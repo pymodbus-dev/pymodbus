@@ -29,7 +29,7 @@ class FileRecord:  # pylint: disable=eq-without-hash
     def __init__(self, **kwargs):
         """Initialize a new instance.
 
-        :params reference_type: Defaults to 0x06 (must be)
+        :params reference_type: must be 0x06
         :params file_number: Indicates which file number we are reading
         :params record_number: Indicates which record in the file
         :params record_data: The actual data of the record

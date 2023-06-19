@@ -15,7 +15,6 @@ import pymodbus.register_read_message as pdu_reg_read
 import pymodbus.register_write_message as pdu_req_write
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.mixin import ModbusClientMixin
-from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
@@ -116,7 +115,7 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                     "retry_on_empty": True,
                     "close_comm_on_error": True,
                     "strict": False,
-                    "broadcast_enable": not Defaults.BroadcastEnable,
+                    "broadcast_enable": not False,
                     "reconnect_delay": 117,
                     "reconnect_delay_max": 250,
                 },
@@ -126,9 +125,9 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                     "retry_on_empty": False,
                     "close_comm_on_error": False,
                     "strict": True,
-                    "broadcast_enable": Defaults.BroadcastEnable,
-                    "reconnect_delay": Defaults.ReconnectDelay,
-                    "reconnect_delay_max": Defaults.ReconnectDelayMax,
+                    "broadcast_enable": False,
+                    "reconnect_delay": 100,
+                    "reconnect_delay_max": 1000 * 60 * 5,
                 },
             },
             "serial": {

@@ -17,7 +17,6 @@ from contextlib import suppress
 from functools import partial
 from threading import RLock
 
-from pymodbus.constants import Defaults
 from pymodbus.exceptions import (
     InvalidMessageReceivedException,
     ModbusIOException,
@@ -166,7 +165,7 @@ class ModbusTransactionManager:
                     if "modbusudpclient" in c_str.lower().strip():
                         full = True
                         if not expected_response_length:
-                            expected_response_length = Defaults.ReadSize
+                            expected_response_length = 1024
                     response, last_exception = self._transact(
                         request,
                         expected_response_length,

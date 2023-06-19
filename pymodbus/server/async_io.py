@@ -7,7 +7,6 @@ import traceback
 from contextlib import suppress
 from typing import Union
 
-from pymodbus.constants import Defaults
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
@@ -393,10 +392,8 @@ class ModbusUnixServer:
         self.path = path
         self.handler = ModbusServerRequestHandler
         self.handler.server = self
-        self.ignore_missing_slaves = kwargs.get(
-            "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
-        )
-        self.broadcast_enable = kwargs.get("broadcast_enable", Defaults.BroadcastEnable)
+        self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves", False)
+        self.broadcast_enable = kwargs.get("broadcast_enable", False)
         self.response_manipulator = kwargs.get("response_manipulator", None)
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
@@ -480,7 +477,7 @@ class ModbusTcpServer:
         :param allow_reuse_address: Whether the server will allow the
                         reuse of an address.
         :param backlog:  is the maximum number of queued connections
-                    passed to listen(). Defaults to 20, increase if many
+                    passed to listen(). increase if many
                     connections are being made and broken to your Modbus slave
         :param ignore_missing_slaves: True to not send errors on a request
                         to a missing slave
@@ -499,10 +496,8 @@ class ModbusTcpServer:
         self.address = address or ("", 502)
         self.handler = ModbusServerRequestHandler
         self.handler.server = self
-        self.ignore_missing_slaves = kwargs.get(
-            "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
-        )
-        self.broadcast_enable = kwargs.get("broadcast_enable", Defaults.BroadcastEnable)
+        self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves", False)
+        self.broadcast_enable = kwargs.get("broadcast_enable", False)
         self.response_manipulator = kwargs.get("response_manipulator", None)
         self.request_tracer = kwargs.get("request_tracer", None)
         if isinstance(identity, ModbusDeviceIdentification):
@@ -606,7 +601,7 @@ class ModbusTlsServer(ModbusTcpServer):
         :param allow_reuse_address: Whether the server will allow the
                         reuse of an address.
         :param backlog:  is the maximum number of queued connections
-                    passed to listen(). Defaults to 20, increase if many
+                    passed to listen().  increase if many
                     connections are being made and broken to your Modbus slave
         :param ignore_missing_slaves: True to not send errors on a request
                         to a missing slave
@@ -675,10 +670,8 @@ class ModbusUdpServer:
         self.control = ModbusControlBlock()
         self.address = address or ("", 502)
         self.handler = ModbusServerRequestHandler
-        self.ignore_missing_slaves = kwargs.get(
-            "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
-        )
-        self.broadcast_enable = kwargs.get("broadcast_enable", Defaults.BroadcastEnable)
+        self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves", False)
+        self.broadcast_enable = kwargs.get("broadcast_enable", False)
         self.response_manipulator = kwargs.get("response_manipulator", None)
 
         if isinstance(identity, ModbusDeviceIdentification):
@@ -784,10 +777,8 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         self.device = kwargs.get("port", 0)
         self.stopbits = kwargs.get("stopbits", 1)
         self.handle_local_echo = kwargs.get("handle_local_echo", False)
-        self.ignore_missing_slaves = kwargs.get(
-            "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
-        )
-        self.broadcast_enable = kwargs.get("broadcast_enable", Defaults.BroadcastEnable)
+        self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves", False)
+        self.broadcast_enable = kwargs.get("broadcast_enable", False)
         self.auto_reconnect = kwargs.get("auto_reconnect", False)
         self.reconnect_delay = kwargs.get("reconnect_delay", 2)
         self.reconnecting_task = None

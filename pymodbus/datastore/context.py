@@ -37,9 +37,6 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
     def __init__(self, *_args, **kwargs):
         """Initialize the datastores.
 
-        Defaults to fully populated
-        sequential data blocks if none are passed in.
-
         :param kwargs: Each element is a ModbusDataBlock
 
             "di" - Discrete Inputs initializer

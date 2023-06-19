@@ -111,21 +111,21 @@ def test_client_mixin(arglist, method, arg, pdu_request):
         {
             "fix": {
                 "opt_args": {
-                    "timeout": Defaults.Timeout + 2,
+                    "timeout": 3 + 2,
                     "retries": 3 + 2,
                     "retry_on_empty": True,
                     "close_comm_on_error": True,
-                    "strict": not Defaults.Strict,
+                    "strict": False,
                     "broadcast_enable": not Defaults.BroadcastEnable,
                     "reconnect_delay": 117,
                     "reconnect_delay_max": 250,
                 },
                 "defaults": {
-                    "timeout": Defaults.Timeout,
+                    "timeout": 3,
                     "retries": 3,
                     "retry_on_empty": False,
                     "close_comm_on_error": False,
-                    "strict": Defaults.Strict,
+                    "strict": True,
                     "broadcast_enable": Defaults.BroadcastEnable,
                     "reconnect_delay": Defaults.ReconnectDelay,
                     "reconnect_delay_max": Defaults.ReconnectDelayMax,

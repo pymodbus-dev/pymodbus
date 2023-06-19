@@ -127,12 +127,6 @@ class Defaults:  # pylint: disable=too-few-public-methods
 
     """
 
-    RetryOnEmpty = False
-    RetryOnInvalid = False
-    Timeout = 3
-    Reconnects = 0
-    TransactionId = 0
-    Strict = True
     ProtocolId = 0
     Slave: int = 0x00
     Baudrate = 19200

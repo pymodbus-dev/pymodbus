@@ -92,5 +92,5 @@ class TestAllMessages:
 
         request = ReadCoilsRequest(1, 5)
         assert request.slave_id == Defaults.Slave
-        assert request.transaction_id == Defaults.TransactionId
+        assert not request.transaction_id
         assert request.protocol_id == Defaults.ProtocolId

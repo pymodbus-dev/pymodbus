@@ -82,11 +82,11 @@ class ModbusBaseClient(ModbusClientMixin):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         framer: type[ModbusFramer] = None,
-        timeout: str | float = Defaults.Timeout,
+        timeout: str | float = 3,
         retries: str | int = 3,
         retry_on_empty: bool = False,
         close_comm_on_error: bool = False,
-        strict: bool = Defaults.Strict,
+        strict: bool = True,
         broadcast_enable: bool = Defaults.BroadcastEnable,
         reconnect_delay: int = 0.1,
         reconnect_delay_max: int = 300,

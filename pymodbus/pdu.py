@@ -60,7 +60,7 @@ class ModbusPDU:
         :param slave: Modbus slave slave ID
 
         """
-        self.transaction_id = kwargs.get("transaction", Defaults.TransactionId)
+        self.transaction_id = kwargs.get("transaction", 0)
         self.protocol_id = kwargs.get("protocol", Defaults.ProtocolId)
         self.slave_id = slave
         self.skip_encode = kwargs.get("skip_encode", False)

@@ -58,11 +58,11 @@ class ModbusTransactionManager:
         :param retry_on_empty: Should the client retry on empty
         :param retries: The number of retries to allow
         """
-        self.tid = Defaults.TransactionId
+        self.tid = 0
         self.client = client
         self.backoff = kwargs.get("backoff", 0.3)
         self.retry_on_empty = kwargs.get("retry_on_empty", False)
-        self.retry_on_invalid = kwargs.get("retry_on_invalid", Defaults.RetryOnInvalid)
+        self.retry_on_invalid = kwargs.get("retry_on_invalid", False)
         self.retries = kwargs.get("retries", 3)
         self.reset_socket = kwargs.get("reset_socket", True)
         self._transaction_lock = RLock()
@@ -463,7 +463,7 @@ class ModbusTransactionManager:
 
     def reset(self):
         """Reset the transaction identifier."""
-        self.tid = Defaults.TransactionId
+        self.tid = 0
         self.transactions = type(  # pylint: disable=attribute-defined-outside-init
             self.transactions
         )()

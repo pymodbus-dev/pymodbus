@@ -127,10 +127,6 @@ class Defaults:  # pylint: disable=too-few-public-methods
 
     """
 
-    Baudrate = 19200
-    Parity = "N"
-    Bytesize = 8
-    Stopbits = 1
     ZeroMode = False
     IgnoreMissingSlaves = False
     ReadSize = 1024

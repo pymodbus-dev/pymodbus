@@ -777,12 +777,12 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
                     manipulating the response
         """
         self.loop = kwargs.get("loop") or asyncio.get_event_loop()
-        self.bytesize = kwargs.get("bytesize", Defaults.Bytesize)
-        self.parity = kwargs.get("parity", Defaults.Parity)
-        self.baudrate = kwargs.get("baudrate", Defaults.Baudrate)
+        self.bytesize = kwargs.get("bytesize", 8)
+        self.parity = kwargs.get("parity", "N")
+        self.baudrate = kwargs.get("baudrate", 19200)
         self.timeout = kwargs.get("timeout", 3)
         self.device = kwargs.get("port", 0)
-        self.stopbits = kwargs.get("stopbits", Defaults.Stopbits)
+        self.stopbits = kwargs.get("stopbits", 1)
         self.handle_local_echo = kwargs.get("handle_local_echo", False)
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves

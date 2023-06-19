@@ -6,7 +6,6 @@ from functools import partial
 from typing import Any, Type
 
 from pymodbus.client.base import ModbusBaseClient
-from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
@@ -48,10 +47,10 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         self,
         port: str,
         framer: Type[ModbusFramer] = ModbusRtuFramer,
-        baudrate: int = Defaults.Baudrate,
-        bytesize: int = Defaults.Bytesize,
-        parity: str = Defaults.Parity,
-        stopbits: int = Defaults.Stopbits,
+        baudrate: int = 19200,
+        bytesize: int = 8,
+        parity: str = "N",
+        stopbits: int = 1,
         handle_local_echo: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -121,10 +120,10 @@ class ModbusSerialClient(ModbusBaseClient):
         self,
         port: str,
         framer: Type[ModbusFramer] = ModbusRtuFramer,
-        baudrate: int = Defaults.Baudrate,
-        bytesize: int = Defaults.Bytesize,
-        parity: str = Defaults.Parity,
-        stopbits: int = Defaults.Stopbits,
+        baudrate: int = 19200,
+        bytesize: int = 8,
+        parity: str = "N",
+        stopbits: int = 1,
         handle_local_echo: bool = False,
         **kwargs: Any,
     ) -> None:

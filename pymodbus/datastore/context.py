@@ -1,6 +1,5 @@
 """Context for datastore."""
 # pylint: disable=missing-type-doc
-from pymodbus.constants import Defaults
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.logging import Log
@@ -53,7 +52,7 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
         self.store["c"] = kwargs.get("co", ModbusSequentialDataBlock.create())
         self.store["i"] = kwargs.get("ir", ModbusSequentialDataBlock.create())
         self.store["h"] = kwargs.get("hr", ModbusSequentialDataBlock.create())
-        self.zero_mode = kwargs.get("zero_mode", Defaults.ZeroMode)
+        self.zero_mode = kwargs.get("zero_mode", False)
 
     def __str__(self):
         """Return a string representation of the context.

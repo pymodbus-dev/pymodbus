@@ -134,7 +134,7 @@ class ModbusServerContext:
         self.single = single
         self._slaves = slaves or {}
         if self.single:
-            self._slaves = {Defaults.Slave: self._slaves}
+            self._slaves = {0: self._slaves}
 
     def __iter__(self):
         """Iterate over the current collection of slave contexts.
@@ -161,7 +161,7 @@ class ModbusServerContext:
         :raises NoSuchSlaveException:
         """
         if self.single:
-            slave = Defaults.Slave
+            slave = 0
         if 0xF7 >= slave >= 0x00:
             self._slaves[slave] = context
         else:
@@ -186,7 +186,7 @@ class ModbusServerContext:
         :raises NoSuchSlaveException:
         """
         if self.single:
-            slave = Defaults.Slave
+            slave = 0
         if slave in self._slaves:
             return self._slaves.get(slave)
         raise NoSuchSlaveException(

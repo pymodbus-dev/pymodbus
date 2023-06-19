@@ -127,8 +127,6 @@ class Defaults:  # pylint: disable=too-few-public-methods
 
     """
 
-    ProtocolId = 0
-    Slave: int = 0x00
     Baudrate = 19200
     Parity = "N"
     Bytesize = 8

@@ -127,10 +127,6 @@ class Defaults:  # pylint: disable=too-few-public-methods
 
     """
 
-    Backoff = 0.3
-    CloseCommOnError = False
-    HandleLocalEcho = False
-    Retries = 3
     RetryOnEmpty = False
     RetryOnInvalid = False
     Timeout = 3

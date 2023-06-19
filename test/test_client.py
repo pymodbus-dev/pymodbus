@@ -112,9 +112,9 @@ def test_client_mixin(arglist, method, arg, pdu_request):
             "fix": {
                 "opt_args": {
                     "timeout": Defaults.Timeout + 2,
-                    "retries": Defaults.Retries + 2,
-                    "retry_on_empty": not Defaults.RetryOnEmpty,
-                    "close_comm_on_error": not Defaults.CloseCommOnError,
+                    "retries": 3 + 2,
+                    "retry_on_empty": True,
+                    "close_comm_on_error": True,
                     "strict": not Defaults.Strict,
                     "broadcast_enable": not Defaults.BroadcastEnable,
                     "reconnect_delay": 117,
@@ -122,9 +122,9 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                 },
                 "defaults": {
                     "timeout": Defaults.Timeout,
-                    "retries": Defaults.Retries,
-                    "retry_on_empty": Defaults.RetryOnEmpty,
-                    "close_comm_on_error": Defaults.CloseCommOnError,
+                    "retries": 3,
+                    "retry_on_empty": False,
+                    "close_comm_on_error": False,
                     "strict": Defaults.Strict,
                     "broadcast_enable": Defaults.BroadcastEnable,
                     "reconnect_delay": Defaults.ReconnectDelay,
@@ -139,7 +139,7 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                     "bytesize": Defaults.Bytesize - 1,
                     "parity": "E",
                     "stopbits": Defaults.Stopbits + 1,
-                    "handle_local_echo": not Defaults.HandleLocalEcho,
+                    "handle_local_echo": True,
                 },
                 "defaults": {
                     "host": None,
@@ -149,7 +149,7 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                     "bytesize": Defaults.Bytesize,
                     "parity": Defaults.Parity,
                     "stopbits": Defaults.Stopbits,
-                    "handle_local_echo": Defaults.HandleLocalEcho,
+                    "handle_local_echo": False,
                 },
             },
             "tcp": {

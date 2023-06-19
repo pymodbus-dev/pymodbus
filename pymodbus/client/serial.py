@@ -52,7 +52,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         bytesize: int = Defaults.Bytesize,
         parity: str = Defaults.Parity,
         stopbits: int = Defaults.Stopbits,
-        handle_local_echo: bool = Defaults.HandleLocalEcho,
+        handle_local_echo: bool = False,
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
@@ -125,7 +125,7 @@ class ModbusSerialClient(ModbusBaseClient):
         bytesize: int = Defaults.Bytesize,
         parity: str = Defaults.Parity,
         stopbits: int = Defaults.Stopbits,
-        handle_local_echo: bool = Defaults.HandleLocalEcho,
+        handle_local_echo: bool = False,
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus Serial Client."""

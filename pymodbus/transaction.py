@@ -61,9 +61,9 @@ class ModbusTransactionManager:
         self.tid = Defaults.TransactionId
         self.client = client
         self.backoff = kwargs.get("backoff", 0.3)
-        self.retry_on_empty = kwargs.get("retry_on_empty", Defaults.RetryOnEmpty)
+        self.retry_on_empty = kwargs.get("retry_on_empty", False)
         self.retry_on_invalid = kwargs.get("retry_on_invalid", Defaults.RetryOnInvalid)
-        self.retries = kwargs.get("retries", Defaults.Retries) or 1
+        self.retries = kwargs.get("retries", 3)
         self.reset_socket = kwargs.get("reset_socket", True)
         self._transaction_lock = RLock()
         self._no_response_devices = []

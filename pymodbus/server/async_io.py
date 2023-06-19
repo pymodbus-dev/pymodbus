@@ -783,9 +783,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         self.timeout = kwargs.get("timeout", Defaults.Timeout)
         self.device = kwargs.get("port", 0)
         self.stopbits = kwargs.get("stopbits", Defaults.Stopbits)
-        self.handle_local_echo = kwargs.get(
-            "handle_local_echo", Defaults.HandleLocalEcho
-        )
+        self.handle_local_echo = kwargs.get("handle_local_echo", False)
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
         )

@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from pymodbus.client.mixin import ModbusClientMixin
-from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
 from pymodbus.framer import ModbusFramer
@@ -82,12 +81,12 @@ class ModbusBaseClient(ModbusClientMixin):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         framer: type[ModbusFramer] = None,
-        timeout: str | float = Defaults.Timeout,
-        retries: str | int = Defaults.Retries,
-        retry_on_empty: bool = Defaults.RetryOnEmpty,
-        close_comm_on_error: bool = Defaults.CloseCommOnError,
-        strict: bool = Defaults.Strict,
-        broadcast_enable: bool = Defaults.BroadcastEnable,
+        timeout: str | float = 3,
+        retries: str | int = 3,
+        retry_on_empty: bool = False,
+        close_comm_on_error: bool = False,
+        strict: bool = True,
+        broadcast_enable: bool = False,
         reconnect_delay: int = 0.1,
         reconnect_delay_max: int = 300,
         on_reconnect_callback: Callable[[], None] | None = None,

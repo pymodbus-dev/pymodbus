@@ -13,7 +13,6 @@ __all__ = [
 # pylint: disable=missing-type-doc
 import struct
 
-from pymodbus.constants import Defaults
 from pymodbus.pdu import ExceptionResponse, ModbusRequest, ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
 
@@ -23,7 +22,7 @@ class ReadRegistersRequestBase(ModbusRequest):
 
     _rtu_frame_size = 8
 
-    def __init__(self, address, count, slave=Defaults.Slave, **kwargs):
+    def __init__(self, address, count, slave=0, **kwargs):
         """Initialize a new instance.
 
         :param address: The address to start the read from
@@ -71,7 +70,7 @@ class ReadRegistersResponseBase(ModbusResponse):
 
     _rtu_byte_count_pos = 2
 
-    def __init__(self, values, slave=Defaults.Slave, **kwargs):
+    def __init__(self, values, slave=0, **kwargs):
         """Initialize a new instance.
 
         :param values: The values to write to
@@ -131,7 +130,7 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
     function_code = 3
     function_code_name = "read_holding_registers"
 
-    def __init__(self, address=None, count=None, slave=Defaults.Slave, **kwargs):
+    def __init__(self, address=None, count=None, slave=0, **kwargs):
         """Initialize a new instance of the request.
 
         :param address: The starting address to read from
@@ -192,7 +191,7 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
     function_code = 4
     function_code_name = "read_input_registers"
 
-    def __init__(self, address=None, count=None, slave=Defaults.Slave, **kwargs):
+    def __init__(self, address=None, count=None, slave=0, **kwargs):
         """Initialize a new instance of the request.
 
         :param address: The starting address to read from

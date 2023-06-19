@@ -11,7 +11,6 @@ __all__ = [
 # pylint: disable=missing-type-doc
 import struct
 
-from pymodbus.constants import Defaults
 from pymodbus.pdu import ExceptionResponse, ModbusRequest, ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
@@ -22,7 +21,7 @@ class ReadBitsRequestBase(ModbusRequest):
 
     _rtu_frame_size = 8
 
-    def __init__(self, address, count, slave=Defaults.Slave, **kwargs):
+    def __init__(self, address, count, slave=0, **kwargs):
         """Initialize the read request data.
 
         :param address: The start address to read from
@@ -76,7 +75,7 @@ class ReadBitsResponseBase(ModbusResponse):
 
     _rtu_byte_count_pos = 2
 
-    def __init__(self, values, slave=Defaults.Slave, **kwargs):
+    def __init__(self, values, slave=0, **kwargs):
         """Initialize a new instance.
 
         :param values: The requested values to be returned
@@ -147,7 +146,7 @@ class ReadCoilsRequest(ReadBitsRequestBase):
     function_code = 1
     function_code_name = "read_coils"
 
-    def __init__(self, address=None, count=None, slave=Defaults.Slave, **kwargs):
+    def __init__(self, address=None, count=None, slave=0, **kwargs):
         """Initialize a new instance.
 
         :param address: The address to start reading from
@@ -194,7 +193,7 @@ class ReadCoilsResponse(ReadBitsResponseBase):
 
     function_code = 1
 
-    def __init__(self, values=None, slave=Defaults.Slave, **kwargs):
+    def __init__(self, values=None, slave=0, **kwargs):
         """Initialize a new instance.
 
         :param values: The request values to respond with
@@ -215,7 +214,7 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
     function_code = 2
     function_code_name = "read_discrete_input"
 
-    def __init__(self, address=None, count=None, slave=Defaults.Slave, **kwargs):
+    def __init__(self, address=None, count=None, slave=0, **kwargs):
         """Initialize a new instance.
 
         :param address: The address to start reading from
@@ -262,7 +261,7 @@ class ReadDiscreteInputsResponse(ReadBitsResponseBase):
 
     function_code = 2
 
-    def __init__(self, values=None, slave=Defaults.Slave, **kwargs):
+    def __init__(self, values=None, slave=0, **kwargs):
         """Initialize a new instance.
 
         :param values: The request values to respond with

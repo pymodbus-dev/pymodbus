@@ -4,7 +4,6 @@ import socket
 from typing import Any, Tuple, Type
 
 from pymodbus.client.base import ModbusBaseClient
-from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
@@ -43,7 +42,7 @@ class AsyncModbusUdpClient(
     def __init__(
         self,
         host: str,
-        port: int = Defaults.UdpPort,
+        port: int = 502,
         framer: Type[ModbusFramer] = ModbusSocketFramer,
         source_address: Tuple[str, int] = None,
         **kwargs: Any,
@@ -108,7 +107,7 @@ class ModbusUdpClient(ModbusBaseClient):
     def __init__(
         self,
         host: str,
-        port: int = Defaults.UdpPort,
+        port: int = 502,
         framer: Type[ModbusFramer] = ModbusSocketFramer,
         source_address: Tuple[str, int] = None,
         **kwargs: Any,

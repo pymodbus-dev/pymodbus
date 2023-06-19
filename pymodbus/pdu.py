@@ -11,7 +11,6 @@ __all__ = [
 # pylint: disable=missing-type-doc
 import struct
 
-from pymodbus.constants import Defaults
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.logging import Log
 from pymodbus.utilities import rtuFrameSize
@@ -54,14 +53,14 @@ class ModbusPDU:
        of encoding it again.
     """
 
-    def __init__(self, slave=Defaults.Slave, **kwargs):
+    def __init__(self, slave=0, **kwargs):
         """Initialize the base data for a modbus request.
 
         :param slave: Modbus slave slave ID
 
         """
-        self.transaction_id = kwargs.get("transaction", Defaults.TransactionId)
-        self.protocol_id = kwargs.get("protocol", Defaults.ProtocolId)
+        self.transaction_id = kwargs.get("transaction", 0)
+        self.protocol_id = kwargs.get("protocol", 0)
         self.slave_id = slave
         self.skip_encode = kwargs.get("skip_encode", False)
         self.check = 0x0000
@@ -103,7 +102,7 @@ class ModbusRequest(ModbusPDU):
 
     function_code = -1
 
-    def __init__(self, slave=Defaults.Slave, **kwargs):
+    def __init__(self, slave=0, **kwargs):  # pylint: disable=useless-parent-delegation
         """Proxy to the lower level initializer.
 
         :param slave: Modbus slave slave ID
@@ -137,7 +136,7 @@ class ModbusResponse(ModbusPDU):
 
     should_respond = True
 
-    def __init__(self, slave=Defaults.Slave, **kwargs):
+    def __init__(self, slave=0, **kwargs):
         """Proxy the lower level initializer.
 
         :param slave: Modbus slave slave ID

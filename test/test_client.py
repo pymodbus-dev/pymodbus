@@ -15,7 +15,6 @@ import pymodbus.register_read_message as pdu_reg_read
 import pymodbus.register_write_message as pdu_req_write
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.mixin import ModbusClientMixin
-from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
@@ -111,45 +110,45 @@ def test_client_mixin(arglist, method, arg, pdu_request):
         {
             "fix": {
                 "opt_args": {
-                    "timeout": Defaults.Timeout + 2,
-                    "retries": Defaults.Retries + 2,
-                    "retry_on_empty": not Defaults.RetryOnEmpty,
-                    "close_comm_on_error": not Defaults.CloseCommOnError,
-                    "strict": not Defaults.Strict,
-                    "broadcast_enable": not Defaults.BroadcastEnable,
+                    "timeout": 3 + 2,
+                    "retries": 3 + 2,
+                    "retry_on_empty": True,
+                    "close_comm_on_error": True,
+                    "strict": False,
+                    "broadcast_enable": not False,
                     "reconnect_delay": 117,
                     "reconnect_delay_max": 250,
                 },
                 "defaults": {
-                    "timeout": Defaults.Timeout,
-                    "retries": Defaults.Retries,
-                    "retry_on_empty": Defaults.RetryOnEmpty,
-                    "close_comm_on_error": Defaults.CloseCommOnError,
-                    "strict": Defaults.Strict,
-                    "broadcast_enable": Defaults.BroadcastEnable,
-                    "reconnect_delay": Defaults.ReconnectDelay,
-                    "reconnect_delay_max": Defaults.ReconnectDelayMax,
+                    "timeout": 3,
+                    "retries": 3,
+                    "retry_on_empty": False,
+                    "close_comm_on_error": False,
+                    "strict": True,
+                    "broadcast_enable": False,
+                    "reconnect_delay": 100,
+                    "reconnect_delay_max": 1000 * 60 * 5,
                 },
             },
             "serial": {
                 "pos_arg": "/dev/tty",
                 "opt_args": {
                     "framer": ModbusAsciiFramer,
-                    "baudrate": Defaults.Baudrate + 500,
-                    "bytesize": Defaults.Bytesize - 1,
+                    "baudrate": 19200 + 500,
+                    "bytesize": 8 - 1,
                     "parity": "E",
-                    "stopbits": Defaults.Stopbits + 1,
-                    "handle_local_echo": not Defaults.HandleLocalEcho,
+                    "stopbits": 1 + 1,
+                    "handle_local_echo": True,
                 },
                 "defaults": {
                     "host": None,
                     "port": "/dev/tty",
                     "framer": ModbusRtuFramer,
-                    "baudrate": Defaults.Baudrate,
-                    "bytesize": Defaults.Bytesize,
-                    "parity": Defaults.Parity,
-                    "stopbits": Defaults.Stopbits,
-                    "handle_local_echo": Defaults.HandleLocalEcho,
+                    "baudrate": 19200,
+                    "bytesize": 8,
+                    "parity": "N",
+                    "stopbits": 1,
+                    "handle_local_echo": False,
                 },
             },
             "tcp": {
@@ -161,7 +160,7 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                 },
                 "defaults": {
                     "host": "192.168.1.2",
-                    "port": Defaults.TcpPort,
+                    "port": 502,
                     "framer": ModbusSocketFramer,
                     "source_address": None,
                 },
@@ -179,7 +178,7 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                 },
                 "defaults": {
                     "host": "192.168.1.2",
-                    "port": Defaults.TlsPort,
+                    "port": 802,
                     "framer": ModbusTlsFramer,
                     "source_address": None,
                     "sslctx": None,
@@ -197,7 +196,7 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                 },
                 "defaults": {
                     "host": "192.168.1.2",
-                    "port": Defaults.UdpPort,
+                    "port": 502,
                     "framer": ModbusSocketFramer,
                     "source_address": None,
                 },

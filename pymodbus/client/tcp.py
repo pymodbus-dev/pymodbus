@@ -6,7 +6,6 @@ import time
 from typing import Any, Tuple, Type
 
 from pymodbus.client.base import ModbusBaseClient
-from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
@@ -40,7 +39,7 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
     def __init__(
         self,
         host: str,
-        port: int = Defaults.TcpPort,
+        port: int = 502,
         framer: Type[ModbusFramer] = ModbusSocketFramer,
         source_address: Tuple[str, int] = None,
         **kwargs: Any,
@@ -107,7 +106,7 @@ class ModbusTcpClient(ModbusBaseClient):
     def __init__(
         self,
         host: str,
-        port: int = Defaults.TcpPort,
+        port: int = 502,
         framer: Type[ModbusFramer] = ModbusSocketFramer,
         source_address: Tuple[str, int] = None,
         **kwargs: Any,

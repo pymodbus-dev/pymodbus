@@ -4,7 +4,6 @@ import functools
 
 from pymodbus.client import ModbusSerialClient as _ModbusSerialClient
 from pymodbus.client import ModbusTcpClient as _ModbusTcpClient
-from pymodbus.constants import Defaults
 from pymodbus.diag_message import (
     ChangeAsciiInputDelimiterRequest,
     ClearCountersRequest,
@@ -90,7 +89,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
                 err = {"error": str(resp)}
         return err
 
-    def read_coils(self, address, count=1, slave=Defaults.Slave, **kwargs):
+    def read_coils(self, address, count=1, slave=0, **kwargs):
         """Read `count` coils from a given slave starting at `address`.
 
         :param address: The starting address to read from
@@ -106,7 +105,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
             return {"function_code": resp.function_code, "bits": resp.bits}
         return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
-    def read_discrete_inputs(self, address, count=1, slave=Defaults.Slave, **kwargs):
+    def read_discrete_inputs(self, address, count=1, slave=0, **kwargs):
         """Read `count` number of discrete inputs starting at offset `address`.
 
         :param address: The starting address to read from
@@ -123,7 +122,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
     @handle_brodcast
-    def write_coil(self, address, value, slave=Defaults.Slave, **kwargs):
+    def write_coil(self, address, value, slave=0, **kwargs):
         """Write `value` to coil at `address`.
 
         :param address: coil offset to write to
@@ -138,7 +137,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         return resp
 
     @handle_brodcast
-    def write_coils(self, address, values, slave=Defaults.Slave, **kwargs):
+    def write_coils(self, address, values, slave=0, **kwargs):
         """Write `value` to coil at `address`.
 
         :param address: coil offset to write to
@@ -153,7 +152,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         return resp
 
     @handle_brodcast
-    def write_register(self, address, value, slave=Defaults.Slave, **kwargs):
+    def write_register(self, address, value, slave=0, **kwargs):
         """Write `value` to register at `address`.
 
         :param address: register offset to write to
@@ -168,7 +167,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         return resp
 
     @handle_brodcast
-    def write_registers(self, address, values, slave=Defaults.Slave, **kwargs):
+    def write_registers(self, address, values, slave=0, **kwargs):
         """Write list of `values` to registers starting at `address`.
 
         :param address: register offset to write to
@@ -182,7 +181,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         )
         return resp
 
-    def read_holding_registers(self, address, count=1, slave=Defaults.Slave, **kwargs):
+    def read_holding_registers(self, address, count=1, slave=0, **kwargs):
         """Read `count` number of holding registers starting at `address`.
 
         :param address: starting register offset to read from
@@ -198,7 +197,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
             return {"function_code": resp.function_code, "registers": resp.registers}
         return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
-    def read_input_registers(self, address, count=1, slave=Defaults.Slave, **kwargs):
+    def read_input_registers(self, address, count=1, slave=0, **kwargs):
         """Read `count` number of input registers starting at `address`.
 
         :param address: starting register offset to read from to
@@ -220,7 +219,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         read_count=0,
         write_address=0,
         values=0,
-        slave=Defaults.Slave,
+        slave=0,
         **kwargs,
     ):
         """Read `read_count` number of holding registers.
@@ -253,7 +252,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         address=0x0000,
         and_mask=0xFFFF,
         or_mask=0x0000,
-        slave=Defaults.Slave,
+        slave=0,
         **kwargs,
     ):
         """Mask content of holding register at `address` with `and_mask` and `or_mask`.
@@ -299,7 +298,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
             }
         return ExtendedRequestSupport._process_exception(resp, slave=request.slave_id)
 
-    def report_slave_id(self, slave=Defaults.Slave, **kwargs):
+    def report_slave_id(self, slave=0, **kwargs):
         """Report information about remote slave ID.
 
         :param slave: Modbus slave ID
@@ -317,7 +316,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
             }
         return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
-    def read_exception_status(self, slave=Defaults.Slave, **kwargs):
+    def read_exception_status(self, slave=0, **kwargs):
         """Read contents of eight Exception Status output in a remote device.
 
         :param slave: Modbus slave ID

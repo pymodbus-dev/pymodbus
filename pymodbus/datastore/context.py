@@ -1,6 +1,5 @@
 """Context for datastore."""
 # pylint: disable=missing-type-doc
-from pymodbus.constants import Defaults
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.logging import Log
@@ -38,9 +37,6 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
     def __init__(self, *_args, **kwargs):
         """Initialize the datastores.
 
-        Defaults to fully populated
-        sequential data blocks if none are passed in.
-
         :param kwargs: Each element is a ModbusDataBlock
 
             "di" - Discrete Inputs initializer
@@ -53,7 +49,7 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
         self.store["c"] = kwargs.get("co", ModbusSequentialDataBlock.create())
         self.store["i"] = kwargs.get("ir", ModbusSequentialDataBlock.create())
         self.store["h"] = kwargs.get("hr", ModbusSequentialDataBlock.create())
-        self.zero_mode = kwargs.get("zero_mode", Defaults.ZeroMode)
+        self.zero_mode = kwargs.get("zero_mode", False)
 
     def __str__(self):
         """Return a string representation of the context.
@@ -134,7 +130,7 @@ class ModbusServerContext:
         self.single = single
         self._slaves = slaves or {}
         if self.single:
-            self._slaves = {Defaults.Slave: self._slaves}
+            self._slaves = {0: self._slaves}
 
     def __iter__(self):
         """Iterate over the current collection of slave contexts.
@@ -161,7 +157,7 @@ class ModbusServerContext:
         :raises NoSuchSlaveException:
         """
         if self.single:
-            slave = Defaults.Slave
+            slave = 0
         if 0xF7 >= slave >= 0x00:
             self._slaves[slave] = context
         else:
@@ -186,7 +182,7 @@ class ModbusServerContext:
         :raises NoSuchSlaveException:
         """
         if self.single:
-            slave = Defaults.Slave
+            slave = 0
         if slave in self._slaves:
             return self._slaves.get(slave)
         raise NoSuchSlaveException(

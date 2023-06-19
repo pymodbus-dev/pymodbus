@@ -102,12 +102,11 @@ class ModbusRequest(ModbusPDU):
 
     function_code = -1
 
-    def __init__(self, slave=0, **kwargs):
+    def __init__(self, slave=0, **kwargs):  # pylint: disable=useless-parent-delegation
         """Proxy to the lower level initializer.
 
         :param slave: Modbus slave slave ID
         """
-        assert slave < 0
         super().__init__(slave, **kwargs)
 
     def doException(self, exception):

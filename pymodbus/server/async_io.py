@@ -496,7 +496,7 @@ class ModbusTcpServer:
         self.framer = framer or ModbusSocketFramer
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
-        self.address = address or ("", Defaults.TcpPort)
+        self.address = address or ("", 502)
         self.handler = ModbusServerRequestHandler
         self.handler.server = self
         self.ignore_missing_slaves = kwargs.get(
@@ -673,7 +673,7 @@ class ModbusUdpServer:
         self.framer = framer or ModbusSocketFramer
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
-        self.address = address or ("", Defaults.TcpPort)
+        self.address = address or ("", 502)
         self.handler = ModbusServerRequestHandler
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves

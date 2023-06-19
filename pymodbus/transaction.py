@@ -60,7 +60,7 @@ class ModbusTransactionManager:
         """
         self.tid = Defaults.TransactionId
         self.client = client
-        self.backoff = kwargs.get("backoff", Defaults.Backoff) or 0.3
+        self.backoff = kwargs.get("backoff", 0.3)
         self.retry_on_empty = kwargs.get("retry_on_empty", Defaults.RetryOnEmpty)
         self.retry_on_invalid = kwargs.get("retry_on_invalid", Defaults.RetryOnInvalid)
         self.retries = kwargs.get("retries", Defaults.Retries) or 1

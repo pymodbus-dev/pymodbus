@@ -127,9 +127,6 @@ class Defaults:  # pylint: disable=too-few-public-methods
 
     """
 
-    TcpPort = 502
-    TlsPort = 802
-    UdpPort = 502
     Backoff = 0.3
     CloseCommOnError = False
     HandleLocalEcho = False

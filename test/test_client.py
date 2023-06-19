@@ -161,7 +161,7 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                 },
                 "defaults": {
                     "host": "192.168.1.2",
-                    "port": Defaults.TcpPort,
+                    "port": 502,
                     "framer": ModbusSocketFramer,
                     "source_address": None,
                 },
@@ -179,7 +179,7 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                 },
                 "defaults": {
                     "host": "192.168.1.2",
-                    "port": Defaults.TlsPort,
+                    "port": 802,
                     "framer": ModbusTlsFramer,
                     "source_address": None,
                     "sslctx": None,
@@ -197,7 +197,7 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                 },
                 "defaults": {
                     "host": "192.168.1.2",
-                    "port": Defaults.UdpPort,
+                    "port": 502,
                     "framer": ModbusSocketFramer,
                     "source_address": None,
                 },

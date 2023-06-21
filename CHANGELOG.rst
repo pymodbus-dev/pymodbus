@@ -1,3 +1,16 @@
+version 3.3.2
+----------------------------------------------------------
+* Fix RemoteSlaveContext (#1599)
+* Change version follow PEP 440. (#1609)
+* Fix regression with REPL server not listening (#1604)
+* Fix write function codes (#1598)
+* Release corrections. (#1586)
+
+Thanks to:
+  Alex
+  Fredo70
+  jan iversen
+
 version 3.3.1
 ----------------------------------------------------------
 * transport fixes and 100% test coverage. (#1580)

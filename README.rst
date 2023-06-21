@@ -20,9 +20,9 @@ There are challenges small and large not only programming but also documentation
 Supported versions
 ------------------------------------------------------------
 
-Version `2.5.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (Supports python >= 2.7, no longer supported).
+Version `2.5.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (python >= 2.7, no longer supported).
 
-Version `3.3.1 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.3.1>`_ is the current release (Supports Python >= 3.8).
+Version `3.3.2 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.3.2>`_ is the current release (Tested with Python >= 3.8).
 
 .. important::
    All API changes after 3.0.0 are documented in `API_changes.rst <https://github.com/pymodbus-dev/pymodbus/blob/dev/API_changes.rst>`_

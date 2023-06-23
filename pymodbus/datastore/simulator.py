@@ -572,10 +572,9 @@ class ModbusSimulatorContext:
             real_address = self.fc_offset[func_code] + address
             for i in range(real_address, real_address + count):
                 reg = self.registers[i]
+                kwargs = reg.action_kwargs if reg.action_kwargs else {}
                 if reg.action:
-                    self.action_methods[reg.action](
-                        self.registers, i, reg, reg.action_kwargs
-                    )
+                    self.action_methods[reg.action](self.registers, i, reg, **kwargs)
                 self.registers[i].count_read += 1
                 result.append(reg.value)
         else:
@@ -631,26 +630,28 @@ class ModbusSimulatorContext:
     # --------------------------------------------
 
     @classmethod
-    def action_random(cls, registers, inx, cell, _kwargs):
+    def action_random(cls, registers, inx, cell, minval=1, maxval=65536):
         """Update with random value.
 
         :meta private:
         """
         if cell.type in (CellType.BITS, CellType.UINT16):
-            registers[inx].value = random.randint(1, 65536)
+            registers[inx].value = random.randint(int(minval), int(maxval))
         elif cell.type == CellType.FLOAT32:
-            regs = cls.build_registers_from_value(random.uniform(1.0, 65000.0), False)
+            regs = cls.build_registers_from_value(
+                random.uniform(float(minval), float(maxval)), False
+            )
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]
         elif cell.type == CellType.UINT32:
             regs = cls.build_registers_from_value(
-                int(random.uniform(0.0, 65000.0)), True
+                random.randint(int(minval), int(maxval)), True
             )
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]
 
     @classmethod
-    def action_increment(cls, registers, inx, cell, _kwargs):
+    def action_increment(cls, registers, inx, cell, minval=None, maxval=None):
         """Increment value reset with overflow.
 
         :meta private:
@@ -658,11 +659,16 @@ class ModbusSimulatorContext:
         reg = registers[inx]
         reg2 = registers[inx + 1]
         if cell.type in (CellType.BITS, CellType.UINT16):
-            reg.value += 1
+            value = reg.value + 1
+            if maxval and value > maxval:
+                value = minval
+            reg.value = value
         elif cell.type == CellType.FLOAT32:
             tmp_reg = [reg.value, reg2.value]
             value = cls.build_value_from_registers(tmp_reg, False)
             value += 1.0
+            if maxval and value > maxval:
+                value = minval
             new_regs = cls.build_registers_from_value(value, False)
             reg.value = new_regs[0]
             reg2.value = new_regs[1]
@@ -670,12 +676,14 @@ class ModbusSimulatorContext:
             tmp_reg = [reg.value, reg2.value]
             value = cls.build_value_from_registers(tmp_reg, True)
             value += 1
+            if maxval and value > maxval:
+                value = minval
             new_regs = cls.build_registers_from_value(value, True)
             reg.value = new_regs[0]
             reg2.value = new_regs[1]
 
     @classmethod
-    def action_timestamp(cls, registers, inx, _cell, _kwargs):
+    def action_timestamp(cls, registers, inx, _cell, **_kwargs):
         """Set current time.
 
         :meta private:
@@ -690,7 +698,7 @@ class ModbusSimulatorContext:
         registers[inx + 6].value = system_time.second
 
     @classmethod
-    def action_reset(cls, _registers, _inx, _cell, _kwargs):
+    def action_reset(cls, _registers, _inx, _cell, **_kwargs):
         """Reboot server.
 
         :meta private:
@@ -698,7 +706,7 @@ class ModbusSimulatorContext:
         raise RuntimeError("RESET server")
 
     @classmethod
-    def action_uptime(cls, registers, inx, cell, _kwargs):
+    def action_uptime(cls, registers, inx, cell, **_kwargs):
         """Return uptime in seconds.
 
         :meta private:

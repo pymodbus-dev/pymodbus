@@ -20,7 +20,7 @@ import asyncio
 import logging
 
 from examples import helper
-from pymodbus.client import AsyncModbusTcpClient
+from pymodbus.client import ModbusTcpClient
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.remote import RemoteSlaveContext
 from pymodbus.server import StartAsyncTcpServer
@@ -40,11 +40,11 @@ async def run_forwarder(args):
     txt = f"### start forwarder, listen {args.port}, connect to {args.client_port}"
     _logger.info(txt)
 
-    args.client = AsyncModbusTcpClient(
+    args.client = ModbusTcpClient(
         host="localhost",
         port=args.client_port,
     )
-    await args.client.connect()
+    args.client.connect()
     assert args.client.connected
     # If required to communicate with a specified client use slave=<slave_id>
     # in RemoteSlaveContext
@@ -58,7 +58,7 @@ async def run_forwarder(args):
         store = RemoteSlaveContext(args.client, slave=1)
     args.context = ModbusServerContext(slaves=store, single=True)
 
-    await StartAsyncTcpServer(context=args.context, address=("localhost", args.port))
+    await StartAsyncTcpServer(context=args.context, address=("", args.port))
     # loop forever
 
 

@@ -112,7 +112,6 @@ class ModbusTcpClient(ModbusBaseClient):
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus TCP Client."""
-        self.transport = None
         super().__init__(framer=framer, **kwargs)
         self.params.host = host
         self.params.port = port
@@ -123,7 +122,7 @@ class ModbusTcpClient(ModbusBaseClient):
     @property
     def connected(self):
         """Connect internal."""
-        return self.transport is not None
+        return self.socket is not None
 
     def connect(self):  # pylint: disable=invalid-overridden-method
         """Connect to the modbus tcp server."""

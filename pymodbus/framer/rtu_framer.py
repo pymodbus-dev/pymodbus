@@ -200,7 +200,7 @@ class ModbusRtuFramer(ModbusFramer):
         for i in range(start, buf_len - 3):  # <slave id><function code><crc 2 bytes>
             if not broadcast and self._buffer[i] not in slaves:
                 continue
-            if self._buffer[i + 1] not in self.function_codes:
+            if self._buffer[i + 1] not in self.function_codes and (self._buffer[i + 1] - 0x80) not in self.function_codes:
                 continue
             if i:
                 self._buffer = self._buffer[i:]  # remove preceding trash.

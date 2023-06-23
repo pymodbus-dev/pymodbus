@@ -81,6 +81,10 @@ class CommParams:
             )
         return new_sslctx
 
+    def copy(self):
+        """Create a copy."""
+        return dataclasses.replace(self)
+
 
 class Transport(asyncio.BaseProtocol):
     """Protocol layer including transport.
@@ -107,7 +111,7 @@ class Transport(asyncio.BaseProtocol):
         :param callback_disconnected: Called when connection is disconnected
         :param callback_data: Called when data is received
         """
-        self.comm_params = dataclasses.replace(params)
+        self.comm_params = params.copy()
         self.is_server = is_server
 
         self.reconnect_delay_current: float = 0.0
@@ -121,22 +125,28 @@ class Transport(asyncio.BaseProtocol):
         self.unique_id: str = str(id(self))
 
         # Transport specific setup
-        if params.host == NULLMODEM_HOST:
+        if self.comm_params.host.startswith(NULLMODEM_HOST):
             self.call_create = self.create_nullmodem
             return
-        if params.comm_type == CommType.SERIAL:
-            self.call_create = lambda: create_serial_connection(
-                self.loop,
-                self.handle_new_connection,
-                self.comm_params.host,
-                baudrate=self.comm_params.baudrate,
-                bytesize=self.comm_params.bytesize,
-                parity=self.comm_params.parity,
-                stopbits=self.comm_params.stopbits,
-                timeout=self.comm_params.timeout_connect,
-            )
-            return
-        if params.comm_type == CommType.UDP:
+        if self.comm_params.comm_type == CommType.SERIAL:
+            if self.comm_params.host.startswith("socket:") and is_server:
+                parts = self.comm_params.host[9:].split(":")
+                self.comm_params.host = parts[0]
+                self.comm_params.port = int(parts[1])
+                self.comm_params.comm_type = CommType.TCP
+            else:
+                self.call_create = lambda: create_serial_connection(
+                    self.loop,
+                    self.handle_new_connection,
+                    self.comm_params.host,
+                    baudrate=self.comm_params.baudrate,
+                    bytesize=self.comm_params.bytesize,
+                    parity=self.comm_params.parity,
+                    stopbits=self.comm_params.stopbits,
+                    timeout=self.comm_params.timeout_connect,
+                )
+                return
+        if self.comm_params.comm_type == CommType.UDP:
             if is_server:
                 self.call_create = lambda: self.loop.create_datagram_endpoint(
                     self.handle_new_connection,
@@ -188,6 +198,8 @@ class Transport(asyncio.BaseProtocol):
     async def transport_listen(self) -> bool:
         """Handle generic listen and call on to specific transport listen."""
         Log.debug("Awaiting connections {}", self.comm_params.comm_name)
+        if not self.loop:
+            self.loop = asyncio.get_running_loop()
         try:
             self.transport = await self.call_create()
             if isinstance(self.transport, tuple):
@@ -323,8 +335,7 @@ class Transport(asyncio.BaseProtocol):
         new_transport = NullModem(self.is_server, self)
         new_protocol = self.handle_new_connection()
         new_protocol.connection_made(new_transport)
-        if self.is_server:
-            return new_transport, new_protocol
+        self.connection_made(self.transport)
         return new_transport, new_protocol
 
     def handle_new_connection(self):
@@ -381,26 +392,29 @@ class NullModem(asyncio.DatagramTransport, asyncio.WriteTransport):
     (Allowing tests to be shortcut without actual network calls)
     """
 
-    client: NullModem = None
-    server: NullModem = None
-    client_protocol: Transport = None
-    server_protocol: Transport = None
+    listening: int = -1
+    clients: list[NullModem] = []
+    servers: list[NullModem] = []
 
     def __init__(self, is_server: bool, protocol: Transport):
         """Create half part of null modem"""
         asyncio.DatagramTransport.__init__(self)
         asyncio.WriteTransport.__init__(self)
-        self.other_protocol: Transport = None
+        self.other: NullModem = None
+        self.protocol = protocol
+        self.serving: asyncio.Future = asyncio.Future()
         if is_server:
-            self.__class__.server = self
-            self.__class__.server_protocol = protocol
+            self.conn_inx = len(self.servers)
+            self.__class__.listening = self.conn_inx
+            self.__class__.servers.append(self)
             return
-        if not self.__class__.server:
-            raise RuntimeError("Connect called before listen")
-        self.__class__.client = self
-        self.__class__.client_protocol = protocol
-        self.client.other_protocol = self.server_protocol
-        self.server.other_protocol = self.client_protocol
+        if self.listening < 0:
+            raise OSError("Connect called before listen")
+        self.conn_inx = self.listening
+        self.__class__.listening = -1
+        self.__class__.clients.append(self)
+        self.other = self.servers[self.conn_inx]
+        self.other.other = self
 
     # ---------------- #
     # external methods #
@@ -408,6 +422,13 @@ class NullModem(asyncio.DatagramTransport, asyncio.WriteTransport):
 
     def close(self):
         """Close null modem"""
+        if not self.serving.done():
+            self.serving.set_result(True)
+        if self.other:
+            self.other.other = None
+            self.other.protocol.connection_lost(None)
+            self.other = None
+            self.protocol.connection_lost(None)
 
     def sendto(self, data: bytes, _addr: Any = None):
         """Send datagrame"""
@@ -415,7 +436,11 @@ class NullModem(asyncio.DatagramTransport, asyncio.WriteTransport):
 
     def write(self, data: bytes):
         """Send data"""
-        return len(data)
+        self.other.protocol.data_received(data)
+
+    async def serve_forever(self):
+        """Serve forever"""
+        await self.serving
 
     # ---------------- #
     # Abstract methods #

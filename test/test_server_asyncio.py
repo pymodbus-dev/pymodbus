@@ -88,7 +88,7 @@ class BasicClient(asyncio.BaseProtocol):
         BasicClient.my_protocol = None
 
 
-class TestAsyncioServer:  # pylint: disable=too-many-public-methods
+class TestAsyncioServer:
     """Unittest for the pymodbus.server.asyncio module.
 
     The scope of this test is the life-cycle management of the network
@@ -167,9 +167,9 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
             assert not self.task.cancelled()
             await asyncio.wait_for(self.server.serving, timeout=0.1)
             if not do_udp:
-                assert self.server.server
+                assert self.server.transport
         elif not do_udp:  # pylint: disable=confusing-consecutive-elif
-            assert not self.server.server
+            assert not self.server.transport
         assert self.server.control.Identity.VendorName == "VendorName"
         await asyncio.sleep(0.1)
 
@@ -178,7 +178,7 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
         BasicClient.connected = asyncio.Future()
         BasicClient.done = asyncio.Future()
         BasicClient.eof = asyncio.Future()
-        random_port = self.server.server.sockets[0].getsockname()[
+        random_port = self.server.transport.sockets[0].getsockname()[
             1
         ]  # get the random server port
         (
@@ -283,15 +283,6 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
             await self.start_server(do_tls=True, do_ident=True)
             assert self.server.control.Identity.VendorName == "VendorName"
 
-    async def test_async_tls_server_serve_forever(self):
-        """Test StartAsyncTcpServer serve_forever() method"""
-        with mock.patch(
-            "asyncio.base_events.Server.serve_forever", new_callable=mock.AsyncMock
-        ) as serve, mock.patch.object(ssl.SSLContext, "load_cert_chain"):
-            await self.start_server(do_tls=True, do_forever=False)
-            await self.server.serve_forever()
-            serve.assert_awaited()
-
     async def test_async_tls_server_serve_forever_twice(self):
         """Call on serve_forever() twice should result in a runtime error"""
         with mock.patch.object(ssl.SSLContext, "load_cert_chain"):
@@ -307,22 +298,13 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
         """Test that the modbus udp asyncio server starts correctly"""
         await self.start_server(do_udp=True, do_forever=False, do_ident=True)
         assert self.server.control.Identity.VendorName == "VendorName"
-        assert not self.server.protocol
+        assert not self.server.transport
 
     async def test_async_start_udp_server(self):
         """Test that the modbus udp asyncio server starts correctly"""
         await self.start_server(do_udp=True, do_ident=True)
         assert self.server.control.Identity.VendorName == "VendorName"
-        assert self.server.protocol
-
-    async def test_async_udp_server_serve_forever_start(self):
-        """Test StartAsyncUdpServer serve_forever() method"""
-        with mock.patch(
-            "asyncio.base_events.Server.serve_forever", new_callable=mock.AsyncMock
-        ) as serve:
-            await self.start_server(do_forever=False, do_ident=True)
-            await self.server.serve_forever()
-            serve.assert_awaited()
+        assert self.server.transport
 
     async def test_async_udp_server_serve_forever_close(self):
         """Test StarAsyncUdpServer serve_forever() method"""
@@ -336,46 +318,13 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
         with pytest.raises(RuntimeError):
             await self.server.serve_forever()
 
-    @pytest.mark.skipif(pytest.IS_WINDOWS, reason="Windows have a timeout problem.")
-    async def test_async_udp_server_receive_data(self):
-        """Test that the sending data on datagram socket gets data pushed to framer"""
-        await self.start_server(do_udp=True)
-        with mock.patch(
-            "pymodbus.transaction.ModbusSocketFramer.processIncomingPacket",
-            new_callable=mock.Mock,
-        ) as process:
-            self.server.endpoint.datagram_received(data=b"12345", addr=(SERV_IP, 12345))
-            await asyncio.sleep(0.1)
-            process.seal()
-            process.assert_called_once()
-            assert process.call_args[1]["data"] == b"12345"
-
-    async def test_async_udp_server_send_data(self):
-        """Test that the modbus udp asyncio server correctly sends data outbound"""
-        BasicClient.dataTo = b"x\01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x19"
-        await self.start_server(do_udp=True)
-        random_port = self.server.protocol._sock.getsockname()[  # pylint: disable=protected-access
-            1
-        ]
-        received = self.server.endpoint.datagram_received = mock.Mock(
-            wraps=self.server.endpoint.datagram_received
-        )
-        await self.loop.create_datagram_endpoint(
-            BasicClient, remote_addr=("127.0.0.1", random_port)
-        )
-        await asyncio.sleep(0.1)
-        received.assert_called_once()
-        assert received.call_args[0][0] == BasicClient.dataTo
-        await self.server.server_close()
-        self.server = None
-
     async def test_async_udp_server_roundtrip(self):
         """Test sending and receiving data on udp socket"""
         expected_response = b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"  # value of 17 as per context
         BasicClient.dataTo = TEST_DATA  # slave 1, read register
         BasicClient.done = asyncio.Future()
         await self.start_server(do_udp=True)
-        random_port = self.server.protocol._sock.getsockname()[  # pylint: disable=protected-access
+        random_port = self.server.transport._sock.getsockname()[  # pylint: disable=protected-access
             1
         ]
         transport, _ = await self.loop.create_datagram_endpoint(
@@ -396,13 +345,13 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
             new_callable=lambda: mock.Mock(side_effect=Exception),
         ):
             # get the random server port pylint: disable=protected-access
-            random_port = self.server.protocol._sock.getsockname()[1]
+            random_port = self.server.transport._sock.getsockname()[1]
             _, _ = await self.loop.create_datagram_endpoint(
                 BasicClient, remote_addr=("127.0.0.1", random_port)
             )
             await asyncio.wait_for(BasicClient.connected, timeout=0.1)
             assert not BasicClient.done.done()
-            assert not self.server.protocol._sock._closed
+            assert not self.server.transport._sock._closed
 
     async def test_async_tcp_server_exception(self):
         """Send garbage data on a TCP socket should drop the connection"""

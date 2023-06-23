@@ -1,6 +1,5 @@
 """Fixtures for transport tests."""
 import asyncio
-import dataclasses
 import os
 from contextlib import suppress
 from unittest import mock
@@ -99,9 +98,6 @@ async def prepare_transport(commparams):
 @pytest.fixture(name="server")
 async def prepare_transport_server(commparams):
     """Prepare transport object."""
-    if commparams.comm_type == CommType.SERIAL:
-        commparams = dataclasses.replace(commparams)
-        commparams.comm_type = CommType.TCP
     transport = Transport(commparams, True)
     with suppress(RuntimeError):
         transport.loop = asyncio.get_running_loop()
@@ -113,10 +109,6 @@ async def prepare_transport_server(commparams):
         transport.comm_params.sslctx = commparams.generate_ssl(
             True, certfile=cwd + "crt", keyfile=cwd + "key"
         )
-    elif commparams.comm_type == CommType.SERIAL:
-        serial_params = dataclasses.replace(commparams)
-        serial_params.comm_type = CommType.TCP
-        transport = Transport(serial_params, True)
     return transport
 
 

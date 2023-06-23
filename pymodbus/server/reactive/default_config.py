@@ -13,7 +13,6 @@ DEFAULT_CONFIG = {
         "parity": "N",
         "baudrate": 9600,
         "timeout": 3,
-        "auto_reconnect": False,
         "reconnect_delay": 2,
     },
     "tls": {

@@ -84,12 +84,12 @@ class TestExamples:
             ("tcp", "socket", BASE_PORT + 42),
         ],
     )
-    async def test_payload(self, mock_cmdline):
+    async def test_payload(self, mock_clc, mock_cls):
         """Test server/client with payload."""
-        run_args = setup_payload_server(cmdline=mock_cmdline)
+        run_args = setup_payload_server(cmdline=mock_cls)
         task = asyncio.create_task(run_async_server(run_args))
         await asyncio.sleep(0.1)
-        testclient = setup_async_client(cmdline=mock_cmdline)
+        testclient = setup_async_client(cmdline=mock_clc)
         await run_async_client(testclient, modbus_calls=run_payload_calls)
         await asyncio.sleep(0.1)
         await ServerAsyncStop()

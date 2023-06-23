@@ -35,6 +35,9 @@ class TestBasicTransport:
 
         commparams.host = NULLMODEM_HOST
         Transport(commparams, False)
+        if commparams.comm_type == CommType.SERIAL:
+            commparams.host = "socket://127.0.0.1:6301"
+            Transport(commparams, True)
 
     async def test_connect(self, client, dummy_transport):
         """Test properties."""
@@ -48,6 +51,7 @@ class TestBasicTransport:
     async def test_listen(self, server, dummy_transport):
         """Test listen_tcp()."""
         server.call_create = mock.AsyncMock(return_value=(dummy_transport, None))
+        server.loop = None
         assert await server.transport_listen()
         server.call_create.side_effect = OSError("testing")
         assert not await server.transport_listen()
@@ -195,7 +199,7 @@ class TestBasicNullModem:
     def test_init(self):
         """Test null modem init"""
         NullModem.server = None
-        with pytest.raises(RuntimeError):
+        with pytest.raises(OSError, match="Connect called before listen"):
             NullModem(False, mock.Mock())
         NullModem(True, mock.Mock())
         NullModem(False, mock.Mock())
@@ -203,9 +207,18 @@ class TestBasicNullModem:
     def test_external_methods(self):
         """Test external methods."""
         modem = NullModem(True, mock.Mock())
-        modem.close()
+        modem.other = NullModem(False, mock.Mock())
+        modem.other.protocol = mock.Mock()
         modem.sendto(b"abcd")
         modem.write(b"abcd")
+        modem.close()
+
+    async def test_serve_forever(self):
+        """Test external methods."""
+        modem = NullModem(True, mock.Mock())
+        modem.serving.set_result(True)
+        await modem.serve_forever()
+        modem.close()
 
     def test_abstract_methods(self):
         """Test asyncio abstract methods."""

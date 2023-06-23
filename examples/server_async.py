@@ -145,7 +145,7 @@ async def run_async_server(args):
     txt = f"### start ASYNC server, listening on {args.port} - {args.comm}"
     _logger.info(txt)
     if args.comm == "tcp":
-        address = ("", args.port) if args.port else None
+        address = (args.host if args.host else "", args.port if args.port else None)
         server = await StartAsyncTcpServer(
             context=args.context,  # Data storage
             identity=args.identity,  # server identify
@@ -160,7 +160,10 @@ async def run_async_server(args):
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif args.comm == "udp":
-        address = ("127.0.0.1", args.port) if args.port else None
+        address = (
+            args.host if args.host else "127.0.0.1",
+            args.port if args.port else None,
+        )
         server = await StartAsyncUdpServer(
             context=args.context,  # Data storage
             identity=args.identity,  # server identify
@@ -192,7 +195,7 @@ async def run_async_server(args):
             # strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif args.comm == "tls":
-        address = ("", args.port) if args.port else None
+        address = (args.host if args.host else "", args.port if args.port else None)
         server = await StartAsyncTlsServer(
             context=args.context,  # Data storage
             host="localhost",  # define tcp address where to connect to.

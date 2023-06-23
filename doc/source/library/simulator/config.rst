@@ -104,7 +104,6 @@ Server configuration examples
                 "parity": "N",
                 "baudrate": 9600,
                 "timeout": 3,
-                "auto_reconnect": false,
                 "reconnect_delay": 2,
                 "framer": "rtu",
                 "identity": {

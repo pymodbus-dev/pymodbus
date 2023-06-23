@@ -320,11 +320,15 @@ class ModbusTcpServer(Transport):
         :param response_manipulator: Callback method for manipulating the
                                         response
         """
+        if not address:
+            address = ("", 502)
         params = kwargs.get(
             "internal_tls_setup",
             CommParams(
                 comm_type=CommType.TCP,
                 comm_name="server_listener",
+                host=address[0],
+                port=address[1],
                 reconnect_delay=0.0,
                 reconnect_delay_max=0.0,
                 timeout_connect=0.0,
@@ -340,7 +344,7 @@ class ModbusTcpServer(Transport):
         self.framer = framer or ModbusSocketFramer
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
-        self.address = address or ("", 502)
+        self.address = address
         self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves", False)
         self.broadcast_enable = kwargs.get("broadcast_enable", False)
         self.response_manipulator = kwargs.get("response_manipulator", None)
@@ -361,6 +365,12 @@ class ModbusTcpServer(Transport):
         if params.sslctx:
             self.factory_parms["ssl"] = params.sslctx
         self.handle_local_echo = False
+
+    def handle_new_connection(self):
+        """Handle incoming connect."""
+        handler = ModbusServerRequestHandler
+        handler.server = self
+        return handler
 
     async def serve_forever(self):
         """Start endless loop."""

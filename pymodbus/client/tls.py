@@ -7,35 +7,7 @@ from pymodbus.client.tcp import AsyncModbusTcpClient, ModbusTcpClient
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
 from pymodbus.logging import Log
-
-
-def sslctx_provider(
-    sslctx=None, certfile=None, keyfile=None, password=None
-):  # pylint: disable=missing-type-doc
-    """Provide the SSLContext for ModbusTlsClient.
-
-    If the user defined SSLContext is not passed in, sslctx_provider will
-    produce a default one.
-
-    :param sslctx: The user defined SSLContext to use for TLS (default None and
-                   auto create)
-    :param certfile: The optional client's cert file path for TLS server request
-    :param keyfile: The optional client's key file path for TLS server request
-    :param password: The password for decrypting client's private key file
-    """
-    if sslctx:
-        return sslctx
-
-    sslctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-    sslctx.check_hostname = False
-    sslctx.verify_mode = ssl.CERT_NONE
-    sslctx.options |= ssl.OP_NO_TLSv1_1
-    sslctx.options |= ssl.OP_NO_TLSv1
-    sslctx.options |= ssl.OP_NO_SSLv3
-    sslctx.options |= ssl.OP_NO_SSLv2
-    if certfile and keyfile:
-        sslctx.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
-    return sslctx
+from pymodbus.transport.transport import CommParams, CommType
 
 
 class AsyncModbusTlsClient(AsyncModbusTcpClient):
@@ -81,31 +53,32 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
     ):
         """Initialize Asyncio Modbus TLS Client."""
         AsyncModbusTcpClient.__init__(
-            self, host, port=port, framer=framer, internal_no_setup=True, **kwargs
+            self,
+            host,
+            port=port,
+            framer=framer,
+            CommType=CommType.TLS,
+            sslctx=CommParams.generate_ssl(
+                False, certfile, keyfile, password, sslctx=sslctx
+            ),
+            **kwargs,
         )
-        self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password)
-        self.params.certfile = certfile
-        self.params.keyfile = keyfile
-        self.params.password = password
         self.params.server_hostname = server_hostname
-        self.new_transport.setup_tls(
-            False, host, port, sslctx, certfile, keyfile, password, server_hostname
-        )
 
     async def connect(self) -> bool:
         """Initiate connection to start client."""
 
         # if reconnect_delay_current was set to 0 by close(), we need to set it back again
         # so this instance will work
-        self.new_transport.reset_delay()
+        self.reset_delay()
 
         # force reconnect if required:
         Log.debug(
             "Connecting to {}:{}.",
-            self.new_transport.comm_params.host,
-            self.new_transport.comm_params.port,
+            self.comm_params.host,
+            self.comm_params.port,
         )
-        return await self.new_transport.transport_connect()
+        return await self.transport_connect()
 
 
 class ModbusTlsClient(ModbusTcpClient):
@@ -145,7 +118,7 @@ class ModbusTlsClient(ModbusTcpClient):
         host: str,
         port: int = 802,
         framer: Type[ModbusFramer] = ModbusTlsFramer,
-        sslctx: str = None,
+        sslctx: ssl.SSLContext = None,
         certfile: str = None,
         keyfile: str = None,
         password: str = None,
@@ -155,11 +128,9 @@ class ModbusTlsClient(ModbusTcpClient):
         """Initialize Modbus TLS Client."""
         self.transport = None
         super().__init__(host, port=port, framer=framer, **kwargs)
-        self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password)
-        self.params.sslctx = sslctx
-        self.params.certfile = certfile
-        self.params.keyfile = keyfile
-        self.params.password = password
+        self.sslctx = CommParams.generate_ssl(
+            False, certfile, keyfile, password, sslctx=sslctx
+        )
         self.params.server_hostname = server_hostname
 
     @property

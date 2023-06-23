@@ -13,11 +13,11 @@ from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.transaction import DictTransactionManager
-from pymodbus.transport.transport import Transport
+from pymodbus.transport.transport import CommParams, Transport
 from pymodbus.utilities import ModbusTransactionState
 
 
-class ModbusBaseClient(ModbusClientMixin):
+class ModbusBaseClient(ModbusClientMixin, Transport):
     """**ModbusBaseClient**
 
     **Parameters common to all clients**:
@@ -49,19 +49,17 @@ class ModbusBaseClient(ModbusClientMixin):
     """
 
     @dataclass
-    class _params:  # pylint: disable=too-many-instance-attributes
+    class _params:
         """Parameter class."""
 
         host: str = None
         port: str | int = None
-        framer: type[ModbusFramer] = None
         timeout: float = None
         retries: int = None
         retry_on_empty: bool = None
         close_comm_on_error: bool = None
         strict: bool = None
         broadcast_enable: bool = None
-        kwargs: dict = None
         reconnect_delay: int = None
 
         baudrate: int = None
@@ -72,10 +70,6 @@ class ModbusBaseClient(ModbusClientMixin):
 
         source_address: tuple[str, int] = None
 
-        sslctx: str = None
-        certfile: str = None
-        keyfile: str = None
-        password: str = None
         server_hostname: str = None
 
     def __init__(  # pylint: disable=too-many-arguments
@@ -93,19 +87,27 @@ class ModbusBaseClient(ModbusClientMixin):
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
-        self.new_transport = Transport(
-            "comm",
-            reconnect_delay * 1000,
-            reconnect_delay_max * 1000,
-            timeout * 1000,
-            lambda: None,
-            self.cb_base_connection_lost,
-            self.cb_base_handle_data,
+        ModbusClientMixin.__init__(self)
+        Transport.__init__(
+            self,
+            CommParams(
+                comm_type=kwargs.get("CommType"),
+                comm_name="comm",
+                reconnect_delay=reconnect_delay,
+                reconnect_delay_max=reconnect_delay_max,
+                timeout_connect=timeout,
+                host=kwargs.get("host", None),
+                port=kwargs.get("port", None),
+                sslctx=kwargs.get("sslctx", None),
+                baudrate=kwargs.get("baudrate", None),
+                bytesize=kwargs.get("bytesize", None),
+                parity=kwargs.get("parity", None),
+                stopbits=kwargs.get("stopbits", None),
+            ),
+            False,
         )
-
         self.framer = framer
         self.params = self._params()
-        self.params.framer = framer
         self.params.timeout = float(timeout)
         self.params.retries = int(retries)
         self.params.retry_on_empty = bool(retry_on_empty)
@@ -115,7 +117,6 @@ class ModbusBaseClient(ModbusClientMixin):
         self.params.reconnect_delay = int(reconnect_delay)
         self.reconnect_delay_max = int(reconnect_delay_max)
         self.on_reconnect_callback = on_reconnect_callback
-        self.params.kwargs = kwargs
         self.retry_on_empty: int = 0
         # -> retry read on nothing
 
@@ -123,7 +124,7 @@ class ModbusBaseClient(ModbusClientMixin):
         # -> list of acceptable slaves (0 for accept all)
 
         # Common variables.
-        self.framer = self.params.framer(ClientDecoder(), self)
+        self.framer = framer(ClientDecoder(), self)
         self.transaction = DictTransactionManager(
             self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
         )
@@ -134,9 +135,6 @@ class ModbusBaseClient(ModbusClientMixin):
         self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float = 0
         self.silent_interval: float = 0
-
-        # Initialize  mixin
-        ModbusClientMixin.__init__(self)
 
     # ----------------------------------------------------------------------- #
     # Client external interface
@@ -152,9 +150,9 @@ class ModbusBaseClient(ModbusClientMixin):
         """
         self.framer.decoder.register(custom_response_class)
 
-    def close(self, reconnect: bool = False) -> None:
+    def close(self, reconnect=False) -> None:
         """Close connection."""
-        self.new_transport.close(reconnect=reconnect)
+        self.transport_close(reconnect=reconnect)
 
     def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).
@@ -177,7 +175,7 @@ class ModbusBaseClient(ModbusClientMixin):
             if not self.connect():
                 raise ConnectionException(f"Failed to connect[{str(self)}]")
             return self.transaction.execute(request)
-        if not self.new_transport.transport:
+        if not self.transport:
             raise ConnectionException(f"Not connected[{str(self)}]")
         return self.async_execute(request)
 
@@ -189,11 +187,7 @@ class ModbusBaseClient(ModbusClientMixin):
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
         Log.debug("send: {}", packet, ":hex")
-        # if self.use_udp:
-        #     self.new_transport.transport.sendto(packet)
-        # else:
-        #     self.new_transport.transport.write(packet)
-        await self.new_transport.send(packet)
+        self.transport_send(packet)
         req = self._build_response(request.transaction_id)
         if self.params.broadcast_enable and not request.slave_id:
             resp = b"Broadcast write sent - no response expected"
@@ -205,16 +199,16 @@ class ModbusBaseClient(ModbusClientMixin):
                 raise
         return resp
 
-    def cb_base_handle_data(self, data: bytes) -> int:
+    def callback_data(self, data: bytes, addr: tuple = None) -> int:
         """Handle received data
 
         returns number of bytes consumed
         """
-        Log.debug("recv: {}", data, ":hex")
+        Log.debug("recv: {} addr={}", data, ":hex", addr)
         self.framer.processIncomingPacket(data, self._handle_response, slave=0)
         return len(data)
 
-    def cb_base_connection_lost(self, _reason: Exception) -> None:
+    def callback_disconnected(self, _reason: Exception) -> None:
         """Handle lost connection"""
         for tid in list(self.transaction):
             self.raise_future(
@@ -243,7 +237,7 @@ class ModbusBaseClient(ModbusClientMixin):
     def _build_response(self, tid):
         """Return a deferred response for the current request."""
         my_future = asyncio.Future()
-        if not self.new_transport.transport:
+        if not self.transport:
             self.raise_future(my_future, ConnectionException("Client is not connected"))
         else:
             self.transaction.addTransaction(my_future, tid)

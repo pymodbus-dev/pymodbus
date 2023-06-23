@@ -19,23 +19,26 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.server import ServerStop
 
 
+BASE_PORT = 6300
+
+
 class TestClientServerSyncExamples:
     """Test Client server async combinations."""
 
     USE_CASES = [
-        ("tcp", "socket"),
-        ("tcp", "rtu"),
-        # awaiting fix: ("tls", "tls"),
-        ("udp", "socket"),
-        ("udp", "rtu"),
-        ("serial", "rtu"),
-        # awaiting fix: ("serial", "ascii"),
-        # awaiting fix: ("serial", "binary"),
+        ("tcp", "socket", BASE_PORT + 1),
+        ("tcp", "rtu", BASE_PORT + 2),
+        # awaiting fix: ("tls", "tls", BASE_PORT + 3),
+        ("udp", "socket", BASE_PORT + 4),
+        ("udp", "rtu", BASE_PORT + 5),
+        ("serial", "rtu", BASE_PORT + 6),
+        # awaiting fix: ("serial", "ascii", BASE_PORT + 7),
+        # awaiting fix: ("serial", "binary", BASE_PORT + 8),
     ]
 
-    @pytest.mark.xdist_group(name="server_serialize")
+    @pytest.mark.parametrize("port_offset", [0])
     @pytest.mark.parametrize(
-        ("use_comm", "use_framer"),
+        ("use_comm", "use_framer", "use_port"),
         USE_CASES,
     )
     def test_combinations(
@@ -52,9 +55,9 @@ class TestClientServerSyncExamples:
         run_sync_client(test_client, modbus_calls=run_a_few_calls)
         ServerStop()
 
-    @pytest.mark.xdist_group(name="server_serialize")
+    @pytest.mark.parametrize("port_offset", [10])
     @pytest.mark.parametrize(
-        ("use_comm", "use_framer"),
+        ("use_comm", "use_framer", "use_port"),
         USE_CASES,
     )
     def test_server_no_client(self, mock_cmdline):
@@ -66,9 +69,9 @@ class TestClientServerSyncExamples:
         sleep(1)
         ServerStop()
 
-    @pytest.mark.xdist_group(name="server_serialize")
+    @pytest.mark.parametrize("port_offset", [20])
     @pytest.mark.parametrize(
-        ("use_comm", "use_framer"),
+        ("use_comm", "use_framer", "use_port"),
         USE_CASES,
     )
     def test_server_client_twice(self, mock_cmdline):
@@ -84,9 +87,9 @@ class TestClientServerSyncExamples:
         run_sync_client(test_client, modbus_calls=run_a_few_calls)
         ServerStop()
 
-    @pytest.mark.xdist_group(name="server_serialize")
+    @pytest.mark.parametrize("port_offset", [30])
     @pytest.mark.parametrize(
-        ("use_comm", "use_framer"),
+        ("use_comm", "use_framer", "use_port"),
         USE_CASES,
     )
     def test_client_no_server(self, mock_cmdline):

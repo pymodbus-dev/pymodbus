@@ -44,7 +44,6 @@ The entries for a tcp server with minimal parameters look like:
                 "comm": "tcp",
                 "host": "0.0.0.0",
                 "port": 5020,
-                "allow_reuse_address": true,
                 "framer": "socket",
             }
         }
@@ -60,7 +59,6 @@ The entry “comm” allows the following values:
 - “serial”, to use :class:`pymodbus.server.ModbusSerialServer`,
 - “tcp”, to use :class:`pymodbus.server.ModbusTcpServer`,
 - “tls”, to use :class:`pymodbus.server.ModbusTlsServer`,
-- “unix”, to use :class:`pymodbus.server.ModbusUnixServer`,
 - “udp”;  to use :class:`pymodbus.server.ModbusUdpServer`.
 
 The entry “framer” allows the following values:
@@ -87,7 +85,6 @@ Server configuration examples
                 "comm": "tcp",
                 "host": "0.0.0.0",
                 "port": 5020,
-                "allow_reuse_address": true,
                 "ignore_missing_slaves": false,
                 "framer": "socket",
                 "identity": {
@@ -125,8 +122,6 @@ Server configuration examples
                 "port": 5020,
                 "certfile": "certificates/pymodbus.crt",
                 "keyfile": "certificates/pymodbus.key",
-                "allow_reuse_address": true,
-                "backlog": 20,
                 "ignore_missing_slaves": false,
                 "framer": "tls",
                 "identity": {

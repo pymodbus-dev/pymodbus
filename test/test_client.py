@@ -103,7 +103,6 @@ def test_client_mixin(arglist, method, arg, pdu_request):
         assert isinstance(pdu_to_call, pdu_request)
 
 
-@pytest.mark.xdist_group(name="client")
 @pytest.mark.parametrize(
     "arg_list",
     [
@@ -269,7 +268,7 @@ async def test_client_connection_made():
     """Test protocol made connection."""
     client = lib_client.AsyncModbusTcpClient("127.0.0.1")
     assert not client.connected
-    client.new_transport.connection_made(mock.AsyncMock())
+    client.connection_made(mock.AsyncMock())
     assert client.connected
     client.close()
 
@@ -299,15 +298,15 @@ async def test_client_protocol_receiver():
     """Test the client protocol data received"""
     base = ModbusBaseClient(framer=ModbusSocketFramer)
     transport = mock.MagicMock()
-    base.new_transport.connection_made(transport)
-    assert base.new_transport.transport == transport
-    assert base.new_transport.transport
+    base.connection_made(transport)
+    assert base.transport == transport
+    assert base.transport
     data = b"\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04"
 
     # setup existing request
     assert not list(base.transaction)
     response = base._build_response(0x00)  # pylint: disable=protected-access
-    base.new_transport.data_received(data)
+    base.data_received(data)
     result = response.result()
     assert isinstance(result, pdu_bit_read.ReadCoilsResponse)
 
@@ -334,7 +333,7 @@ async def test_client_protocol_handler():
     """Test the client protocol handles responses"""
     base = ModbusBaseClient(framer=ModbusSocketFramer)
     transport = mock.MagicMock()
-    base.new_transport.connection_made(transport=transport)
+    base.connection_made(transport=transport)
     reply = pdu_bit_read.ReadCoilsRequest(1, 1)
     reply.transaction_id = 0x00
     base._handle_response(None)  # pylint: disable=protected-access
@@ -350,7 +349,7 @@ async def test_client_protocol_execute():
     """Test the client protocol execute method"""
     base = ModbusBaseClient(host="127.0.0.1", framer=ModbusSocketFramer)
     transport = mock.MagicMock()
-    base.new_transport.connection_made(transport)
+    base.connection_made(transport)
     base.transport.write = mock.Mock()
 
     request = pdu_bit_read.ReadCoilsRequest(1, 1)
@@ -362,15 +361,6 @@ async def test_client_protocol_execute():
     base.params.broadcast_enable = True
     request = pdu_bit_read.ReadCoilsRequest(1, 1)
     response = await base.async_execute(request)
-
-
-def test_client_udp():
-    """Test client udp."""
-    base = ModbusBaseClient(host="127.0.0.1", framer=ModbusSocketFramer)
-    base.new_transport.datagram_received(bytes("00010000", "utf-8"), 1)
-    base.transport = mock.MagicMock()
-    base.use_udp = True
-    base.new_transport.send(bytes("00010000", "utf-8"))
 
 
 def test_client_udp_connect():

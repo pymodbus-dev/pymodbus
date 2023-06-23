@@ -1,5 +1,4 @@
 """Test client sync."""
-import ssl
 from itertools import count
 from test.conftest import mockSocket
 from unittest import mock
@@ -13,7 +12,6 @@ from pymodbus.client import (
     ModbusTlsClient,
     ModbusUdpClient,
 )
-from pymodbus.client.tls import sslctx_provider
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import (
     ModbusAsciiFramer,
@@ -207,28 +205,6 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
     # -----------------------------------------------------------------------#
     # Test TLS Client
     # -----------------------------------------------------------------------#
-
-    def test_tls_sslctx_provider(self):
-        """Test that sslctx_provider() produce SSLContext correctly"""
-        with mock.patch.object(ssl.SSLContext, "load_cert_chain") as mock_method:
-            sslctx1 = sslctx_provider(certfile="cert.pem")
-            assert sslctx1
-            assert isinstance(sslctx1, ssl.SSLContext)
-            assert not mock_method.called
-
-            sslctx2 = sslctx_provider(keyfile="key.pem")
-            assert sslctx2
-            assert isinstance(sslctx2, ssl.SSLContext)
-            assert not mock_method.called
-
-            sslctx3 = sslctx_provider(certfile="cert.pem", keyfile="key.pem")
-            assert sslctx3
-            assert isinstance(sslctx3, ssl.SSLContext)
-            assert mock_method.called
-
-            sslctx_old = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-            sslctx_new = sslctx_provider(sslctx=sslctx_old)
-            assert sslctx_new == sslctx_old
 
     def test_syn_tls_client_instantiation(self):
         """Test sync tls client."""

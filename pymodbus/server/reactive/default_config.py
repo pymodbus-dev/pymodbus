@@ -3,9 +3,7 @@
 DEFAULT_CONFIG = {
     "tcp": {
         "handler": "ModbusConnectedRequestHandler",
-        "allow_reuse_address": True,
         "allow_reuse_port": True,
-        "backlog": 20,
         "ignore_missing_slaves": False,
     },
     "serial": {
@@ -22,9 +20,7 @@ DEFAULT_CONFIG = {
         "handler": "ModbusConnectedRequestHandler",
         "certfile": None,
         "keyfile": None,
-        "allow_reuse_address": True,
         "allow_reuse_port": True,
-        "backlog": 20,
         "ignore_missing_slaves": False,
     },
     "udp": {

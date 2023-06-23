@@ -229,11 +229,11 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
         """Test tcp stream interruption"""
         await self.start_server()
         await self.connect_server()
-        assert len(self.server.active_connections), 1
+        assert len(self.server.local_active_connections), 1
 
         BasicClient.transport.close()
         await asyncio.sleep(0.2)  # so we have to wait a bit
-        assert not self.server.active_connections
+        assert not self.server.local_active_connections
 
     async def test_async_tcp_server_close_connection(self):
         """Test server_close() while there are active TCP connections"""
@@ -276,14 +276,12 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
         with mock.patch.object(ssl.SSLContext, "load_cert_chain"):
             await self.start_server(do_tls=True, do_forever=False, do_ident=True)
             assert self.server.control.Identity.VendorName == "VendorName"
-            assert self.server.sslctx
 
     async def test_async_start_tls_server(self):
         """Test that the modbus tls asyncio server starts correctly"""
         with mock.patch.object(ssl.SSLContext, "load_cert_chain"):
             await self.start_server(do_tls=True, do_ident=True)
             assert self.server.control.Identity.VendorName == "VendorName"
-            assert self.server.sslctx
 
     async def test_async_tls_server_serve_forever(self):
         """Test StartAsyncTcpServer serve_forever() method"""

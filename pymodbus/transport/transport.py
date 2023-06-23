@@ -4,260 +4,166 @@
 from __future__ import annotations
 
 import asyncio
+import dataclasses
 import ssl
-import sys
-from dataclasses import dataclass
+from enum import Enum
 from typing import Any, Callable, Coroutine
 
 from pymodbus.logging import Log
 from pymodbus.transport.serial_asyncio import create_serial_connection
 
 
-class Transport:
-    """Transport layer.
+NULLMODEM_HOST = "__pymodbus_nullmodem"
+
+
+class CommType(Enum):
+    """Type of transport"""
+
+    TCP = 1
+    TLS = 2
+    UDP = 3
+    SERIAL = 4
+
+
+@dataclasses.dataclass
+class CommParams:
+    """Parameter class."""
+
+    # generic
+    comm_name: str = None
+    comm_type: CommType = None
+    reconnect_delay: float = None
+    reconnect_delay_max: float = None
+    timeout_connect: float = None
+
+    # tcp / tls / udp / serial
+    host: str = None
+
+    # tcp / tls / udp
+    port: int = None
+
+    # tls
+    sslctx: ssl.SSLContext = None
+
+    # serial
+    baudrate: int = None
+    bytesize: int = None
+    parity: str = None
+    stopbits: int = None
+
+    @classmethod
+    def generate_ssl(
+        cls,
+        is_server: bool,
+        certfile: str = None,
+        keyfile: str = None,
+        password: str = None,
+        sslctx: ssl.SSLContext = None,
+    ) -> ssl.SSLContext:
+        """Generate sslctx from cert/key/passwor
+
+        MODBUS/TCP Security Protocol Specification demands TLSv2 at least
+        """
+        if sslctx:
+            return sslctx
+        new_sslctx = ssl.SSLContext(
+            ssl.PROTOCOL_TLS_SERVER if is_server else ssl.PROTOCOL_TLS_CLIENT
+        )
+        new_sslctx.check_hostname = False
+        new_sslctx.verify_mode = ssl.CERT_NONE
+        new_sslctx.options |= ssl.OP_NO_TLSv1_1
+        new_sslctx.options |= ssl.OP_NO_TLSv1
+        new_sslctx.options |= ssl.OP_NO_SSLv3
+        new_sslctx.options |= ssl.OP_NO_SSLv2
+        if certfile:
+            new_sslctx.load_cert_chain(
+                certfile=certfile, keyfile=keyfile, password=password
+            )
+        return new_sslctx
+
+
+class Transport(asyncio.BaseProtocol):
+    """Protocol layer including transport.
 
     Contains pure transport methods needed to connect/listen, send/receive and close connections
     for unix socket, tcp, tls and serial communications.
 
     Contains high level methods like reconnect.
 
-    This class is not available in the pymodbus API, and should not be referenced in Applications
-    nor in the pymodbus documentation.
-
-    The class is designed to be an object in the message level class.
+    The class is designed to take care of differences between the different transport mediums, and
+    provide a neutral interface for the upper layers.
     """
-
-    @dataclass
-    class CommParamsClass:
-        """Parameter class."""
-
-        # generic
-        done: bool = False
-        comm_name: str = None
-        reconnect_delay: float = None
-        reconnect_delay_max: float = None
-        timeout_connect: float = None
-
-        # tcp / tls / udp / serial
-        host: str = None
-
-        # tcp / tls / udp
-        port: int = None
-
-        # tls
-        ssl: ssl.SSLContext = None
-        server_hostname: str = None
-
-        # serial
-        baudrate: int = None
-        bytesize: int = None
-        parity: str = None
-        stopbits: int = None
-
-        def check_done(self):
-            """Check if already setup"""
-            if self.done:
-                raise RuntimeError("Already setup!")
-            self.done = True
 
     def __init__(
         self,
-        comm_name: str,
-        reconnect_delay: int,
-        reconnect_max: int,
-        timeout_connect: int,
-        callback_connected: Callable[[], None],
-        callback_disconnected: Callable[[Exception], None],
-        callback_data: Callable[[bytes], int],
+        params: CommParams,
+        is_server: bool,
     ) -> None:
         """Initialize a transport instance.
 
-        :param comm_name: name of this transport connection
-        :param reconnect_delay: delay in milliseconds for first reconnect (0 for no reconnect)
-        :param reconnect_delay: max reconnect delay in milliseconds
-        :param timeout_connect: Max. time in milliseconds for connect to complete
+        :param params: parameter dataclass
+        :param is_server: true if object act as a server (listen allowed)
         :param callback_connected: Called when connection is established
         :param callback_disconnected: Called when connection is disconnected
         :param callback_data: Called when data is received
         """
-        self.cb_connection_made = callback_connected
-        self.cb_connection_lost = callback_disconnected
-        self.cb_handle_data = callback_data
-
-        # properties, can be read, but may not be mingled with
-        self.comm_params = self.CommParamsClass(
-            comm_name=comm_name,
-            reconnect_delay=reconnect_delay / 1000,
-            reconnect_delay_max=reconnect_max / 1000,
-            timeout_connect=timeout_connect / 1000,
-        )
+        self.comm_params = dataclasses.replace(params)
+        self.is_server = is_server
 
         self.reconnect_delay_current: float = 0.0
+        self.listener: Transport = None
         self.transport: asyncio.BaseTransport | asyncio.Server = None
         self.loop: asyncio.AbstractEventLoop = None
         self.reconnect_task: asyncio.Task = None
         self.recv_buffer: bytes = b""
-        self.call_connect_listen: Callable[[], Coroutine[Any, Any, Any]] = lambda: None
-        self.use_udp = False
+        self.call_create: Callable[[], Coroutine[Any, Any, Any]] = lambda: None
+        self.active_connections: dict[str, Transport] = {}
+        self.unique_id: str = str(id(self))
 
-    # ------------------------ #
-    # Transport specific setup #
-    # ------------------------ #
-    def setup_unix(self, setup_server: bool, host: str):
-        """Prepare transport unix"""
-        if sys.platform.startswith("win"):
-            raise RuntimeError("Modbus_unix is not supported on Windows!")
-        self.comm_params.check_done()
-        self.comm_params.done = True
-        self.comm_params.host = host
-        if setup_server:
-            self.call_connect_listen = lambda: self.loop.create_unix_server(
-                self.handle_listen,
-                path=self.comm_params.host,
-                start_serving=True,
-            )
-        else:
-            self.call_connect_listen = lambda: self.loop.create_unix_connection(
-                lambda: self,
-                path=self.comm_params.host,
-            )
-
-    def setup_tcp(self, setup_server: bool, host: str, port: int):
-        """Prepare transport tcp"""
-        self.comm_params.check_done()
-        self.comm_params.done = True
-        self.comm_params.host = host
-        self.comm_params.port = port
-        if setup_server:
-            self.call_connect_listen = lambda: self.loop.create_server(
-                self.handle_listen,
-                host=self.comm_params.host,
-                port=self.comm_params.port,
-                reuse_address=True,
-                start_serving=True,
-            )
-        else:
-            self.call_connect_listen = lambda: self.loop.create_connection(
-                lambda: self,
-                host=self.comm_params.host,
-                port=self.comm_params.port,
-            )
-
-    def setup_tls(
-        self,
-        setup_server: bool,
-        host: str,
-        port: int,
-        sslctx: ssl.SSLContext,
-        certfile: str,
-        keyfile: str,
-        password: str,
-        server_hostname: str,
-    ):
-        """Prepare transport tls"""
-        self.comm_params.check_done()
-        self.comm_params.done = True
-        self.comm_params.host = host
-        self.comm_params.port = port
-        self.comm_params.server_hostname = server_hostname
-        if not sslctx:
-            # According to MODBUS/TCP Security Protocol Specification, it is
-            # TLSv2 at least
-            sslctx = ssl.SSLContext(
-                ssl.PROTOCOL_TLS_SERVER if setup_server else ssl.PROTOCOL_TLS_CLIENT
-            )
-            sslctx.check_hostname = False
-            sslctx.verify_mode = ssl.CERT_NONE
-            sslctx.options |= ssl.OP_NO_TLSv1_1
-            sslctx.options |= ssl.OP_NO_TLSv1
-            sslctx.options |= ssl.OP_NO_SSLv3
-            sslctx.options |= ssl.OP_NO_SSLv2
-            if certfile:
-                sslctx.load_cert_chain(
-                    certfile=certfile, keyfile=keyfile, password=password
-                )
-        self.comm_params.ssl = sslctx
-        if setup_server:
-            self.call_connect_listen = lambda: self.loop.create_server(
-                self.handle_listen,
-                host=self.comm_params.host,
-                port=self.comm_params.port,
-                reuse_address=True,
-                ssl=self.comm_params.ssl,
-                start_serving=True,
-            )
-        else:
-            self.call_connect_listen = lambda: self.loop.create_connection(
-                lambda: self,
+        # Transport specific setup
+        if params.host == NULLMODEM_HOST:
+            self.call_create = self.create_nullmodem
+            return
+        if params.comm_type == CommType.SERIAL:
+            self.call_create = lambda: create_serial_connection(
+                self.loop,
+                self.handle_new_connection,
                 self.comm_params.host,
-                self.comm_params.port,
-                ssl=self.comm_params.ssl,
-                server_hostname=self.comm_params.server_hostname,
+                baudrate=self.comm_params.baudrate,
+                bytesize=self.comm_params.bytesize,
+                parity=self.comm_params.parity,
+                stopbits=self.comm_params.stopbits,
+                timeout=self.comm_params.timeout_connect,
             )
-
-    def setup_udp(self, setup_server: bool, host: str, port: int):
-        """Prepare transport udp"""
-        self.comm_params.check_done()
-        self.comm_params.done = True
-        self.comm_params.host = host
-        self.comm_params.port = port
-        if setup_server:
-
-            async def call_async_listen(self):
-                """Remove protocol return value."""
-                transport, _protocol = await self.loop.create_datagram_endpoint(
-                    self.handle_listen,
+            return
+        if params.comm_type == CommType.UDP:
+            if is_server:
+                self.call_create = lambda: self.loop.create_datagram_endpoint(
+                    self.handle_new_connection,
                     local_addr=(self.comm_params.host, self.comm_params.port),
                 )
-                return transport
-
-            self.call_connect_listen = lambda: call_async_listen(self)
-        else:
-            self.call_connect_listen = lambda: self.loop.create_datagram_endpoint(
-                lambda: self,
-                remote_addr=(self.comm_params.host, self.comm_params.port),
-            )
-        self.use_udp = True
-
-    def setup_serial(
-        self,
-        setup_server: bool,
-        host: str,
-        baudrate: int,
-        bytesize: int,
-        parity: str,
-        stopbits: int,
-    ):
-        """Prepare transport serial"""
-        self.comm_params.check_done()
-        self.comm_params.done = True
-        self.comm_params.host = host
-        self.comm_params.baudrate = baudrate
-        self.comm_params.bytesize = bytesize
-        self.comm_params.parity = parity
-        self.comm_params.stopbits = stopbits
-        if setup_server:
-            self.call_connect_listen = lambda: create_serial_connection(
-                self.loop,
-                self.handle_listen,
+            else:
+                self.call_create = lambda: self.loop.create_datagram_endpoint(
+                    self.handle_new_connection,
+                    remote_addr=(self.comm_params.host, self.comm_params.port),
+                )
+            return
+        # TLS and TCP
+        if is_server:
+            self.call_create = lambda: self.loop.create_server(
+                self.handle_new_connection,
                 self.comm_params.host,
-                baudrate=self.comm_params.baudrate,
-                bytesize=self.comm_params.bytesize,
-                parity=self.comm_params.parity,
-                stopbits=self.comm_params.stopbits,
-                timeout=self.comm_params.timeout_connect,
+                self.comm_params.port,
+                ssl=self.comm_params.sslctx,
+                reuse_address=True,
+                start_serving=True,
             )
-
         else:
-            self.call_connect_listen = lambda: create_serial_connection(
-                self.loop,
-                lambda: self,
+            self.call_create = lambda: self.loop.create_connection(
+                self.handle_new_connection,
                 self.comm_params.host,
-                baudrate=self.comm_params.baudrate,
-                bytesize=self.comm_params.bytesize,
-                stopbits=self.comm_params.stopbits,
-                parity=self.comm_params.parity,
-                timeout=self.comm_params.timeout_connect,
+                self.comm_params.port,
+                ssl=self.comm_params.sslctx,
             )
 
     async def transport_connect(self) -> bool:
@@ -265,10 +171,9 @@ class Transport:
         Log.debug("Connecting {}", self.comm_params.comm_name)
         if not self.loop:
             self.loop = asyncio.get_running_loop()
-        self.transport = None
         try:
             self.transport, _protocol = await asyncio.wait_for(
-                self.call_connect_listen(),
+                self.call_create(),
                 timeout=self.comm_params.timeout_connect,
             )
         except (
@@ -276,19 +181,22 @@ class Transport:
             OSError,
         ) as exc:
             Log.warning("Failed to connect {}", exc)
-            self.close(reconnect=True)
+            self.transport_close(reconnect=True)
             return False
         return bool(self.transport)
 
-    async def transport_listen(self):
+    async def transport_listen(self) -> bool:
         """Handle generic listen and call on to specific transport listen."""
         Log.debug("Awaiting connections {}", self.comm_params.comm_name)
         try:
-            self.transport = await self.call_connect_listen()
+            self.transport = await self.call_create()
+            if isinstance(self.transport, tuple):
+                self.transport = self.transport[0]
         except OSError as exc:
             Log.warning("Failed to start server {}", exc)
-            self.close()
-        return self.transport
+            self.transport_close()
+            return False
+        return True
 
     # ---------------------------------- #
     # Transport asyncio standard methods #
@@ -299,22 +207,22 @@ class Transport:
         :param transport: socket etc. representing the connection.
         """
         Log.debug("Connected to {}", self.comm_params.comm_name)
-        if not self.loop:
-            self.loop = asyncio.get_running_loop()
         self.transport = transport
         self.reset_delay()
-        self.cb_connection_made()
+        self.callback_connected()
 
     def connection_lost(self, reason: Exception):
         """Call from asyncio, when the connection is lost or closed.
 
         :param reason: None or an exception object
         """
+        if not self.transport:
+            return
         Log.debug("Connection lost {} due to {}", self.comm_params.comm_name, reason)
-        self.cb_connection_lost(reason)
-        if self.transport:
-            self.close()
-            self.reconnect_task = asyncio.create_task(self.reconnect_connect())
+        self.transport_close()
+        if not self.is_server:
+            self.reconnect_task = asyncio.create_task(self.do_reconnect())
+        self.callback_disconnected(reason)
 
     def data_received(self, data: bytes):
         """Call when some data is received.
@@ -323,42 +231,60 @@ class Transport:
         """
         Log.debug("recv: {}", data, ":hex")
         self.recv_buffer += data
-        cut = self.cb_handle_data(self.recv_buffer)
+        cut = self.callback_data(self.recv_buffer)
         self.recv_buffer = self.recv_buffer[cut:]
 
-    def datagram_received(self, data, _addr):
+    def datagram_received(self, data: bytes, addr: tuple):
         """Receive datagram (UDP connections)."""
-        self.data_received(data)
+        Log.debug("recv: {} addr={}", data, ":hex", addr)
+        self.recv_buffer += data
+        cut = self.callback_data(self.recv_buffer, addr=addr)
+        self.recv_buffer = self.recv_buffer[cut:]
 
     def eof_received(self):
-        """Accept other end terminates connection.
-
-        Actual handling are in connection_lost()
-        """
+        """Accept other end terminates connection."""
         Log.debug("-> eof_received")
 
     def error_received(self, exc):
-        """Get error detected in UDP.
-
-        Actual handling are in connection_lost()
-        """
+        """Get error detected in UDP."""
         Log.debug("-> error_received {}", exc)
         raise RuntimeError(str(exc))
+
+    # --------- #
+    # callbacks #
+    # --------- #
+    def callback_connected(self) -> None:
+        """Call when connection is succcesfull."""
+        Log.debug("callback_connected called")
+
+    def callback_disconnected(self, exc: Exception) -> None:
+        """Call when connection is lost."""
+        Log.debug("callback_disconnected called: {}", exc)
+
+    def callback_data(self, data: bytes, addr: tuple = None) -> int:
+        """Handle received data."""
+        Log.debug("callback_data called: {} addr={}", data, ":hex", addr)
+        return 0
 
     # ----------------------------------- #
     # Helper methods for external classes #
     # ----------------------------------- #
-    async def send(self, data: bytes) -> bool:
+    def transport_send(self, data: bytes, addr: tuple = None) -> None:
         """Send request.
 
         :param data: non-empty bytes object with data to send.
+        :param addr: optional addr, only used for UDP server.
         """
         Log.debug("send: {}", data, ":hex")
-        if self.use_udp:
-            return self.transport.sendto(data)  # type: ignore[union-attr]
-        return self.transport.write(data)  # type: ignore[union-attr]
+        if self.comm_params.comm_type == CommType.UDP:
+            if addr:
+                self.transport.sendto(data, addr=addr)  # type: ignore[union-attr]
+            else:
+                self.transport.sendto(data)  # type: ignore[union-attr]
+        else:
+            self.transport.write(data)  # type: ignore[union-attr]
 
-    def close(self, reconnect: bool = False) -> None:
+    def transport_close(self, reconnect: bool = False) -> None:
         """Close connection.
 
         :param reconnect: (default false), try to reconnect
@@ -371,7 +297,15 @@ class Transport:
         if not reconnect and self.reconnect_task:
             self.reconnect_task.cancel()
             self.reconnect_task = None
-        self.recv_buffer = b""
+            self.reconnect_delay_current = 0.0
+            self.recv_buffer = b""
+        if self.listener:
+            self.listener.active_connections.pop(self.unique_id)
+        elif self.is_server:
+            for _key, value in self.active_connections.items():
+                value.listener = None
+                value.transport_close()
+            self.active_connections = {}
 
     def reset_delay(self) -> None:
         """Reset wait time before next reconnect to minimal period."""
@@ -384,11 +318,26 @@ class Transport:
     # ---------------- #
     # Internal methods #
     # ---------------- #
-    def handle_listen(self):
-        """Handle incoming connect."""
-        return self
+    async def create_nullmodem(self):
+        """Bypass create_ and use null modem"""
+        new_transport = NullModem(self.is_server, self)
+        new_protocol = self.handle_new_connection()
+        new_protocol.connection_made(new_transport)
+        if self.is_server:
+            return new_transport, new_protocol
+        return new_transport, new_protocol
 
-    async def reconnect_connect(self):
+    def handle_new_connection(self):
+        """Handle incoming connect."""
+        if not self.is_server:
+            return self
+
+        new_transport = Transport(self.comm_params, True)
+        new_transport.listener = self
+        self.active_connections[new_transport.unique_id] = new_transport
+        return new_transport
+
+    async def do_reconnect(self):
         """Handle reconnect as a task."""
         try:
             self.reconnect_delay_current = self.comm_params.reconnect_delay
@@ -418,8 +367,87 @@ class Transport:
 
     async def __aexit__(self, _class, _value, _traceback) -> None:
         """Implement the client with async exit block."""
-        self.close()
+        self.transport_close()
 
     def __str__(self) -> str:
         """Build a string representation of the connection."""
         return f"{self.__class__.__name__}({self.comm_params.comm_name})"
+
+
+class NullModem(asyncio.DatagramTransport, asyncio.WriteTransport):
+    """Transport layer.
+
+    Contains methods to act as a null modem between 2 objects.
+    (Allowing tests to be shortcut without actual network calls)
+    """
+
+    client: NullModem = None
+    server: NullModem = None
+    client_protocol: Transport = None
+    server_protocol: Transport = None
+
+    def __init__(self, is_server: bool, protocol: Transport):
+        """Create half part of null modem"""
+        asyncio.DatagramTransport.__init__(self)
+        asyncio.WriteTransport.__init__(self)
+        self.other_protocol: Transport = None
+        if is_server:
+            self.__class__.server = self
+            self.__class__.server_protocol = protocol
+            return
+        if not self.__class__.server:
+            raise RuntimeError("Connect called before listen")
+        self.__class__.client = self
+        self.__class__.client_protocol = protocol
+        self.client.other_protocol = self.server_protocol
+        self.server.other_protocol = self.client_protocol
+
+    # ---------------- #
+    # external methods #
+    # ---------------- #
+
+    def close(self):
+        """Close null modem"""
+
+    def sendto(self, data: bytes, _addr: Any = None):
+        """Send datagrame"""
+        return self.write(data)
+
+    def write(self, data: bytes):
+        """Send data"""
+        return len(data)
+
+    # ---------------- #
+    # Abstract methods #
+    # ---------------- #
+    def abort(self) -> None:
+        """Abort connection."""
+
+    def can_write_eof(self) -> bool:
+        """Allow to write eof"""
+        return True
+
+    def get_write_buffer_size(self) -> int:
+        """Set write limit."""
+        return 1024
+
+    def get_write_buffer_limits(self) -> tuple[int, int]:
+        """Set flush limits"""
+        return (1, 1024)
+
+    def set_write_buffer_limits(self, high: int = None, low: int = None) -> None:
+        """Set flush limits"""
+
+    def write_eof(self) -> None:
+        """Write eof"""
+
+    def get_protocol(self) -> Transport:
+        """Return current protocol."""
+        return None
+
+    def set_protocol(self, protocol: asyncio.BaseProtocol) -> None:
+        """Set current protocol."""
+
+    def is_closing(self) -> bool:
+        """Return true if closing"""
+        return False

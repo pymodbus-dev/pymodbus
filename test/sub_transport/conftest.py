@@ -1,139 +1,132 @@
 """Fixtures for transport tests."""
 import asyncio
+import dataclasses
 import os
-import time
 from contextlib import suppress
-from dataclasses import dataclass
-from tempfile import gettempdir
 from unittest import mock
 
 import pytest
-import pytest_asyncio
 
-from pymodbus.transport.nullmodem import NullModem
-from pymodbus.transport.transport import Transport
+from pymodbus.transport.transport import CommParams, CommType, NullModem, Transport
 
 
-@dataclass
-class BaseParams(Transport.CommParamsClass):
-    """Base parameters for all transport testing."""
+class DummyTransport(asyncio.BaseTransport):
+    """Use in connection_made calls."""
 
-    comm_name = "test comm"
-    reconnect_delay = 1000
-    reconnect_delay_max = 3500
-    timeout_connect = 2000
-    host = "test host"
-    port = 502
-    server_hostname = "server test host"
-    baudrate = 9600
-    bytesize = 8
-    parity = "e"
-    stopbits = 2
-    cwd = os.path.dirname(__file__) + "/../../examples/certificates/pymodbus."
+    def transport_close(self):
+        """Define dummy."""
+
+    def transport_send(self):
+        """Define dummy."""
+
+    def close(self):
+        """Define dummy."""
+
+    def get_protocol(self):
+        """Define dummy."""
+
+    def is_closing(self):
+        """Define dummy."""
+
+    def set_protocol(self, _protocol):
+        """Define dummy."""
+
+    def abort(self):
+        """Define dummy."""
 
 
-@pytest.fixture(name="params")
-def prepare_baseparams(use_port):
-    """Prepare BaseParams class."""
-    BaseParams.port = use_port
-    return BaseParams
+@pytest.fixture(name="dummy_transport")
+def prepare_dummy_transport():
+    """Return transport object"""
+    return DummyTransport()
+
+
+@pytest.fixture(name="cwd_certificate")
+def prepare_cwd_certificate():
+    """Prepare path to certificate."""
+    return os.path.dirname(__file__) + "/../../examples/certificates/pymodbus."
+
+
+@pytest.fixture(name="use_comm_type")
+def prepare_dummy_use_comm_type():
+    """Return default comm_type"""
+    return CommType.TCP
+
+
+@pytest.fixture(name="use_host")
+def prepare_dummy_use_host():
+    """Return default host"""
+    return "localhost"
 
 
 @pytest.fixture(name="commparams")
-def prepare_testparams():
+def prepare_commparams(use_port, use_host, use_comm_type):
     """Prepare CommParamsClass object."""
-    return Transport.CommParamsClass(
-        done=True,
-        comm_name=BaseParams.comm_name,
-        reconnect_delay=BaseParams.reconnect_delay / 1000,
-        reconnect_delay_max=BaseParams.reconnect_delay_max / 1000,
-        timeout_connect=BaseParams.timeout_connect / 1000,
+    return CommParams(
+        comm_name="test comm",
+        comm_type=use_comm_type,
+        reconnect_delay=1,
+        reconnect_delay_max=3.5,
+        timeout_connect=2,
+        host=use_host,
+        port=use_port,
+        baudrate=9600,
+        bytesize=8,
+        parity="E",
+        stopbits=2,
     )
 
 
-@pytest.fixture(name="transport")
-async def prepare_transport():
+@pytest.fixture(name="client")
+async def prepare_transport(commparams):
     """Prepare transport object."""
-    transport = Transport(
-        BaseParams.comm_name,
-        BaseParams.reconnect_delay,
-        BaseParams.reconnect_delay_max,
-        BaseParams.timeout_connect,
-        mock.Mock(name="cb_connection_made"),
-        mock.Mock(name="cb_connection_lost"),
-        mock.Mock(name="cb_handle_data", return_value=0),
-    )
+    transport = Transport(commparams, False)
     with suppress(RuntimeError):
         transport.loop = asyncio.get_running_loop()
+    transport.callback_connected = mock.Mock()
+    transport.callback_disconnected = mock.Mock()
+    transport.callback_data = mock.Mock(return_value=0)
+    if commparams.comm_type == CommType.TLS:
+        cwd = os.path.dirname(__file__) + "/../../examples/certificates/pymodbus."
+        transport.comm_params.sslctx = commparams.generate_ssl(
+            False, certfile=cwd + "crt", keyfile=cwd + "key"
+        )
+    if commparams.comm_type == CommType.SERIAL:
+        transport.comm_params.host = f"socket://localhost:{transport.comm_params.port}"
+    return transport
+
+
+@pytest.fixture(name="server")
+async def prepare_transport_server(commparams):
+    """Prepare transport object."""
+    if commparams.comm_type == CommType.SERIAL:
+        commparams = dataclasses.replace(commparams)
+        commparams.comm_type = CommType.TCP
+    transport = Transport(commparams, True)
+    with suppress(RuntimeError):
+        transport.loop = asyncio.get_running_loop()
+    transport.callback_connected = mock.Mock()
+    transport.callback_disconnected = mock.Mock()
+    transport.callback_data = mock.Mock(return_value=0)
+    if commparams.comm_type == CommType.TLS:
+        cwd = os.path.dirname(__file__) + "/../../examples/certificates/pymodbus."
+        transport.comm_params.sslctx = commparams.generate_ssl(
+            True, certfile=cwd + "crt", keyfile=cwd + "key"
+        )
+    elif commparams.comm_type == CommType.SERIAL:
+        serial_params = dataclasses.replace(commparams)
+        serial_params.comm_type = CommType.TCP
+        transport = Transport(serial_params, True)
     return transport
 
 
 @pytest.fixture(name="nullmodem")
-async def prepare_nullmodem():
+def prepare_nullmodem():
     """Prepare nullmodem object."""
-    transport = NullModem(
-        BaseParams.comm_name,
-        BaseParams.reconnect_delay,
-        BaseParams.reconnect_delay_max,
-        BaseParams.timeout_connect,
-        mock.Mock(name="cb_connection_made"),
-        mock.Mock(name="cb_connection_lost"),
-        mock.Mock(name="cb_handle_data", return_value=0),
-    )
-    transport.__class__.nullmodem_client = None
-    transport.__class__.nullmodem_server = None
-    with suppress(RuntimeError):
-        transport.loop = asyncio.get_running_loop()
-    return transport
+    return NullModem(False, mock.Mock())
 
 
 @pytest.fixture(name="nullmodem_server")
-async def prepare_nullmodem_server():
+def prepare_nullmodem_server():
     """Prepare nullmodem object."""
-    transport = NullModem(
-        BaseParams.comm_name,
-        BaseParams.reconnect_delay,
-        BaseParams.reconnect_delay_max,
-        BaseParams.timeout_connect,
-        mock.Mock(name="cb_connection_made"),
-        mock.Mock(name="cb_connection_lost"),
-        mock.Mock(name="cb_handle_data", return_value=0),
-    )
-    transport.__class__.nullmodem_client = None
-    transport.__class__.nullmodem_server = None
-    with suppress(RuntimeError):
-        transport.loop = asyncio.get_running_loop()
-    return transport
-
-
-@pytest_asyncio.fixture(name="transport_server")
-async def prepare_transport_server():
-    """Prepare transport object."""
-    transport = Transport(
-        BaseParams.comm_name,
-        BaseParams.reconnect_delay,
-        BaseParams.reconnect_delay_max,
-        BaseParams.timeout_connect,
-        mock.Mock(name="cb_connection_made"),
-        mock.Mock(name="cb_connection_lost"),
-        mock.Mock(name="cb_handle_data", return_value=0),
-    )
-    with suppress(RuntimeError):
-        transport.loop = asyncio.get_running_loop()
-    return transport
-
-
-@pytest.fixture(name="domain_host")
-def get_domain_host(positive):
-    """Get test host."""
-    return "localhost" if positive else "/illegal_host_name"
-
-
-@pytest.fixture(name="domain_socket")
-def get_domain_socket(positive):
-    """Get test file."""
-    return (
-        gettempdir() + "/test_unix_" + str(time.time())
-        if positive
-        else "/illegal_file_name"
-    )
+    return NullModem(True, mock.Mock())

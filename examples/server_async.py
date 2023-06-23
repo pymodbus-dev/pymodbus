@@ -154,7 +154,6 @@ async def run_async_server(args):
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
-            allow_reuse_address=True,  # allow the reuse of an address
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
@@ -202,7 +201,6 @@ async def run_async_server(args):
             # custom_functions=[],  # allow custom handling
             address=address,  # listen address
             framer=args.framer,  # The framer strategy to use
-            allow_reuse_address=True,  # allow the reuse of an address
             certfile=helper.get_certificate(
                 "crt"
             ),  # The cert file path for TLS (used if sslctx is None)
@@ -211,7 +209,6 @@ async def run_async_server(args):
                 "key"
             ),  # The key file path for TLS (used if sslctx is None)
             # password="none",  # The password for for decrypting the private key file
-            # reqclicert=False,  # Force the sever request client"s certificate
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete

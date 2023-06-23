@@ -4,7 +4,6 @@
             "comm": "tcp",
             "host": "0.0.0.0",
             "port": 5020,
-            "allow_reuse_address": true,
             "ignore_missing_slaves": false,
             "framer": "socket",
             "identity": {
@@ -42,8 +41,6 @@
             "port": 5020,
             "certfile": "certificates/pymodbus.crt",
             "keyfile": "certificates/pymodbus.key",
-            "allow_reuse_address": true,
-            "backlog": 20,
             "ignore_missing_slaves": false,
             "framer": "tls",
             "identity": {

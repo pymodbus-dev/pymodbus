@@ -169,7 +169,6 @@ async def run_server_simulator(args):
         context=args.context,
         address=("", args.port),
         framer=args.framer,
-        allow_reuse_address=True,
     )
 
 

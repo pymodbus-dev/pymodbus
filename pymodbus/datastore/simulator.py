@@ -572,10 +572,9 @@ class ModbusSimulatorContext:
             real_address = self.fc_offset[func_code] + address
             for i in range(real_address, real_address + count):
                 reg = self.registers[i]
+                kwargs = reg.action_kwargs if reg.action_kwargs else {}
                 if reg.action:
-                    self.action_methods[reg.action](
-                        self.registers, i, reg, reg.action_kwargs
-                    )
+                    self.action_methods[reg.action](self.registers, i, reg, **kwargs)
                 self.registers[i].count_read += 1
                 result.append(reg.value)
         else:
@@ -629,9 +628,6 @@ class ModbusSimulatorContext:
     # --------------------------------------------
     # Internal action methods
     # --------------------------------------------
-
-    _FLOAT32_max = struct.unpack("f", b"\xff\xff\x7f\x7f")
-    _FLOAT32_min = struct.unpack("f", b"\xff\xff\x7f\xff")
 
     @classmethod
     def action_random(cls, registers, inx, cell, minval=1, maxval=65536):
@@ -687,7 +683,7 @@ class ModbusSimulatorContext:
             reg2.value = new_regs[1]
 
     @classmethod
-    def action_timestamp(cls, registers, inx, _cell, _kwargs):
+    def action_timestamp(cls, registers, inx, _cell, **_kwargs):
         """Set current time.
 
         :meta private:
@@ -702,7 +698,7 @@ class ModbusSimulatorContext:
         registers[inx + 6].value = system_time.second
 
     @classmethod
-    def action_reset(cls, _registers, _inx, _cell, _kwargs):
+    def action_reset(cls, _registers, _inx, _cell, **_kwargs):
         """Reboot server.
 
         :meta private:
@@ -710,7 +706,7 @@ class ModbusSimulatorContext:
         raise RuntimeError("RESET server")
 
     @classmethod
-    def action_uptime(cls, registers, inx, cell, _kwargs):
+    def action_uptime(cls, registers, inx, cell, **_kwargs):
         """Return uptime in seconds.
 
         :meta private:

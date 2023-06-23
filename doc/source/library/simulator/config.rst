@@ -290,13 +290,13 @@ The datastore simulator have a number of builtin actions, and allows custom acti
 - **"reset"**, causes a reboot of the simulator,
 - **"uptime"**, sets the number of seconds the server have been running.
 
-The **"random"** and **"increment"** actions may have optioally defined minimum and maximum limitation (any or both).
-In case of **"increment"**, the counter is reset back to minimum value, if maximum value is crossed.
+The **"random"** and **"increment"** actions may optionally minimum and/or maximum.
+In case of **"increment"**, the counter is reset to the minimum value, if the maximum is crossed.
 
 .. code-block::
 
-    {"addr": 9, "value": 7, "action": "random", "kwargs": {"min": 0, "max": 12} },
-    {"addr": 10, "value": 100, "action": "increment", "kwargs": {"min": 50} }
+    {"addr": 9, "value": 7, "action": "random", "kwargs": {"minval": 0, "maxval": 12} },
+    {"addr": 10, "value": 100, "action": "increment", "kwargs": {"minval": 50} }
 
 
 Invalid section

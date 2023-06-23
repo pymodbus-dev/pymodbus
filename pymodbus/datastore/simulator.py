@@ -630,25 +630,24 @@ class ModbusSimulatorContext:
     # Internal action methods
     # --------------------------------------------
 
-    _FLOAT32_max = struct.unpack("f", b'\xff\xff\x7f\x7f')
-    _FLOAT32_min = struct.unpack("f", b'\xff\xff\x7f\xff')
+    _FLOAT32_max = struct.unpack("f", b"\xff\xff\x7f\x7f")
+    _FLOAT32_min = struct.unpack("f", b"\xff\xff\x7f\xff")
 
     @classmethod
-    def action_random(cls, registers, inx, cell, _kwargs):
+    def action_random(cls, registers, inx, cell, minval=1, maxval=65536):
         """Update with random value.
 
         :meta private:
         """
         if cell.type in (CellType.BITS, CellType.UINT16):
-            minval,maxval = cls.limit_value(0, 2**16, **_kwargs)
             registers[inx].value = random.randint(int(minval), int(maxval))
         elif cell.type == CellType.FLOAT32:
-            minval,maxval = cls.limit_value(cls._FLOAT32_min, cls._FLOAT32_max, **_kwargs)
-            regs = cls.build_registers_from_value(random.uniform(float(minval), float(maxval)), False)
+            regs = cls.build_registers_from_value(
+                random.uniform(float(minval), float(maxval)), False
+            )
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]
         elif cell.type == CellType.UINT32:
-            minval,maxval = cls.limit_value(0, 2**32, **_kwargs)
             regs = cls.build_registers_from_value(
                 random.randint(int(minval), int(maxval)), True
             )
@@ -656,7 +655,7 @@ class ModbusSimulatorContext:
             registers[inx + 1].value = regs[1]
 
     @classmethod
-    def action_increment(cls, registers, inx, cell, _kwargs):
+    def action_increment(cls, registers, inx, cell, minval=None, maxval=None):
         """Increment value reset with overflow.
 
         :meta private:
@@ -664,17 +663,15 @@ class ModbusSimulatorContext:
         reg = registers[inx]
         reg2 = registers[inx + 1]
         if cell.type in (CellType.BITS, CellType.UINT16):
-            value = reg.value +1
-            minval,maxval = cls.limit_value(0, 2**16, **_kwargs)
-            if value > maxval :
+            value = reg.value + 1
+            if maxval and value > maxval:
                 value = minval
             reg.value = value
         elif cell.type == CellType.FLOAT32:
             tmp_reg = [reg.value, reg2.value]
             value = cls.build_value_from_registers(tmp_reg, False)
             value += 1.0
-            minval,maxval = cls.limit_value(cls._FLOAT32_min, cls._FLOAT32_max, **_kwargs)
-            if value > maxval :
+            if maxval and value > maxval:
                 value = minval
             new_regs = cls.build_registers_from_value(value, False)
             reg.value = new_regs[0]
@@ -683,8 +680,7 @@ class ModbusSimulatorContext:
             tmp_reg = [reg.value, reg2.value]
             value = cls.build_value_from_registers(tmp_reg, True)
             value += 1
-            minval,maxval = cls.limit_value(0, 2*32, **_kwargs)
-            if value > maxval :
+            if maxval and value > maxval:
                 value = minval
             new_regs = cls.build_registers_from_value(value, True)
             reg.value = new_regs[0]
@@ -761,18 +757,6 @@ class ModbusSimulatorContext:
                 continue
             return False
         return True
-
-    @classmethod
-    def limit_value(cls, mindef, maxdef, min = None, max = None, **kws): # pylint: disable=redefined-builtin,unused-argument
-        """Validate "min" and "max" values in _range dict, if exist, against mindef/maxdef values.
-
-        :meta private:
-        """
-        if min is None :
-            min = mindef
-        if max is None :
-            max = maxdef
-        return min,max
 
     @classmethod
     def build_registers_from_value(cls, value, is_int):

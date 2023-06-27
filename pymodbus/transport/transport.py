@@ -332,8 +332,9 @@ class Transport(asyncio.BaseProtocol):
     # ---------------- #
     async def create_nullmodem(self):
         """Bypass create_ and use null modem"""
-        new_transport = NullModem(self.is_server, self)
+        new_transport = NullModem(self.is_server, None)
         new_protocol = self.handle_new_connection()
+        new_transport.protocol = new_protocol
         new_protocol.connection_made(new_transport)
         self.connection_made(self.transport)
         return new_transport, new_protocol

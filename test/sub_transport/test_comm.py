@@ -176,8 +176,9 @@ class TestCommNullModem:
         """Test single connection."""
         await server.transport_listen()
         await client.transport_connect()
-        assert server.transport.protocol == server
-        assert server.transport.other == client.transport
+        server_obj = list(server.active_connections.values())[0]
+        assert server.transport.protocol == server_obj
+        assert server_obj.transport.other == client.transport
         assert client.transport.listening == -1
         assert client.transport.protocol == client
         assert client.transport.other == server.transport
@@ -188,31 +189,34 @@ class TestCommNullModem:
         """Test single connection."""
         await server.transport_listen()
         await client.transport_connect()
-        server.callback_data = mock.Mock(return_value=0)
+        server_obj = list(server.active_connections.values())[0]
+        server_obj.callback_data = mock.Mock(return_value=0)
         client.callback_data = mock.Mock(return_value=0)
         test_data = b"abcd"
         test_data2 = b"efgh"
         client.transport_send(test_data)
-        server.transport_send(test_data2)
-        assert server.recv_buffer == test_data
+        server_obj.transport_send(test_data2)
+        assert server_obj.recv_buffer == test_data
         assert client.recv_buffer == test_data2
         client.callback_data.assert_called_once()
-        server.callback_data.assert_called_once()
+        server_obj.callback_data.assert_called_once()
 
     @pytest.mark.parametrize("use_host", [NULLMODEM_HOST])
     async def test_multi_connection(self, server, client):
         """Test single connection."""
         await server.transport_listen()
         await client.transport_connect()
+        server_obj = list(server.active_connections.values())[0]
         server2 = Transport(server.comm_params, True)
         client2 = Transport(client.comm_params, False)
         await server2.transport_listen()
         await client2.transport_connect()
+        server2_obj = list(server2.active_connections.values())[0]
 
-        assert server.transport.protocol == server
-        assert server.transport.other == client.transport
-        assert server2.transport.protocol == server2
-        assert server2.transport.other == client2.transport
+        assert server.transport.protocol == server_obj
+        assert server_obj.transport.other == client.transport
+        assert server2.transport.protocol == server2_obj
+        assert server2_obj.transport.other == client2.transport
         assert client.transport.protocol == client
         assert client.transport.other == server.transport
         assert client2.transport.protocol == client2
@@ -226,27 +230,29 @@ class TestCommNullModem:
         """Test single connection."""
         await server.transport_listen()
         await client.transport_connect()
+        server_obj = list(server.active_connections.values())[0]
         server2 = Transport(server.comm_params, True)
         client2 = Transport(client.comm_params, False)
         await server2.transport_listen()
         await client2.transport_connect()
-        server.callback_data = mock.Mock(return_value=0)
+        server2_obj = list(server2.active_connections.values())[0]
+        server_obj.callback_data = mock.Mock(return_value=0)
         client.callback_data = mock.Mock(return_value=0)
         client2.callback_data = mock.Mock(return_value=0)
-        server2.callback_data = mock.Mock(return_value=0)
+        server2_obj.callback_data = mock.Mock(return_value=0)
         test_data = b"abcd"
         test_data2 = b"efgh"
         test_data3 = b"ijkl"
         test_data4 = b"mnop"
         client.transport_send(test_data)
         client2.transport_send(test_data2)
-        server.transport_send(test_data3)
-        server2.transport_send(test_data4)
-        assert server.recv_buffer == test_data
-        assert server2.recv_buffer == test_data2
+        server_obj.transport_send(test_data3)
+        server2_obj.transport_send(test_data4)
+        assert server_obj.recv_buffer == test_data
+        assert server2_obj.recv_buffer == test_data2
         assert client.recv_buffer == test_data3
         assert client2.recv_buffer == test_data4
         client.callback_data.assert_called_once()
         client2.callback_data.assert_called_once()
-        server.callback_data.assert_called_once()
-        server2.callback_data.assert_called_once()
+        server_obj.callback_data.assert_called_once()
+        server2_obj.callback_data.assert_called_once()

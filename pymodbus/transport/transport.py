@@ -126,6 +126,8 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
         # ModbusProtocol specific setup
         if self.comm_params.host.startswith(NULLMODEM_HOST):
+            if self.comm_params.comm_type == CommType.SERIAL:
+                self.comm_params.port = int(self.comm_params.host[9:].split(":")[1])
             self.call_create = self.create_nullmodem
             return
         if self.comm_params.comm_type == CommType.SERIAL:
@@ -332,22 +334,38 @@ class ModbusProtocol(asyncio.BaseProtocol):
     # ---------------- #
     async def create_nullmodem(self):
         """Bypass create_ and use null modem"""
-        new_transport = NullModem(self.is_server, None)
-        new_protocol = self.handle_new_connection()
-        new_transport.protocol = new_protocol
-        new_protocol.connection_made(new_transport)
-        self.connection_made(self.transport)
-        return new_transport, new_protocol
+        if self.is_server:
+            # Listener object
+            self.transport = NullModem(self)
+            NullModem.listener_new_connection[
+                self.comm_params.port
+            ] = self.handle_new_connection
+            return self.transport, self
+
+        # connect object
+        client_protocol = self.handle_new_connection()
+        try:
+            server_protocol = NullModem.listener_new_connection[self.comm_params.port]()
+        except KeyError:
+            Log.error("No listener on port {} for connect", self.comm_params.port)
+            raise
+
+        client_transport = NullModem(client_protocol)
+        server_transport = NullModem(server_protocol)
+        client_transport.other_transport = server_transport
+        server_transport.other_transport = client_transport
+        client_protocol.connection_made(client_transport)
+        server_protocol.connection_made(server_transport)
+        return client_transport, client_protocol
 
     def handle_new_connection(self):
         """Handle incoming connect."""
         if not self.is_server:
             return self
 
-        new_transport = ModbusProtocol(self.comm_params, True)
-        new_transport.listener = self
-        self.active_connections[new_transport.unique_id] = new_transport
-        return new_transport
+        new_protocol = ModbusProtocol(self.comm_params, True)
+        self.active_connections[new_protocol.unique_id] = new_protocol
+        return new_protocol
 
     async def do_reconnect(self):
         """Handle reconnect as a task."""
@@ -393,29 +411,16 @@ class NullModem(asyncio.DatagramTransport, asyncio.WriteTransport):
     (Allowing tests to be shortcut without actual network calls)
     """
 
-    listening: int = -1
-    clients: list[NullModem] = []
-    servers: list[NullModem] = []
+    listener_new_connection: dict[int, ModbusProtocol] = {}
 
-    def __init__(self, is_server: bool, protocol: ModbusProtocol):
+    def __init__(self, protocol: ModbusProtocol):
         """Create half part of null modem"""
         asyncio.DatagramTransport.__init__(self)
         asyncio.WriteTransport.__init__(self)
         self.other: NullModem = None
         self.protocol = protocol
         self.serving: asyncio.Future = asyncio.Future()
-        if is_server:
-            self.conn_inx = len(self.servers)
-            self.__class__.listening = self.conn_inx
-            self.__class__.servers.append(self)
-            return
-        if self.listening < 0:
-            raise OSError("Connect called before listen")
-        self.conn_inx = self.listening
-        self.__class__.listening = -1
-        self.__class__.clients.append(self)
-        self.other = self.servers[self.conn_inx]
-        self.other.other = self
+        self.other_transport: NullModem = None
 
     # ---------------- #
     # external methods #

@@ -19,7 +19,7 @@ from pymodbus.transaction import (
     ModbusSocketFramer,
     ModbusTlsFramer,
 )
-from pymodbus.transport.transport import CommParams, CommType, Transport
+from pymodbus.transport.transport import CommParams, CommType, ModbusProtocol
 
 
 with suppress(ImportError):
@@ -31,7 +31,7 @@ with suppress(ImportError):
 # --------------------------------------------------------------------------- #
 
 
-class ModbusServerRequestHandler(Transport):
+class ModbusServerRequestHandler(ModbusProtocol):
     """Implements modbus slave wire protocol.
 
     This uses the asyncio.Protocol to implement the server protocol.
@@ -289,7 +289,7 @@ class ModbusServerRequestHandler(Transport):
 # --------------------------------------------------------------------------- #
 
 
-class ModbusTcpServer(Transport):
+class ModbusTcpServer(ModbusProtocol):
     """A modbus threaded tcp socket server.
 
     We inherit and overload the socket server so that we
@@ -468,7 +468,7 @@ class ModbusTlsServer(ModbusTcpServer):
         )
 
 
-class ModbusUdpServer(Transport):
+class ModbusUdpServer(ModbusProtocol):
     """A modbus threaded udp socket server.
 
     We inherit and overload the socket server so that we
@@ -575,7 +575,7 @@ class ModbusUdpServer(Transport):
             self.stop_serving.set_result(True)
 
 
-class ModbusSerialServer(Transport):
+class ModbusSerialServer(ModbusProtocol):
     """A modbus threaded serial socket server.
 
     We inherit and overload the socket server so that we

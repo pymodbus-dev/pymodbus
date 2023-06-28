@@ -6,10 +6,10 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.transport.transport import CommParams, CommType, NullModem, Transport
+from pymodbus.transport.transport import CommParams, CommType, ModbusProtocol, NullModem
 
 
-class DummyTransport(asyncio.BaseTransport):
+class DummyProtocol(asyncio.BaseTransport):
     """Use in connection_made calls."""
 
     def transport_close(self):
@@ -34,10 +34,10 @@ class DummyTransport(asyncio.BaseTransport):
         """Define dummy."""
 
 
-@pytest.fixture(name="dummy_transport")
-def prepare_dummy_transport():
+@pytest.fixture(name="dummy_protocol")
+def prepare_dummy_protocol():
     """Return transport object"""
-    return DummyTransport()
+    return DummyProtocol()
 
 
 @pytest.fixture(name="cwd_certificate")
@@ -77,9 +77,9 @@ def prepare_commparams(use_port, use_host, use_comm_type):
 
 
 @pytest.fixture(name="client")
-async def prepare_transport(commparams):
+async def prepare_protocol(commparams):
     """Prepare transport object."""
-    transport = Transport(commparams, False)
+    transport = ModbusProtocol(commparams, False)
     with suppress(RuntimeError):
         transport.loop = asyncio.get_running_loop()
     transport.callback_connected = mock.Mock()
@@ -98,7 +98,7 @@ async def prepare_transport(commparams):
 @pytest.fixture(name="server")
 async def prepare_transport_server(commparams):
     """Prepare transport object."""
-    transport = Transport(commparams, True)
+    transport = ModbusProtocol(commparams, True)
     with suppress(RuntimeError):
         transport.loop = asyncio.get_running_loop()
     transport.callback_connected = mock.Mock()

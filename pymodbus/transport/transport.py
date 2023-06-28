@@ -1,4 +1,4 @@
-"""Transport layer."""
+"""ModbusProtocol layer."""
 # mypy: disable-error-code="name-defined"
 # needed because asyncio.Server is not defined (to mypy) in v3.8.16
 from __future__ import annotations
@@ -86,7 +86,7 @@ class CommParams:
         return dataclasses.replace(self)
 
 
-class Transport(asyncio.BaseProtocol):
+class ModbusProtocol(asyncio.BaseProtocol):
     """Protocol layer including transport.
 
     Contains pure transport methods needed to connect/listen, send/receive and close connections
@@ -115,16 +115,16 @@ class Transport(asyncio.BaseProtocol):
         self.is_server = is_server
 
         self.reconnect_delay_current: float = 0.0
-        self.listener: Transport = None
-        self.transport: asyncio.BaseTransport | asyncio.Server = None
+        self.listener: ModbusProtocol = None
+        self.transport: asyncio.BaseModbusProtocol | asyncio.Server = None
         self.loop: asyncio.AbstractEventLoop = None
         self.reconnect_task: asyncio.Task = None
         self.recv_buffer: bytes = b""
         self.call_create: Callable[[], Coroutine[Any, Any, Any]] = lambda: None
-        self.active_connections: dict[str, Transport] = {}
+        self.active_connections: dict[str, ModbusProtocol] = {}
         self.unique_id: str = str(id(self))
 
-        # Transport specific setup
+        # ModbusProtocol specific setup
         if self.comm_params.host.startswith(NULLMODEM_HOST):
             self.call_create = self.create_nullmodem
             return
@@ -211,9 +211,9 @@ class Transport(asyncio.BaseProtocol):
         return True
 
     # ---------------------------------- #
-    # Transport asyncio standard methods #
+    # ModbusProtocol asyncio standard methods #
     # ---------------------------------- #
-    def connection_made(self, transport: asyncio.BaseTransport):
+    def connection_made(self, transport: asyncio.BaseModbusProtocol):
         """Call from asyncio, when a connection is made.
 
         :param transport: socket etc. representing the connection.
@@ -344,7 +344,7 @@ class Transport(asyncio.BaseProtocol):
         if not self.is_server:
             return self
 
-        new_transport = Transport(self.comm_params, True)
+        new_transport = ModbusProtocol(self.comm_params, True)
         new_transport.listener = self
         self.active_connections[new_transport.unique_id] = new_transport
         return new_transport
@@ -387,7 +387,7 @@ class Transport(asyncio.BaseProtocol):
 
 
 class NullModem(asyncio.DatagramTransport, asyncio.WriteTransport):
-    """Transport layer.
+    """ModbusProtocol layer.
 
     Contains methods to act as a null modem between 2 objects.
     (Allowing tests to be shortcut without actual network calls)
@@ -397,7 +397,7 @@ class NullModem(asyncio.DatagramTransport, asyncio.WriteTransport):
     clients: list[NullModem] = []
     servers: list[NullModem] = []
 
-    def __init__(self, is_server: bool, protocol: Transport):
+    def __init__(self, is_server: bool, protocol: ModbusProtocol):
         """Create half part of null modem"""
         asyncio.DatagramTransport.__init__(self)
         asyncio.WriteTransport.__init__(self)
@@ -467,7 +467,7 @@ class NullModem(asyncio.DatagramTransport, asyncio.WriteTransport):
     def write_eof(self) -> None:
         """Write eof"""
 
-    def get_protocol(self) -> Transport:
+    def get_protocol(self) -> ModbusProtocol:
         """Return current protocol."""
         return None
 

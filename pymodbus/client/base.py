@@ -13,11 +13,11 @@ from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.transaction import DictTransactionManager
-from pymodbus.transport.transport import CommParams, Transport
+from pymodbus.transport.transport import CommParams, ModbusProtocol
 from pymodbus.utilities import ModbusTransactionState
 
 
-class ModbusBaseClient(ModbusClientMixin, Transport):
+class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     """**ModbusBaseClient**
 
     **Parameters common to all clients**:
@@ -88,7 +88,7 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
     ) -> None:
         """Initialize a client instance."""
         ModbusClientMixin.__init__(self)
-        Transport.__init__(
+        ModbusProtocol.__init__(
             self,
             CommParams(
                 comm_type=kwargs.get("CommType"),

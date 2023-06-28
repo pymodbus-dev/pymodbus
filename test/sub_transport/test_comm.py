@@ -5,14 +5,14 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.transport.transport import NULLMODEM_HOST, CommType, Transport
+from pymodbus.transport.transport import NULLMODEM_HOST, CommType, ModbusProtocol
 
 
 BASE_PORT = 6100
 FACTOR = 1.2 if not pytest.IS_WINDOWS else 2.2
 
 
-class TestCommTransport:
+class TestCommModbusProtocol:
     """Test for the transport module."""
 
     @pytest.mark.parametrize(
@@ -133,7 +133,7 @@ class TestCommTransport:
 
         c2_params = commparams.copy()
         c2_params.port = client.comm_params.port + 1
-        client2 = Transport(commparams, False)
+        client2 = ModbusProtocol(commparams, False)
         client2.callback_connected = mock.Mock()
         client2.callback_disconnected = mock.Mock()
         client2.callback_data = mock.Mock(return_value=0)
@@ -207,8 +207,8 @@ class TestCommNullModem:
         await server.transport_listen()
         await client.transport_connect()
         server_obj = list(server.active_connections.values())[0]
-        server2 = Transport(server.comm_params, True)
-        client2 = Transport(client.comm_params, False)
+        server2 = ModbusProtocol(server.comm_params, True)
+        client2 = ModbusProtocol(client.comm_params, False)
         await server2.transport_listen()
         await client2.transport_connect()
         server2_obj = list(server2.active_connections.values())[0]
@@ -231,8 +231,8 @@ class TestCommNullModem:
         await server.transport_listen()
         await client.transport_connect()
         server_obj = list(server.active_connections.values())[0]
-        server2 = Transport(server.comm_params, True)
-        client2 = Transport(client.comm_params, False)
+        server2 = ModbusProtocol(server.comm_params, True)
+        client2 = ModbusProtocol(client.comm_params, False)
         await server2.transport_listen()
         await client2.transport_connect()
         server2_obj = list(server2.active_connections.values())[0]

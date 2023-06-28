@@ -184,10 +184,9 @@ class TestBasicModbusProtocol:
     @pytest.mark.parametrize("use_host", [NULLMODEM_HOST])
     async def test_create_nullmodem(self, client, server):
         """Test create_nullmodem."""
-        with pytest.raises(KeyError):
-            await client.transport_connect()
+        assert not await client.transport_connect()
         await server.transport_listen()
-        await client.transport_connect()
+        assert await client.transport_connect()
 
     async def test_handle_new_connection(self, client, server):
         """Test handle_new_connection()."""

@@ -38,11 +38,39 @@ class TestBasicModbusProtocol:
         assert server.unique_id == str(id(server))
         assert server.is_server
 
-        commparams.host = NULLMODEM_HOST
-        ModbusProtocol(commparams, False)
+    @pytest.mark.parametrize("use_host", [NULLMODEM_HOST])
+    @pytest.mark.parametrize("use_comm_type", COMM_TYPES)
+    async def test_init_nullmodem(self, client, server, commparams):
+        """Test init()"""
         if commparams.comm_type == CommType.SERIAL:
-            commparams.host = "socket://127.0.0.1:6301"
-            ModbusProtocol(commparams, True)
+            client.comm_params.host = commparams.host
+            server.comm_params.comm_type = commparams.comm_type
+        client.comm_params.sslctx = None
+        assert client.comm_params == commparams
+        assert client.unique_id == str(id(client))
+        assert not client.is_server
+        server.comm_params.sslctx = None
+        assert server.comm_params == commparams
+        assert server.unique_id == str(id(server))
+        assert server.is_server
+
+    @pytest.mark.parametrize(
+        ("use_host", "use_comm_type"), [("socket://127.0.0.1:7001", CommType.SERIAL)]
+    )
+    async def test_init_serial(self, client, server, commparams):
+        """Test init()"""
+        client.comm_params.host = commparams.host
+        client.comm_params.sslctx = None
+        server.comm_params.host = commparams.host
+        server.comm_params.port = commparams.port
+        server.comm_params.comm_type = commparams.comm_type
+        assert client.comm_params == commparams
+        assert client.unique_id == str(id(client))
+        assert not client.is_server
+        server.comm_params.sslctx = None
+        assert server.comm_params == commparams
+        assert server.unique_id == str(id(server))
+        assert server.is_server
 
     async def test_connect(self, client, dummy_protocol):
         """Test properties."""
@@ -156,8 +184,10 @@ class TestBasicModbusProtocol:
     @pytest.mark.parametrize("use_host", [NULLMODEM_HOST])
     async def test_create_nullmodem(self, client, server):
         """Test create_nullmodem."""
+        with pytest.raises(KeyError):
+            await client.transport_connect()
         await server.transport_listen()
-        await client.transport_listen()
+        await client.transport_connect()
 
     async def test_handle_new_connection(self, client, server):
         """Test handle_new_connection()."""
@@ -203,16 +233,12 @@ class TestBasicNullModem:
 
     def test_init(self):
         """Test null modem init"""
-        NullModem.server = None
-        with pytest.raises(OSError, match="Connect called before listen"):
-            NullModem(False, mock.Mock())
-        NullModem(True, mock.Mock())
-        NullModem(False, mock.Mock())
+        NullModem(mock.Mock())
 
     def test_external_methods(self):
         """Test external methods."""
-        modem = NullModem(True, mock.Mock())
-        modem.other = NullModem(False, mock.Mock())
+        modem = NullModem(mock.Mock())
+        modem.other = NullModem(mock.Mock())
         modem.other.protocol = mock.Mock()
         modem.sendto(b"abcd")
         modem.write(b"abcd")
@@ -220,14 +246,14 @@ class TestBasicNullModem:
 
     async def test_serve_forever(self):
         """Test external methods."""
-        modem = NullModem(True, mock.Mock())
+        modem = NullModem(mock.Mock())
         modem.serving.set_result(True)
         await modem.serve_forever()
         modem.close()
 
     def test_abstract_methods(self):
         """Test asyncio abstract methods."""
-        modem = NullModem(True, mock.Mock())
+        modem = NullModem(mock.Mock())
         modem.abort()
         modem.can_write_eof()
         modem.get_write_buffer_size()

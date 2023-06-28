@@ -6,7 +6,13 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.transport.transport import CommParams, CommType, ModbusProtocol, NullModem
+from pymodbus.transport.transport import (
+    NULLMODEM_HOST,
+    CommParams,
+    CommType,
+    ModbusProtocol,
+    NullModem,
+)
 
 
 class DummyProtocol(asyncio.BaseTransport):
@@ -61,6 +67,8 @@ def prepare_dummy_use_host():
 @pytest.fixture(name="commparams")
 def prepare_commparams(use_port, use_host, use_comm_type):
     """Prepare CommParamsClass object."""
+    if use_host == NULLMODEM_HOST and use_comm_type == CommType.SERIAL:
+        use_host = f"{NULLMODEM_HOST}:{use_port}"
     return CommParams(
         comm_name="test comm",
         comm_type=use_comm_type,

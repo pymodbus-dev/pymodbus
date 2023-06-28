@@ -37,6 +37,7 @@ class TestClientServerSyncExamples:
     ]
 
     @pytest.mark.parametrize("port_offset", [0])
+    @pytest.mark.parametrize("use_host", ["localhost"])
     @pytest.mark.parametrize(
         ("use_comm", "use_framer", "use_port"),
         USE_CASES,

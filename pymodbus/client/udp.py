@@ -124,6 +124,11 @@ class ModbusUdpClient(ModbusBaseClient):
 
         self.socket = None
 
+    @property
+    def connected(self):
+        """Connect internal."""
+        return self.socket is not None
+
     def connect(self):  # pylint: disable=invalid-overridden-method
         """Connect to the modbus tcp server.
 

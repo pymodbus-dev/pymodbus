@@ -1,6 +1,7 @@
 """Fixtures for examples tests."""
 import asyncio
 
+import pytest
 import pytest_asyncio
 
 from examples.server_async import run_async_server, setup_server
@@ -8,17 +9,24 @@ from pymodbus.server import ServerAsyncStop
 from pymodbus.transport.transport import NULLMODEM_HOST
 
 
-@pytest_asyncio.fixture(name="port_offset")
-def _define_port_offset():
+@pytest.fixture(name="port_offset")
+def define_port_offset():
     """Define port offset"""
     return 0
 
 
-@pytest_asyncio.fixture(name="mock_clc")
-def _define_commandline_client(
+@pytest.fixture(name="use_host")
+def define_use_host():
+    """Set default host"""
+    return NULLMODEM_HOST
+
+
+@pytest.fixture(name="mock_clc")
+def define_commandline_client(
     use_comm,
     use_framer,
     use_port,
+    use_host,
     port_offset,
 ):
     """Define commandline."""
@@ -30,17 +38,22 @@ def _define_commandline_client(
         use_framer,
     ]
     if use_comm == "serial":
-        cmdline.extend(["--port", f"{NULLMODEM_HOST}:{my_port}", "--baudrate", "9600"])
+        if use_host == NULLMODEM_HOST:
+            use_host = f"{use_host}:{my_port}"
+        else:
+            use_host = f"socket://{use_host}:{my_port}"
+        cmdline.extend(["--baudrate", "9600", "--port", use_host])
     else:
-        cmdline.extend(["--port", my_port, "--host", NULLMODEM_HOST])
+        cmdline.extend(["--port", my_port, "--host", use_host])
     return cmdline
 
 
-@pytest_asyncio.fixture(name="mock_cls")
-def _define_commandline_server(
+@pytest.fixture(name="mock_cls")
+def define_commandline_server(
     use_comm,
     use_framer,
     use_port,
+    use_host,
     port_offset,
 ):
     """Define commandline."""
@@ -52,9 +65,13 @@ def _define_commandline_server(
         use_framer,
     ]
     if use_comm == "serial":
-        cmdline.extend(["--port", f"{NULLMODEM_HOST}:{my_port}", "--baudrate", "9600"])
+        if use_host == NULLMODEM_HOST:
+            use_host = f"{use_host}:{my_port}"
+        else:
+            use_host = f"socket://{use_host}:{my_port}"
+        cmdline.extend(["--baudrate", "9600", "--port", use_host])
     else:
-        cmdline.extend(["--port", my_port, "--host", NULLMODEM_HOST])
+        cmdline.extend(["--port", my_port, "--host", use_host])
     return cmdline
 
 

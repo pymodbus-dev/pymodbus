@@ -132,7 +132,6 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         )
         self.reconnect_delay = self.params.reconnect_delay
         self.reconnect_delay_current = self.params.reconnect_delay
-        self.use_sync = False
         self.use_udp = False
         self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float = 0
@@ -141,6 +140,11 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     # ----------------------------------------------------------------------- #
     # Client external interface
     # ----------------------------------------------------------------------- #
+    @property
+    def connected(self):
+        """Connect internal."""
+        return True
+
     def register(self, custom_response_class: ModbusResponse) -> None:
         """Register a custom response class with the decoder (call **sync**).
 

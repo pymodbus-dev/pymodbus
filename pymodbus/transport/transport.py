@@ -365,6 +365,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
         new_protocol = ModbusProtocol(self.comm_params, True)
         self.active_connections[new_protocol.unique_id] = new_protocol
+        new_protocol.listener = self
         return new_protocol
 
     async def do_reconnect(self):
@@ -430,10 +431,10 @@ class NullModem(asyncio.DatagramTransport, asyncio.WriteTransport):
         """Close null modem"""
         if not self.serving.done():
             self.serving.set_result(True)
-        if self.other:
-            self.other.other = None
-            self.other.protocol.connection_lost(None)
-            self.other = None
+        if self.other_transport:
+            self.other_transport.other_transport = None
+            self.other_transport.protocol.connection_lost(None)
+            self.other_transport = None
             self.protocol.connection_lost(None)
 
     def sendto(self, data: bytes, _addr: Any = None):
@@ -442,7 +443,7 @@ class NullModem(asyncio.DatagramTransport, asyncio.WriteTransport):
 
     def write(self, data: bytes):
         """Send data"""
-        self.other.protocol.data_received(data)
+        self.other_transport.protocol.data_received(data)
 
     async def serve_forever(self):
         """Serve forever"""

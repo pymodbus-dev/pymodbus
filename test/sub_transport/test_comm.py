@@ -115,6 +115,9 @@ class TestCommModbusProtocol:
         assert client.recv_buffer == test_data
         assert not server_connected.recv_buffer
         client.transport_close()
+        await asyncio.sleep(2)
+        if use_comm_type != CommType.UDP:
+            assert not len(server.active_connections)
         server.transport_close()
 
     @pytest.mark.parametrize(
@@ -166,6 +169,7 @@ class TestCommModbusProtocol:
         assert server2_connected.recv_buffer == test2_data + test_data
         client2.transport_close()
         server.transport_close()
+        assert not len(server.active_connections)
 
 
 class TestCommNullModem:
@@ -176,12 +180,11 @@ class TestCommNullModem:
         """Test single connection."""
         await server.transport_listen()
         await client.transport_connect()
-        server_obj = list(server.active_connections.values())[0]
-        assert server.transport.protocol == server_obj
-        assert server_obj.transport.other == client.transport
-        assert client.transport.listening == -1
+        connect = list(server.active_connections.values())[0]
+        assert connect.transport.protocol == connect
         assert client.transport.protocol == client
-        assert client.transport.other == server.transport
+        assert client.transport.other_transport == connect.transport
+        assert connect.transport.other_transport == client.transport
         client.transport_close()
 
     @pytest.mark.parametrize("use_host", [NULLMODEM_HOST])
@@ -189,39 +192,38 @@ class TestCommNullModem:
         """Test single connection."""
         await server.transport_listen()
         await client.transport_connect()
-        server_obj = list(server.active_connections.values())[0]
-        server_obj.callback_data = mock.Mock(return_value=0)
+        connect = list(server.active_connections.values())[0]
+        connect.callback_data = mock.Mock(return_value=0)
         client.callback_data = mock.Mock(return_value=0)
         test_data = b"abcd"
         test_data2 = b"efgh"
         client.transport_send(test_data)
-        server_obj.transport_send(test_data2)
-        assert server_obj.recv_buffer == test_data
+        connect.transport_send(test_data2)
+        assert connect.recv_buffer == test_data
         assert client.recv_buffer == test_data2
         client.callback_data.assert_called_once()
-        server_obj.callback_data.assert_called_once()
+        connect.callback_data.assert_called_once()
 
     @pytest.mark.parametrize("use_host", [NULLMODEM_HOST])
     async def test_multi_connection(self, server, client):
         """Test single connection."""
         await server.transport_listen()
         await client.transport_connect()
-        server_obj = list(server.active_connections.values())[0]
+        connect = list(server.active_connections.values())[0]
         server2 = ModbusProtocol(server.comm_params, True)
         client2 = ModbusProtocol(client.comm_params, False)
         await server2.transport_listen()
         await client2.transport_connect()
-        server2_obj = list(server2.active_connections.values())[0]
+        connect2 = list(server2.active_connections.values())[0]
 
-        assert server.transport.protocol == server_obj
-        assert server_obj.transport.other == client.transport
-        assert server2.transport.protocol == server2_obj
-        assert server2_obj.transport.other == client2.transport
+        assert connect.transport.protocol == connect
+        assert connect.transport.other_transport == client.transport
+        assert connect2.transport.protocol == connect2
+        assert connect2.transport.other_transport == client2.transport
         assert client.transport.protocol == client
-        assert client.transport.other == server.transport
+        assert client.transport.other_transport == connect.transport
         assert client2.transport.protocol == client2
-        assert client2.transport.other == server2.transport
-        assert client.transport.listening == -1
+        assert client2.transport.other_transport == connect2.transport
         client.transport_close()
         client2.transport_close()
 
@@ -230,29 +232,29 @@ class TestCommNullModem:
         """Test single connection."""
         await server.transport_listen()
         await client.transport_connect()
-        server_obj = list(server.active_connections.values())[0]
+        connect = list(server.active_connections.values())[0]
         server2 = ModbusProtocol(server.comm_params, True)
         client2 = ModbusProtocol(client.comm_params, False)
         await server2.transport_listen()
         await client2.transport_connect()
-        server2_obj = list(server2.active_connections.values())[0]
-        server_obj.callback_data = mock.Mock(return_value=0)
+        connect2 = list(server2.active_connections.values())[0]
+        connect.callback_data = mock.Mock(return_value=0)
         client.callback_data = mock.Mock(return_value=0)
         client2.callback_data = mock.Mock(return_value=0)
-        server2_obj.callback_data = mock.Mock(return_value=0)
+        connect2.callback_data = mock.Mock(return_value=0)
         test_data = b"abcd"
         test_data2 = b"efgh"
         test_data3 = b"ijkl"
         test_data4 = b"mnop"
         client.transport_send(test_data)
         client2.transport_send(test_data2)
-        server_obj.transport_send(test_data3)
-        server2_obj.transport_send(test_data4)
-        assert server_obj.recv_buffer == test_data
-        assert server2_obj.recv_buffer == test_data2
+        connect.transport_send(test_data3)
+        connect2.transport_send(test_data4)
+        assert connect.recv_buffer == test_data
+        assert connect2.recv_buffer == test_data2
         assert client.recv_buffer == test_data3
         assert client2.recv_buffer == test_data4
         client.callback_data.assert_called_once()
         client2.callback_data.assert_called_once()
-        server_obj.callback_data.assert_called_once()
-        server2_obj.callback_data.assert_called_once()
+        connect.callback_data.assert_called_once()
+        connect2.callback_data.assert_called_once()

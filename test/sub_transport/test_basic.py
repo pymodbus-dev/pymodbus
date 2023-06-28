@@ -238,8 +238,8 @@ class TestBasicNullModem:
     def test_external_methods(self):
         """Test external methods."""
         modem = NullModem(mock.Mock())
-        modem.other = NullModem(mock.Mock())
-        modem.other.protocol = mock.Mock()
+        modem.other_transport = NullModem(mock.Mock())
+        modem.other_transport.protocol = mock.Mock()
         modem.sendto(b"abcd")
         modem.write(b"abcd")
         modem.close()

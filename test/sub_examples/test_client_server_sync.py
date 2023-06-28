@@ -58,6 +58,7 @@ class TestClientServerSyncExamples:
         ServerStop()
 
     @pytest.mark.parametrize("port_offset", [10])
+    @pytest.mark.parametrize("use_host", ["localhost"])
     @pytest.mark.parametrize(
         ("use_comm", "use_framer", "use_port"),
         USE_CASES,
@@ -72,6 +73,7 @@ class TestClientServerSyncExamples:
         ServerStop()
 
     @pytest.mark.parametrize("port_offset", [20])
+    @pytest.mark.parametrize("use_host", ["localhost"])
     @pytest.mark.parametrize(
         ("use_comm", "use_framer", "use_port"),
         USE_CASES,
@@ -92,6 +94,7 @@ class TestClientServerSyncExamples:
         ServerStop()
 
     @pytest.mark.parametrize("port_offset", [30])
+    @pytest.mark.parametrize("use_host", ["localhost"])
     @pytest.mark.parametrize(
         ("use_comm", "use_framer", "use_port"),
         USE_CASES,

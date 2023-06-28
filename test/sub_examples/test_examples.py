@@ -67,6 +67,7 @@ class TestExamples:
         test_client = setup_async_client(cmdline=cmdline)
         await run_async_client(test_client, modbus_calls=run_async_calls)
 
+    @pytest.mark.parametrize("use_host", ["localhost"])
     @pytest.mark.parametrize(
         ("use_comm", "use_framer", "use_port"),
         [

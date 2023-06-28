@@ -117,7 +117,7 @@ class TestCommModbusProtocol:
         client.transport_close()
         await asyncio.sleep(2)
         if use_comm_type != CommType.UDP:
-            assert not len(server.active_connections)
+            assert not server.active_connections
         server.transport_close()
 
     @pytest.mark.parametrize(
@@ -169,7 +169,7 @@ class TestCommModbusProtocol:
         assert server2_connected.recv_buffer == test2_data + test_data
         client2.transport_close()
         server.transport_close()
-        assert not len(server.active_connections)
+        assert not server.active_connections
 
 
 class TestCommNullModem:

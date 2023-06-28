@@ -111,12 +111,13 @@ class ModbusTcpClient(ModbusBaseClient):
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus TCP Client."""
-        super().__init__(framer=framer, **kwargs)
+        kwargs["use_sync"] = True
+        self.transport = None
+        super().__init__(framer=framer, host=host, port=port, **kwargs)
         self.params.host = host
         self.params.port = port
         self.params.source_address = source_address
         self.socket = None
-        self.use_sync = True
 
     @property
     def connected(self):

@@ -123,10 +123,10 @@ async def prepare_transport_server(commparams):
 @pytest.fixture(name="nullmodem")
 def prepare_nullmodem():
     """Prepare nullmodem object."""
-    return NullModem(False, mock.Mock())
+    return NullModem(mock.Mock())
 
 
 @pytest.fixture(name="nullmodem_server")
 def prepare_nullmodem_server():
     """Prepare nullmodem object."""
-    return NullModem(True, mock.Mock())
+    return NullModem(mock.Mock())

@@ -88,24 +88,26 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     ) -> None:
         """Initialize a client instance."""
         ModbusClientMixin.__init__(self)
-        ModbusProtocol.__init__(
-            self,
-            CommParams(
-                comm_type=kwargs.get("CommType"),
-                comm_name="comm",
-                reconnect_delay=reconnect_delay,
-                reconnect_delay_max=reconnect_delay_max,
-                timeout_connect=timeout,
-                host=kwargs.get("host", None),
-                port=kwargs.get("port", None),
-                sslctx=kwargs.get("sslctx", None),
-                baudrate=kwargs.get("baudrate", None),
-                bytesize=kwargs.get("bytesize", None),
-                parity=kwargs.get("parity", None),
-                stopbits=kwargs.get("stopbits", None),
-            ),
-            False,
-        )
+        self.use_sync = kwargs.get("use_sync", False)
+        if not self.use_sync:
+            ModbusProtocol.__init__(
+                self,
+                CommParams(
+                    comm_type=kwargs.get("CommType"),
+                    comm_name="comm",
+                    reconnect_delay=reconnect_delay,
+                    reconnect_delay_max=reconnect_delay_max,
+                    timeout_connect=timeout,
+                    host=kwargs.get("host", None),
+                    port=kwargs.get("port", None),
+                    sslctx=kwargs.get("sslctx", None),
+                    baudrate=kwargs.get("baudrate", None),
+                    bytesize=kwargs.get("bytesize", None),
+                    parity=kwargs.get("parity", None),
+                    stopbits=kwargs.get("stopbits", None),
+                ),
+                False,
+            )
         self.framer = framer
         self.params = self._params()
         self.params.timeout = float(timeout)

@@ -346,10 +346,10 @@ class ModbusProtocol(asyncio.BaseProtocol):
         client_protocol = self.handle_new_connection()
         try:
             server_protocol = NullModem.listener_new_connection[self.comm_params.port]()
-        except KeyError:
+        except KeyError as exc:
             raise asyncio.TimeoutError(
                 f"No listener on port {self.comm_params.port} for connect"
-            )
+            ) from exc
 
         client_transport = NullModem(client_protocol)
         server_transport = NullModem(server_protocol)

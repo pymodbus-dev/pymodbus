@@ -319,6 +319,7 @@ class ModbusTcpServer(Transport):
                         False to treat 0 as any other slave_id
         :param response_manipulator: Callback method for manipulating the
                                         response
+        :param loop: Optionally allow users to supply their own event loop
         """
         if not address:
             address = ("", 502)
@@ -511,6 +512,7 @@ class ModbusUdpServer(Transport):
                             False to treat 0 as any other slave_id
         :param response_manipulator: Callback method for
                             manipulating the response
+        :param loop: Optionally allow users to supply their own event loop
         """
         # ----------------
         super().__init__(
@@ -525,7 +527,7 @@ class ModbusUdpServer(Transport):
         )
 
         self.local_active_connections = {}
-        self.loop = asyncio.get_running_loop()
+        self.loop = kwargs.get("loop") or asyncio.get_event_loop()
         self.decoder = ServerDecoder()
         self.framer = framer or ModbusSocketFramer
         self.context = context or ModbusServerContext()
@@ -631,6 +633,7 @@ class ModbusSerialServer(Transport):  # pylint: disable=too-many-instance-attrib
         :param reconnect_delay: reconnect delay in seconds
         :param response_manipulator: Callback method for
                     manipulating the response
+        :param loop: Optionally allow users to supply their own event loop
         """
         super().__init__(
             CommParams(

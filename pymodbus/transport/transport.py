@@ -1,5 +1,5 @@
 """ModbusProtocol layer."""
-# mypy: disable-error-code="name-defined"
+# mypy: disable-error-code="name-defined,union-attr"
 # needed because asyncio.Server is not defined (to mypy) in v3.8.16
 from __future__ import annotations
 

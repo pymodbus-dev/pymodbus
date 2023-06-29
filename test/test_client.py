@@ -23,7 +23,7 @@ from pymodbus.framer.tls_framer import ModbusTlsFramer
 from pymodbus.transport.transport import NULLMODEM_HOST, CommType
 
 
-BASE_PORT = 6400
+BASE_PORT = 6500
 
 
 @pytest.mark.parametrize(

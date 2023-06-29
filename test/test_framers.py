@@ -14,7 +14,7 @@ from pymodbus.transport.transport import NULLMODEM_HOST, CommType
 from pymodbus.utilities import ModbusTransactionState
 
 
-BASE_PORT = 6500
+BASE_PORT = 6600
 
 
 TEST_MESSAGE = b"\x00\x01\x00\x01\x00\n\xec\x1c"

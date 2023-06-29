@@ -149,10 +149,10 @@ class TestExamples:
             ("tcp", "socket", BASE_PORT + 46),
         ],
     )
-    async def test_simple_async_client(self, use_port, mock_server):
+    async def test_simple_async_client(self, use_port, mock_server, use_host):
         """Run simple async client."""
         _cmdline = mock_server
-        await run_simple_async_client("127.0.0.1", str(use_port))
+        await run_simple_async_client(use_host, use_port)
 
     @pytest.mark.parametrize(
         ("use_comm", "use_framer", "use_port"),

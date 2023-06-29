@@ -292,11 +292,11 @@ class ModbusProtocol(asyncio.BaseProtocol):
         Log.debug("send: {}", data, ":hex")
         if self.comm_params.comm_type == CommType.UDP:
             if addr:
-                self.transport.sendto(data, addr=addr)  # type: ignore[union-attr]
+                self.transport.sendto(data, addr=addr)
             else:
-                self.transport.sendto(data)  # type: ignore[union-attr]
+                self.transport.sendto(data)
         else:
-            self.transport.write(data)  # type: ignore[union-attr]
+            self.transport.write(data)
 
     def transport_close(self, reconnect: bool = False) -> None:
         """Close connection.

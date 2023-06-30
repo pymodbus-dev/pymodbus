@@ -63,6 +63,13 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
         default=9600,
         type=int,
     )
+    parser.add_argument(
+        "--host",
+        help="set host, default is 127.0.0.1",
+        dest="host",
+        default=None,
+        type=str,
+    )
     if server:
         parser.add_argument(
             "--store",
@@ -82,14 +89,6 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
             "--context",
             help="ADVANCED USAGE: set datastore context object",
             default=None,
-        )
-    else:
-        parser.add_argument(
-            "--host",
-            help="set host, default is 127.0.0.1",
-            dest="host",
-            default="127.0.0.1",
-            type=str,
         )
     if extras:
         for extra in extras:
@@ -116,6 +115,8 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
     args.port = args.port or comm_defaults[args.comm][1]
     if args.comm != "serial" and args.port:
         args.port = int(args.port)
+    if not args.host:
+        args.host = "" if server else "127.0.0.1"
     return args
 
 

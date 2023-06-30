@@ -3,20 +3,24 @@
 
 An example of a asynchronous client.
 
-usage: client_async.py [-h] [--comm {tcp,udp,serial,tls}]
-                       [--framer {ascii,binary,rtu,socket,tls}]
-                       [--log {critical,error,warning,info,debug}]
-                       [--port PORT]
+usage: client_async.py [-h] [-c {tcp,udp,serial,tls}]
+                       [-f {ascii,binary,rtu,socket,tls}]
+                       [-l {critical,error,warning,info,debug}] [-p PORT]
+                       [--baudrate BAUDRATE] [--host HOST]
+
+Run asynchronous client.
+
 options:
   -h, --help            show this help message and exit
-  --comm {tcp,udp,serial,tls}
-                        "serial", "tcp", "udp" or "tls"
-  --framer {ascii,binary,rtu,socket,tls}
-                        "ascii", "binary", "rtu", "socket" or "tls"
-  --log {critical,error,warning,info,debug}
-                        "critical", "error", "warning", "info" or "debug"
-  --port PORT           the port to use
-  --baudrate BAUDRATE   the baud rate to use for the serial device
+  -c {tcp,udp,serial,tls}, --comm {tcp,udp,serial,tls}
+                        set communication, default is tcp
+  -f {ascii,binary,rtu,socket,tls}, --framer {ascii,binary,rtu,socket,tls}
+                        set framer, default depends on --comm
+  -l {critical,error,warning,info,debug}, --log {critical,error,warning,info,debug}
+                        set log level, default is info
+  -p PORT, --port PORT  set port
+  --baudrate BAUDRATE   set serial device baud rate
+  --host HOST           set host, default is 127.0.0.1
 
 The corresponding server must be started before e.g. as:
     python3 server_sync.py

@@ -137,6 +137,7 @@ class ModbusSerialClient(ModbusBaseClient):
     ) -> None:
         """Initialize Modbus Serial Client."""
         self.transport = None
+        kwargs["use_sync"] = True
         super().__init__(framer=framer, **kwargs)
         self.params.port = port
         self.params.baudrate = baudrate
@@ -145,7 +146,6 @@ class ModbusSerialClient(ModbusBaseClient):
         self.params.stopbits = stopbits
         self.params.handle_local_echo = handle_local_echo
         self.socket = None
-        self.use_sync = True
 
         self.last_frame_end = None
 

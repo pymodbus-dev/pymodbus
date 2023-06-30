@@ -115,6 +115,7 @@ class ModbusUdpClient(ModbusBaseClient):
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus UDP Client."""
+        kwargs["use_sync"] = True
         self.transport = None
         super().__init__(framer=framer, **kwargs)
         self.params.host = host
@@ -122,7 +123,11 @@ class ModbusUdpClient(ModbusBaseClient):
         self.params.source_address = source_address
 
         self.socket = None
-        self.use_sync = True
+
+    @property
+    def connected(self):
+        """Connect internal."""
+        return self.socket is not None
 
     def connect(self):  # pylint: disable=invalid-overridden-method
         """Connect to the modbus tcp server.

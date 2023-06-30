@@ -13,11 +13,11 @@ from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.transaction import DictTransactionManager
-from pymodbus.transport.transport import CommParams, Transport
+from pymodbus.transport.transport import CommParams, ModbusProtocol
 from pymodbus.utilities import ModbusTransactionState
 
 
-class ModbusBaseClient(ModbusClientMixin, Transport):
+class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     """**ModbusBaseClient**
 
     **Parameters common to all clients**:
@@ -88,24 +88,26 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
     ) -> None:
         """Initialize a client instance."""
         ModbusClientMixin.__init__(self)
-        Transport.__init__(
-            self,
-            CommParams(
-                comm_type=kwargs.get("CommType"),
-                comm_name="comm",
-                reconnect_delay=reconnect_delay,
-                reconnect_delay_max=reconnect_delay_max,
-                timeout_connect=timeout,
-                host=kwargs.get("host", None),
-                port=kwargs.get("port", None),
-                sslctx=kwargs.get("sslctx", None),
-                baudrate=kwargs.get("baudrate", None),
-                bytesize=kwargs.get("bytesize", None),
-                parity=kwargs.get("parity", None),
-                stopbits=kwargs.get("stopbits", None),
-            ),
-            False,
-        )
+        self.use_sync = kwargs.get("use_sync", False)
+        if not self.use_sync:
+            ModbusProtocol.__init__(
+                self,
+                CommParams(
+                    comm_type=kwargs.get("CommType"),
+                    comm_name="comm",
+                    reconnect_delay=reconnect_delay,
+                    reconnect_delay_max=reconnect_delay_max,
+                    timeout_connect=timeout,
+                    host=kwargs.get("host", None),
+                    port=kwargs.get("port", None),
+                    sslctx=kwargs.get("sslctx", None),
+                    baudrate=kwargs.get("baudrate", None),
+                    bytesize=kwargs.get("bytesize", None),
+                    parity=kwargs.get("parity", None),
+                    stopbits=kwargs.get("stopbits", None),
+                ),
+                False,
+            )
         self.framer = framer
         self.params = self._params()
         self.params.timeout = float(timeout)
@@ -130,7 +132,6 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
         )
         self.reconnect_delay = self.params.reconnect_delay
         self.reconnect_delay_current = self.params.reconnect_delay
-        self.use_sync = False
         self.use_udp = False
         self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float = 0
@@ -139,6 +140,11 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
     # ----------------------------------------------------------------------- #
     # Client external interface
     # ----------------------------------------------------------------------- #
+    @property
+    def connected(self):
+        """Connect internal."""
+        return True
+
     def register(self, custom_response_class: ModbusResponse) -> None:
         """Register a custom response class with the decoder (call **sync**).
 
@@ -172,7 +178,7 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
         :raises ConnectionException: Check exception text.
         """
         if self.use_sync:
-            if not self.connect():
+            if not self.connected:
                 raise ConnectionException(f"Failed to connect[{str(self)}]")
             return self.transaction.execute(request)
         if not self.transport:

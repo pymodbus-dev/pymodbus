@@ -3,7 +3,7 @@ import asyncio
 from unittest import mock
 
 
-class TestReconnectTransport:
+class TestReconnectModbusProtocol:
     """Test transport module, base part."""
 
     async def test_no_reconnect_call(self, client):

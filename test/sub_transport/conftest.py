@@ -1,16 +1,21 @@
 """Fixtures for transport tests."""
 import asyncio
-import dataclasses
 import os
 from contextlib import suppress
 from unittest import mock
 
 import pytest
 
-from pymodbus.transport.transport import CommParams, CommType, NullModem, Transport
+from pymodbus.transport.transport import (
+    NULLMODEM_HOST,
+    CommParams,
+    CommType,
+    ModbusProtocol,
+    NullModem,
+)
 
 
-class DummyTransport(asyncio.BaseTransport):
+class DummyProtocol(asyncio.BaseTransport):
     """Use in connection_made calls."""
 
     def transport_close(self):
@@ -35,10 +40,10 @@ class DummyTransport(asyncio.BaseTransport):
         """Define dummy."""
 
 
-@pytest.fixture(name="dummy_transport")
-def prepare_dummy_transport():
+@pytest.fixture(name="dummy_protocol")
+def prepare_dummy_protocol():
     """Return transport object"""
-    return DummyTransport()
+    return DummyProtocol()
 
 
 @pytest.fixture(name="cwd_certificate")
@@ -62,6 +67,8 @@ def prepare_dummy_use_host():
 @pytest.fixture(name="commparams")
 def prepare_commparams(use_port, use_host, use_comm_type):
     """Prepare CommParamsClass object."""
+    if use_host == NULLMODEM_HOST and use_comm_type == CommType.SERIAL:
+        use_host = f"{NULLMODEM_HOST}:{use_port}"
     return CommParams(
         comm_name="test comm",
         comm_type=use_comm_type,
@@ -78,9 +85,9 @@ def prepare_commparams(use_port, use_host, use_comm_type):
 
 
 @pytest.fixture(name="client")
-async def prepare_transport(commparams):
+async def prepare_protocol(commparams):
     """Prepare transport object."""
-    transport = Transport(commparams, False)
+    transport = ModbusProtocol(commparams, False)
     with suppress(RuntimeError):
         transport.loop = asyncio.get_running_loop()
     transport.callback_connected = mock.Mock()
@@ -99,10 +106,7 @@ async def prepare_transport(commparams):
 @pytest.fixture(name="server")
 async def prepare_transport_server(commparams):
     """Prepare transport object."""
-    if commparams.comm_type == CommType.SERIAL:
-        commparams = dataclasses.replace(commparams)
-        commparams.comm_type = CommType.TCP
-    transport = Transport(commparams, True)
+    transport = ModbusProtocol(commparams, True)
     with suppress(RuntimeError):
         transport.loop = asyncio.get_running_loop()
     transport.callback_connected = mock.Mock()
@@ -113,20 +117,16 @@ async def prepare_transport_server(commparams):
         transport.comm_params.sslctx = commparams.generate_ssl(
             True, certfile=cwd + "crt", keyfile=cwd + "key"
         )
-    elif commparams.comm_type == CommType.SERIAL:
-        serial_params = dataclasses.replace(commparams)
-        serial_params.comm_type = CommType.TCP
-        transport = Transport(serial_params, True)
     return transport
 
 
 @pytest.fixture(name="nullmodem")
 def prepare_nullmodem():
     """Prepare nullmodem object."""
-    return NullModem(False, mock.Mock())
+    return NullModem(mock.Mock())
 
 
 @pytest.fixture(name="nullmodem_server")
 def prepare_nullmodem_server():
     """Prepare nullmodem object."""
-    return NullModem(True, mock.Mock())
+    return NullModem(mock.Mock())

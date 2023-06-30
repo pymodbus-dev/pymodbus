@@ -20,6 +20,10 @@ from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
+from pymodbus.transport.transport import NULLMODEM_HOST, CommType
+
+
+BASE_PORT = 6500
 
 
 @pytest.mark.parametrize(
@@ -258,7 +262,12 @@ async def test_client_instanciate(
 
 async def test_client_modbusbaseclient():
     """Test modbus base client class."""
-    client = ModbusBaseClient(framer=ModbusAsciiFramer)
+    client = ModbusBaseClient(
+        framer=ModbusAsciiFramer,
+        host=NULLMODEM_HOST,
+        port=BASE_PORT + 1,
+        CommType=CommType.TCP,
+    )
     client.register(pdu_bit_read.ReadCoilsResponse)
     assert str(client)
     client.close()
@@ -285,7 +294,12 @@ async def test_client_base_async():
         p_connect.return_value.set_result(True)
         p_close.return_value = asyncio.Future()
         p_close.return_value.set_result(True)
-        async with ModbusBaseClient(framer=ModbusAsciiFramer) as client:
+        async with ModbusBaseClient(
+            framer=ModbusAsciiFramer,
+            host=NULLMODEM_HOST,
+            port=BASE_PORT + 2,
+            CommType=CommType.TCP,
+        ) as client:
             str(client)
         p_connect.return_value = asyncio.Future()
         p_connect.return_value.set_result(False)
@@ -331,7 +345,9 @@ async def test_client_protocol_response():
 
 async def test_client_protocol_handler():
     """Test the client protocol handles responses"""
-    base = ModbusBaseClient(framer=ModbusSocketFramer)
+    base = ModbusBaseClient(
+        framer=ModbusAsciiFramer, host=NULLMODEM_HOST, port=+3, CommType=CommType.TCP
+    )
     transport = mock.MagicMock()
     base.connection_made(transport=transport)
     reply = pdu_bit_read.ReadCoilsRequest(1, 1)

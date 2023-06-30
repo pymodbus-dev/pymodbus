@@ -10,7 +10,11 @@ from pymodbus.factory import ClientDecoder
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.binary_framer import ModbusBinaryFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
+from pymodbus.transport.transport import NULLMODEM_HOST, CommType
 from pymodbus.utilities import ModbusTransactionState
+
+
+BASE_PORT = 6600
 
 
 TEST_MESSAGE = b"\x00\x01\x00\x01\x00\n\xec\x1c"
@@ -284,7 +288,12 @@ def test_build_packet(rtu_framer):
 def test_send_packet(rtu_framer):
     """Test send packet."""
     message = TEST_MESSAGE
-    client = ModbusBaseClient(framer=ModbusRtuFramer)
+    client = ModbusBaseClient(
+        framer=ModbusAsciiFramer,
+        host=NULLMODEM_HOST,
+        port=BASE_PORT + 1,
+        CommType=CommType.TCP,
+    )
     client.state = ModbusTransactionState.TRANSACTION_COMPLETE
     client.silent_interval = 1
     client.last_frame_end = 1

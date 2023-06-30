@@ -67,6 +67,7 @@ class TestExamples:
         test_client = setup_async_client(cmdline=cmdline)
         await run_async_client(test_client, modbus_calls=run_async_calls)
 
+    @pytest.mark.parametrize("use_host", ["localhost"])
     @pytest.mark.parametrize(
         ("use_comm", "use_framer", "use_port"),
         [
@@ -84,12 +85,12 @@ class TestExamples:
             ("tcp", "socket", BASE_PORT + 42),
         ],
     )
-    async def test_payload(self, mock_cmdline):
+    async def test_payload(self, mock_clc, mock_cls):
         """Test server/client with payload."""
-        run_args = setup_payload_server(cmdline=mock_cmdline)
+        run_args = setup_payload_server(cmdline=mock_cls)
         task = asyncio.create_task(run_async_server(run_args))
         await asyncio.sleep(0.1)
-        testclient = setup_async_client(cmdline=mock_cmdline)
+        testclient = setup_async_client(cmdline=mock_clc)
         await run_async_client(testclient, modbus_calls=run_payload_calls)
         await asyncio.sleep(0.1)
         await ServerAsyncStop()
@@ -148,10 +149,10 @@ class TestExamples:
             ("tcp", "socket", BASE_PORT + 46),
         ],
     )
-    async def test_simple_async_client(self, use_port, mock_server):
+    async def test_simple_async_client(self, use_port, mock_server, use_host):
         """Run simple async client."""
         _cmdline = mock_server
-        await run_simple_async_client("127.0.0.1", str(use_port))
+        await run_simple_async_client(use_host, use_port)
 
     @pytest.mark.parametrize(
         ("use_comm", "use_framer", "use_port"),

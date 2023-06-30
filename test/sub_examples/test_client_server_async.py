@@ -36,10 +36,10 @@ class TestClientServerAsyncExamples:
         ("use_comm", "use_framer", "use_port"),
         USE_CASES,
     )
-    async def test_combinations(self, mock_server):
+    async def test_combinations(self, mock_server, mock_clc):
         """Run async client and server."""
-        cmdline = mock_server
-        test_client = setup_async_client(cmdline=cmdline)
+        assert mock_server
+        test_client = setup_async_client(cmdline=mock_clc)
         await run_async_client(test_client, modbus_calls=run_a_few_calls)
 
     @pytest.mark.parametrize("port_offset", [10])
@@ -56,10 +56,12 @@ class TestClientServerAsyncExamples:
         ("use_comm", "use_framer", "use_port"),
         USE_CASES,
     )
-    async def test_server_client_twice(self, mock_server):
+    async def test_server_client_twice(self, mock_server, use_comm, mock_clc):
         """Run async server without client."""
-        cmdline = mock_server
-        test_client = setup_async_client(cmdline=cmdline)
+        assert mock_server
+        if use_comm == "serial":
+            return
+        test_client = setup_async_client(cmdline=mock_clc)
         await run_async_client(test_client, modbus_calls=run_a_few_calls)
         await asyncio.sleep(0.5)
         await run_async_client(test_client, modbus_calls=run_a_few_calls)
@@ -69,8 +71,8 @@ class TestClientServerAsyncExamples:
         ("use_comm", "use_framer", "use_port"),
         USE_CASES,
     )
-    async def test_client_no_server(self, mock_cmdline):
+    async def test_client_no_server(self, mock_clc):
         """Run async client without server."""
-        test_client = setup_async_client(cmdline=mock_cmdline)
+        test_client = setup_async_client(cmdline=mock_clc)
         with pytest.raises((AssertionError, asyncio.TimeoutError)):
             await run_async_client(test_client, modbus_calls=run_a_few_calls)

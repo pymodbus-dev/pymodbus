@@ -9,7 +9,8 @@ Version 3.4.0
 - Modbue<x>Server handler=, allow_reuse_addr=, backlog= are no longer accepted
 - ModbusTcpClient / AsyncModbusTcpClient no longer support unix path
 - StartAsyncUnixServer / ModbusUnixServer removed (never worked on Windows)
-- ModbusTlsServer reqclicert= is not longer accepted
+- ModbusTlsServer reqclicert= is no longer accepted
+- ModbusSerialServer auto_connect= is no longer accepted
 
 
 -------------

@@ -129,4 +129,4 @@ async def run_async_client(host, port):
 
 
 if __name__ == "__main__":
-    asyncio.run(run_async_client("127.0.0.1", "5020"), debug=True)
+    asyncio.run(run_async_client("127.0.0.1", 5020), debug=True)

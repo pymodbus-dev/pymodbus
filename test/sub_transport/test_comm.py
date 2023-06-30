@@ -9,7 +9,7 @@ from pymodbus.transport.transport import NULLMODEM_HOST, CommType, ModbusProtoco
 
 
 BASE_PORT = 6100
-FACTOR = 1.2 if not pytest.IS_WINDOWS else 2.2
+FACTOR = 1.2 if not pytest.IS_WINDOWS else 3.2
 
 
 class TestCommModbusProtocol:

@@ -167,7 +167,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ReturnQueryDataRequest(msg, slave, **kwargs))
+        return self.execute(pdu_diag.ReturnQueryDataRequest(msg, slave=slave, **kwargs))
 
     def diag_restart_communication(
         self, toggle: bool, slave: int = 0, **kwargs: Any
@@ -180,7 +180,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :raises ModbusException:
         """
         return self.execute(
-            pdu_diag.RestartCommunicationsOptionRequest(toggle, slave, **kwargs)
+            pdu_diag.RestartCommunicationsOptionRequest(toggle, slave=slave, **kwargs)
         )
 
     def diag_read_diagnostic_register(
@@ -192,7 +192,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ReturnDiagnosticRegisterRequest(slave, **kwargs))
+        return self.execute(
+            pdu_diag.ReturnDiagnosticRegisterRequest(slave=slave, **kwargs)
+        )
 
     def diag_change_ascii_input_delimeter(
         self, slave: int = 0, **kwargs: Any
@@ -203,7 +205,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ChangeAsciiInputDelimiterRequest(slave, **kwargs))
+        return self.execute(
+            pdu_diag.ChangeAsciiInputDelimiterRequest(slave=slave, **kwargs)
+        )
 
     def diag_force_listen_only(self, slave: int = 0, **kwargs: Any) -> ModbusResponse:
         """Diagnose force listen only (code 0x08 sub 0x04).
@@ -212,7 +216,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ForceListenOnlyModeRequest(slave, **kwargs))
+        return self.execute(pdu_diag.ForceListenOnlyModeRequest(slave=slave, **kwargs))
 
     def diag_clear_counters(self, slave: int = 0, **kwargs: Any) -> ModbusResponse:
         """Diagnose clear counters (code 0x08 sub 0x0A).
@@ -221,7 +225,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ClearCountersRequest(slave, **kwargs))
+        return self.execute(pdu_diag.ClearCountersRequest(slave=slave, **kwargs))
 
     def diag_read_bus_message_count(
         self, slave: int = 0, **kwargs: Any
@@ -232,7 +236,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ReturnBusMessageCountRequest(slave, **kwargs))
+        return self.execute(
+            pdu_diag.ReturnBusMessageCountRequest(slave=slave, **kwargs)
+        )
 
     def diag_read_bus_comm_error_count(
         self, slave: int = 0, **kwargs: Any
@@ -244,7 +250,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :raises ModbusException:
         """
         return self.execute(
-            pdu_diag.ReturnBusCommunicationErrorCountRequest(slave, **kwargs)
+            pdu_diag.ReturnBusCommunicationErrorCountRequest(slave=slave, **kwargs)
         )
 
     def diag_read_bus_exception_error_count(
@@ -257,7 +263,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :raises ModbusException:
         """
         return self.execute(
-            pdu_diag.ReturnBusExceptionErrorCountRequest(slave, **kwargs)
+            pdu_diag.ReturnBusExceptionErrorCountRequest(slave=slave, **kwargs)
         )
 
     def diag_read_slave_message_count(
@@ -269,7 +275,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ReturnSlaveMessageCountRequest(slave, **kwargs))
+        return self.execute(
+            pdu_diag.ReturnSlaveMessageCountRequest(slave=slave, **kwargs)
+        )
 
     def diag_read_slave_no_response_count(
         self, slave: int = 0, **kwargs: Any
@@ -280,7 +288,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ReturnSlaveNoResponseCountRequest(slave, **kwargs))
+        return self.execute(
+            pdu_diag.ReturnSlaveNoResponseCountRequest(slave=slave, **kwargs)
+        )
 
     def diag_read_slave_nak_count(
         self, slave: int = 0, **kwargs: Any
@@ -291,7 +301,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ReturnSlaveNAKCountRequest(slave, **kwargs))
+        return self.execute(pdu_diag.ReturnSlaveNAKCountRequest(slave=slave, **kwargs))
 
     def diag_read_slave_busy_count(
         self, slave: int = 0, **kwargs: Any
@@ -302,7 +312,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ReturnSlaveBusyCountRequest(slave, **kwargs))
+        return self.execute(pdu_diag.ReturnSlaveBusyCountRequest(slave=slave, **kwargs))
 
     def diag_read_bus_char_overrun_count(
         self, slave: int = 0, **kwargs: Any
@@ -314,7 +324,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :raises ModbusException:
         """
         return self.execute(
-            pdu_diag.ReturnSlaveBusCharacterOverrunCountRequest(slave, **kwargs)
+            pdu_diag.ReturnSlaveBusCharacterOverrunCountRequest(slave=slave, **kwargs)
         )
 
     def diag_read_iop_overrun_count(
@@ -326,7 +336,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ReturnIopOverrunCountRequest(slave, **kwargs))
+        return self.execute(
+            pdu_diag.ReturnIopOverrunCountRequest(slave=slave, **kwargs)
+        )
 
     def diag_clear_overrun_counter(
         self, slave: int = 0, **kwargs: Any
@@ -337,7 +349,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ClearOverrunCountRequest(slave, **kwargs))
+        return self.execute(pdu_diag.ClearOverrunCountRequest(slave=slave, **kwargs))
 
     def diag_getclear_modbus_response(
         self, slave: int = 0, **kwargs: Any
@@ -348,7 +360,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.GetClearModbusPlusRequest(slave, **kwargs))
+        return self.execute(pdu_diag.GetClearModbusPlusRequest(slave=slave, **kwargs))
 
     def diag_get_comm_event_counter(self, **kwargs: Any) -> ModbusResponse:
         """Diagnose get event counter (code 0x0B).

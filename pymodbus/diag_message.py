@@ -48,7 +48,7 @@ import struct
 
 from pymodbus.constants import ModbusPlusOperation, ModbusStatus
 from pymodbus.device import ModbusControlBlock
-from pymodbus.exceptions import NotImplementedException
+from pymodbus.exceptions import ModbusException, NotImplementedException
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.utilities import pack_bitstring
 
@@ -87,7 +87,7 @@ class DiagnosticStatusRequest(ModbusRequest):
                 packet += self.message.encode()
             elif isinstance(self.message, bytes):
                 packet += self.message
-            elif isinstance(self.message, list):
+            elif isinstance(self.message, (list, tuple)):
                 for piece in self.message:
                     packet += struct.pack(">H", piece)
             elif isinstance(self.message, int):
@@ -101,8 +101,11 @@ class DiagnosticStatusRequest(ModbusRequest):
         """
         (
             self.sub_function_code,  # pylint: disable=attribute-defined-outside-init
-            self.message,
-        ) = struct.unpack(">HH", data)
+        ) = struct.unpack(">H", data[:2])
+        if self.sub_function_code == ReturnQueryDataRequest.sub_function_code:
+            self.message = data[2:]
+        else:
+            self.message = struct.unpack(">H", data[2:])
 
     def get_response_pdu_size(self):
         """Get response pdu size.
@@ -158,18 +161,19 @@ class DiagnosticStatusResponse(ModbusResponse):
 
         :param data: The data to decode into the function code
         """
-        word_len = len(data) // 2
-        if len(data) % 2:
-            word_len += 1
-            data += b"0"
-        data = struct.unpack(">" + "H" * word_len, data)
         (
             self.sub_function_code,  # pylint: disable=attribute-defined-outside-init
-            self.message,
-        ) = (
-            data[0],
-            data[1:],
-        )
+        ) = struct.unpack(">H", data[:2])
+        data = data[2:]
+        if self.sub_function_code == ReturnQueryDataRequest.sub_function_code:
+            self.message = data
+        else:
+            word_len = len(data) // 2
+            if len(data) % 2:
+                word_len += 1
+                data += b"0"
+            data = struct.unpack(">" + "H" * word_len, data)
+            self.message = data
 
 
 class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
@@ -231,16 +235,15 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
 
     sub_function_code = 0x0000
 
-    def __init__(self, message=0x0000, slave=None, **kwargs):
+    def __init__(self, message=b"\x00\x00", slave=None, **kwargs):
         """Initialize a new instance of the request.
 
         :param message: The message to send to loopback
         """
         DiagnosticStatusRequest.__init__(self, slave=slave, **kwargs)
-        if isinstance(message, list):
-            self.message = message
-        else:
-            self.message = [message]
+        if not isinstance(message, bytes):
+            raise ModbusException(f"message({type(message)}) must be bytes")
+        self.message = message
 
     def execute(self, *_args):
         """Execute the loopback request (builds the response).
@@ -260,16 +263,15 @@ class ReturnQueryDataResponse(DiagnosticStatusResponse):
 
     sub_function_code = 0x0000
 
-    def __init__(self, message=0x0000, **kwargs):
+    def __init__(self, message=b"\x00\x00", **kwargs):
         """Initialize a new instance of the response.
 
         :param message: The message to loopback
         """
         DiagnosticStatusResponse.__init__(self, **kwargs)
-        if isinstance(message, list):
-            self.message = message
-        else:
-            self.message = [message]
+        if not isinstance(message, bytes):
+            raise ModbusException(f"message({type(message)}) must be bytes")
+        self.message = message
 
 
 # ---------------------------------------------------------------------------#

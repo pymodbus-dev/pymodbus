@@ -33,7 +33,7 @@ BASE_PORT = 6500
             {},
             {"address": 0x01},
             {"address": 0x01, "value": False},
-            {"msg": "long message"},
+            {"msg": b"long message"},
             {"toggle": False},
             {"address": 0x01, "values": [False, True]},
             {"address": 0x01, "values": [22, 44]},

@@ -124,6 +124,33 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 traceback.format_exc(),
             )
 
+    async def inner_handle(self):
+        """Handle handler."""
+        slaves = self.server.context.slaves()
+        # this is an asyncio.Queue await, it will never fail
+        data = await self._recv_()
+        if isinstance(data, tuple):
+            # addr is populated when talking over UDP
+            data, *addr = data
+        else:
+            addr = (None,)  # empty tuple
+
+        # if broadcast is enabled make sure to
+        # process requests to address 0
+        if self.server.broadcast_enable:  # pragma: no cover
+            if 0 not in slaves:
+                slaves.append(0)
+
+        Log.debug("Handling data: {}", data, ":hex")
+
+        single = self.server.context.single
+        self.framer.processIncomingPacket(
+            data=data,
+            callback=lambda x: self.execute(x, *addr),
+            slave=slaves,
+            single=single,
+        )
+
     async def handle(self):
         """Return Asyncio coroutine which represents a single conversation.
 
@@ -145,31 +172,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
         reset_frame = False
         while self.running:
             try:
-                slaves = self.server.context.slaves()
-                # this is an asyncio.Queue await, it will never fail
-                data = await self._recv_()
-                if isinstance(data, tuple):
-                    # addr is populated when talking over UDP
-                    data, *addr = data
-                else:
-                    addr = (None,)  # empty tuple
-
-                # if broadcast is enabled make sure to
-                # process requests to address 0
-                if self.server.broadcast_enable:  # pragma: no cover
-                    if 0 not in slaves:
-                        slaves.append(0)
-
-                Log.debug("Handling data: {}", data, ":hex")
-
-                single = self.server.context.single
-                self.framer.processIncomingPacket(
-                    data=data,
-                    callback=lambda x: self.execute(x, *addr),
-                    slave=slaves,
-                    single=single,
-                )
-
+                await self.inner_handle()
             except asyncio.CancelledError:
                 # catch and ignore cancellation errors
                 if self.running:
@@ -251,7 +254,6 @@ class ModbusServerRequestHandler(ModbusProtocol):
         if kwargs.get("skip_encoding", False):
             __send(message, *addr)
         elif message.should_respond:
-            # self.server.control.Counter.BusMessage += 1
             pdu = self.framer.buildPacket(message)
             __send(pdu, *addr)
         else:
@@ -394,10 +396,12 @@ class ModbusTcpServer(ModbusProtocol):
         active_connecions = self.local_active_connections.copy()
         for k_item, v_item in active_connecions.items():
             Log.warning("aborting active session {}", k_item)
-            v_item.transport.close()
-            await asyncio.sleep(0.1)
-            v_item.handler_task.cancel()
-            await v_item.handler_task
+            if v_item.transport:
+                v_item.transport.close()
+                await asyncio.sleep(0.1)
+            if v_item.handler_task:
+                v_item.handler_task.cancel()
+                await v_item.handler_task
         self.local_active_connections = {}
         self.transport_close()
 

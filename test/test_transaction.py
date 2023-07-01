@@ -468,19 +468,19 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tls._process = mock.MagicMock()  # pylint: disable=protected-access
         self._tls.isFrameReady = mock.MagicMock(return_value=False)
         self._tls.processIncomingPacket(msg, mock_callback, slave)
-        assert msg == self._tls.getRawFrame()
+        assert msg == self._tls._buffer  # pylint: disable=protected-access
         self._tls.advanceFrame()
 
         self._tls.isFrameReady = mock.MagicMock(return_value=True)
         x = mock.MagicMock(return_value=False)
         self._tls._validate_slave_id = x  # pylint: disable=protected-access
         self._tls.processIncomingPacket(msg, mock_callback, slave)
-        assert not self._tls.getRawFrame()
+        assert not self._tls._buffer  # pylint: disable=protected-access
         self._tls.advanceFrame()
         x = mock.MagicMock(return_value=True)
         self._tls._validate_slave_id = x  # pylint: disable=protected-access
         self._tls.processIncomingPacket(msg, mock_callback, slave)
-        assert msg == self._tls.getRawFrame()
+        assert msg == self._tls._buffer  # pylint: disable=protected-access
         self._tls.advanceFrame()
 
     def test_framer_tls_process(self):
@@ -507,7 +507,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
                 mock_callback, error=True
             )
         self._tls._process(mock_callback)  # pylint: disable=protected-access
-        assert not self._tls.getRawFrame()
+        assert not self._tls._buffer  # pylint: disable=protected-access
 
     def test_framer_tls_framer_populate(self):
         """Test a tls frame packet build"""
@@ -516,10 +516,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tls.addToFrame(msg)
         assert self._tls.checkFrame()
         actual = ModbusRequest()
-        result = self._tls.populateResult(  # pylint: disable=assignment-from-none
-            actual
-        )
-        assert not result
+        self._tls.populateResult(actual)
         self._tls.advanceFrame()
 
     def test_framer_tls_framer_packet(self):
@@ -618,7 +615,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
             """Mock callback."""
 
         mock_result = MockResult(code=0)
-        self._rtu.getRawFrame = self._rtu.getFrame = mock.MagicMock()
+        self._rtu.getFrame = mock.MagicMock()
         self._rtu.decoder = mock.MagicMock()
         self._rtu.decoder.decode = mock.MagicMock(return_value=mock_result)
         self._rtu.populateResult = mock.MagicMock()

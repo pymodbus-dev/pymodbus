@@ -42,8 +42,6 @@ class ModbusSocketFramer(ModbusFramer):
         :param decoder: The decoder factory implementation to use
         """
         super().__init__(decoder, client)
-        self._buffer = b""
-        self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
         self._hsize = 0x07
 
     # ----------------------------------------------------------------------- #
@@ -92,13 +90,6 @@ class ModbusSocketFramer(ModbusFramer):
         """
         return len(self._buffer) > self._hsize
 
-    def addToFrame(self, message):
-        """Add new packet data to the current frame buffer.
-
-        :param message: The most recent packet
-        """
-        self._buffer += message
-
     def getFrame(self):
         """Return the next frame from the buffered data.
 
@@ -106,18 +97,6 @@ class ModbusSocketFramer(ModbusFramer):
         """
         length = self._hsize + self._header["len"] - 1
         return self._buffer[self._hsize : length]
-
-    def populateResult(self, result):
-        """Populate the modbus result.
-
-        With the transport specific header
-        information (pid, tid, uid, checksum, etc)
-
-        :param result: The response packet
-        """
-        result.transaction_id = self._header["tid"]
-        result.protocol_id = self._header["pid"]
-        result.slave_id = self._header["uid"]
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
@@ -137,7 +116,7 @@ class ModbusSocketFramer(ModbusFramer):
             }
         return {}
 
-    def processIncomingPacket(self, data, callback, slave, tid: int = None, **kwargs):
+    def frameProcessIncomingPacket(self, data, callback, slave, tid=None, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -174,7 +153,7 @@ class ModbusSocketFramer(ModbusFramer):
 
     def _process(self, callback, tid, error=False):
         """Process incoming packets irrespective error condition."""
-        data = self.getRawFrame() if error else self.getFrame()
+        data = self._buffer if error else self.getFrame()
         if (result := self.decoder.decode(data)) is None:
             self.resetFrame()
             raise ModbusIOException("Unable to decode request")
@@ -186,22 +165,6 @@ class ModbusSocketFramer(ModbusFramer):
             self.resetFrame()
         else:
             callback(result)  # defer or push to a thread?
-
-    def resetFrame(self):
-        """Reset the entire message frame.
-
-        This allows us to skip ovver errors that may be in the stream.
-        It is hard to know if we are simply out of sync or if there is
-        an error in the stream as we have no way to check the start or
-        end of the message (python just doesn't have the resolution to
-        check for millisecond delays).
-        """
-        self._buffer = b""
-        self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
-
-    def getRawFrame(self):
-        """Return the complete buffer."""
-        return self._buffer
 
     def buildPacket(self, message):
         """Create a ready to send modbus packet.

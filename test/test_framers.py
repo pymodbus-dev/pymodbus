@@ -55,15 +55,21 @@ def test_framer_initialization(framer):
     assert framer.decoder == decoder
     if isinstance(framer, ModbusAsciiFramer):
         assert framer._header == {  # pylint: disable=protected-access
+            "tid": 0,
+            "pid": 0,
             "lrc": "0000",
             "len": 0,
             "uid": 0x00,
+            "crc": b"\x00\x00",
         }
         assert framer._hsize == 0x02  # pylint: disable=protected-access
         assert framer._start == b":"  # pylint: disable=protected-access
         assert framer._end == b"\r\n"  # pylint: disable=protected-access
     elif isinstance(framer, ModbusRtuFramer):
         assert framer._header == {  # pylint: disable=protected-access
+            "tid": 0,
+            "pid": 0,
+            "lrc": "0000",
             "uid": 0x00,
             "len": 0,
             "crc": b"\x00\x00",
@@ -73,7 +79,10 @@ def test_framer_initialization(framer):
         assert framer._min_frame_size == 4  # pylint: disable=protected-access
     else:
         assert framer._header == {  # pylint: disable=protected-access
-            "crc": 0x0000,
+            "tid": 0,
+            "pid": 0,
+            "lrc": "0000",
+            "crc": b"\x00\x00",
             "len": 0,
             "uid": 0x00,
         }
@@ -143,9 +152,12 @@ def test_rtu_reset_framer(rtu_framer, data):
     rtu_framer._buffer = data  # pylint: disable=protected-access
     rtu_framer.resetFrame()
     assert rtu_framer._header == {  # pylint: disable=protected-access
-        "uid": 0x00,
-        "len": 0,
+        "lrc": "0000",
         "crc": b"\x00\x00",
+        "len": 0,
+        "uid": 0x00,
+        "pid": 0,
+        "tid": 0,
     }
 
 
@@ -190,11 +202,25 @@ def test_rtu_populate_header_fail(rtu_framer, data):
     [
         (
             b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD",
-            {"crc": b"\x49\xAD", "uid": 17, "len": 11},
+            {
+                "crc": b"\x49\xAD",
+                "uid": 17,
+                "len": 11,
+                "lrc": "0000",
+                "tid": 17,
+                "pid": 0,
+            },
         ),
         (
             b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x11\x03",
-            {"crc": b"\x49\xAD", "uid": 17, "len": 11},
+            {
+                "crc": b"\x49\xAD",
+                "uid": 17,
+                "len": 11,
+                "lrc": "0000",
+                "tid": 17,
+                "pid": 0,
+            },
         ),
     ],
 )
@@ -321,15 +347,6 @@ def test_process(rtu_framer):
     rtu_framer._buffer = TEST_MESSAGE  # pylint: disable=protected-access
     with pytest.raises(ModbusIOException):
         rtu_framer._process(None)  # pylint: disable=protected-access
-
-
-def test_get_raw_frame(rtu_framer):
-    """Test get raw frame."""
-    rtu_framer._buffer = TEST_MESSAGE  # pylint: disable=protected-access
-    assert (
-        rtu_framer.getRawFrame()
-        == rtu_framer._buffer  # pylint: disable=protected-access
-    )
 
 
 def test_validate__slave_id(rtu_framer):

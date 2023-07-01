@@ -59,8 +59,6 @@ class ModbusRtuFramer(ModbusFramer):
         :param decoder: The decoder factory implementation to use
         """
         super().__init__(decoder, client)
-        self._buffer = b""
-        self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
         self._hsize = 0x01
         self._end = b"\x0d\x0a"
         self._min_frame_size = 4
@@ -115,11 +113,9 @@ class ModbusRtuFramer(ModbusFramer):
         end of the message (python just doesn't have the resolution to
         check for millisecond delays).
         """
-        Log.debug(
-            "Resetting frame - Current Frame in buffer - {}", self._buffer, ":hex"
-        )
-        # self._buffer = b""
-        self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
+        x = self._buffer
+        super().resetFrame()
+        self._buffer = x
 
     def isFrameReady(self):
         """Check if we should continue decode logic.
@@ -152,6 +148,7 @@ class ModbusRtuFramer(ModbusFramer):
         """
         data = data if data is not None else self._buffer
         self._header["uid"] = int(data[0])
+        self._header["tid"] = int(data[0])
         size = self.get_expected_response_length(data)
         self._header["len"] = size
 
@@ -160,13 +157,6 @@ class ModbusRtuFramer(ModbusFramer):
             raise IndexError
         self._header["crc"] = data[size - 2 : size]
         return size
-
-    def addToFrame(self, message):
-        """Add the received data to the buffer handle.
-
-        :param message: The most recent packet
-        """
-        self._buffer += message
 
     def getFrame(self):
         """Get the next frame from the buffer.
@@ -190,7 +180,7 @@ class ModbusRtuFramer(ModbusFramer):
         :param result: The response packet
         """
         result.slave_id = self._header["uid"]
-        result.transaction_id = self._header["uid"]
+        result.transaction_id = self._header["tid"]
 
     def getFrameStart(self, slaves, broadcast, skip_cur_frame):
         """Scan buffer for a relevant frame start."""
@@ -215,7 +205,7 @@ class ModbusRtuFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(self, data, callback, slave, **kwargs):
+    def frameProcessIncomingPacket(self, data, callback, slave, _tid=None, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -329,7 +319,7 @@ class ModbusRtuFramer(ModbusFramer):
 
     def _process(self, callback, error=False):
         """Process incoming packets irrespective error condition."""
-        data = self.getRawFrame() if error else self.getFrame()
+        data = self._buffer if error else self.getFrame()
         if (result := self.decoder.decode(data)) is None:
             raise ModbusIOException("Unable to decode request")
         if error and result.function_code < 0x80:
@@ -337,11 +327,6 @@ class ModbusRtuFramer(ModbusFramer):
         self.populateResult(result)
         self.advanceFrame()
         callback(result)  # defer or push to a thread?
-
-    def getRawFrame(self):
-        """Return the complete buffer."""
-        Log.debug("Getting Raw Frame - {}", self._buffer, ":hex")
-        return self._buffer
 
     def get_expected_response_length(self, data):
         """Get the expected response length.

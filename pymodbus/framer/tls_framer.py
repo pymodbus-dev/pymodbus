@@ -34,8 +34,6 @@ class ModbusTlsFramer(ModbusFramer):
         :param decoder: The decoder factory implementation to use
         """
         super().__init__(decoder, client)
-        self._buffer = b""
-        self._header = {}
         self._hsize = 0x0
 
     # ----------------------------------------------------------------------- #
@@ -73,23 +71,12 @@ class ModbusTlsFramer(ModbusFramer):
         """
         return len(self._buffer) > self._hsize
 
-    def addToFrame(self, message):
-        """Add new packet data to the current frame buffer.
-
-        :param message: The most recent packet
-        """
-        self._buffer += message
-
     def getFrame(self):
         """Return the next frame from the buffered data.
 
         :returns: The next full frame buffer
         """
         return self._buffer[self._hsize :]
-
-    def populateResult(self, _result):
-        """Populate the modbus result."""
-        return
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
@@ -101,7 +88,7 @@ class ModbusTlsFramer(ModbusFramer):
             return {"fcode": fcode}
         return {}
 
-    def processIncomingPacket(self, data, callback, slave, **kwargs):
+    def frameProcessIncomingPacket(self, data, callback, slave, _tid=None, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -139,7 +126,7 @@ class ModbusTlsFramer(ModbusFramer):
 
     def _process(self, callback, error=False):
         """Process incoming packets irrespective error condition."""
-        data = self.getRawFrame() if error else self.getFrame()
+        data = self._buffer if error else self.getFrame()
         if (result := self.decoder.decode(data)) is None:
             raise ModbusIOException("Unable to decode request")
         if error and result.function_code < 0x80:
@@ -147,21 +134,6 @@ class ModbusTlsFramer(ModbusFramer):
         self.populateResult(result)
         self.advanceFrame()
         callback(result)  # defer or push to a thread?
-
-    def resetFrame(self):
-        """Reset the entire message frame.
-
-        This allows us to skip ovver errors that may be in the stream.
-        It is hard to know if we are simply out of sync or if there is
-        an error in the stream as we have no way to check the start or
-        end of the message (python just doesn't have the resolution to
-        check for millisecond delays).
-        """
-        self._buffer = b""
-
-    def getRawFrame(self):
-        """Return the complete buffer."""
-        return self._buffer
 
     def buildPacket(self, message):
         """Create a ready to send modbus packet.

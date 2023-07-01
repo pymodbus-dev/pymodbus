@@ -88,7 +88,7 @@ class ReadExceptionStatusResponse(ModbusResponse):
         :param status: The status response to report
         """
         ModbusResponse.__init__(self, **kwargs)
-        self.status = status
+        self.status = status if status < 256 else 255
 
     def encode(self):
         """Encode the response.

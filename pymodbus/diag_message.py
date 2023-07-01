@@ -105,7 +105,7 @@ class DiagnosticStatusRequest(ModbusRequest):
         if self.sub_function_code == ReturnQueryDataRequest.sub_function_code:
             self.message = data[2:]
         else:
-            self.message = struct.unpack(">H", data[2:])
+            (self.message,) = struct.unpack(">H", data[2:])
 
     def get_response_pdu_size(self):
         """Get response pdu size.

@@ -224,7 +224,7 @@ async def _execute_information_requests(client):
 async def _execute_diagnostic_requests(client):
     """Execute extended diagnostic requests."""
     _logger.info("### Running diagnostic requests.")
-    message = b"long test"
+    message = b"OK"
     rr = _check_call(
         await client.execute(
             req_diag.ReturnQueryDataRequest(message=message, slave=SLAVE)

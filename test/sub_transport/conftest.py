@@ -64,8 +64,27 @@ def prepare_dummy_use_host():
     return "localhost"
 
 
-@pytest.fixture(name="commparams")
-def prepare_commparams(use_port, use_host, use_comm_type):
+@pytest.fixture(name="use_cls")
+def prepare_commparams_server(use_port, use_host, use_comm_type):
+    """Prepare CommParamsClass object."""
+    if use_host == NULLMODEM_HOST and use_comm_type == CommType.SERIAL:
+        use_host = f"{NULLMODEM_HOST}:{use_port}"
+    return CommParams(
+        comm_name="test comm",
+        comm_type=use_comm_type,
+        reconnect_delay=0,
+        reconnect_delay_max=0,
+        timeout_connect=0,
+        source_address=(use_host, use_port),
+        baudrate=9600,
+        bytesize=8,
+        parity="E",
+        stopbits=2,
+    )
+
+
+@pytest.fixture(name="use_clc")
+def prepare_commparams_client(use_port, use_host, use_comm_type):
     """Prepare CommParamsClass object."""
     if use_host == NULLMODEM_HOST and use_comm_type == CommType.SERIAL:
         use_host = f"{NULLMODEM_HOST}:{use_port}"
@@ -85,36 +104,36 @@ def prepare_commparams(use_port, use_host, use_comm_type):
 
 
 @pytest.fixture(name="client")
-async def prepare_protocol(commparams):
+async def prepare_protocol(use_clc):
     """Prepare transport object."""
-    transport = ModbusProtocol(commparams, False)
+    transport = ModbusProtocol(use_clc, False)
     with suppress(RuntimeError):
         transport.loop = asyncio.get_running_loop()
     transport.callback_connected = mock.Mock()
     transport.callback_disconnected = mock.Mock()
     transport.callback_data = mock.Mock(return_value=0)
-    if commparams.comm_type == CommType.TLS:
+    if use_clc.comm_type == CommType.TLS:
         cwd = os.path.dirname(__file__) + "/../../examples/certificates/pymodbus."
-        transport.comm_params.sslctx = commparams.generate_ssl(
+        transport.comm_params.sslctx = use_clc.generate_ssl(
             False, certfile=cwd + "crt", keyfile=cwd + "key"
         )
-    if commparams.comm_type == CommType.SERIAL:
+    if use_clc.comm_type == CommType.SERIAL:
         transport.comm_params.host = f"socket://localhost:{transport.comm_params.port}"
     return transport
 
 
 @pytest.fixture(name="server")
-async def prepare_transport_server(commparams):
+async def prepare_transport_server(use_cls):
     """Prepare transport object."""
-    transport = ModbusProtocol(commparams, True)
+    transport = ModbusProtocol(use_cls, True)
     with suppress(RuntimeError):
         transport.loop = asyncio.get_running_loop()
     transport.callback_connected = mock.Mock()
     transport.callback_disconnected = mock.Mock()
     transport.callback_data = mock.Mock(return_value=0)
-    if commparams.comm_type == CommType.TLS:
+    if use_cls.comm_type == CommType.TLS:
         cwd = os.path.dirname(__file__) + "/../../examples/certificates/pymodbus."
-        transport.comm_params.sslctx = commparams.generate_ssl(
+        transport.comm_params.sslctx = use_cls.generate_ssl(
             True, certfile=cwd + "crt", keyfile=cwd + "key"
         )
     return transport

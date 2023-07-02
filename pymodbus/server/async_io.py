@@ -50,8 +50,8 @@ class ModbusServerRequestHandler(ModbusProtocol):
             reconnect_delay=0.0,
             reconnect_delay_max=0.0,
             timeout_connect=0.0,
-            host=owner.comm_params.host,
-            port=owner.comm_params.port,
+            host=owner.comm_params.source_address[0],
+            port=owner.comm_params.source_address[1],
         )
         super().__init__(params, True)
         self.server = owner
@@ -338,8 +338,8 @@ class ModbusTcpServer(ModbusProtocol):
                 timeout_connect=0.0,
             ),
         )
-        params.host = address[0]
-        params.port = address[1]
+        params.source_address = address
+
         super().__init__(
             params,
             True,
@@ -515,8 +515,7 @@ class ModbusUdpServer(ModbusProtocol):
             CommParams(
                 comm_type=CommType.UDP,
                 comm_name="server_listener",
-                host=address[0],
-                port=address[1],
+                source_address=address,
                 reconnect_delay=0.0,
                 reconnect_delay_max=0.0,
                 timeout_connect=0.0,
@@ -619,7 +618,7 @@ class ModbusSerialServer(ModbusProtocol):
                 reconnect_delay=kwargs.get("reconnect_delay", 2),
                 reconnect_delay_max=0.0,
                 timeout_connect=kwargs.get("timeout", 3),
-                host=kwargs.get("port", 0),
+                source_address=(kwargs.get("port", 0), 0),
                 bytesize=kwargs.get("bytesize", 8),
                 parity=kwargs.get("parity", "N"),
                 baudrate=kwargs.get("baudrate", 19200),

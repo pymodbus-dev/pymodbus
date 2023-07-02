@@ -248,7 +248,7 @@ class ModbusRtuFramer(ModbusFramer):
         :return:
         """
         start = time.time()
-        timeout = start + self.client.params.timeout
+        timeout = start + self.client.comm_params.timeout_connect
         while self.client.state != ModbusTransactionState.IDLE:
             if self.client.state == ModbusTransactionState.TRANSACTION_COMPLETE:
                 timestamp = round(time.time(), 6)
@@ -272,7 +272,7 @@ class ModbusRtuFramer(ModbusFramer):
             elif self.client.state == ModbusTransactionState.RETRYING:
                 # Simple lets settle down!!!
                 # To check for higher baudrates
-                time.sleep(self.client.params.timeout)
+                time.sleep(self.client.comm_params.timeout_connect)
                 break
             elif time.time() > timeout:
                 Log.debug(

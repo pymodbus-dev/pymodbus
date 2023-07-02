@@ -54,7 +54,6 @@ class AsyncModbusUdpClient(
         ModbusBaseClient.__init__(
             self, framer=framer, CommType=CommType.UDP, host=host, port=port, **kwargs
         )
-        self.params.port = port
         self.params.source_address = source_address
 
     @property
@@ -117,9 +116,9 @@ class ModbusUdpClient(ModbusBaseClient):
         """Initialize Modbus UDP Client."""
         kwargs["use_sync"] = True
         self.transport = None
-        super().__init__(framer=framer, **kwargs)
-        self.params.host = host
-        self.params.port = port
+        super().__init__(
+            framer=framer, port=port, host=host, CommType=CommType.UDP, **kwargs
+        )
         self.params.source_address = source_address
 
         self.socket = None
@@ -137,9 +136,9 @@ class ModbusUdpClient(ModbusBaseClient):
         if self.socket:
             return True
         try:
-            family = ModbusUdpClient._get_address_family(self.params.host)
+            family = ModbusUdpClient._get_address_family(self.comm_params.host)
             self.socket = socket.socket(family, socket.SOCK_DGRAM)
-            self.socket.settimeout(self.params.timeout)
+            self.socket.settimeout(self.comm_params.timeout_connect)
         except OSError as exc:
             Log.error("Unable to create udp socket {}", exc)
             self.close()
@@ -161,7 +160,9 @@ class ModbusUdpClient(ModbusBaseClient):
         if not self.socket:
             raise ConnectionException(str(self))
         if request:
-            return self.socket.sendto(request, (self.params.host, self.params.port))
+            return self.socket.sendto(
+                request, (self.comm_params.host, self.comm_params.port)
+            )
         return 0
 
     def recv(self, size):
@@ -183,11 +184,11 @@ class ModbusUdpClient(ModbusBaseClient):
 
     def __str__(self):
         """Build a string representation of the connection."""
-        return f"ModbusUdpClient({self.params.host}:{self.params.port})"
+        return f"ModbusUdpClient({self.comm_params.host}:{self.comm_params.port})"
 
     def __repr__(self):
         """Return string representation."""
         return (
             f"<{self.__class__.__name__} at {hex(id(self))} socket={self.socket}, "
-            f"ipaddr={self.params.host}, port={self.params.port}, timeout={self.params.timeout}>"
+            f"ipaddr={self.comm_params.host}, port={self.comm_params.port}, timeout={self.comm_params.timeout_connect}>"
         )

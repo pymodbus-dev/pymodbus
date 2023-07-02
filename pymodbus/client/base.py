@@ -52,9 +52,6 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     class _params:
         """Parameter class."""
 
-        host: str = None
-        port: str | int = None
-        timeout: float = None
         retries: int = None
         retry_on_empty: bool = None
         close_comm_on_error: bool = None
@@ -62,10 +59,6 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         broadcast_enable: bool = None
         reconnect_delay: int = None
 
-        baudrate: int = None
-        bytesize: int = None
-        parity: str = None
-        stopbits: int = None
         handle_local_echo: bool = None
 
         source_address: tuple[str, int] = None
@@ -89,28 +82,31 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         """Initialize a client instance."""
         ModbusClientMixin.__init__(self)
         self.use_sync = kwargs.get("use_sync", False)
+        setup_params = CommParams(
+            comm_type=kwargs.get("CommType"),
+            comm_name="comm",
+            source_address=kwargs.get("source_address", ("localhost", 0)),
+            reconnect_delay=reconnect_delay,
+            reconnect_delay_max=reconnect_delay_max,
+            timeout_connect=timeout,
+            host=kwargs.get("host", None),
+            port=kwargs.get("port", None),
+            sslctx=kwargs.get("sslctx", None),
+            baudrate=kwargs.get("baudrate", None),
+            bytesize=kwargs.get("bytesize", None),
+            parity=kwargs.get("parity", None),
+            stopbits=kwargs.get("stopbits", None),
+        )
         if not self.use_sync:
             ModbusProtocol.__init__(
                 self,
-                CommParams(
-                    comm_type=kwargs.get("CommType"),
-                    comm_name="comm",
-                    reconnect_delay=reconnect_delay,
-                    reconnect_delay_max=reconnect_delay_max,
-                    timeout_connect=timeout,
-                    host=kwargs.get("host", None),
-                    port=kwargs.get("port", None),
-                    sslctx=kwargs.get("sslctx", None),
-                    baudrate=kwargs.get("baudrate", None),
-                    bytesize=kwargs.get("bytesize", None),
-                    parity=kwargs.get("parity", None),
-                    stopbits=kwargs.get("stopbits", None),
-                ),
+                setup_params,
                 False,
             )
+        else:
+            self.comm_params = setup_params
         self.framer = framer
         self.params = self._params()
-        self.params.timeout = float(timeout)
         self.params.retries = int(retries)
         self.params.retry_on_empty = bool(retry_on_empty)
         self.params.close_comm_on_error = bool(close_comm_on_error)
@@ -199,7 +195,9 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             resp = b"Broadcast write sent - no response expected"
         else:
             try:
-                resp = await asyncio.wait_for(req, timeout=self.params.timeout)
+                resp = await asyncio.wait_for(
+                    req, timeout=self.comm_params.timeout_connect
+                )
             except asyncio.exceptions.TimeoutError:
                 self.close(reconnect=True)
                 raise
@@ -315,4 +313,6 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
 
         :returns: The string representation
         """
-        return f"{self.__class__.__name__} {self.params.host}:{self.params.port}"
+        return (
+            f"{self.__class__.__name__} {self.comm_params.host}:{self.comm_params.port}"
+        )

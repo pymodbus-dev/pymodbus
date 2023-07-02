@@ -47,8 +47,7 @@ class ModbusBinaryFramer(ModbusFramer):
         :param decoder: The decoder implementation to use
         """
         super().__init__(decoder, client)
-        self._buffer = b""
-        self._header = {"crc": 0x0000, "len": 0, "uid": 0x00}
+        # self._header.update({"crc": 0x0000})
         self._hsize = 0x01
         self._start = b"\x7b"  # {
         self._end = b"\x7d"  # }
@@ -104,16 +103,6 @@ class ModbusBinaryFramer(ModbusFramer):
         """
         return len(self._buffer) > 1
 
-    def addToFrame(self, message):
-        """Add the next message to the frame buffer.
-
-        This should be used before the decoding while loop to add the received
-        data to the buffer handle.
-
-        :param message: The most recent packet
-        """
-        self._buffer += message
-
     def getFrame(self):
         """Get the next frame from the buffer.
 
@@ -126,42 +115,11 @@ class ModbusBinaryFramer(ModbusFramer):
             return buffer
         return b""
 
-    def populateResult(self, result):
-        """Populate the modbus result header.
-
-        The serial packets do not have any header information
-        that is copied.
-
-        :param result: The response packet
-        """
-        result.slave_id = self._header["uid"]
-
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(self, data, callback, slave, **kwargs):
-        """Process new packet pattern.
-
-        This takes in a new request packet, adds it to the current
-        packet stream, and performs framing on it. That is, checks
-        for complete messages, and once found, will process all that
-        exist.  This handles the case when we read N + 1 or 1 // N
-        messages at a time instead of 1.
-
-        The processed and decoded messages are pushed to the callback
-        function to process and send.
-
-        :param data: The new packet data
-        :param callback: The function to send results to
-        :param slave: Process if slave id matches, ignore otherwise (could be a
-               list of slave ids (server) or single slave id(client/server)
-        :param kwargs:
-        :raises ModbusIOException:
-        """
-        self.addToFrame(data)
-        if not isinstance(slave, (list, tuple)):
-            slave = [slave]
-        single = kwargs.get("single", False)
+    def frameProcessIncomingPacket(self, single, callback, slave, _tid=None, **kwargs):
+        """Process new packet pattern."""
         while self.isFrameReady():
             if not self.checkFrame():
                 Log.debug("Frame check failed, ignoring!!")
@@ -208,18 +166,6 @@ class ModbusBinaryFramer(ModbusFramer):
                 array.append(item)
             array.append(item)
         return bytes(array)
-
-    def resetFrame(self):
-        """Reset the entire message frame.
-
-        This allows us to skip ovver errors that may be in the stream.
-        It is hard to know if we are simply out of sync or if there is
-        an error in the stream as we have no way to check the start or
-        end of the message (python just doesn't have the resolution to
-        check for millisecond delays).
-        """
-        self._buffer = b""
-        self._header = {"crc": 0x0000, "len": 0, "uid": 0x00}
 
 
 # __END__

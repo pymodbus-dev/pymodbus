@@ -287,7 +287,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         msg = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
         assert not self._tcp.isFrameReady()
         assert not self._tcp.checkFrame()
-        self._tcp.addToFrame(msg)
+        self._tcp._buffer = msg  # pylint: disable=protected-access
         assert self._tcp.isFrameReady()
         assert self._tcp.checkFrame()
         self._tcp.advanceFrame()
@@ -298,7 +298,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     def test_tcp_framer_transaction_full(self):
         """Test a full tcp frame transaction"""
         msg = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
-        self._tcp.addToFrame(msg)
+        self._tcp._buffer = msg  # pylint: disable=protected-access
         assert self._tcp.checkFrame()
         result = self._tcp.getFrame()
         assert result == msg[7:]
@@ -308,11 +308,11 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test a half completed tcp frame transaction"""
         msg1 = b"\x00\x01\x12\x34\x00"
         msg2 = b"\x04\xff\x02\x12\x34"
-        self._tcp.addToFrame(msg1)
+        self._tcp._buffer = msg1  # pylint: disable=protected-access
         assert not self._tcp.checkFrame()
         result = self._tcp.getFrame()
         assert result == b""
-        self._tcp.addToFrame(msg2)
+        self._tcp._buffer += msg2
         assert self._tcp.checkFrame()
         result = self._tcp.getFrame()
         assert result == msg2[2:]
@@ -322,11 +322,11 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test a half completed tcp frame transaction"""
         msg1 = b"\x00\x01\x12\x34\x00\x04\xff"
         msg2 = b"\x02\x12\x34"
-        self._tcp.addToFrame(msg1)
+        self._tcp._buffer = msg1  # pylint: disable=protected-access
         assert not self._tcp.checkFrame()
         result = self._tcp.getFrame()
         assert result == b""
-        self._tcp.addToFrame(msg2)
+        self._tcp._buffer += msg2
         assert self._tcp.checkFrame()
         result = self._tcp.getFrame()
         assert msg2 == result
@@ -336,11 +336,11 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test a half completed tcp frame transaction"""
         msg1 = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12"
         msg2 = b"\x34"
-        self._tcp.addToFrame(msg1)
+        self._tcp._buffer = msg1  # pylint: disable=protected-access
         assert not self._tcp.checkFrame()
         result = self._tcp.getFrame()
         assert result == msg1[7:]
-        self._tcp.addToFrame(msg2)
+        self._tcp._buffer += msg2
         assert self._tcp.checkFrame()
         result = self._tcp.getFrame()
         assert result == msg1[7:] + msg2
@@ -350,12 +350,12 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test that we can get back on track after an invalid message"""
         msg1 = b"\x99\x99\x99\x99\x00\x01\x00\x01"
         msg2 = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
-        self._tcp.addToFrame(msg1)
+        self._tcp._buffer = msg1  # pylint: disable=protected-access
         assert not self._tcp.checkFrame()
         result = self._tcp.getFrame()
         assert result == b""
         self._tcp.advanceFrame()
-        self._tcp.addToFrame(msg2)
+        self._tcp._buffer += msg2
         assert len(self._tcp._buffer) == 10  # pylint: disable=protected-access
         assert self._tcp.checkFrame()
         result = self._tcp.getFrame()
@@ -369,7 +369,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         expected.protocol_id = 0x1234
         expected.slave_id = 0xFF
         msg = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
-        self._tcp.addToFrame(msg)
+        self._tcp._buffer = msg  # pylint: disable=protected-access
         assert self._tcp.checkFrame()
         actual = ModbusRequest()
         self._tcp.populateResult(actual)
@@ -399,7 +399,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         msg = b"\x01\x12\x34\x00\x08"
         assert not self._tls.isFrameReady()
         assert not self._tls.checkFrame()
-        self._tls.addToFrame(msg)
+        self._tls._buffer = msg  # pylint: disable=protected-access
         assert self._tls.isFrameReady()
         assert self._tls.checkFrame()
         self._tls.advanceFrame()
@@ -410,7 +410,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     def test_framer_tls_framer_transaction_full(self):
         """Test a full tls frame transaction"""
         msg = b"\x01\x12\x34\x00\x08"
-        self._tls.addToFrame(msg)
+        self._tls._buffer = msg  # pylint: disable=protected-access
         assert self._tls.checkFrame()
         result = self._tls.getFrame()
         assert result == msg[0:]
@@ -420,11 +420,11 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test a half completed tls frame transaction"""
         msg1 = b""
         msg2 = b"\x01\x12\x34\x00\x08"
-        self._tls.addToFrame(msg1)
+        self._tls._buffer = msg1  # pylint: disable=protected-access
         assert not self._tls.checkFrame()
         result = self._tls.getFrame()
         assert result == b""
-        self._tls.addToFrame(msg2)
+        self._tls._buffer += msg2
         assert self._tls.checkFrame()
         result = self._tls.getFrame()
         assert result == msg2[0:]
@@ -434,12 +434,12 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test that we can get back on track after an invalid message"""
         msg1 = b""
         msg2 = b"\x01\x12\x34\x00\x08"
-        self._tls.addToFrame(msg1)
+        self._tls._buffer = msg1  # pylint: disable=protected-access
         assert not self._tls.checkFrame()
         result = self._tls.getFrame()
         assert result == b""
         self._tls.advanceFrame()
-        self._tls.addToFrame(msg2)
+        self._tls._buffer = msg2  # pylint: disable=protected-access
         assert len(self._tls._buffer) == 5  # pylint: disable=protected-access
         assert self._tls.checkFrame()
         result = self._tls.getFrame()
@@ -513,7 +513,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test a tls frame packet build"""
         ModbusRequest()
         msg = b"\x01\x12\x34\x00\x08"
-        self._tls.addToFrame(msg)
+        self._tls._buffer = msg  # pylint: disable=protected-access
         assert self._tls.checkFrame()
         actual = ModbusRequest()
         self._tls.populateResult(actual)
@@ -538,11 +538,11 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert not self._rtu.isFrameReady()
 
         msg_parts = [b"\x00\x01\x00", b"\x00\x00\x01\xfc\x1b"]
-        self._rtu.addToFrame(msg_parts[0])
+        self._rtu._buffer = msg_parts[0]  # pylint: disable=protected-access
         assert not self._rtu.isFrameReady()
         assert not self._rtu.checkFrame()
 
-        self._rtu.addToFrame(msg_parts[1])
+        self._rtu._buffer += msg_parts[1]
         assert self._rtu.isFrameReady()
         assert self._rtu.checkFrame()
 
@@ -550,7 +550,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test a full rtu frame transaction"""
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
         stripped_msg = msg[1:-2]
-        self._rtu.addToFrame(msg)
+        self._rtu._buffer = msg  # pylint: disable=protected-access
         assert self._rtu.checkFrame()
         result = self._rtu.getFrame()
         assert stripped_msg == result
@@ -560,9 +560,9 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test a half completed rtu frame transaction"""
         msg_parts = [b"\x00\x01\x00", b"\x00\x00\x01\xfc\x1b"]
         stripped_msg = b"".join(msg_parts)[1:-2]
-        self._rtu.addToFrame(msg_parts[0])
+        self._rtu._buffer = msg_parts[0]  # pylint: disable=protected-access
         assert not self._rtu.checkFrame()
-        self._rtu.addToFrame(msg_parts[1])
+        self._rtu._buffer += msg_parts[1]
         assert self._rtu.isFrameReady()
         assert self._rtu.checkFrame()
         result = self._rtu.getFrame()
@@ -573,7 +573,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test a rtu frame packet build"""
         request = ModbusRequest()
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
-        self._rtu.addToFrame(msg)
+        self._rtu._buffer = msg  # pylint: disable=protected-access
         self._rtu.populateHeader()
         self._rtu.populateResult(request)
 
@@ -598,7 +598,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     def test_rtu_decode_exception(self):
         """Test that the RTU framer can decode errors"""
         message = b"\x00\x90\x02\x9c\x01"
-        self._rtu.addToFrame(message)
+        self._rtu._buffer = message  # pylint: disable=protected-access
         result = self._rtu.checkFrame()
         assert result
 
@@ -639,7 +639,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         def mock_callback():
             """Mock callback."""
 
-        self._rtu.addToFrame = mock.MagicMock()
+        self._rtu._buffer = mock.MagicMock()  # pylint: disable=protected-access
         self._rtu._process = mock.MagicMock()  # pylint: disable=protected-access
         self._rtu.isFrameReady = mock.MagicMock(return_value=False)
         self._rtu._buffer = mock_data  # pylint: disable=protected-access
@@ -654,7 +654,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         msg = b":F7031389000A60\r\n"
         assert not self._ascii.isFrameReady()
         assert not self._ascii.checkFrame()
-        self._ascii.addToFrame(msg)
+        self._ascii._buffer = msg  # pylint: disable=protected-access
         assert self._ascii.isFrameReady()
         assert self._ascii.checkFrame()
         self._ascii.advanceFrame()
@@ -666,7 +666,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test a full ascii frame transaction"""
         msg = b"sss:F7031389000A60\r\n"
         pack = a2b_hex(msg[6:-4])
-        self._ascii.addToFrame(msg)
+        self._ascii._buffer = msg  # pylint: disable=protected-access
         assert self._ascii.checkFrame()
         result = self._ascii.getFrame()
         assert pack == result
@@ -677,11 +677,11 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         msg1 = b"sss:F7031389"
         msg2 = b"000A60\r\n"
         pack = a2b_hex(msg1[6:] + msg2[:-4])
-        self._ascii.addToFrame(msg1)
+        self._ascii._buffer = msg1  # pylint: disable=protected-access
         assert not self._ascii.checkFrame()
         result = self._ascii.getFrame()
         assert not result
-        self._ascii.addToFrame(msg2)
+        self._ascii._buffer += msg2
         assert self._ascii.checkFrame()
         result = self._ascii.getFrame()
         assert pack == result
@@ -727,7 +727,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         msg = TEST_MESSAGE
         assert not self._binary.isFrameReady()
         assert not self._binary.checkFrame()
-        self._binary.addToFrame(msg)
+        self._binary._buffer = msg  # pylint: disable=protected-access
         assert self._binary.isFrameReady()
         assert self._binary.checkFrame()
         self._binary.advanceFrame()
@@ -739,7 +739,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test a full binary frame transaction"""
         msg = TEST_MESSAGE
         pack = msg[2:-3]
-        self._binary.addToFrame(msg)
+        self._binary._buffer = msg  # pylint: disable=protected-access
         assert self._binary.checkFrame()
         result = self._binary.getFrame()
         assert pack == result
@@ -750,11 +750,12 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         msg1 = b"\x7b\x01\x03\x00"
         msg2 = b"\x00\x00\x05\x85\xC9\x7d"
         pack = msg1[2:] + msg2[:-3]
-        self._binary.addToFrame(msg1)
+        self._binary._buffer = msg1  # pylint: disable=protected-access
         assert not self._binary.checkFrame()
         result = self._binary.getFrame()
         assert not result
-        self._binary.addToFrame(msg2)
+        self._binary._buffer += msg2
+
         assert self._binary.checkFrame()
         result = self._binary.getFrame()
         assert pack == result

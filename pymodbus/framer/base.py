@@ -98,16 +98,6 @@ class ModbusFramer:
             "tid": 0,
         }
 
-    def addToFrame(self, message):
-        """Add the next message to the frame buffer.
-
-        This should be used before the decoding while loop to add the received
-        data to the buffer handle.
-
-        :param message: The most recent packet
-        """
-        self._buffer += message
-
     def populateResult(self, result):
         """Populate the modbus result header.
 
@@ -140,10 +130,10 @@ class ModbusFramer:
         :raises ModbusIOException:
         """
         Log.debug("Processing: {}", data, ":hex")
+        self._buffer += data
         if not isinstance(slave, (list, tuple)):
             slave = [slave]
         single = kwargs.pop("single", False)
-        self.addToFrame(data)
         self.frameProcessIncomingPacket(single, callback, slave, **kwargs)
 
     def frameProcessIncomingPacket(

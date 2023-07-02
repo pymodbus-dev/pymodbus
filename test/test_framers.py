@@ -231,16 +231,9 @@ def test_rtu_populate_header(rtu_framer, data):
     assert rtu_framer._header == expected  # pylint: disable=protected-access
 
 
-def test_add_to_frame(rtu_framer):
-    """Test add to frame."""
-    assert rtu_framer._buffer == b""  # pylint: disable=protected-access
-    rtu_framer.addToFrame(b"abcd")
-    assert rtu_framer._buffer == b"abcd"  # pylint: disable=protected-access
-
-
 def test_get_frame(rtu_framer):
     """Test get frame."""
-    rtu_framer.addToFrame(b"\x02\x01\x01\x00Q\xcc")
+    rtu_framer._buffer = b"\x02\x01\x01\x00Q\xcc"  # pylint: disable=protected-access
     rtu_framer.populateHeader(b"\x02\x01\x01\x00Q\xcc")
     assert rtu_framer.getFrame() == b"\x01\x01\x00"
 

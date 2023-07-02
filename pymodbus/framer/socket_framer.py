@@ -116,7 +116,7 @@ class ModbusSocketFramer(ModbusFramer):
             }
         return {}
 
-    def frameProcessIncomingPacket(self, data, callback, slave, tid=None, **kwargs):
+    def frameProcessIncomingPacket(self, single, callback, slave, tid=None, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -128,11 +128,6 @@ class ModbusSocketFramer(ModbusFramer):
         The processed and decoded messages are pushed to the callback
         function to process and send.
         """
-        if not isinstance(slave, (list, tuple)):
-            slave = [slave]
-        single = kwargs.get("single", False)
-        Log.debug("Processing: {}", data, ":hex")
-        self.addToFrame(data)
         while True:
             if not self.isFrameReady():
                 if len(self._buffer):

@@ -139,7 +139,14 @@ class ModbusFramer:
         :param kwargs:
         :raises ModbusIOException:
         """
-        self.frameProcessIncomingPacket(data, callback, slave, **kwargs)
+        Log.debug("Processing: {}", data, ":hex")
+        if not isinstance(slave, (list, tuple)):
+            slave = [slave]
+        single = kwargs.pop("single", False)
+        self.addToFrame(data)
+        self.frameProcessIncomingPacket(single, callback, slave, **kwargs)
 
-    def frameProcessIncomingPacket(self, _data, _callback, _slave, _tid=None, **kwargs):
+    def frameProcessIncomingPacket(
+        self, _single, _callback, _slave, _tid=None, **kwargs
+    ):
         """Process new packet pattern."""

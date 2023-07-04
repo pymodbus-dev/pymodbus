@@ -221,8 +221,5 @@ async def run_async_server(args):
 
 
 if __name__ == "__main__":
-    run_args = setup_server(
-        description="Run asynchronous server.",
-        cmdline=["--log", "debug", "--framer", "rtu"],
-    )
+    run_args = setup_server(description="Run asynchronous server.")
     asyncio.run(run_async_server(run_args), debug=True)

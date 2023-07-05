@@ -67,7 +67,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - on: ubuntu-latest
+          - on: linux-latest
           - on: macos-latest
           - on: windows-latest
         python:

@@ -36,11 +36,9 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
     This uses the asyncio.Protocol to implement the server protocol.
 
-    When a connection is established, the asyncio.Protocol.connection_made
-    callback is called. This callback will setup the connection and
+    When a connection is established, a callback is called.
+    This callback will setup the connection and
     create and schedule an asyncio.Task and assign it to running_task.
-
-    running_task will be canceled upon connection_lost event.
     """
 
     def __init__(self, owner):
@@ -80,7 +78,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
             self.handler_task = asyncio.create_task(self.handle())
         except Exception as exc:  # pragma: no cover pylint: disable=broad-except
             Log.error(
-                "Server connection_made unable to fulfill request: {}; {}",
+                "Server callback_connected exception: {}; {}",
                 exc,
                 traceback.format_exc(),
             )
@@ -145,8 +143,6 @@ class ModbusServerRequestHandler(ModbusProtocol):
         the ModbusServerRequestHandler class's callback Future.
 
         This callback future gets data from either
-        asyncio.DatagramProtocol.datagram_received or
-        from asyncio.BaseProtocol.data_received.
 
         This function will execute without blocking in the while-loop and
         yield to the asyncio event loop when the frame is exhausted.

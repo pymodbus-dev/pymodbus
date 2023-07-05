@@ -75,6 +75,8 @@ jobs:
           - version: '3.9'
           - version: '3.10'
           - version: '3.11'
+          - version: '3.12'
+          - version: '3.13'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3

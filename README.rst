@@ -44,7 +44,7 @@ Pymodbus also provides a lot of ready to use examples as well as a server/client
 
 Requires Python >= 3.8
 
-The tests are run against Python 3.8, 3.9, 3.10, 3.11 on Windows, Linux and MacOS.
+The tests are run against Python 3.8, 3.9, 3.10, 3.11, 3.12, 3.13 on Windows, Linux and MacOS.
 
 ------------------------------------------------------------
 Features

@@ -59,12 +59,13 @@ class ModbusServerRequestHandler(ModbusProtocol):
         self.running = False
         self.receive_queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
-        self.client_address = (None, None)
         self.framer: ModbusFramer = None
 
     def _log_exception(self):
         """Show log exception."""
-        Log.debug("Handler for stream [{}] has been canceled", self.client_address)
+        Log.debug(
+            "Handler for stream [{}] has been canceled", self.comm_params.comm_name
+        )
 
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
@@ -74,7 +75,6 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 self.server.decoder,
                 client=None,
             )
-            self.server.local_active_connections[self.client_address] = self
 
             # schedule the connection handler on the event loop
             self.handler_task = asyncio.create_task(self.handle())
@@ -90,15 +90,15 @@ class ModbusServerRequestHandler(ModbusProtocol):
         try:
             if self.handler_task:
                 self.handler_task.cancel()
-            if self.client_address in self.server.local_active_connections:
-                self.server.local_active_connections.pop(self.client_address)
             if hasattr(self.server, "on_connection_lost"):
                 self.server.on_connection_lost()
             if call_exc is None:
                 self._log_exception()
             else:
                 Log.debug(
-                    "Client Disconnection {} due to {}", self.client_address, call_exc
+                    "Client Disconnection {} due to {}",
+                    self.comm_params.comm_name,
+                    call_exc,
                 )
             self.running = False
         except Exception as exc:  # pylint: disable=broad-except
@@ -167,11 +167,10 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 # should handle application layer errors
                 # for UDP sockets, simply reset the frame
                 if isinstance(self, ModbusServerRequestHandler):
-                    client_addr = self.client_address[:2]
                     Log.error(
                         'Unknown exception "{}" on stream {} forcing disconnect',
                         exc,
-                        client_addr,
+                        self.comm_params.comm_name,
                     )
                     self.transport_close()
                 else:
@@ -309,7 +308,6 @@ class ModbusTcpServer(ModbusProtocol):
             params,
             True,
         )
-        self.local_active_connections = {}
         self.decoder = ServerDecoder()
         self.framer = framer or ModbusSocketFramer
         self.context = context or ModbusServerContext()
@@ -358,16 +356,6 @@ class ModbusTcpServer(ModbusProtocol):
 
     async def server_close(self):
         """Close server."""
-        active_connecions = self.local_active_connections.copy()
-        for k_item, v_item in active_connecions.items():
-            Log.warning("aborting active session {}", k_item)
-            if v_item.transport:
-                v_item.transport.close()
-                await asyncio.sleep(0.1)
-            if v_item.handler_task:
-                v_item.handler_task.cancel()
-                await v_item.handler_task
-        self.local_active_connections = {}
         self.transport_close()
 
 
@@ -488,7 +476,6 @@ class ModbusUdpServer(ModbusProtocol):
             True,
         )
 
-        self.local_active_connections = {}
         self.loop = asyncio.get_running_loop()
         self.decoder = ServerDecoder()
         self.framer = framer or ModbusSocketFramer
@@ -602,7 +589,6 @@ class ModbusSerialServer(ModbusProtocol):
         self.control = ModbusControlBlock()
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
-        self.local_active_connections = {}
         self.request_tracer = None
         self.server = None
         self.control = ModbusControlBlock()
@@ -620,15 +606,6 @@ class ModbusSerialServer(ModbusProtocol):
     async def shutdown(self):
         """Terminate server."""
         self.transport_close()
-        loop_list = list(self.local_active_connections)
-        for k_item in loop_list:
-            v_item = self.local_active_connections[k_item]
-            Log.warning("aborting active session {}", k_item)
-            v_item.transport.close()
-            await asyncio.sleep(0.1)
-            v_item.handler_task.cancel()
-            await v_item.handler_task
-        self.local_active_connections = {}
         if self.server:
             self.server.close()
             await asyncio.wait_for(self.server.wait_closed(), 10)

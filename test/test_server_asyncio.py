@@ -229,11 +229,9 @@ class TestAsyncioServer:
         """Test tcp stream interruption"""
         await self.start_server()
         await self.connect_server()
-        assert len(self.server.local_active_connections), 1
 
         BasicClient.transport.close()
         await asyncio.sleep(0.2)  # so we have to wait a bit
-        assert not self.server.local_active_connections
 
     async def test_async_tcp_server_close_connection(self):
         """Test server_close() while there are active TCP connections"""

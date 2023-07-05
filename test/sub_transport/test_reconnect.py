@@ -16,7 +16,7 @@ class TestReconnectModbusProtocol:
         assert not client.reconnect_delay_current
         client.transport_close()
 
-    async def test_reconnect_call(self, client, commparams):
+    async def test_reconnect_call(self, client, use_clc):
         """Test connection_lost()."""
         client.loop.create_connection = mock.AsyncMock(return_value=(None, None))
         await client.transport_connect()
@@ -26,10 +26,10 @@ class TestReconnectModbusProtocol:
         await asyncio.sleep(client.reconnect_delay_current * 1.8)
         assert client.reconnect_task
         assert client.loop.create_connection.call_count == 2
-        assert client.reconnect_delay_current == commparams.reconnect_delay * 2
+        assert client.reconnect_delay_current == use_clc.reconnect_delay * 2
         client.transport_close()
 
-    async def test_multi_reconnect_call(self, client, commparams):
+    async def test_multi_reconnect_call(self, client, use_clc):
         """Test connection_lost()."""
         client.loop.create_connection = mock.AsyncMock(return_value=(None, None))
         await client.transport_connect()
@@ -37,16 +37,16 @@ class TestReconnectModbusProtocol:
         client.connection_lost(RuntimeError("Connection lost"))
         await asyncio.sleep(client.reconnect_delay_current * 1.8)
         assert client.loop.create_connection.call_count == 2
-        assert client.reconnect_delay_current == commparams.reconnect_delay * 2
+        assert client.reconnect_delay_current == use_clc.reconnect_delay * 2
         await asyncio.sleep(client.reconnect_delay_current * 1.8)
         assert client.loop.create_connection.call_count == 3
-        assert client.reconnect_delay_current == commparams.reconnect_delay_max
+        assert client.reconnect_delay_current == use_clc.reconnect_delay_max
         await asyncio.sleep(client.reconnect_delay_current * 1.8)
         assert client.loop.create_connection.call_count >= 4
-        assert client.reconnect_delay_current == commparams.reconnect_delay_max
+        assert client.reconnect_delay_current == use_clc.reconnect_delay_max
         client.transport_close()
 
-    async def test_reconnect_call_ok(self, client, commparams):
+    async def test_reconnect_call_ok(self, client, use_clc):
         """Test connection_lost()."""
         client.loop.create_connection = mock.AsyncMock(
             return_value=(mock.Mock(), mock.Mock())
@@ -56,6 +56,6 @@ class TestReconnectModbusProtocol:
         client.connection_lost(RuntimeError("Connection lost"))
         await asyncio.sleep(client.reconnect_delay_current * 1.8)
         assert client.loop.create_connection.call_count == 2
-        assert client.reconnect_delay_current == commparams.reconnect_delay
+        assert client.reconnect_delay_current == use_clc.reconnect_delay
         assert not client.reconnect_task
         client.transport_close()

@@ -566,14 +566,14 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
 
         :return: Current Serial port
         """
-        return self.params.port
+        return self.comm_params.port
 
     def set_port(self, value):
         """Set serial Port setter.
 
         :param value: New port
         """
-        self.params.port = value
+        self.comm_params.port = value
         if self.is_socket_open():
             self.close()
 
@@ -598,7 +598,7 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
 
         :return: Current bytesize
         """
-        return self.params.bytesize
+        return self.comm_params.bytesize
 
     def set_bytesize(self, value):
         """Set Byte size.
@@ -606,7 +606,7 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
         :param value: Possible values (5, 6, 7, 8)
 
         """
-        self.params.bytesize = int(value)
+        self.comm_params.bytesize = int(value)
         if self.is_socket_open():
             self.close()
 
@@ -631,14 +631,14 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
 
         :return: Current baudrate
         """
-        return self.params.baudrate
+        return self.comm_params.baudrate
 
     def set_baudrate(self, value):
         """Set baudrate setter.
 
         :param value: <supported baudrate>
         """
-        self.params.baudrate = int(value)
+        self.comm_params.baudrate = int(value)
         if self.is_socket_open():
             self.close()
 
@@ -647,14 +647,14 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
 
         :return: Current read imeout.
         """
-        return self.params.timeout
+        return self.comm_params.timeout_connect
 
     def set_timeout(self, value):
         """Read timeout setter.
 
         :param value: Read Timeout in seconds
         """
-        self.params.timeout = float(value)
+        self.comm_params.timeout_connect = float(value)
         if self.is_socket_open():
             self.close()
 
@@ -664,12 +664,12 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
         :return: Current Serial settings as dict.
         """
         return {
-            "baudrate": self.params.baudrate,
-            "port": self.params.port,
-            "parity": self.params.parity,
-            "stopbits": self.params.stopbits,
-            "bytesize": self.params.bytesize,
-            "read timeout": self.params.timeout,
+            "baudrate": self.comm_params.baudrate,
+            "port": self.comm_params.port,
+            "parity": self.comm_params.parity,
+            "stopbits": self.comm_params.stopbits,
+            "bytesize": self.comm_params.bytesize,
+            "read timeout": self.comm_params.timeout_connect,
             "t1.5": self.inter_char_timeout,
             "t3.5": self.silent_interval,
         }

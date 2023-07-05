@@ -52,7 +52,6 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         bytesize: int = 8,
         parity: str = "N",
         stopbits: int = 1,
-        handle_local_echo: bool = False,
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
@@ -68,12 +67,6 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
             stopbits=stopbits,
             **kwargs,
         )
-        self.params.port = port
-        self.params.baudrate = baudrate
-        self.params.bytesize = bytesize
-        self.params.parity = parity
-        self.params.stopbits = stopbits
-        self.params.handle_local_echo = handle_local_echo
 
     @property
     def connected(self):
@@ -132,24 +125,27 @@ class ModbusSerialClient(ModbusBaseClient):
         bytesize: int = 8,
         parity: str = "N",
         stopbits: int = 1,
-        handle_local_echo: bool = False,
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus Serial Client."""
         self.transport = None
         kwargs["use_sync"] = True
-        super().__init__(framer=framer, **kwargs)
-        self.params.port = port
-        self.params.baudrate = baudrate
-        self.params.bytesize = bytesize
-        self.params.parity = parity
-        self.params.stopbits = stopbits
-        self.params.handle_local_echo = handle_local_echo
+        ModbusBaseClient.__init__(
+            self,
+            framer=framer,
+            CommType=CommType.SERIAL,
+            host=port,
+            baudrate=baudrate,
+            bytesize=bytesize,
+            parity=parity,
+            stopbits=stopbits,
+            **kwargs,
+        )
         self.socket = None
 
         self.last_frame_end = None
 
-        self._t0 = float(1 + 8 + 2) / self.params.baudrate
+        self._t0 = float(1 + 8 + 2) / self.comm_params.baudrate
 
         """
         The minimum delay is 0.01s and the maximum can be set to 0.05s.
@@ -161,7 +157,7 @@ class ModbusSerialClient(ModbusBaseClient):
             else 0.05
         )
 
-        if self.params.baudrate > 19200:
+        if self.comm_params.baudrate > 19200:
             self.silent_interval = 1.75 / 1000  # ms
         else:
             self.inter_char_timeout = 1.5 * self._t0
@@ -179,12 +175,12 @@ class ModbusSerialClient(ModbusBaseClient):
             return True
         try:
             self.socket = serial.serial_for_url(
-                self.params.port,
-                timeout=self.params.timeout,
-                bytesize=self.params.bytesize,
-                stopbits=self.params.stopbits,
-                baudrate=self.params.baudrate,
-                parity=self.params.parity,
+                self.comm_params.host,
+                timeout=self.comm_params.timeout_connect,
+                bytesize=self.comm_params.bytesize,
+                stopbits=self.comm_params.stopbits,
+                baudrate=self.comm_params.baudrate,
+                parity=self.comm_params.parity,
             )
             if isinstance(self.framer, ModbusRtuFramer):
                 if self.params.strict:
@@ -244,10 +240,13 @@ class ModbusSerialClient(ModbusBaseClient):
         """Wait for data."""
         size = 0
         more_data = False
-        if self.params.timeout is not None and self.params.timeout:
+        if (
+            self.comm_params.timeout_connect is not None
+            and self.comm_params.timeout_connect
+        ):
             condition = partial(
                 lambda start, timeout: (time.time() - start) <= timeout,
-                timeout=self.params.timeout,
+                timeout=self.comm_params.timeout_connect,
             )
         else:
             condition = partial(lambda dummy1, dummy2: True, dummy2=None)
@@ -286,11 +285,11 @@ class ModbusSerialClient(ModbusBaseClient):
 
     def __str__(self):
         """Build a string representation of the connection."""
-        return f"ModbusSerialClient({self.framer} baud[{self.params.baudrate}])"
+        return f"ModbusSerialClient({self.framer} baud[{self.comm_params.baudrate}])"
 
     def __repr__(self):
         """Return string representation."""
         return (
             f"<{self.__class__.__name__} at {hex(id(self))} socket={self.socket}, "
-            f"framer={self.framer}, timeout={self.params.timeout}>"
+            f"framer={self.framer}, timeout={self.comm_params.timeout_connect}>"
         )

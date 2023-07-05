@@ -95,7 +95,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client = ModbusUdpClient("127.0.0.1")
         rep = (
             f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
-            f"ipaddr={client.params.host}, port={client.params.port}, timeout={client.params.timeout}>"
+            f"ipaddr={client.comm_params.host}, port={client.comm_params.port}, timeout={client.comm_params.timeout_connect}>"
         )
         assert repr(client) == rep
 
@@ -160,7 +160,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         mock_socket = mock.MagicMock()
         mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02"])
         client.socket = mock_socket
-        client.params.timeout = 3
+        client.comm_params.timeout_connect = 3
         assert client.recv(3) == b"\x00\x01\x02"
         mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02"])
         assert client.recv(2) == b"\x00\x01"
@@ -185,7 +185,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client = ModbusTcpClient("127.0.0.1")
         rep = (
             f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
-            f"ipaddr={client.params.host}, port={client.params.port}, timeout={client.params.timeout}>"
+            f"ipaddr={client.comm_params.host}, port={client.comm_params.port}, timeout={client.comm_params.timeout_connect}>"
         )
         assert repr(client) == rep
 
@@ -264,7 +264,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         assert client.recv(0) == b""
         assert client.recv(4) == b"\x00" * 4
 
-        client.params.timeout = 2
+        client.comm_params.timeout_connect = 2
         client.socket.mock_prepare_receive(b"\x00")
         assert b"\x00" in client.recv(None)
 
@@ -273,8 +273,8 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client = ModbusTlsClient("127.0.0.1")
         rep = (
             f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
-            f"ipaddr={client.params.host}, port={client.params.port}, sslctx={client.sslctx}, "
-            f"timeout={client.params.timeout}>"
+            f"ipaddr={client.comm_params.host}, port={client.comm_params.port}, sslctx={client.sslctx}, "
+            f"timeout={client.comm_params.timeout_connect}>"
         )
         assert repr(client) == rep
 
@@ -424,6 +424,6 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client = ModbusSerialClient("/dev/null")
         rep = (
             f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
-            f"framer={client.framer}, timeout={client.params.timeout}>"
+            f"framer={client.framer}, timeout={client.comm_params.timeout_connect}>"
         )
         assert repr(client) == rep

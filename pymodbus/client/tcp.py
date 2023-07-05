@@ -54,8 +54,6 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
             port=port,
             **kwargs,
         )
-        self.params.host = host
-        self.params.port = port
         self.params.source_address = source_address
 
     async def connect(self) -> bool:
@@ -111,11 +109,11 @@ class ModbusTcpClient(ModbusBaseClient):
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus TCP Client."""
+        if "CommType" not in kwargs:
+            kwargs["CommType"] = CommType.TCP
         kwargs["use_sync"] = True
         self.transport = None
         super().__init__(framer=framer, host=host, port=port, **kwargs)
-        self.params.host = host
-        self.params.port = port
         self.params.source_address = source_address
         self.socket = None
 
@@ -130,8 +128,8 @@ class ModbusTcpClient(ModbusBaseClient):
             return True
         try:
             self.socket = socket.create_connection(
-                (self.params.host, self.params.port),
-                timeout=self.params.timeout,
+                (self.comm_params.host, self.comm_params.port),
+                timeout=self.comm_params.timeout_connect,
                 source_address=self.params.source_address,
             )
             Log.debug(
@@ -141,8 +139,8 @@ class ModbusTcpClient(ModbusBaseClient):
         except OSError as msg:
             Log.error(
                 "Connection to ({}, {}) failed: {}",
-                self.params.host,
-                self.params.port,
+                self.comm_params.host,
+                self.comm_params.port,
                 msg,
             )
             self.close()
@@ -157,7 +155,7 @@ class ModbusTcpClient(ModbusBaseClient):
     def _check_read_buffer(self):
         """Check read buffer."""
         time_ = time.time()
-        end = time_ + self.params.timeout
+        end = time_ + self.comm_params.timeout_connect
         data = None
         ready = select.select([self.socket], [], [], end - time_)
         if ready[0]:
@@ -193,7 +191,7 @@ class ModbusTcpClient(ModbusBaseClient):
         # less than the expected size.
         self.socket.setblocking(0)
 
-        timeout = self.params.timeout
+        timeout = self.comm_params.timeout_connect
 
         # If size isn't specified read up to 4096 bytes at a time.
         if size is None:
@@ -270,11 +268,11 @@ class ModbusTcpClient(ModbusBaseClient):
 
         :returns: The string representation
         """
-        return f"ModbusTcpClient({self.params.host}:{self.params.port})"
+        return f"ModbusTcpClient({self.comm_params.host}:{self.comm_params.port})"
 
     def __repr__(self):
         """Return string representation."""
         return (
             f"<{self.__class__.__name__} at {hex(id(self))} socket={self.socket}, "
-            f"ipaddr={self.params.host}, port={self.params.port}, timeout={self.params.timeout}>"
+            f"ipaddr={self.comm_params.host}, port={self.comm_params.port}, timeout={self.comm_params.timeout_connect}>"
         )

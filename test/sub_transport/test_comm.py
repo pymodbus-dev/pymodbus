@@ -111,11 +111,11 @@ class TestCommModbusProtocol:
             server_connected.transport_send(test_data, addr=addr)
         else:
             server_connected.transport_send(test_data)
-        await asyncio.sleep(2)
+        await asyncio.sleep(1)
         assert client.recv_buffer == test_data
         assert not server_connected.recv_buffer
         client.transport_close()
-        await asyncio.sleep(2)
+        await asyncio.sleep(1)
         if use_comm_type != CommType.UDP:
             assert not server.active_connections
         server.transport_close()
@@ -126,7 +126,7 @@ class TestCommModbusProtocol:
             (CommType.TCP, "localhost", BASE_PORT + 21),
         ],
     )
-    async def test_connected_multiple(self, client, server, commparams):
+    async def test_connected_multiple(self, client, server, use_clc):
         """Test connection and data exchange."""
         assert await server.transport_listen()
         assert await client.transport_connect()
@@ -134,9 +134,9 @@ class TestCommModbusProtocol:
         assert len(server.active_connections) == 1
         server_connected = list(server.active_connections.values())[0]
 
-        c2_params = commparams.copy()
+        c2_params = use_clc.copy()
         c2_params.port = client.comm_params.port + 1
-        client2 = ModbusProtocol(commparams, False)
+        client2 = ModbusProtocol(use_clc, False)
         client2.callback_connected = mock.Mock()
         client2.callback_disconnected = mock.Mock()
         client2.callback_data = mock.Mock(return_value=0)

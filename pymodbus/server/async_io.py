@@ -36,67 +36,49 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
     This uses the asyncio.Protocol to implement the server protocol.
 
-    When a connection is established, the asyncio.Protocol.connection_made
-    callback is called. This callback will setup the connection and
+    When a connection is established, a callback is called.
+    This callback will setup the connection and
     create and schedule an asyncio.Task and assign it to running_task.
-
-    running_task will be canceled upon connection_lost event.
     """
 
     def __init__(self, owner):
         """Initialize."""
         params = CommParams(
             comm_name="server",
+            comm_type=owner.comm_params.comm_type,
             reconnect_delay=0.0,
             reconnect_delay_max=0.0,
             timeout_connect=0.0,
-            host=owner.comm_params.host,
-            port=owner.comm_params.port,
+            host=owner.comm_params.source_address[0],
+            port=owner.comm_params.source_address[1],
         )
         super().__init__(params, True)
         self.server = owner
         self.running = False
         self.receive_queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
-        self._sent = b""  # for handle_local_echo
-        self.client_address = (None, None)
         self.framer: ModbusFramer = None
 
     def _log_exception(self):
         """Show log exception."""
-        Log.debug("Handler for stream [{}] has been canceled", self.client_address)
+        Log.debug(
+            "Handler for stream [{}] has been canceled", self.comm_params.comm_name
+        )
 
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
         try:
-            if (
-                hasattr(self.transport, "get_extra_info")
-                and self.transport.get_extra_info("peername") is not None
-            ):
-                self.client_address = self.transport.get_extra_info("peername")[:2]
-                Log.debug("Peer [{}] opened", self.client_address)
-            elif hasattr(self.transport, "serial"):
-                Log.debug(
-                    "Serial connection opened on port: {}", self.transport.serial.port
-                )
-                self.client_address = ("serial", "server")
-            else:
-                Log.warning(
-                    "Unable to get information about transport {}", self.transport
-                )
-            self.transport = self.transport
             self.running = True
             self.framer = self.server.framer(
                 self.server.decoder,
                 client=None,
             )
-            self.server.local_active_connections[self.client_address] = self
 
             # schedule the connection handler on the event loop
             self.handler_task = asyncio.create_task(self.handle())
         except Exception as exc:  # pragma: no cover pylint: disable=broad-except
             Log.error(
-                "Server connection_made unable to fulfill request: {}; {}",
+                "Server callback_connected exception: {}; {}",
                 exc,
                 traceback.format_exc(),
             )
@@ -106,15 +88,15 @@ class ModbusServerRequestHandler(ModbusProtocol):
         try:
             if self.handler_task:
                 self.handler_task.cancel()
-            if self.client_address in self.server.local_active_connections:
-                self.server.local_active_connections.pop(self.client_address)
             if hasattr(self.server, "on_connection_lost"):
                 self.server.on_connection_lost()
             if call_exc is None:
                 self._log_exception()
             else:
                 Log.debug(
-                    "Client Disconnection {} due to {}", self.client_address, call_exc
+                    "Client Disconnection {} due to {}",
+                    self.comm_params.comm_name,
+                    call_exc,
                 )
             self.running = False
         except Exception as exc:  # pylint: disable=broad-except
@@ -161,8 +143,6 @@ class ModbusServerRequestHandler(ModbusProtocol):
         the ModbusServerRequestHandler class's callback Future.
 
         This callback future gets data from either
-        asyncio.DatagramProtocol.datagram_received or
-        from asyncio.BaseProtocol.data_received.
 
         This function will execute without blocking in the while-loop and
         yield to the asyncio event loop when the frame is exhausted.
@@ -183,13 +163,12 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 # should handle application layer errors
                 # for UDP sockets, simply reset the frame
                 if isinstance(self, ModbusServerRequestHandler):
-                    client_addr = self.client_address[:2]
                     Log.error(
                         'Unknown exception "{}" on stream {} forcing disconnect',
                         exc,
-                        client_addr,
+                        self.comm_params.comm_name,
                     )
-                    self.transport.close()
+                    self.transport_close()
                 else:
                     Log.error("Unknown error occurred {}", exc)
                     reset_frame = True  # graceful recovery
@@ -239,23 +218,13 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 response, skip_encoding = self.server.response_manipulator(response)
             self.send(response, *addr, skip_encoding=skip_encoding)
 
-    def send(self, message, *addr, **kwargs):
+    def send(self, message, addr, **kwargs):
         """Send message."""
-
-        def __send(msg, *addr):
-            Log.debug("send: [{}]- {}", message, msg, ":b2a")
-            if addr == (None,):
-                self.transport.write(msg)
-                if self.server.handle_local_echo is True:
-                    self._sent = msg
-            else:
-                self.transport.sendto(msg, *addr)
-
         if kwargs.get("skip_encoding", False):
-            __send(message, *addr)
+            self.transport_send(message, addr=addr)
         elif message.should_respond:
             pdu = self.framer.buildPacket(message)
-            __send(pdu, *addr)
+            self.transport_send(pdu, addr=addr)
         else:
             Log.debug("Skipping sending response!!")
 
@@ -270,15 +239,6 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
     def callback_data(self, data: bytes, addr: tuple = None) -> int:
         """Handle received data."""
-        if self.server.handle_local_echo is True and self._sent:
-            if self._sent in data:
-                data, self._sent = data.replace(self._sent, b"", 1), b""
-            elif self._sent.startswith(data):
-                self._sent, data = self._sent.replace(data, b"", 1), b""
-            else:
-                self._sent = b""
-            if not data:
-                return 0
         if addr:
             self.receive_queue.put_nowait((data, addr))
         else:
@@ -338,13 +298,12 @@ class ModbusTcpServer(ModbusProtocol):
                 timeout_connect=0.0,
             ),
         )
-        params.host = address[0]
-        params.port = address[1]
+        params.source_address = address
+
         super().__init__(
             params,
             True,
         )
-        self.local_active_connections = {}
         self.decoder = ServerDecoder()
         self.framer = framer or ModbusSocketFramer
         self.context = context or ModbusServerContext()
@@ -369,21 +328,21 @@ class ModbusTcpServer(ModbusProtocol):
 
     async def serve_forever(self):
         """Start endless loop."""
-        if self.transport is None:
-            await self.transport_listen()
-            self.serving.set_result(True)
-            Log.info("Server(TCP) listening.")
-            try:
-                await self.transport.serve_forever()
-            except asyncio.exceptions.CancelledError:
-                self.serving_done.set_result(False)
-                raise
-            except Exception as exc:  # pylint: disable=broad-except
-                Log.error("Server unexpected exception {}", exc)
-        else:
+        if self.transport:
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
             )
+
+        await self.transport_listen()
+        self.serving.set_result(True)
+        Log.info("Server(TCP) listening.")
+        try:
+            await self.transport.serve_forever()
+        except asyncio.exceptions.CancelledError:
+            self.serving_done.set_result(False)
+            raise
+        except Exception as exc:  # pylint: disable=broad-except
+            Log.error("Server unexpected exception {}", exc)
         self.serving_done.set_result(True)
         Log.info("Server graceful shutdown.")
 
@@ -393,16 +352,6 @@ class ModbusTcpServer(ModbusProtocol):
 
     async def server_close(self):
         """Close server."""
-        active_connecions = self.local_active_connections.copy()
-        for k_item, v_item in active_connecions.items():
-            Log.warning("aborting active session {}", k_item)
-            if v_item.transport:
-                v_item.transport.close()
-                await asyncio.sleep(0.1)
-            if v_item.handler_task:
-                v_item.handler_task.cancel()
-                await v_item.handler_task
-        self.local_active_connections = {}
         self.transport_close()
 
 
@@ -515,8 +464,7 @@ class ModbusUdpServer(ModbusProtocol):
             CommParams(
                 comm_type=CommType.UDP,
                 comm_name="server_listener",
-                host=address[0],
-                port=address[1],
+                source_address=address,
                 reconnect_delay=0.0,
                 reconnect_delay_max=0.0,
                 timeout_connect=0.0,
@@ -524,7 +472,6 @@ class ModbusUdpServer(ModbusProtocol):
             True,
         )
 
-        self.local_active_connections = {}
         self.loop = asyncio.get_running_loop()
         self.decoder = ServerDecoder()
         self.framer = framer or ModbusSocketFramer
@@ -549,23 +496,22 @@ class ModbusUdpServer(ModbusProtocol):
 
     async def serve_forever(self):
         """Start endless loop."""
-        if self.transport is None:
-            try:
-                await self.transport_listen()
-            except asyncio.exceptions.CancelledError:
-                self.serving_done.set_result(False)
-                raise
-            except Exception as exc:
-                Log.error("Server unexpected exception {}", exc)
-                self.serving_done.set_result(False)
-                raise RuntimeError(exc) from exc
-            Log.info("Server(UDP) listening.")
-            self.serving.set_result(True)
-            await self.stop_serving
-        else:
+        if self.transport:
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
             )
+        try:
+            await self.transport_listen()
+        except asyncio.exceptions.CancelledError:
+            self.serving_done.set_result(False)
+            raise
+        except Exception as exc:
+            Log.error("Server unexpected exception {}", exc)
+            self.serving_done.set_result(False)
+            raise RuntimeError(exc) from exc
+        Log.info("Server(UDP) listening.")
+        self.serving.set_result(True)
+        await self.stop_serving
         self.serving_done.set_result(True)
 
     async def shutdown(self):
@@ -619,7 +565,7 @@ class ModbusSerialServer(ModbusProtocol):
                 reconnect_delay=kwargs.get("reconnect_delay", 2),
                 reconnect_delay_max=0.0,
                 timeout_connect=kwargs.get("timeout", 3),
-                host=kwargs.get("port", 0),
+                source_address=(kwargs.get("port", 0), 0),
                 bytesize=kwargs.get("bytesize", 8),
                 parity=kwargs.get("parity", "N"),
                 baudrate=kwargs.get("baudrate", 19200),
@@ -639,7 +585,6 @@ class ModbusSerialServer(ModbusProtocol):
         self.control = ModbusControlBlock()
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
-        self.local_active_connections = {}
         self.request_tracer = None
         self.server = None
         self.control = ModbusControlBlock()
@@ -654,24 +599,9 @@ class ModbusSerialServer(ModbusProtocol):
         """Handle incoming connect."""
         return ModbusServerRequestHandler(self)
 
-    def on_connection_lost(self):
-        """Call on lost connection."""
-        if self.transport is not None:
-            self.transport.close()
-            self.transport = None
-
     async def shutdown(self):
         """Terminate server."""
         self.transport_close()
-        loop_list = list(self.local_active_connections)
-        for k_item in loop_list:
-            v_item = self.local_active_connections[k_item]
-            Log.warning("aborting active session {}", k_item)
-            v_item.transport.close()
-            await asyncio.sleep(0.1)
-            v_item.handler_task.cancel()
-            await v_item.handler_task
-        self.local_active_connections = {}
         if self.server:
             self.server.close()
             await asyncio.wait_for(self.server.wait_closed(), 10)

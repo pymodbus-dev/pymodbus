@@ -127,7 +127,9 @@ class ModbusTlsClient(ModbusTcpClient):
     ):
         """Initialize Modbus TLS Client."""
         self.transport = None
-        super().__init__(host, port=port, framer=framer, **kwargs)
+        super().__init__(
+            host, CommType=CommType.TLS, port=port, framer=framer, **kwargs
+        )
         self.sslctx = CommParams.generate_ssl(
             False, certfile, keyfile, password, sslctx=sslctx
         )
@@ -147,15 +149,15 @@ class ModbusTlsClient(ModbusTcpClient):
             if self.params.source_address:
                 sock.bind(self.params.source_address)
             self.socket = self.sslctx.wrap_socket(
-                sock, server_side=False, server_hostname=self.params.host
+                sock, server_side=False, server_hostname=self.comm_params.host
             )
-            self.socket.settimeout(self.params.timeout)
-            self.socket.connect((self.params.host, self.params.port))
+            self.socket.settimeout(self.comm_params.timeout_connect)
+            self.socket.connect((self.comm_params.host, self.comm_params.port))
         except OSError as msg:
             Log.error(
                 "Connection to ({}, {}) failed: {}",
-                self.params.host,
-                self.params.port,
+                self.comm_params.host,
+                self.comm_params.port,
                 msg,
             )
             self.close()
@@ -163,12 +165,12 @@ class ModbusTlsClient(ModbusTcpClient):
 
     def __str__(self):
         """Build a string representation of the connection."""
-        return f"ModbusTlsClient({self.params.host}:{self.params.port})"
+        return f"ModbusTlsClient({self.comm_params.host}:{self.comm_params.port})"
 
     def __repr__(self):
         """Return string representation."""
         return (
             f"<{self.__class__.__name__} at {hex(id(self))} socket={self.socket}, "
-            f"ipaddr={self.params.host}, port={self.params.port}, sslctx={self.sslctx}, "
-            f"timeout={self.params.timeout}>"
+            f"ipaddr={self.comm_params.host}, port={self.comm_params.port}, sslctx={self.sslctx}, "
+            f"timeout={self.comm_params.timeout_connect}>"
         )

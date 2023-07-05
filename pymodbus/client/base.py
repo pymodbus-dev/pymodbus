@@ -59,8 +59,6 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         broadcast_enable: bool = None
         reconnect_delay: int = None
 
-        handle_local_echo: bool = None
-
         source_address: tuple[str, int] = None
 
         server_hostname: str = None
@@ -85,7 +83,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         setup_params = CommParams(
             comm_type=kwargs.get("CommType"),
             comm_name="comm",
-            source_address=kwargs.get("source_address", ("localhost", 0)),
+            source_address=kwargs.get("source_address", ("127.0.0.1", 0)),
             reconnect_delay=reconnect_delay,
             reconnect_delay_max=reconnect_delay_max,
             timeout_connect=timeout,
@@ -96,6 +94,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             bytesize=kwargs.get("bytesize", None),
             parity=kwargs.get("parity", None),
             stopbits=kwargs.get("stopbits", None),
+            handle_local_echo=kwargs.get("handle_local_echo", False),
         )
         if not self.use_sync:
             ModbusProtocol.__init__(

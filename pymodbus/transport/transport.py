@@ -35,9 +35,10 @@ class CommParams:
     reconnect_delay: float = None
     reconnect_delay_max: float = None
     timeout_connect: float = None
-    host: str = "localhost"
+    host: str = "127.0.0.1"
     port: int = 0
-    source_address: tuple[str, int] = ("localhost", 0)
+    source_address: tuple[str, int] = ("127.0.0.1", 0)
+    handle_local_echo: bool = False
 
     # tls
     sslctx: ssl.SSLContext = None
@@ -93,7 +94,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
     Host/Port/SourceAddress explanation:
     - SourceAddress:
-        - server: (host, port) to listen on (default is ("localhost", 502/802))
+        - server: (host, port) to listen on (default is ("127.0.0.1", 502/802))
         - server serial: (host, _) to open/connect and listen on
         - client: (Bind local part to interface (default is local interface)
         - client serial: (host, _) to open/connect and listen on
@@ -134,56 +135,14 @@ class ModbusProtocol(asyncio.BaseProtocol):
             self.unique_id: str = str(id(self))
             self.reconnect_task: asyncio.Task = None
             self.reconnect_delay_current: float = 0.0
+            self.sent_buffer: bytes = b""
 
         # ModbusProtocol specific setup
         if self.comm_params.comm_type == CommType.SERIAL:
             self.init_correct_serial()
         if self.init_check_nullmodem():
             return
-
-        if self.comm_params.comm_type == CommType.SERIAL:
-            self.call_create = lambda: create_serial_connection(
-                self.loop,
-                self.handle_new_connection,
-                self.comm_params.host,
-                baudrate=self.comm_params.baudrate,
-                bytesize=self.comm_params.bytesize,
-                parity=self.comm_params.parity,
-                stopbits=self.comm_params.stopbits,
-                timeout=self.comm_params.timeout_connect,
-            )
-            return
-        if self.comm_params.comm_type == CommType.UDP:
-            if is_server:
-                self.call_create = lambda: self.loop.create_datagram_endpoint(
-                    self.handle_new_connection,
-                    local_addr=self.comm_params.source_address,
-                )
-            else:
-                self.call_create = lambda: self.loop.create_datagram_endpoint(
-                    self.handle_new_connection,
-                    local_addr=self.comm_params.source_address,
-                    remote_addr=(self.comm_params.host, self.comm_params.port),
-                )
-            return
-        # TLS and TCP
-        if is_server:
-            self.call_create = lambda: self.loop.create_server(
-                self.handle_new_connection,
-                self.comm_params.source_address[0],
-                self.comm_params.source_address[1],
-                ssl=self.comm_params.sslctx,
-                reuse_address=True,
-                start_serving=True,
-            )
-        else:
-            self.call_create = lambda: self.loop.create_connection(
-                self.handle_new_connection,
-                self.comm_params.host,
-                self.comm_params.port,
-                local_addr=self.comm_params.source_address,
-                ssl=self.comm_params.sslctx,
-            )
+        self.init_setup_connect_listen()
 
     def init_correct_serial(self) -> None:
         """Split host for serial if needed."""
@@ -210,6 +169,51 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
         self.call_create = lambda: self.create_nullmodem(port)
         return True
+
+    def init_setup_connect_listen(self) -> None:
+        """Handle connect/listen handler."""
+        if self.comm_params.comm_type == CommType.SERIAL:
+            self.call_create = lambda: create_serial_connection(
+                self.loop,
+                self.handle_new_connection,
+                self.comm_params.host,
+                baudrate=self.comm_params.baudrate,
+                bytesize=self.comm_params.bytesize,
+                parity=self.comm_params.parity,
+                stopbits=self.comm_params.stopbits,
+                timeout=self.comm_params.timeout_connect,
+            )
+            return
+        if self.comm_params.comm_type == CommType.UDP:
+            if self.is_server:
+                self.call_create = lambda: self.loop.create_datagram_endpoint(
+                    self.handle_new_connection,
+                    local_addr=self.comm_params.source_address,
+                )
+            else:
+                self.call_create = lambda: self.loop.create_datagram_endpoint(
+                    self.handle_new_connection,
+                    remote_addr=(self.comm_params.host, self.comm_params.port),
+                )
+            return
+        # TLS and TCP
+        if self.is_server:
+            self.call_create = lambda: self.loop.create_server(
+                self.handle_new_connection,
+                self.comm_params.source_address[0],
+                self.comm_params.source_address[1],
+                ssl=self.comm_params.sslctx,
+                reuse_address=True,
+                start_serving=True,
+            )
+        else:
+            self.call_create = lambda: self.loop.create_connection(
+                self.handle_new_connection,
+                self.comm_params.host,
+                self.comm_params.port,
+                local_addr=self.comm_params.source_address,
+                ssl=self.comm_params.sslctx,
+            )
 
     async def transport_connect(self) -> bool:
         """Handle generic connect and call on to specific transport connect."""
@@ -279,6 +283,9 @@ class ModbusProtocol(asyncio.BaseProtocol):
         :param data: non-empty bytes object with incoming data.
         """
         Log.debug("recv: {}", data, ":hex")
+        if self.comm_params.handle_local_echo and self.sent_buffer == data:
+            self.sent_buffer = b""
+            return
         self.recv_buffer += data
         cut = self.callback_data(self.recv_buffer)
         self.recv_buffer = self.recv_buffer[cut:]
@@ -286,6 +293,9 @@ class ModbusProtocol(asyncio.BaseProtocol):
     def datagram_received(self, data: bytes, addr: tuple):
         """Receive datagram (UDP connections)."""
         Log.debug("recv: {} addr={}", data, ":hex", addr)
+        if self.comm_params.handle_local_echo and self.sent_buffer == data:
+            self.sent_buffer = b""
+            return
         self.recv_buffer += data
         cut = self.callback_data(self.recv_buffer, addr=addr)
         self.recv_buffer = self.recv_buffer[cut:]
@@ -325,6 +335,8 @@ class ModbusProtocol(asyncio.BaseProtocol):
         :param addr: optional addr, only used for UDP server.
         """
         Log.debug("send: {}", data, ":hex")
+        if self.comm_params.handle_local_echo:
+            self.sent_buffer = data
         if self.comm_params.comm_type == CommType.UDP:
             if addr:
                 self.transport.sendto(data, addr=addr)

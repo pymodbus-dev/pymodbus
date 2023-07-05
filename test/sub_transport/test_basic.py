@@ -136,10 +136,27 @@ class TestBasicModbusProtocol:
         client.transport_send(b"abc")
         client.transport_send(b"abc", addr=("localhost", 502))
 
+    async def test_handle_local_echo(self, client):
+        """Test transport_send()."""
+        client.comm_params.handle_local_echo = True
+        client.transport = mock.Mock()
+        test_data = b"abc"
+        client.transport_send(test_data)
+        client.data_received(test_data)
+        assert not client.recv_buffer
+        client.data_received(test_data)
+        assert client.recv_buffer == test_data
+        client.recv_buffer = b""
+        client.transport_send(test_data)
+        client.datagram_received(test_data, ("127.0.0.1", 502))
+        assert not client.recv_buffer
+        client.datagram_received(test_data, ("127.0.0.1", 502))
+        assert client.recv_buffer == test_data
+
     async def test_transport_close(self, server, dummy_protocol):
         """Test transport_close()."""
-        dummy_protocol.abort = mock.Mock()
-        dummy_protocol.close = mock.Mock()
+        dummy_protocol.abort = mock.MagicMock()
+        dummy_protocol.close = mock.MagicMock()
         server.connection_made(dummy_protocol)
         server.recv_buffer = b"abc"
         server.reconnect_task = mock.MagicMock()
@@ -150,6 +167,19 @@ class TestBasicModbusProtocol:
         await server.transport_listen()
         server.active_connections = {"a": dummy_protocol}
         server.transport_close()
+        server.transport_close()
+        assert not server.active_connections
+
+    async def test_transport_close2(self, server, client, dummy_protocol):
+        """Test transport_close()."""
+        dummy_protocol.abort = mock.Mock()
+        dummy_protocol.close = mock.Mock()
+        client.connection_made(dummy_protocol)
+        client.recv_buffer = b"abc"
+        client.reconnect_task = mock.MagicMock()
+        client.listener = server
+        server.active_connections = {client.unique_id: dummy_protocol}
+        client.transport_close()
         assert not server.active_connections
 
     async def test_reset_delay(self, client, use_clc):

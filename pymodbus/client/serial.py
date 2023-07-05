@@ -52,7 +52,6 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         bytesize: int = 8,
         parity: str = "N",
         stopbits: int = 1,
-        handle_local_echo: bool = False,
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
@@ -68,7 +67,6 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
             stopbits=stopbits,
             **kwargs,
         )
-        self.params.handle_local_echo = handle_local_echo
 
     @property
     def connected(self):
@@ -127,7 +125,6 @@ class ModbusSerialClient(ModbusBaseClient):
         bytesize: int = 8,
         parity: str = "N",
         stopbits: int = 1,
-        handle_local_echo: bool = False,
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus Serial Client."""
@@ -144,7 +141,6 @@ class ModbusSerialClient(ModbusBaseClient):
             stopbits=stopbits,
             **kwargs,
         )
-        self.params.handle_local_echo = handle_local_echo
         self.socket = None
 
         self.last_frame_end = None

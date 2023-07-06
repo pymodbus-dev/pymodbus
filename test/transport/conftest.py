@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import os
-import sys
 from unittest import mock
 
 import pytest
@@ -11,16 +10,11 @@ from pymodbus.logging import Log
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
 
 
-sys.path.extend(["examples", "../examples", "../../examples"])
-
-
 class DummyProtocol(ModbusProtocol):
-    """Use in connection_made calls."""
+    """Implement use of ModbusProtocol."""
 
     def __init__(self, params=CommParams(), is_server=False):
         """Initialize."""
-        #  self.connection_made = mock.Mock()
-        #  self.connection_lost = mock.Mock()
         super().__init__(params, is_server)
 
     def callback_new_connection(self) -> ModbusProtocol:

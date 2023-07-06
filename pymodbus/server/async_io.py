@@ -296,6 +296,7 @@ class ModbusTcpServer(ModbusProtocol):
                 reconnect_delay=0.0,
                 reconnect_delay_max=0.0,
                 timeout_connect=0.0,
+                new_connection_class=lambda: ModbusServerRequestHandler(self),
             ),
         )
         params.source_address = address
@@ -321,10 +322,6 @@ class ModbusTcpServer(ModbusProtocol):
         # constructors cannot be declared async, so we have to
         # defer the initialization of the server
         self.handle_local_echo = False
-
-    def handle_new_connection(self):
-        """Handle incoming connect."""
-        return ModbusServerRequestHandler(self)
 
     async def serve_forever(self):
         """Start endless loop."""
@@ -408,6 +405,7 @@ class ModbusTlsServer(ModbusTcpServer):
             sslctx=CommParams.generate_ssl(
                 True, certfile, keyfile, password, sslctx=sslctx
             ),
+            new_connection_class=lambda: ModbusServerRequestHandler(self),
         )
         super().__init__(
             context,
@@ -466,6 +464,7 @@ class ModbusUdpServer(ModbusProtocol):
                 reconnect_delay=0.0,
                 reconnect_delay_max=0.0,
                 timeout_connect=0.0,
+                new_connection_class=lambda: ModbusServerRequestHandler(self),
             ),
             True,
         )
@@ -486,10 +485,6 @@ class ModbusUdpServer(ModbusProtocol):
         self.serving = asyncio.Future()
         self.serving_done = asyncio.Future()
         self.handle_local_echo = False
-
-    def handle_new_connection(self):
-        """Handle incoming connect."""
-        return ModbusServerRequestHandler(self)
 
     async def serve_forever(self):
         """Start endless loop."""
@@ -568,6 +563,7 @@ class ModbusSerialServer(ModbusProtocol):
                 parity=kwargs.get("parity", "N"),
                 baudrate=kwargs.get("baudrate", 19200),
                 stopbits=kwargs.get("stopbits", 1),
+                new_connection_class=lambda: ModbusServerRequestHandler(self),
             ),
             True,
         )
@@ -592,10 +588,6 @@ class ModbusSerialServer(ModbusProtocol):
 
     async def start(self):
         """Start connecting."""
-
-    def handle_new_connection(self):
-        """Handle incoming connect."""
-        return ModbusServerRequestHandler(self)
 
     async def shutdown(self):
         """Terminate server."""

@@ -36,7 +36,7 @@ jobs:
         id: cacheVenv
         uses: actions/cache@v3
         with:
-          path: ./venv/
+          path: venv/
           key: ${{ runner.os }}-${{ steps.setupPython.outputs.python-version }}-venv-${{ hashFiles('requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-${{ steps.setupPython.outputs.python-version }}-venv-

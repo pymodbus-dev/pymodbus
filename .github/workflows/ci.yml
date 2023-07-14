@@ -76,10 +76,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
       - uses: github/codeql-action/init@v2
         with:
           languages: python
+
       - uses: github/codeql-action/autobuild@v2
+
       - uses: github/codeql-action/analyze@v2
 
 
@@ -102,20 +105,35 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
       - name: Set up ${{ matrix.python.version }}
+        id: setupPython
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python.version }}
 
-      # - name: venv restore
-      #  id: cache-venv
-      #  uses: syphar/restore-virtualenv@v1
-      #  with:
-      #    requirement_files: requirements.txt
+      - name: cache virtualenv
+        id: cacheVenv
+        uses: actions/cache@v3
+        with:
+          path: venv/
+          key: ${{ runner.os }}-${{ steps.setupPython.outputs.python-version }}-venv-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ steps.setupPython.outputs.python-version }}-venv-
 
-      - name: venv create
-      #  if: steps.cache-venv.outputs.cache-hit != 'true'
-        run: pip install -e . -r requirements.txt
+      - name: Install requirements
+        if: steps.cacheVenv.outputs.cache-hit != 'true'
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -U -e . -r requirements.txt
+          echo PATH=$PATH >> $GITHUB_ENV
+
+      - name: Activate venv
+        if: steps.cacheVenv.outputs.cache-hit == 'true'
+        run: |
+          source venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
 
       - name: pytest
         run: pytest --cov=pymodbus --cov=test --cov-report=term-missing --cov-report=xml -v --full-trace --timeout=20

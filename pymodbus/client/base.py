@@ -66,14 +66,14 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         framer: type[ModbusFramer] = None,
-        timeout: str | float = 3,
-        retries: str | int = 3,
+        timeout: float = 3,
+        retries: int = 3,
         retry_on_empty: bool = False,
         close_comm_on_error: bool = False,
         strict: bool = True,
         broadcast_enable: bool = False,
-        reconnect_delay: int = 0.1,
-        reconnect_delay_max: int = 300,
+        reconnect_delay: float = 0.1,
+        reconnect_delay_max: float = 300,
         on_reconnect_callback: Callable[[], None] | None = None,
         **kwargs: Any,
     ) -> None:
@@ -104,7 +104,6 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             )
         else:
             self.comm_params = setup_params
-        self.framer = framer
         self.params = self._params()
         self.params.retries = int(retries)
         self.params.retry_on_empty = bool(retry_on_empty)

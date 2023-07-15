@@ -662,12 +662,16 @@ class ModbusSimulatorContext:
             value = reg.value + 1
             if maxval and value > maxval:
                 value = minval
+            if minval and value < minval:
+                value = minval
             reg.value = value
         elif cell.type == CellType.FLOAT32:
             tmp_reg = [reg.value, reg2.value]
             value = cls.build_value_from_registers(tmp_reg, False)
             value += 1.0
             if maxval and value > maxval:
+                value = minval
+            if minval and value < minval:
                 value = minval
             new_regs = cls.build_registers_from_value(value, False)
             reg.value = new_regs[0]
@@ -677,6 +681,8 @@ class ModbusSimulatorContext:
             value = cls.build_value_from_registers(tmp_reg, True)
             value += 1
             if maxval and value > maxval:
+                value = minval
+            if minval and value < minval:
                 value = minval
             new_regs = cls.build_registers_from_value(value, True)
             reg.value = new_regs[0]

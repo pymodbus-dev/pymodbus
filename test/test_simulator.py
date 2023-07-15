@@ -512,6 +512,7 @@ class TestSimulator:
             (CellType.UINT16, 50, 15075),
             (CellType.UINT32, 50, 63075),
             (CellType.FLOAT32, 27.0, 16100.5),
+            (CellType.FLOAT32, 65.0, 78.0),
         ],
     )
     def test_simulator_action_random(self, celltype, minval, maxval):

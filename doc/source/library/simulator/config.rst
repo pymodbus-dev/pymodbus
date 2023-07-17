@@ -424,7 +424,7 @@ Remark remember to set ``"value": <float value>`` like 512.0 (float) not 512 (in
 String section
 ^^^^^^^^^^^^^^
 
-Example "float32" configuration:
+Example "string" configuration:
 
 .. code-block::
 

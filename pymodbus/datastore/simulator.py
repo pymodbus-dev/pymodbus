@@ -767,7 +767,7 @@ class ModbusSimulatorContext:
         if is_int:
             value_bytes = int.to_bytes(value, 4, "big")
         else:
-            value_bytes = struct.pack("f", value)
+            value_bytes = struct.pack(">f", value)
         regs[0] = int.from_bytes(value_bytes[:2], "big")
         regs[1] = int.from_bytes(value_bytes[-2:], "big")
         return regs
@@ -781,5 +781,5 @@ class ModbusSimulatorContext:
         if is_int:
             value = int.from_bytes(value_bytes, "big")
         else:
-            value = struct.unpack("f", value_bytes)[0]
+            value = struct.unpack(">f", value_bytes)[0]
         return value

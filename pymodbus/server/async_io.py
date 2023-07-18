@@ -269,7 +269,6 @@ class ModbusTcpServer(ModbusProtocol):
         broadcast_enable=False,
         response_manipulator=None,
         request_tracer=None,
-        **kwargs,  # pylint: disable=unused-argument
     ):
         """Initialize the socket server.
 

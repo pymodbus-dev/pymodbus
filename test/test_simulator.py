@@ -561,7 +561,7 @@ class TestSimulator:
                 )
             assert minval <= new_value <= maxval
 
-    async def test_init_simulator(self):
+    async def test_init_simulator_server_tcp(self):
         """Test init simulator server"""
         with patch(
             "builtins.open",

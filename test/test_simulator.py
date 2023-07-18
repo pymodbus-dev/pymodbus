@@ -1,10 +1,13 @@
 """Test datastore."""
 import copy
+import json
+from unittest.mock import mock_open, patch
 
 import pytest
 
 from pymodbus.datastore import ModbusSimulatorContext
 from pymodbus.datastore.simulator import Cell, CellType, Label
+from pymodbus.server import ModbusSimulatorServer
 
 
 FX_READ_BIT = 1
@@ -92,6 +95,24 @@ class TestSimulator:
             {"addr": [45, 48], "value": "Strxyz12"},
         ],
         "repeat": [{"addr": [0, 48], "to": [49, 147]}],
+    }
+
+    default_server_config = {
+        "server": {
+            "comm": "tcp",
+            "host": "0.0.0.0",
+            "port": 5020,
+            "ignore_missing_slaves": False,
+            "framer": "socket",
+            "identity": {
+                "VendorName": "pymodbus",
+                "ProductCode": "PM",
+                "VendorUrl": "https://github.com/pymodbus-dev/pymodbus/",
+                "ProductName": "pymodbus Server",
+                "ModelName": "pymodbus Server",
+                "MajorMinorRevision": "3.1.0",
+            },
+        },
     }
 
     test_registers = [
@@ -539,3 +560,18 @@ class TestSimulator:
                     regs, is_int
                 )
             assert minval <= new_value <= maxval
+
+    async def test_init_simulator_server_tcp(self):
+        """Test init simulator server"""
+        with patch(
+            "builtins.open",
+            mock_open(
+                read_data=json.dumps(
+                    {
+                        "server_list": self.default_server_config,
+                        "device_list": {"device": self.default_config},
+                    }
+                )
+            ),
+        ):
+            ModbusSimulatorServer()

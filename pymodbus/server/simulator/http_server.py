@@ -149,7 +149,6 @@ class ModbusSimulatorServer:
         else:
             custom_actions_dict = None
         server = setup["server_list"][modbus_server]
-        server["loop"] = asyncio.get_running_loop()
         if server["comm"] != "serial":
             server["address"] = (server["host"], server["port"])
             del server["host"]

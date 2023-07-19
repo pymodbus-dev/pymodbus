@@ -11,7 +11,7 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
 from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
-from pymodbus.pdu import ModbusRequest, ModbusResponse
+from pymodbus.pdu import ExceptionResponse, ModbusRequest, ModbusResponse
 from pymodbus.transaction import DictTransactionManager
 from pymodbus.transport.transport import CommParams, ModbusProtocol
 from pymodbus.utilities import ModbusTransactionState
@@ -152,7 +152,10 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
 
     def close(self, reconnect=False) -> None:
         """Close connection."""
-        self.transport_close(reconnect=reconnect)
+        if reconnect:
+            self.connection_lost(asyncio.TimeoutError("Server not responding"))
+        else:
+            self.transport_close()
 
     def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).
@@ -192,13 +195,16 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         if self.params.broadcast_enable and not request.slave_id:
             resp = b"Broadcast write sent - no response expected"
         else:
-            try:
-                resp = await asyncio.wait_for(
-                    req, timeout=self.comm_params.timeout_connect
-                )
-            except asyncio.exceptions.TimeoutError:
-                self.close(reconnect=True)
-                raise
+            count = 0
+            while count < self.params.retries:
+                count += 1
+                try:
+                    resp = await asyncio.wait_for(
+                        req, timeout=self.comm_params.timeout_connect
+                    )
+                except asyncio.exceptions.TimeoutError:
+                    self.close(reconnect=True)
+                return ExceptionResponse(request.function_code, exception_code=0xFE)
         return resp
 
     def callback_data(self, data: bytes, addr: tuple = None) -> int:

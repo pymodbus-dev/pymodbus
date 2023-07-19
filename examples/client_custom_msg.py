@@ -24,6 +24,7 @@ from pymodbus.pdu import ModbusExceptions, ModbusRequest, ModbusResponse
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
+logging.basicConfig()
 log = logging.getLogger(__file__)
 log.setLevel(logging.DEBUG)
 

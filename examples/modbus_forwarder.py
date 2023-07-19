@@ -26,6 +26,7 @@ from pymodbus.datastore.remote import RemoteSlaveContext
 from pymodbus.server import StartAsyncTcpServer
 
 
+logging.basicConfig()
 _logger = logging.getLogger(__file__)
 
 

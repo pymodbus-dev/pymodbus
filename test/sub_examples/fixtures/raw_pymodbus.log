@@ -1,0 +1,14 @@
+2023-07-07 15:14:33,158 - DEBUG - pymodbus.logging - Running transaction 28107
+2023-07-07 15:14:33,158 - DEBUG - pymodbus.logging - SEND: 0x6d 0xcb 0x0 0x0 0x0 0x6 0x1 0x3 0x0 0x6 0x0 0x2
+2023-07-07 15:14:33,158 - DEBUG - pymodbus.logging - New Transaction state "SENDING"
+2023-07-07 15:14:33,158 - DEBUG - pymodbus.logging - Changing transaction state from "SENDING" to "WAITING FOR REPLY"
+2023-07-07 15:14:33,158 - DEBUG - pymodbus.logging - Changing transaction state from "WAITING FOR REPLY" to "PROCESSING REPLY"
+2023-07-07 15:14:33,158 - DEBUG - pymodbus.logging - RECV: 0x6d 0xcb 0x0 0x0 0x0 0x7 0x1 0x3 0x4 0x0 0x0 0x8 0xef
+2023-07-07 15:14:33,158 - DEBUG - pymodbus.logging - Processing: 0x6d 0xcb 0x0 0x0 0x0 0x7 0x1 0x3 0x4 0x0 0x0 0x8 0xef
+2023-07-07 15:14:33,158 - DEBUG - pymodbus.logging - Factory Response[ReadHoldingRegistersResponse': 3]
+2023-07-07 15:14:33,158 - DEBUG - pymodbus.logging - Adding transaction 28107
+2023-07-07 15:14:33,158 - DEBUG - pymodbus.logging - Getting transaction 28107
+2023-07-07 15:14:33,158 - DEBUG - pymodbus.logging - Changing transaction state from "PROCESSING REPLY" to "TRANSACTION_COMPLETE"
+2023-07-07 15:14:33,158 - DEBUG - pymodbus.logging - [0, 2287]
+2023-07-07 15:14:33,158 - DEBUG - pymodbus.logging - handle: [b'\x00\x00', b'\x08\xef']
+2023-07-07 15:14:34,177 - DEBUG - pymodbus.logging - Current transaction state - TRANSACTION_COMPLETE

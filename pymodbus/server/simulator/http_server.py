@@ -13,6 +13,8 @@ try:
 except ImportError:
     web = None
 
+import contextlib
+
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.datastore.simulator import Label
 from pymodbus.device import ModbusDeviceIdentification
@@ -231,10 +233,12 @@ class ModbusSimulatorServer:
         """Stop modbus server."""
         Log.info("Stopping modbus server")
         app["modbus_server"].cancel()
-        await app["modbus_server"]
+        with contextlib.suppress(asyncio.exceptions.CancelledError):
+            await app["modbus_server"]
+
         Log.info("Modbus server Stopped")
 
-    async def run_forever(self):
+    async def run_forever(self, only_start=False):
         """Start modbus and http servers."""
         try:
             runner = web.AppRunner(self.web_app)
@@ -245,13 +249,16 @@ class ModbusSimulatorServer:
             Log.error("Error starting http server, reason: {}", exc)
             raise exc
         Log.info("HTTP server started")
+        if only_start:
+            return
         while True:
             await asyncio.sleep(1)
 
     async def stop(self):
         """Stop modbus and http servers."""
-        self.site.stop()
+        await self.site.stop()
         self.site = None
+        await asyncio.sleep(1)
 
     async def handle_html_static(self, request):
         """Handle static html."""

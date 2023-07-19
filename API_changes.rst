@@ -11,6 +11,7 @@ Version 3.4.0
 - StartAsyncUnixServer / ModbusUnixServer removed (never worked on Windows)
 - ModbusTlsServer reqclicert= is no longer accepted
 - ModbusSerialServer auto_connect= is no longer accepted
+- ModbusSimulatorServer.serve_forever(only_start=False) added to allow return
 
 
 -------------

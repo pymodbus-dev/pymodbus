@@ -1,4 +1,5 @@
 """Test datastore."""
+import asyncio
 import copy
 import json
 from unittest.mock import mock_open, patch
@@ -561,17 +562,20 @@ class TestSimulator:
                 )
             assert minval <= new_value <= maxval
 
-    async def test_init_simulator_server_tcp(self):
+    @patch(
+        "builtins.open",
+        mock_open(
+            read_data=json.dumps(
+                {
+                    "server_list": default_server_config,
+                    "device_list": {"device": default_config},
+                }
+            )
+        ),
+    )
+    async def test_simulator_server_tcp(self):
         """Test init simulator server"""
-        with patch(
-            "builtins.open",
-            mock_open(
-                read_data=json.dumps(
-                    {
-                        "server_list": self.default_server_config,
-                        "device_list": {"device": self.default_config},
-                    }
-                )
-            ),
-        ):
-            ModbusSimulatorServer()
+        task = ModbusSimulatorServer()
+        await task.run_forever(only_start=True)
+        await asyncio.sleep(5)
+        await task.stop()

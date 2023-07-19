@@ -21,6 +21,7 @@ from examples.server_payload import setup_payload_server
 from examples.server_updating import run_updating_server, setup_updating_server
 from examples.simple_async_client import run_async_client as run_simple_async_client
 from examples.simple_sync_client import run_sync_client as run_simple_sync_client
+from examples.simulator import run_simulator
 from pymodbus.server import ServerAsyncStop
 
 
@@ -164,6 +165,10 @@ class TestExamples:
         """Run simple async client."""
         _cmdline = mock_server
         run_simple_sync_client("127.0.0.1", str(use_port))
+
+    async def test_simulator(self):
+        """Run simulator server/client."""
+        await run_simulator()
 
     async def test_modbus_forwarder(self):
         """Test modbus forwarder."""

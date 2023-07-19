@@ -120,7 +120,7 @@ demo_actions = {
 
 def get_commandline(cmdline=None):
     """Read and validate command line arguments"""
-    parser = argparse.ArgumentParser(description="Run server simulator.")
+    parser = argparse.ArgumentParser(description="Run datastore simulator example.")
     parser.add_argument(
         "--log",
         choices=["critical", "error", "warning", "info", "debug"],

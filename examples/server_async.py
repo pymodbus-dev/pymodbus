@@ -52,8 +52,9 @@ from pymodbus.server import (
 )
 
 
-_logger = logging.getLogger()
-_logger.setLevel("DEBUG")
+logging.basicConfig()
+_logger = logging.getLogger(__file__)
+_logger.setLevel(logging.INFO)
 
 
 def setup_server(description=None, context=None, cmdline=None):
@@ -221,5 +222,15 @@ async def run_async_server(args):
 
 
 if __name__ == "__main__":
+    _logger.setLevel(logging.INFO)
+    _logger.error("jan ERROR")
+    _logger.error("jan WARNING")
+    _logger.info("jan INFO")
+    _logger.debug("jan DEBUG")
+
     run_args = setup_server(description="Run asynchronous server.")
+    _logger.error("jan after ERROR")
+    _logger.error("jan after WARNING")
+    _logger.info("jan after INFO")
+    _logger.debug("jan after DEBUG")
     asyncio.run(run_async_server(run_args), debug=True)

@@ -38,7 +38,7 @@ from pymodbus.datastore import (
 )
 
 
-_logger = logging.getLogger()
+_logger = logging.getLogger(__name__)
 
 
 async def updating_task(context):

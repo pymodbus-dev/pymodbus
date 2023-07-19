@@ -17,7 +17,7 @@ from pymodbus.datastore import (
 from pymodbus.payload import BinaryPayloadBuilder
 
 
-_logger = logging.getLogger()
+_logger = logging.getLogger(__name__)
 
 
 def setup_payload_server(cmdline=None):

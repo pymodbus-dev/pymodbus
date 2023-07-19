@@ -13,7 +13,7 @@ from pymodbus.utilities import hexlify_packets
 # ---------------------------------------------------------------------------#
 #  Block unhandled logging
 # ---------------------------------------------------------------------------#
-logging.getLogger(__name__).addHandler(__null())
+logging.getLogger("pymodbus_internal").addHandler(__null())
 
 
 def pymodbus_apply_logging_config(

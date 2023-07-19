@@ -48,7 +48,7 @@ from pymodbus.logging import Log
 from pymodbus.server.simulator.http_server import ModbusSimulatorServer
 
 
-def get_commandline():
+def get_commandline(extras=None, cmdline=None):
     """Get command line arguments."""
     parser = argparse.ArgumentParser(
         description="Modbus server with REST-API and web server"
@@ -97,7 +97,10 @@ def get_commandline():
         help="python file with custom actions, default is none",
         type=str,
     )
-    args = parser.parse_args()
+    if extras:
+        for extra in extras:
+            parser.add_argument(extra[0], **extra[1])
+    args = parser.parse_args(cmdline)
     pymodbus_apply_logging_config(args.log.upper())
     Log.info("Start simulator")
     cmd_args = {}

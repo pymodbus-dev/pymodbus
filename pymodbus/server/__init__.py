@@ -4,6 +4,7 @@ import external classes, to make them easier to use:
 """
 
 __all__ = [
+    "get_simulator_commandline",
     "ModbusSerialServer",
     "ModbusSimulatorServer",
     "ModbusTcpServer",
@@ -38,3 +39,4 @@ from pymodbus.server.async_io import (
     StartUdpServer,
 )
 from pymodbus.server.simulator.http_server import ModbusSimulatorServer
+from pymodbus.server.simulator.main import get_commandline as get_simulator_commandline

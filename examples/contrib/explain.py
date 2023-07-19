@@ -1,5 +1,6 @@
 """How to explain pymodbus logs using https://rapidscada.net/modbus/."""
 
+import contextlib
 import os
 import shutil
 import tempfile
@@ -123,7 +124,7 @@ def explain_with_rapid_scada(
 def annotate_pymodbus_logs(file: Union[str, os.PathLike]) -> None:
     """Annotate a pymodbus log file in-place with explanations."""
     with open(file, encoding="utf-8") as in_file, tempfile.NamedTemporaryFile(
-        mode="w", encoding="utf-8"
+        mode="w", encoding="utf-8", delete=False
     ) as out_file:
         for i, line in enumerate(in_file):
             if "Running transaction" in line and i > 0:
@@ -146,7 +147,9 @@ def annotate_pymodbus_logs(file: Union[str, os.PathLike]) -> None:
                     f"Receive explained: {explained}\n"
                     f"Receive summary: {explained.summarize()}\n",
                 )
-        # If input file was small, buffer may not have been flushed yet,
-        # so this ensures no data loss or empty file issues before copying
-        out_file.flush()
-        shutil.copyfile(out_file.name, file)
+    # NOTE: per NamedTemporaryFile docs, the name cannot be reused on Windows
+    # while the file is still open. So we have to use delete=False followed by
+    # manually removing the temp file
+    shutil.copyfile(out_file.name, file)
+    with contextlib.suppress(FileNotFoundError):
+        os.remove(out_file.name)

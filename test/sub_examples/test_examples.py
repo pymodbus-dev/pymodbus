@@ -4,14 +4,24 @@ This is a thorough test of the clientexamples.
 
 """
 import asyncio
+import pathlib
+import shutil
+import tempfile
+from unittest.mock import MagicMock, patch
 
 import pytest
+import requests
 
 from examples.build_bcd_payload import BcdPayloadBuilder, BcdPayloadDecoder
 from examples.client_async import run_a_few_calls, run_async_client, setup_async_client
 from examples.client_calls import run_async_calls
 from examples.client_custom_msg import run_custom_client
 from examples.client_payload import run_payload_calls
+from examples.contrib.explain import (
+    ParsedModbusResult,
+    annotate_pymodbus_logs,
+    explain_with_rapid_scada,
+)
 from examples.datastore_simulator import run_server_simulator, setup_simulator
 from examples.message_generator import generate_messages
 from examples.message_parser import parse_messages
@@ -25,6 +35,7 @@ from pymodbus.server import ServerAsyncStop
 
 
 BASE_PORT = 6400
+FIXTURES_DIR = pathlib.PurePath(__file__).parent / "fixtures"
 
 
 class TestExamples:
@@ -168,3 +179,82 @@ class TestExamples:
     async def test_modbus_forwarder(self):
         """Test modbus forwarder."""
         print("waiting for fix")
+
+    @pytest.mark.parametrize(
+        ("value", "is_receive", "fixture_path", "expected"),
+        [
+            (
+                "0x6e 0x46 0x0 0x0 0x0 0x6 0x1 0x3 0x0 0x6 0x0 0x2",
+                False,
+                FIXTURES_DIR / "rapid_scada_post_send.html",
+                ParsedModbusResult(
+                    transaction_id=28230,
+                    length=6,
+                    unit_id=1,
+                    func_code=3,
+                    is_receive=False,
+                    zero_index_reg=6,
+                    quantity=2,
+                ),
+            ),
+            (
+                "0x6e 0x46 0x0 0x0 0x0 0x7 0x1 0x3 0x4 0x0 0x0 0x6 0xfb",
+                True,
+                FIXTURES_DIR / "rapid_scada_post_recv.html",
+                ParsedModbusResult(
+                    transaction_id=28230,
+                    length=7,
+                    unit_id=1,
+                    func_code=3,
+                    is_receive=True,
+                    byte_count=4,
+                    registers=[0, 1787],
+                ),
+            ),
+        ],
+    )
+    def test_explain_with_rapid_scada(
+        self,
+        value: str,
+        is_receive: bool,
+        fixture_path: pathlib.PurePath,
+        expected: ParsedModbusResult,
+    ) -> None:
+        """Test explain_with_rapid_scada with stub HTML response."""
+        with open(fixture_path, encoding="utf-8") as html_file:
+            html_text = html_file.read().replace("\n", "")
+        mock_post_return = MagicMock(spec_set=requests.Response)
+        mock_post_return.text = html_text
+
+        with patch("examples.contrib.explain.requests.post") as mock_post:
+            mock_post.return_value = mock_post_return
+            assert explain_with_rapid_scada(value, is_receive=is_receive) == expected
+        mock_post.assert_called_once()
+
+    def test_annotate_pymodbus_logs(self) -> None:
+        """Test annotate_pymodbus_logs with stub log file."""
+        send_explained = ParsedModbusResult(
+            transaction_id=28107,
+            length=6,
+            unit_id=1,
+            func_code=3,
+            is_receive=False,
+            zero_index_reg=6,
+            quantity=2,
+        )
+        recv_explained = ParsedModbusResult(
+            transaction_id=28107,
+            length=7,
+            unit_id=1,
+            func_code=3,
+            is_receive=True,
+            byte_count=4,
+            registers=[0, 2287],
+        )
+        with patch(
+            "examples.contrib.explain.explain_with_rapid_scada",
+            side_effect=[send_explained, recv_explained],
+        ), tempfile.TemporaryDirectory() as tmpdir:
+            temp_log_file = pathlib.PurePath(tmpdir).joinpath("raw_pymodbus.log")
+            shutil.copyfile(FIXTURES_DIR / "raw_pymodbus.log", temp_log_file)
+            annotate_pymodbus_logs(file=temp_log_file)

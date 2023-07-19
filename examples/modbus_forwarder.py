@@ -26,7 +26,7 @@ from pymodbus.datastore.remote import RemoteSlaveContext
 from pymodbus.server import StartAsyncTcpServer
 
 
-_logger = logging.getLogger()
+_logger = logging.getLogger(__file__)
 
 
 async def setup_forwarder(args):

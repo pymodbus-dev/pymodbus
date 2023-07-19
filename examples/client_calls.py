@@ -46,7 +46,7 @@ from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ExceptionResponse
 
 
-_logger = logging.getLogger()
+_logger = logging.getLogger(__file__)
 _logger.setLevel("DEBUG")
 
 

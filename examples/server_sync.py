@@ -48,7 +48,7 @@ from pymodbus.server import (
 )
 
 
-_logger = logging.getLogger()
+_logger = logging.getLogger(__name__)
 _logger.setLevel("DEBUG")
 
 

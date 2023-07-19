@@ -52,13 +52,19 @@ from pymodbus.server import (
 )
 
 
-_logger = logging.getLogger()
-_logger.setLevel("DEBUG")
+_logger = logging.getLogger(__file__)
+_logger.setLevel(logging.INFO)
 
 
 def setup_server(description=None, context=None, cmdline=None):
     """Run server setup."""
+    _logger.error("jan before ERROR")
+    _logger.info("jan before INFO")
+    _logger.debug("jan before DEBUG")
     args = helper.get_commandline(server=True, description=description, cmdline=cmdline)
+    _logger.error("jan ERROR")
+    _logger.info("jan INFO")
+    _logger.debug("jan DEBUG")
     if context:
         args.context = context
     if not args.context:

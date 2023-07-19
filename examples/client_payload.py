@@ -16,7 +16,7 @@ from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 
 
-_logger = logging.getLogger()
+_logger = logging.getLogger(__file__)
 ORDER_DICT = {"<": "LITTLE", ">": "BIG"}
 
 

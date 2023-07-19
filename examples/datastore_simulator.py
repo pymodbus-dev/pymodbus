@@ -31,7 +31,7 @@ from pymodbus.server import StartAsyncTcpServer
 from pymodbus.transaction import ModbusSocketFramer
 
 
-_logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__file__)
 
 demo_config = {
     "setup": {

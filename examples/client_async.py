@@ -40,7 +40,7 @@ from pymodbus.client import (
 )
 
 
-_logger = logging.getLogger()
+_logger = logging.getLogger(__file__)
 _logger.setLevel("DEBUG")
 
 

@@ -1,4 +1,8 @@
-"""How to explain pymodbus logs using https://rapidscada.net/modbus/."""
+"""
+How to explain pymodbus logs using https://rapidscada.net/modbus/ and requests.
+
+Created on 7/19/2023 to support Python 3.8 to 3.11 on macOS, Ubuntu, or Windows.
+"""
 
 import contextlib
 import os
@@ -8,7 +12,9 @@ from dataclasses import dataclass
 from html.parser import HTMLParser
 from typing import List, Optional, Tuple, Union
 
-import requests
+
+with contextlib.suppress:
+    import requests
 
 
 RAPID_SCADA_URL = "https://rapidscada.net/modbus/"

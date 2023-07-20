@@ -282,20 +282,15 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
         :param data: non-empty bytes object with incoming data.
         """
-        Log.debug("recv: {}", data, ":hex")
-        if self.comm_params.handle_local_echo and self.sent_buffer == data:
-            self.sent_buffer = b""
-            return
-        self.recv_buffer += data
-        cut = self.callback_data(self.recv_buffer)
-        self.recv_buffer = self.recv_buffer[cut:]
+        self.datagram_received(data, None)
 
     def datagram_received(self, data: bytes, addr: tuple):
         """Receive datagram (UDP connections)."""
-        Log.debug("recv: {} addr={}", data, ":hex", addr)
         if self.comm_params.handle_local_echo and self.sent_buffer == data:
+            Log.debug("recv skipping (local_echo): {} addr={}", data, ":hex", addr)
             self.sent_buffer = b""
             return
+        Log.debug("recv: {} addr={}", data, ":hex", addr)
         self.recv_buffer += data
         cut = self.callback_data(self.recv_buffer, addr=addr)
         self.recv_buffer = self.recv_buffer[cut:]

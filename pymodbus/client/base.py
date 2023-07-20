@@ -189,7 +189,6 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         """Execute requests asynchronously."""
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
-        Log.debug("send: {}", packet, ":hex")
         self.transport_send(packet)
         req = self._build_response(request.transaction_id)
         if self.params.broadcast_enable and not request.slave_id:
@@ -217,7 +216,6 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
 
         returns number of bytes consumed
         """
-        Log.debug("recv: {} addr={}", data, ":hex", addr)
         self.framer.processIncomingPacket(data, self._handle_response, slave=0)
         return len(data)
 

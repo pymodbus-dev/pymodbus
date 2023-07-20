@@ -42,7 +42,7 @@ async def run_calls(client, count):
     """Run client calls."""
     _logger.info("### Read fixed/increment/random value of different types.")
     _logger.info("--> UINT16")
-    for count in range(1, 100):
+    for count in range(1, 5):
         await read_registers(client, 1148, 1, True, curval=32117)
         await read_registers(client, 2305, 1, True, curval=50 + count)
         await read_registers(client, 2306, 1, True, minval=45, maxval=55)
@@ -62,8 +62,6 @@ async def run_simulator():
     """Run server."""
     _logger.info("### start server simulator")
     cmdline = [
-        "--log",
-        "debug",
         "--modbus_device",
         "device_try",
     ]

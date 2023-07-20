@@ -26,7 +26,6 @@ The corresponding server must be started before e.g. as:
     python3 server_sync.py
 """
 import asyncio
-import contextlib
 import logging
 
 # --------------------------------------------------------------------------- #
@@ -133,9 +132,7 @@ async def run_async_client(client, modbus_calls=None):
 
 async def run_a_few_calls(client):
     """Test connection works."""
-    with contextlib.suppress(asyncio.TimeoutError):
-        rr = await client.read_coils(32, 1, slave=1)
-
+    rr = await client.read_coils(32, 1, slave=1)
     assert len(rr.bits) == 8
     rr = await client.read_holding_registers(4, 2, slave=1)
     assert rr.registers[0] == 17

@@ -13,6 +13,8 @@ try:
 except ImportError:
     web = None
 
+import contextlib
+
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.datastore.simulator import Label
 from pymodbus.device import ModbusDeviceIdentification
@@ -85,8 +87,8 @@ class ModbusSimulatorServer:
 
     :param modbus_server: Server name in json file (default: "server")
     :param modbus_device: Device name in json file (default: "client")
-    :param http_host: TCP host for HTTP (default: 8080)
-    :param http_port: TCP port for HTTP (default: "localhost")
+    :param http_host: TCP host for HTTP (default: "localhost")
+    :param http_port: TCP port for HTTP (default: 8080)
     :param json_file: setup file (default: "setup.json")
     :param custom_actions_module: python module with custom actions (default: none)
 
@@ -149,7 +151,6 @@ class ModbusSimulatorServer:
         else:
             custom_actions_dict = None
         server = setup["server_list"][modbus_server]
-        server["loop"] = asyncio.get_running_loop()
         if server["comm"] != "serial":
             server["address"] = (server["host"], server["port"])
             del server["host"]
@@ -226,16 +227,20 @@ class ModbusSimulatorServer:
         except Exception as exc:
             Log.error("Error starting modbus server, reason: {}", exc)
             raise exc
-        Log.info("Modbus server started")
+        Log.info(
+            "Modbus server started on {}", self.modbus_server.comm_params.source_address
+        )
 
     async def stop_modbus_server(self, app):
         """Stop modbus server."""
         Log.info("Stopping modbus server")
         app["modbus_server"].cancel()
-        await app["modbus_server"]
+        with contextlib.suppress(asyncio.exceptions.CancelledError):
+            await app["modbus_server"]
+
         Log.info("Modbus server Stopped")
 
-    async def run_forever(self):
+    async def run_forever(self, only_start=False):
         """Start modbus and http servers."""
         try:
             runner = web.AppRunner(self.web_app)
@@ -245,14 +250,17 @@ class ModbusSimulatorServer:
         except Exception as exc:
             Log.error("Error starting http server, reason: {}", exc)
             raise exc
-        Log.info("HTTP server started")
+        Log.info("HTTP server started on ({}:{})", self.http_host, self.http_port)
+        if only_start:
+            return
         while True:
             await asyncio.sleep(1)
 
     async def stop(self):
         """Stop modbus and http servers."""
-        self.site.stop()
+        await self.site.stop()
         self.site = None
+        await asyncio.sleep(1)
 
     async def handle_html_static(self, request):
         """Handle static html."""

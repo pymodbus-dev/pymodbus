@@ -33,8 +33,8 @@ is just a thin cover on top of the async server and is in some aspects
 a lot slower.
 """
 import logging
-import os
 
+from examples import helper
 from examples.server_async import setup_server
 
 # --------------------------------------------------------------------------- #
@@ -48,7 +48,8 @@ from pymodbus.server import (
 )
 
 
-_logger = logging.getLogger()
+_logger = logging.getLogger(__name__)
+_logger.setLevel("DEBUG")
 
 
 def run_sync_server(args):
@@ -65,24 +66,19 @@ def run_sync_server(args):
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
-            # TBD handler=None,  # handler for each session
-            allow_reuse_address=True,  # allow the reuse of an address
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif args.comm == "udp":
-        address = ("", args.port) if args.port else None
+        address = ("127.0.0.1", args.port) if args.port else None
         server = StartUdpServer(
             context=args.context,  # Data storage
             identity=args.identity,  # server identify
-            # TBD host=
-            # TBD port=
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
-            # TBD handler=None,  # handler for each session
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
@@ -98,7 +94,6 @@ def run_sync_server(args):
             port=args.port,  # serial port
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
-            # handler=None,  # handler for each session
             # stopbits=1,  # The number of stop bits to use
             # bytesize=7,  # The bytesize of the serial messages
             # parity="E",  # Which kind of parity to use
@@ -110,28 +105,22 @@ def run_sync_server(args):
         )
     elif args.comm == "tls":
         address = ("", args.port) if args.port else None
-        cwd = os.getcwd().split("/")[-1]
-        if cwd == "examples":
-            path = "."
-        elif cwd == "test":
-            path = "../examples"
-        else:
-            path = "examples"
         server = StartTlsServer(
             context=args.context,  # Data storage
             host="localhost",  # define tcp address where to connect to.
             # port=port,  # on which port
             identity=args.identity,  # server identify
             # custom_functions=[],  # allow custom handling
-            address=None,  # listen address
+            address=address,  # listen address
             framer=args.framer,  # The framer strategy to use
-            # handler=None,  # handler for each session
-            allow_reuse_address=True,  # allow the reuse of an address
-            certfile=f"{path}/certificates/pymodbus.crt",  # The cert file path for TLS (used if sslctx is None)
+            certfile=helper.get_certificate(
+                "crt"
+            ),  # The cert file path for TLS (used if sslctx is None)
             # sslctx=None,  # The SSLContext to use for TLS (default None and auto create)
-            keyfile=f"{path}/certificates/pymodbus.key",  # The key file path for TLS (used if sslctx is None)
+            keyfile=helper.get_certificate(
+                "key"
+            ),  # The key file path for TLS (used if sslctx is None)
             # password=None,  # The password for for decrypting the private key file
-            # reqclicert=False,  # Force the sever request client"s certificate
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete

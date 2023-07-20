@@ -6,6 +6,7 @@ get_command_line
 """
 import argparse
 import logging
+import os
 
 from pymodbus import pymodbus_apply_logging_config
 from pymodbus.transaction import (
@@ -17,7 +18,7 @@ from pymodbus.transaction import (
 )
 
 
-_logger = logging.getLogger()
+_logger = logging.getLogger(__file__)
 
 
 def get_commandline(server=False, description=None, extras=None, cmdline=None):
@@ -62,6 +63,13 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
         default=9600,
         type=int,
     )
+    parser.add_argument(
+        "--host",
+        help="set host, default is 127.0.0.1",
+        dest="host",
+        default=None,
+        type=str,
+    )
     if server:
         parser.add_argument(
             "--store",
@@ -82,14 +90,6 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
             help="ADVANCED USAGE: set datastore context object",
             default=None,
         )
-    else:
-        parser.add_argument(
-            "--host",
-            help="set host, default is 127.0.0.1",
-            dest="host",
-            default="127.0.0.1",
-            type=str,
-        )
     if extras:
         for extra in extras:
             parser.add_argument(extra[0], **extra[1])
@@ -109,10 +109,29 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
         "socket": ModbusSocketFramer,
         "tls": ModbusTlsFramer,
     }
-    pymodbus_apply_logging_config(args.log)
+    pymodbus_apply_logging_config(args.log.upper())
     _logger.setLevel(args.log.upper())
     args.framer = framers[args.framer or comm_defaults[args.comm][0]]
     args.port = args.port or comm_defaults[args.comm][1]
     if args.comm != "serial" and args.port:
         args.port = int(args.port)
+    if not args.host:
+        args.host = "" if server else "127.0.0.1"
     return args
+
+
+def get_certificate(suffix: str):
+    """Get example certificate."""
+    delimiter = "\\" if os.name == "nt" else "/"
+    cwd = os.getcwd().split(delimiter)[-1]
+    if cwd == "examples":
+        path = "."
+    elif cwd == "sub_examples":
+        path = "../../examples"
+    elif cwd == "test":
+        path = "../examples"
+    elif cwd == "pymodbus":
+        path = "examples"
+    else:
+        raise RuntimeError(f"**Error** Cannot find certificate path={cwd}")
+    return f"{path}/certificates/pymodbus.{suffix}"

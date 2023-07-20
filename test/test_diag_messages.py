@@ -166,16 +166,16 @@ class TestDataStore:
 
     def test_return_query_data_request(self):
         """Testing diagnostic message execution"""
-        message = ReturnQueryDataRequest([0x0000] * 2)
+        message = ReturnQueryDataRequest(b"\x00\x00\x00\x00")
         assert message.encode() == b"\x00\x00\x00\x00\x00\x00"
-        message = ReturnQueryDataRequest(0x0000)
+        message = ReturnQueryDataRequest(b"\x00\x00")
         assert message.encode() == b"\x00\x00\x00\x00"
 
     def test_return_query_data_response(self):
         """Testing diagnostic message execution"""
-        message = ReturnQueryDataResponse([0x0000] * 2)
+        message = ReturnQueryDataResponse(b"\x00\x00\x00\x00")
         assert message.encode() == b"\x00\x00\x00\x00\x00\x00"
-        message = ReturnQueryDataResponse(0x0000)
+        message = ReturnQueryDataResponse(b"\x00\x00")
         assert message.encode() == b"\x00\x00\x00\x00"
 
     def test_restart_cmmunications_option(self):

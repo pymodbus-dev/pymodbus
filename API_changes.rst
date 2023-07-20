@@ -3,6 +3,18 @@ PyModbus - API changes.
 =======================
 
 -------------
+Version 3.4.0
+-------------
+- Modbus<x>Client .connect() returns True/False (connected or not)
+- Modbue<x>Server handler=, allow_reuse_addr=, backlog= are no longer accepted
+- ModbusTcpClient / AsyncModbusTcpClient no longer support unix path
+- StartAsyncUnixServer / ModbusUnixServer removed (never worked on Windows)
+- ModbusTlsServer reqclicert= is no longer accepted
+- ModbusSerialServer auto_connect= is no longer accepted
+- ModbusSimulatorServer.serve_forever(only_start=False) added to allow return
+
+
+-------------
 Version 3.3.1
 -------------
 

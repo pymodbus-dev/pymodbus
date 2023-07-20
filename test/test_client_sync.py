@@ -1,5 +1,4 @@
 """Test client sync."""
-import ssl
 from itertools import count
 from test.conftest import mockSocket
 from unittest import mock
@@ -13,7 +12,6 @@ from pymodbus.client import (
     ModbusTlsClient,
     ModbusUdpClient,
 )
-from pymodbus.client.tls import sslctx_provider
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import (
     ModbusAsciiFramer,
@@ -97,7 +95,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client = ModbusUdpClient("127.0.0.1")
         rep = (
             f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
-            f"ipaddr={client.params.host}, port={client.params.port}, timeout={client.params.timeout}>"
+            f"ipaddr={client.comm_params.host}, port={client.comm_params.port}, timeout={client.comm_params.timeout_connect}>"
         )
         assert repr(client) == rep
 
@@ -162,7 +160,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         mock_socket = mock.MagicMock()
         mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02"])
         client.socket = mock_socket
-        client.params.timeout = 3
+        client.comm_params.timeout_connect = 3
         assert client.recv(3) == b"\x00\x01\x02"
         mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02"])
         assert client.recv(2) == b"\x00\x01"
@@ -187,7 +185,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client = ModbusTcpClient("127.0.0.1")
         rep = (
             f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
-            f"ipaddr={client.params.host}, port={client.params.port}, timeout={client.params.timeout}>"
+            f"ipaddr={client.comm_params.host}, port={client.comm_params.port}, timeout={client.comm_params.timeout_connect}>"
         )
         assert repr(client) == rep
 
@@ -207,28 +205,6 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
     # -----------------------------------------------------------------------#
     # Test TLS Client
     # -----------------------------------------------------------------------#
-
-    def test_tls_sslctx_provider(self):
-        """Test that sslctx_provider() produce SSLContext correctly"""
-        with mock.patch.object(ssl.SSLContext, "load_cert_chain") as mock_method:
-            sslctx1 = sslctx_provider(certfile="cert.pem")
-            assert sslctx1
-            assert isinstance(sslctx1, ssl.SSLContext)
-            assert not mock_method.called
-
-            sslctx2 = sslctx_provider(keyfile="key.pem")
-            assert sslctx2
-            assert isinstance(sslctx2, ssl.SSLContext)
-            assert not mock_method.called
-
-            sslctx3 = sslctx_provider(certfile="cert.pem", keyfile="key.pem")
-            assert sslctx3
-            assert isinstance(sslctx3, ssl.SSLContext)
-            assert mock_method.called
-
-            sslctx_old = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-            sslctx_new = sslctx_provider(sslctx=sslctx_old)
-            assert sslctx_new == sslctx_old
 
     def test_syn_tls_client_instantiation(self):
         """Test sync tls client."""
@@ -288,7 +264,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         assert client.recv(0) == b""
         assert client.recv(4) == b"\x00" * 4
 
-        client.params.timeout = 2
+        client.comm_params.timeout_connect = 2
         client.socket.mock_prepare_receive(b"\x00")
         assert b"\x00" in client.recv(None)
 
@@ -297,8 +273,8 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client = ModbusTlsClient("127.0.0.1")
         rep = (
             f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
-            f"ipaddr={client.params.host}, port={client.params.port}, sslctx={client.sslctx}, "
-            f"timeout={client.params.timeout}>"
+            f"ipaddr={client.comm_params.host}, port={client.comm_params.port}, sslctx={client.sslctx}, "
+            f"timeout={client.comm_params.timeout_connect}>"
         )
         assert repr(client) == rep
 
@@ -448,6 +424,6 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client = ModbusSerialClient("/dev/null")
         rep = (
             f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
-            f"framer={client.framer}, timeout={client.params.timeout}>"
+            f"framer={client.framer}, timeout={client.comm_params.timeout_connect}>"
         )
         assert repr(client) == rep

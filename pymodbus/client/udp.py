@@ -4,11 +4,11 @@ import socket
 from typing import Any, Tuple, Type
 
 from pymodbus.client.base import ModbusBaseClient
-from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.logging import Log
+from pymodbus.transport.transport import CommType
 
 
 DGRAM_TYPE = socket.SOCK_DGRAM
@@ -43,7 +43,7 @@ class AsyncModbusUdpClient(
     def __init__(
         self,
         host: str,
-        port: int = Defaults.UdpPort,
+        port: int = 502,
         framer: Type[ModbusFramer] = ModbusSocketFramer,
         source_address: Tuple[str, int] = None,
         **kwargs: Any,
@@ -51,17 +51,17 @@ class AsyncModbusUdpClient(
         """Initialize Asyncio Modbus UDP Client."""
         asyncio.DatagramProtocol.__init__(self)
         asyncio.Protocol.__init__(self)
-        ModbusBaseClient.__init__(self, framer=framer, **kwargs)
-        self.params.port = port
+        ModbusBaseClient.__init__(
+            self, framer=framer, CommType=CommType.UDP, host=host, port=port, **kwargs
+        )
         self.params.source_address = source_address
-        self.setup_udp(False, host, port)
 
     @property
     def connected(self):
         """Return true if connected."""
-        return self.transport is not None
+        return self.is_active()
 
-    async def connect(self):
+    async def connect(self) -> bool:
         """Start reconnecting asynchronous udp client.
 
         :meta private:
@@ -71,7 +71,11 @@ class AsyncModbusUdpClient(
         self.reset_delay()
 
         # force reconnect if required:
-        Log.debug("Connecting to {}:{}.", self.comm_params.host, self.comm_params.port)
+        Log.debug(
+            "Connecting to {}:{}.",
+            self.comm_params.host,
+            self.comm_params.port,
+        )
         return await self.transport_connect()
 
 
@@ -104,19 +108,25 @@ class ModbusUdpClient(ModbusBaseClient):
     def __init__(
         self,
         host: str,
-        port: int = Defaults.UdpPort,
+        port: int = 502,
         framer: Type[ModbusFramer] = ModbusSocketFramer,
         source_address: Tuple[str, int] = None,
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus UDP Client."""
-        super().__init__(framer=framer, **kwargs)
-        self.params.host = host
-        self.params.port = port
+        kwargs["use_sync"] = True
+        self.transport = None
+        super().__init__(
+            framer=framer, port=port, host=host, CommType=CommType.UDP, **kwargs
+        )
         self.params.source_address = source_address
 
         self.socket = None
-        self.use_sync = True
+
+    @property
+    def connected(self):
+        """Connect internal."""
+        return self.socket is not None
 
     def connect(self):  # pylint: disable=invalid-overridden-method
         """Connect to the modbus tcp server.
@@ -126,9 +136,9 @@ class ModbusUdpClient(ModbusBaseClient):
         if self.socket:
             return True
         try:
-            family = ModbusUdpClient._get_address_family(self.params.host)
+            family = ModbusUdpClient._get_address_family(self.comm_params.host)
             self.socket = socket.socket(family, socket.SOCK_DGRAM)
-            self.socket.settimeout(self.params.timeout)
+            self.socket.settimeout(self.comm_params.timeout_connect)
         except OSError as exc:
             Log.error("Unable to create udp socket {}", exc)
             self.close()
@@ -150,7 +160,9 @@ class ModbusUdpClient(ModbusBaseClient):
         if not self.socket:
             raise ConnectionException(str(self))
         if request:
-            return self.socket.sendto(request, (self.params.host, self.params.port))
+            return self.socket.sendto(
+                request, (self.comm_params.host, self.comm_params.port)
+            )
         return 0
 
     def recv(self, size):
@@ -172,11 +184,11 @@ class ModbusUdpClient(ModbusBaseClient):
 
     def __str__(self):
         """Build a string representation of the connection."""
-        return f"ModbusUdpClient({self.params.host}:{self.params.port})"
+        return f"ModbusUdpClient({self.comm_params.host}:{self.comm_params.port})"
 
     def __repr__(self):
         """Return string representation."""
         return (
             f"<{self.__class__.__name__} at {hex(id(self))} socket={self.socket}, "
-            f"ipaddr={self.params.host}, port={self.params.port}, timeout={self.params.timeout}>"
+            f"ipaddr={self.comm_params.host}, port={self.comm_params.port}, timeout={self.comm_params.timeout_connect}>"
         )

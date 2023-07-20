@@ -24,7 +24,8 @@ from pymodbus.pdu import ModbusExceptions, ModbusRequest, ModbusResponse
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
-log = logging.getLogger()
+logging.basicConfig()
+log = logging.getLogger(__file__)
 log.setLevel(logging.DEBUG)
 
 # --------------------------------------------------------------------------- #
@@ -124,9 +125,9 @@ class Read16CoilsRequest(ReadCoilsRequest):
 # --------------------------------------------------------------------------- #
 
 
-def run_custom_client():
+def run_custom_client(host, port):
     """Run versions of read coil."""
-    with ModbusClient(host="localhost", port=5020) as client:
+    with ModbusClient(host=host, port=port) as client:
         # Standard call
         request = ReadCoilsRequest(32, 1, slave=1)
         result = client.execute(request)
@@ -145,4 +146,4 @@ def run_custom_client():
 
 
 if __name__ == "__main__":
-    run_custom_client()
+    run_custom_client("localhost", "5020")

@@ -3,31 +3,34 @@
 
 An example of a single threaded synchronous client.
 
-usage: client_sync.py [-h] [--comm {tcp,udp,serial,tls}]
-                      [--framer {ascii,binary,rtu,socket,tls}]
-                      [--log {critical,error,warning,info,debug}]
-                      [--port PORT]
+usage: client_sync.py [-h] [-c {tcp,udp,serial,tls}]
+                       [-f {ascii,binary,rtu,socket,tls}]
+                       [-l {critical,error,warning,info,debug}] [-p PORT]
+                       [--baudrate BAUDRATE] [--host HOST]
+
+Run asynchronous client.
+
 options:
   -h, --help            show this help message and exit
-  --comm {tcp,udp,serial,tls}
-                        "serial", "tcp", "udp" or "tls"
-  --framer {ascii,binary,rtu,socket,tls}
-                        "ascii", "binary", "rtu", "socket" or "tls"
-  --log {critical,error,warning,info,debug}
-                        "critical", "error", "warning", "info" or "debug"
-  --port PORT           the port to use
-  --baudrate BAUDRATE   the baud rate to use for the serial device
+  -c {tcp,udp,serial,tls}, --comm {tcp,udp,serial,tls}
+                        set communication, default is tcp
+  -f {ascii,binary,rtu,socket,tls}, --framer {ascii,binary,rtu,socket,tls}
+                        set framer, default depends on --comm
+  -l {critical,error,warning,info,debug}, --log {critical,error,warning,info,debug}
+                        set log level, default is info
+  -p PORT, --port PORT  set port
+  --baudrate BAUDRATE   set serial device baud rate
+  --host HOST           set host, default is 127.0.0.1
 
 The corresponding server must be started before e.g. as:
     python3 server_sync.py
 """
 import logging
-import os
 
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
-from examples.helper import get_commandline
+from examples import helper
 from pymodbus.client import (
     ModbusSerialClient,
     ModbusTcpClient,
@@ -36,12 +39,14 @@ from pymodbus.client import (
 )
 
 
-_logger = logging.getLogger()
+logging.basicConfig()
+_logger = logging.getLogger(__file__)
+_logger.setLevel("DEBUG")
 
 
 def setup_sync_client(description=None, cmdline=None):
     """Run client setup."""
-    args = get_commandline(
+    args = helper.get_commandline(
         server=False,
         description=description,
         cmdline=cmdline,
@@ -93,13 +98,6 @@ def setup_sync_client(description=None, cmdline=None):
             #    handle_local_echo=False,
         )
     elif args.comm == "tls":
-        cwd = os.getcwd().split("/")[-1]
-        if cwd == "examples":
-            path = "."
-        elif cwd == "test":
-            path = "../examples"
-        else:
-            path = "examples"
         client = ModbusTlsClient(
             args.host,
             port=args.port,
@@ -112,8 +110,8 @@ def setup_sync_client(description=None, cmdline=None):
             #    strict=True,
             # TLS setup parameters
             #    sslctx=None,
-            certfile=f"{path}/certificates/pymodbus.crt",
-            keyfile=f"{path}/certificates/pymodbus.key",
+            certfile=helper.get_certificate("crt"),
+            keyfile=helper.get_certificate("key"),
             #    password=None,
             server_hostname="localhost",
         )
@@ -130,6 +128,15 @@ def run_sync_client(client, modbus_calls=None):
     _logger.info("### End of Program")
 
 
+def run_a_few_calls(client):
+    """Test connection works."""
+    rr = client.read_coils(32, 1, slave=1)
+    assert len(rr.bits) == 8
+    rr = client.read_holding_registers(4, 2, slave=1)
+    assert rr.registers[0] == 17
+    assert rr.registers[1] == 17
+
+
 if __name__ == "__main__":
     testclient = setup_sync_client(description="Run synchronous client.")
-    run_sync_client(testclient)
+    run_sync_client(testclient, modbus_calls=run_a_few_calls)

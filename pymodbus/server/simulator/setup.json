@@ -4,7 +4,6 @@
             "comm": "tcp",
             "host": "0.0.0.0",
             "port": 5020,
-            "allow_reuse_address": true,
             "ignore_missing_slaves": false,
             "framer": "socket",
             "identity": {
@@ -24,7 +23,6 @@
             "parity": "N",
             "baudrate": 9600,
             "timeout": 3,
-            "auto_reconnect": false,
             "reconnect_delay": 2,
             "framer": "rtu",
             "identity": {
@@ -42,8 +40,6 @@
             "port": 5020,
             "certfile": "certificates/pymodbus.crt",
             "keyfile": "certificates/pymodbus.key",
-            "allow_reuse_address": true,
-            "backlog": 20,
             "ignore_missing_slaves": false,
             "framer": "tls",
             "identity": {
@@ -143,9 +139,9 @@
                     },
                     "action": {
                         "bits": null,
-                        "uint16": "register",
-                        "uint32": "register",
-                        "float32": "register",
+                        "uint16": null,
+                        "uint32": null,
+                        "float32": null,
                         "string": null
                     }
                 }
@@ -155,8 +151,7 @@
                 77
             ],
             "write": [
-                10,
-                [61, 76]
+                10
             ],
             "bits": [
                 10,
@@ -172,7 +167,17 @@
                 [2126, 2129],
                 {"addr": 2164, "value": 1},
                 {"addr": [2168,2169], "value": 32117},
-                {"addr": [2208, 2306], "action": null}
+                {"addr": [2208, 2304], "action": "increment"},
+                {"addr": 2305,
+                    "value": 50,
+                    "action": "increment",
+                    "kwargs": {"minval": 45, "maxval": 155}
+                },
+                {"addr": 2306,
+                    "value": 50,
+                    "action": "random",
+                    "kwargs": {"minval": 45, "maxval": 55}
+                }
             ],
             "uint32": [
                 [12, 13],
@@ -181,26 +186,42 @@
                 {"addr": [3174, 3175], "value": 1},
                 {"addr": [3188,3189], "value": 32514},
                 {"addr": [3308, 3407], "action": null},
-                {"addr": [3688, 3879], "value": 115, "action": "increment"}
+                {"addr": [3688, 3875], "value": 115, "action": "increment"},
+                {"addr": [3876, 3877],
+                    "value": 50000,
+                    "action": "increment",
+                    "kwargs": {"minval": 45000, "maxval": 55000}
+                },
+                {"addr": [3878, 3879],
+                    "value": 50000,
+                    "action": "random",
+                    "kwargs": {"minval": 45000, "maxval": 55000}
+                }
             ],
             "float32": [
                 [14, 15],
                 [4047, 4048],
                 [4146, 4149],
                 {"addr": [4184, 4185], "value": 1},
-                {"addr": [4188, 4191], "value": 32514.1},
+                {"addr": [4188, 4191], "value": 32514.2},
                 {"addr": [4308, 4407], "action": null},
-                {"addr": [4688, 4879], "value": 115.7, "action": "increment"}
+                {"addr": [4688, 4875], "value": 115.7, "action": "increment"},
+                {"addr": [4876, 4877],
+                    "value": 50000.0,
+                    "action": "increment",
+                    "kwargs": {"minval": 45000.0, "maxval": 55000.0}
+                },
+                {"addr": [4878, 48779],
+                    "value": 50000.0,
+                    "action": "random",
+                    "kwargs": {"minval": 45000.0, "maxval": 55000.0}
+                }
             ],
             "string": [
                 {"addr": [16, 20], "value": "A_B_C_D_E_"},
-                5047,
-                [5146, 5149],
                 {"addr": [529, 544], "value": "Brand name, 32 bytes...........X"}
             ],
             "repeat": [
-                {"addr": [0, 999], "to": [10000, 10999]},
-                {"addr": [10, 1999], "to": [11000, 11999]}
             ]
         }
     }

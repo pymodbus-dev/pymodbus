@@ -336,7 +336,7 @@ def tcp(ctx, host, port, framer):
 )
 @click.option(
     "--baudrate",
-    help="Modbus RTU serial baudrate to use. Defaults to 9600",
+    help="Modbus RTU serial baudrate to use.",
     default=9600,
     type=int,
 )
@@ -344,7 +344,7 @@ def tcp(ctx, host, port, framer):
     "--bytesize",
     help="Modbus RTU serial Number of data bits. "
     "Possible values: FIVEBITS, SIXBITS, SEVENBITS, "
-    "EIGHTBITS. Defaults to 8",
+    "EIGHTBITS.",
     type=NumericChoice(["5", "6", "7", "8"], int),
     default="8",
 )
@@ -367,33 +367,31 @@ def tcp(ctx, host, port, framer):
 )
 @click.option(
     "--xonxoff",
-    help="Modbus RTU serial xonxoff.  Enable software flow control. Defaults to 0",
+    help="Modbus RTU serial xonxoff.  Enable software flow control.",
     default=0,
     type=int,
 )
 @click.option(
     "--rtscts",
-    help="Modbus RTU serial rtscts. Enable hardware (RTS/CTS) flow "
-    "control. Defaults to 0",
+    help="Modbus RTU serial rtscts. Enable hardware (RTS/CTS) flow " "control.",
     default=0,
     type=int,
 )
 @click.option(
     "--dsrdtr",
-    help="Modbus RTU serial dsrdtr. Enable hardware (DSR/DTR) flow "
-    "control. Defaults to 0",
+    help="Modbus RTU serial dsrdtr. Enable hardware (DSR/DTR) flow " "control.",
     default=0,
     type=int,
 )
 @click.option(
     "--timeout",
-    help="Modbus RTU serial read timeout. Defaults to 0.025 sec",
+    help="Modbus RTU serial read timeout.",
     default=0.25,
     type=float,
 )
 @click.option(
     "--write-timeout",
-    help="Modbus RTU serial write timeout. Defaults to 2 sec",
+    help="Modbus RTU serial write timeout.",
     default=2,
     type=float,
 )

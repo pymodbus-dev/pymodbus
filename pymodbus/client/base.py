@@ -7,18 +7,17 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from pymodbus.client.mixin import ModbusClientMixin
-from pymodbus.constants import Defaults
-from pymodbus.exceptions import ConnectionException
+from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.factory import ClientDecoder
 from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.transaction import DictTransactionManager
-from pymodbus.transport.transport import Transport
+from pymodbus.transport.transport import CommParams, ModbusProtocol
 from pymodbus.utilities import ModbusTransactionState
 
 
-class ModbusBaseClient(ModbusClientMixin, Transport):
+class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     """**ModbusBaseClient**
 
     **Parameters common to all clients**:
@@ -50,64 +49,62 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
     """
 
     @dataclass
-    class _params:  # pylint: disable=too-many-instance-attributes
+    class _params:
         """Parameter class."""
 
-        host: str = None
-        port: str | int = None
-        framer: type[ModbusFramer] = None
-        timeout: float = None
         retries: int = None
         retry_on_empty: bool = None
         close_comm_on_error: bool = None
         strict: bool = None
         broadcast_enable: bool = None
-        kwargs: dict = None
         reconnect_delay: int = None
-
-        baudrate: int = None
-        bytesize: int = None
-        parity: str = None
-        stopbits: int = None
-        handle_local_echo: bool = None
 
         source_address: tuple[str, int] = None
 
-        sslctx: str = None
-        certfile: str = None
-        keyfile: str = None
-        password: str = None
         server_hostname: str = None
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
         framer: type[ModbusFramer] = None,
-        timeout: str | float = Defaults.Timeout,
-        retries: str | int = Defaults.Retries,
-        retry_on_empty: bool = Defaults.RetryOnEmpty,
-        close_comm_on_error: bool = Defaults.CloseCommOnError,
-        strict: bool = Defaults.Strict,
-        broadcast_enable: bool = Defaults.BroadcastEnable,
-        reconnect_delay: int = 0.1,
-        reconnect_delay_max: int = 300,
+        timeout: float = 3,
+        retries: int = 3,
+        retry_on_empty: bool = False,
+        close_comm_on_error: bool = False,
+        strict: bool = True,
+        broadcast_enable: bool = False,
+        reconnect_delay: float = 0.1,
+        reconnect_delay_max: float = 300,
         on_reconnect_callback: Callable[[], None] | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
-        Transport.__init__(
-            self,
-            "comm",
-            reconnect_delay * 1000,
-            reconnect_delay_max * 1000,
-            timeout * 1000,
-            lambda: None,
-            self.cb_base_connection_lost,
-            self.cb_base_handle_data,
+        ModbusClientMixin.__init__(self)
+        self.use_sync = kwargs.get("use_sync", False)
+        setup_params = CommParams(
+            comm_type=kwargs.get("CommType"),
+            comm_name="comm",
+            source_address=kwargs.get("source_address", ("127.0.0.1", 0)),
+            reconnect_delay=reconnect_delay,
+            reconnect_delay_max=reconnect_delay_max,
+            timeout_connect=timeout,
+            host=kwargs.get("host", None),
+            port=kwargs.get("port", None),
+            sslctx=kwargs.get("sslctx", None),
+            baudrate=kwargs.get("baudrate", None),
+            bytesize=kwargs.get("bytesize", None),
+            parity=kwargs.get("parity", None),
+            stopbits=kwargs.get("stopbits", None),
+            handle_local_echo=kwargs.get("handle_local_echo", False),
         )
-        self.framer = framer
+        if not self.use_sync:
+            ModbusProtocol.__init__(
+                self,
+                setup_params,
+                False,
+            )
+        else:
+            self.comm_params = setup_params
         self.params = self._params()
-        self.params.framer = framer
-        self.params.timeout = float(timeout)
         self.params.retries = int(retries)
         self.params.retry_on_empty = bool(retry_on_empty)
         self.params.close_comm_on_error = bool(close_comm_on_error)
@@ -116,7 +113,6 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
         self.params.reconnect_delay = int(reconnect_delay)
         self.reconnect_delay_max = int(reconnect_delay_max)
         self.on_reconnect_callback = on_reconnect_callback
-        self.params.kwargs = kwargs
         self.retry_on_empty: int = 0
         # -> retry read on nothing
 
@@ -124,24 +120,25 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
         # -> list of acceptable slaves (0 for accept all)
 
         # Common variables.
-        self.framer = self.params.framer(ClientDecoder(), self)
+        self.framer = framer(ClientDecoder(), self)
         self.transaction = DictTransactionManager(
             self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
         )
         self.reconnect_delay = self.params.reconnect_delay
         self.reconnect_delay_current = self.params.reconnect_delay
-        self.use_sync = False
         self.use_udp = False
         self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float = 0
         self.silent_interval: float = 0
 
-        # Initialize  mixin
-        ModbusClientMixin.__init__(self)
-
     # ----------------------------------------------------------------------- #
     # Client external interface
     # ----------------------------------------------------------------------- #
+    @property
+    def connected(self):
+        """Connect internal."""
+        return True
+
     def register(self, custom_response_class: ModbusResponse) -> None:
         """Register a custom response class with the decoder (call **sync**).
 
@@ -152,6 +149,13 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
         have them interpreted automatically.
         """
         self.framer.decoder.register(custom_response_class)
+
+    def close(self, reconnect=False) -> None:
+        """Close connection."""
+        if reconnect:
+            self.connection_lost(asyncio.TimeoutError("Server not responding"))
+        else:
+            self.transport_close()
 
     def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).
@@ -171,7 +175,7 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
         :raises ConnectionException: Check exception text.
         """
         if self.use_sync:
-            if not self.connect():
+            if not self.connected:
                 raise ConnectionException(f"Failed to connect[{str(self)}]")
             return self.transaction.execute(request)
         if not self.transport:
@@ -185,32 +189,37 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
         """Execute requests asynchronously."""
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
-        Log.debug("send: {}", packet, ":hex")
-        if self.use_udp:
-            self.transport.sendto(packet)
-        else:
-            self.transport.write(packet)
+        self.transport_send(packet)
         req = self._build_response(request.transaction_id)
         if self.params.broadcast_enable and not request.slave_id:
             resp = b"Broadcast write sent - no response expected"
         else:
-            try:
-                resp = await asyncio.wait_for(req, timeout=self.params.timeout)
-            except asyncio.exceptions.TimeoutError:
+            count = 0
+            while count < self.params.retries:
+                count += 1
+                try:
+                    resp = await asyncio.wait_for(
+                        req, timeout=self.comm_params.timeout_connect
+                    )
+                    break
+                except asyncio.exceptions.TimeoutError:
+                    pass
+            if count == self.params.retries:
                 self.close(reconnect=True)
-                raise
+                raise ModbusIOException(
+                    f"ERROR: No response received after {self.params.retries} retries"
+                )
         return resp
 
-    def cb_base_handle_data(self, data: bytes) -> int:
+    def callback_data(self, data: bytes, addr: tuple = None) -> int:
         """Handle received data
 
         returns number of bytes consumed
         """
-        Log.debug("recv: {}", data, ":hex")
         self.framer.processIncomingPacket(data, self._handle_response, slave=0)
         return len(data)
 
-    def cb_base_connection_lost(self, _reason: Exception) -> None:
+    def callback_disconnected(self, _reason: Exception) -> None:
         """Handle lost connection"""
         for tid in list(self.transaction):
             self.raise_future(
@@ -248,7 +257,7 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
     # ----------------------------------------------------------------------- #
     # Internal methods
     # ----------------------------------------------------------------------- #
-    def send(self, request):  # pylint: disable=invalid-overridden-method
+    def send(self, request):
         """Send request.
 
         :meta private:
@@ -311,4 +320,6 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
 
         :returns: The string representation
         """
-        return f"{self.__class__.__name__} {self.params.host}:{self.params.port}"
+        return (
+            f"{self.__class__.__name__} {self.comm_params.host}:{self.comm_params.port}"
+        )

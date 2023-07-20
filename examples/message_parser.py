@@ -20,7 +20,8 @@ from pymodbus.transaction import (
 )
 
 
-_logger = logging.getLogger()
+logging.basicConfig()
+_logger = logging.getLogger(__file__)
 
 
 def get_commandline(cmdline):

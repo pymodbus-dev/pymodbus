@@ -1,10 +1,14 @@
 """Test datastore."""
+import asyncio
 import copy
+import json
+from unittest.mock import mock_open, patch
 
 import pytest
 
 from pymodbus.datastore import ModbusSimulatorContext
 from pymodbus.datastore.simulator import Cell, CellType, Label
+from pymodbus.server import ModbusSimulatorServer
 
 
 FX_READ_BIT = 1
@@ -68,7 +72,7 @@ class TestSimulator:
                 "addr": [19, 20],
                 "value": 14661,
                 "action": "increment",
-                "args": {"min": 1, "max": 100},
+                "args": {"minval": 1, "maxval": 100},
             },
         ],
         "uint32": [
@@ -79,7 +83,7 @@ class TestSimulator:
                 "addr": [31, 32],
                 "value": 50,
                 "action": "random",
-                "kwargs": {"min": 10, "max": 80},
+                "kwargs": {"minval": 10, "maxval": 80},
             },
         ],
         "float32": [
@@ -92,6 +96,24 @@ class TestSimulator:
             {"addr": [45, 48], "value": "Strxyz12"},
         ],
         "repeat": [{"addr": [0, 48], "to": [49, 147]}],
+    }
+
+    default_server_config = {
+        "server": {
+            "comm": "tcp",
+            "host": "0.0.0.0",
+            "port": 5020,
+            "ignore_missing_slaves": False,
+            "framer": "socket",
+            "identity": {
+                "VendorName": "pymodbus",
+                "ProductCode": "PM",
+                "VendorUrl": "https://github.com/pymodbus-dev/pymodbus/",
+                "ProductName": "pymodbus Server",
+                "ModelName": "pymodbus Server",
+                "MajorMinorRevision": "3.1.0",
+            },
+        },
     }
 
     test_registers = [
@@ -126,18 +148,20 @@ class TestSimulator:
         Cell(type=CellType.NEXT, value=17320),
         Cell(type=CellType.UINT32, value=5, action=1),
         Cell(type=CellType.NEXT, value=17320),  # 30
-        Cell(type=CellType.UINT32, action=2, action_kwargs={"min": 10, "max": 80}),
+        Cell(
+            type=CellType.UINT32, action=2, action_kwargs={"minval": 10, "maxval": 80}
+        ),
         Cell(type=CellType.NEXT, value=50),
-        Cell(type=CellType.FLOAT32, access=True, value=72),
-        Cell(type=CellType.NEXT, access=True, value=17221),
-        Cell(type=CellType.FLOAT32, access=True, value=34161),
-        Cell(type=CellType.NEXT, access=True, value=45381),
-        Cell(type=CellType.FLOAT32, access=True, value=34161),
-        Cell(type=CellType.NEXT, access=True, value=45381),
-        Cell(type=CellType.FLOAT32, value=1653, action=1),
-        Cell(type=CellType.NEXT, value=43080),  # 40
-        Cell(type=CellType.FLOAT32, value=1653, action=1),
-        Cell(type=CellType.NEXT, value=43080),
+        Cell(type=CellType.FLOAT32, access=True, value=17731),
+        Cell(type=CellType.NEXT, access=True, value=18432),
+        Cell(type=CellType.FLOAT32, access=True, value=17841),
+        Cell(type=CellType.NEXT, access=True, value=29061),
+        Cell(type=CellType.FLOAT32, access=True, value=17841),
+        Cell(type=CellType.NEXT, access=True, value=29061),
+        Cell(type=CellType.FLOAT32, value=18600, action=1),
+        Cell(type=CellType.NEXT, value=29958),  # 40
+        Cell(type=CellType.FLOAT32, value=18600, action=1),
+        Cell(type=CellType.NEXT, value=29958),
         Cell(type=CellType.STRING, value=int.from_bytes(bytes("St", "utf-8"), "big")),
         Cell(type=CellType.NEXT, value=int.from_bytes(bytes("r ", "utf-8"), "big")),
         Cell(type=CellType.STRING, value=int.from_bytes(bytes("St", "utf-8"), "big")),
@@ -386,7 +410,7 @@ class TestSimulator:
                 "31-32",
                 Cell(
                     type=Label.type_uint32,
-                    action="random({'min': 10, 'max': 80})",
+                    action="random({'minval': 10, 'maxval': 80})",
                     value="50",
                 ),
             ),
@@ -435,7 +459,7 @@ class TestSimulator:
         assert values[0] or values[1]
 
     def test_simulator_action_timestamp(self):
-        """Test action random"""
+        """Test action timestamp"""
         exc_setup = copy.deepcopy(self.default_config)
         exc_simulator = ModbusSimulatorContext(exc_setup, None)
         addr = 12
@@ -445,7 +469,7 @@ class TestSimulator:
         exc_simulator.getValues(FX_READ_REG, addr, 1)
 
     def test_simulator_action_reset(self):
-        """Test action random"""
+        """Test action reset"""
         exc_setup = copy.deepcopy(self.default_config)
         exc_simulator = ModbusSimulatorContext(exc_setup, None)
         addr = 12
@@ -454,3 +478,104 @@ class TestSimulator:
         ]
         with pytest.raises(RuntimeError):
             exc_simulator.getValues(FX_READ_REG, addr, 1)
+
+    @pytest.mark.parametrize(
+        ("celltype", "minval", "maxval", "value", "expected"),
+        [
+            (CellType.BITS, 50, 75, 73, (74, 75, 50)),
+            (CellType.BITS, 50, 75, 45, (50, 51, 52)),
+            (CellType.UINT16, 50, 15075, 15073, (15074, 15075, 50)),
+            (CellType.UINT16, 50, 75, 45, (50, 51, 52)),
+            (CellType.UINT32, 50, 63075, 63073, (63074, 63075, 50)),
+            (CellType.UINT32, 50, 75, 45, (50, 51, 52)),
+            (CellType.FLOAT32, 27.0, 16100.5, 16098.0, (16099.0, 16100.0, 27.0)),
+            (CellType.FLOAT32, 27.0, 75.5, 24.0, (27.0, 28.0, 29.0)),
+        ],
+    )
+    def test_simulator_action_increment(
+        self, celltype, minval, maxval, value, expected
+    ):
+        """Test action increment"""
+        exc_setup = copy.deepcopy(self.default_config)
+        exc_simulator = ModbusSimulatorContext(exc_setup, None)
+        action = exc_simulator.action_name_to_id[Label.increment]
+        kwargs = {
+            "minval": minval,
+            "maxval": maxval,
+        }
+        exc_simulator.registers[30].type = celltype
+        exc_simulator.registers[30].action = action
+        exc_simulator.registers[30].action_kwargs = kwargs
+        exc_simulator.registers[31].type = CellType.NEXT
+
+        is_int = celltype != CellType.FLOAT32
+        reg_count = 1 if celltype in (CellType.BITS, CellType.UINT16) else 2
+        regs = (
+            [value, 0]
+            if reg_count == 1
+            else ModbusSimulatorContext.build_registers_from_value(value, is_int)
+        )
+        exc_simulator.registers[30].value = regs[0]
+        exc_simulator.registers[31].value = regs[1]
+        for expect_value in expected:
+            regs = exc_simulator.getValues(FX_READ_REG, 30, reg_count)
+            if reg_count == 1:
+                assert expect_value == regs[0], f"type({celltype})"
+            else:
+                new_value = ModbusSimulatorContext.build_value_from_registers(
+                    regs, is_int
+                )
+                assert expect_value == new_value, f"type({celltype})"
+
+    @pytest.mark.parametrize(
+        ("celltype", "minval", "maxval"),
+        [
+            (CellType.BITS, 50, 75),
+            (CellType.UINT16, 50, 15075),
+            (CellType.UINT32, 50, 63075),
+            (CellType.FLOAT32, 27.0, 16100.5),
+            (CellType.FLOAT32, 65.0, 78.0),
+        ],
+    )
+    def test_simulator_action_random(self, celltype, minval, maxval):
+        """Test action random"""
+        exc_setup = copy.deepcopy(self.default_config)
+        exc_simulator = ModbusSimulatorContext(exc_setup, None)
+        action = exc_simulator.action_name_to_id[Label.random]
+        kwargs = {
+            "minval": minval,
+            "maxval": maxval,
+        }
+        exc_simulator.registers[30].type = celltype
+        exc_simulator.registers[30].action = action
+        exc_simulator.registers[30].action_kwargs = kwargs
+        exc_simulator.registers[31].type = CellType.NEXT
+        is_int = celltype != CellType.FLOAT32
+        reg_count = 1 if celltype in (CellType.BITS, CellType.UINT16) else 2
+        for _i in range(100):
+            regs = exc_simulator.getValues(FX_READ_REG, 30, reg_count)
+            if reg_count == 1:
+                new_value = regs[0]
+            else:
+                new_value = ModbusSimulatorContext.build_value_from_registers(
+                    regs, is_int
+                )
+            assert minval <= new_value <= maxval
+
+    @patch(
+        "builtins.open",
+        mock_open(
+            read_data=json.dumps(
+                {
+                    "server_list": default_server_config,
+                    "device_list": {"device": default_config},
+                }
+            )
+        ),
+    )
+    async def test_simulator_server_tcp(self):
+        """Test init simulator server"""
+        task = ModbusSimulatorServer()
+        await task.run_forever(only_start=True)
+        await asyncio.sleep(5)
+        await task.stop()

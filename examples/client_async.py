@@ -1,48 +1,56 @@
 #!/usr/bin/env python3
-"""Pymodbus Aynchronous Client Example.
+"""Pymodbus aynchronous client example.
 
-An example of a single threaded synchronous client.
+An example of a asynchronous client.
 
-usage: client_async.py [-h] [--comm {tcp,udp,serial,tls}]
-                       [--framer {ascii,binary,rtu,socket,tls}]
-                       [--log {critical,error,warning,info,debug}]
-                       [--port PORT]
+usage: client_async.py [-h] [-c {tcp,udp,serial,tls}]
+                       [-f {ascii,binary,rtu,socket,tls}]
+                       [-l {critical,error,warning,info,debug}] [-p PORT]
+                       [--baudrate BAUDRATE] [--host HOST]
+
+Run asynchronous client.
+
 options:
   -h, --help            show this help message and exit
-  --comm {tcp,udp,serial,tls}
-                        "serial", "tcp", "udp" or "tls"
-  --framer {ascii,binary,rtu,socket,tls}
-                        "ascii", "binary", "rtu", "socket" or "tls"
-  --log {critical,error,warning,info,debug}
-                        "critical", "error", "warning", "info" or "debug"
-  --port PORT           the port to use
-  --baudrate BAUDRATE   the baud rate to use for the serial device
+  -c {tcp,udp,serial,tls}, --comm {tcp,udp,serial,tls}
+                        set communication, default is tcp
+  -f {ascii,binary,rtu,socket,tls}, --framer {ascii,binary,rtu,socket,tls}
+                        set framer, default depends on --comm
+  -l {critical,error,warning,info,debug}, --log {critical,error,warning,info,debug}
+                        set log level, default is info
+  -p PORT, --port PORT  set port
+  --baudrate BAUDRATE   set serial device baud rate
+  --host HOST           set host, default is 127.0.0.1
 
 The corresponding server must be started before e.g. as:
     python3 server_sync.py
 """
 import asyncio
 import logging
-import os
 
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
-from examples.helper import get_commandline
+from examples import helper
 from pymodbus.client import (
     AsyncModbusSerialClient,
     AsyncModbusTcpClient,
     AsyncModbusTlsClient,
     AsyncModbusUdpClient,
 )
+from pymodbus.exceptions import ModbusIOException
 
 
-_logger = logging.getLogger()
+logging.basicConfig()
+_logger = logging.getLogger(__file__)
+_logger.setLevel("DEBUG")
 
 
 def setup_async_client(description=None, cmdline=None):
     """Run client setup."""
-    args = get_commandline(server=False, description=description, cmdline=cmdline)
+    args = helper.get_commandline(
+        server=False, description=description, cmdline=cmdline
+    )
     _logger.info("### Create client object")
     if args.comm == "tcp":
         client = AsyncModbusTcpClient(
@@ -50,8 +58,10 @@ def setup_async_client(description=None, cmdline=None):
             port=args.port,  # on which port
             # Common optional paramers:
             framer=args.framer,
-            #    timeout=10,
-            #    retries=3,
+            timeout=5,
+            retries=3,
+            reconnect_delay=1,
+            reconnect_delay_max=10,
             #    retry_on_empty=False,
             #    close_comm_on_error=False,
             #    strict=True,
@@ -90,13 +100,6 @@ def setup_async_client(description=None, cmdline=None):
             #    handle_local_echo=False,
         )
     elif args.comm == "tls":
-        cwd = os.getcwd().split("/")[-1]
-        if cwd == "examples":
-            path = "."
-        elif cwd == "test":
-            path = "../examples"
-        else:
-            path = "examples"
         client = AsyncModbusTlsClient(
             args.host,
             port=args.port,
@@ -109,8 +112,8 @@ def setup_async_client(description=None, cmdline=None):
             #    strict=True,
             # TLS setup parameters
             #    sslctx=sslctx,
-            certfile=f"{path}/certificates/pymodbus.crt",
-            keyfile=f"{path}/certificates/pymodbus.key",
+            certfile=helper.get_certificate("crt"),
+            keyfile=helper.get_certificate("key"),
             #    password="none",
             server_hostname="localhost",
         )
@@ -128,25 +131,18 @@ async def run_async_client(client, modbus_calls=None):
     _logger.info("### End of Program")
 
 
-async def helper():
-    """Combine the setup and run"""
-    args = [
-        "--comm",
-        "udp",
-        "--host",
-        "127.0.0.1",
-        "--port",
-        "5020",
-        "--framer",
-        "socket",
-        "--log",
-        "debug",
-    ]
-    testclient = setup_async_client(
-        description="Run asynchronous client.", cmdline=args
-    )
-    await run_async_client(testclient)
+async def run_a_few_calls(client):
+    """Test connection works."""
+    try:
+        rr = await client.read_coils(32, 1, slave=1)
+        assert len(rr.bits) == 8
+        rr = await client.read_holding_registers(4, 2, slave=1)
+        assert rr.registers[0] == 17
+        assert rr.registers[1] == 17
+    except ModbusIOException:
+        pass
 
 
 if __name__ == "__main__":
-    asyncio.run(helper(), debug=True)
+    testclient = setup_async_client(description="Run asynchronous client.")
+    asyncio.run(run_async_client(testclient, modbus_calls=run_a_few_calls), debug=True)

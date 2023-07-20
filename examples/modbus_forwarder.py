@@ -14,19 +14,20 @@ a) server receives a read/write request from external client:
 Both server and client are tcp based, but it can be easily modified to any server/client
 (see client_sync.py and server_sync.py for other communication types)
 
-**WARNING** This example is a simple solution, that do only forward data (read/write) requests.
+**WARNING** This example is a simple solution, that do only forward read requests.
 """
 import asyncio
 import logging
 
-from examples.helper import get_commandline
-from pymodbus.client import AsyncModbusTcpClient
+from examples import helper
+from pymodbus.client import ModbusTcpClient
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.remote import RemoteSlaveContext
 from pymodbus.server import StartAsyncTcpServer
 
 
-_logger = logging.getLogger()
+logging.basicConfig()
+_logger = logging.getLogger(__file__)
 
 
 async def setup_forwarder(args):
@@ -40,11 +41,11 @@ async def run_forwarder(args):
     txt = f"### start forwarder, listen {args.port}, connect to {args.client_port}"
     _logger.info(txt)
 
-    args.client = AsyncModbusTcpClient(
+    args.client = ModbusTcpClient(
         host="localhost",
         port=args.client_port,
     )
-    await args.client.connect()
+    args.client.connect()
     assert args.client.connected
     # If required to communicate with a specified client use slave=<slave_id>
     # in RemoteSlaveContext
@@ -58,12 +59,12 @@ async def run_forwarder(args):
         store = RemoteSlaveContext(args.client, slave=1)
     args.context = ModbusServerContext(slaves=store, single=True)
 
-    await StartAsyncTcpServer(context=args.context, address=("localhost", args.port))
+    await StartAsyncTcpServer(context=args.context, address=("", args.port))
     # loop forever
 
 
 if __name__ == "__main__":
-    cmd_args = get_commandline(
+    cmd_args = helper.get_commandline(
         server=True,
         description="Run asynchronous forwarder.",
         extras=[

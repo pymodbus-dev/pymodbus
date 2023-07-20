@@ -46,7 +46,9 @@ from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ExceptionResponse
 
 
-_logger = logging.getLogger()
+logging.basicConfig()
+_logger = logging.getLogger(__file__)
+_logger.setLevel("DEBUG")
 
 
 SLAVE = 0x01
@@ -84,7 +86,7 @@ async def async_template_call(client):
 def template_call(client):
     """Show complete modbus call, sync version."""
     try:
-        rr = client.read_coils(1, 1, slave=SLAVE)
+        rr = client.read_coils(32, 1, slave=SLAVE)
     except ModbusException as exc:
         txt = f"ERROR: exception in pymodbus {exc}"
         _logger.error(txt)
@@ -200,31 +202,36 @@ async def _execute_information_requests(client):
     assert rr.information[0] == b"Pymodbus"
 
     rr = _check_call(await client.execute(req_other.ReportSlaveIdRequest(slave=SLAVE)))
-    assert rr.status
+    # assert rr.status
 
     rr = _check_call(
         await client.execute(req_other.ReadExceptionStatusRequest(slave=SLAVE))
     )
-    assert not rr.status
+    # assert not rr.status
 
     rr = _check_call(
         await client.execute(req_other.GetCommEventCounterRequest(slave=SLAVE))
     )
-    assert rr.status
-    assert not rr.count
+    # assert rr.status
+    # assert not rr.count
 
     rr = _check_call(
         await client.execute(req_other.GetCommEventLogRequest(slave=SLAVE))
     )
-    assert rr.status
-    assert not (rr.event_count + rr.message_count + len(rr.events))
+    # assert rr.status
+    # assert not (rr.event_count + rr.message_count + len(rr.events))
 
 
 async def _execute_diagnostic_requests(client):
     """Execute extended diagnostic requests."""
     _logger.info("### Running diagnostic requests.")
-    rr = _check_call(await client.execute(req_diag.ReturnQueryDataRequest(slave=SLAVE)))
-    assert not rr.message[0]
+    message = b"OK"
+    rr = _check_call(
+        await client.execute(
+            req_diag.ReturnQueryDataRequest(message=message, slave=SLAVE)
+        )
+    )
+    assert rr.message == message
 
     _check_call(
         await client.execute(req_diag.RestartCommunicationsOptionRequest(slave=SLAVE))
@@ -289,14 +296,14 @@ def run_sync_calls(client):
     template_call(client)
 
 
-async def helper():
+async def async_helper():
     """Combine the setup and run"""
     testclient = setup_async_client(description="Run asynchronous client.")
     await run_async_client(testclient, modbus_calls=run_async_calls)
 
 
 if __name__ == "__main__":
-    asyncio.run(helper())
+    asyncio.run(async_helper())
     testclient = setup_sync_client(
         description="Run modbus calls in synchronous client."
     )

@@ -44,7 +44,6 @@ The entries for a tcp server with minimal parameters look like:
                 "comm": "tcp",
                 "host": "0.0.0.0",
                 "port": 5020,
-                "allow_reuse_address": true,
                 "framer": "socket",
             }
         }
@@ -60,7 +59,6 @@ The entry “comm” allows the following values:
 - “serial”, to use :class:`pymodbus.server.ModbusSerialServer`,
 - “tcp”, to use :class:`pymodbus.server.ModbusTcpServer`,
 - “tls”, to use :class:`pymodbus.server.ModbusTlsServer`,
-- “unix”, to use :class:`pymodbus.server.ModbusUnixServer`,
 - “udp”;  to use :class:`pymodbus.server.ModbusUdpServer`.
 
 The entry “framer” allows the following values:
@@ -87,7 +85,6 @@ Server configuration examples
                 "comm": "tcp",
                 "host": "0.0.0.0",
                 "port": 5020,
-                "allow_reuse_address": true,
                 "ignore_missing_slaves": false,
                 "framer": "socket",
                 "identity": {
@@ -107,7 +104,6 @@ Server configuration examples
                 "parity": "N",
                 "baudrate": 9600,
                 "timeout": 3,
-                "auto_reconnect": false,
                 "reconnect_delay": 2,
                 "framer": "rtu",
                 "identity": {
@@ -125,8 +121,6 @@ Server configuration examples
                 "port": 5020,
                 "certfile": "certificates/pymodbus.crt",
                 "keyfile": "certificates/pymodbus.key",
-                "allow_reuse_address": true,
-                "backlog": 20,
                 "ignore_missing_slaves": false,
                 "framer": "tls",
                 "identity": {
@@ -238,7 +232,7 @@ Example "setup" configuration:
                 "uint16": "register",
                 "uint32": "register",
                 "float32": "register",
-                            "string": null
+                "string": null
             }
     }
 
@@ -289,6 +283,14 @@ The datastore simulator have a number of builtin actions, and allows custom acti
 - **"timestamp"**, uses 6 registers and build a timestamp,
 - **"reset"**, causes a reboot of the simulator,
 - **"uptime"**, sets the number of seconds the server have been running.
+
+The **"random"** and **"increment"** actions may optionally minimum and/or maximum.
+In case of **"increment"**, the counter is reset to the minimum value, if the maximum is crossed.
+
+.. code-block::
+
+    {"addr": 9, "value": 7, "action": "random", "kwargs": {"minval": 0, "maxval": 12} },
+    {"addr": 10, "value": 100, "action": "increment", "kwargs": {"minval": 50} }
 
 
 Invalid section
@@ -422,7 +424,7 @@ Remark remember to set ``"value": <float value>`` like 512.0 (float) not 512 (in
 String section
 ^^^^^^^^^^^^^^
 
-Example "float32" configuration:
+Example "string" configuration:
 
 .. code-block::
 

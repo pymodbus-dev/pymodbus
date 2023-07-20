@@ -61,7 +61,6 @@ jobs:
   integreation_test:
     name: pytest - ${{ matrix.os.on }} - ${{ matrix.python.version }}
     runs-on: ${{ matrix.os.on }}
-    needs: linters
     timeout-minutes: 10
     strategy:
       fail-fast: false
@@ -75,16 +74,6 @@ jobs:
           - version: '3.9'
           - version: '3.10'
           - version: '3.11'
-          - version: pypy-3.8
-        exclude:
-          - os:
-              on: macos-latest
-            python:
-              version: pypy-3.8
-          - os:
-              on: windows-latest
-            python:
-              version: pypy-3.8
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -105,12 +94,29 @@ jobs:
         run: pip install -e . -r requirements.txt
 
       - name: pytest
-        run: pytest --cov=pymodbus --cov=test --cov-report=term-missing --cov-report=xml -v --full-trace --timeout=20
+        run: pytest -n0 --cov=pymodbus --cov=test --cov-report=term-missing --cov-report=xml -v --full-trace --timeout=20
+
+  analyze:
+    name: Analyze Python
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: github/codeql-action/init@v2
+        with:
+          languages: python
+
+      - uses: github/codeql-action/autobuild@v2
+
+      - uses: github/codeql-action/analyze@v2
 
   ci_complete:
     name: ci_complete
     runs-on: ubuntu-latest
     needs:
+      - linters
+      - analyze
       - integreation_test
     timeout-minutes: 1
     steps:

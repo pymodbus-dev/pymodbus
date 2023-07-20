@@ -31,7 +31,8 @@ from pymodbus.server import StartAsyncTcpServer
 from pymodbus.transaction import ModbusSocketFramer
 
 
-_logger = logging.getLogger(__name__)
+logging.basicConfig()
+_logger = logging.getLogger(__file__)
 
 demo_config = {
     "setup": {
@@ -119,7 +120,7 @@ demo_actions = {
 
 def get_commandline(cmdline=None):
     """Read and validate command line arguments"""
-    parser = argparse.ArgumentParser(description="Run server simulator.")
+    parser = argparse.ArgumentParser(description="Run datastore simulator example.")
     parser.add_argument(
         "--log",
         choices=["critical", "error", "warning", "info", "debug"],
@@ -136,7 +137,7 @@ def get_commandline(cmdline=None):
 def setup_simulator(setup=None, actions=None, cmdline=None):
     """Run server setup."""
     args = get_commandline(cmdline=cmdline)
-    pymodbus_apply_logging_config(args.log)
+    pymodbus_apply_logging_config(args.log.upper())
     _logger.setLevel(args.log.upper())
     args.framer = ModbusSocketFramer
     args.port = int(args.port)
@@ -165,12 +166,10 @@ async def run_server_simulator(args):
     """Run server."""
     _logger.info("### start server simulator")
 
-    pymodbus_apply_logging_config(args.log.upper())
     await StartAsyncTcpServer(
         context=args.context,
         address=("", args.port),
         framer=args.framer,
-        allow_reuse_address=True,
     )
 
 

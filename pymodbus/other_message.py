@@ -17,7 +17,7 @@ __all__ = [
 # pylint: disable=missing-type-doc
 import struct
 
-from pymodbus.constants import Defaults, ModbusStatus
+from pymodbus.constants import ModbusStatus
 from pymodbus.device import DeviceInformationFactory, ModbusControlBlock
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 
@@ -88,7 +88,7 @@ class ReadExceptionStatusResponse(ModbusResponse):
         :param status: The status response to report
         """
         ModbusResponse.__init__(self, **kwargs)
-        self.status = status
+        self.status = status if status < 256 else 255
 
     def encode(self):
         """Encode the response.
@@ -377,7 +377,7 @@ class ReportSlaveIdRequest(ModbusRequest):
     function_code_name = "report_slave_id"
     _rtu_frame_size = 4
 
-    def __init__(self, slave=Defaults.Slave, **kwargs):
+    def __init__(self, slave=0, **kwargs):
         """Initialize a new instance.
 
         :param slave: Modbus slave slave ID

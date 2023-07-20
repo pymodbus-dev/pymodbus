@@ -11,7 +11,6 @@ from pymodbus.bit_write_message import (
     WriteSingleCoilRequest,
     WriteSingleCoilResponse,
 )
-from pymodbus.constants import Defaults
 from pymodbus.register_read_message import (
     ReadHoldingRegistersRequest,
     ReadHoldingRegistersResponse,
@@ -91,6 +90,6 @@ class TestAllMessages:
         assert request.protocol_id == 0x12
 
         request = ReadCoilsRequest(1, 5)
-        assert request.slave_id == Defaults.Slave
-        assert request.transaction_id == Defaults.TransactionId
-        assert request.protocol_id == Defaults.ProtocolId
+        assert not request.slave_id
+        assert not request.transaction_id
+        assert not request.protocol_id

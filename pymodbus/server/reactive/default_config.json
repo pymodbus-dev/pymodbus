@@ -1,8 +1,6 @@
 {
   "tcp": {
         "handler": "ModbusConnectedRequestHandler",
-        "allow_reuse_address": true,
-        "backlog": 20,
         "ignore_missing_slaves": false
     },
     "serial": {
@@ -12,15 +10,12 @@
         "parity": "N",
         "baudrate": 9600,
         "timeout": 3,
-        "auto_reconnect": false,
         "reconnect_delay": 2
     },
     "tls": {
         "handler": "ModbusConnectedRequestHandler",
         "certfile": null,
         "keyfile": null,
-        "allow_reuse_address": true,
-        "backlog": 20,
         "ignore_missing_slaves": false
     },
     "udp": {

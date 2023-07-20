@@ -17,7 +17,6 @@ from contextlib import suppress
 from functools import partial
 from threading import RLock
 
-from pymodbus.constants import Defaults
 from pymodbus.exceptions import (
     InvalidMessageReceivedException,
     ModbusIOException,
@@ -58,12 +57,12 @@ class ModbusTransactionManager:
         :param retry_on_empty: Should the client retry on empty
         :param retries: The number of retries to allow
         """
-        self.tid = Defaults.TransactionId
+        self.tid = 0
         self.client = client
-        self.backoff = kwargs.get("backoff", Defaults.Backoff) or 0.3
-        self.retry_on_empty = kwargs.get("retry_on_empty", Defaults.RetryOnEmpty)
-        self.retry_on_invalid = kwargs.get("retry_on_invalid", Defaults.RetryOnInvalid)
-        self.retries = kwargs.get("retries", Defaults.Retries) or 1
+        self.backoff = kwargs.get("backoff", 0.3)
+        self.retry_on_empty = kwargs.get("retry_on_empty", False)
+        self.retry_on_invalid = kwargs.get("retry_on_invalid", False)
+        self.retries = kwargs.get("retries", 3)
         self.reset_socket = kwargs.get("reset_socket", True)
         self._transaction_lock = RLock()
         self._no_response_devices = []
@@ -166,7 +165,7 @@ class ModbusTransactionManager:
                     if "modbusudpclient" in c_str.lower().strip():
                         full = True
                         if not expected_response_length:
-                            expected_response_length = Defaults.ReadSize
+                            expected_response_length = 1024
                     response, last_exception = self._transact(
                         request,
                         expected_response_length,
@@ -463,7 +462,7 @@ class ModbusTransactionManager:
 
     def reset(self):
         """Reset the transaction identifier."""
-        self.tid = Defaults.TransactionId
+        self.tid = 0
         self.transactions = type(  # pylint: disable=attribute-defined-outside-init
             self.transactions
         )()

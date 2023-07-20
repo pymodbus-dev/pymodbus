@@ -14,7 +14,8 @@ from pymodbus.datastore.remote import RemoteSlaveContext
 from pymodbus.server.async_io import ModbusTcpServer
 
 
-_logger = logging.getLogger()
+logging.basicConfig()
+_logger = logging.getLogger(__file__)
 
 
 def raise_graceful_exit(*_args):
@@ -41,7 +42,8 @@ class SerialForwarderTCPServer:
             store[i] = RemoteSlaveContext(client, slave=i)
         context = ModbusServerContext(slaves=store, single=False)
         self.server = ModbusTcpServer(
-            context, address=(server_ip, server_port), allow_reuse_address=True
+            context,
+            address=(server_ip, server_port),
         )
         message = f"serving on {server_ip} port {server_port}"
         _logger.info(message)

@@ -4,39 +4,10 @@ import ssl
 from typing import Any, Type
 
 from pymodbus.client.tcp import AsyncModbusTcpClient, ModbusTcpClient
-from pymodbus.constants import Defaults
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
 from pymodbus.logging import Log
-
-
-def sslctx_provider(
-    sslctx=None, certfile=None, keyfile=None, password=None
-):  # pylint: disable=missing-type-doc
-    """Provide the SSLContext for ModbusTlsClient.
-
-    If the user defined SSLContext is not passed in, sslctx_provider will
-    produce a default one.
-
-    :param sslctx: The user defined SSLContext to use for TLS (default None and
-                   auto create)
-    :param certfile: The optional client's cert file path for TLS server request
-    :param keyfile: The optional client's key file path for TLS server request
-    :param password: The password for decrypting client's private key file
-    """
-    if sslctx:
-        return sslctx
-
-    sslctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-    sslctx.check_hostname = False
-    sslctx.verify_mode = ssl.CERT_NONE
-    sslctx.options |= ssl.OP_NO_TLSv1_1
-    sslctx.options |= ssl.OP_NO_TLSv1
-    sslctx.options |= ssl.OP_NO_SSLv3
-    sslctx.options |= ssl.OP_NO_SSLv2
-    if certfile and keyfile:
-        sslctx.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
-    return sslctx
+from pymodbus.transport.transport import CommParams, CommType
 
 
 class AsyncModbusTlsClient(AsyncModbusTcpClient):
@@ -71,7 +42,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
     def __init__(
         self,
         host: str,
-        port: int = Defaults.TlsPort,
+        port: int = 802,
         framer: Type[ModbusFramer] = ModbusTlsFramer,
         sslctx: ssl.SSLContext = None,
         certfile: str = None,
@@ -82,18 +53,19 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
     ):
         """Initialize Asyncio Modbus TLS Client."""
         AsyncModbusTcpClient.__init__(
-            self, host, port=port, framer=framer, internal_no_setup=True, **kwargs
+            self,
+            host,
+            port=port,
+            framer=framer,
+            CommType=CommType.TLS,
+            sslctx=CommParams.generate_ssl(
+                False, certfile, keyfile, password, sslctx=sslctx
+            ),
+            **kwargs,
         )
-        self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password)
-        self.params.certfile = certfile
-        self.params.keyfile = keyfile
-        self.params.password = password
         self.params.server_hostname = server_hostname
-        self.setup_tls(
-            False, host, port, sslctx, certfile, keyfile, password, server_hostname
-        )
 
-    async def connect(self):
+    async def connect(self) -> bool:
         """Initiate connection to start client."""
 
         # if reconnect_delay_current was set to 0 by close(), we need to set it back again
@@ -101,7 +73,11 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         self.reset_delay()
 
         # force reconnect if required:
-        Log.debug("Connecting to {}:{}.", self.params.host, self.params.port)
+        Log.debug(
+            "Connecting to {}:{}.",
+            self.comm_params.host,
+            self.comm_params.port,
+        )
         return await self.transport_connect()
 
 
@@ -140,9 +116,9 @@ class ModbusTlsClient(ModbusTcpClient):
     def __init__(
         self,
         host: str,
-        port: int = Defaults.TlsPort,
+        port: int = 802,
         framer: Type[ModbusFramer] = ModbusTlsFramer,
-        sslctx: str = None,
+        sslctx: ssl.SSLContext = None,
         certfile: str = None,
         keyfile: str = None,
         password: str = None,
@@ -150,12 +126,13 @@ class ModbusTlsClient(ModbusTcpClient):
         **kwargs: Any,
     ):
         """Initialize Modbus TLS Client."""
-        super().__init__(host, port=port, framer=framer, **kwargs)
-        self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password)
-        self.params.sslctx = sslctx
-        self.params.certfile = certfile
-        self.params.keyfile = keyfile
-        self.params.password = password
+        self.transport = None
+        super().__init__(
+            host, CommType=CommType.TLS, port=port, framer=framer, **kwargs
+        )
+        self.sslctx = CommParams.generate_ssl(
+            False, certfile, keyfile, password, sslctx=sslctx
+        )
         self.params.server_hostname = server_hostname
 
     @property
@@ -172,15 +149,15 @@ class ModbusTlsClient(ModbusTcpClient):
             if self.params.source_address:
                 sock.bind(self.params.source_address)
             self.socket = self.sslctx.wrap_socket(
-                sock, server_side=False, server_hostname=self.params.host
+                sock, server_side=False, server_hostname=self.comm_params.host
             )
-            self.socket.settimeout(self.params.timeout)
-            self.socket.connect((self.params.host, self.params.port))
+            self.socket.settimeout(self.comm_params.timeout_connect)
+            self.socket.connect((self.comm_params.host, self.comm_params.port))
         except OSError as msg:
             Log.error(
                 "Connection to ({}, {}) failed: {}",
-                self.params.host,
-                self.params.port,
+                self.comm_params.host,
+                self.comm_params.port,
                 msg,
             )
             self.close()
@@ -188,12 +165,12 @@ class ModbusTlsClient(ModbusTcpClient):
 
     def __str__(self):
         """Build a string representation of the connection."""
-        return f"ModbusTlsClient({self.params.host}:{self.params.port})"
+        return f"ModbusTlsClient({self.comm_params.host}:{self.comm_params.port})"
 
     def __repr__(self):
         """Return string representation."""
         return (
             f"<{self.__class__.__name__} at {hex(id(self))} socket={self.socket}, "
-            f"ipaddr={self.params.host}, port={self.params.port}, sslctx={self.sslctx}, "
-            f"timeout={self.params.timeout}>"
+            f"ipaddr={self.comm_params.host}, port={self.comm_params.port}, sslctx={self.sslctx}, "
+            f"timeout={self.comm_params.timeout_connect}>"
         )

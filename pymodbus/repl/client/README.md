@@ -32,9 +32,6 @@ Commands:
   serial
   tcp
 
-# Or using a Docker run command instead
-
-✗ docker run -it pymodbus-dev/pymodbus pymodbus.console --help
 ```
 TCP Options
 
@@ -58,10 +55,9 @@ Usage: pymodbus.console serial [OPTIONS]
 Options:
   --method TEXT          Modbus Serial Mode (rtu/ascii)
   --port TEXT            Modbus RTU port
-  --baudrate INTEGER     Modbus RTU serial baudrate to use. Defaults to 9600
+  --baudrate INTEGER     Modbus RTU serial baudrate to use.
   --bytesize [5|6|7|8]   Modbus RTU serial Number of data bits. Possible
                          values: FIVEBITS, SIXBITS, SEVENBITS, EIGHTBITS.
-                         Defaults to 8
 
   --parity [N|E|O|M|S]   Modbus RTU serial parity.  Enable parity checking.
                          Possible values: PARITY_NONE, PARITY_EVEN, PARITY_ODD
@@ -72,16 +68,16 @@ Options:
                          STOPBITS_ONE_POINT_FIVE, STOPBITS_TWO. Default to '1'
 
   --xonxoff INTEGER      Modbus RTU serial xonxoff.  Enable software flow
-                         control.Defaults to 0
+                         control.
 
   --rtscts INTEGER       Modbus RTU serial rtscts. Enable hardware (RTS/CTS)
-                         flow control. Defaults to 0
+                         flow control.
 
   --dsrdtr INTEGER       Modbus RTU serial dsrdtr. Enable hardware (DSR/DTR)
-                         flow control. Defaults to 0
+                         flow control.
 
-  --timeout FLOAT        Modbus RTU serial read timeout. Defaults to 0.025 sec
-  --write-timeout FLOAT  Modbus RTU serial write timeout. Defaults to 2 sec
+  --timeout FLOAT        Modbus RTU serial read timeout in sec.
+  --write-timeout FLOAT  Modbus RTU serial write timeout in sec.
   --help                 Show this message and exit.
 ```
 

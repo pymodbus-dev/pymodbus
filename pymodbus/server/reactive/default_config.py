@@ -3,9 +3,7 @@
 DEFAULT_CONFIG = {
     "tcp": {
         "handler": "ModbusConnectedRequestHandler",
-        "allow_reuse_address": True,
         "allow_reuse_port": True,
-        "backlog": 20,
         "ignore_missing_slaves": False,
     },
     "serial": {
@@ -15,16 +13,13 @@ DEFAULT_CONFIG = {
         "parity": "N",
         "baudrate": 9600,
         "timeout": 3,
-        "auto_reconnect": False,
         "reconnect_delay": 2,
     },
     "tls": {
         "handler": "ModbusConnectedRequestHandler",
         "certfile": None,
         "keyfile": None,
-        "allow_reuse_address": True,
         "allow_reuse_port": True,
-        "backlog": 20,
         "ignore_missing_slaves": False,
     },
     "udp": {

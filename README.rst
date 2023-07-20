@@ -22,7 +22,7 @@ Supported versions
 
 Version `2.5.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (python >= 2.7, no longer supported).
 
-Version `3.3.2 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.3.2>`_ is the current release (Tested with Python >= 3.8).
+Version `3.4.0 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.4.0>`_ is the current release (Tested with Python >= 3.8).
 
 .. important::
    All API changes after 3.0.0 are documented in `API_changes.rst <https://github.com/pymodbus-dev/pymodbus/blob/dev/API_changes.rst>`_
@@ -239,88 +239,6 @@ The repository contains a number of important branches and tags.
 If a maintenance release of an old version is needed (e.g. v2.5.4),
 the release tag is used to create a branch with the same name,
 and maintenance development is merged here.
-
------------------------------------------------------------
-Install with Docker
------------------------------------------------------------
-Pull the latest image on ``dev`` branch with ``docker pull ghcr.io/pymodbus-dev/pymodbus:dev``::
-
-   ❯ docker pull ghcr.io/pymodbus-dev/pymodbus:dev
-   dev: Pulling from pymodbus-dev/pymodbus
-   548fcab5fe88: Pull complete
-   a4d3f9f008ef: Pull complete
-   eb83acb05730: Pull complete
-   71cd28d529fd: Pull complete
-   66607ad8f4f0: Pull complete
-   64dff4c66d3b: Pull complete
-   8b26e5718a7a: Pull complete
-   dc87d8707532: Pull complete
-   Digest: sha256:cfeee09a87dde5863574779416490fd47cacbb6f37332a3cdaf995c416e16b69
-   Status: Downloaded newer image for ghcr.io/pymodbus-dev/pymodbus:dev
-   ghcr.io/pymodbus-dev/pymodbus:dev
-
-The image when run with out any further options supplied will start a repl server in non interactive mode.::
-
-   ❯ docker run -it --rm -p 8080:8080 -p 5020:5020 ghcr.io/pymodbus-dev/pymodbus:dev
-
-   Reactive Modbus Server started.
-   ======== Running on http://127.0.0.1:8080 ========
-
-   ===========================================================================
-   Example Usage:
-   curl -X POST http://127.0.0.1:8080 -d "{"response_type": "error", "error_code": 4}"
-   ===========================================================================
-
-The default command can be overridden by passing any valid command at the end.::
-
-   ❯ docker run -p 8080:8080 -p 5020:5020 -it --rm ghcr.io/pymodbus-dev/pymodbus:dev bash -c "pymodbus.server --help"
-
-    Usage: pymodbus.server [OPTIONS] COMMAND [ARGS]...
-
-    Reactive Modbus server
-
-   ╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-   │ --host                                    TEXT     Host address [default: localhost]                                       │
-   │ --web-port                                INTEGER  Web app port [default: 8080]                                            │
-   │                       -b                           Support broadcast messages                                              │
-   │ --repl                    --no-repl                Enable/Disable repl for server [default: repl]                          │
-   │ --verbose                 --no-verbose             Run with debug logs enabled for pymodbus [default: no-verbose]          │
-   │ --install-completion                               Install completion for the current shell.                               │
-   │ --show-completion                                  Show completion for the current shell, to copy it or customize the      │
-   │                                                    installation.                                                           │
-   │ --help                                             Show this message and exit.                                             │
-   ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-   ╭─ Commands ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-   │ run              Run Reactive Modbus server.                                                                               │
-   ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-
-To check the repl console.::
-
-   ❯ docker run -p 8080:8080 -p 5020:5020 -it --rm ghcr.io/pymodbus-dev/pymodbus:dev bash -c "pymodbus.console --help"
-   Usage: pymodbus.console [OPTIONS] COMMAND [ARGS]...
-
-     Run Main.
-
-   Options:
-     --version                       Show the version and exit.
-     --verbose                       Verbose logs
-     --broadcast-support             Support broadcast messages
-     --retry-on-empty                Retry on empty response
-     --retry-on-error                Retry on error response
-     --retries INTEGER               Retry count
-     --reset-socket / --no-reset-socket
-                                     Reset client socket on error
-     --help                          Show this message and exit.
-
-   Commands:
-     serial  Define serial communication.
-     tcp     Define TCP.
-
-To run examples (assuming server is running). ::
-
-   ❯ docker run -p 8080:8080 -p 5020:5020 -it --rm ghcr.io/pymodbus-dev/pymodbus:dev bash -c "examples/client_async.py"
-   14:52:13 INFO  client_async:44 ### Create client object
-   14:52:13 INFO  client_async:120 ### Client starting
 
 ------------------------------------------------------------
 Current Work In Progress

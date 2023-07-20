@@ -46,12 +46,6 @@ Invoke REPL server with `pymodbus.server run` command.
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-If using the docker image, you can run all the same commands, prepending the `docker run` command. For example:
-
-```shell
-docker run -it pymodbus-dev/pymodbus pymodbus.server --help
-```
-
 ```shell
 ✗ pymodbus.server run --help
 

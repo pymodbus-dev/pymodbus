@@ -30,9 +30,8 @@ The corresponding client can be started as:
 """
 import asyncio
 import logging
-import os
 
-from examples.helper import get_commandline
+from examples import helper
 from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
@@ -53,12 +52,14 @@ from pymodbus.server import (
 )
 
 
-_logger = logging.getLogger()
+logging.basicConfig()
+_logger = logging.getLogger(__file__)
+_logger.setLevel(logging.INFO)
 
 
 def setup_server(description=None, context=None, cmdline=None):
     """Run server setup."""
-    args = get_commandline(server=True, description=description, cmdline=cmdline)
+    args = helper.get_commandline(server=True, description=description, cmdline=cmdline)
     if context:
         args.context = context
     if not args.context:
@@ -145,7 +146,7 @@ async def run_async_server(args):
     txt = f"### start ASYNC server, listening on {args.port} - {args.comm}"
     _logger.info(txt)
     if args.comm == "tcp":
-        address = ("", args.port) if args.port else None
+        address = (args.host if args.host else "", args.port if args.port else None)
         server = await StartAsyncTcpServer(
             context=args.context,  # Data storage
             identity=args.identity,  # server identify
@@ -154,22 +155,22 @@ async def run_async_server(args):
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
-            # handler=None,  # handler for each session
-            allow_reuse_address=True,  # allow the reuse of an address
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif args.comm == "udp":
-        address = ("127.0.0.1", args.port) if args.port else None
+        address = (
+            args.host if args.host else "127.0.0.1",
+            args.port if args.port else None,
+        )
         server = await StartAsyncUdpServer(
             context=args.context,  # Data storage
             identity=args.identity,  # server identify
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
-            # handler=None,  # handler for each session
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
@@ -185,7 +186,6 @@ async def run_async_server(args):
             port=args.port,  # serial port
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
-            # handler=None,  # handler for each session
             # stopbits=1,  # The number of stop bits to use
             # bytesize=8,  # The bytesize of the serial messages
             # parity="N",  # Which kind of parity to use
@@ -196,14 +196,7 @@ async def run_async_server(args):
             # strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif args.comm == "tls":
-        address = ("", args.port) if args.port else None
-        cwd = os.getcwd().split("/")[-1]
-        if cwd == "examples":
-            path = "."
-        elif cwd == "test":
-            path = "../examples"
-        else:
-            path = "examples"
+        address = (args.host if args.host else "", args.port if args.port else None)
         server = await StartAsyncTlsServer(
             context=args.context,  # Data storage
             host="localhost",  # define tcp address where to connect to.
@@ -212,13 +205,14 @@ async def run_async_server(args):
             # custom_functions=[],  # allow custom handling
             address=address,  # listen address
             framer=args.framer,  # The framer strategy to use
-            # handler=None,  # handler for each session
-            allow_reuse_address=True,  # allow the reuse of an address
-            certfile=f"{path}/certificates/pymodbus.crt",  # The cert file path for TLS (used if sslctx is None)
+            certfile=helper.get_certificate(
+                "crt"
+            ),  # The cert file path for TLS (used if sslctx is None)
             # sslctx=sslctx,  # The SSLContext to use for TLS (default None and auto create)
-            keyfile=f"{path}/certificates/pymodbus.key",  # The key file path for TLS (used if sslctx is None)
+            keyfile=helper.get_certificate(
+                "key"
+            ),  # The key file path for TLS (used if sslctx is None)
             # password="none",  # The password for for decrypting the private key file
-            # reqclicert=False,  # Force the sever request client"s certificate
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
@@ -228,5 +222,6 @@ async def run_async_server(args):
 
 
 if __name__ == "__main__":
+    _logger.info("Starting...")
     run_args = setup_server(description="Run asynchronous server.")
     asyncio.run(run_async_server(run_args), debug=True)

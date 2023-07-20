@@ -4,7 +4,6 @@ import functools
 
 from pymodbus.client import ModbusSerialClient as _ModbusSerialClient
 from pymodbus.client import ModbusTcpClient as _ModbusTcpClient
-from pymodbus.constants import Defaults
 from pymodbus.diag_message import (
     ChangeAsciiInputDelimiterRequest,
     ClearCountersRequest,
@@ -90,7 +89,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
                 err = {"error": str(resp)}
         return err
 
-    def read_coils(self, address, count=1, slave=Defaults.Slave, **kwargs):
+    def read_coils(self, address, count=1, slave=0, **kwargs):
         """Read `count` coils from a given slave starting at `address`.
 
         :param address: The starting address to read from
@@ -106,7 +105,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
             return {"function_code": resp.function_code, "bits": resp.bits}
         return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
-    def read_discrete_inputs(self, address, count=1, slave=Defaults.Slave, **kwargs):
+    def read_discrete_inputs(self, address, count=1, slave=0, **kwargs):
         """Read `count` number of discrete inputs starting at offset `address`.
 
         :param address: The starting address to read from
@@ -123,7 +122,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
     @handle_brodcast
-    def write_coil(self, address, value, slave=Defaults.Slave, **kwargs):
+    def write_coil(self, address, value, slave=0, **kwargs):
         """Write `value` to coil at `address`.
 
         :param address: coil offset to write to
@@ -138,7 +137,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         return resp
 
     @handle_brodcast
-    def write_coils(self, address, values, slave=Defaults.Slave, **kwargs):
+    def write_coils(self, address, values, slave=0, **kwargs):
         """Write `value` to coil at `address`.
 
         :param address: coil offset to write to
@@ -153,7 +152,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         return resp
 
     @handle_brodcast
-    def write_register(self, address, value, slave=Defaults.Slave, **kwargs):
+    def write_register(self, address, value, slave=0, **kwargs):
         """Write `value` to register at `address`.
 
         :param address: register offset to write to
@@ -168,7 +167,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         return resp
 
     @handle_brodcast
-    def write_registers(self, address, values, slave=Defaults.Slave, **kwargs):
+    def write_registers(self, address, values, slave=0, **kwargs):
         """Write list of `values` to registers starting at `address`.
 
         :param address: register offset to write to
@@ -182,7 +181,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         )
         return resp
 
-    def read_holding_registers(self, address, count=1, slave=Defaults.Slave, **kwargs):
+    def read_holding_registers(self, address, count=1, slave=0, **kwargs):
         """Read `count` number of holding registers starting at `address`.
 
         :param address: starting register offset to read from
@@ -198,7 +197,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
             return {"function_code": resp.function_code, "registers": resp.registers}
         return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
-    def read_input_registers(self, address, count=1, slave=Defaults.Slave, **kwargs):
+    def read_input_registers(self, address, count=1, slave=0, **kwargs):
         """Read `count` number of input registers starting at `address`.
 
         :param address: starting register offset to read from to
@@ -220,7 +219,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         read_count=0,
         write_address=0,
         values=0,
-        slave=Defaults.Slave,
+        slave=0,
         **kwargs,
     ):
         """Read `read_count` number of holding registers.
@@ -253,7 +252,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         address=0x0000,
         and_mask=0xFFFF,
         or_mask=0x0000,
-        slave=Defaults.Slave,
+        slave=0,
         **kwargs,
     ):
         """Mask content of holding register at `address` with `and_mask` and `or_mask`.
@@ -299,7 +298,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
             }
         return ExtendedRequestSupport._process_exception(resp, slave=request.slave_id)
 
-    def report_slave_id(self, slave=Defaults.Slave, **kwargs):
+    def report_slave_id(self, slave=0, **kwargs):
         """Report information about remote slave ID.
 
         :param slave: Modbus slave ID
@@ -317,7 +316,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
             }
         return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
-    def read_exception_status(self, slave=Defaults.Slave, **kwargs):
+    def read_exception_status(self, slave=0, **kwargs):
         """Read contents of eight Exception Status output in a remote device.
 
         :param slave: Modbus slave ID
@@ -567,14 +566,14 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
 
         :return: Current Serial port
         """
-        return self.params.port
+        return self.comm_params.port
 
     def set_port(self, value):
         """Set serial Port setter.
 
         :param value: New port
         """
-        self.params.port = value
+        self.comm_params.port = value
         if self.is_socket_open():
             self.close()
 
@@ -599,7 +598,7 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
 
         :return: Current bytesize
         """
-        return self.params.bytesize
+        return self.comm_params.bytesize
 
     def set_bytesize(self, value):
         """Set Byte size.
@@ -607,7 +606,7 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
         :param value: Possible values (5, 6, 7, 8)
 
         """
-        self.params.bytesize = int(value)
+        self.comm_params.bytesize = int(value)
         if self.is_socket_open():
             self.close()
 
@@ -632,14 +631,14 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
 
         :return: Current baudrate
         """
-        return self.params.baudrate
+        return self.comm_params.baudrate
 
     def set_baudrate(self, value):
         """Set baudrate setter.
 
         :param value: <supported baudrate>
         """
-        self.params.baudrate = int(value)
+        self.comm_params.baudrate = int(value)
         if self.is_socket_open():
             self.close()
 
@@ -648,14 +647,14 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
 
         :return: Current read imeout.
         """
-        return self.params.timeout
+        return self.comm_params.timeout_connect
 
     def set_timeout(self, value):
         """Read timeout setter.
 
         :param value: Read Timeout in seconds
         """
-        self.params.timeout = float(value)
+        self.comm_params.timeout_connect = float(value)
         if self.is_socket_open():
             self.close()
 
@@ -665,12 +664,12 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
         :return: Current Serial settings as dict.
         """
         return {
-            "baudrate": self.params.baudrate,
-            "port": self.params.port,
-            "parity": self.params.parity,
-            "stopbits": self.params.stopbits,
-            "bytesize": self.params.bytesize,
-            "read timeout": self.params.timeout,
+            "baudrate": self.comm_params.baudrate,
+            "port": self.comm_params.port,
+            "parity": self.comm_params.parity,
+            "stopbits": self.comm_params.stopbits,
+            "bytesize": self.comm_params.bytesize,
+            "read timeout": self.comm_params.timeout_connect,
             "t1.5": self.inter_char_timeout,
             "t3.5": self.silent_interval,
         }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pymodbus aynchronous client example.
+"""Pymodbus asynchronous client example.
 
 An example of a asynchronous client.
 

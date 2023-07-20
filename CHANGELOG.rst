@@ -41,7 +41,7 @@ version 3.4.0
 * move test of examples to subdirectory. (#1592)
 * transport as object, not base class. (#1572)
 * Simple examples. (#1590)
-* transport_connect *> bool. (#1587)
+* transport_connect as bool. (#1587)
 * Prepare dev (#1588)
 * Release corrections. (#1586)
 

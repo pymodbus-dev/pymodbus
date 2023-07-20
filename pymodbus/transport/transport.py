@@ -286,10 +286,16 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
     def datagram_received(self, data: bytes, addr: tuple):
         """Receive datagram (UDP connections)."""
-        if self.comm_params.handle_local_echo and self.sent_buffer == data:
+        if self.comm_params.handle_local_echo and self.sent_buffer:
             Log.debug("recv skipping (local_echo): {} addr={}", data, ":hex", addr)
-            self.sent_buffer = b""
-            return
+            if self.sent_buffer in data:
+                data, self.sent_buffer = data.replace(self.sent_buffer, b"", 1), b""
+            elif self.sent_buffer.startswith(data):
+                self.sent_buffer, data = self.sent_buffer.replace(data, b"", 1), b""
+            else:
+                self.sent_buffer = b""
+            if not data:
+                return
         Log.debug("recv: {} addr={}", data, ":hex", addr)
         self.recv_buffer += data
         cut = self.callback_data(self.recv_buffer, addr=addr)

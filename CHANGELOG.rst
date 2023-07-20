@@ -1,3 +1,58 @@
+version 3.4.0
+----------------------------------------------------------
+* Prepare v3.4.0.
+* Handle partial local echo. (#1675)
+* clarify handle_local_echo. (#1674)
+* async_client: add retries/reconnect. (#1672)
+* Fix 3.11 problem. (#1673)
+* Add new example simulator server/client. (#1671)
+* `examples/contrib/explain.py` leveraging Rapid SCADA (#1665)
+* _logger missed basicConfig. (#1670)
+* Bug fix for #1662 (#1663)
+* Bug fix for #1661 (#1664)
+* Fix typo in config.rst (#1660)
+* test action_increment. (#1659)
+* test codeql (#1655)
+* mypy complaints. (#1656)
+* Remove self.params from async client (#1640)
+* Drop test of pypy with python 3.8.
+* repair server_async.py (#1644)
+* move common framer to base. (#1639)
+* Restrict Return diag call to bytes. (#1638)
+* use slave= in diag requests. (#1636)
+* transport listen in server. (#1628)
+* CI test.
+* Integrate transport in server. (#1617)
+* fix getFrameStart for ExceptionResponse (#1627)
+* Add min/min to simulator actions.
+* Change to "sync client" in forwarder example (#1625)
+* Remove docker (lack of maintenance). (#1623)
+* Clean defaults (#1618)
+* Reduce CI log with no debug. (#1616)
+* prepare server to use transport. (#1607)
+* Fix RemoteSlaveContext (#1599)
+* Combine stale and lock. (#1608)
+* update pytest + extensions. (#1610)
+* Change version follow PEP 440. (#1609)
+* Fix regression with REPL server not listening (#1604)
+* Remove handler= for server classes. (#1602)
+* Fix write function codes (#1598)
+* transport nullmodem (#1591)
+* move test of examples to subdirectory. (#1592)
+* transport as object, not base class. (#1572)
+* Simple examples. (#1590)
+* transport_connect *> bool. (#1587)
+* Prepare dev (#1588)
+* Release corrections. (#1586)
+
+Thanks to:
+    Alex
+    Fredo70
+    Hangyu Fan
+    James Braza
+    jan iversen
+
+
 version 3.3.2
 ----------------------------------------------------------
 * Fix RemoteSlaveContext (#1599)

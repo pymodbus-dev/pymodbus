@@ -226,10 +226,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 self.call_create(),
                 timeout=self.comm_params.timeout_connect,
             )
-        except (
-            asyncio.TimeoutError,
-            OSError,
-        ) as exc:
+        except OSError as exc:
             Log.warning("Failed to connect {}", exc)
             self.transport_close(intern=True, reconnect=True)
             return False

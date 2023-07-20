@@ -7,11 +7,11 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from pymodbus.client.mixin import ModbusClientMixin
-from pymodbus.exceptions import ConnectionException
+from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.factory import ClientDecoder
 from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
-from pymodbus.pdu import ExceptionResponse, ModbusRequest, ModbusResponse
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.transaction import DictTransactionManager
 from pymodbus.transport.transport import CommParams, ModbusProtocol
 from pymodbus.utilities import ModbusTransactionState
@@ -202,9 +202,14 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
                     resp = await asyncio.wait_for(
                         req, timeout=self.comm_params.timeout_connect
                     )
+                    break
                 except asyncio.exceptions.TimeoutError:
-                    self.close(reconnect=True)
-                return ExceptionResponse(request.function_code, exception_code=0xFE)
+                    pass
+            if count == self.params.retries:
+                self.close(reconnect=True)
+                raise ModbusIOException(
+                    f"ERROR: No response received after {self.params.retries} retries"
+                )
         return resp
 
     def callback_data(self, data: bytes, addr: tuple = None) -> int:

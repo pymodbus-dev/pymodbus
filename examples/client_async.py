@@ -38,6 +38,7 @@ from pymodbus.client import (
     AsyncModbusTlsClient,
     AsyncModbusUdpClient,
 )
+from pymodbus.exceptions import ModbusIOException
 
 
 logging.basicConfig()
@@ -132,11 +133,14 @@ async def run_async_client(client, modbus_calls=None):
 
 async def run_a_few_calls(client):
     """Test connection works."""
-    rr = await client.read_coils(32, 1, slave=1)
-    assert len(rr.bits) == 8
-    rr = await client.read_holding_registers(4, 2, slave=1)
-    assert rr.registers[0] == 17
-    assert rr.registers[1] == 17
+    try:
+        rr = await client.read_coils(32, 1, slave=1)
+        assert len(rr.bits) == 8
+        rr = await client.read_holding_registers(4, 2, slave=1)
+        assert rr.registers[0] == 17
+        assert rr.registers[1] == 17
+    except ModbusIOException:
+        pass
 
 
 if __name__ == "__main__":

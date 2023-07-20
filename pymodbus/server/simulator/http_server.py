@@ -87,8 +87,8 @@ class ModbusSimulatorServer:
 
     :param modbus_server: Server name in json file (default: "server")
     :param modbus_device: Device name in json file (default: "client")
-    :param http_host: TCP host for HTTP (default: 8080)
-    :param http_port: TCP port for HTTP (default: "localhost")
+    :param http_host: TCP host for HTTP (default: "localhost")
+    :param http_port: TCP port for HTTP (default: 8080)
     :param json_file: setup file (default: "setup.json")
     :param custom_actions_module: python module with custom actions (default: none)
 
@@ -227,7 +227,9 @@ class ModbusSimulatorServer:
         except Exception as exc:
             Log.error("Error starting modbus server, reason: {}", exc)
             raise exc
-        Log.info("Modbus server started")
+        Log.info(
+            "Modbus server started on {}", self.modbus_server.comm_params.source_address
+        )
 
     async def stop_modbus_server(self, app):
         """Stop modbus server."""
@@ -248,7 +250,7 @@ class ModbusSimulatorServer:
         except Exception as exc:
             Log.error("Error starting http server, reason: {}", exc)
             raise exc
-        Log.info("HTTP server started")
+        Log.info("HTTP server started on ({}:{})", self.http_host, self.http_port)
         if only_start:
             return
         while True:

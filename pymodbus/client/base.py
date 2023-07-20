@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from pymodbus.client.mixin import ModbusClientMixin
-from pymodbus.exceptions import ConnectionException
+from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.factory import ClientDecoder
 from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
@@ -152,7 +152,10 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
 
     def close(self, reconnect=False) -> None:
         """Close connection."""
-        self.transport_close(reconnect=reconnect)
+        if reconnect:
+            self.connection_lost(asyncio.TimeoutError("Server not responding"))
+        else:
+            self.transport_close()
 
     def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).
@@ -192,13 +195,21 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         if self.params.broadcast_enable and not request.slave_id:
             resp = b"Broadcast write sent - no response expected"
         else:
-            try:
-                resp = await asyncio.wait_for(
-                    req, timeout=self.comm_params.timeout_connect
-                )
-            except asyncio.exceptions.TimeoutError:
+            count = 0
+            while count < self.params.retries:
+                count += 1
+                try:
+                    resp = await asyncio.wait_for(
+                        req, timeout=self.comm_params.timeout_connect
+                    )
+                    break
+                except asyncio.exceptions.TimeoutError:
+                    pass
+            if count == self.params.retries:
                 self.close(reconnect=True)
-                raise
+                raise ModbusIOException(
+                    f"ERROR: No response received after {self.params.retries} retries"
+                )
         return resp
 
     def callback_data(self, data: bytes, addr: tuple = None) -> int:

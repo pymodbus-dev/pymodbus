@@ -23,7 +23,7 @@
 #    pip install pymodbus[serial]
 
 # install:repl
-aiohttp==3.8.3
+aiohttp==3.8.5
 typer[all]==0.7.0
 prompt-toolkit==3.0.36
 pygments>=2.14.0

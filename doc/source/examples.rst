@@ -8,6 +8,10 @@ The first part are some simple examples which can be copied and run directly. Th
 The second part are more advanced examples, but in order to not duplicate code, this requires you to download the examples directory and run
 the examples in the directory.
 
+.. tip:: The examples needs to be run from within the examples directory, unless you modify them.
+    Most examples use helper.py and client_*.py or server_*.py. This is done to avoid maintaining the
+    same code in multiple files.
+
 
 Ready to run examples:
 ----------------------

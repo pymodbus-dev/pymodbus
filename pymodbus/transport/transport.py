@@ -506,6 +506,7 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
     # ---------------- #
     def abort(self) -> None:
         """Abort connection."""
+        self.close()
 
     def can_write_eof(self) -> bool:
         """Allow to write eof"""

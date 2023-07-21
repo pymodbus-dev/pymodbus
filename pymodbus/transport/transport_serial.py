@@ -82,10 +82,9 @@ class SerialTransport(asyncio.Transport):
 
     def close(self):
         """Close the transport gracefully."""
-        if not self._closing:
-            self._closing = True
-            self._remove_reader()
-            self._remove_writer()
+        self._closing = True
+        self._remove_reader()
+        self._remove_writer()
 
     def _read_ready(self):
         """Test if there are data waiting."""
@@ -103,17 +102,12 @@ class SerialTransport(asyncio.Transport):
         if self._closing:
             return
 
-        if not self.get_write_buffer_size():
-            self._write_buffer.append(data)
-            self._ensure_writer()
-        else:
-            self._write_buffer.append(data)
+        self._write_buffer.append(data)
+        self._ensure_writer()
 
     def abort(self):
         """Close the transport immediately."""
-        self._closing = True
-        self._remove_reader()
-        self._remove_writer()  # Pending buffered data will not be written
+        self.close()
 
     def flush(self):
         """Clear output buffer and stops any more data being written"""

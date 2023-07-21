@@ -307,7 +307,7 @@ class TestBasicSerial:
     async def test_abstract_methods(self):
         """Test asyncio abstract methods."""
         comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
-        comm.loop
+        assert comm.loop
         comm.get_protocol()
         comm.set_protocol(None)
         comm.get_write_buffer_limits()

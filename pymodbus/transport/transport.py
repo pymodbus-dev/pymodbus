@@ -10,7 +10,7 @@ from enum import Enum
 from typing import Any, Callable, Coroutine
 
 from pymodbus.logging import Log
-from pymodbus.transport.serial_asyncio import create_serial_connection
+from pymodbus.transport.transport_serial import create_serial_connection
 
 
 NULLMODEM_HOST = "__pymodbus_nullmodem"
@@ -290,8 +290,6 @@ class ModbusProtocol(asyncio.BaseProtocol):
             Log.debug("recv skipping (local_echo): {} addr={}", data, ":hex", addr)
             if self.sent_buffer in data:
                 data, self.sent_buffer = data.replace(self.sent_buffer, b"", 1), b""
-            elif self.sent_buffer.startswith(data):
-                self.sent_buffer, data = self.sent_buffer.replace(data, b"", 1), b""
             else:
                 self.sent_buffer = b""
             if not data:
@@ -459,7 +457,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         return f"{self.__class__.__name__}({self.comm_params.comm_name})"
 
 
-class NullModem(asyncio.DatagramTransport, asyncio.WriteTransport):
+class NullModem(asyncio.DatagramTransport, asyncio.Transport):
     """ModbusProtocol layer.
 
     Contains methods to act as a null modem between 2 objects.
@@ -471,9 +469,9 @@ class NullModem(asyncio.DatagramTransport, asyncio.WriteTransport):
     def __init__(self, protocol: ModbusProtocol):
         """Create half part of null modem"""
         asyncio.DatagramTransport.__init__(self)
-        asyncio.WriteTransport.__init__(self)
+        asyncio.Transport.__init__(self)
         self.other: NullModem = None
-        self.protocol = protocol
+        self.protocol: ModbusProtocol | asyncio.BaseProtocol = protocol
         self.serving: asyncio.Future = asyncio.Future()
         self.other_transport: NullModem = None
 
@@ -508,10 +506,11 @@ class NullModem(asyncio.DatagramTransport, asyncio.WriteTransport):
     # ---------------- #
     def abort(self) -> None:
         """Abort connection."""
+        self.close()
 
     def can_write_eof(self) -> bool:
         """Allow to write eof"""
-        return True
+        return False
 
     def get_write_buffer_size(self) -> int:
         """Set write limit."""
@@ -527,13 +526,24 @@ class NullModem(asyncio.DatagramTransport, asyncio.WriteTransport):
     def write_eof(self) -> None:
         """Write eof"""
 
-    def get_protocol(self) -> ModbusProtocol:
+    def get_protocol(self) -> ModbusProtocol | asyncio.BaseProtocol:
         """Return current protocol."""
-        return None
+        return self.protocol
 
     def set_protocol(self, protocol: asyncio.BaseProtocol) -> None:
         """Set current protocol."""
+        self.protocol = protocol
 
     def is_closing(self) -> bool:
         """Return true if closing"""
         return False
+
+    def is_reading(self) -> bool:
+        """Return true if read is active."""
+        return True
+
+    def pause_reading(self):
+        """Pause receiver."""
+
+    def resume_reading(self):
+        """Resume receiver."""

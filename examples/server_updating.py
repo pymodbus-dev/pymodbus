@@ -52,7 +52,7 @@ async def updating_task(context):
     address = 0x10
     values = context[slave_id].getValues(fc_as_hex, address, count=5)
     values = [v + 1 for v in values]  # increment by 1.
-    txt = f"new values: {str(values)}"
+    txt = f"new values: {values!s}"
     _logger.debug(txt)
     context[slave_id].setValues(fc_as_hex, address, values)
     await asyncio.sleep(1)

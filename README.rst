@@ -12,9 +12,6 @@ There are challenges small and large not only programming but also documentation
 .. image:: https://pepy.tech/badge/pymodbus
    :target: https://pepy.tech/project/pymodbus
    :alt: Downloads
-.. image:: https://ghcr-badge.deta.dev/pymodbus-dev/pymodbus/tags?label=Docker
-   :target: https://github.com/pymodbus-dev/pymodbus/pkgs/container/pymodbus
-   :alt: Docker Tags
 
 ------------------------------------------------------------
 Supported versions

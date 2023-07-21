@@ -10,14 +10,13 @@ with contextlib.suppress(ImportError):
 
 
 class SerialTransport(asyncio.Transport):
-    """An asyncio transport model of a serial communication channel."""
+    """An asyncio serial transport."""
 
-    def __init__(self, loop, protocol, serial_instance):
+    def __init__(self, loop, protocol, *args, **kwargs):
         """Initialize."""
         super().__init__()
-        self._loop = loop
         self._protocol = protocol
-        self._serial = serial_instance
+        self._serial = serial.serial_for_url(*args, **kwargs)
         self._closing = False
         self._write_buffer = []
         self.set_write_buffer_limits()
@@ -37,7 +36,7 @@ class SerialTransport(asyncio.Transport):
     @property
     def loop(self):
         """Return asyncio event loop."""
-        return self._loop
+        return self._protocol.loop
 
     def get_protocol(self) -> asyncio.BaseProtocol:
         """Return protocol"""
@@ -49,7 +48,7 @@ class SerialTransport(asyncio.Transport):
 
     def get_write_buffer_limits(self) -> Tuple[int, int]:
         """Return buffer sizes"""
-        return (0, 1024)
+        return (1, 1024)
 
     def can_write_eof(self):
         """Return Serial do not support end-of-file."""
@@ -57,16 +56,6 @@ class SerialTransport(asyncio.Transport):
 
     def write_eof(self):
         """Write end of file marker."""
-
-    def is_reading(self) -> bool:
-        """Return true if read is active."""
-        return True
-
-    def pause_reading(self):
-        """Pause receiver."""
-
-    def resume_reading(self):
-        """Resume receiver."""
 
     def set_write_buffer_limits(self, high=None, low=None):
         """Set the high- and low-water limits for write flow control."""
@@ -77,48 +66,30 @@ class SerialTransport(asyncio.Transport):
 
     # ------------------------------------------------
 
-    def xget_extra_info(self, name, default=None):
-        """Get optional transport information.
-
-        Currently only "serial" is available.
-        """
-        if name == "serial":
-            return self._serial
-        return default
-
     def is_closing(self):
         """Return True if the transport is closing or closed."""
         return self._closing
 
     def close(self):
-        """Close the transport gracefully.
-
-        Any buffered data will be written asynchronously. No more data
-        will be received and further writes will be silently ignored.
-        After all buffered data is flushed, the protocol's
-        connection_lost() method will be called with None as its
-        argument.
-        """
+        """Close the transport gracefully."""
         if not self._closing:
-            self._close(None)
+            self._closing = True
+            self._remove_reader()
+            self._remove_writer()
 
     def _read_ready(self):
         """Test if there are data waiting."""
         try:
             data = self._serial.read(1024)
         except serial.SerialException as exc:
-            self._close(exc=exc)
+            self._protocol.loop.call_soon(self._call_connection_lost, exc)
+            self.close()
         else:
             if data:
                 self._protocol.data_received(data)
 
     def write(self, data):
-        """Write some data to the transport.
-
-        This method does not block; it buffers the data and arranges
-        for it to be sent out asynchronously.  Writes made after the
-        transport has been closed will be ignored.
-        """
+        """Write some data to the transport."""
         if self._closing:
             return
 
@@ -129,14 +100,10 @@ class SerialTransport(asyncio.Transport):
             self._write_buffer.append(data)
 
     def abort(self):
-        """Close the transport immediately.
-
-        Pending operations will not be given opportunity to complete,
-        and buffered data will be lost. No more data will be received
-        and further writes will be ignored.  The protocol's
-        connection_lost() method will eventually be called.
-        """
-        self._abort(None)
+        """Close the transport immediately."""
+        self._closing = True
+        self._remove_reader()
+        self._remove_writer()  # Pending buffered data will not be written
 
     def flush(self):
         """Clear output buffer and stops any more data being written"""
@@ -144,17 +111,7 @@ class SerialTransport(asyncio.Transport):
         self._write_buffer.clear()
 
     def _write_ready(self):
-        """Asynchronously write buffered data.
-
-        This method is called back asynchronously as a writer
-        registered with the asyncio event-loop against the
-        underlying file descriptor for the serial port.
-
-        Should the write-buffer become empty if this method
-        is invoked while the transport is closing, the protocol's
-        connection_lost() method will be called with None as its
-        argument.
-        """
+        """Asynchronously write buffered data."""
         data = b"".join(self._write_buffer)
         assert data, "Write buffer should not be empty"
 
@@ -165,13 +122,14 @@ class SerialTransport(asyncio.Transport):
         except (BlockingIOError, InterruptedError):
             self._write_buffer.append(data)
         except serial.SerialException as exc:
-            self._fatal_error(exc, "Fatal write error on serial transport")
+            self._protocol.loop.call_soon(self._call_connection_lost, exc)
+            self.abort()
         else:
             if nlen == len(data):
                 assert not self.get_write_buffer_size()
                 self._remove_writer()
                 if self._closing and not self.get_write_buffer_size():
-                    self._close()
+                    self.close()
                 return
 
             assert 0 <= nlen < len(data)
@@ -184,17 +142,18 @@ class SerialTransport(asyncio.Transport):
         def _poll_read(self):
             if self._has_reader and not self._closing:
                 try:
-                    self._has_reader = self._loop.call_later(
+                    self._has_reader = self._protocol.loop.call_later(
                         self._poll_wait_time, self._poll_read
                     )
                     if self._serial.in_waiting:
                         self._read_ready()
                 except serial.SerialException as exc:
-                    self._fatal_error(exc, "Fatal write error on serial transport")
+                    self._protocol.loop.call_soon(self._call_connection_lost, exc)
+                    self.abort()
 
         def _ensure_reader(self):
             if not self._has_reader and not self._closing:
-                self._has_reader = self._loop.call_later(
+                self._has_reader = self._protocol.loop.call_later(
                     self._poll_wait_time, self._poll_read
                 )
 
@@ -205,14 +164,14 @@ class SerialTransport(asyncio.Transport):
 
         def _poll_write(self):
             if self._has_writer and not self._closing:
-                self._has_writer = self._loop.call_later(
+                self._has_writer = self._protocol.loop.call_later(
                     self._poll_wait_time, self._poll_write
                 )
                 self._write_ready()
 
         def _ensure_writer(self):
             if not self._has_writer and not self._closing:
-                self._has_writer = self._loop.call_soon(self._poll_write)
+                self._has_writer = self._protocol.loop.call_soon(self._poll_write)
 
         def _remove_writer(self):
             if self._has_writer:
@@ -223,74 +182,26 @@ class SerialTransport(asyncio.Transport):
 
         def _ensure_reader(self):
             if (not self._has_reader) and (not self._closing):
-                self._loop.add_reader(self._serial.fileno(), self._read_ready)
+                self._protocol.loop.add_reader(self._serial.fileno(), self._read_ready)
                 self._has_reader = True
 
         def _remove_reader(self):
             if self._has_reader:
-                self._loop.remove_reader(self._serial.fileno())
+                self._protocol.loop.remove_reader(self._serial.fileno())
                 self._has_reader = False
 
         def _ensure_writer(self):
             if (not self._has_writer) and (not self._closing):
-                self._loop.add_writer(self._serial.fileno(), self._write_ready)
+                self._protocol.loop.add_writer(self._serial.fileno(), self._write_ready)
                 self._has_writer = True
 
         def _remove_writer(self):
             if self._has_writer:
-                self._loop.remove_writer(self._serial.fileno())
+                self._protocol.loop.remove_writer(self._serial.fileno())
                 self._has_writer = False
 
-    def _fatal_error(self, exc, message="Fatal error on serial transport"):
-        """Report a fatal error to the event-loop and abort the transport."""
-        self._loop.call_exception_handler(
-            {
-                "message": message,
-                "exception": exc,
-                "transport": self,
-                "protocol": self._protocol,
-            }
-        )
-        self._abort(exc)
-
-    def _close(self, exc=None):
-        """Close the transport gracefully.
-
-        If the write buffer is already empty, writing will be
-        stopped immediately and a call to the protocol's
-        connection_lost() method scheduled.
-
-        If the write buffer is not already empty, the
-        asynchronous writing will continue, and the _write_ready
-        method will call this _close method again when the
-        buffer has been flushed completely.
-        """
-        self._closing = True
-        self._remove_reader()
-        if not self.get_write_buffer_size():
-            self._remove_writer()
-            self._loop.call_soon(self._call_connection_lost, exc)
-
-    def _abort(self, exc):
-        """Close the transport immediately.
-
-        Pending operations will not be given opportunity to complete,
-        and buffered data will be lost. No more data will be received
-        and further writes will be ignored.  The protocol's
-        connection_lost() method will eventually be called with the
-        passed exception.
-        """
-        self._closing = True
-        self._remove_reader()
-        self._remove_writer()  # Pending buffered data will not be written
-        self._loop.call_soon(self._call_connection_lost, exc)
-
     def _call_connection_lost(self, exc):
-        """Close the connection.
-
-        Informs the protocol through connection_lost() and clears
-        pending buffers and closes the serial connection.
-        """
+        """Close the connection."""
         assert self._closing
         assert not self._has_writer
         assert not self._has_reader
@@ -306,12 +217,10 @@ class SerialTransport(asyncio.Transport):
 
             self._write_buffer.clear()
         self._write_buffer.clear()
-        self._loop = None
 
 
 async def create_serial_connection(loop, protocol_factory, *args, **kwargs):
     """Create a connection to a new serial port instance."""
-    serial_instance = serial.serial_for_url(*args, **kwargs)
     protocol = protocol_factory()
-    transport = SerialTransport(loop, protocol, serial_instance)
+    transport = SerialTransport(loop, protocol, *args, **kwargs)
     return transport, protocol

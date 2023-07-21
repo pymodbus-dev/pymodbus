@@ -511,7 +511,7 @@ class NullModem(asyncio.DatagramTransport, asyncio.WriteTransport):
 
     def can_write_eof(self) -> bool:
         """Allow to write eof"""
-        return True
+        return False
 
     def get_write_buffer_size(self) -> int:
         """Set write limit."""
@@ -529,10 +529,11 @@ class NullModem(asyncio.DatagramTransport, asyncio.WriteTransport):
 
     def get_protocol(self) -> ModbusProtocol:
         """Return current protocol."""
-        return None
+        return self.protocol
 
     def set_protocol(self, protocol: asyncio.BaseProtocol) -> None:
         """Set current protocol."""
+        self.protocol = protocol
 
     def is_closing(self) -> bool:
         """Return true if closing"""

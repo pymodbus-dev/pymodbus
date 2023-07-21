@@ -176,10 +176,10 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         """
         if self.use_sync:
             if not self.connected:
-                raise ConnectionException(f"Failed to connect[{str(self)}]")
+                raise ConnectionException(f"Failed to connect[{self!s}]")
             return self.transaction.execute(request)
         if not self.transport:
-            raise ConnectionException(f"Not connected[{str(self)}]")
+            raise ConnectionException(f"Not connected[{self!s}]")
         return self.async_execute(request)
 
     # ----------------------------------------------------------------------- #

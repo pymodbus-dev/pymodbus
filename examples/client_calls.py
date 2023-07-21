@@ -79,7 +79,7 @@ async def async_template_call(client):
         raise ModbusException(txt)
 
     # Validate data
-    txt = f"### Template coils response: {str(rr.bits)}"
+    txt = f"### Template coils response: {rr.bits!s}"
     _logger.debug(txt)
 
 
@@ -102,7 +102,7 @@ def template_call(client):
         raise ModbusException(txt)
 
     # Validate data
-    txt = f"### Template coils response: {str(rr.bits)}"
+    txt = f"### Template coils response: {rr.bits!s}"
     _logger.debug(txt)
 
 

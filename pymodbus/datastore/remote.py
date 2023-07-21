@@ -93,7 +93,7 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
             "d15": lambda a, v: self._client.write_coils(  # pylint: disable=unnecessary-lambda
                 a, v, **kwargs
             ),
-            "c5": lambda a, v: self._client.write_coils(  # pylint: disable=unnecessary-lambda
+            "c5": lambda a, v: self._client.write_coil(  # pylint: disable=unnecessary-lambda
                 a, v, **kwargs
             ),
             "c15": lambda a, v: self._client.write_coils(  # pylint: disable=unnecessary-lambda

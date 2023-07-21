@@ -88,10 +88,10 @@ def explain_with_rapid_scada(
         ),
         timeout=timeout,
     ) as response:
-        if response.status != 200:
+        if response.getcode() != 200:
             raise HTTPError(
                 url=response.url,
-                code=response.status,
+                code=response.getcode(),
                 msg=response.reason,
                 hdrs=response.headers,
                 fp=response.fp,

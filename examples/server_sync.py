@@ -129,7 +129,12 @@ def run_sync_server(args):
     return server
 
 
-if __name__ == "__main__":
+def sync_helper():
+    """Combine setup and run."""
     run_args = setup_server(description="Run synchronous server.")
     server = run_sync_server(run_args)
     server.shutdown()
+
+
+if __name__ == "__main__":
+    sync_helper()  # pragma: no cover

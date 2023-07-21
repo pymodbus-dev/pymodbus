@@ -54,10 +54,6 @@ Asynchronous server
 ^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/server_async.py
 
-Build bcd Payload
-^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../examples/build_bcd_payload.py
-
 Callback Server example
 ^^^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/server_callback.py

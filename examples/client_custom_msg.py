@@ -9,16 +9,18 @@ implementation from pymodbus.
         result = client.read_coils(1,10)
         print result
 """
+import asyncio
 import logging
 import struct
 
 from pymodbus.bit_read_message import ReadCoilsRequest
-from pymodbus.client import ModbusTcpClient as ModbusClient
+from pymodbus.client import AsyncModbusTcpClient as ModbusClient
 
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.pdu import ModbusExceptions, ModbusRequest, ModbusResponse
+from pymodbus.transaction import ModbusSocketFramer
 
 
 # --------------------------------------------------------------------------- #
@@ -39,7 +41,7 @@ log.setLevel(logging.DEBUG)
 # --------------------------------------------------------------------------- #
 
 
-class CustomModbusResponse(ModbusResponse):
+class CustomModbusResponse(ModbusResponse):  # pragma no cover
     """Custom modbus response."""
 
     function_code = 55
@@ -87,11 +89,11 @@ class CustomModbusRequest(ModbusRequest):
         """Encode."""
         return struct.pack(">HH", self.address, self.count)
 
-    def decode(self, data):
+    def decode(self, data):  # pragma no cover
         """Decode."""
         self.address, self.count = struct.unpack(">HH", data)
 
-    def execute(self, context):
+    def execute(self, context):  # pragma no cover
         """Execute."""
         if not 1 <= self.count <= 0x7D0:
             return self.doException(ModbusExceptions.IllegalValue)
@@ -125,25 +127,22 @@ class Read16CoilsRequest(ReadCoilsRequest):
 # --------------------------------------------------------------------------- #
 
 
-def run_custom_client(host, port):
+async def main(host="localhost", port=5020):
     """Run versions of read coil."""
-    with ModbusClient(host=host, port=port) as client:
-        # Standard call
-        request = ReadCoilsRequest(32, 1, slave=1)
-        result = client.execute(request)
-        print(result)
-
-        # inherited request
-        request = Read16CoilsRequest(32, slave=1)
-        result = client.execute(request)
-        print(result)
+    with ModbusClient(host=host, port=port, framer=ModbusSocketFramer) as client:
+        await client.connect()
 
         # new modbus function code.
         client.register(CustomModbusResponse)
         request = CustomModbusRequest(32, slave=1)
-        result = client.execute(request)
+        result = await client.execute(request)
+        print(result)
+
+        # inherited request
+        request = Read16CoilsRequest(32, slave=1)
+        result = await client.execute(request)
         print(result)
 
 
 if __name__ == "__main__":
-    run_custom_client("localhost", "5020")
+    asyncio.run(main())  # pragma: no cover

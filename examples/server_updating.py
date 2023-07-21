@@ -80,6 +80,11 @@ async def run_updating_server(args):
     await run_async_server(args)
 
 
+async def main(cmdline=None):
+    """Combine setup and run"""
+    run_args = setup_updating_server(cmdline=cmdline)
+    await run_updating_server(run_args)
+
+
 if __name__ == "__main__":
-    run_args = setup_updating_server()
-    asyncio.run(run_updating_server(run_args), debug=True)
+    asyncio.run(main(), debug=True)  # pragma: no cover

@@ -216,4 +216,4 @@ def generate_messages(cmdline=None):
 
 
 if __name__ == "__main__":
-    generate_messages()
+    generate_messages()  # pragma: no cover

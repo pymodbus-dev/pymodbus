@@ -33,17 +33,14 @@ from pymodbus.transaction import (
 )
 
 
-async def run_async_client(host, port):
+async def run_async_simple_client(comm, host, port):
     """Run async client."""
 
     # activate debugging
     pymodbus_apply_logging_config("DEBUG")
 
-    # change to test other client types
-    select_my_client = "tcp"
-
     print("get client")
-    if select_my_client == "tcp":
+    if comm == "tcp":
         client = AsyncModbusTcpClient(
             host,
             port=port,
@@ -55,7 +52,7 @@ async def run_async_client(host, port):
             # strict=True,
             # source_address=("localhost", 0),
         )
-    elif select_my_client == "udp":
+    elif comm == "udp":
         client = AsyncModbusUdpClient(
             host,
             port=port,
@@ -67,7 +64,7 @@ async def run_async_client(host, port):
             # strict=True,
             # source_address=None,
         )
-    elif select_my_client == "serial":
+    elif comm == "serial":
         client = AsyncModbusSerialClient(
             port,
             framer=ModbusRtuFramer,
@@ -77,12 +74,12 @@ async def run_async_client(host, port):
             # close_comm_on_error=False,
             # strict=True,
             baudrate=9600,
-            # bytesize=8,
-            # parity="N",
-            # stopbits=1,
+            bytesize=8,
+            parity="N",
+            stopbits=1,
             # handle_local_echo=False,
         )
-    elif select_my_client == "tls":
+    elif comm == "tls":
         client = AsyncModbusTlsClient(
             host,
             port=port,
@@ -93,13 +90,13 @@ async def run_async_client(host, port):
             # close_comm_on_error=False,
             # strict=True,
             # sslctx=sslctx,
-            certfile="my_cert.crt",
-            keyfile="my_cert.key",
+            certfile="../examples/certificates/pymodbus.crt",
+            keyfile="../examples/certificates/pymodbus.key",
             # password="none",
             server_hostname="localhost",
         )
-    else:
-        print(f"Unknown client {select_my_client} selected")
+    else:  # pragma no cover
+        print(f"Unknown client {comm} selected")
         return
 
     print("connect to server")
@@ -111,15 +108,15 @@ async def run_async_client(host, port):
     try:
         # See all calls in client_calls.py
         rr = await client.read_coils(1, 1, slave=1)
-    except ModbusException as exc:
+    except ModbusException as exc:  # pragma no cover
         print(f"Received ModbusException({exc}) from library")
         client.close()
         return
-    if rr.isError():
+    if rr.isError():  # pragma no cover
         print(f"Received Modbus library error({rr})")
         client.close()
         return
-    if isinstance(rr, ExceptionResponse):
+    if isinstance(rr, ExceptionResponse):  # pragma no cover
         print(f"Received Modbus library exception ({rr})")
         # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
         client.close()
@@ -129,4 +126,6 @@ async def run_async_client(host, port):
 
 
 if __name__ == "__main__":
-    asyncio.run(run_async_client("127.0.0.1", 5020), debug=True)
+    asyncio.run(
+        run_async_simple_client("tcp", "127.0.0.1", 5020), debug=True
+    )  # pragma: no cover

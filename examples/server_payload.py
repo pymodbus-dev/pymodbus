@@ -58,6 +58,11 @@ def setup_payload_server(cmdline=None):
     )
 
 
+async def main(cmdline=None):
+    """Combine setup and run"""
+    run_args = setup_payload_server(cmdline=cmdline)
+    await run_async_server(run_args)
+
+
 if __name__ == "__main__":
-    run_args = setup_payload_server()
-    asyncio.run(run_async_server(run_args))
+    asyncio.run(main(), debug=True)  # pragma: no cover

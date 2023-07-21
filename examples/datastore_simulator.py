@@ -173,6 +173,11 @@ async def run_server_simulator(args):
     )
 
 
+async def main(cmdline=None):
+    """Combine setup and run"""
+    run_args = setup_simulator(cmdline=cmdline)
+    await run_server_simulator(run_args)
+
+
 if __name__ == "__main__":
-    run_args = setup_simulator()
-    asyncio.run(run_server_simulator(run_args), debug=True)
+    asyncio.run(main(), debug=True)  # pragma: no cover

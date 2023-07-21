@@ -211,7 +211,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 self.handle_new_connection,
                 self.comm_params.host,
                 self.comm_params.port,
-                local_addr=self.comm_params.source_address,
+                # local_addr=self.comm_params.source_address,
                 ssl=self.comm_params.sslctx,
             )
 

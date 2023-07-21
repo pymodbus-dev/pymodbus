@@ -179,8 +179,8 @@ def _get_client_methods(members):
         filter(lambda x: (x[0] not in EXCLUDE and x[0] in CLIENT_METHODS), members)
     )
     commands = {
-        "client.{c[0]}": Command(
-            "client.{c[0]}", argspec(c[1]), inspect.getdoc(c[1]), slave=False
+        f"client.{c[0]}": Command(
+            f"client.{c[0]}", argspec(c[1]), inspect.getdoc(c[1]), slave=False
         )
         for c in commands
         if not c[0].startswith("_")

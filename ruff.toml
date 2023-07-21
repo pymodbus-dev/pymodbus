@@ -15,6 +15,8 @@ ignore = [
     "S101",  # Use of `assert`
     "S311",  # PRNG for cryptography
     "S104",  # binding on all interfaces
+    "RUF012",  # typing.ClassVar
+    "RUF013",  # implicit Optional
 ]
 line-length = 120
 select = [

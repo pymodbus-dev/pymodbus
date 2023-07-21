@@ -64,6 +64,16 @@ class SerialTransport(asyncio.Transport):
         """Return The number of bytes in the write buffer."""
         return len(self._write_buffer)
 
+    def is_reading(self) -> bool:
+        """Return true if read is active."""
+        return True
+
+    def pause_reading(self):
+        """Pause receiver."""
+
+    def resume_reading(self):
+        """Resume receiver."""
+
     # ------------------------------------------------
 
     def is_closing(self):

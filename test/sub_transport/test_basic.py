@@ -146,12 +146,19 @@ class TestBasicModbusProtocol:
         assert not client.recv_buffer
         client.data_received(test_data)
         assert client.recv_buffer == test_data
+        assert not client.sent_buffer
         client.recv_buffer = b""
         client.transport_send(test_data)
         client.datagram_received(test_data, ("127.0.0.1", 502))
         assert not client.recv_buffer
+        assert not client.sent_buffer
         client.datagram_received(test_data, ("127.0.0.1", 502))
         assert client.recv_buffer == test_data
+        assert not client.sent_buffer
+        client.transport_send(b"no echo")
+        client.datagram_received(test_data, ("127.0.0.1", 502))
+        assert client.recv_buffer == test_data + test_data
+        assert not client.sent_buffer
 
     async def test_transport_close(self, server, dummy_protocol):
         """Test transport_close()."""
@@ -275,3 +282,4 @@ class TestBasicNullModem:
         modem.get_protocol()
         modem.set_protocol(None)
         modem.is_closing()
+        modem.is_reading()

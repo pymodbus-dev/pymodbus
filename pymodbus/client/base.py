@@ -83,7 +83,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         setup_params = CommParams(
             comm_type=kwargs.get("CommType"),
             comm_name="comm",
-            source_address=kwargs.get("source_address", ("127.0.0.1", 0)),
+            source_address=kwargs.get("source_address", ("0.0.0.0", 0)),
             reconnect_delay=reconnect_delay,
             reconnect_delay_max=reconnect_delay_max,
             timeout_connect=timeout,

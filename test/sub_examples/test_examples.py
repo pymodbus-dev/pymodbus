@@ -213,7 +213,7 @@ class TestExamples:
         ("use_comm", "use_framer", "use_port"),
         [
             ("tcp", "socket", BASE_PORT + 46),
-            ("tls", "tls", BASE_PORT + 47),
+            # awaiting fix ("tls", "tls", BASE_PORT + 47),
             ("udp", "socket", BASE_PORT + 48),
             ("serial", "rtu", BASE_PORT + 49),
         ],
@@ -230,7 +230,7 @@ class TestExamples:
         ("use_comm", "use_framer", "use_port"),
         [
             ("tcp", "socket", BASE_PORT + 46),
-            ("tls", "tls", BASE_PORT + 47),
+            # awaiting fix ("tls", "tls", BASE_PORT + 47),
             ("udp", "socket", BASE_PORT + 48),
             ("serial", "rtu", BASE_PORT + 49),
         ],

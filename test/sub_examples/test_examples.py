@@ -20,9 +20,9 @@ from examples.client_payload import main as main_payload_calls
 from examples.datastore_simulator import main as main_datastore_simulator
 from examples.message_generator import generate_messages
 from examples.message_parser import main as main_parse_messages
-from examples.server_async import run_async_server, setup_server
+from examples.server_async import setup_server
 from examples.server_callback import run_callback_server
-from examples.server_payload import setup_payload_server
+from examples.server_payload import main as main_payload_server
 from examples.server_sync import run_sync_server
 from examples.server_updating import main as main_updating_server
 from examples.simple_async_client import run_async_simple_client
@@ -154,8 +154,7 @@ class TestExamples:
     )
     async def test_payload(self, mock_clc, mock_cls):
         """Test server/client with payload."""
-        run_args = setup_payload_server(cmdline=mock_cls)
-        task = asyncio.create_task(run_async_server(run_args))
+        task = asyncio.create_task(main_payload_server(cmdline=mock_cls))
         await asyncio.sleep(0.1)
         await main_payload_calls(cmdline=mock_clc)
         await asyncio.sleep(0.1)

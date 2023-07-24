@@ -1,11 +1,10 @@
 """ModbusProtocol layer."""
-# mypy: disable-error-code="name-defined,union-attr"
-# needed because asyncio.Server is not defined (to mypy) in v3.8.16
 from __future__ import annotations
 
 import asyncio
 import dataclasses
 import ssl
+from contextlib import suppress
 from enum import Enum
 from typing import Any, Callable, Coroutine
 
@@ -124,7 +123,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.is_server = is_server
         self.is_closing = False
 
-        self.transport: asyncio.BaseModbusProtocol | asyncio.Server = None
+        self.transport: asyncio.BaseTransport = None
         self.loop: asyncio.AbstractEventLoop = None
         self.recv_buffer: bytes = b""
         self.call_create: Callable[[], Coroutine[Any, Any, Any]] = lambda: None
@@ -258,7 +257,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
     # ---------------------------------- #
     # ModbusProtocol asyncio standard methods #
     # ---------------------------------- #
-    def connection_made(self, transport: asyncio.BaseModbusProtocol):
+    def connection_made(self, transport: asyncio.BaseTransport):
         """Call from asyncio, when a connection is made.
 
         :param transport: socket etc. representing the connection.
@@ -298,10 +297,23 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 self.sent_buffer = b""
             if not data:
                 return
-        Log.debug("recv: {} addr={}", data, ":hex", addr)
+        Log.debug(
+            "recv: {} old_data: {} addr={}",
+            data,
+            ":hex",
+            self.recv_buffer,
+            ":hex",
+            addr,
+        )
         self.recv_buffer += data
         cut = self.callback_data(self.recv_buffer, addr=addr)
         self.recv_buffer = self.recv_buffer[cut:]
+        if self.recv_buffer:
+            Log.debug(
+                "recv, unused data waiting for next packet: {}",
+                self.recv_buffer,
+                ":hex",
+            )
 
     def eof_received(self):
         """Accept other end terminates connection."""
@@ -342,11 +354,11 @@ class ModbusProtocol(asyncio.BaseProtocol):
             self.sent_buffer = data
         if self.comm_params.comm_type == CommType.UDP:
             if addr:
-                self.transport.sendto(data, addr=addr)
+                self.transport.sendto(data, addr=addr)  # type: ignore[attr-defined]
             else:
-                self.transport.sendto(data)
+                self.transport.sendto(data)  # type: ignore[attr-defined]
         else:
-            self.transport.write(data)
+            self.transport.write(data)  # type: ignore[attr-defined]
 
     def transport_close(self, intern: bool = False, reconnect: bool = False) -> None:
         """Close connection.
@@ -392,26 +404,11 @@ class ModbusProtocol(asyncio.BaseProtocol):
         """Bypass create_ and use null modem"""
         if self.is_server:
             # Listener object
-            self.transport = NullModem(self)
-            NullModem.listener_new_connection[port] = self.handle_new_connection
+            self.transport = NullModem.set_listener(port, self)
             return self.transport, self
 
         # connect object
-        client_protocol = self.handle_new_connection()
-        try:
-            server_protocol = NullModem.listener_new_connection[port]()
-        except KeyError as exc:
-            raise asyncio.TimeoutError(
-                f"No listener on port {self.comm_params.port} for connect"
-            ) from exc
-
-        client_transport = NullModem(client_protocol)
-        server_transport = NullModem(server_protocol)
-        client_transport.other_transport = server_transport
-        server_transport.other_transport = client_transport
-        client_protocol.connection_made(client_transport)
-        server_protocol.connection_made(server_transport)
-        return client_transport, client_protocol
+        return NullModem.set_connection(port, self)
 
     def handle_new_connection(self):
         """Handle incoming connect."""
@@ -468,46 +465,117 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
     (Allowing tests to be shortcut without actual network calls)
     """
 
-    listener_new_connection: dict[int, ModbusProtocol] = {}
+    listeners: dict[int, ModbusProtocol] = {}
+    connections: dict[NullModem, int] = {}
 
-    def __init__(self, protocol: ModbusProtocol):
+    def __init__(self, protocol: ModbusProtocol, listen: int = None) -> None:
         """Create half part of null modem"""
         asyncio.DatagramTransport.__init__(self)
         asyncio.Transport.__init__(self)
-        self.other: NullModem = None
-        self.protocol: ModbusProtocol | asyncio.BaseProtocol = protocol
+        self.protocol: ModbusProtocol = protocol
         self.serving: asyncio.Future = asyncio.Future()
-        self.other_transport: NullModem = None
+        self.other_modem: NullModem = None
+        self.listen = listen
+        self.manipulator: Callable[[bytes], list[bytes]] = None
+        self._is_closing = False
+
+    # -------------------------- #
+    # external nullmodem methods #
+    # -------------------------- #
+    @classmethod
+    def set_listener(cls, port: int, parent: ModbusProtocol) -> NullModem:
+        """Register listener."""
+        if port in cls.listeners:
+            raise AssertionError(f"Port {port} already listening !")
+        cls.listeners[port] = parent
+        return NullModem(parent, listen=port)
+
+    @classmethod
+    def set_connection(
+        cls, port: int, parent: ModbusProtocol
+    ) -> tuple[NullModem, ModbusProtocol]:
+        """Connect to listener."""
+        if port not in cls.listeners:
+            raise asyncio.TimeoutError(f"Port {port} not being listened on !")
+
+        client_protocol = parent.handle_new_connection()
+        server_protocol = NullModem.listeners[port].handle_new_connection()
+        client_transport = NullModem(client_protocol)
+        server_transport = NullModem(server_protocol)
+        cls.connections[client_transport] = port
+        cls.connections[server_transport] = -port
+        client_transport.other_modem = server_transport
+        server_transport.other_modem = client_transport
+        client_protocol.connection_made(client_transport)
+        server_protocol.connection_made(server_transport)
+        return client_transport, client_protocol
+
+    def set_manipulator(self, function: Callable[[bytes], list[bytes]]) -> None:
+        """Register a manipulator."""
+        self.manipulator = function
+
+    @classmethod
+    def is_dirty(cls):
+        """Check if everything is closed."""
+        dirty = False
+        if cls.connections:
+            Log.error(
+                "NullModem_FATAL missing close on port {} connect()",
+                [str(key) for key in cls.connections.values()],
+            )
+            dirty = True
+        if cls.listeners:
+            Log.error(
+                "NullModem_FATAL missing close on port {} listen()",
+                [str(value) for value in cls.listeners],
+            )
+            dirty = True
+        return dirty
 
     # ---------------- #
     # external methods #
     # ---------------- #
 
-    def close(self):
+    def close(self) -> None:
         """Close null modem"""
+        if self._is_closing:
+            return
+        self._is_closing = True
         if not self.serving.done():
             self.serving.set_result(True)
-        if self.other_transport:
-            self.other_transport.other_transport = None
-            self.other_transport.protocol.connection_lost(None)
-            self.other_transport = None
+        if self.listen:
+            del self.listeners[self.listen]
+            return
+        if self.connections:
+            with suppress(KeyError):
+                del self.connections[self]
+        if self.other_modem:
+            self.other_modem.other_modem = None
+            self.other_modem.close()
+            self.other_modem = None
+        if self.protocol:
             self.protocol.connection_lost(None)
 
-    def sendto(self, data: bytes, _addr: Any = None):
+    def sendto(self, data: bytes, _addr: Any = None) -> None:
         """Send datagrame"""
-        return self.write(data)
+        self.write(data)
 
-    def write(self, data: bytes):
+    def write(self, data: bytes) -> None:
         """Send data"""
-        self.other_transport.protocol.data_received(data)
+        if not self.manipulator:
+            self.other_modem.protocol.data_received(data)
+            return
+        data_manipulated = self.manipulator(data)
+        for part in data_manipulated:
+            self.other_modem.protocol.data_received(part)
 
-    async def serve_forever(self):
+    async def serve_forever(self) -> None:
         """Serve forever"""
         await self.serving
 
-    # ---------------- #
-    # Abstract methods #
-    # ---------------- #
+    # ------------- #
+    # Dummy methods #
+    # ------------- #
     def abort(self) -> None:
         """Abort connection."""
         self.close()
@@ -536,11 +604,10 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
 
     def set_protocol(self, protocol: asyncio.BaseProtocol) -> None:
         """Set current protocol."""
-        self.protocol = protocol
 
     def is_closing(self) -> bool:
         """Return true if closing"""
-        return False
+        return self._is_closing
 
     def is_reading(self) -> bool:
         """Return true if read is active."""

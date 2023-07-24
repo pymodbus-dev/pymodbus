@@ -6,7 +6,7 @@ import pytest_asyncio
 
 from examples.server_async import run_async_server, setup_server
 from pymodbus.server import ServerAsyncStop
-from pymodbus.transport.transport import NULLMODEM_HOST
+from pymodbus.transport import NULLMODEM_HOST
 
 
 @pytest.fixture(name="port_offset")

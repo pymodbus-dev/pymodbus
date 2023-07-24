@@ -19,7 +19,7 @@ from pymodbus.transaction import (
     ModbusSocketFramer,
     ModbusTlsFramer,
 )
-from pymodbus.transport.transport import CommParams, CommType, ModbusProtocol
+from pymodbus.transport import CommParams, CommType, ModbusProtocol
 
 
 with suppress(ImportError):

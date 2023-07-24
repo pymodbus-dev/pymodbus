@@ -2,12 +2,28 @@
 import asyncio
 from unittest import mock
 
+import pytest
+
+from pymodbus.transport import NullModem
+
 
 class TestReconnectModbusProtocol:
     """Test transport module, base part."""
 
+    @staticmethod
+    @pytest.fixture(name="use_port")
+    def get_my_port(base_ports):
+        """Return next port"""
+        base_ports[__class__.__name__] += 1
+        return base_ports[__class__.__name__]
+
+    def teardown(self):
+        """Run class teardown"""
+        assert not NullModem.is_dirty()
+
     async def test_no_reconnect_call(self, client):
         """Test connection_lost()."""
+        client.loop = asyncio.get_running_loop()
         client.loop.create_connection = mock.AsyncMock(return_value=(None, None))
         await client.transport_connect()
         client.connection_lost(RuntimeError("Connection lost"))
@@ -18,6 +34,7 @@ class TestReconnectModbusProtocol:
 
     async def test_reconnect_call(self, client, use_clc):
         """Test connection_lost()."""
+        client.loop = asyncio.get_running_loop()
         client.loop.create_connection = mock.AsyncMock(return_value=(None, None))
         await client.transport_connect()
         client.connection_made(mock.Mock())
@@ -31,6 +48,7 @@ class TestReconnectModbusProtocol:
 
     async def test_multi_reconnect_call(self, client, use_clc):
         """Test connection_lost()."""
+        client.loop = asyncio.get_running_loop()
         client.loop.create_connection = mock.AsyncMock(return_value=(None, None))
         await client.transport_connect()
         client.connection_made(mock.Mock())
@@ -48,6 +66,7 @@ class TestReconnectModbusProtocol:
 
     async def test_reconnect_call_ok(self, client, use_clc):
         """Test connection_lost()."""
+        client.loop = asyncio.get_running_loop()
         client.loop.create_connection = mock.AsyncMock(
             return_value=(mock.Mock(), mock.Mock())
         )

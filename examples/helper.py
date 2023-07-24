@@ -125,13 +125,13 @@ def get_certificate(suffix: str):
     delimiter = "\\" if os.name == "nt" else "/"
     cwd = os.getcwd().split(delimiter)[-1]
     if cwd == "examples":
-        path = "."
+        path = "."  # pragma no cover
     elif cwd == "sub_examples":
-        path = "../../examples"
+        path = "../../examples"  # pragma no cover
     elif cwd == "test":
         path = "../examples"
     elif cwd == "pymodbus":
-        path = "examples"
+        path = "examples"  # pragma no cover
     else:
         raise RuntimeError(f"**Error** Cannot find certificate path={cwd}")
     return f"{path}/certificates/pymodbus.{suffix}"

@@ -103,7 +103,7 @@ def run_sync_server(args):
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
-    elif args.comm == "tls":
+    elif args.comm == "tls":  # pragma no cover
         address = ("", args.port) if args.port else None
         server = StartTlsServer(
             context=args.context,  # Data storage

@@ -90,7 +90,7 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
             help="ADVANCED USAGE: set datastore context object",
             default=None,
         )
-    if extras:  # prgama no cover
+    if extras:  # pragma no cover
         for extra in extras:
             parser.add_argument(extra[0], **extra[1])
     args = parser.parse_args(cmdline)

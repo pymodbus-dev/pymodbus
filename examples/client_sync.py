@@ -97,7 +97,7 @@ def setup_sync_client(description=None, cmdline=None):
             #    stopbits=1,
             #    handle_local_echo=False,
         )
-    elif args.comm == "tls":
+    elif args.comm == "tls":  # pragma no cover
         client = ModbusTlsClient(
             args.host,
             port=args.port,
@@ -137,6 +137,13 @@ def run_a_few_calls(client):
     assert rr.registers[1] == 17
 
 
-if __name__ == "__main__":
-    testclient = setup_sync_client(description="Run synchronous client.")
+def main(cmdline=None):
+    """Combine setup and run."""
+    testclient = setup_sync_client(
+        description="Run synchronous client.", cmdline=cmdline
+    )
     run_sync_client(testclient, modbus_calls=run_a_few_calls)
+
+
+if __name__ == "__main__":
+    main()  # pragma: no cover

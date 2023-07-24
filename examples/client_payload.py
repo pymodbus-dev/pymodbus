@@ -137,11 +137,11 @@ async def run_payload_calls(client):
         print("\n")
 
 
-async def async_helper():
+async def main(cmdline=None):
     """Combine the setup and run"""
-    testclient = setup_async_client(description="Run asynchronous client.")
-    await run_async_client(testclient, modbus_calls=run_payload_calls)
+    client = setup_async_client(description="Run asynchronous client.", cmdline=cmdline)
+    await run_async_client(client, modbus_calls=run_payload_calls)
 
 
 if __name__ == "__main__":
-    asyncio.run(async_helper())
+    asyncio.run(main())  # pragma: no cover

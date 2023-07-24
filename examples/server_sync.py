@@ -103,7 +103,7 @@ def run_sync_server(args):
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
-    elif args.comm == "tls":
+    elif args.comm == "tls":  # pragma no cover
         address = ("", args.port) if args.port else None
         server = StartTlsServer(
             context=args.context,  # Data storage
@@ -129,7 +129,12 @@ def run_sync_server(args):
     return server
 
 
-if __name__ == "__main__":
+def sync_helper():
+    """Combine setup and run."""
     run_args = setup_server(description="Run synchronous server.")
     server = run_sync_server(run_args)
     server.shutdown()
+
+
+if __name__ == "__main__":
+    sync_helper()  # pragma: no cover

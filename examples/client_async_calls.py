@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Pymodbus Client modbus call examples.
+"""Pymodbus Client modbus async call examples.
 
 Please see:
 
-    template_call
+    async_template_call
 
 for a template on how to make modbus calls and check for different
 error conditions.
@@ -32,12 +32,13 @@ The corresponding server must be started before e.g. as:
 
     ./server_async.py
 """
+import asyncio
 import logging
 
 import pymodbus.diag_message as req_diag
 import pymodbus.mei_message as req_mei
 import pymodbus.other_message as req_other
-from examples.client_sync import run_sync_client, setup_sync_client
+from examples.client_async import run_async_client, setup_async_client
 from pymodbus.exceptions import ModbusException
 
 
@@ -53,10 +54,10 @@ SLAVE = 0x01
 # Template on how to make modbus calls (sync/async).
 # all calls follow the same schema,
 # --------------------------------------------------
-def template_call(client):
-    """Show complete modbus call, sync version."""
+async def async_template_call(client):
+    """Show complete modbus call, async version."""
     try:
-        rr = client.read_coils(32, 1, slave=SLAVE)
+        rr = await client.read_coils(1, 1, slave=SLAVE)
     except ModbusException as exc:
         txt = f"ERROR: exception in pymodbus {exc}"
         _logger.error(txt)
@@ -74,33 +75,33 @@ def template_call(client):
 # ------------------------------------------------------
 # Call modbus device (all possible calls are presented).
 # ------------------------------------------------------
-def handle_coils(client):
+async def async_handle_coils(client):
     """Read/Write coils."""
     _logger.info("### Reading Coil different number of bits (return 8 bits multiples)")
-    rr = client.read_coils(1, 1, slave=SLAVE)
+    rr = await client.read_coils(1, 1, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 8
 
-    rr = client.read_coils(1, 5, slave=SLAVE)
+    rr = await client.read_coils(1, 5, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 8
 
-    rr = client.read_coils(1, 12, slave=SLAVE)
+    rr = await client.read_coils(1, 12, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 16
 
-    rr = client.read_coils(1, 17, slave=SLAVE)
+    rr = await client.read_coils(1, 17, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 24
 
     _logger.info("### Write false/true to coils and read to verify")
-    client.write_coil(0, True, slave=SLAVE)
-    rr = client.read_coils(0, 1, slave=SLAVE)
+    await client.write_coil(0, True, slave=SLAVE)
+    rr = await client.read_coils(0, 1, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.bits[0]  # test the expected value
 
-    client.write_coils(1, [True] * 21, slave=SLAVE)
-    rr = client.read_coils(1, 21, slave=SLAVE)
+    await client.write_coils(1, [True] * 21, slave=SLAVE)
+    rr = await client.read_coils(1, 21, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     resp = [True] * 21
     # If the returned output quantity is not a multiple of eight,
@@ -110,30 +111,30 @@ def handle_coils(client):
     assert rr.bits == resp  # test the expected value
 
     _logger.info("### Write False to address 1-8 coils")
-    client.write_coils(1, [False] * 8, slave=SLAVE)
-    rr = client.read_coils(1, 8, slave=SLAVE)
+    await client.write_coils(1, [False] * 8, slave=SLAVE)
+    rr = await client.read_coils(1, 8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.bits == [False] * 8  # test the expected value
 
 
-def handle_discrete_input(client):
+async def async_handle_discrete_input(client):
     """Read discrete inputs."""
     _logger.info("### Reading discrete input, Read address:0-7")
-    rr = client.read_discrete_inputs(0, 8, slave=SLAVE)
+    rr = await client.read_discrete_inputs(0, 8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 8
 
 
-def handle_holding_registers(client):
+async def async_handle_holding_registers(client):
     """Read/write holding registers."""
     _logger.info("### write holding register and read holding registers")
-    client.write_register(1, 10, slave=SLAVE)
-    rr = client.read_holding_registers(1, 1, slave=SLAVE)
+    await client.write_register(1, 10, slave=SLAVE)
+    rr = await client.read_holding_registers(1, 1, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers[0] == 10
 
-    client.write_registers(1, [10] * 8, slave=SLAVE)
-    rr = client.read_holding_registers(1, 8, slave=SLAVE)
+    await client.write_registers(1, [10] * 8, slave=SLAVE)
+    rr = await client.read_holding_registers(1, 8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == [10] * 8
 
@@ -144,93 +145,99 @@ def handle_holding_registers(client):
         "write_address": 1,
         "values": [256, 128, 100, 50, 25, 10, 5, 1],
     }
-    client.readwrite_registers(slave=SLAVE, **arguments)
-    rr = client.read_holding_registers(1, 8, slave=SLAVE)
+    await client.readwrite_registers(slave=SLAVE, **arguments)
+    rr = await client.read_holding_registers(1, 8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == arguments["values"]
 
 
-def handle_input_registers(client):
+async def async_handle_input_registers(client):
     """Read input registers."""
     _logger.info("### read input registers")
-    rr = client.read_input_registers(1, 8, slave=SLAVE)
+    rr = await client.read_input_registers(1, 8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.registers) == 8
 
 
-def execute_information_requests(client):  # pragma no cover
+async def async_execute_information_requests(client):
     """Execute extended information requests."""
     _logger.info("### Running information requests.")
-    rr = client.execute(req_mei.ReadDeviceInformationRequest(slave=SLAVE))
+    rr = await client.execute(req_mei.ReadDeviceInformationRequest(slave=SLAVE))
     assert not rr.isError()  # test that call was OK
     assert rr.information[0] == b"Pymodbus"
 
-    rr = client.execute(req_other.ReportSlaveIdRequest(slave=SLAVE))
+    rr = await client.execute(req_other.ReportSlaveIdRequest(slave=SLAVE))
     assert not rr.isError()  # test that call was OK
     # assert rr.status
 
-    rr = client.execute(req_other.ReadExceptionStatusRequest(slave=SLAVE))
+    rr = await client.execute(req_other.ReadExceptionStatusRequest(slave=SLAVE))
     assert not rr.isError()  # test that call was OK
     # assert not rr.status
 
-    rr = client.execute(req_other.GetCommEventCounterRequest(slave=SLAVE))
+    rr = await client.execute(req_other.GetCommEventCounterRequest(slave=SLAVE))
     assert not rr.isError()  # test that call was OK
     # assert rr.status
     # assert not rr.count
 
-    rr = client.execute(req_other.GetCommEventLogRequest(slave=SLAVE))
+    rr = await client.execute(req_other.GetCommEventLogRequest(slave=SLAVE))
     assert not rr.isError()  # test that call was OK
     # assert rr.status
     # assert not (rr.event_count + rr.message_count + len(rr.events))
 
 
-def execute_diagnostic_requests(client):  # pragma no cover
+async def async_execute_diagnostic_requests(client):
     """Execute extended diagnostic requests."""
     _logger.info("### Running diagnostic requests.")
     message = b"OK"
-    rr = client.execute(req_diag.ReturnQueryDataRequest(message=message, slave=SLAVE))
+    rr = await client.execute(
+        req_diag.ReturnQueryDataRequest(message=message, slave=SLAVE)
+    )
     assert not rr.isError()  # test that call was OK
     assert rr.message == message
 
-    client.execute(req_diag.RestartCommunicationsOptionRequest(slave=SLAVE))
-    client.execute(req_diag.ReturnDiagnosticRegisterRequest(slave=SLAVE))
-    client.execute(req_diag.ChangeAsciiInputDelimiterRequest(slave=SLAVE))
+    await client.execute(req_diag.RestartCommunicationsOptionRequest(slave=SLAVE))
+    await client.execute(req_diag.ReturnDiagnosticRegisterRequest(slave=SLAVE))
+    await client.execute(req_diag.ChangeAsciiInputDelimiterRequest(slave=SLAVE))
 
-    # NOT WORKING: _check_call(client.execute(req_diag.ForceListenOnlyModeRequest(slave=SLAVE)))
+    # NOT WORKING: _check_call(await client.execute(req_diag.ForceListenOnlyModeRequest(slave=SLAVE)))
     # does not send a response
 
-    client.execute(req_diag.ClearCountersRequest())
-    client.execute(req_diag.ReturnBusCommunicationErrorCountRequest(slave=SLAVE))
-    client.execute(req_diag.ReturnBusExceptionErrorCountRequest(slave=SLAVE))
-    client.execute(req_diag.ReturnSlaveMessageCountRequest(slave=SLAVE))
-    client.execute(req_diag.ReturnSlaveNoResponseCountRequest(slave=SLAVE))
-    client.execute(req_diag.ReturnSlaveNAKCountRequest(slave=SLAVE))
-    client.execute(req_diag.ReturnSlaveBusyCountRequest(slave=SLAVE))
-    client.execute(req_diag.ReturnSlaveBusCharacterOverrunCountRequest(slave=SLAVE))
-    client.execute(req_diag.ReturnIopOverrunCountRequest(slave=SLAVE))
-    client.execute(req_diag.ClearOverrunCountRequest(slave=SLAVE))
-    # NOT WORKING _check_call(client.execute(req_diag.GetClearModbusPlusRequest(slave=SLAVE)))
+    await client.execute(req_diag.ClearCountersRequest())
+    await client.execute(req_diag.ReturnBusCommunicationErrorCountRequest(slave=SLAVE))
+    await client.execute(req_diag.ReturnBusExceptionErrorCountRequest(slave=SLAVE))
+    await client.execute(req_diag.ReturnSlaveMessageCountRequest(slave=SLAVE))
+    await client.execute(req_diag.ReturnSlaveNoResponseCountRequest(slave=SLAVE))
+    await client.execute(req_diag.ReturnSlaveNAKCountRequest(slave=SLAVE))
+    await client.execute(req_diag.ReturnSlaveBusyCountRequest(slave=SLAVE))
+    await client.execute(
+        req_diag.ReturnSlaveBusCharacterOverrunCountRequest(slave=SLAVE)
+    )
+    await client.execute(req_diag.ReturnIopOverrunCountRequest(slave=SLAVE))
+    await client.execute(req_diag.ClearOverrunCountRequest(slave=SLAVE))
+    # NOT WORKING _check_call(await client.execute(req_diag.GetClearModbusPlusRequest(slave=SLAVE)))
 
 
 # ------------------------
 # Run the calls in groups.
 # ------------------------
-def run_sync_calls(client):
+async def run_async_calls(client):
     """Demonstrate basic read/write calls."""
-    template_call(client)
-    handle_coils(client)
-    handle_discrete_input(client)
-    handle_holding_registers(client)
-    handle_input_registers(client)
-    # awaiting fix: execute_information_requests(client)
-    # awaiting fix: execute_diagnostic_requests(client)
+    await async_template_call(client)
+    await async_handle_coils(client)
+    await async_handle_discrete_input(client)
+    await async_handle_holding_registers(client)
+    await async_handle_input_registers(client)
+    await async_execute_information_requests(client)
+    await async_execute_diagnostic_requests(client)
 
 
-def main(cmdline=None):
-    """Combine setup and run."""
-    client = setup_sync_client(description="Run synchronous client.", cmdline=cmdline)
-    run_sync_client(client, modbus_calls=run_sync_calls)
+async def main(cmdline=None):
+    """Combine setup and run"""
+    testclient = setup_async_client(
+        description="Run asynchronous client.", cmdline=cmdline
+    )
+    await run_async_client(testclient, modbus_calls=run_async_calls)
 
 
 if __name__ == "__main__":
-    main()  # pragma: no cover
+    asyncio.run(main())  # pragma: no cover

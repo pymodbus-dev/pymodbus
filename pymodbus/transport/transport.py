@@ -37,7 +37,7 @@ class CommParams:
     timeout_connect: float = None
     host: str = "127.0.0.1"
     port: int = 0
-    source_address: tuple[str, int] = ("127.0.0.1", 0)
+    source_address: tuple[str, int] = ("0.0.0.0", 0)
     handle_local_echo: bool = False
 
     # tls

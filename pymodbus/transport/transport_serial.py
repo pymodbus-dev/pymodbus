@@ -15,6 +15,7 @@ class SerialTransport(asyncio.Transport):
     def __init__(self, loop, protocol, *args, **kwargs):
         """Initialize."""
         super().__init__()
+        self._loop = loop
         self._protocol = protocol
         self._serial = serial.serial_for_url(*args, **kwargs)
         self._closing = False
@@ -23,6 +24,7 @@ class SerialTransport(asyncio.Transport):
         self._has_reader = False
         self._has_writer = False
         self._poll_wait_time = 0.0005
+        self.serving: asyncio.Future = asyncio.Future()
 
         # Asynchronous I/O requires non-blocking devices
         self._serial.timeout = 0
@@ -82,9 +84,18 @@ class SerialTransport(asyncio.Transport):
 
     def close(self):
         """Close the transport gracefully."""
+        if self._closing:
+            return
         self._closing = True
+        if not self.serving.done():
+            self.serving.set_result(True)
         self._remove_reader()
         self._remove_writer()
+        self._loop.call_soon(self._call_connection_lost, None)
+
+    async def serve_forever(self):
+        """Serve forever"""
+        await self.serving
 
     def _read_ready(self):
         """Test if there are data waiting."""
@@ -146,18 +157,18 @@ class SerialTransport(asyncio.Transport):
         def _poll_read(self):
             if self._has_reader and not self._closing:
                 try:
-                    self._has_reader = self._protocol.loop.call_later(
+                    self._has_reader = self._loop.call_later(
                         self._poll_wait_time, self._poll_read
                     )
                     if self._serial.in_waiting:
                         self._read_ready()
                 except serial.SerialException as exc:
-                    self._protocol.loop.call_soon(self._call_connection_lost, exc)
+                    self._loop.call_soon(self._call_connection_lost, exc)
                     self.abort()
 
         def _ensure_reader(self):
             if not self._has_reader and not self._closing:
-                self._has_reader = self._protocol.loop.call_later(
+                self._has_reader = self._loop.call_later(
                     self._poll_wait_time, self._poll_read
                 )
 
@@ -168,14 +179,14 @@ class SerialTransport(asyncio.Transport):
 
         def _poll_write(self):
             if self._has_writer and not self._closing:
-                self._has_writer = self._protocol.loop.call_later(
+                self._has_writer = self._loop.call_later(
                     self._poll_wait_time, self._poll_write
                 )
                 self._write_ready()
 
         def _ensure_writer(self):
             if not self._has_writer and not self._closing:
-                self._has_writer = self._protocol.loop.call_soon(self._poll_write)
+                self._has_writer = self._loop.call_soon(self._poll_write)
 
         def _remove_writer(self):
             if self._has_writer:
@@ -186,22 +197,22 @@ class SerialTransport(asyncio.Transport):
 
         def _ensure_reader(self):
             if (not self._has_reader) and (not self._closing):
-                self._protocol.loop.add_reader(self._serial.fileno(), self._read_ready)
+                self._loop.add_reader(self._serial.fileno(), self._read_ready)
                 self._has_reader = True
 
         def _remove_reader(self):
             if self._has_reader:
-                self._protocol.loop.remove_reader(self._serial.fileno())
+                self._loop.remove_reader(self._serial.fileno())
                 self._has_reader = False
 
         def _ensure_writer(self):
             if (not self._has_writer) and (not self._closing):
-                self._protocol.loop.add_writer(self._serial.fileno(), self._write_ready)
+                self._loop.add_writer(self._serial.fileno(), self._write_ready)
                 self._has_writer = True
 
         def _remove_writer(self):
             if self._has_writer:
-                self._protocol.loop.remove_writer(self._serial.fileno())
+                self._loop.remove_writer(self._serial.fileno())
                 self._has_writer = False
 
     def _call_connection_lost(self, exc):

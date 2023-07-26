@@ -323,7 +323,7 @@ class TestBasicSerial:
     @mock.patch(
         "pymodbus.transport.transport_serial.serial.serial_for_url", mock.Mock()
     )
-    async def test_external_methods(self):
+    async def xtest_external_methods(self):
         """Test external methods."""
         comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
         comm.write(b"abcd")

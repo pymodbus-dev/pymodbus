@@ -1,3 +1,27 @@
+version 3.4.1
+----------------------------------------------------------
+* Fix serial startup problems. (#1701)
+* pass source_address in tcp client. (#1700)
+* serial server use source_address[0]. (#1699)
+* Examples coverage nearly 100%. (#1694)
+* new async serial (#1681)
+* Docker is not supported (lack of maintainer). (#1693)
+* Forwarder write_coil --> write_coil. (#1691)
+* Change default source_address to (0.0.0.0, 502) (#1690)
+* Update ruff to 0.0.277 (#1689)
+* Fix dict comprehension (#1687)
+* Removed `requests` dependency from `contrib/explain.py`  (#1688)
+* Fix broken test (#1685)
+* Fix readme badges (#1682)
+* Bump aiohttp from 3.8.3 to 3.8.5 (#1680)
+* pygments from 2.14.0 to 2.15.0 (#1677)
+
+Thanks to:
+    Alex
+    James Braza
+    jan iversen
+
+
 version 3.4.0
 ----------------------------------------------------------
 * Prepare v3.4.0.

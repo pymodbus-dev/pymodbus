@@ -3,6 +3,12 @@ PyModbus - API changes.
 =======================
 
 -------------
+Version 3.4.1
+-------------
+
+No changes.
+
+-------------
 Version 3.4.0
 -------------
 - Modbus<x>Client .connect() returns True/False (connected or not)

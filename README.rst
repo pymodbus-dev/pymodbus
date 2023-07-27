@@ -288,10 +288,4 @@ We always have more work than time, so feel free to open a discussion / issue on
 License Information
 ------------------------------------------------------------
 
-Pymodbus is built on top of code developed from/by:
-  * Copyright (c) 2001-2005 S.W.A.C. GmbH, Germany.
-  * Copyright (c) 2001-2005 S.W.A.C. Bohemia s.r.o., Czech Republic.
-
-  * Hynek Petrak, https://github.com/HynekPetrak
-
 Released under the `BSD License <LICENSE>`_

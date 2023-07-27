@@ -88,12 +88,13 @@ def prepare_commparams_client(use_port, use_host, use_comm_type):
     """Prepare CommParamsClass object."""
     if use_host == NULLMODEM_HOST and use_comm_type == CommType.SERIAL:
         use_host = f"{NULLMODEM_HOST}:{use_port}"
+    timeout = 10 if not pytest.IS_WINDOWS else 5
     return CommParams(
         comm_name="test comm",
         comm_type=use_comm_type,
         reconnect_delay=1,
         reconnect_delay_max=3.5,
-        timeout_connect=2,
+        timeout_connect=timeout,
         host=use_host,
         port=use_port,
         baudrate=9600,

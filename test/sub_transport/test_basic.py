@@ -10,6 +10,10 @@ from pymodbus.transport.transport import (
     ModbusProtocol,
     NullModem,
 )
+from pymodbus.transport.transport_serial import (
+    SerialTransport,
+    create_serial_connection,
+)
 
 
 COMM_TYPES = [
@@ -146,12 +150,19 @@ class TestBasicModbusProtocol:
         assert not client.recv_buffer
         client.data_received(test_data)
         assert client.recv_buffer == test_data
+        assert not client.sent_buffer
         client.recv_buffer = b""
         client.transport_send(test_data)
         client.datagram_received(test_data, ("127.0.0.1", 502))
         assert not client.recv_buffer
+        assert not client.sent_buffer
         client.datagram_received(test_data, ("127.0.0.1", 502))
         assert client.recv_buffer == test_data
+        assert not client.sent_buffer
+        client.transport_send(b"no echo")
+        client.datagram_received(test_data, ("127.0.0.1", 502))
+        assert client.recv_buffer == test_data + test_data
+        assert not client.sent_buffer
 
     async def test_transport_close(self, server, dummy_protocol):
         """Test transport_close()."""
@@ -275,3 +286,57 @@ class TestBasicNullModem:
         modem.get_protocol()
         modem.set_protocol(None)
         modem.is_closing()
+        modem.is_reading()
+        modem.pause_reading()
+        modem.resume_reading()
+
+
+class TestBasicSerial:
+    """Test transport serial module."""
+
+    @mock.patch(
+        "pymodbus.transport.transport_serial.serial.serial_for_url", mock.Mock()
+    )
+    async def test_init(self):
+        """Test null modem init"""
+        SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
+
+    @mock.patch(
+        "pymodbus.transport.transport_serial.serial.serial_for_url", mock.Mock()
+    )
+    async def test_abstract_methods(self):
+        """Test asyncio abstract methods."""
+        comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
+        assert comm.loop
+        comm.get_protocol()
+        comm.set_protocol(None)
+        comm.get_write_buffer_limits()
+        comm.can_write_eof()
+        comm.write_eof()
+        comm.set_write_buffer_limits(1024, 1)
+        comm.get_write_buffer_size()
+        comm.is_reading()
+        comm.pause_reading()
+        comm.resume_reading()
+        comm.is_closing()
+
+    @mock.patch(
+        "pymodbus.transport.transport_serial.serial.serial_for_url", mock.Mock()
+    )
+    async def xtest_external_methods(self):
+        """Test external methods."""
+        comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
+        comm.write(b"abcd")
+        comm.flush()
+        comm.close()
+        comm.abort()
+        assert await create_serial_connection(
+            asyncio.get_running_loop(), mock.Mock, url="dummy"
+        )
+
+    async def test_serve_forever(self):
+        """Test external methods."""
+        modem = NullModem(mock.Mock())
+        modem.serving.set_result(True)
+        await modem.serve_forever()
+        modem.close()

@@ -6,15 +6,12 @@ There are challenges small and large not only programming but also documentation
 
 .. image:: https://github.com/pymodbus-dev/pymodbus/actions/workflows/ci.yml/badge.svg?branch=dev
    :target: https://github.com/pymodbus-dev/pymodbus/actions/workflows/ci.yml
- .. image:: https://readthedocs.org/projects/pymodbus/badge/?version=latest
+.. image:: https://readthedocs.org/projects/pymodbus/badge/?version=latest
    :target: https://pymodbus.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 .. image:: https://pepy.tech/badge/pymodbus
    :target: https://pepy.tech/project/pymodbus
    :alt: Downloads
-.. image:: https://ghcr-badge.deta.dev/pymodbus-dev/pymodbus/tags?label=Docker
-   :target: https://github.com/pymodbus-dev/pymodbus/pkgs/container/pymodbus
-   :alt: Docker Tags
 
 ------------------------------------------------------------
 Supported versions
@@ -22,7 +19,7 @@ Supported versions
 
 Version `2.5.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (python >= 2.7, no longer supported).
 
-Version `3.4.0 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.4.0>`_ is the current release (Tested with Python >= 3.8).
+Version `3.4.1 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.4.1>`_ is the current release (Tested with Python >= 3.8).
 
 .. important::
    All API changes after 3.0.0 are documented in `API_changes.rst <https://github.com/pymodbus-dev/pymodbus/blob/dev/API_changes.rst>`_

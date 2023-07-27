@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pragma no cover
 """Pymodbus synchronous forwarder.
 
 This is a repeater or converter and an example of just how powerful datastore is.
@@ -63,7 +64,8 @@ async def run_forwarder(args):
     # loop forever
 
 
-if __name__ == "__main__":
+async def async_helper():
+    """Combine setup and run"""
     cmd_args = helper.get_commandline(
         server=True,
         description="Run asynchronous forwarder.",
@@ -77,4 +79,8 @@ if __name__ == "__main__":
             )
         ],
     )
-    asyncio.run(run_forwarder(cmd_args))
+    await run_forwarder(cmd_args)
+
+
+if __name__ == "__main__":
+    asyncio.run(async_helper())  # pragma: no cover

@@ -11,10 +11,8 @@ import tempfile
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from typing import List, Optional, Tuple, Union
-
-
-with contextlib.suppress:
-    import requests
+from urllib import request
+from urllib.error import HTTPError
 
 
 RAPID_SCADA_URL = "https://rapidscada.net/modbus/"
@@ -82,14 +80,25 @@ def explain_with_rapid_scada(
     data_packet = "+".join(
         [f"{int(hex_str, base=16):02X}" for hex_str in packet.split(" ")],
     )
-    raw_response: requests.Response = requests.post(
-        f"{RAPID_SCADA_URL}?ModbusMode={int(is_modbus_tcp)}"
-        f"&DataDirection={int(is_receive)}&DataPackage={data_packet}",
+    with request.urlopen(  # noqa: S310
+        request.Request(
+            f"{RAPID_SCADA_URL}?ModbusMode={int(is_modbus_tcp)}"
+            f"&DataDirection={int(is_receive)}&DataPackage={data_packet}",
+            method="POST",
+        ),
         timeout=timeout,
-    )
-    raw_response.raise_for_status()
+    ) as response:
+        if response.getcode() != 200:
+            raise HTTPError(
+                url=response.url,
+                code=response.getcode(),
+                msg=response.reason,
+                hdrs=response.headers,
+                fp=response.fp,
+            )
+        response_data = response.read().decode()
     parser = NonEmptyDataFromHTML()
-    parser.feed(raw_response.text)
+    parser.feed(response_data)
 
     # pylint: disable-next=dangerous-default-value
     def get_next_field(prior_field: str, data: List[str] = parser.data) -> str:

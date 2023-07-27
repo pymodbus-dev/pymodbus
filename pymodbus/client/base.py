@@ -83,7 +83,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         setup_params = CommParams(
             comm_type=kwargs.get("CommType"),
             comm_name="comm",
-            source_address=kwargs.get("source_address", ("127.0.0.1", 0)),
+            source_address=kwargs.get("source_address", ("0.0.0.0", 0)),
             reconnect_delay=reconnect_delay,
             reconnect_delay_max=reconnect_delay_max,
             timeout_connect=timeout,
@@ -176,10 +176,10 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         """
         if self.use_sync:
             if not self.connected:
-                raise ConnectionException(f"Failed to connect[{str(self)}]")
+                raise ConnectionException(f"Failed to connect[{self!s}]")
             return self.transaction.execute(request)
         if not self.transport:
-            raise ConnectionException(f"Not connected[{str(self)}]")
+            raise ConnectionException(f"Not connected[{self!s}]")
         return self.async_execute(request)
 
     # ----------------------------------------------------------------------- #

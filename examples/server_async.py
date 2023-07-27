@@ -221,7 +221,12 @@ async def run_async_server(args):
     return server
 
 
-if __name__ == "__main__":
+async def async_helper():
+    """Combine setup and run."""
     _logger.info("Starting...")
     run_args = setup_server(description="Run asynchronous server.")
-    asyncio.run(run_async_server(run_args), debug=True)
+    await run_async_server(run_args)
+
+
+if __name__ == "__main__":
+    asyncio.run(async_helper(), debug=True)  # pragma: no cover

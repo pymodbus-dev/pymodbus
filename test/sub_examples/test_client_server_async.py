@@ -8,10 +8,17 @@ examples.
 These are basis for most examples and thus tested separately
 """
 import asyncio
+from unittest import mock
 
 import pytest
 
-from examples.client_async import run_a_few_calls, run_async_client, setup_async_client
+from examples.client_async import (
+    main,
+    run_a_few_calls,
+    run_async_client,
+    setup_async_client,
+)
+from pymodbus.exceptions import ModbusIOException
 
 
 BASE_PORT = 6200
@@ -39,7 +46,20 @@ class TestClientServerAsyncExamples:
     async def test_combinations(self, mock_server, mock_clc):
         """Run async client and server."""
         assert mock_server
+        await main(cmdline=mock_clc)
+
+    @pytest.mark.parametrize("port_offset", [1])
+    @pytest.mark.parametrize(
+        ("use_comm", "use_framer", "use_port"),
+        [("tcp", "socket", BASE_PORT + 1)],
+    )
+    async def test_client_exception(self, mock_server, mock_clc):
+        """Run async client and server."""
+        assert mock_server
         test_client = setup_async_client(cmdline=mock_clc)
+        test_client.read_holding_registers = mock.AsyncMock(
+            side_effect=ModbusIOException("test")
+        )
         await run_async_client(test_client, modbus_calls=run_a_few_calls)
 
     @pytest.mark.parametrize("port_offset", [10])

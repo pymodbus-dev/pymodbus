@@ -82,13 +82,13 @@ class Decoder:
             print("-" * 80)
             try:
                 decoder.addToFrame(message)
-                if decoder.checkFrame():
+                if decoder.checkFrame():  # pragma no cover
                     slave = decoder._header.get(  # pylint: disable=protected-access
                         "uid", 0x00
                     )
                     decoder.advanceFrame()
                     decoder.processIncomingPacket(message, self.report, slave)
-                else:
+                else:  # pragma no cover
                     self.check_errors(decoder, message)
             except Exception:  # pylint: disable=broad-except
                 self.check_errors(decoder, message)
@@ -98,7 +98,7 @@ class Decoder:
         txt = f"Unable to parse message - {message} with {decoder}"
         _logger.error(txt)
 
-    def report(self, message):
+    def report(self, message):  # pragma no cover
         """Print the message information"""
         print(
             "%-15s = %s"  # pylint: disable=consider-using-f-string
@@ -146,7 +146,7 @@ def parse_messages(cmdline=None):
     """Do a helper method to generate the messages to parse"""
     args = get_commandline(cmdline=cmdline)
     _logger.setLevel(args.log.upper())
-    if not args.message:
+    if not args.message:  # pragma no cover
         _logger.error("Missing --message.")
         return
 
@@ -162,5 +162,10 @@ def parse_messages(cmdline=None):
     decoder.decode(raw_message)
 
 
+def main(cmdline=None):
+    """Run program"""
+    parse_messages(cmdline=cmdline)
+
+
 if __name__ == "__main__":
-    parse_messages()
+    main()  # pragma: no cover

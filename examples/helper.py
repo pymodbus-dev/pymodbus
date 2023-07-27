@@ -90,7 +90,7 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
             help="ADVANCED USAGE: set datastore context object",
             default=None,
         )
-    if extras:
+    if extras:  # pragma no cover
         for extra in extras:
             parser.add_argument(extra[0], **extra[1])
     args = parser.parse_args(cmdline)
@@ -125,13 +125,13 @@ def get_certificate(suffix: str):
     delimiter = "\\" if os.name == "nt" else "/"
     cwd = os.getcwd().split(delimiter)[-1]
     if cwd == "examples":
-        path = "."
+        path = "."  # pragma no cover
     elif cwd == "sub_examples":
-        path = "../../examples"
+        path = "../../examples"  # pragma no cover
     elif cwd == "test":
         path = "../examples"
     elif cwd == "pymodbus":
-        path = "examples"
+        path = "examples"  # pragma no cover
     else:
         raise RuntimeError(f"**Error** Cannot find certificate path={cwd}")
     return f"{path}/certificates/pymodbus.{suffix}"

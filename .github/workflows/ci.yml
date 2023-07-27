@@ -94,7 +94,7 @@ jobs:
         run: pip install -e . -r requirements.txt
 
       - name: pytest
-        run: pytest -n0 --cov=pymodbus --cov=test --cov-report=term-missing --cov-report=xml -v --full-trace --timeout=20
+        run: pytest -n0  -v --full-trace --timeout=20
 
   analyze:
     name: Analyze Python

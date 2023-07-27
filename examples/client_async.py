@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pymodbus aynchronous client example.
+"""Pymodbus asynchronous client example.
 
 An example of a asynchronous client.
 
@@ -143,6 +143,11 @@ async def run_a_few_calls(client):
         pass
 
 
+async def main(cmdline=None):
+    """Combine setup and run."""
+    testclient = setup_async_client(description="Run client.", cmdline=cmdline)
+    await run_async_client(testclient, modbus_calls=run_a_few_calls)
+
+
 if __name__ == "__main__":
-    testclient = setup_async_client(description="Run asynchronous client.")
-    asyncio.run(run_async_client(testclient, modbus_calls=run_a_few_calls), debug=True)
+    asyncio.run(main(), debug=True)  # pragma: no cover

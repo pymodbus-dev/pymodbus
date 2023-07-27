@@ -52,7 +52,7 @@ async def updating_task(context):
     address = 0x10
     values = context[slave_id].getValues(fc_as_hex, address, count=5)
     values = [v + 1 for v in values]  # increment by 1.
-    txt = f"new values: {str(values)}"
+    txt = f"new values: {values!s}"
     _logger.debug(txt)
     context[slave_id].setValues(fc_as_hex, address, values)
     await asyncio.sleep(1)
@@ -80,6 +80,11 @@ async def run_updating_server(args):
     await run_async_server(args)
 
 
+async def main(cmdline=None):
+    """Combine setup and run"""
+    run_args = setup_updating_server(cmdline=cmdline)
+    await run_updating_server(run_args)
+
+
 if __name__ == "__main__":
-    run_args = setup_updating_server()
-    asyncio.run(run_updating_server(run_args), debug=True)
+    asyncio.run(main(), debug=True)  # pragma: no cover

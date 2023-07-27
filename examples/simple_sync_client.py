@@ -31,17 +31,14 @@ from pymodbus.transaction import (
 )
 
 
-def run_sync_client(host, port):
+def run_sync_simple_client(comm, host, port):
     """Run sync client."""
 
     # activate debugging
     pymodbus_apply_logging_config("DEBUG")
 
-    # change to test other client types
-    select_my_client = "tcp"
-
     print("get client")
-    if select_my_client == "tcp":
+    if comm == "tcp":
         client = ModbusTcpClient(
             host,
             port=port,
@@ -53,7 +50,7 @@ def run_sync_client(host, port):
             # strict=True,
             # source_address=("localhost", 0),
         )
-    elif select_my_client == "tcp":
+    elif comm == "udp":
         client = ModbusUdpClient(
             host,
             port=port,
@@ -65,7 +62,7 @@ def run_sync_client(host, port):
             # strict=True,
             # source_address=None,
         )
-    elif select_my_client == "serial":
+    elif comm == "serial":
         client = ModbusSerialClient(
             port,
             framer=ModbusRtuFramer,
@@ -75,12 +72,12 @@ def run_sync_client(host, port):
             # close_comm_on_error=False,.
             # strict=True,
             baudrate=9600,
-            # bytesize=8,
-            # parity="N",
-            # stopbits=1,
+            bytesize=8,
+            parity="N",
+            stopbits=1,
             # handle_local_echo=False,
         )
-    elif select_my_client == "tls":
+    elif comm == "tls":
         client = ModbusTlsClient(
             host,
             port=port,
@@ -91,13 +88,13 @@ def run_sync_client(host, port):
             # close_comm_on_error=False,
             # strict=True,
             # sslctx=None,
-            certfile="my_cert.crt",
-            keyfile="my_cert.key",
+            certfile="../examples/certificates/pymodbus.crt",
+            keyfile="../examples/certificates/pymodbus.key",
             # password=None,
             server_hostname="localhost",
         )
-    else:
-        print(f"Unknown client {select_my_client} selected")
+    else:  # pragma no cover
+        print(f"Unknown client {comm} selected")
         return
 
     print("connect to server")
@@ -110,18 +107,18 @@ def run_sync_client(host, port):
         print(f"Received ModbusException({exc}) from library")
         client.close()
         return
-    if rr.isError():
+    if rr.isError():  # pragma no cover
         print(f"Received Modbus library error({rr})")
         client.close()
         return
-    if isinstance(rr, ExceptionResponse):
+    if isinstance(rr, ExceptionResponse):  # pragma no cover
         print(f"Received Modbus library exception ({rr})")
         # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
         client.close()
 
-    print("close connection")
-    client.close()
+    print("close connection")  # pragma no cover
+    client.close()  # pragma no cover
 
 
 if __name__ == "__main__":
-    run_sync_client("127.0.0.1", "5020")
+    run_sync_simple_client("tcp", "127.0.0.1", "5020")  # pragma: no cover

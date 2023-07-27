@@ -12,7 +12,12 @@ from time import sleep
 
 import pytest
 
-from examples.client_sync import run_a_few_calls, run_sync_client, setup_sync_client
+from examples.client_sync import (
+    main,
+    run_a_few_calls,
+    run_sync_client,
+    setup_sync_client,
+)
 from examples.server_async import setup_server
 from examples.server_sync import run_sync_server
 from pymodbus.exceptions import ConnectionException
@@ -53,8 +58,7 @@ class TestClientServerSyncExamples:
         thread.daemon = True
         thread.start()
         sleep(1)
-        test_client = setup_sync_client(cmdline=mock_clc)
-        run_sync_client(test_client, modbus_calls=run_a_few_calls)
+        main(cmdline=mock_clc)
         ServerStop()
 
     @pytest.mark.parametrize("port_offset", [10])

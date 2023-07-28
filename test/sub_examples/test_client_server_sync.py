@@ -7,6 +7,7 @@ examples.
 
 These are basis for most examples and thus tested separately
 """
+import os
 from threading import Thread
 from time import sleep
 
@@ -24,29 +25,34 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.server import ServerStop
 
 
-BASE_PORT = 6300
+if os.name == "nt":
+    SLEEPING = 1
+else:
+    SLEEPING = 0.1
 
 
+@pytest.mark.parametrize("use_host", ["localhost"])
+@pytest.mark.parametrize(
+    ("use_comm", "use_framer"),
+    [
+        ("tcp", "socket"),
+        ("tcp", "rtu"),
+        # awaiting fix: ("tls", "tls"),
+        ("udp", "socket"),
+        ("udp", "rtu"),
+        ("serial", "rtu"),
+    ],
+)
 class TestClientServerSyncExamples:
     """Test Client server async combinations."""
 
-    USE_CASES = [
-        ("tcp", "socket", BASE_PORT + 1),
-        ("tcp", "rtu", BASE_PORT + 2),
-        # awaiting fix: ("tls", "tls", BASE_PORT + 3),
-        ("udp", "socket", BASE_PORT + 4),
-        ("udp", "rtu", BASE_PORT + 5),
-        ("serial", "rtu", BASE_PORT + 6),
-        # awaiting fix: ("serial", "ascii", BASE_PORT + 7),
-        # awaiting fix: ("serial", "binary", BASE_PORT + 8),
-    ]
+    @staticmethod
+    @pytest.fixture(name="use_port")
+    def get_port_in_class(base_ports):
+        """Return next port"""
+        base_ports[__class__.__name__] += 1
+        return base_ports[__class__.__name__]
 
-    @pytest.mark.parametrize("port_offset", [0])
-    @pytest.mark.parametrize("use_host", ["localhost"])
-    @pytest.mark.parametrize(
-        ("use_comm", "use_framer", "use_port"),
-        USE_CASES,
-    )
     def test_combinations(
         self,
         mock_clc,
@@ -57,52 +63,35 @@ class TestClientServerSyncExamples:
         thread = Thread(target=run_sync_server, args=(server_args,))
         thread.daemon = True
         thread.start()
-        sleep(1)
+        sleep(SLEEPING)
         main(cmdline=mock_clc)
         ServerStop()
 
-    @pytest.mark.parametrize("port_offset", [10])
-    @pytest.mark.parametrize("use_host", ["localhost"])
-    @pytest.mark.parametrize(
-        ("use_comm", "use_framer", "use_port"),
-        USE_CASES,
-    )
     def test_server_no_client(self, mock_cls):
         """Run async server without client."""
         server_args = setup_server(cmdline=mock_cls)
         thread = Thread(target=run_sync_server, args=(server_args,))
         thread.daemon = True
         thread.start()
-        sleep(1)
+        sleep(SLEEPING)
         ServerStop()
 
-    @pytest.mark.parametrize("port_offset", [20])
-    @pytest.mark.parametrize("use_host", ["localhost"])
-    @pytest.mark.parametrize(
-        ("use_comm", "use_framer", "use_port"),
-        USE_CASES,
-    )
     def test_server_client_twice(self, mock_cls, mock_clc, use_comm):
         """Run async server without client."""
         if use_comm == "serial":
+            # cannot open the usb port multiple times
             return
         server_args = setup_server(cmdline=mock_cls)
         thread = Thread(target=run_sync_server, args=(server_args,))
         thread.daemon = True
         thread.start()
-        sleep(1)
+        sleep(SLEEPING)
         test_client = setup_sync_client(cmdline=mock_clc)
         run_sync_client(test_client, modbus_calls=run_a_few_calls)
-        sleep(0.5)
+        sleep(SLEEPING)
         run_sync_client(test_client, modbus_calls=run_a_few_calls)
         ServerStop()
 
-    @pytest.mark.parametrize("port_offset", [30])
-    @pytest.mark.parametrize("use_host", ["localhost"])
-    @pytest.mark.parametrize(
-        ("use_comm", "use_framer", "use_port"),
-        USE_CASES,
-    )
     def test_client_no_server(self, mock_clc):
         """Run async client without server."""
         if mock_clc[1] == "udp":

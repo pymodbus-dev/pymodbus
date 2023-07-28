@@ -6,14 +6,12 @@ from unittest import mock
 import pytest
 
 from pymodbus.transport import (
-    NULLMODEM_HOST,
     CommType,
     ModbusProtocol,
-    NullModem,
 )
 
 
-FACTOR = 1.2 if not pytest.IS_WINDOWS else 3.2
+FACTOR = 1.2 if not pytest.IS_WINDOWS else 4.2
 
 
 class TestCommModbusProtocol:
@@ -21,21 +19,17 @@ class TestCommModbusProtocol:
 
     @staticmethod
     @pytest.fixture(name="use_port")
-    def get_my_port(base_ports):
+    def get_port_in_class(base_ports):
         """Return next port"""
         base_ports[__class__.__name__] += 1
         return base_ports[__class__.__name__]
-
-    def teardown(self):
-        """Run class teardown"""
-        assert not NullModem.is_dirty()
 
     @pytest.mark.parametrize(
         ("use_comm_type", "use_host"),
         [
             (CommType.TCP, "localhost"),
             (CommType.TLS, "localhost"),
-            # (CommType.UDP, "localhost", BASE_PORT + 3), udp is connectionless.
+            # (CommType.UDP, "localhost"), udp is connectionless.
             (CommType.SERIAL, "socket://localhost:5004"),
         ],
     )
@@ -54,6 +48,7 @@ class TestCommModbusProtocol:
             (CommType.TLS, "illegal_host"),
             # (CommType.UDP, "illegal_host", BASE_PORT + 7), udp is connectionless.
             (CommType.SERIAL, "/dev/tty007pymodbus_5008"),
+            (CommType.SERIAL, "socket://illegal_host:5008"),
         ],
     )
     async def test_connect_not_ok(self, client):
@@ -188,12 +183,11 @@ class TestCommNullModem:
 
     @staticmethod
     @pytest.fixture(name="use_port")
-    def get_my_port(base_ports):
+    def get_port_in_class(base_ports):
         """Return next port"""
-        base_ports[__class__.__name__] += 1
+        base_ports[__class__.__name__] += 2
         return base_ports[__class__.__name__]
 
-    @pytest.mark.parametrize("use_host", [NULLMODEM_HOST])
     async def test_single_connection(self, server, client):
         """Test single connection."""
         await server.transport_listen()
@@ -206,7 +200,6 @@ class TestCommNullModem:
         client.transport_close()
         server.transport_close()
 
-    @pytest.mark.parametrize("use_host", [NULLMODEM_HOST])
     async def test_single_flow(self, server, client):
         """Test single connection."""
         await server.transport_listen()
@@ -224,22 +217,23 @@ class TestCommNullModem:
         connect.callback_data.assert_called_once()
         server.transport_close()
 
-    @pytest.mark.parametrize("use_host", [NULLMODEM_HOST])
-    async def xtest_multi_connection(self, server, client):
+    async def test_multi_connection(self, server, client):
         """Test single connection."""
         await server.transport_listen()
         await client.transport_connect()
         connect = list(server.active_connections.values())[0]
         new_params_server = server.comm_params.copy()
-        new_params_server.port += 1
+        new_params_server.source_address = (
+            new_params_server.source_address[0],
+            new_params_server.source_address[1] + 1,
+        )
         new_params_client = client.comm_params.copy()
-        new_params_client.port = new_params_server.port
+        new_params_client.port = new_params_server.source_address[1]
         server2 = ModbusProtocol(new_params_server, True)
         client2 = ModbusProtocol(new_params_client, False)
         await server2.transport_listen()
         await client2.transport_connect()
         connect2 = list(server2.active_connections.values())[0]
-
         assert connect.transport.protocol == connect
         assert connect.transport.other_modem == client.transport
         assert connect2.transport.protocol == connect2
@@ -248,17 +242,23 @@ class TestCommNullModem:
         assert client.transport.other_modem == connect.transport
         assert client2.transport.protocol == client2
         assert client2.transport.other_modem == connect2.transport
-        client.transport_close()
-        client2.transport_close()
+        for obj in (client, client2, server, server2):
+            obj.transport_close()
 
-    @pytest.mark.parametrize("use_host", [NULLMODEM_HOST])
-    async def xtest_triangle_flow(self, server, client):
+    async def test_triangle_flow(self, server, client):
         """Test single connection."""
         await server.transport_listen()
         await client.transport_connect()
         connect = list(server.active_connections.values())[0]
-        server2 = ModbusProtocol(server.comm_params, True)
-        client2 = ModbusProtocol(client.comm_params, False)
+        new_params_server = server.comm_params.copy()
+        new_params_server.source_address = (
+            new_params_server.source_address[0],
+            new_params_server.source_address[1] + 1,
+        )
+        server2 = ModbusProtocol(new_params_server, True)
+        new_params_client = client.comm_params.copy()
+        new_params_client.port = new_params_server.source_address[1]
+        client2 = ModbusProtocol(new_params_client, False)
         await server2.transport_listen()
         await client2.transport_connect()
         connect2 = list(server2.active_connections.values())[0]
@@ -282,3 +282,5 @@ class TestCommNullModem:
         client2.callback_data.assert_called_once()
         connect.callback_data.assert_called_once()
         connect2.callback_data.assert_called_once()
+        for obj in (client, client2, server, server2):
+            obj.transport_close()

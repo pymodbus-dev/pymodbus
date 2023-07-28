@@ -88,7 +88,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             reconnect_delay_max=reconnect_delay_max,
             timeout_connect=timeout,
             host=kwargs.get("host", None),
-            port=kwargs.get("port", None),
+            port=kwargs.get("port", 0),
             sslctx=kwargs.get("sslctx", None),
             baudrate=kwargs.get("baudrate", None),
             bytesize=kwargs.get("bytesize", None),

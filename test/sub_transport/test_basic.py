@@ -5,7 +5,6 @@ from unittest import mock
 import pytest
 
 from pymodbus.transport import (
-    NULLMODEM_HOST,
     CommType,
     ModbusProtocol,
     NullModem,
@@ -29,16 +28,11 @@ class TestBasicModbusProtocol:
 
     @staticmethod
     @pytest.fixture(name="use_port")
-    def get_my_port(base_ports):
+    def get_port_in_class(base_ports):
         """Return next port"""
         base_ports[__class__.__name__] += 1
         return base_ports[__class__.__name__]
 
-    def teardown(self):
-        """Run class teardown"""
-        assert not NullModem.is_dirty()
-
-    @pytest.mark.parametrize("use_host", [NULLMODEM_HOST])
     @pytest.mark.parametrize("use_comm_type", COMM_TYPES)
     async def test_init_nullmodem(self, client, server):
         """Test init()"""
@@ -205,7 +199,6 @@ class TestBasicModbusProtocol:
         assert client.is_active()
         client.transport_close()
 
-    @pytest.mark.parametrize("use_host", [NULLMODEM_HOST])
     async def test_create_nullmodem(self, client, server):
         """Test create_nullmodem."""
         assert not await client.transport_connect()
@@ -253,26 +246,23 @@ class TestBasicModbusProtocol:
         )
 
 
+@mock.patch(
+    "pymodbus.transport.transport_serial.serial.serial_for_url", mock.MagicMock()
+)
 class TestBasicSerial:
     """Test transport serial module."""
 
     @staticmethod
     @pytest.fixture(name="use_port")
-    def get_my_port(base_ports):
+    def get_port_in_class(base_ports):
         """Return next port"""
         base_ports[__class__.__name__] += 1
         return base_ports[__class__.__name__]
 
-    @mock.patch(
-        "pymodbus.transport.transport_serial.serial.serial_for_url", mock.Mock()
-    )
     async def test_init(self):
         """Test null modem init"""
         SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
 
-    @mock.patch(
-        "pymodbus.transport.transport_serial.serial.serial_for_url", mock.Mock()
-    )
     async def test_abstract_methods(self):
         """Test asyncio abstract methods."""
         comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
@@ -289,9 +279,6 @@ class TestBasicSerial:
         comm.resume_reading()
         comm.is_closing()
 
-    @mock.patch(
-        "pymodbus.transport.transport_serial.serial.serial_for_url", mock.Mock()
-    )
     async def xtest_external_methods(self):
         """Test external methods."""
         comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")

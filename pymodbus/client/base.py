@@ -13,7 +13,7 @@ from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.transaction import DictTransactionManager
-from pymodbus.transport.transport import CommParams, ModbusProtocol
+from pymodbus.transport import CommParams, ModbusProtocol
 from pymodbus.utilities import ModbusTransactionState
 
 

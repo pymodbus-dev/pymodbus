@@ -1,12 +1,11 @@
 """Fixtures for transport tests."""
 import asyncio
 import os
-from contextlib import suppress
 from unittest import mock
 
 import pytest
 
-from pymodbus.transport.transport import (
+from pymodbus.transport import (
     NULLMODEM_HOST,
     CommParams,
     CommType,
@@ -15,35 +14,40 @@ from pymodbus.transport.transport import (
 )
 
 
-class DummyProtocol(asyncio.BaseTransport):
+class DummyProtocol(ModbusProtocol):
     """Use in connection_made calls."""
 
-    def transport_close(self):
-        """Define dummy."""
+    def __init__(self, is_server=False):  # pylint: disable=super-init-not-called
+        """Initialize"""
+        self.comm_params = CommParams()
+        self.transport = None
+        self.is_server = is_server
+        self.is_closing = False
+        self.data = b""
+        self.connection_made = mock.Mock()
+        self.connection_lost = mock.Mock()
+        self.reconnect_task: asyncio.Task = None
 
-    def transport_send(self):
-        """Define dummy."""
+    def handle_new_connection(self):
+        """Handle incoming connect."""
+        if not self.is_server:
+            # Clients reuse the same object.
+            return self
+        return DummyProtocol()
 
     def close(self):
-        """Define dummy."""
+        """Simulate close."""
+        self.is_closing = True
 
-    def get_protocol(self):
-        """Define dummy."""
-
-    def is_closing(self):
-        """Define dummy."""
-
-    def set_protocol(self, _protocol):
-        """Define dummy."""
-
-    def abort(self):
-        """Define dummy."""
+    def data_received(self, data):
+        """Call when some data is received."""
+        self.data += data
 
 
 @pytest.fixture(name="dummy_protocol")
 def prepare_dummy_protocol():
     """Return transport object"""
-    return DummyProtocol()
+    return DummyProtocol
 
 
 @pytest.fixture(name="cwd_certificate")
@@ -105,11 +109,9 @@ def prepare_commparams_client(use_port, use_host, use_comm_type):
 
 
 @pytest.fixture(name="client")
-async def prepare_protocol(use_clc):
+def prepare_protocol(use_clc):
     """Prepare transport object."""
     transport = ModbusProtocol(use_clc, False)
-    with suppress(RuntimeError):
-        transport.loop = asyncio.get_running_loop()
     transport.callback_connected = mock.Mock()
     transport.callback_disconnected = mock.Mock()
     transport.callback_data = mock.Mock(return_value=0)
@@ -124,11 +126,9 @@ async def prepare_protocol(use_clc):
 
 
 @pytest.fixture(name="server")
-async def prepare_transport_server(use_cls):
+def prepare_transport_server(use_cls):
     """Prepare transport object."""
     transport = ModbusProtocol(use_cls, True)
-    with suppress(RuntimeError):
-        transport.loop = asyncio.get_running_loop()
     transport.callback_connected = mock.Mock()
     transport.callback_disconnected = mock.Mock()
     transport.callback_data = mock.Mock(return_value=0)

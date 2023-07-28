@@ -7,7 +7,7 @@ from pymodbus.client.tcp import AsyncModbusTcpClient, ModbusTcpClient
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
 from pymodbus.logging import Log
-from pymodbus.transport.transport import CommParams, CommType
+from pymodbus.transport import CommParams, CommType
 
 
 class AsyncModbusTlsClient(AsyncModbusTcpClient):

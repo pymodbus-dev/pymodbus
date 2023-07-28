@@ -10,7 +10,7 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.logging import Log
-from pymodbus.transport.transport import CommType
+from pymodbus.transport import CommType
 from pymodbus.utilities import ModbusTransactionState
 
 

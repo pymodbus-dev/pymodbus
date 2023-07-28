@@ -16,6 +16,22 @@ def pytest_configure():
 # -----------------------------------------------------------------------#
 # Generic fixtures
 # -----------------------------------------------------------------------#
+BASE_PORTS = {
+    "TestBasicModbusProtocol": 8100,
+    "TestBasicSerial": 8200,
+    "TestCommModbusProtocol": 8300,
+    "TestCommNullModem": 8400,
+    "TestExamples": 8500,
+    "TestModbusProtocol": 8600,
+    "TestNullModem": 8700,
+    "TestReconnectModbusProtocol": 8800,
+}
+
+
+@pytest.fixture(name="base_ports", scope="package")
+def get_base_ports():
+    """Return base_ports"""
+    return BASE_PORTS
 
 
 class MockContext(ModbusBaseSlaveContext):

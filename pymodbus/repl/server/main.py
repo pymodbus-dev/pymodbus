@@ -137,7 +137,7 @@ def run(
         autocompletion=framers,
         help="Modbus framer to use",
     ),
-    modbus_port: int = typer.Option(5020, "--modbus-port", "-p", help="Modbus port"),
+    modbus_port: str = typer.Option("5020", "--modbus-port", "-p", help="Modbus port"),
     modbus_slave_id: List[int] = typer.Option(
         [1], "--slave-id", "-u", help="Supported Modbus slave id's"
     ),

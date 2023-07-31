@@ -3,6 +3,12 @@ PyModbus - API changes.
 =======================
 
 -------------
+Version 3.4.2
+-------------
+-ModbusSerialServer now accepts request_tracer=.
+
+
+-------------
 Version 3.4.1
 -------------
 

@@ -556,6 +556,7 @@ class ModbusSerialServer(ModbusProtocol):
         :param reconnect_delay: reconnect delay in seconds
         :param response_manipulator: Callback method for
                     manipulating the response
+        :param request_tracer: Callback method for tracing
         """
         super().__init__(
             CommParams(
@@ -584,7 +585,7 @@ class ModbusSerialServer(ModbusProtocol):
         self.control = ModbusControlBlock()
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
-        self.request_tracer = None
+        self.request_tracer = kwargs.get("request_tracer", None)
         self.server = None
         self.control = ModbusControlBlock()
         identity = kwargs.get("identity")

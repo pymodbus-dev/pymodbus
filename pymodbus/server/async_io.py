@@ -487,7 +487,6 @@ class ModbusUdpServer(ModbusProtocol):
         # asyncio future that will be done once server has started
         self.serving = asyncio.Future()
         self.serving_done = asyncio.Future()
-        self.request_tracer = None
         self.handle_local_echo = False
 
     def handle_new_connection(self):

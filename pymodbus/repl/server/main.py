@@ -16,7 +16,6 @@ from pymodbus.repl.server.cli import run_repl
 from pymodbus.server.reactive.default_config import DEFAULT_CONFIG
 from pymodbus.server.reactive.main import (
     DEFAULT_FRAMER,
-    DEFUALT_HANDLERS,
     ReactiveServer,
 )
 
@@ -114,7 +113,7 @@ def server(
         "repl": repl,
         "host": host,
         "web_port": web_port,
-        "broadcast": broadcast_support,
+        "broadcast_enable": broadcast_support,
     }
 
 
@@ -178,13 +177,7 @@ def run(
     data_block_settings = modbus_config.pop("data_block_settings", {})
     modbus_config = modbus_config.get(modbus_server, {})
     modbus_config = process_extra_args(extra_args, modbus_config)
-    if modbus_server != "serial":
-        handler = modbus_config.pop("handler", "ModbusConnectedRequestHandler")
-    else:
-        handler = modbus_config.pop("handler", "ModbusSingleRequestHandler")
-    handler = DEFUALT_HANDLERS.get(handler.strip())
 
-    modbus_config["handler"] = handler
     modbus_config["randomize"] = randomize
     modbus_config["change_rate"] = change_rate
     app = ReactiveServer.factory(

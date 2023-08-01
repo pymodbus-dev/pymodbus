@@ -3,6 +3,13 @@ PyModbus - API changes.
 =======================
 
 -------------
+Version 3.5.0 (future)
+-------------
+- Remove handler parameter from ModbusUdpServer
+- Remove handler from default config
+- Remove allow_reuse_port from default config
+
+-------------
 Version 3.4.2
 -------------
 -ModbusSerialServer now accepts request_tracer=.

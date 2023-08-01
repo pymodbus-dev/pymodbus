@@ -449,8 +449,6 @@ class ModbusUdpServer(ModbusProtocol):
         :param framer: The framer strategy to use
         :param identity: An optional identify structure
         :param address: An optional (interface, port) to bind to.
-        :param handler: A handler for each client session; default is
-                            ModbusDisonnectedRequestHandler
         :param ignore_missing_slaves: True to not send errors on a request
                             to a missing slave
         :param broadcast_enable: True to treat slave_id 0 as broadcast address,

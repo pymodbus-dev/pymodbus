@@ -1,5 +1,6 @@
 """Repl server main."""
 import asyncio
+import contextlib
 import json
 import logging
 import sys
@@ -180,19 +181,26 @@ def run(
 
     modbus_config["randomize"] = randomize
     modbus_config["change_rate"] = change_rate
-    app = ReactiveServer.factory(
-        modbus_server,
-        framer,
-        modbus_port=modbus_port,
-        slave=modbus_slave_id,
-        single=False,
-        data_block_settings=data_block_settings,
-        **web_app_config,
-        **modbus_config,
-    )
-    loop.run_until_complete(app.run_async(repl))
+
+    async def _wrapper():
+        app = ReactiveServer.factory(
+            modbus_server,
+            framer,
+            modbus_port=modbus_port,
+            slave=modbus_slave_id,
+            single=False,
+            data_block_settings=data_block_settings,
+            **web_app_config,
+            **modbus_config,
+        )
+        await app.run_async(repl)
+        return app
+
+    app = loop.run_until_complete(_wrapper())
     if repl:
-        loop.run_until_complete(run_repl(app))
+        with contextlib.suppress(asyncio.CancelledError):
+            loop.run_until_complete(run_repl(app))
+
     else:
         loop.run_forever()
 

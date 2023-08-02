@@ -185,7 +185,6 @@ def run(
         framer,
         modbus_port=modbus_port,
         slave=modbus_slave_id,
-        loop=loop,
         single=False,
         data_block_settings=data_block_settings,
         **web_app_config,

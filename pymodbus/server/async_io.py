@@ -572,7 +572,7 @@ class ModbusSerialServer(ModbusProtocol):
             True,
         )
 
-        self.loop = kwargs.get("loop") or asyncio.get_event_loop()
+        self.loop = asyncio.get_running_loop()
         self.handle_local_echo = kwargs.get("handle_local_echo", False)
         self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves", False)
         self.broadcast_enable = kwargs.get("broadcast_enable", False)

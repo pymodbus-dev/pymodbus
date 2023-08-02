@@ -19,3 +19,9 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Pymodbus is built on top of code developed from/by:
+  * Copyright (c) 2001-2005 S.W.A.C. GmbH, Germany.
+  * Copyright (c) 2001-2005 S.W.A.C. Bohemia s.r.o., Czech Republic.
+  * Hynek Petrak, https://github.com/HynekPetrak
+  * Copyright (c) 2011 Galen Collins

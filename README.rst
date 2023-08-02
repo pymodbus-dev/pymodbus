@@ -219,7 +219,7 @@ Then:
 
    pip install -e .
 
-   pre-commit --install
+   pre-commit install
 
 This installs pymodbus in your virtual environment with pointers directly to the pymodbus directory, so any change you make is immediately available as if installed.  It will also install `pre-commit` git hooks.
 

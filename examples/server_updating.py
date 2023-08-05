@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Pymodbus asynchronous Server with updating subroutine Example.
 
 An example of an asynchronous server with multiple threads and
@@ -44,19 +45,21 @@ _logger = logging.getLogger(__name__)
 
 async def updating_task(context):
     """
-    This subroutine will run continously beside the server and
-    increment each two seconds some values (via asyncio.create_task
-    in run_updating_server).
+    This subroutine runs continously beside the server
+    (via asyncio.create_task in run_updating_server).
+    It will increment some values each two seconds.
 
-    It should be noted that getValues and setValues are not thread safe.
+    It should be noted that getValues and setValues are not safe
+    against concurrent use.
     """
 
     fc_as_hex = 3
     slave_id = 0x00
-    address = 7
+    address = 0x10
+    c = 6
     
     # set values to zero
-    values = context[slave_id].getValues(fc_as_hex, address, count=6)
+    values = context[slave_id].getValues(fc_as_hex, address, count=c)
     values = [0 for v in values]
     context[slave_id].setValues(fc_as_hex, address, values)
 
@@ -66,13 +69,13 @@ async def updating_task(context):
 
     # incrementing loop 
     while True:
-        await asyncio.sleep(5)
+        await asyncio.sleep(2)
         
-        values = context[slave_id].getValues(fc_as_hex, address, count=6)
+        values = context[slave_id].getValues(fc_as_hex, address, count=c)
         values = [v + 1 for v in values] 
         context[slave_id].setValues(fc_as_hex, address, values)
 
-        txt = f"updating_task: incemented values: {values!s} at address {address!s}"
+        txt = f"updating_task: incremented values: {values!s} at address {address!s}"
         print(txt)
         _logger.debug(txt)
 
@@ -94,8 +97,9 @@ def setup_updating_server(cmdline=None):
 
 
 async def run_updating_server(args):
-    """Start updater task and async server."""
-    asyncio.create_task(updating_task(args.context)) # start updating_task concurrently with the current task
+    """start updating_task concurrently with the current task"""
+    asyncio.create_task(updating_task(args.context))
+    """start the server"""
     await run_async_server(args) # start the server
 
 

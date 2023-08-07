@@ -163,11 +163,11 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         trans._recv = mock.MagicMock(  # pylint: disable=protected-access
             side_effect=iter([b"abcdef", b"deadbe", b"123456"])
         )
-        client.handle_local_echo = True
+        client.comm_params.handle_local_echo = True
         trans.retry_on_empty = False
         trans.retry_on_invalid = False
         assert trans.execute(request).message == "[Input/Output] Wrong local echo"
-        client.handle_local_echo = False
+        client.comm_params.handle_local_echo = False
 
         # retry on invalid response
         trans.retry_on_invalid = True

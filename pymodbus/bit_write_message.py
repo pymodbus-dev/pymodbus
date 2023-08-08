@@ -185,7 +185,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         """
         ModbusRequest.__init__(self, slave=slave, **kwargs)
         self.address = address
-        if not values:
+        if values is None:
             values = []
         elif not hasattr(values, "__iter__"):
             values = [values]

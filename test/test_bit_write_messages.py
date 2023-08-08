@@ -142,6 +142,6 @@ class TestModbusBitMessage:
             assert result
 
     def test_pass_falsy_value_in_write_multiple_coils_request(self):
-        """Test pass falsy invalid multiple coils."""
+        """Test pass falsy value to write multiple coils."""
         request = WriteMultipleCoilsRequest(1, 0)
         assert request.values == [0]

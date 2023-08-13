@@ -198,13 +198,14 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             while count < self.params.retries:
                 count += 1
                 try:
+                    req = self._build_response(request.transaction_id)
                     resp = await asyncio.wait_for(
                         req, timeout=self.comm_params.timeout_connect
                     )
                     break
                 except asyncio.exceptions.TimeoutError:
                     pass
-            if count == self.params.retries:
+            if count > self.params.retries:
                 self.close(reconnect=True)
                 raise ModbusIOException(
                     f"ERROR: No response received after {self.params.retries} retries"

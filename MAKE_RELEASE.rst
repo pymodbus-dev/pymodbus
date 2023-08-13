@@ -13,7 +13,9 @@ Prepare/make release on dev.
    * Update README.rst "Supported versions"
    * Update CHANGELOG.rst
       * Add commits from last release, but selectively !
-        git log --pretty="format:%h - %an - %s" v3.3.0..HEAD > commit.log
+        git log --oneline v3.3.0..HEAD > commit.log
+        git log --pretty="%an" v3.0.0..HEAD | sort -uf >> AUTHORS
+        update AUTHORS
    * Commit, push and merge.
 * Checkout master locally
    * git merge dev

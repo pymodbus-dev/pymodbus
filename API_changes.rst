@@ -6,20 +6,17 @@ PyModbus - API changes.
 Version 3.5.0 (future)
 -------------
 - Remove handler parameter from ModbusUdpServer
-- Remove handler from repl default config
-- Remove allow_reuse_port from repl default config
 - Remove loop parameter from ModbusSerialServer
+- Remove handler and allow_reuse_port from repl default config
 
 -------------
 Version 3.4.2
 -------------
--ModbusSerialServer now accepts request_tracer=.
-
+- ModbusSerialServer now accepts request_tracer=.
 
 -------------
 Version 3.4.1
 -------------
-
 No changes.
 
 -------------

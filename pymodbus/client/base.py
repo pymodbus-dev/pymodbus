@@ -202,6 +202,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
                     resp = await asyncio.wait_for(
                         req, timeout=self.comm_params.timeout_connect
                     )
+                    count = 0
                     break
                 except asyncio.exceptions.TimeoutError:
                     pass

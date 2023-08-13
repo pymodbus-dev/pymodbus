@@ -1,3 +1,6 @@
+All these version were not possible without volunteers!
+`AUTHORS` contains a complete list for each major version.
+
 version 3.4.1
 ----------------------------------------------------------
 * Fix serial startup problems. (#1701)
@@ -15,12 +18,6 @@ version 3.4.1
 * Fix readme badges (#1682)
 * Bump aiohttp from 3.8.3 to 3.8.5 (#1680)
 * pygments from 2.14.0 to 2.15.0 (#1677)
-
-Thanks to:
-    Alex
-    James Braza
-    jan iversen
-
 
 version 3.4.0
 ----------------------------------------------------------
@@ -69,14 +66,6 @@ version 3.4.0
 * Prepare dev (#1588)
 * Release corrections. (#1586)
 
-Thanks to:
-    Alex
-    Fredo70
-    Hangyu Fan
-    James Braza
-    jan iversen
-
-
 version 3.3.2
 ----------------------------------------------------------
 * Fix RemoteSlaveContext (#1599)
@@ -85,11 +74,6 @@ version 3.3.2
 * Fix write function codes (#1598)
 * Release corrections. (#1586)
 
-Thanks to:
-  Alex
-  Fredo70
-  jan iversen
-
 version 3.3.1
 ----------------------------------------------------------
 * transport fixes and 100% test coverage. (#1580)
@@ -97,11 +81,6 @@ version 3.3.1
 * Added mechanism to determine if server did not start cleanly (#1539)
 * Proof transport reconnect works. (#1577)
 * Fix non-shared block doc in config.rst. (#1573)
-
-Thanks to:
-  Hayden Roche
-  jan iversen
-  Philip Couling
 
 version 3.3.0
 ----------------------------------------------------------
@@ -153,17 +132,6 @@ version 3.3.0
 * Server multidrop test.: (#1451)
 * mypy problem ModbusResponse.
 
-Thanks to:
-  Alex
-  Christian Krause
-  corollaries
-  dhoomakethu
-  Ghostkeeper
-  jan iversen
-  James Braza
-  Kenny Johansson
-  Pavel Kostromitinov
-
 version 3.2.2 (picked from dev, only bugfixes)
 ----------------------------------------------------------
 * Add forgotten await
@@ -174,11 +142,6 @@ version 3.2.1 (picked from dev, only bugfixes)
 * Don't publish univeral (Python2 / Python 3) wheels (#1423)
 * Remove unneccesary custom LOG_LEVEL check (#1424)
 * Include py.typed in package (#1422)
-
-Thanks to:
-  Alex,
-  jan iversen,
-  Thijs W
 
 version 3.2.0
 ----------------------------------------------------------
@@ -223,16 +186,6 @@ version 3.2.0
 * main() should be sync (#1339)
 * Bug: Fixed caused by passing wrong arg (#1336)
 
-Thanks to:
-  AKJ7,
-  Alex,
-  Alex Ruddick,
-  banana-sun,
-  cgernert,
-  Jakob Ruhe,
-  James Braza,
-  jan Iversen
-
 version 3.1.3
 ----------------------------------------------------------
 * Solve log problem in payload.
@@ -241,10 +194,6 @@ version 3.1.3
 * Central logging. (#1324)
 * Skip sqlAlchemy test. (#1325)
 * Solve 1319 (#1320)
-
-Thanks to:
-  duc996,
-  jan iversen
 
 version 3.1.2
 ----------------------------------------------------------
@@ -267,14 +216,6 @@ version 3.1.2
 * #1258 Avoid showing unit as a seperate command line argument (#1288)
 * Solve docker cache problem. (#1287)
 
-Thanks to:
-
-  Alex,
-  Alexandre CUER,
-  dhoomakethu,
-  jan iversen,
-  peufeu2
-
 version 3.1.1
 ----------------------------------------------------------
 * add missing server.start() (#1282)
@@ -287,15 +228,6 @@ version 3.1.1
 * add connect() to the very first example (#1270)
 * Solve docker problem. (#1268)
 * Test stop of server task. (#1256)
-
-Thanks to:
-
-  Alex,
-  Alexandre CUER,
-  Dries,
-  jan iversen,
-  peufeu2
-
 
 version 3.1.0
 ----------------------------------------------------------
@@ -320,16 +252,6 @@ version 3.1.0
 * Serial receive incomplete bytes.issue #1183 (#1185)
 * Handle echo (#1186)
 * Add updating server example. (#1176)
-
-Thanks to:
-
-  Alex,
-  banana-sun,
-  Chris Hung,
-  dhoomakethu,
-  jan iversen,
-  Matthias Straka,
-  Pavel Kostromitinov,
 
 version 3.0.2
 ----------------------------------------------------------
@@ -360,19 +282,6 @@ version 3.0.2
 * Make serial import dynamic. (#1114)
 * Bugfix ModbusSerialServer setup so handler is called correctly. (#1113)
 * Clean configurations. (#1111)
-
-Thanks to:
-
-  Alex,
-  Alexandre CUER,
-  Blaise Thompson,
-  dhoomakethu,
-  Gao Fang,
-  jan Iversen,
-  Joe Burmeister,
-  Sebastian Machuca,
-  Thijs W,
-  WouterTuinstra
 
 version 3.0.1
 ----------------------------------------------------------
@@ -509,7 +418,6 @@ version 2.5.0rc3
 * Travis fix for Mac OSX
 * Disable unnecessary deprecation warning while using async clients.
 * Use Github actions for builds in favor of travis.
-
 
 version 2.5.0rc2
 ----------------------------------------------------------

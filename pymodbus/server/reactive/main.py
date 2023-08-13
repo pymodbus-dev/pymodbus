@@ -33,7 +33,6 @@ from pymodbus.logging import Log
 from pymodbus.pdu import ExceptionResponse, ModbusExceptions
 from pymodbus.server.async_io import (
     ModbusSerialServer,
-    ModbusServerRequestHandler,
     ModbusTcpServer,
     ModbusTlsServer,
     ModbusUdpServer,
@@ -68,11 +67,6 @@ DEFAULT_MANIPULATOR = {
     "delay_by": 0,
     "error_code": ModbusExceptions.IllegalAddress,
     "clear_after": 5,  # request count
-}
-DEFUALT_HANDLERS = {
-    "ModbusSingleRequestHandler": ModbusServerRequestHandler,
-    "ModbusConnectedRequestHandler": ModbusServerRequestHandler,
-    "ModbusDisconnectedRequestHandler": ModbusServerRequestHandler,
 }
 DEFAULT_MODBUS_MAP = {
     "block_start": 0,

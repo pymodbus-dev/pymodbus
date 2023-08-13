@@ -1,5 +1,6 @@
 """Repl server main."""
 import asyncio
+import contextlib
 import json
 import logging
 import sys
@@ -16,7 +17,6 @@ from pymodbus.repl.server.cli import run_repl
 from pymodbus.server.reactive.default_config import DEFAULT_CONFIG
 from pymodbus.server.reactive.main import (
     DEFAULT_FRAMER,
-    DEFUALT_HANDLERS,
     ReactiveServer,
 )
 
@@ -114,7 +114,7 @@ def server(
         "repl": repl,
         "host": host,
         "web_port": web_port,
-        "broadcast": broadcast_support,
+        "broadcast_enable": broadcast_support,
     }
 
 
@@ -178,29 +178,29 @@ def run(
     data_block_settings = modbus_config.pop("data_block_settings", {})
     modbus_config = modbus_config.get(modbus_server, {})
     modbus_config = process_extra_args(extra_args, modbus_config)
-    if modbus_server != "serial":
-        handler = modbus_config.pop("handler", "ModbusConnectedRequestHandler")
-    else:
-        handler = modbus_config.pop("handler", "ModbusSingleRequestHandler")
-    handler = DEFUALT_HANDLERS.get(handler.strip())
 
-    modbus_config["handler"] = handler
     modbus_config["randomize"] = randomize
     modbus_config["change_rate"] = change_rate
-    app = ReactiveServer.factory(
-        modbus_server,
-        framer,
-        modbus_port=modbus_port,
-        slave=modbus_slave_id,
-        loop=loop,
-        single=False,
-        data_block_settings=data_block_settings,
-        **web_app_config,
-        **modbus_config,
-    )
-    loop.run_until_complete(app.run_async(repl))
+
+    async def _wrapper():
+        app = ReactiveServer.factory(
+            modbus_server,
+            framer,
+            modbus_port=modbus_port,
+            slave=modbus_slave_id,
+            single=False,
+            data_block_settings=data_block_settings,
+            **web_app_config,
+            **modbus_config,
+        )
+        await app.run_async(repl)
+        return app
+
+    app = loop.run_until_complete(_wrapper())
     if repl:
-        loop.run_until_complete(run_repl(app))
+        with contextlib.suppress(asyncio.CancelledError):
+            loop.run_until_complete(run_repl(app))
+
     else:
         loop.run_forever()
 

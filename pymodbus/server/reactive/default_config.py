@@ -2,12 +2,9 @@
 
 DEFAULT_CONFIG = {
     "tcp": {
-        "handler": "ModbusConnectedRequestHandler",
-        "allow_reuse_port": True,
         "ignore_missing_slaves": False,
     },
     "serial": {
-        "handler": "ModbusSingleRequestHandler",
         "stopbits": 1,
         "bytesize": 8,
         "parity": "N",
@@ -16,14 +13,11 @@ DEFAULT_CONFIG = {
         "reconnect_delay": 2,
     },
     "tls": {
-        "handler": "ModbusConnectedRequestHandler",
         "certfile": None,
         "keyfile": None,
-        "allow_reuse_port": True,
         "ignore_missing_slaves": False,
     },
     "udp": {
-        "handler": "ModbusDisonnectedRequestHandler",
         "ignore_missing_slaves": False,
     },
     "data_block_settings": {

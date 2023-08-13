@@ -449,8 +449,6 @@ class ModbusUdpServer(ModbusProtocol):
         :param framer: The framer strategy to use
         :param identity: An optional identify structure
         :param address: An optional (interface, port) to bind to.
-        :param handler: A handler for each client session; default is
-                            ModbusDisonnectedRequestHandler
         :param ignore_missing_slaves: True to not send errors on a request
                             to a missing slave
         :param broadcast_enable: True to treat slave_id 0 as broadcast address,
@@ -574,7 +572,7 @@ class ModbusSerialServer(ModbusProtocol):
             True,
         )
 
-        self.loop = kwargs.get("loop") or asyncio.get_event_loop()
+        self.loop = asyncio.get_running_loop()
         self.handle_local_echo = kwargs.get("handle_local_echo", False)
         self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves", False)
         self.broadcast_enable = kwargs.get("broadcast_enable", False)

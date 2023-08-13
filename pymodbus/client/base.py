@@ -195,7 +195,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             resp = b"Broadcast write sent - no response expected"
         else:
             count = 0
-            while count < self.params.retries:
+            while count <= self.params.retries:
                 count += 1
                 try:
                     req = self._build_response(request.transaction_id)

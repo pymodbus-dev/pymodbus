@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import dataclasses
 import ssl
+import sys
 from contextlib import suppress
 from enum import Enum
 from typing import Any, Callable, Coroutine
@@ -13,6 +14,14 @@ from pymodbus.transport.transport_serial import create_serial_connection
 
 
 NULLMODEM_HOST = "__pymodbus_nullmodem"
+
+if sys.version_info.minor == 11:
+    USEEXCEPTIONS: tuple[type[Any], type[Any]] | type[Any] = OSError
+else:
+    USEEXCEPTIONS = (
+        asyncio.TimeoutError,
+        OSError,
+    )
 
 
 class CommType(Enum):
@@ -229,10 +238,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 self.call_create(),
                 timeout=self.comm_params.timeout_connect,
             )
-        except (
-            asyncio.TimeoutError,
-            OSError,
-        ) as exc:
+        except USEEXCEPTIONS as exc:
             Log.warning("Failed to connect {}", exc)
             self.transport_close(intern=True, reconnect=True)
             return False

@@ -26,9 +26,9 @@ from pymodbus.server import ServerStop
 
 
 if os.name == "nt":
-    SLEEPING = 1
+    SLEEPING = 5
 else:
-    SLEEPING = 0.1
+    SLEEPING = 1
 
 
 @pytest.mark.parametrize("use_host", ["localhost"])

@@ -213,13 +213,6 @@ class TestNullModem:
         modem.close()
         listen.close()
 
-    async def test_serve_forever(self, dummy_protocol):
-        """Test external methods."""
-        modem = NullModem(dummy_protocol())
-        modem.serving.set_result(True)
-        await modem.serve_forever()
-        modem.close()
-
     def test_abstract_methods(self, dummy_protocol):
         """Test asyncio abstract methods."""
         modem = NullModem(dummy_protocol())

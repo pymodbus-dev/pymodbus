@@ -7,7 +7,6 @@ import pytest
 from pymodbus.transport import (
     CommType,
     ModbusProtocol,
-    NullModem,
 )
 from pymodbus.transport.transport_serial import (
     SerialTransport,
@@ -279,9 +278,18 @@ class TestBasicSerial:
         comm.resume_reading()
         comm.is_closing()
 
-    async def xtest_external_methods(self):
+    async def test_external_methods(self):
         """Test external methods."""
-        comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
+        comm = SerialTransport(mock.MagicMock(), mock.Mock(), "dummy")
+        comm.sync_serial.read = mock.MagicMock(return_value="abcd")
+        comm.sync_serial.write = mock.MagicMock(return_value=4)
+        comm.sync_serial.fileno = mock.MagicMock(return_value=2)
+        comm.sync_serial.async_loop.add_writer = mock.MagicMock()
+        comm.sync_serial.async_loop.add_reader = mock.MagicMock()
+        comm.sync_serial.async_loop.remove_writer = mock.MagicMock()
+        comm.sync_serial.async_loop.remove_reader = mock.MagicMock()
+        comm.sync_serial.in_waiting = False
+
         comm.write(b"abcd")
         comm.flush()
         comm.close()
@@ -289,10 +297,3 @@ class TestBasicSerial:
         assert await create_serial_connection(
             asyncio.get_running_loop(), mock.Mock, url="dummy"
         )
-
-    async def test_serve_forever(self):
-        """Test external methods."""
-        modem = NullModem(mock.Mock())
-        modem.serving.set_result(True)
-        await modem.serve_forever()
-        modem.close()

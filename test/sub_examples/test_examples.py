@@ -94,7 +94,7 @@ class TestExamples:
         task.cancel()
         await task
 
-    async def xtest_simulator(self):
+    async def test_simulator(self):
         """Run simulator server/client."""
         # Awaiting fix, missing stop of task.
         await run_simulator()
@@ -220,12 +220,17 @@ class TestSyncExamples:
         main_client_calls(cmdline=mock_clc)
         ServerStop()
 
-    async def test_sync_simple_client(
-        self, use_comm, use_host, use_port, use_framer, mock_server
+    def test_sync_simple_client(
+        self, use_framer, use_comm, use_host, use_port, mock_cls
     ):
         """Run simple async client."""
-        _cmdline = mock_server
+        server_args = setup_server(cmdline=mock_cls)
+        thread = Thread(target=run_sync_server, args=(server_args,))
+        thread.daemon = True
+        thread.start()
+        sleep(1)
         if use_comm == "serial":
             use_port = f"socket://{use_host}:{use_port}"
         framer = get_framer(use_framer)
         run_sync_simple_client(use_comm, use_host, use_port, framer=framer)
+        ServerStop()

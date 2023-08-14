@@ -195,9 +195,8 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         # Broadcast w/ Local echo
         client.comm_params.handle_local_echo = True
         client.params.broadcast_enable = True
-        recv = trans._recv = mock.MagicMock(  # pylint: disable=protected-access
-            return_value=b"deadbeef"
-        )
+        recv = mock.MagicMock(return_value=b"deadbeef")
+        trans._recv = recv  # pylint: disable=protected-access
         request.slave_id = 0
         response = trans.execute(request)
         assert response == b"Broadcast write sent - no response expected"

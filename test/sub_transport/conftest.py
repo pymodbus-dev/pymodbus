@@ -63,9 +63,9 @@ def prepare_dummy_use_comm_type():
 
 
 @pytest.fixture(name="use_host")
-def prepare_dummy_use_host():
+def prepare_nullmodem_host():
     """Return default host"""
-    return "localhost"
+    return NULLMODEM_HOST
 
 
 @pytest.fixture(name="use_cls")
@@ -92,12 +92,12 @@ def prepare_commparams_client(use_port, use_host, use_comm_type):
     """Prepare CommParamsClass object."""
     if use_host == NULLMODEM_HOST and use_comm_type == CommType.SERIAL:
         use_host = f"{NULLMODEM_HOST}:{use_port}"
-    timeout = 10 if not pytest.IS_WINDOWS else 5
+    timeout = 10 if not pytest.IS_WINDOWS else 2
     return CommParams(
         comm_name="test comm",
         comm_type=use_comm_type,
-        reconnect_delay=1,
-        reconnect_delay_max=3.5,
+        reconnect_delay=0.1,
+        reconnect_delay_max=0.35,
         timeout_connect=timeout,
         host=use_host,
         port=use_port,

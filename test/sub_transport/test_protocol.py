@@ -1,7 +1,7 @@
 """Test transport."""
 import pytest
 
-from pymodbus.transport import CommType, NullModem
+from pymodbus.transport import CommType
 
 
 COMM_TYPES = [
@@ -23,14 +23,10 @@ class TestModbusProtocol:
 
     @staticmethod
     @pytest.fixture(name="use_port")
-    def get_my_port(base_ports):
+    def get_port_in_class(base_ports):
         """Return next port"""
         base_ports[__class__.__name__] += 1
         return base_ports[__class__.__name__]
-
-    def teardown(self):
-        """Run class teardown"""
-        assert not NullModem.is_dirty()
 
     @pytest.mark.parametrize("use_comm_type", COMM_TYPES)
     async def test_init_client(self, client):

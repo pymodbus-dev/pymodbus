@@ -58,7 +58,7 @@ def setup_async_client(description=None, cmdline=None):
             port=args.port,  # on which port
             # Common optional paramers:
             framer=args.framer,
-            timeout=5,
+            timeout=args.timeout,
             retries=3,
             reconnect_delay=1,
             reconnect_delay_max=10,
@@ -74,7 +74,7 @@ def setup_async_client(description=None, cmdline=None):
             port=args.port,
             # Common optional paramers:
             framer=args.framer,
-            #    timeout=10,
+            timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,
             #    close_comm_on_error=False,
@@ -87,7 +87,7 @@ def setup_async_client(description=None, cmdline=None):
             args.port,
             # Common optional paramers:
             #    framer=ModbusRtuFramer,
-            #    timeout=10,
+            timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,
             #    close_comm_on_error=False,
@@ -105,7 +105,7 @@ def setup_async_client(description=None, cmdline=None):
             port=args.port,
             # Common optional paramers:
             framer=args.framer,
-            #    timeout=10,
+            timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,
             #    close_comm_on_error=False,

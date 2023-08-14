@@ -21,6 +21,18 @@ from pymodbus.transaction import (
 _logger = logging.getLogger(__file__)
 
 
+def get_framer(framer):
+    """Convert framer name to framer class"""
+    framers = {
+        "ascii": ModbusAsciiFramer,
+        "binary": ModbusBinaryFramer,
+        "rtu": ModbusRtuFramer,
+        "socket": ModbusSocketFramer,
+        "tls": ModbusTlsFramer,
+    }
+    return framers[framer]
+
+
 def get_commandline(server=False, description=None, extras=None, cmdline=None):
     """Read and validate command line arguments"""
     parser = argparse.ArgumentParser(description=description)
@@ -90,6 +102,13 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
             help="ADVANCED USAGE: set datastore context object",
             default=None,
         )
+    else:
+        parser.add_argument(
+            "--timeout",
+            help="ADVANCED USAGE: set client timeout",
+            default=10,
+            type=float,
+        )
     if extras:  # pragma no cover
         for extra in extras:
             parser.add_argument(extra[0], **extra[1])
@@ -102,16 +121,9 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
         "serial": ["rtu", "/dev/ptyp0"],
         "tls": ["tls", 5020],
     }
-    framers = {
-        "ascii": ModbusAsciiFramer,
-        "binary": ModbusBinaryFramer,
-        "rtu": ModbusRtuFramer,
-        "socket": ModbusSocketFramer,
-        "tls": ModbusTlsFramer,
-    }
     pymodbus_apply_logging_config(args.log.upper())
     _logger.setLevel(args.log.upper())
-    args.framer = framers[args.framer or comm_defaults[args.comm][0]]
+    args.framer = get_framer(args.framer or comm_defaults[args.comm][0])
     args.port = args.port or comm_defaults[args.comm][1]
     if args.comm != "serial" and args.port:
         args.port = int(args.port)

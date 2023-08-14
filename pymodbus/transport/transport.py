@@ -1,4 +1,51 @@
-"""ModbusProtocol layer."""
+"""ModbusProtocol layer.
+
+Contains pure transport methods needed to
+- connect/listen,
+- send/receive
+- close/abort connections
+for unix socket, tcp, tls and serial communications as well as a special
+null modem option.
+
+Contains high level methods like reconnect.
+
+All transport differences are handled in transport, providing a unified
+interface to upper layers.
+
+Host/Port/SourceAddress explanation:
+- SourceAddress (host, port):
+- server (host, port): Listen on host:port
+- server serial (comm_port, _): comm_port is device string
+- client (host, port): Bind host:port to interface
+- client serial: not used
+- Host
+- server: not used
+- client: remote host to connect to (as host:port)
+- client serial: host is comm_port device string
+- Port
+- server: not used
+- client: remote port to connect to (as host:port)
+- client serial: no used
+
+Pyserial allow the comm_port to be a socket e.g. "socket://localhost:502",
+this allows serial clients to connect to a tcp server with RTU framer.
+
+Pymodbus allows this format for both server and client.
+For clients the string is passed to pyserial,
+but for servers it is used to start a modbus tcp server.
+This allows for serial testing, without a serial cable.
+
+Pymodbus offers nullmodem for clients/servers running in the same process
+if <host> is set to NULLMODEM_HOST it will be automatically invoked.
+This allows testing without actual network traffic and is a lot faster.
+
+Class NullModem is a asyncio transport class,
+that replaces the socket class or pyserial.
+
+The class is designed to take care of differences between the different
+transport mediums, and provide a neutral interface for the upper layers.
+It basically provides a pipe, without caring about the actual data content.
+"""
 from __future__ import annotations
 
 import asyncio
@@ -18,7 +65,7 @@ NULLMODEM_HOST = "__pymodbus_nullmodem"
 if sys.version_info.minor == 11:
     USEEXCEPTIONS: tuple[type[Any], type[Any]] | type[Any] = OSError
 else:
-    USEEXCEPTIONS = (
+    USEEXCEPTIONS = (  # pragma: no cover
         asyncio.TimeoutError,
         OSError,
     )
@@ -93,30 +140,7 @@ class CommParams:
 
 
 class ModbusProtocol(asyncio.BaseProtocol):
-    """Protocol layer including transport.
-
-    Contains pure transport methods needed to connect/listen, send/receive and close connections
-    for unix socket, tcp, tls and serial communications.
-
-    Contains high level methods like reconnect.
-
-    Host/Port/SourceAddress explanation:
-    - SourceAddress:
-        - server: (host, port) to listen on (default is ("127.0.0.1", 502/802))
-        - server serial: (host, _) to open/connect and listen on
-        - client: (Bind local part to interface (default is local interface)
-        - client serial: (host, _) to open/connect and listen on
-    - Host
-        - Server: not used
-        - Client serial: port string to use for connecting
-        - Client others: remote host to connect to
-    - Port
-        - Server/Client serial: not used
-        - Client others: remote port to connect to
-
-    The class is designed to take care of differences between the different transport mediums, and
-    provide a neutral interface for the upper layers.
-    """
+    """Protocol layer including transport."""
 
     def __init__(
         self,
@@ -146,74 +170,63 @@ class ModbusProtocol(asyncio.BaseProtocol):
             self.sent_buffer: bytes = b""
 
         # ModbusProtocol specific setup
-        if self.comm_params.comm_type == CommType.SERIAL:
-            self.init_correct_serial()
-        if self.init_check_nullmodem():
-            return
-        self.init_setup_connect_listen()
-
-    def init_correct_serial(self) -> None:
-        """Split host for serial if needed."""
         if self.is_server:
             host = self.comm_params.source_address[0]
-            if host.startswith("socket"):
-                parts = host[9:].split(":")
-                self.comm_params.source_address = (parts[0], int(parts[1]))
-                self.comm_params.comm_type = CommType.TCP
-            elif host.startswith(NULLMODEM_HOST):
-                self.comm_params.source_address = (host, int(host[9:].split(":")[1]))
-            return
-        if self.comm_params.host.startswith(NULLMODEM_HOST):
-            self.comm_params.port = int(self.comm_params.host[9:].split(":")[1])
-
-    def init_check_nullmodem(self) -> bool:
-        """Check if nullmodem is needed."""
-        if self.comm_params.host.startswith(NULLMODEM_HOST):
-            port = self.comm_params.port
-        elif self.comm_params.source_address[0].startswith(NULLMODEM_HOST):
-            port = self.comm_params.source_address[1]
+            port = int(self.comm_params.source_address[1])
         else:
-            return False
-
-        self.call_create = lambda: self.create_nullmodem(port)
-        return True
-
-    def init_setup_connect_listen(self) -> None:
-        """Handle connect/listen handler."""
+            host = self.comm_params.host
+            port = int(self.comm_params.port)
         if self.comm_params.comm_type == CommType.SERIAL:
-            if self.is_server:
-                host = self.comm_params.source_address[0]
-            else:
-                host = self.comm_params.host
-            self.call_create = lambda: create_serial_connection(
-                self.loop,
-                self.handle_new_connection,
-                host,
-                baudrate=self.comm_params.baudrate,
-                bytesize=self.comm_params.bytesize,
-                parity=self.comm_params.parity,
-                stopbits=self.comm_params.stopbits,
-                timeout=self.comm_params.timeout_connect,
-            )
+            host, port = self.init_setup_serial(host, port)
+            if not host and not port:
+                return
+        if host == NULLMODEM_HOST:
+            self.call_create = lambda: self.create_nullmodem(port)
             return
+        # TCP/TLS/UDP
+        self.init_setup_connect_listen(host, port)
+
+    def init_setup_serial(self, host: str, _port: int) -> tuple[str, int]:
+        """Split host for serial if needed."""
+        if NULLMODEM_HOST in host:
+            return NULLMODEM_HOST, int(host[9:].split(":")[1])
+        if self.is_server and host.startswith("socket"):
+            # format is "socket://<host>:port"
+            self.comm_params.comm_type = CommType.TCP
+            parts = host.split(":")
+            return parts[1][2:], int(parts[2])
+        self.call_create = lambda: create_serial_connection(
+            self.loop,
+            self.handle_new_connection,
+            host,
+            baudrate=self.comm_params.baudrate,
+            bytesize=self.comm_params.bytesize,
+            parity=self.comm_params.parity,
+            stopbits=self.comm_params.stopbits,
+            timeout=self.comm_params.timeout_connect,
+        )
+        return None, None
+
+    def init_setup_connect_listen(self, host: str, port: int) -> None:
+        """Handle connect/listen handler."""
         if self.comm_params.comm_type == CommType.UDP:
             if self.is_server:
                 self.call_create = lambda: self.loop.create_datagram_endpoint(
                     self.handle_new_connection,
-                    local_addr=self.comm_params.source_address,
+                    local_addr=(host, port),
                 )
             else:
                 self.call_create = lambda: self.loop.create_datagram_endpoint(
                     self.handle_new_connection,
-                    remote_addr=(self.comm_params.host, self.comm_params.port),
+                    remote_addr=(host, port),
                 )
             return
         # TLS and TCP
         if self.is_server:
             self.call_create = lambda: self.loop.create_server(
                 self.handle_new_connection,
-                self.comm_params.source_address[0],
-                self.comm_params.source_address[1],
+                host,
+                port,
                 ssl=self.comm_params.sslctx,
                 reuse_address=True,
                 start_serving=True,
@@ -221,9 +234,9 @@ class ModbusProtocol(asyncio.BaseProtocol):
         else:
             self.call_create = lambda: self.loop.create_connection(
                 self.handle_new_connection,
-                self.comm_params.host,
-                self.comm_params.port,
-                # local_addr=self.comm_params.source_address,
+                host,
+                port,
+                local_addr=self.comm_params.source_address,
                 ssl=self.comm_params.sslctx,
             )
 

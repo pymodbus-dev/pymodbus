@@ -192,6 +192,18 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         response = trans.execute(request)
         assert response == b"Broadcast write sent - no response expected"
 
+        # Broadcast w/ Local echo
+        client.comm_params.handle_local_echo = True
+        client.params.broadcast_enable = True
+        recv = trans._recv = mock.MagicMock(  # pylint: disable=protected-access
+            return_value=b"deadbeef"
+        )
+        request.slave_id = 0
+        response = trans.execute(request)
+        assert response == b"Broadcast write sent - no response expected"
+        recv.assert_called_once_with(8, False)
+        client.comm_params.handle_local_echo = False
+
     # ----------------------------------------------------------------------- #
     # Dictionary based transaction manager
     # ----------------------------------------------------------------------- #

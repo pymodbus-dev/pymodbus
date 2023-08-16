@@ -125,11 +125,14 @@ class ReadDeviceInformationResponse(ModbusResponse):
         size = 8  # skip the header information
         count = int(buffer[7])
 
-        while count > 0:
-            _, object_length = struct.unpack(">BB", buffer[size : size + 2])
-            size += object_length + 2
-            count -= 1
-        return size + 2
+        try:
+            while count > 0:
+                _, object_length = struct.unpack(">BB", buffer[size : size + 2])
+                size += object_length + 2
+                count -= 1
+            return size + 2
+        except struct.error as exc:
+            raise IndexError from exc
 
     def __init__(self, read_code=None, information=None, **kwargs):
         """Initialize a new instance.

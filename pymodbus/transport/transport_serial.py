@@ -15,20 +15,19 @@ class SerialTransport(asyncio.Transport):
     def __init__(self, loop, protocol, *args, **kwargs):
         """Initialize."""
         super().__init__()
-        self._loop = loop
+        self.async_loop = loop
         self._protocol = protocol
-        self._serial = serial.serial_for_url(*args, **kwargs)
+        self.sync_serial = serial.serial_for_url(*args, **kwargs)
         self._closing = False
         self._write_buffer = []
         self.set_write_buffer_limits()
         self._has_reader = False
         self._has_writer = False
         self._poll_wait_time = 0.0005
-        self.serving: asyncio.Future = asyncio.Future()
 
         # Asynchronous I/O requires non-blocking devices
-        self._serial.timeout = 0
-        self._serial.write_timeout = 0
+        self.sync_serial.timeout = 0
+        self.sync_serial.write_timeout = 0
         loop.call_soon(protocol.connection_made, self)
         loop.call_soon(self._ensure_reader)
 
@@ -87,20 +86,14 @@ class SerialTransport(asyncio.Transport):
         if self._closing:
             return
         self._closing = True
-        if not self.serving.done():
-            self.serving.set_result(True)
         self._remove_reader()
         self._remove_writer()
-        self._loop.call_soon(self._call_connection_lost, None)
-
-    async def serve_forever(self):
-        """Serve forever"""
-        await self.serving
+        self.async_loop.call_soon(self._call_connection_lost, None)
 
     def _read_ready(self):
         """Test if there are data waiting."""
         try:
-            data = self._serial.read(1024)
+            data = self.sync_serial.read(1024)
         except serial.SerialException as exc:
             self._protocol.loop.call_soon(self._call_connection_lost, exc)
             self.close()
@@ -133,7 +126,7 @@ class SerialTransport(asyncio.Transport):
         self._write_buffer.clear()
 
         try:
-            nlen = self._serial.write(data)
+            nlen = self.sync_serial.write(data)
         except (BlockingIOError, InterruptedError):
             self._write_buffer.append(data)
         except serial.SerialException as exc:
@@ -157,18 +150,18 @@ class SerialTransport(asyncio.Transport):
         def _poll_read(self):
             if self._has_reader and not self._closing:
                 try:
-                    self._has_reader = self._loop.call_later(
+                    self._has_reader = self.async_loop.call_later(
                         self._poll_wait_time, self._poll_read
                     )
-                    if self._serial.in_waiting:
+                    if self.sync_serial.in_waiting:
                         self._read_ready()
                 except serial.SerialException as exc:
-                    self._loop.call_soon(self._call_connection_lost, exc)
+                    self.async_loop.call_soon(self._call_connection_lost, exc)
                     self.abort()
 
         def _ensure_reader(self):
             if not self._has_reader and not self._closing:
-                self._has_reader = self._loop.call_later(
+                self._has_reader = self.async_loop.call_later(
                     self._poll_wait_time, self._poll_read
                 )
 
@@ -179,14 +172,14 @@ class SerialTransport(asyncio.Transport):
 
         def _poll_write(self):
             if self._has_writer and not self._closing:
-                self._has_writer = self._loop.call_later(
+                self._has_writer = self.async_loop.call_later(
                     self._poll_wait_time, self._poll_write
                 )
                 self._write_ready()
 
         def _ensure_writer(self):
             if not self._has_writer and not self._closing:
-                self._has_writer = self._loop.call_soon(self._poll_write)
+                self._has_writer = self.async_loop.call_soon(self._poll_write)
 
         def _remove_writer(self):
             if self._has_writer:
@@ -197,22 +190,22 @@ class SerialTransport(asyncio.Transport):
 
         def _ensure_reader(self):
             if (not self._has_reader) and (not self._closing):
-                self._loop.add_reader(self._serial.fileno(), self._read_ready)
+                self.async_loop.add_reader(self.sync_serial.fileno(), self._read_ready)
                 self._has_reader = True
 
         def _remove_reader(self):
             if self._has_reader:
-                self._loop.remove_reader(self._serial.fileno())
+                self.async_loop.remove_reader(self.sync_serial.fileno())
                 self._has_reader = False
 
         def _ensure_writer(self):
             if (not self._has_writer) and (not self._closing):
-                self._loop.add_writer(self._serial.fileno(), self._write_ready)
+                self.async_loop.add_writer(self.sync_serial.fileno(), self._write_ready)
                 self._has_writer = True
 
         def _remove_writer(self):
             if self._has_writer:
-                self._loop.remove_writer(self._serial.fileno())
+                self.async_loop.remove_writer(self.sync_serial.fileno())
                 self._has_writer = False
 
     def _call_connection_lost(self, exc):
@@ -220,12 +213,12 @@ class SerialTransport(asyncio.Transport):
         assert self._closing
         assert not self._has_writer
         assert not self._has_reader
-        if self._serial:
+        if self.sync_serial:
             with contextlib.suppress(Exception):
-                self._serial.flush()
+                self.sync_serial.flush()
 
-            self._serial.close()
-            self._serial = None
+            self.sync_serial.close()
+            self.sync_serial = None
         if self._protocol:
             with contextlib.suppress(Exception):
                 self._protocol.connection_lost(exc)

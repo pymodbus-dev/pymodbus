@@ -64,6 +64,8 @@ async def run_simulator():
     cmdline = [
         "--modbus_device",
         "device_try",
+        "--modbus_server",
+        "server",
     ]
     cmd_args = get_simulator_commandline(cmdline=cmdline)
     task = ModbusSimulatorServer(**cmd_args)
@@ -82,6 +84,7 @@ async def run_simulator():
     await run_calls(client, 1)
 
     _logger.info("### shutdown client")
+    client.close()
 
     _logger.info("### shutdown server")
     await task.stop()

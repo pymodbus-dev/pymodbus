@@ -253,8 +253,11 @@ class ModbusProtocol(asyncio.BaseProtocol):
             )
         except USEEXCEPTIONS as exc:
             Log.warning("Failed to connect {}", exc)
-            self.transport_close(intern=True, reconnect=True)
+            # self.transport_close(intern=True, reconnect=True)
             return False
+        except Exception as exc:
+            Log.warning("Failed to connect UNKNOWN EXCEPTION {}", exc)
+            raise
         return bool(self.transport)
 
     async def transport_listen(self) -> bool:
@@ -269,7 +272,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 self.transport = self.transport[0]
         except OSError as exc:
             Log.warning("Failed to start server {}", exc)
-            self.transport_close(intern=True)
+            # self.transport_close(intern=True)
             return False
         return True
 
@@ -336,7 +339,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
     def eof_received(self):
         """Accept other end terminates connection."""
-        Log.debug("-> eof_received")
+        Log.debug("-> transport: received eof")
 
     def error_received(self, exc):
         """Get error detected in UDP."""
@@ -346,6 +349,11 @@ class ModbusProtocol(asyncio.BaseProtocol):
     # --------- #
     # callbacks #
     # --------- #
+    def callback_new_connection(self) -> ModbusProtocol:
+        """Call when listener receive new connection request."""
+        Log.debug("callback_new_connection called")
+        return ModbusProtocol(self.comm_params, False)
+
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
         Log.debug("callback_connected called")
@@ -398,6 +406,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         if self.is_server:
             for _key, value in self.active_connections.items():
                 value.listener = None
+                value.callback_disconnected(None)
                 value.transport_close()
             self.active_connections = {}
             return
@@ -435,7 +444,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
             # Clients reuse the same object.
             return self
 
-        new_protocol = ModbusProtocol(self.comm_params, False)
+        new_protocol = self.callback_new_connection()
         self.active_connections[new_protocol.unique_id] = new_protocol
         new_protocol.listener = self
         return new_protocol
@@ -492,7 +501,6 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
         asyncio.DatagramTransport.__init__(self)
         asyncio.Transport.__init__(self)
         self.protocol: ModbusProtocol = protocol
-        self.serving: asyncio.Future = asyncio.Future()
         self.other_modem: NullModem = None
         self.listen = listen
         self.manipulator: Callable[[bytes], list[bytes]] = None
@@ -560,8 +568,6 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
         if self._is_closing:
             return
         self._is_closing = True
-        if not self.serving.done():
-            self.serving.set_result(True)
         if self.listen:
             del self.listeners[self.listen]
             return
@@ -587,10 +593,6 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
         data_manipulated = self.manipulator(data)
         for part in data_manipulated:
             self.other_modem.protocol.data_received(part)
-
-    async def serve_forever(self) -> None:
-        """Serve forever"""
-        await self.serving
 
     # ------------- #
     # Dummy methods #

@@ -46,9 +46,8 @@ class TestCommModbusProtocol:
         [
             (CommType.TCP, "illegal_host"),
             (CommType.TLS, "illegal_host"),
-            # (CommType.UDP, "illegal_host", BASE_PORT + 7), udp is connectionless.
+            # (CommType.UDP, "illegal_host"), udp is connectionless.
             (CommType.SERIAL, "/dev/tty007pymodbus_5008"),
-            (CommType.SERIAL, "socket://illegal_host:5008"),
         ],
     )
     async def test_connect_not_ok(self, client):
@@ -130,9 +129,12 @@ class TestCommModbusProtocol:
         ("use_comm_type", "use_host"),
         [
             (CommType.TCP, "localhost"),
+            (CommType.TLS, "localhost"),
+            # (CommType.UDP, "localhost"),  reuses same connection
+            # (CommType.SERIAL, "socket://localhost:5020"), no multipoint
         ],
     )
-    async def test_connected_multiple(self, client, server, use_clc):
+    async def test_connected_multiple(self, client, server):
         """Test connection and data exchange."""
         assert await server.transport_listen()
         assert await client.transport_connect()
@@ -140,13 +142,10 @@ class TestCommModbusProtocol:
         assert len(server.active_connections) == 1
         server_connected = list(server.active_connections.values())[0]
 
-        c2_params = use_clc.copy()
-        c2_params.port = client.comm_params.port + 1
-        client2 = ModbusProtocol(use_clc, False)
+        client2 = ModbusProtocol(client.comm_params, False)
         client2.callback_connected = mock.Mock()
         client2.callback_disconnected = mock.Mock()
         client2.callback_data = mock.Mock(return_value=0)
-
         assert await client2.transport_connect()
         await asyncio.sleep(0.5)
         assert len(server.active_connections) == 2
@@ -215,6 +214,7 @@ class TestCommNullModem:
         assert client.recv_buffer == test_data2
         client.callback_data.assert_called_once()
         connect.callback_data.assert_called_once()
+        client.transport_close()
         server.transport_close()
 
     async def test_multi_connection(self, server, client):

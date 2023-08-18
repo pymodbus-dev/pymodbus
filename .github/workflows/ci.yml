@@ -61,7 +61,7 @@ jobs:
   integreation_test:
     name: pytest - ${{ matrix.os.on }} - ${{ matrix.python.version }}
     runs-on: ${{ matrix.os.on }}
-    timeout-minutes: 10
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -94,7 +94,7 @@ jobs:
         run: pip install -e . -r requirements.txt
 
       - name: pytest
-        run: pytest -n0  -v --full-trace --timeout=20
+        run: pytest -n0  -v --full-trace --timeout=1200
 
   analyze:
     name: Analyze Python

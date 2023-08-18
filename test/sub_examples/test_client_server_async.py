@@ -64,6 +64,7 @@ class TestClientServerAsyncExamples:
         """Run async server without client."""
         assert mock_server
         if use_comm == "serial":
+            # Serial do not allow mmulti point.
             return
         test_client = setup_async_client(cmdline=mock_clc)
         await run_async_client(test_client, modbus_calls=run_a_few_calls)

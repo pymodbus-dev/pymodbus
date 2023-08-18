@@ -1,6 +1,9 @@
 """Configure pytest."""
+import asyncio
 import platform
+import sys
 from collections import deque
+from threading import enumerate as thread_enumerate
 
 import pytest
 
@@ -39,10 +42,29 @@ def get_base_ports():
     return BASE_PORTS
 
 
-@pytest.fixture(name="nullmodem_check", autouse=True)
-def _check_nullmodem():
-    """Check null modem."""
+@pytest.fixture(name="system_health_check", autouse=True)
+async def _check_system_health():
+    """Check Thread, asyncio.task and NullModem for leftovers."""
+    start_threads = {thread.getName(): thread for thread in thread_enumerate()}
+    start_tasks = {task.get_name(): task for task in asyncio.all_tasks()}
     yield
+    await asyncio.sleep(0.1)
+    all_clean = True
+    error_text = "ERROR tasks/threads hanging:\n"
+    for thread in thread_enumerate():
+        name = thread.getName()
+        if not (
+            (name in start_threads)
+            or (name == "asyncio_0")
+            or (sys.version_info.minor == 8 and name.startswith("ThreadPoolExecutor"))
+        ):
+            error_text += f"-->THREAD: {thread}\n"
+            all_clean = False
+    for task in asyncio.all_tasks():
+        if not (task.get_name() in start_tasks or "wrap_asyncgen_fixture" in str(task)):
+            error_text += f"-->TASK: {task}\n"
+            all_clean = False
+    assert all_clean, error_text
     assert not NullModem.is_dirty()
 
 

@@ -255,6 +255,9 @@ class ModbusProtocol(asyncio.BaseProtocol):
             Log.warning("Failed to connect {}", exc)
             self.transport_close(intern=True, reconnect=True)
             return False
+        except Exception as exc:
+            Log.warning("Failed to connect UNKNOWN EXCEPTION {}", exc)
+            raise
         return bool(self.transport)
 
     async def transport_listen(self) -> bool:

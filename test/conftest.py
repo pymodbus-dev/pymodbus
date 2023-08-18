@@ -49,26 +49,22 @@ async def _check_system_health():
     start_tasks = {task.get_name(): task for task in asyncio.all_tasks()}
     yield
     await asyncio.sleep(0.1)
-    end_clean = []
+    all_clean = True
+    error_text = "ERROR tasks/threads hanging:\n"
     for thread in thread_enumerate():
         name = thread.getName()
-        if (
+        if not (
             (name in start_threads)
             or (name == "asyncio_0")
             or (sys.version_info.minor == 8 and name.startswith("ThreadPoolExecutor"))
         ):
-            continue
-        end_clean.append(("THREAD", thread))
+            error_text += f"-->THREAD: {thread}\n"
+            all_clean = False
     for task in asyncio.all_tasks():
-        if task.get_name() not in start_tasks and "wrap_asyncgen_fixture" not in str(
-            task
-        ):
-            end_clean.append(("TASK", task))
-    if end_clean:
-        error_text = "ERROR tasks/threads hanging:\n"
-        for entry in end_clean:
-            error_text += f"-->{entry[0]}: {entry[1]}\n"
-        raise AssertionError(error_text)
+        if not (task.get_name() in start_tasks or "wrap_asyncgen_fixture" in str(task)):
+            error_text += f"-->TASK: {task}\n"
+            all_clean = False
+    assert all_clean, error_text
     assert not NullModem.is_dirty()
 
 

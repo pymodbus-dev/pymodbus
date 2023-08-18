@@ -272,7 +272,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 self.transport = self.transport[0]
         except OSError as exc:
             Log.warning("Failed to start server {}", exc)
-            self.transport_close(intern=True)
+            # self.transport_close(intern=True)
             return False
         return True
 

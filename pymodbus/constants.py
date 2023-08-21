@@ -3,11 +3,12 @@
 This is the single location for storing default
 values for the servers and clients.
 """
+import enum
 
 INTERNAL_ERROR = "Pymodbus internal error"
 
 
-class ModbusStatus:  # pylint: disable=too-few-public-methods
+class ModbusStatus(int, enum.Enum):  # pylint: disable=too-few-public-methods
     """These represent various status codes in the modbus protocol.
 
     .. attribute:: Waiting
@@ -44,12 +45,8 @@ class ModbusStatus:  # pylint: disable=too-few-public-methods
     SlaveOn = 0xFF
     SlaveOff = 0x00
 
-    def __init__(self):
-        """Prohibit objects."""
-        raise RuntimeError(INTERNAL_ERROR)
 
-
-class Endian:  # pylint: disable=too-few-public-methods
+class Endian(str, enum.Enum):  # pylint: disable=too-few-public-methods
     """An enumeration representing the various byte endianness.
 
     .. attribute:: Auto
@@ -73,12 +70,8 @@ class Endian:  # pylint: disable=too-few-public-methods
     Big = ">"
     Little = "<"
 
-    def __init__(self):
-        """Prohibit objects."""
-        raise RuntimeError(INTERNAL_ERROR)
 
-
-class ModbusPlusOperation:  # pylint: disable=too-few-public-methods
+class ModbusPlusOperation(int, enum.Enum):  # pylint: disable=too-few-public-methods
     """Represents the type of modbus plus request.
 
     .. attribute:: GetStatistics
@@ -95,12 +88,8 @@ class ModbusPlusOperation:  # pylint: disable=too-few-public-methods
     GetStatistics = 0x0003
     ClearStatistics = 0x0004
 
-    def __init__(self):
-        """Prohibit objects."""
-        raise RuntimeError(INTERNAL_ERROR)
 
-
-class DeviceInformation:  # pylint: disable=too-few-public-methods
+class DeviceInformation(int, enum.Enum):  # pylint: disable=too-few-public-methods
     """Represents what type of device information to read.
 
     .. attribute:: Basic
@@ -132,12 +121,8 @@ class DeviceInformation:  # pylint: disable=too-few-public-methods
     Extended = 0x03
     Specific = 0x04
 
-    def __init__(self):
-        """Prohibit objects."""
-        raise RuntimeError(INTERNAL_ERROR)
 
-
-class MoreData:  # pylint: disable=too-few-public-methods
+class MoreData(int, enum.Enum):  # pylint: disable=too-few-public-methods
     """Represents the more follows condition.
 
     .. attribute:: Nothing
@@ -151,7 +136,3 @@ class MoreData:  # pylint: disable=too-few-public-methods
 
     Nothing = 0x00
     KeepReading = 0xFF
-
-    def __init__(self):
-        """Prohibit objects."""
-        raise RuntimeError(INTERNAL_ERROR)

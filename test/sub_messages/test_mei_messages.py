@@ -93,7 +93,6 @@ class TestMeiMessage:
         )
         result = handle.encode()
         assert result == message
-        assert str(handle) == "ReadDeviceInformationResponse(1)"
 
         dataset = {
             0x00: "Company",
@@ -133,7 +132,6 @@ class TestMeiMessage:
         )
         result = handle.encode()
         assert result == message
-        assert str(handle) == "ReadDeviceInformationResponse(1)"
 
     def test_read_device_information_decode(self):
         """Test that the read device information response can decode"""

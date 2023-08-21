@@ -8,7 +8,7 @@ import enum
 INTERNAL_ERROR = "Pymodbus internal error"
 
 
-class ModbusStatus(int, enum.Enum):  # pylint: disable=too-few-public-methods
+class ModbusStatus(int, enum.Enum):
     """These represent various status codes in the modbus protocol.
 
     .. attribute:: Waiting
@@ -46,7 +46,7 @@ class ModbusStatus(int, enum.Enum):  # pylint: disable=too-few-public-methods
     SlaveOff = 0x00
 
 
-class Endian(str, enum.Enum):  # pylint: disable=too-few-public-methods
+class Endian(str, enum.Enum):
     """An enumeration representing the various byte endianness.
 
     .. attribute:: Auto
@@ -71,7 +71,7 @@ class Endian(str, enum.Enum):  # pylint: disable=too-few-public-methods
     Little = "<"
 
 
-class ModbusPlusOperation(int, enum.Enum):  # pylint: disable=too-few-public-methods
+class ModbusPlusOperation(int, enum.Enum):
     """Represents the type of modbus plus request.
 
     .. attribute:: GetStatistics
@@ -89,7 +89,7 @@ class ModbusPlusOperation(int, enum.Enum):  # pylint: disable=too-few-public-met
     ClearStatistics = 0x0004
 
 
-class DeviceInformation(int, enum.Enum):  # pylint: disable=too-few-public-methods
+class DeviceInformation(int, enum.Enum):
     """Represents what type of device information to read.
 
     .. attribute:: Basic
@@ -122,7 +122,7 @@ class DeviceInformation(int, enum.Enum):  # pylint: disable=too-few-public-metho
     Specific = 0x04
 
 
-class MoreData(int, enum.Enum):  # pylint: disable=too-few-public-methods
+class MoreData(int, enum.Enum):
     """Represents the more follows condition.
 
     .. attribute:: Nothing

@@ -155,6 +155,12 @@ class TestBasicModbusProtocol:
         client.datagram_received(test_data, ("127.0.0.1", 502))
         assert client.recv_buffer == test_data + test_data
         assert not client.sent_buffer
+        client.recv_buffer = b""
+        client.transport_send(b"partial")
+        client.datagram_received(b"par", ("127.0.0.1", 502))
+        client.datagram_received(b"tialresponse", ("127.0.0.1", 502))
+        assert client.recv_buffer == b"response"
+        assert not client.sent_buffer
 
     async def test_transport_close(self, server, dummy_protocol):
         """Test transport_close()."""

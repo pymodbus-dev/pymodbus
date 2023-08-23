@@ -11,39 +11,39 @@ INTERNAL_ERROR = "Pymodbus internal error"
 class ModbusStatus(int, enum.Enum):
     """These represent various status codes in the modbus protocol.
 
-    .. attribute:: Waiting
+    .. attribute:: WAITING
 
        This indicates that a modbus device is currently
        waiting for a given request to finish some running task.
 
-    .. attribute:: Ready
+    .. attribute:: READY
 
        This indicates that a modbus device is currently
        free to perform the next request task.
 
-    .. attribute:: On
+    .. attribute:: ON
 
        This indicates that the given modbus entity is on
 
-    .. attribute:: Off
+    .. attribute:: OFF
 
        This indicates that the given modbus entity is off
 
-    .. attribute:: SlaveOn
+    .. attribute:: SLAVE_ON
 
        This indicates that the given modbus slave is running
 
-    .. attribute:: SlaveOff
+    .. attribute:: SLAVE_OFF
 
        This indicates that the given modbus slave is not running
     """
 
-    Waiting = 0xFFFF
-    Ready = 0x0000
-    On = 0xFF00
-    Off = 0x0000
-    SlaveOn = 0xFF
-    SlaveOff = 0x00
+    WAITING = 0xFFFF
+    READY = 0x0000
+    ON = 0xFF00
+    OFF = 0x0000
+    SLAVE_ON = 0xFF
+    SLAVE_OFF = 0x00
 
     def __str__(self):
        return str(int(self))
@@ -52,16 +52,16 @@ class ModbusStatus(int, enum.Enum):
 class Endian(str, enum.Enum):
     """An enumeration representing the various byte endianness.
 
-    .. attribute:: Auto
+    .. attribute:: AUTO
 
        This indicates that the byte order is chosen by the
        current native environment.
 
-    .. attribute:: Big
+    .. attribute:: BIG
 
        This indicates that the bytes are in big endian format
 
-    .. attribute:: Little
+    .. attribute:: LITTLE
 
        This indicates that the bytes are in little endian format
 
@@ -69,9 +69,9 @@ class Endian(str, enum.Enum):
        python struct module for my convenience.
     """
 
-    Auto = "@"
-    Big = ">"
-    Little = "<"
+    AUTO = "@"
+    BIG = ">"
+    LITTLE = "<"
 
     def __str__(self):
        return str.__str__(self)
@@ -80,19 +80,19 @@ class Endian(str, enum.Enum):
 class ModbusPlusOperation(int, enum.Enum):
     """Represents the type of modbus plus request.
 
-    .. attribute:: GetStatistics
+    .. attribute:: GET_STATISTICS
 
        Operation requesting that the current modbus plus statistics
        be returned in the response.
 
-    .. attribute:: ClearStatistics
+    .. attribute:: CLEAR_STATISTICS
 
        Operation requesting that the current modbus plus statistics
        be cleared and not returned in the response.
     """
 
-    GetStatistics = 0x0003
-    ClearStatistics = 0x0004
+    GET_STATISTICS = 0x0003
+    CLEAR_STATISTICS = 0x0004
 
     def __str__(self):
        return str(int(self))
@@ -101,34 +101,34 @@ class ModbusPlusOperation(int, enum.Enum):
 class DeviceInformation(int, enum.Enum):
     """Represents what type of device information to read.
 
-    .. attribute:: Basic
+    .. attribute:: BASIC
 
        This is the basic (required) device information to be returned.
        This includes VendorName, ProductCode, and MajorMinorRevision
        code.
 
-    .. attribute:: Regular
+    .. attribute:: REGULAR
 
        In addition to basic data objects, the device provides additional
        and optional identification and description data objects. All of
        the objects of this category are defined in the standard but their
        implementation is optional.
 
-    .. attribute:: Extended
+    .. attribute:: EXTENDED
 
        In addition to regular data objects, the device provides additional
        and optional identification and description private data about the
        physical device itself. All of these data are device dependent.
 
-    .. attribute:: Specific
+    .. attribute:: SPECIFIC
 
        Request to return a single data object.
     """
 
-    Basic = 0x01
-    Regular = 0x02
-    Extended = 0x03
-    Specific = 0x04
+    BASIC = 0x01
+    REGULAR = 0x02
+    EXTENDED = 0x03
+    SPECIFIC = 0x04
 
     def __str__(self):
        return str(int(self))
@@ -137,17 +137,17 @@ class DeviceInformation(int, enum.Enum):
 class MoreData(int, enum.Enum):
     """Represents the more follows condition.
 
-    .. attribute:: Nothing
+    .. attribute:: NOTHING
 
        This indicates that no more objects are going to be returned.
 
-    .. attribute:: KeepReading
+    .. attribute:: KEEP_READING
 
        This indicates that there are more objects to be returned.
     """
 
-    Nothing = 0x00
-    KeepReading = 0xFF
+    NOTHING = 0x00
+    KEEP_READING = 0xFF
 
     def __str__(self):
        return str(int(self))

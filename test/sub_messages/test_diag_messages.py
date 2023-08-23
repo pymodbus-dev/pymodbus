@@ -192,11 +192,11 @@ class TestDataStore:
 
     def test_get_clear_modbus_plus_request_execute(self):
         """Testing diagnostic message execution"""
-        request = GetClearModbusPlusRequest(data=ModbusPlusOperation.ClearStatistics)
+        request = GetClearModbusPlusRequest(data=ModbusPlusOperation.CLEAR_STATISTICS)
         response = request.execute()
-        assert response.message == ModbusPlusOperation.ClearStatistics
+        assert response.message == ModbusPlusOperation.CLEAR_STATISTICS
 
-        request = GetClearModbusPlusRequest(data=ModbusPlusOperation.GetStatistics)
+        request = GetClearModbusPlusRequest(data=ModbusPlusOperation.GET_STATISTICS)
         response = request.execute()
-        resp = [ModbusPlusOperation.GetStatistics]
+        resp = [ModbusPlusOperation.GET_STATISTICS]
         assert response.message == resp + [0x00] * 55

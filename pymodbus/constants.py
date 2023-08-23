@@ -45,6 +45,9 @@ class ModbusStatus(int, enum.Enum):
     SlaveOn = 0xFF
     SlaveOff = 0x00
 
+    def __str__(self):
+       return str(int(self))
+
 
 class Endian(str, enum.Enum):
     """An enumeration representing the various byte endianness.
@@ -70,6 +73,9 @@ class Endian(str, enum.Enum):
     Big = ">"
     Little = "<"
 
+    def __str__(self):
+       return str.__str__(self)
+
 
 class ModbusPlusOperation(int, enum.Enum):
     """Represents the type of modbus plus request.
@@ -87,6 +93,9 @@ class ModbusPlusOperation(int, enum.Enum):
 
     GetStatistics = 0x0003
     ClearStatistics = 0x0004
+
+    def __str__(self):
+       return str(int(self))
 
 
 class DeviceInformation(int, enum.Enum):
@@ -121,6 +130,9 @@ class DeviceInformation(int, enum.Enum):
     Extended = 0x03
     Specific = 0x04
 
+    def __str__(self):
+       return str(int(self))
+
 
 class MoreData(int, enum.Enum):
     """Represents the more follows condition.
@@ -136,3 +148,6 @@ class MoreData(int, enum.Enum):
 
     Nothing = 0x00
     KeepReading = 0xFF
+
+    def __str__(self):
+       return str(int(self))

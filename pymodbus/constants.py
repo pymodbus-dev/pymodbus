@@ -5,6 +5,7 @@ values for the servers and clients.
 """
 import enum
 
+
 INTERNAL_ERROR = "Pymodbus internal error"
 
 

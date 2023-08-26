@@ -156,6 +156,7 @@ class CLI:  # pylint: disable=too-few-public-methods
         use_keys = KeyBindings()
         history_file = pathlib.Path.home().joinpath(".pymodhis")
         self.client = client
+        self.result = None
 
         @use_keys.add("c-space")
         def _(event):
@@ -205,10 +206,10 @@ class CLI:  # pylint: disable=too-few-public-methods
         kwargs, execute = _process_args(args, string=False)
         if execute:
             if text[0] in CLIENT_ATTRIBUTES:
-                result = Result(getattr(client, cmd))
+                self.result = Result(getattr(client, cmd))
             else:
-                result = Result(getattr(client, cmd)(**kwargs))
-            result.print_result()
+                self.result = Result(getattr(client, cmd)(**kwargs))
+            self.result.print_result()
 
     def _process_result(self, text, result):
         """Process result commands."""
@@ -223,7 +224,6 @@ class CLI:  # pylint: disable=too-few-public-methods
 
     def run(self):
         """Run the REPL."""
-        result = None
         while True:
             try:
                 text = self.session.prompt("> ", complete_while_typing=True)
@@ -234,8 +234,8 @@ class CLI:  # pylint: disable=too-few-public-methods
                     raise EOFError()
                 elif text.strip().lower().startswith("client."):
                     self._process_client(text, self.client)
-                elif text.strip().lower().startswith("result.") and result:
-                    self._process_result(text, result)
+                elif text.strip().lower().startswith("result.") and self.result:
+                    self._process_result(text, self.result)
             except KeyboardInterrupt:
                 continue  # Control-C pressed. Try again.
             except EOFError:

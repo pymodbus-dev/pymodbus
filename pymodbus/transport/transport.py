@@ -391,7 +391,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         """
         Log.debug("send: {}", data, ":hex")
         if self.comm_params.handle_local_echo:
-            self.sent_buffer = data
+            self.sent_buffer += data
         if self.comm_params.comm_type == CommType.UDP:
             if addr:
                 self.transport.sendto(data, addr=addr)  # type: ignore[attr-defined]

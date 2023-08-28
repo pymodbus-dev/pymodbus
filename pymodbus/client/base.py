@@ -189,25 +189,27 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         """Execute requests asynchronously."""
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
-        self.transport_send(packet)
-        if self.params.broadcast_enable and not request.slave_id:
-            resp = b"Broadcast write sent - no response expected"
-        else:
-            count = 0
-            while count <= self.params.retries:
-                try:
-                    req = self._build_response(request.transaction_id)
-                    resp = await asyncio.wait_for(
-                        req, timeout=self.comm_params.timeout_connect
-                    )
-                    break
-                except asyncio.exceptions.TimeoutError:
-                    count += 1
-            if count > self.params.retries:
-                self.close(reconnect=True)
-                raise ModbusIOException(
-                    f"ERROR: No response received after {self.params.retries} retries"
+
+        count = 0
+        while count <= self.params.retries:
+            self.transport_send(packet)
+            if self.params.broadcast_enable and not request.slave_id:
+                resp = b"Broadcast write sent - no response expected"
+                break
+            try:
+                req = self._build_response(request.transaction_id)
+                resp = await asyncio.wait_for(
+                    req, timeout=self.comm_params.timeout_connect
                 )
+                break
+            except asyncio.exceptions.TimeoutError:
+                count += 1
+        if count > self.params.retries:
+            self.close(reconnect=True)
+            raise ModbusIOException(
+                f"ERROR: No response received after {self.params.retries} retries"
+            )
+
         return resp
 
     def callback_data(self, data: bytes, addr: tuple = None) -> int:

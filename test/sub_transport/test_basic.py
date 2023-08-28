@@ -162,6 +162,31 @@ class TestBasicModbusProtocol:
         assert client.recv_buffer == b"response"
         assert not client.sent_buffer
 
+    async def test_broadcast_local_echo(self, client):
+        """Test transport_send() with broadcast and echo packets"""
+        client.comm_params.handle_local_echo = True
+        client.transport = mock.Mock()
+        client.recv_buffer = b""
+        client.transport_send(b"broadcast")
+        client.transport_send(b"message")
+        client.datagram_received(b"broadcast", ("127.0.0.1", 502))
+        client.datagram_received(b"messageresponse", ("127.0.0.1", 502))
+        assert client.recv_buffer == b"response"
+        assert not client.sent_buffer
+        client.recv_buffer = b""
+        client.transport_send(b"broadcast")
+        client.transport_send(b"message")
+        client.datagram_received(b"broadcastmessageresponse", ("127.0.0.1", 502))
+        assert client.recv_buffer == b"response"
+        assert not client.sent_buffer
+        client.recv_buffer = b""
+        client.transport_send(b"broadcast")
+        client.transport_send(b"message")
+        client.datagram_received(b"broadcastmessa", ("127.0.0.1", 502))
+        client.datagram_received(b"geresponse", ("127.0.0.1", 502))
+        assert client.recv_buffer == b"response"
+        assert not client.sent_buffer
+
     async def test_transport_close(self, server, dummy_protocol):
         """Test transport_close()."""
         dummy_protocol.abort = mock.MagicMock()

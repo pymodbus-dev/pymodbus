@@ -312,10 +312,23 @@ class ModbusProtocol(asyncio.BaseProtocol):
     def datagram_received(self, data: bytes, addr: tuple):
         """Receive datagram (UDP connections)."""
         if self.comm_params.handle_local_echo and self.sent_buffer:
-            Log.debug("recv skipping (local_echo): {} addr={}", data, ":hex", addr)
-            if self.sent_buffer in data:
-                data, self.sent_buffer = data.replace(self.sent_buffer, b"", 1), b""
+            if data.startswith(self.sent_buffer):
+                Log.debug(
+                    "recv skipping (local_echo): {} addr={}",
+                    self.sent_buffer,
+                    ":hex",
+                    addr,
+                )
+                data = data[len(self.sent_buffer) :]
+                self.sent_buffer = b""
+            elif self.sent_buffer.startswith(data):
+                Log.debug(
+                    "recv skipping (partial local_echo): {} addr={}", data, ":hex", addr
+                )
+                self.sent_buffer = self.sent_buffer[len(data) :]
+                return
             else:
+                Log.debug("did not receive local echo: {} addr={}", data, ":hex", addr)
                 self.sent_buffer = b""
             if not data:
                 return
@@ -378,7 +391,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         """
         Log.debug("send: {}", data, ":hex")
         if self.comm_params.handle_local_echo:
-            self.sent_buffer = data
+            self.sent_buffer += data
         if self.comm_params.comm_type == CommType.UDP:
             if addr:
                 self.transport.sendto(data, addr=addr)  # type: ignore[attr-defined]

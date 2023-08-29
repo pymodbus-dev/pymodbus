@@ -63,7 +63,7 @@ class ReadDeviceInformationRequest(ModbusRequest):
         :param object_id: The object to read from
         """
         ModbusRequest.__init__(self, **kwargs)
-        self.read_code = read_code or DeviceInformation.Basic
+        self.read_code = read_code or DeviceInformation.BASIC
         self.object_id = object_id
 
     def encode(self):
@@ -141,12 +141,12 @@ class ReadDeviceInformationResponse(ModbusResponse):
         :param information: The requested information request
         """
         ModbusResponse.__init__(self, **kwargs)
-        self.read_code = read_code or DeviceInformation.Basic
+        self.read_code = read_code or DeviceInformation.BASIC
         self.information = information or {}
         self.number_of_objects = 0
         self.conformity = 0x83  # I support everything right now
         self.next_object_id = 0x00
-        self.more_follows = MoreData.Nothing
+        self.more_follows = MoreData.NOTHING
         self.space_left = None
 
     def _encode_object(self, object_id, data):
@@ -181,7 +181,7 @@ class ReadDeviceInformationResponse(ModbusResponse):
                     objects += self._encode_object(object_id, data)
         except _OutOfSpaceException as exc:
             self.next_object_id = exc.oid
-            self.more_follows = MoreData.KeepReading
+            self.more_follows = MoreData.KEEP_READING
 
         packet += struct.pack(
             ">BBB", self.more_follows, self.next_object_id, self.number_of_objects

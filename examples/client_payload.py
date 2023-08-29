@@ -43,10 +43,10 @@ async def run_payload_calls(client):
     ++++++++++++++++++++++++++++++++++++++++++++
     """
     for word_endian, byte_endian in (
-        (Endian.Big, Endian.Big),
-        (Endian.Big, Endian.Little),
-        (Endian.Little, Endian.Big),
-        (Endian.Little, Endian.Little),
+        (Endian.BIG, Endian.BIG),
+        (Endian.BIG, Endian.LITTLE),
+        (Endian.LITTLE, Endian.BIG),
+        (Endian.LITTLE, Endian.LITTLE),
     ):
         print("-" * 60)
         print(f"Word Order: {ORDER_DICT[word_endian]}")

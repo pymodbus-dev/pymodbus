@@ -297,9 +297,9 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
         """
         DiagnosticStatusRequest.__init__(self, slave=slave, **kwargs)
         if toggle:
-            self.message = [ModbusStatus.On]
+            self.message = [ModbusStatus.ON]
         else:
-            self.message = [ModbusStatus.Off]
+            self.message = [ModbusStatus.OFF]
 
     def execute(self, *_args):
         """Clear event log and restart.
@@ -330,9 +330,9 @@ class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
         """
         DiagnosticStatusResponse.__init__(self, **kwargs)
         if toggle:
-            self.message = [ModbusStatus.On]
+            self.message = [ModbusStatus.ON]
         else:
-            self.message = [ModbusStatus.Off]
+            self.message = [ModbusStatus.OFF]
 
 
 # ---------------------------------------------------------------------------#
@@ -828,7 +828,7 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
         Func_code (1 byte) + Sub function code (2 byte) + Operation (2 byte) + Data (108 bytes)
         :return:
         """
-        if self.message == ModbusPlusOperation.GetStatistics:
+        if self.message == ModbusPlusOperation.GET_STATISTICS:
             data = 2 + 108  # byte count(2) + data (54*2)
         else:
             data = 0
@@ -840,7 +840,7 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
         :returns: The initialized response message
         """
         message = None  # the clear operation does not return info
-        if self.message == ModbusPlusOperation.ClearStatistics:
+        if self.message == ModbusPlusOperation.CLEAR_STATISTICS:
             _MCB.Plus.reset()
             message = self.message
         else:

@@ -248,28 +248,28 @@ class DeviceInformationFactory:  # pylint: disable=too-few-public-methods
     """
 
     __lookup = {
-        DeviceInformation.Basic: lambda c, r, i: c.__gets(  # pylint: disable=protected-access
+        DeviceInformation.BASIC: lambda c, r, i: c.__gets(  # pylint: disable=protected-access
             r, list(range(i, 0x03))
         ),
-        DeviceInformation.Regular: lambda c, r, i: c.__gets(  # pylint: disable=protected-access
+        DeviceInformation.REGULAR: lambda c, r, i: c.__gets(  # pylint: disable=protected-access
             r,
             list(range(i, 0x07))
             if c.__get(r, i)[i]  # pylint: disable=protected-access
             else list(range(0, 0x07)),
         ),
-        DeviceInformation.Extended: lambda c, r, i: c.__gets(  # pylint: disable=protected-access
+        DeviceInformation.EXTENDED: lambda c, r, i: c.__gets(  # pylint: disable=protected-access
             r,
             [x for x in range(i, 0x100) if x not in range(0x07, 0x80)]
             if c.__get(r, i)[i]  # pylint: disable=protected-access
             else [x for x in range(0, 0x100) if x not in range(0x07, 0x80)],
         ),
-        DeviceInformation.Specific: lambda c, r, i: c.__get(  # pylint: disable=protected-access
+        DeviceInformation.SPECIFIC: lambda c, r, i: c.__get(  # pylint: disable=protected-access
             r, i
         ),
     }
 
     @classmethod
-    def get(cls, control, read_code=DeviceInformation.Basic, object_id=0x00):
+    def get(cls, control, read_code=DeviceInformation.BASIC, object_id=0x00):
         """Get the requested device data from the system.
 
         :param control: The control block to pull data from

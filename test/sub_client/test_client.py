@@ -17,7 +17,7 @@ from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.datastore.store import ModbusSequentialDataBlock
-from pymodbus.exceptions import ConnectionException
+from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
@@ -365,9 +365,10 @@ async def test_client_protocol_handler():
 class MockTransport:
     """Mock transport class which responds with an appropriate encoded packet"""
 
-    def __init__(self, base, req):
+    def __init__(self, base, req, retries=0):
         """Initialize MockTransport"""
         self.base = base
+        self.retries = retries
 
         db = ModbusSequentialDataBlock(0, [0] * 100)
         self.ctx = ModbusSlaveContext(di=db, co=db, hr=db, ir=db)
@@ -382,6 +383,9 @@ class MockTransport:
 
     def write(self, data, addr=None):
         """Write data to the transport, start a task to send the response"""
+        if self.retries:
+            self.retries -= 1
+            return
         self.delayed_resp_task = asyncio.create_task(self.delayed_resp())
 
     def close(self):
@@ -399,6 +403,35 @@ async def test_client_protocol_execute():
     response = await base.async_execute(request)
     assert not response.isError()
     assert isinstance(response, pdu_bit_read.ReadCoilsResponse)
+
+
+async def test_client_protocol_retry():
+    """Test the client protocol execute method with retries"""
+    base = ModbusBaseClient(host="127.0.0.1", framer=ModbusSocketFramer, timeout=0.1)
+    request = pdu_bit_read.ReadCoilsRequest(1, 1)
+    transport = MockTransport(base, request, retries=2)
+    base.connection_made(transport=transport)
+
+    response = await base.async_execute(request)
+    assert transport.retries == 0
+    assert not response.isError()
+    assert isinstance(response, pdu_bit_read.ReadCoilsResponse)
+
+
+async def test_client_protocol_timeout():
+    """Test the client protocol execute method with timeout"""
+    base = ModbusBaseClient(
+        host="127.0.0.1", framer=ModbusSocketFramer, timeout=0.1, retries=2
+    )
+    # Avoid creating do_reconnect() task
+    base.connection_lost = mock.MagicMock()
+    request = pdu_bit_read.ReadCoilsRequest(1, 1)
+    transport = MockTransport(base, request, retries=4)
+    base.connection_made(transport=transport)
+
+    with pytest.raises(ModbusIOException):
+        await base.async_execute(request)
+    assert transport.retries == 1
 
 
 def test_client_udp_connect():

@@ -14,6 +14,7 @@ Version 3.5.0 (future)
   - :code:`ModbusPlusOperation`
   - :code:`Endian`
   - :code:`ModbusStatus`
+- Async clients now accepts `no_resend_on_retry=True`, to not resend the request when retrying.
 
 -------------
 Version 3.4.2

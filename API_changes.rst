@@ -3,7 +3,7 @@ PyModbus - API changes.
 =======================
 
 -------------
-Version 3.5.0 (future)
+Version 3.5.0
 -------------
 - Remove handler parameter from ModbusUdpServer
 - Remove loop parameter from ModbusSerialServer
@@ -15,10 +15,6 @@ Version 3.5.0 (future)
   - :code:`Endian`
   - :code:`ModbusStatus`
 - Async clients now accepts `no_resend_on_retry=True`, to not resend the request when retrying.
-
--------------
-Version 3.4.2
--------------
 - ModbusSerialServer now accepts request_tracer=.
 
 -------------

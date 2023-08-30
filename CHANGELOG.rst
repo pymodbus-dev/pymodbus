@@ -1,6 +1,37 @@
 All these version were not possible without volunteers!
 `AUTHORS` contains a complete list for each major version.
 
+version 3.5.0
+----------------------------------------------------------
+- Async retry (#1752)
+- test_client: Fix test_client_protocol_execute() (#1751)
+- Use enums for constants (#1743)
+- Local Echo Broadcast with Async Clients (#1744)
+- Fix #1746 . Return missing result (#1748)
+- Document nullmodem. (#1739)
+- Add system health check to all tests. (#1736)
+- Handle partial message in ReadDeviceInformationResponse (#1738)
+- Broadcast with Handle Local Echo (#1737)
+- transport_emulator, part II. (#1710)
+- Added file AUTHORS, to list all Volunteers. (#1734)
+- Fix #1702 and #1728 (#1733)
+- Clear retry count when success. (#1732)
+- RFC: Reduce parameters for REPL server classes (#1714)
+- retries=1, solved. (#1731)
+- Impoved the example "server_updating.py" (#1720)
+- pylint 3.11 (#1730)
+- Correct retry loop. (#1729)
+- Fix faulty not check (#1725)
+- bugfix local echo handling on sync clients (#1723)
+- Updated copyright in LICENSE.
+- Correct README pre-commit.
+- Fix custom message parsing in RTU framer (#1716)
+- Request tracer (#1715)
+- pymodbus.server: allow strings for "-p" paramter (#1713)
+- New nullmodem and transport. (#1696)
+- xdist loadscope (test is not split). (#1708)
+- Add client performance example. (#1707)
+
 version 3.4.1
 ----------------------------------------------------------
 * Fix serial startup problems. (#1701)
@@ -21,7 +52,6 @@ version 3.4.1
 
 version 3.4.0
 ----------------------------------------------------------
-* Prepare v3.4.0.
 * Handle partial local echo. (#1675)
 * clarify handle_local_echo. (#1674)
 * async_client: add retries/reconnect. (#1672)

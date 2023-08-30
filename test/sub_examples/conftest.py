@@ -6,13 +6,7 @@ import pytest_asyncio
 
 from examples.server_async import run_async_server, setup_server
 from pymodbus.server import ServerAsyncStop
-from pymodbus.transport.transport import NULLMODEM_HOST
-
-
-@pytest.fixture(name="port_offset")
-def define_port_offset():
-    """Define port offset"""
-    return 0
+from pymodbus.transport import NULLMODEM_HOST
 
 
 @pytest.fixture(name="use_host")
@@ -27,16 +21,10 @@ def define_commandline_client(
     use_framer,
     use_port,
     use_host,
-    port_offset,
 ):
     """Define commandline."""
-    my_port = str(use_port + port_offset)
-    cmdline = [
-        "--comm",
-        use_comm,
-        "--framer",
-        use_framer,
-    ]
+    my_port = str(use_port)
+    cmdline = ["--comm", use_comm, "--framer", use_framer, "--timeout", "0.1"]
     if use_comm == "serial":
         if use_host == NULLMODEM_HOST:
             use_host = f"{use_host}:{my_port}"
@@ -54,10 +42,9 @@ def define_commandline_server(
     use_framer,
     use_port,
     use_host,
-    port_offset,
 ):
     """Define commandline."""
-    my_port = str(use_port + port_offset)
+    my_port = str(use_port)
     cmdline = [
         "--comm",
         use_comm,

@@ -203,9 +203,9 @@ class GetCommEventCounterResponse(ModbusResponse):
         :returns: The byte encoded message
         """
         if self.status:
-            ready = ModbusStatus.Ready
+            ready = ModbusStatus.READY
         else:
-            ready = ModbusStatus.Waiting
+            ready = ModbusStatus.WAITING
         return struct.pack(">HH", ready, self.count)
 
     def decode(self, data):
@@ -214,7 +214,7 @@ class GetCommEventCounterResponse(ModbusResponse):
         :param data: The packet data to decode
         """
         ready, self.count = struct.unpack(">HH", data)
-        self.status = ready == ModbusStatus.Ready
+        self.status = ready == ModbusStatus.READY
 
     def __str__(self):
         """Build a representation of the response.
@@ -323,9 +323,9 @@ class GetCommEventLogResponse(ModbusResponse):
         :returns: The byte encoded message
         """
         if self.status:
-            ready = ModbusStatus.Ready
+            ready = ModbusStatus.READY
         else:
-            ready = ModbusStatus.Waiting
+            ready = ModbusStatus.WAITING
         packet = struct.pack(">B", 6 + len(self.events))
         packet += struct.pack(">H", ready)
         packet += struct.pack(">HH", self.event_count, self.message_count)
@@ -339,7 +339,7 @@ class GetCommEventLogResponse(ModbusResponse):
         """
         length = int(data[0])
         status = struct.unpack(">H", data[1:3])[0]
-        self.status = status == ModbusStatus.Ready
+        self.status = status == ModbusStatus.READY
         self.event_count = struct.unpack(">H", data[3:5])[0]
         self.message_count = struct.unpack(">H", data[5:7])[0]
 
@@ -453,9 +453,9 @@ class ReportSlaveIdResponse(ModbusResponse):
         :returns: The byte encoded message
         """
         if self.status:
-            status = ModbusStatus.SlaveOn
+            status = ModbusStatus.SLAVE_ON
         else:
-            status = ModbusStatus.SlaveOff
+            status = ModbusStatus.SLAVE_OFF
         length = len(self.identifier) + 1
         packet = struct.pack(">B", length)
         packet += self.identifier  # we assume it is already encoded
@@ -473,7 +473,7 @@ class ReportSlaveIdResponse(ModbusResponse):
         self.byte_count = int(data[0])
         self.identifier = data[1 : self.byte_count + 1]
         status = int(data[-1])
-        self.status = status == ModbusStatus.SlaveOn
+        self.status = status == ModbusStatus.SLAVE_ON
 
     def __str__(self) -> str:
         """Build a representation of the response.

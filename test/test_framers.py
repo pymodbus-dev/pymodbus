@@ -10,7 +10,7 @@ from pymodbus.factory import ClientDecoder
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.binary_framer import ModbusBinaryFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
-from pymodbus.transport.transport import NULLMODEM_HOST, CommType
+from pymodbus.transport import CommType
 from pymodbus.utilities import ModbusTransactionState
 
 
@@ -309,7 +309,7 @@ def test_send_packet(rtu_framer):
     message = TEST_MESSAGE
     client = ModbusBaseClient(
         framer=ModbusAsciiFramer,
-        host=NULLMODEM_HOST,
+        host="localhost",
         port=BASE_PORT + 1,
         CommType=CommType.TCP,
     )

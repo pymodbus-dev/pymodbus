@@ -296,6 +296,9 @@ class ModbusTransactionManager:
                 )
                 self.client.state = ModbusTransactionState.PROCESSING_REPLY
                 return size, None
+            if self.client.comm_params.handle_local_echo is True:
+                if self._recv(size, full) != packet:
+                    return b"", "Wrong local echo"
             if broadcast:
                 if size:
                     Log.debug(
@@ -310,12 +313,6 @@ class ModbusTransactionManager:
                     'to "WAITING FOR REPLY"'
                 )
                 self.client.state = ModbusTransactionState.WAITING_FOR_REPLY
-            if (
-                hasattr(self.client, "handle_local_echo")
-                and self.client.handle_local_echo is True
-            ):
-                if self._recv(size, full) != packet:
-                    return b"", "Wrong local echo"
             result = self._recv(response_length, full)
             # result2 = self._recv(response_length, full)
             Log.debug("RECV: {}", result, ":hex")

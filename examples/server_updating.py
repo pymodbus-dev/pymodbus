@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Pymodbus asynchronous Server Example.
+"""Pymodbus asynchronous Server with updating task Example.
 
-An example of a multi threaded asynchronous server.
+An example of an asynchronous server and
+a task that runs continuously alongside the server and updates values.
 
-usage: server_async.py [-h] [--comm {tcp,udp,serial,tls}]
+usage: server_updating.py [-h] [--comm {tcp,udp,serial,tls}]
                        [--framer {ascii,binary,rtu,socket,tls}]
                        [--log {critical,error,warning,info,debug}]
                        [--port PORT] [--store {sequential,sparse,factory,none}]
@@ -14,13 +15,17 @@ Command line options for examples
 options:
   -h, --help            show this help message and exit
   --comm {tcp,udp,serial,tls}
+
                         "serial", "tcp", "udp" or "tls"
   --framer {ascii,binary,rtu,socket,tls}
+
                         "ascii", "binary", "rtu", "socket" or "tls"
   --log {critical,error,warning,info,debug}
+
                         "critical", "error", "warning", "info" or "debug"
   --port PORT           the port to use
   --store {sequential,sparse,factory,none}
+
                         "sequential", "sparse", "factory" or "none"
   --slaves SLAVES       number of slaves to respond to
 
@@ -42,20 +47,43 @@ _logger = logging.getLogger(__name__)
 
 
 async def updating_task(context):
-    """Run every so often and update live values of the context.
+    """Update values in server.
 
-    It should be noted that there is a race condition for the update.
+    This task runs continuously beside the server
+    (via asyncio.create_task in run_updating_server).
+    It will increment some values each two seconds.
+
+    It should be noted that getValues and setValues are not safe
+    against concurrent use.
     """
-    _logger.debug("updating the context")
+
     fc_as_hex = 3
     slave_id = 0x00
     address = 0x10
-    values = context[slave_id].getValues(fc_as_hex, address, count=5)
-    values = [v + 1 for v in values]  # increment by 1.
-    txt = f"new values: {values!s}"
-    _logger.debug(txt)
+    count = 6
+
+    # set values to zero
+    values = context[slave_id].getValues(fc_as_hex, address, count=count)
+    values = [0 for v in values]
     context[slave_id].setValues(fc_as_hex, address, values)
-    await asyncio.sleep(1)
+
+    txt = (
+        f"updating_task: started: initialised values: {values!s} at address {address!s}"
+    )
+    print(txt)
+    _logger.debug(txt)
+
+    # incrementing loop
+    while True:
+        await asyncio.sleep(2)
+
+        values = context[slave_id].getValues(fc_as_hex, address, count=count)
+        values = [v + 1 for v in values]
+        context[slave_id].setValues(fc_as_hex, address, values)
+
+        txt = f"updating_task: incremented values: {values!s} at address {address!s}"
+        print(txt)
+        _logger.debug(txt)
 
 
 def setup_updating_server(cmdline=None):
@@ -75,9 +103,10 @@ def setup_updating_server(cmdline=None):
 
 
 async def run_updating_server(args):
-    """Start updater task and async server."""
-    asyncio.create_task(updating_task(args.context))  # noqa: RUF006
-    await run_async_server(args)
+    """Start updating_task concurrently with the current task"""
+    task = asyncio.create_task(updating_task(args.context))
+    await run_async_server(args)  # start the server
+    task.cancel()
 
 
 async def main(cmdline=None):

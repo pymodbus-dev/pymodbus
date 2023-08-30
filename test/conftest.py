@@ -1,10 +1,14 @@
 """Configure pytest."""
+import asyncio
 import platform
+import sys
 from collections import deque
+from threading import enumerate as thread_enumerate
 
 import pytest
 
 from pymodbus.datastore import ModbusBaseSlaveContext
+from pymodbus.transport import NullModem
 
 
 def pytest_configure():
@@ -16,6 +20,52 @@ def pytest_configure():
 # -----------------------------------------------------------------------#
 # Generic fixtures
 # -----------------------------------------------------------------------#
+BASE_PORTS = {
+    "TestBasicModbusProtocol": 7100,
+    "TestBasicSerial": 7200,
+    "TestCommModbusProtocol": 7300,
+    "TestCommNullModem": 7400,
+    "TestExamples": 7500,
+    "TestAsyncExamples": 7600,
+    "TestSyncExamples": 7700,
+    "TestModbusProtocol": 7800,
+    "TestNullModem": 7900,
+    "TestReconnectModbusProtocol": 8000,
+    "TestClientServerSyncExamples": 8100,
+    "TestClientServerAsyncExamples": 8200,
+}
+
+
+@pytest.fixture(name="base_ports", scope="package")
+def get_base_ports():
+    """Return base_ports"""
+    return BASE_PORTS
+
+
+@pytest.fixture(name="system_health_check", autouse=True)
+async def _check_system_health():
+    """Check Thread, asyncio.task and NullModem for leftovers."""
+    start_threads = {thread.getName(): thread for thread in thread_enumerate()}
+    start_tasks = {task.get_name(): task for task in asyncio.all_tasks()}
+    yield
+    await asyncio.sleep(0.1)
+    all_clean = True
+    error_text = "ERROR tasks/threads hanging:\n"
+    for thread in thread_enumerate():
+        name = thread.getName()
+        if not (
+            (name in start_threads)
+            or (name == "asyncio_0")
+            or (sys.version_info.minor == 8 and name.startswith("ThreadPoolExecutor"))
+        ):
+            error_text += f"-->THREAD: {thread}\n"
+            all_clean = False
+    for task in asyncio.all_tasks():
+        if not (task.get_name() in start_tasks or "wrap_asyncgen_fixture" in str(task)):
+            error_text += f"-->TASK: {task}\n"
+            all_clean = False
+    assert all_clean, error_text
+    assert not NullModem.is_dirty()
 
 
 class MockContext(ModbusBaseSlaveContext):

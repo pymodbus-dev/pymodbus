@@ -3,9 +3,23 @@ PyModbus - API changes.
 =======================
 
 -------------
+Version 3.5.0
+-------------
+- Remove handler parameter from ModbusUdpServer
+- Remove loop parameter from ModbusSerialServer
+- Remove handler and allow_reuse_port from repl default config
+- Static classes from the :code:`constants` module are now inheriting from :code:`enum.Enum` and using `UPPER_CASE` naming scheme, this affects:
+  - :code:`MoreData`
+  - :code:`DeviceInformation`
+  - :code:`ModbusPlusOperation`
+  - :code:`Endian`
+  - :code:`ModbusStatus`
+- Async clients now accepts `no_resend_on_retry=True`, to not resend the request when retrying.
+- ModbusSerialServer now accepts request_tracer=.
+
+-------------
 Version 3.4.1
 -------------
-
 No changes.
 
 -------------

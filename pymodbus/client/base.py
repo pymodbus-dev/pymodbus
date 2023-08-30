@@ -13,7 +13,7 @@ from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.transaction import DictTransactionManager
-from pymodbus.transport.transport import CommParams, ModbusProtocol
+from pymodbus.transport import CommParams, ModbusProtocol
 from pymodbus.utilities import ModbusTransactionState
 
 
@@ -32,6 +32,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     :param reconnect_delay: (optional) Minimum delay in milliseconds before reconnecting.
     :param reconnect_delay_max: (optional) Maximum delay in milliseconds before reconnecting.
     :param on_reconnect_callback: (optional) Function that will be called just before a reconnection attempt.
+    :param no_resend_on_retry: (optional) Do not resend request when retrying due to missing response.
     :param kwargs: (optional) Experimental parameters.
 
     .. tip::
@@ -75,6 +76,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         reconnect_delay: float = 0.1,
         reconnect_delay_max: float = 300,
         on_reconnect_callback: Callable[[], None] | None = None,
+        no_resend_on_retry: bool = False,
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
@@ -88,7 +90,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             reconnect_delay_max=reconnect_delay_max,
             timeout_connect=timeout,
             host=kwargs.get("host", None),
-            port=kwargs.get("port", None),
+            port=kwargs.get("port", 0),
             sslctx=kwargs.get("sslctx", None),
             baudrate=kwargs.get("baudrate", None),
             bytesize=kwargs.get("bytesize", None),
@@ -114,10 +116,8 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         self.reconnect_delay_max = int(reconnect_delay_max)
         self.on_reconnect_callback = on_reconnect_callback
         self.retry_on_empty: int = 0
-        # -> retry read on nothing
-
+        self.no_resend_on_retry = no_resend_on_retry
         self.slaves: list[int] = []
-        # -> list of acceptable slaves (0 for accept all)
 
         # Common variables.
         self.framer = framer(ClientDecoder(), self)
@@ -189,26 +189,28 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         """Execute requests asynchronously."""
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
-        self.transport_send(packet)
-        req = self._build_response(request.transaction_id)
-        if self.params.broadcast_enable and not request.slave_id:
-            resp = b"Broadcast write sent - no response expected"
-        else:
-            count = 0
-            while count < self.params.retries:
-                count += 1
-                try:
-                    resp = await asyncio.wait_for(
-                        req, timeout=self.comm_params.timeout_connect
-                    )
-                    break
-                except asyncio.exceptions.TimeoutError:
-                    pass
-            if count == self.params.retries:
-                self.close(reconnect=True)
-                raise ModbusIOException(
-                    f"ERROR: No response received after {self.params.retries} retries"
+
+        count = 0
+        while count <= self.params.retries:
+            if not count or not self.no_resend_on_retry:
+                self.transport_send(packet)
+            if self.params.broadcast_enable and not request.slave_id:
+                resp = b"Broadcast write sent - no response expected"
+                break
+            try:
+                req = self._build_response(request.transaction_id)
+                resp = await asyncio.wait_for(
+                    req, timeout=self.comm_params.timeout_connect
                 )
+                break
+            except asyncio.exceptions.TimeoutError:
+                count += 1
+        if count > self.params.retries:
+            self.close(reconnect=True)
+            raise ModbusIOException(
+                f"ERROR: No response received after {self.params.retries} retries"
+            )
+
         return resp
 
     def callback_data(self, data: bytes, addr: tuple = None) -> int:

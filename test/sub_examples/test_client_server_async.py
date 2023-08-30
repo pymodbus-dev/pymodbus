@@ -21,38 +21,32 @@ from examples.client_async import (
 from pymodbus.exceptions import ModbusIOException
 
 
-BASE_PORT = 6200
-
-
+@pytest.mark.parametrize(
+    ("use_comm", "use_framer"),
+    [
+        ("tcp", "socket"),
+        ("tcp", "rtu"),
+        ("tls", "tls"),
+        ("udp", "socket"),
+        ("udp", "rtu"),
+        ("serial", "rtu"),
+    ],
+)
 class TestClientServerAsyncExamples:
     """Test Client server async examples."""
 
-    USE_CASES = [
-        ("tcp", "socket", BASE_PORT + 1),
-        ("tcp", "rtu", BASE_PORT + 2),
-        ("tls", "tls", BASE_PORT + 3),
-        ("udp", "socket", BASE_PORT + 4),
-        ("udp", "rtu", BASE_PORT + 5),
-        ("serial", "rtu", BASE_PORT + 6),
-        # awaiting fix: ("serial", "ascii", BASE_PORT + 7),
-        # awaiting fix: ("serial", "binary", BASE_PORT + 8),
-    ]
+    @staticmethod
+    @pytest.fixture(name="use_port")
+    def get_port_in_class(base_ports):
+        """Return next port"""
+        base_ports[__class__.__name__] += 1
+        return base_ports[__class__.__name__]
 
-    @pytest.mark.parametrize("port_offset", [0])
-    @pytest.mark.parametrize(
-        ("use_comm", "use_framer", "use_port"),
-        USE_CASES,
-    )
     async def test_combinations(self, mock_server, mock_clc):
         """Run async client and server."""
         assert mock_server
         await main(cmdline=mock_clc)
 
-    @pytest.mark.parametrize("port_offset", [1])
-    @pytest.mark.parametrize(
-        ("use_comm", "use_framer", "use_port"),
-        [("tcp", "socket", BASE_PORT + 1)],
-    )
     async def test_client_exception(self, mock_server, mock_clc):
         """Run async client and server."""
         assert mock_server
@@ -62,35 +56,21 @@ class TestClientServerAsyncExamples:
         )
         await run_async_client(test_client, modbus_calls=run_a_few_calls)
 
-    @pytest.mark.parametrize("port_offset", [10])
-    @pytest.mark.parametrize(
-        ("use_comm", "use_framer", "use_port"),
-        USE_CASES,
-    )
     async def test_server_no_client(self, mock_server):
         """Run async server without client."""
         assert mock_server
 
-    @pytest.mark.parametrize("port_offset", [20])
-    @pytest.mark.parametrize(
-        ("use_comm", "use_framer", "use_port"),
-        USE_CASES,
-    )
     async def test_server_client_twice(self, mock_server, use_comm, mock_clc):
         """Run async server without client."""
         assert mock_server
         if use_comm == "serial":
+            # Serial do not allow mmulti point.
             return
         test_client = setup_async_client(cmdline=mock_clc)
         await run_async_client(test_client, modbus_calls=run_a_few_calls)
         await asyncio.sleep(0.5)
         await run_async_client(test_client, modbus_calls=run_a_few_calls)
 
-    @pytest.mark.parametrize("port_offset", [30])
-    @pytest.mark.parametrize(
-        ("use_comm", "use_framer", "use_port"),
-        USE_CASES,
-    )
     async def test_client_no_server(self, mock_clc):
         """Run async client without server."""
         test_client = setup_async_client(cmdline=mock_clc)

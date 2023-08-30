@@ -6,6 +6,7 @@ An example of using simulator datastore with json interface.
 usage: server_simulator.py [-h]
                        [--log {critical,error,warning,info,debug}]
                        [--port PORT]
+                       [--host HOST]
 
 Command line options for examples
 
@@ -14,6 +15,7 @@ options:
   --log {critical,error,warning,info,debug}
                         "critical", "error", "warning", "info" or "debug"
   --port PORT           the port to use
+  --host HOST           the interface to listen on
 
 The corresponding client can be started as:
     python3 client_sync.py
@@ -129,6 +131,7 @@ def get_commandline(cmdline=None):
         type=str,
     )
     parser.add_argument("--port", help="set port", type=str, default="5020")
+    parser.add_argument("--host", help="set interface", type=str, default="localhost")
     args = parser.parse_args(cmdline)
 
     return args
@@ -168,7 +171,7 @@ async def run_server_simulator(args):
 
     await StartAsyncTcpServer(
         context=args.context,
-        address=("", args.port),
+        address=(args.host, args.port),
         framer=args.framer,
     )
 

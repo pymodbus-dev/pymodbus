@@ -30,7 +30,7 @@ class TestMeiMessage:
 
     def test_read_device_information_request_encode(self):
         """Test basic bit message encoding/decoding"""
-        params = {"read_code": DeviceInformation.Basic, "object_id": 0x00}
+        params = {"read_code": DeviceInformation.BASIC, "object_id": 0x00}
         handle = ReadDeviceInformationRequest(**params)
         result = handle.encode()
         assert result == b"\x0e\x01\x00"
@@ -40,7 +40,7 @@ class TestMeiMessage:
         """Test basic bit message encoding/decoding"""
         handle = ReadDeviceInformationRequest()
         handle.decode(b"\x0e\x01\x00")
-        assert handle.read_code == DeviceInformation.Basic
+        assert handle.read_code == DeviceInformation.BASIC
         assert not handle.object_id
 
     def test_read_device_information_request(self):
@@ -62,7 +62,7 @@ class TestMeiMessage:
             _ = result.information[0x81]
 
         handle = ReadDeviceInformationRequest(
-            read_code=DeviceInformation.Extended, object_id=0x80
+            read_code=DeviceInformation.EXTENDED, object_id=0x80
         )
         result = handle.execute(context)
         assert result.information[0x81] == ["Test", "Repeated"]
@@ -89,7 +89,7 @@ class TestMeiMessage:
             0x02: TEST_VERSION,
         }
         handle = ReadDeviceInformationResponse(
-            read_code=DeviceInformation.Basic, information=dataset
+            read_code=DeviceInformation.BASIC, information=dataset
         )
         result = handle.encode()
         assert result == message
@@ -105,7 +105,7 @@ class TestMeiMessage:
         message += TEST_MESSAGE
         message += b"\x81\x04Test\x81\x08Repeated"
         handle = ReadDeviceInformationResponse(
-            read_code=DeviceInformation.Extended, information=dataset
+            read_code=DeviceInformation.EXTENDED, information=dataset
         )
         result = handle.encode()
         assert result == message
@@ -129,7 +129,7 @@ class TestMeiMessage:
             0x80: longstring,
         }
         handle = ReadDeviceInformationResponse(
-            read_code=DeviceInformation.Basic, information=dataset
+            read_code=DeviceInformation.BASIC, information=dataset
         )
         result = handle.encode()
         assert result == message
@@ -142,7 +142,7 @@ class TestMeiMessage:
         message += b"\x81\x04Test\x81\x08Repeated\x81\x07Another"
         handle = ReadDeviceInformationResponse(read_code=0x00, information=[])
         handle.decode(message)
-        assert handle.read_code == DeviceInformation.Basic
+        assert handle.read_code == DeviceInformation.BASIC
         assert handle.conformity == 0x01
         assert handle.information[0x00] == b"Company"
         assert handle.information[0x01] == b"Product"

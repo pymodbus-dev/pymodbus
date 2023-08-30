@@ -24,8 +24,8 @@ from pymodbus.utilities import pack_bitstring, unpack_bitstring
 # ---------------------------------------------------------------------------#
 #  These are defined in the spec to turn a coil on/off
 # ---------------------------------------------------------------------------#
-_turn_coil_on = struct.pack(">H", ModbusStatus.On)
-_turn_coil_off = struct.pack(">H", ModbusStatus.Off)
+_turn_coil_on = struct.pack(">H", ModbusStatus.ON)
+_turn_coil_off = struct.pack(">H", ModbusStatus.OFF)
 
 
 class WriteSingleCoilRequest(ModbusRequest):
@@ -77,7 +77,7 @@ class WriteSingleCoilRequest(ModbusRequest):
         :param data: The packet data to decode
         """
         self.address, value = struct.unpack(">HH", data)
-        self.value = value == ModbusStatus.On
+        self.value = value == ModbusStatus.ON
 
     def execute(self, context):
         """Run a write coil request against a datastore.
@@ -151,7 +151,7 @@ class WriteSingleCoilResponse(ModbusResponse):
         :param data: The packet data to decode
         """
         self.address, value = struct.unpack(">HH", data)
-        self.value = value == ModbusStatus.On
+        self.value = value == ModbusStatus.ON
 
     def __str__(self):
         """Return a string representation of the instance.
@@ -185,7 +185,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         """
         ModbusRequest.__init__(self, slave=slave, **kwargs)
         self.address = address
-        if not values:
+        if values is None:
             values = []
         elif not hasattr(values, "__iter__"):
             values = [values]

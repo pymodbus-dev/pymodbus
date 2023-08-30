@@ -167,7 +167,7 @@ class ModbusSimulatorServer:
                 info_name=server["identity"]
             )
         self.modbus_server = comm(framer=framer, context=datastore, **server)
-
+        self.serving: asyncio.Future = asyncio.Future()
         self.log_file = log_file
         self.site = None
         self.http_host = http_host
@@ -234,6 +234,7 @@ class ModbusSimulatorServer:
     async def stop_modbus_server(self, app):
         """Stop modbus server."""
         Log.info("Stopping modbus server")
+        await self.modbus_server.shutdown()
         app["modbus_server"].cancel()
         with contextlib.suppress(asyncio.exceptions.CancelledError):
             await app["modbus_server"]
@@ -254,13 +255,15 @@ class ModbusSimulatorServer:
         if only_start:
             return
         while True:
-            await asyncio.sleep(1)
+            await self.serving()
 
     async def stop(self):
         """Stop modbus and http servers."""
         await self.site.stop()
         self.site = None
-        await asyncio.sleep(1)
+        if not self.serving.done():
+            self.serving.set_result(True)
+        await asyncio.sleep(0.1)
 
     async def handle_html_static(self, request):
         """Handle static html."""

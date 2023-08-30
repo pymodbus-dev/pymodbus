@@ -33,7 +33,7 @@ from pymodbus.transaction import (
 )
 
 
-async def run_async_simple_client(comm, host, port):
+async def run_async_simple_client(comm, host, port, framer=ModbusSocketFramer):
     """Run async client."""
 
     # activate debugging
@@ -44,7 +44,7 @@ async def run_async_simple_client(comm, host, port):
         client = AsyncModbusTcpClient(
             host,
             port=port,
-            framer=ModbusSocketFramer,
+            framer=framer,
             # timeout=10,
             # retries=3,
             # retry_on_empty=False,

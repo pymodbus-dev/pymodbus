@@ -31,7 +31,7 @@ from pymodbus.transaction import (
 )
 
 
-def run_sync_simple_client(comm, host, port):
+def run_sync_simple_client(comm, host, port, framer=ModbusSocketFramer):
     """Run sync client."""
 
     # activate debugging
@@ -42,7 +42,7 @@ def run_sync_simple_client(comm, host, port):
         client = ModbusTcpClient(
             host,
             port=port,
-            framer=ModbusSocketFramer,
+            framer=framer,
             # timeout=10,
             # retries=3,
             # retry_on_empty=False,y

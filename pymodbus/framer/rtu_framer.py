@@ -62,7 +62,7 @@ class ModbusRtuFramer(ModbusFramer):
         self._hsize = 0x01
         self._end = b"\x0d\x0a"
         self._min_frame_size = 4
-        self.function_codes = set(self.decoder.lookup) if self.decoder else {}
+        self.function_codes = decoder.lookup.keys() if decoder else {}
 
     # ----------------------------------------------------------------------- #
     # Private Helper Functions

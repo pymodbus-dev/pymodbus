@@ -197,7 +197,7 @@ class CLI:  # pylint: disable=too-few-public-methods
                     )
                 )
 
-    def _process_client(self, text, client):
+    def _process_client(self, text, client) -> Result:
         """Process client commands."""
         text = text.strip().split()
         cmd = text[0].split(".")[1]
@@ -209,6 +209,7 @@ class CLI:  # pylint: disable=too-few-public-methods
             else:
                 result = Result(getattr(client, cmd)(**kwargs))
             result.print_result()
+        return result
 
     def _process_result(self, text, result):
         """Process result commands."""
@@ -233,7 +234,7 @@ class CLI:  # pylint: disable=too-few-public-methods
                 elif text.strip().lower() == "exit":
                     raise EOFError()
                 elif text.strip().lower().startswith("client."):
-                    self._process_client(text, self.client)
+                    result = self._process_client(text, self.client)
                 elif text.strip().lower().startswith("result.") and result:
                     self._process_result(text, result)
             except KeyboardInterrupt:

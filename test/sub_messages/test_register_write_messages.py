@@ -38,7 +38,7 @@ class TestWriteRegisterMessages:
         """Initialize the test environment and builds request/result encoding pairs."""
         self.value = 0xABCD
         self.values = [0xA, 0xB, 0xC]
-        builder = BinaryPayloadBuilder(byteorder=Endian.Big)
+        builder = BinaryPayloadBuilder(byteorder=Endian.BIG)
         builder.add_16bit_uint(0x1234)
         self.payload = builder.build()
         self.write = {

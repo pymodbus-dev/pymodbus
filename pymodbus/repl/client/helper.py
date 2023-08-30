@@ -262,10 +262,10 @@ class Result:
             print_formatted_text(HTML("<red>Decoder works only for registers!!</red>"))
             return
         byte_order = (
-            Endian.Little if byte_order.strip().lower() == "little" else Endian.Big
+            Endian.LITTLE if byte_order.strip().lower() == "little" else Endian.BIG
         )
         word_order = (
-            Endian.Little if word_order.strip().lower() == "little" else Endian.Big
+            Endian.LITTLE if word_order.strip().lower() == "little" else Endian.BIG
         )
         decoder = BinaryPayloadDecoder.fromRegisters(
             self.data.get("registers"), byteorder=byte_order, wordorder=word_order

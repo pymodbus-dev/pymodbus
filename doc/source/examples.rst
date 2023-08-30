@@ -29,6 +29,12 @@ Simple synchronous client
 .. literalinclude:: ../../examples/simple_sync_client.py
 
 
+Client performance sync vs async
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../examples/client_performance.py
+
+
+
 Advanced examples
 -----------------
 

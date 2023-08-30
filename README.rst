@@ -19,7 +19,7 @@ Supported versions
 
 Version `2.5.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (python >= 2.7, no longer supported).
 
-Version `3.4.1 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.4.1>`_ is the current release (Tested with Python >= 3.8).
+Version `3.5.0 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.5.0>`_ is the current release (Tested with Python >= 3.8).
 
 .. important::
    All API changes after 3.0.0 are documented in `API_changes.rst <https://github.com/pymodbus-dev/pymodbus/blob/dev/API_changes.rst>`_
@@ -219,7 +219,7 @@ Then:
 
    pip install -e .
 
-   pre-commit --install
+   pre-commit install
 
 This installs pymodbus in your virtual environment with pointers directly to the pymodbus directory, so any change you make is immediately available as if installed.  It will also install `pre-commit` git hooks.
 
@@ -287,11 +287,5 @@ We always have more work than time, so feel free to open a discussion / issue on
 ------------------------------------------------------------
 License Information
 ------------------------------------------------------------
-
-Pymodbus is built on top of code developed from/by:
-  * Copyright (c) 2001-2005 S.W.A.C. GmbH, Germany.
-  * Copyright (c) 2001-2005 S.W.A.C. Bohemia s.r.o., Czech Republic.
-
-  * Hynek Petrak, https://github.com/HynekPetrak
 
 Released under the `BSD License <LICENSE>`_

@@ -18,6 +18,7 @@ from examples.client_calls import template_call
 from examples.client_custom_msg import main as main_custom_client
 from examples.client_payload import main as main_payload_calls
 from examples.datastore_simulator import main as main_datastore_simulator
+from examples.helper import get_framer
 from examples.message_generator import generate_messages
 from examples.message_parser import main as main_parse_messages
 from examples.server_async import setup_server
@@ -33,125 +34,134 @@ from pymodbus.pdu import ExceptionResponse
 from pymodbus.server import ServerAsyncStop, ServerStop
 
 
-BASE_PORT = 6400
-
-
 class TestExamples:
     """Test examples."""
 
-    USE_CASES = [
-        ("tcp", "socket", BASE_PORT + 1),
-        ("tcp", "rtu", BASE_PORT + 2),
-        ("tls", "tls", BASE_PORT + 3),
-        ("udp", "socket", BASE_PORT + 4),
-        ("udp", "rtu", BASE_PORT + 5),
-        ("serial", "rtu", BASE_PORT + 6),
-        # awaiting fix: ("serial", "ascii", BASE_PORT + 7),
-        # awaiting fix: ("serial", "binary", BASE_PORT + 8),
-    ]
+    @staticmethod
+    @pytest.fixture(name="use_port")
+    def get_port_in_class(base_ports):
+        """Return next port"""
+        base_ports[__class__.__name__] += 1
+        return base_ports[__class__.__name__]
 
     @pytest.mark.parametrize("framer", ["socket", "rtu", "ascii", "binary"])
     def test_message_generator(self, framer):
         """Test all message generator."""
         generate_messages(cmdline=["--framer", framer])
 
-    def test_message_parser(self):
+    @pytest.mark.parametrize("framer", ["socket", "rtu", "ascii", "binary"])
+    def test_message_parser(self, framer):
         """Test message parser."""
-        main_parse_messages(["--framer", "socket", "-m", "000100000006010100200001"])
-        main_parse_messages(["--framer", "socket", "-m", "00010000000401010101"])
+        main_parse_messages(["--framer", framer, "-m", "000100000006010100200001"])
+        main_parse_messages(["--framer", framer, "-m", "00010000000401010101"])
 
-    @pytest.mark.parametrize(
-        ("use_comm", "use_framer", "use_port"),
-        USE_CASES,
-    )
+    async def test_server_callback(self, use_port, use_host):
+        """Test server/client with payload."""
+        cmdargs = ["--port", str(use_port), "--host", use_host]
+        task = asyncio.create_task(run_callback_server(cmdline=cmdargs))
+        await asyncio.sleep(0.1)
+        testclient = setup_async_client(cmdline=cmdargs)
+        await run_async_client(testclient, modbus_calls=run_a_few_calls)
+        await asyncio.sleep(0.1)
+        await ServerAsyncStop()
+        await asyncio.sleep(0.1)
+        task.cancel()
+        await task
+
+    async def test_updating_server(self, use_port, use_host):
+        """Test server simulator."""
+        cmdargs = ["--port", str(use_port), "--host", use_host]
+        task = asyncio.create_task(main_updating_server(cmdline=cmdargs))
+        await asyncio.sleep(0.1)
+        client = setup_async_client(cmdline=cmdargs)
+        await run_async_client(client, modbus_calls=run_a_few_calls)
+        await asyncio.sleep(0.1)
+        await ServerAsyncStop()
+        await asyncio.sleep(0.1)
+        task.cancel()
+        await task
+
+    async def test_datastore_simulator(self, use_port, use_host):
+        """Test server simulator."""
+        cmdargs = ["--port", str(use_port), "--host", use_host]
+        task = asyncio.create_task(main_datastore_simulator(cmdline=cmdargs))
+        await asyncio.sleep(0.1)
+        testclient = setup_async_client(cmdline=cmdargs)
+        await run_async_client(testclient, modbus_calls=run_a_few_calls)
+        await asyncio.sleep(0.1)
+        await ServerAsyncStop()
+        await asyncio.sleep(0.1)
+        task.cancel()
+        await task
+
+    async def test_simulator(self):
+        """Run simulator server/client."""
+        # Awaiting fix, missing stop of task.
+        await run_simulator()
+
+    async def test_modbus_forwarder(self):
+        """Test modbus forwarder."""
+        print("waiting for fix")
+
+
+@pytest.mark.parametrize(
+    ("use_comm", "use_framer"),
+    [
+        ("tcp", "socket"),
+        ("tcp", "rtu"),
+        ("tls", "tls"),
+        ("udp", "socket"),
+        ("udp", "rtu"),
+        ("serial", "rtu"),
+    ],
+)
+class TestAsyncExamples:
+    """Test examples."""
+
+    @staticmethod
+    @pytest.fixture(name="use_port")
+    def get_port_in_class(base_ports):
+        """Return next port"""
+        base_ports[__class__.__name__] += 1
+        return base_ports[__class__.__name__]
+
     async def test_client_async_calls(self, mock_server):
         """Test client_async_calls."""
         await main_client_async_calls(cmdline=mock_server)
 
-    @pytest.mark.parametrize(
-        ("use_comm", "use_framer", "use_port"),
-        [
-            ("tcp", "socket", BASE_PORT + 1),
-        ],
-    )
     async def test_client_async_calls_errors(self, mock_server):
         """Test client_async_calls."""
-
-        async def run_template_call(client):
-            """Demonstrate basic read/write calls."""
-            await async_template_call(client)
-
         client = setup_async_client(cmdline=mock_server)
         client.read_coils = mock.AsyncMock(side_effect=ModbusException("test"))
         with pytest.raises(ModbusException):
-            await run_async_client(client, modbus_calls=run_template_call)
+            await run_async_client(client, modbus_calls=async_template_call)
+        client.close()
         client.read_coils = mock.AsyncMock(return_value=ExceptionResponse(0x05, 0x10))
         with pytest.raises(ModbusException):
-            await run_async_client(client, modbus_calls=run_template_call)
+            await run_async_client(client, modbus_calls=async_template_call)
+        client.close()
 
-    @pytest.mark.parametrize("use_host", ["localhost"])
-    @pytest.mark.parametrize(
-        ("use_comm", "use_framer", "use_port"),
-        [
-            ("tcp", "socket", BASE_PORT + 1),
-            ("tcp", "rtu", BASE_PORT + 2),
-            # awaiting fix: ("tls", "tls", BASE_PORT + 3),
-            ("udp", "socket", BASE_PORT + 4),
-            ("udp", "rtu", BASE_PORT + 5),
-            ("serial", "rtu", BASE_PORT + 6),
-            # awaiting fix: ("serial", "ascii", BASE_PORT + 7),
-            # awaiting fix: ("serial", "binary", BASE_PORT + 8),
-        ],
-    )
-    def test_client_calls(self, mock_clc, mock_cls):
-        """Test client_calls."""
-        server_args = setup_server(cmdline=mock_cls)
-        thread = Thread(target=run_sync_server, args=(server_args,))
-        thread.daemon = True
-        thread.start()
-        sleep(1)
-        main_client_calls(cmdline=mock_clc)
-        ServerStop()
-
-    @pytest.mark.parametrize(
-        ("use_comm", "use_framer", "use_port"),
-        [
-            ("tcp", "socket", BASE_PORT + 1),
-        ],
-    )
     async def test_client_calls_errors(self, mock_server):
         """Test client_calls."""
-
-        def run_template_call(client):
-            """Demonstrate basic read/write calls."""
-            template_call(client)
-
         client = setup_async_client(cmdline=mock_server)
         client.read_coils = mock.Mock(side_effect=ModbusException("test"))
         with pytest.raises(ModbusException):
-            await run_async_client(client, modbus_calls=run_template_call)
+            await run_async_client(client, modbus_calls=template_call)
+        client.close()
         client.read_coils = mock.Mock(return_value=ExceptionResponse(0x05, 0x10))
         with pytest.raises(ModbusException):
-            await run_async_client(client, modbus_calls=run_template_call)
+            await run_async_client(client, modbus_calls=template_call)
+        client.close()
 
-    @pytest.mark.parametrize("use_host", ["localhost"])
-    @pytest.mark.parametrize(
-        ("use_comm", "use_framer", "use_port"),
-        [
-            ("tcp", "socket", BASE_PORT + 41),
-        ],
-    )
-    async def test_custom_msg(self, mock_server, use_port, use_host):
+    async def test_custom_msg(
+        self, mock_server, use_comm, use_framer, use_port, use_host
+    ):
         """Test client with custom message."""
+        if use_comm != "tcp" or use_framer != "socket":
+            return
         assert mock_server
         await main_custom_client(port=use_port, host=use_host)
 
-    @pytest.mark.parametrize(
-        ("use_comm", "use_framer", "use_port"),
-        [
-            ("tcp", "socket", BASE_PORT + 42),
-        ],
-    )
     async def test_payload(self, mock_clc, mock_cls):
         """Test server/client with payload."""
         task = asyncio.create_task(main_payload_server(cmdline=mock_cls))
@@ -163,89 +173,64 @@ class TestExamples:
         task.cancel()
         await task
 
-    @pytest.mark.parametrize("use_port", [BASE_PORT + 43])
-    async def test_datastore_simulator(self, use_port):
-        """Test server simulator."""
-        cmdargs = ["--port", str(use_port)]
-        task = asyncio.create_task(
-            main_datastore_simulator(cmdline=["--port", str(use_port)])
-        )
-        await asyncio.sleep(0.1)
-        cmdargs.extend(["--host", "localhost"])
-        testclient = setup_async_client(cmdline=cmdargs)
-        await run_async_client(testclient, modbus_calls=run_a_few_calls)
-        await asyncio.sleep(0.1)
-        await ServerAsyncStop()
-        await asyncio.sleep(0.1)
-        task.cancel()
-        await task
-
-    @pytest.mark.parametrize("use_port", [BASE_PORT + 44])
-    async def test_server_callback(self, use_port):
-        """Test server/client with payload."""
-        cmdargs = ["--port", str(use_port)]
-        task = asyncio.create_task(run_callback_server(cmdline=cmdargs))
-        await asyncio.sleep(0.1)
-        testclient = setup_async_client(cmdline=cmdargs)
-        await run_async_client(testclient, modbus_calls=run_a_few_calls)
-        await asyncio.sleep(0.1)
-        await ServerAsyncStop()
-        await asyncio.sleep(0.1)
-        task.cancel()
-        await task
-
-    @pytest.mark.parametrize("use_port", [BASE_PORT + 45])
-    async def test_updating_server(self, use_port):
-        """Test server simulator."""
-        cmdargs = ["--port", str(use_port)]
-        task = asyncio.create_task(main_updating_server(cmdline=cmdargs))
-        await asyncio.sleep(0.1)
-        client = setup_async_client(cmdline=cmdargs)
-        await run_async_client(client, modbus_calls=run_a_few_calls)
-        await asyncio.sleep(0.1)
-        await ServerAsyncStop()
-        await asyncio.sleep(0.1)
-        task.cancel()
-        await task
-
-    @pytest.mark.parametrize("use_host", ["localhost"])
-    @pytest.mark.parametrize(
-        ("use_comm", "use_framer", "use_port"),
-        [
-            ("tcp", "socket", BASE_PORT + 46),
-            # awaiting fix ("tls", "tls", BASE_PORT + 47),
-            ("udp", "socket", BASE_PORT + 48),
-            ("serial", "rtu", BASE_PORT + 49),
-        ],
-    )
-    async def test_async_simple_client(self, use_comm, use_port, mock_server, use_host):
+    async def test_async_simple_client(
+        self, use_comm, use_port, use_framer, mock_server, use_host
+    ):
         """Run simple async client."""
         _cmdline = mock_server
+        if use_comm == "tls":
+            return
+        if use_comm == "udp" and use_framer == "rtu":
+            return
         if use_comm == "serial":
             use_port = f"socket://{use_host}:{use_port}"
-        await run_async_simple_client(use_comm, use_host, use_port)
+        framer = get_framer(use_framer)
+        await run_async_simple_client(use_comm, use_host, use_port, framer=framer)
 
-    @pytest.mark.parametrize("use_host", ["localhost"])
-    @pytest.mark.parametrize(
-        ("use_comm", "use_framer", "use_port"),
-        [
-            ("tcp", "socket", BASE_PORT + 46),
-            # awaiting fix ("tls", "tls", BASE_PORT + 47),
-            ("udp", "socket", BASE_PORT + 48),
-            ("serial", "rtu", BASE_PORT + 49),
-        ],
-    )
-    async def test_sync_simple_client(self, use_comm, use_host, use_port, mock_server):
+
+@pytest.mark.parametrize("use_host", ["localhost"])
+@pytest.mark.parametrize(
+    ("use_comm", "use_framer"),
+    [
+        ("tcp", "socket"),
+        ("tcp", "rtu"),
+        # awaiting fix: ("tls", "tls"),
+        ("udp", "socket"),
+        ("udp", "rtu"),
+        ("serial", "rtu"),
+    ],
+)
+class TestSyncExamples:
+    """Test examples."""
+
+    @staticmethod
+    @pytest.fixture(name="use_port")
+    def get_port_in_class(base_ports):
+        """Return next port"""
+        base_ports[__class__.__name__] += 1
+        return base_ports[__class__.__name__]
+
+    def test_client_calls(self, mock_clc, mock_cls):
+        """Test client_calls."""
+        server_args = setup_server(cmdline=mock_cls)
+        thread = Thread(target=run_sync_server, args=(server_args,))
+        thread.daemon = True
+        thread.start()
+        sleep(1)
+        main_client_calls(cmdline=mock_clc)
+        ServerStop()
+
+    def test_sync_simple_client(
+        self, use_framer, use_comm, use_host, use_port, mock_cls
+    ):
         """Run simple async client."""
-        _cmdline = mock_server
+        server_args = setup_server(cmdline=mock_cls)
+        thread = Thread(target=run_sync_server, args=(server_args,))
+        thread.daemon = True
+        thread.start()
+        sleep(1)
         if use_comm == "serial":
             use_port = f"socket://{use_host}:{use_port}"
-        run_sync_simple_client(use_comm, use_host, use_port)
-
-    async def test_simulator(self):
-        """Run simulator server/client."""
-        await run_simulator()
-
-    async def test_modbus_forwarder(self):
-        """Test modbus forwarder."""
-        print("waiting for fix")
+        framer = get_framer(use_framer)
+        run_sync_simple_client(use_comm, use_host, use_port, framer=framer)
+        ServerStop()

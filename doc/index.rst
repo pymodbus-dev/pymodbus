@@ -14,6 +14,7 @@ Welcome to PyModbus's documentation!
    changelog.rst
    source/library/client.rst
    source/library/server.rst
+   source/library/nullmodem.rst
    source/library/simulator/simulator
    source/library/REPL
    source/library/datastore.rst

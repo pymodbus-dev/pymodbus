@@ -58,7 +58,7 @@ def setup_sync_client(description=None, cmdline=None):
             port=args.port,
             # Common optional paramers:
             framer=args.framer,
-            #    timeout=10,
+            timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,y
             #    close_comm_on_error=False,
@@ -72,7 +72,7 @@ def setup_sync_client(description=None, cmdline=None):
             port=args.port,
             # Common optional paramers:
             framer=args.framer,
-            #    timeout=10,
+            timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,
             #    close_comm_on_error=False,
@@ -85,7 +85,7 @@ def setup_sync_client(description=None, cmdline=None):
             port=args.port,  # serial port
             # Common optional paramers:
             #    framer=ModbusRtuFramer,
-            #    timeout=10,
+            timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,
             #    close_comm_on_error=False,.
@@ -103,7 +103,7 @@ def setup_sync_client(description=None, cmdline=None):
             port=args.port,
             # Common optional paramers:
             framer=args.framer,
-            #    timeout=10,
+            timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,
             #    close_comm_on_error=False,

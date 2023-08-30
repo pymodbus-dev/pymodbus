@@ -4,11 +4,9 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.transport.transport import (
-    NULLMODEM_HOST,
+from pymodbus.transport import (
     CommType,
     ModbusProtocol,
-    NullModem,
 )
 from pymodbus.transport.transport_serial import (
     SerialTransport,
@@ -27,19 +25,13 @@ COMM_TYPES = [
 class TestBasicModbusProtocol:
     """Test transport module."""
 
-    @pytest.mark.parametrize("use_comm_type", COMM_TYPES)
-    async def test_init(self, client, server):
-        """Test init()"""
-        client.comm_params.sslctx = None
-        assert client.unique_id == str(id(client))
-        assert not hasattr(client, "active_connections")
-        assert not client.is_server
-        server.comm_params.sslctx = None
-        assert not hasattr(server, "unique_id")
-        assert not server.active_connections
-        assert server.is_server
+    @staticmethod
+    @pytest.fixture(name="use_port")
+    def get_port_in_class(base_ports):
+        """Return next port"""
+        base_ports[__class__.__name__] += 1
+        return base_ports[__class__.__name__]
 
-    @pytest.mark.parametrize("use_host", [NULLMODEM_HOST])
     @pytest.mark.parametrize("use_comm_type", COMM_TYPES)
     async def test_init_nullmodem(self, client, server):
         """Test init()"""
@@ -64,7 +56,7 @@ class TestBasicModbusProtocol:
     async def test_connect(self, client, dummy_protocol):
         """Test properties."""
         client.loop = None
-        client.call_create = mock.AsyncMock(return_value=(dummy_protocol, None))
+        client.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
         assert await client.transport_connect()
         assert client.loop
         client.call_create.side_effect = asyncio.TimeoutError("test")
@@ -72,7 +64,7 @@ class TestBasicModbusProtocol:
 
     async def test_listen(self, server, dummy_protocol):
         """Test listen_tcp()."""
-        server.call_create = mock.AsyncMock(return_value=(dummy_protocol, None))
+        server.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
         server.loop = None
         assert await server.transport_listen()
         server.call_create.side_effect = OSError("testing")
@@ -80,7 +72,7 @@ class TestBasicModbusProtocol:
 
     async def test_connection_made(self, client, use_clc, dummy_protocol):
         """Test connection_made()."""
-        client.connection_made(dummy_protocol)
+        client.connection_made(dummy_protocol())
         assert client.transport
         assert not client.recv_buffer
         assert not client.reconnect_task
@@ -90,7 +82,7 @@ class TestBasicModbusProtocol:
     async def test_connection_lost(self, client, dummy_protocol):
         """Test connection_lost()."""
         client.connection_lost(RuntimeError("not implemented"))
-        client.connection_made(dummy_protocol)
+        client.connection_made(dummy_protocol())
         client.connection_lost(RuntimeError("not implemented"))
         assert not client.transport
         assert not client.recv_buffer
@@ -133,7 +125,7 @@ class TestBasicModbusProtocol:
 
     async def test_transport_send(self, client):
         """Test transport_send()."""
-        client.transport = mock.AsyncMock()
+        client.transport = mock.Mock()
         client.transport_send(b"abc")
 
         client.comm_params.comm_type = CommType.UDP
@@ -163,12 +155,43 @@ class TestBasicModbusProtocol:
         client.datagram_received(test_data, ("127.0.0.1", 502))
         assert client.recv_buffer == test_data + test_data
         assert not client.sent_buffer
+        client.recv_buffer = b""
+        client.transport_send(b"partial")
+        client.datagram_received(b"par", ("127.0.0.1", 502))
+        client.datagram_received(b"tialresponse", ("127.0.0.1", 502))
+        assert client.recv_buffer == b"response"
+        assert not client.sent_buffer
+
+    async def test_broadcast_local_echo(self, client):
+        """Test transport_send() with broadcast and echo packets"""
+        client.comm_params.handle_local_echo = True
+        client.transport = mock.Mock()
+        client.recv_buffer = b""
+        client.transport_send(b"broadcast")
+        client.transport_send(b"message")
+        client.datagram_received(b"broadcast", ("127.0.0.1", 502))
+        client.datagram_received(b"messageresponse", ("127.0.0.1", 502))
+        assert client.recv_buffer == b"response"
+        assert not client.sent_buffer
+        client.recv_buffer = b""
+        client.transport_send(b"broadcast")
+        client.transport_send(b"message")
+        client.datagram_received(b"broadcastmessageresponse", ("127.0.0.1", 502))
+        assert client.recv_buffer == b"response"
+        assert not client.sent_buffer
+        client.recv_buffer = b""
+        client.transport_send(b"broadcast")
+        client.transport_send(b"message")
+        client.datagram_received(b"broadcastmessa", ("127.0.0.1", 502))
+        client.datagram_received(b"geresponse", ("127.0.0.1", 502))
+        assert client.recv_buffer == b"response"
+        assert not client.sent_buffer
 
     async def test_transport_close(self, server, dummy_protocol):
         """Test transport_close()."""
         dummy_protocol.abort = mock.MagicMock()
         dummy_protocol.close = mock.MagicMock()
-        server.connection_made(dummy_protocol)
+        server.connection_made(dummy_protocol())
         server.recv_buffer = b"abc"
         server.reconnect_task = mock.MagicMock()
         server.transport_close()
@@ -176,7 +199,7 @@ class TestBasicModbusProtocol:
         dummy_protocol.close.assert_called_once()
         assert not server.recv_buffer
         await server.transport_listen()
-        server.active_connections = {"a": dummy_protocol}
+        server.active_connections = {"a": dummy_protocol()}
         server.transport_close()
         server.transport_close()
         assert not server.active_connections
@@ -185,7 +208,7 @@ class TestBasicModbusProtocol:
         """Test transport_close()."""
         dummy_protocol.abort = mock.Mock()
         dummy_protocol.close = mock.Mock()
-        client.connection_made(dummy_protocol)
+        client.connection_made(dummy_protocol())
         client.recv_buffer = b"abc"
         client.reconnect_task = mock.MagicMock()
         client.listener = server
@@ -202,15 +225,17 @@ class TestBasicModbusProtocol:
     async def test_is_active(self, client):
         """Test is_active()."""
         assert not client.is_active()
-        client.connection_made(mock.AsyncMock())
+        client.connection_made(mock.Mock())
         assert client.is_active()
+        client.transport_close()
 
-    @pytest.mark.parametrize("use_host", [NULLMODEM_HOST])
     async def test_create_nullmodem(self, client, server):
         """Test create_nullmodem."""
         assert not await client.transport_connect()
         await server.transport_listen()
         assert await client.transport_connect()
+        client.transport_close()
+        server.transport_close()
 
     async def test_handle_new_connection(self, client, server):
         """Test handle_new_connection()."""
@@ -251,59 +276,23 @@ class TestBasicModbusProtocol:
         )
 
 
-class TestBasicNullModem:
-    """Test transport null modem module."""
-
-    def test_init(self):
-        """Test null modem init"""
-        NullModem(mock.Mock())
-
-    def test_external_methods(self):
-        """Test external methods."""
-        modem = NullModem(mock.Mock())
-        modem.other_transport = NullModem(mock.Mock())
-        modem.other_transport.protocol = mock.Mock()
-        modem.sendto(b"abcd")
-        modem.write(b"abcd")
-        modem.close()
-
-    async def test_serve_forever(self):
-        """Test external methods."""
-        modem = NullModem(mock.Mock())
-        modem.serving.set_result(True)
-        await modem.serve_forever()
-        modem.close()
-
-    def test_abstract_methods(self):
-        """Test asyncio abstract methods."""
-        modem = NullModem(mock.Mock())
-        modem.abort()
-        modem.can_write_eof()
-        modem.get_write_buffer_size()
-        modem.get_write_buffer_limits()
-        modem.set_write_buffer_limits(1024, 1)
-        modem.write_eof()
-        modem.get_protocol()
-        modem.set_protocol(None)
-        modem.is_closing()
-        modem.is_reading()
-        modem.pause_reading()
-        modem.resume_reading()
-
-
+@mock.patch(
+    "pymodbus.transport.transport_serial.serial.serial_for_url", mock.MagicMock()
+)
 class TestBasicSerial:
     """Test transport serial module."""
 
-    @mock.patch(
-        "pymodbus.transport.transport_serial.serial.serial_for_url", mock.Mock()
-    )
+    @staticmethod
+    @pytest.fixture(name="use_port")
+    def get_port_in_class(base_ports):
+        """Return next port"""
+        base_ports[__class__.__name__] += 1
+        return base_ports[__class__.__name__]
+
     async def test_init(self):
         """Test null modem init"""
         SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
 
-    @mock.patch(
-        "pymodbus.transport.transport_serial.serial.serial_for_url", mock.Mock()
-    )
     async def test_abstract_methods(self):
         """Test asyncio abstract methods."""
         comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
@@ -320,12 +309,18 @@ class TestBasicSerial:
         comm.resume_reading()
         comm.is_closing()
 
-    @mock.patch(
-        "pymodbus.transport.transport_serial.serial.serial_for_url", mock.Mock()
-    )
-    async def xtest_external_methods(self):
+    async def test_external_methods(self):
         """Test external methods."""
-        comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
+        comm = SerialTransport(mock.MagicMock(), mock.Mock(), "dummy")
+        comm.sync_serial.read = mock.MagicMock(return_value="abcd")
+        comm.sync_serial.write = mock.MagicMock(return_value=4)
+        comm.sync_serial.fileno = mock.MagicMock(return_value=2)
+        comm.sync_serial.async_loop.add_writer = mock.MagicMock()
+        comm.sync_serial.async_loop.add_reader = mock.MagicMock()
+        comm.sync_serial.async_loop.remove_writer = mock.MagicMock()
+        comm.sync_serial.async_loop.remove_reader = mock.MagicMock()
+        comm.sync_serial.in_waiting = False
+
         comm.write(b"abcd")
         comm.flush()
         comm.close()
@@ -333,10 +328,3 @@ class TestBasicSerial:
         assert await create_serial_connection(
             asyncio.get_running_loop(), mock.Mock, url="dummy"
         )
-
-    async def test_serve_forever(self):
-        """Test external methods."""
-        modem = NullModem(mock.Mock())
-        modem.serving.set_result(True)
-        await modem.serve_forever()
-        modem.close()

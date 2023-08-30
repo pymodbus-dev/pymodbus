@@ -39,7 +39,7 @@ class BinaryPayloadBuilder:
     """
 
     def __init__(
-        self, payload=None, byteorder=Endian.Little, wordorder=Endian.Big, repack=False
+        self, payload=None, byteorder=Endian.LITTLE, wordorder=Endian.BIG, repack=False
     ):
         """Initialize a new instance of the payload builder.
 
@@ -72,7 +72,7 @@ class BinaryPayloadBuilder:
         upperbyte = f"!{wordorder}H"
         payload = unpack(upperbyte, value)
 
-        if self._wordorder == Endian.Little:
+        if self._wordorder == Endian.LITTLE:
             payload = list(reversed(payload))
 
         fstring = self._byteorder + "H"
@@ -262,7 +262,7 @@ class BinaryPayloadDecoder:
         second  = decoder.decode_16bit_uint()
     """
 
-    def __init__(self, payload, byteorder=Endian.Little, wordorder=Endian.Big):
+    def __init__(self, payload, byteorder=Endian.LITTLE, wordorder=Endian.BIG):
         """Initialize a new payload decoder.
 
         :param payload: The payload to decode with
@@ -278,8 +278,8 @@ class BinaryPayloadDecoder:
     def fromRegisters(
         cls,
         registers,
-        byteorder=Endian.Little,
-        wordorder=Endian.Big,
+        byteorder=Endian.LITTLE,
+        wordorder=Endian.BIG,
     ):
         """Initialize a payload decoder.
 
@@ -311,8 +311,8 @@ class BinaryPayloadDecoder:
     def fromCoils(
         cls,
         coils,
-        byteorder=Endian.Little,
-        _wordorder=Endian.Big,
+        byteorder=Endian.LITTLE,
+        _wordorder=Endian.BIG,
     ):
         """Initialize a payload decoder with the result of reading of coils."""
         if isinstance(coils, list):
@@ -340,7 +340,7 @@ class BinaryPayloadDecoder:
         """
         wc_value = WC.get(fstring.lower()) // 2
         handle = unpack(f"!{wc_value}H", handle)
-        if self._wordorder == Endian.Little:
+        if self._wordorder == Endian.LITTLE:
             handle = list(reversed(handle))
 
         # Repack as unsigned Integer

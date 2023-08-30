@@ -15,6 +15,8 @@ import pymodbus.register_read_message as pdu_reg_read
 import pymodbus.register_write_message as pdu_req_write
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.mixin import ModbusClientMixin
+from pymodbus.datastore import ModbusSlaveContext
+from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
@@ -360,23 +362,43 @@ async def test_client_protocol_handler():
     assert result == reply
 
 
-@pytest.mark.skip()
+class MockTransport:
+    """Mock transport class which responds with an appropriate encoded packet"""
+
+    def __init__(self, base, req):
+        """Initialize MockTransport"""
+        self.base = base
+
+        db = ModbusSequentialDataBlock(0, [0] * 100)
+        self.ctx = ModbusSlaveContext(di=db, co=db, hr=db, ir=db)
+        self.req = req
+
+    async def delayed_resp(self):
+        """Send a response to a received packet"""
+        await asyncio.sleep(0.05)
+        resp = self.req.execute(self.ctx)
+        pkt = self.base.framer.buildPacket(resp)
+        self.base.data_received(pkt)
+
+    def write(self, data, addr=None):
+        """Write data to the transport, start a task to send the response"""
+        self.delayed_resp_task = asyncio.create_task(self.delayed_resp())
+
+    def close(self):
+        """Close the transport"""
+        pass
+
+
 async def test_client_protocol_execute():
     """Test the client protocol execute method"""
     base = ModbusBaseClient(host="127.0.0.1", framer=ModbusSocketFramer)
-    transport = mock.MagicMock()
-    base.connection_made(transport)
-    base.transport.write = mock.Mock()
-
     request = pdu_bit_read.ReadCoilsRequest(1, 1)
-    response = await base.async_execute(request)
-    tid = request.transaction_id
-    f_trans = base.transaction.getTransaction(tid)
-    assert response == f_trans
+    transport = MockTransport(base, request)
+    base.connection_made(transport=transport)
 
-    base.params.broadcast_enable = True
-    request = pdu_bit_read.ReadCoilsRequest(1, 1)
     response = await base.async_execute(request)
+    assert not response.isError()
+    assert isinstance(response, pdu_bit_read.ReadCoilsResponse)
 
 
 def test_client_udp_connect():

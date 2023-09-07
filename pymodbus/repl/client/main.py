@@ -191,9 +191,9 @@ class CLI:  # pylint: disable=too-few-public-methods
             if cmd != "help":
                 print_formatted_text(
                     HTML(
-                        "<skyblue>{:45s}</skyblue>"  # pylint: disable=consider-using-f-string
-                        "<seagreen>{:100s}"
-                        "</seagreen>".format(cmd, obj.help_text)
+                        f"<skyblue>{cmd:45s}</skyblue>"
+                        f"<seagreen>{obj.help_text:100s}"
+                        "</seagreen>"
                     )
                 )
 

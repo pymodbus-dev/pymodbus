@@ -203,7 +203,7 @@ class ReadDeviceInformationResponse(ModbusResponse):
         while count < len(data):
             object_id, object_length = struct.unpack(">BB", data[count : count + 2])
             count += object_length + 2
-            if object_id not in self.information.keys():
+            if object_id not in self.information:
                 self.information[object_id] = data[count - object_length : count]
             elif isinstance(self.information[object_id], list):
                 self.information[object_id].append(data[count - object_length : count])

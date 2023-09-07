@@ -147,9 +147,7 @@ class Command:
     def __str__(self):
         """Return string representation."""
         if self.doc:
-            return "Command {:>50}{:<20}".format(  # pylint: disable=consider-using-f-string
-                self.name, self.doc
-            )
+            return f"Command {self.name:>50}{self.doc:<20}"
         return f"Command {self.name}"
 
 

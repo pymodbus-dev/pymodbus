@@ -12,9 +12,9 @@ Prepare/make release on dev.
    * Update pymodbus/__init__.py with version number (__version__ X.Y.Zpre)
    * Update README.rst "Supported versions"
    * Update CHANGELOG.rst
-      * Add commits from last release, but selectively !
-        git log --oneline v3.3.0..HEAD > commit.log
-        git log --pretty="%an" v3.0.0..HEAD | sort -uf >> AUTHORS
+      * Add commits from last release, but kselectively !
+        git log --oneline v3.5.1..HEAD > commit.log
+        git log --pretty="%an" v3.5.1..HEAD | sort -uf >> AUTHORS
         update AUTHORS
    * Commit, push and merge.
 * Checkout master locally

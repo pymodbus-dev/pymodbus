@@ -23,7 +23,6 @@ from pymodbus.diag_message import (
     ReturnSlaveNAKCountRequest,
     ReturnSlaveNoResponseCountRequest,
 )
-from pymodbus.exceptions import ModbusIOException
 from pymodbus.mei_message import ReadDeviceInformationRequest
 from pymodbus.other_message import (
     GetCommEventCounterRequest,
@@ -31,7 +30,7 @@ from pymodbus.other_message import (
     ReadExceptionStatusRequest,
     ReportSlaveIdRequest,
 )
-from pymodbus.pdu import ExceptionResponse, ModbusExceptions
+from pymodbus.pdu import ExceptionResponse, ModbusExceptions, ModbusIOExceptionResponse
 
 
 def make_response_dict(resp):
@@ -80,9 +79,9 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
                     "exception code": resp.exception_code,
                     "message": ModbusExceptions.decode(resp.exception_code),
                 }
-            elif isinstance(resp, ModbusIOException):
+            elif isinstance(resp, ModbusIOExceptionResponse):
                 err = {
-                    "original_function_code": f"{resp.fcode} ({hex(resp.fcode)})",
+                    "original_function_code": f"{resp.exception.fcode} ({hex(resp.exception.fcode)})",
                     "error": resp.message,
                 }
             else:

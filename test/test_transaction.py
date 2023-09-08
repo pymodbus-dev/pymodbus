@@ -10,7 +10,7 @@ from pymodbus.exceptions import (
     ModbusIOException,
 )
 from pymodbus.factory import ServerDecoder
-from pymodbus.pdu import ModbusRequest
+from pymodbus.pdu import ModbusIOExceptionResponse, ModbusRequest
 from pymodbus.transaction import (
     DictTransactionManager,
     FifoTransactionManager,
@@ -149,7 +149,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         trans.getTransaction = mock.MagicMock()
         trans.getTransaction.return_value = None
         response = trans.execute(request)
-        assert isinstance(response, ModbusIOException)
+        assert isinstance(response, ModbusIOExceptionResponse)
 
         # No response with retries
         trans.retry_on_empty = True
@@ -157,7 +157,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
             side_effect=iter([b"", b"abcdef"])
         )
         response = trans.execute(request)
-        assert isinstance(response, ModbusIOException)
+        assert isinstance(response, ModbusIOExceptionResponse)
 
         # wrong handle_local_echo
         trans._recv = mock.MagicMock(  # pylint: disable=protected-access
@@ -166,7 +166,10 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         client.comm_params.handle_local_echo = True
         trans.retry_on_empty = False
         trans.retry_on_invalid = False
-        assert trans.execute(request).message == "[Input/Output] Wrong local echo"
+        assert (
+            trans.execute(request).exception.message
+            == "[Input/Output] Wrong local echo"
+        )
         client.comm_params.handle_local_echo = False
 
         # retry on invalid response
@@ -175,7 +178,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
             side_effect=iter([b"", b"abcdef", b"deadbe", b"123456"])
         )
         response = trans.execute(request)
-        assert isinstance(response, ModbusIOException)
+        assert isinstance(response, ModbusIOExceptionResponse)
 
         # Unable to decode response
         trans._recv = mock.MagicMock(  # pylint: disable=protected-access
@@ -184,7 +187,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         client.framer.processIncomingPacket.side_effect = mock.MagicMock(
             side_effect=ModbusIOException()
         )
-        assert isinstance(trans.execute(request), ModbusIOException)
+        assert isinstance(trans.execute(request), ModbusIOExceptionResponse)
 
         # Broadcast
         client.params.broadcast_enable = True

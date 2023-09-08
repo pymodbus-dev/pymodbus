@@ -122,11 +122,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         # Common variables.
         self.framer = framer(ClientDecoder(), self)
         self.transaction = DictTransactionManager(
-            self,
-            retries=retries,
-            retry_on_empty=retry_on_empty,
-            reset_socket=self.params.close_comm_on_error,
-            **kwargs,
+            self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
         )
         self.reconnect_delay = self.params.reconnect_delay
         self.reconnect_delay_current = self.params.reconnect_delay

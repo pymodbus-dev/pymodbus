@@ -253,3 +253,21 @@ class IllegalFunctionRequest(ModbusRequest):
         :returns: The error response packet
         """
         return ExceptionResponse(self.function_code, self.ErrorCode)
+
+
+class ModbusIOExceptionResponse(ModbusResponse):
+    """Define any response that was not properly decoded due to `ModbusIOException"""
+
+    ExceptionOffset = 0x80
+    _rtu_frame_size = 5
+
+    def __init__(self, exception, **kwargs):
+        """Initialize the modbus exception response.
+
+        :param exception: the original ModbusIOException
+        """
+        super().__init__(**kwargs)
+        self.exception = exception
+
+    def isError(self):
+        return True

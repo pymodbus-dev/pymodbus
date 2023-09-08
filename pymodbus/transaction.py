@@ -28,6 +28,7 @@ from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
 from pymodbus.logging import Log
+from pymodbus.pdu import ModbusIOExceptionResponse
 from pymodbus.utilities import ModbusTransactionState, hexlify_packets
 
 
@@ -229,8 +230,14 @@ class ModbusTransactionManager:
                                 "No Response received from the remote slave"
                                 "/Unable to decode response"
                             )
-                            response = ModbusIOException(
-                                last_exception, request.function_code
+                            response = ModbusIOExceptionResponse(
+                                ModbusIOException(
+                                    last_exception, request.function_code
+                                ),
+                                slave=request.slave,
+                                transaction=request.transaction_id,
+                                protocol=request.protocol_id,
+                                skip_encode=request.skip_encode,
                             )
                         if self.reset_socket:
                             self.client.close()
@@ -249,7 +256,13 @@ class ModbusTransactionManager:
                 self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
                 if self.reset_socket:
                     self.client.close()
-                return exc
+                return ModbusIOExceptionResponse(
+                    exc,
+                    slave=request.slave,
+                    transaction=request.transaction_id,
+                    protocol=request.protocol_id,
+                    skip_encode=request.skip_encode,
+                )
 
     def _retry_transaction(self, retries, reason, packet, response_length, full=False):
         """Retry transaction."""

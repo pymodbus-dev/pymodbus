@@ -1,6 +1,17 @@
 All these version were not possible without volunteers!
 `AUTHORS` contains a complete list for each major version.
 
+version 3.5.1
+----------------------------------------------------------
+- Always close socket on error (reset_sock). (#1767)
+- Revert reset_socket change.
+- add close_comm_on_error to example.
+- Test long term (HomeAsistant problem). (#1765)
+- Update ruff to 0.0.287 (#1764)
+- Remove references to ModbusSerialServer.start (#1759) (#1762)
+- Readd test to get 100% coverage.
+- transport: Don't raise a RunTimeError in ModbusProtocol.error_received() (#1758)
+
 version 3.5.0
 ----------------------------------------------------------
 - Async retry (#1752)

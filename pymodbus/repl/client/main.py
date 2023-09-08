@@ -191,9 +191,9 @@ class CLI:  # pylint: disable=too-few-public-methods
             if cmd != "help":
                 print_formatted_text(
                     HTML(
-                        "<skyblue>{:45s}</skyblue>"  # pylint: disable=consider-using-f-string
-                        "<seagreen>{:100s}"
-                        "</seagreen>".format(cmd, obj.help_text)
+                        f"<skyblue>{cmd:45s}</skyblue>"
+                        f"<seagreen>{obj.help_text:100s}"
+                        "</seagreen>"
                     )
                 )
 
@@ -263,11 +263,6 @@ class CLI:  # pylint: disable=too-few-public-methods
     "--retry-on-error", is_flag=True, default=False, help="Retry on error response"
 )
 @click.option("--retries", default=3, help="Retry count")
-@click.option(
-    "--reset-socket/--no-reset-socket",
-    default=True,
-    help="Reset client socket on error",
-)
 @click.pass_context
 def main(
     ctx,
@@ -276,7 +271,6 @@ def main(
     retry_on_empty,
     retry_on_error,
     retries,
-    reset_socket,
 ):
     """Run Main."""
     if verbose:
@@ -291,7 +285,6 @@ def main(
         "retry_on_empty": retry_on_empty,
         "retry_on_invalid": retry_on_error,
         "retries": retries,
-        "reset_socket": reset_socket,
     }
 
 

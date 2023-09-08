@@ -237,18 +237,10 @@ class ReactiveServer:
         """
         try:
             if hasattr(asyncio, "create_task"):
-                if isinstance(self._modbus_server, ModbusSerialServer):
-                    app["modbus_serial_server"] = asyncio.create_task(
-                        self._modbus_server.start()
-                    )
                 app["modbus_server"] = asyncio.create_task(
                     self._modbus_server.serve_forever()
                 )
             else:
-                if isinstance(self._modbus_server, ModbusSerialServer):
-                    app["modbus_serial_server"] = asyncio.ensure_future(
-                        self._modbus_server.start()
-                    )
                 app["modbus_server"] = asyncio.ensure_future(
                     self._modbus_server.serve_forever()
                 )

@@ -59,7 +59,7 @@ pytest-asyncio>=0.20.3
 pytest-cov>=4.1.0
 pytest-timeout>=2.1.0
 pytest-xdist>=3.3.1
-ruff>=0.0.277
+ruff>=0.0.287
 types-Pygments
 types-pyserial
 twine>=4.0.2

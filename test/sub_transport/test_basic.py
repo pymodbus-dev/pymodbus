@@ -113,8 +113,7 @@ class TestBasicModbusProtocol:
 
     async def test_error_received(self, client):
         """Test error_received."""
-        with pytest.raises(RuntimeError):
-            client.error_received(Exception("test call"))
+        client.error_received(Exception("test call"))
 
     async def test_callbacks(self, use_clc):
         """Test callbacks."""

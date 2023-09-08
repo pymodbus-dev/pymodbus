@@ -357,7 +357,6 @@ class ModbusProtocol(asyncio.BaseProtocol):
     def error_received(self, exc):
         """Get error detected in UDP."""
         Log.debug("-> error_received {}", exc)
-        raise RuntimeError(str(exc))
 
     # --------- #
     # callbacks #

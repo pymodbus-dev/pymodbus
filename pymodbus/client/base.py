@@ -175,7 +175,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         :raises ConnectionException: Check exception text.
         """
         if self.use_sync:
-            if not self.connected:
+            if not self.connect():
                 raise ConnectionException(f"Failed to connect[{self!s}]")
             return self.transaction.execute(request)
         if not self.transport:

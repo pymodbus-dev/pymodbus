@@ -254,8 +254,7 @@ class ModbusSimulatorServer:
         Log.info("HTTP server started on ({}:{})", self.http_host, self.http_port)
         if only_start:
             return
-        while True:
-            await self.serving()
+        await self.serving
 
     async def stop(self):
         """Stop modbus and http servers."""

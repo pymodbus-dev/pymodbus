@@ -3,19 +3,18 @@
 
 An example of using simulator datastore with json interface.
 
-usage: server_simulator.py [-h]
-                       [--log {critical,error,warning,info,debug}]
-                       [--port PORT]
-                       [--host HOST]
+usage::
 
-Command line options for examples
+    server_simulator.py [-h]
+                        [--log {critical,error,warning,info,debug}]
+                        [--port PORT]
 
-options:
-  -h, --help            show this help message and exit
-  --log {critical,error,warning,info,debug}
-                        "critical", "error", "warning", "info" or "debug"
-  --port PORT           the port to use
-  --host HOST           the interface to listen on
+    -h, --help
+        show this help message and exit
+    -l, --log {critical,error,warning,info,debug}
+        set log level
+    -p, --port PORT
+        set port to use
 
 The corresponding client can be started as:
     python3 client_sync.py

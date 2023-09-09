@@ -64,6 +64,10 @@ Callback Server example
 ^^^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/server_callback.py
 
+Server tracer example
+^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../examples/server_hook.py
+
 Custom Message client
 ^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/client_custom_msg.py
@@ -106,6 +110,10 @@ Examples contributions
 
 These examples are supplied by users of pymodbus.
 The pymodbus team thanks for sharing the examples.
+
+Solar
+^^^^^
+.. literalinclude:: ../../examples/contrib/solar.py
 
 Redis datastore
 ^^^^^^^^^^^^^^^

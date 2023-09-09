@@ -1,6 +1,12 @@
 All these version were not possible without volunteers!
 `AUTHORS` contains a complete list for each major version.
 
+version 3.5.2
+----------------------------------------------------------
+- server tracer example. (#1773)
+- sync connect missing. (#1772)
+- simulator future problem. (#1771)
+
 version 3.5.1
 ----------------------------------------------------------
 - Always close socket on error (reset_sock). (#1767)

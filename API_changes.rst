@@ -6,6 +6,10 @@ PyModbus - API changes.
 Version 3.6.0 (future)
 -------------
 
+-------------
+Version 3.5.2
+-------------
+No changes.
 
 -------------
 Version 3.5.1

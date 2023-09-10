@@ -17,6 +17,7 @@ Prepare/make release on dev.
         git log --oneline v3.5.1..HEAD > commit.log
         git log --pretty="%an" v3.0.0..HEAD | sort -uf >> AUTHORS
         update AUTHORS
+        cd doc; ./build_html
    * Commit, push and merge.
 * Checkout master locally
    * git merge dev

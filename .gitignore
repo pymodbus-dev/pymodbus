@@ -13,8 +13,6 @@ __pycache__/
 .vscode
 .vscode/
 build/
-/doc/source/_static/examples.tgz
-/doc/source/_static/examples.zip
 /dist/
 /pymodbus.egg-info/
 venv

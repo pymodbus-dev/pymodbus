@@ -1,7 +1,4 @@
 # Build PDF & ePub
-formats:
-    - epub
-    - pdf
 version: 2
 
 build:
@@ -11,9 +8,10 @@ build:
 
 sphinx:
   configuration: doc/conf.py
-  formats:
-    - pdf
-    - epub
+
+formats:
+  - epub
+  - pdf
 
 python:
   install:

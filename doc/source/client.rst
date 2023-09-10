@@ -1,14 +1,14 @@
 Client
 ======
 
-Pymodbus offers clients with transport protocols for
+Pymodbus offers clients with transport different protocols:
 
 - *Serial* (RS-485) typically using a dongle
 - *TCP*
 - *TLS*
 - *UDP*
 
-communication can be either using a :mod:`synchronous client` or a :mod:`asynchronous client` using asyncio.
+The application can use either a :mod:`synchronous client` or a :mod:`asynchronous client`.
 
 Using pymodbus client to set/get information from a device (server)
 is done in a few simple steps, like the following synchronous example::
@@ -19,7 +19,7 @@ is done in a few simple steps, like the following synchronous example::
     # connect to device
     client.connect()
 
-    # set/set information
+    # set/set information for as many times as needed
     rr = client.read_coils(0x01)
     client.write_coil(0x01, values)
 
@@ -34,7 +34,7 @@ and a asynchronous example::
     # connect to device
     await async_client.connect()
 
-    # set/set information
+    # set/set information for as many times as needed
     rr = await async_client.read_coils(0x01)
     await async_client.write_coil(0x01, values)
 
@@ -44,15 +44,17 @@ and a asynchronous example::
 Large parts of the implementation are shared between the different classes,
 to ensure high stability and efficient maintenance.
 
-The synchronous clients are not thread safe nor is a single client intended to be used from multiple threads.
-Due to the nature of the modbus protocol, it makes little sense to have client calls split over different threads,
+The synchronous clients are not thread safe nor is a single client intended
+to be used from multiple threads. Due to the nature of the modbus protocol,
+it makes little sense to have client calls split over different threads,
 however the application can do it with proper locking implemented.
 
-The asynchronous client only runs in the thread where the asyncio loop is created, it does not provide mechanisms to
-prevent (semi)parallel calls, that must be prevented at application level.
+The asynchronous client only runs in the thread where the asyncio loop is created,
+it does not provide mechanisms to prevent (semi)parallel calls,
+that must be prevented at application level.
 
-Transport classes
------------------
+Client classes
+--------------
 
 .. autoclass:: pymodbus.client.ModbusBaseClient
     :members:

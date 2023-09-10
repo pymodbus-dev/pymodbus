@@ -6,7 +6,7 @@ Welcome to PyModbus's documentation!
    :caption: Contents:
 
    source/readme.rst
-   source/library/client.rst
+   source/client.rst
    source/library/server.rst
    source/library/nullmodem.rst
    source/library/simulator/simulator

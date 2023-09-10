@@ -44,8 +44,6 @@ Advanced examples
 These examples are considered essential usage examples, and are guaranteed to work,
 because they are tested automatilly with each dev branch commit using CI.
 
-The examples directory can be downloaded from https://github.com/pymodbus-dev/pymodbus/tree/dev/examples
-
 .. tip:: The examples needs to be run from within the examples directory, unless you modify them.
     Most examples use helper.py and client_*.py or server_*.py. This is done to avoid maintaining the
     same code in multiple files.

@@ -1,24 +1,13 @@
-=======================
-PyModbus - API changes.
-=======================
+API changes
+===========
+Versions (X.Y.Z) where Z > 0 e.g. 3.0.1 do NOT have API changes!
 
--------------
-Version 3.6.0 (future)
--------------
+API changes 3.6.0 (future)
+--------------------------
 
--------------
-Version 3.5.2
--------------
-No changes.
 
--------------
-Version 3.5.1
--------------
-No changes.
-
--------------
-Version 3.5.0
--------------
+API changes 3.5.0
+-----------------
 - Remove handler parameter from ModbusUdpServer
 - Remove loop parameter from ModbusSerialServer
 - Remove handler and allow_reuse_port from repl default config
@@ -31,14 +20,9 @@ Version 3.5.0
 - Async clients now accepts `no_resend_on_retry=True`, to not resend the request when retrying.
 - ModbusSerialServer now accepts request_tracer=.
 
--------------
-Version 3.4.1
--------------
-No changes.
 
--------------
-Version 3.4.0
--------------
+API changes 3.4.0
+-----------------
 - Modbus<x>Client .connect() returns True/False (connected or not)
 - Modbue<x>Server handler=, allow_reuse_addr=, backlog= are no longer accepted
 - ModbusTcpClient / AsyncModbusTcpClient no longer support unix path
@@ -48,15 +32,8 @@ Version 3.4.0
 - ModbusSimulatorServer.serve_forever(only_start=False) added to allow return
 
 
--------------
-Version 3.3.1
--------------
-
-No changes.
-
--------------
-Version 3.3.0
--------------
+API changes 3.3.0
+-----------------
 - ModbusTcpDiagClient is removed due to lack of support
 - Clients have an optional parameter: on_reconnect_callback, Function that will be called just before a reconnection attempt.
 - general parameter unit= -> slave=
@@ -65,9 +42,9 @@ Version 3.3.0
 - on_reconnect_callback for async clients works slightly different
 - utilities/unpack_bitstring now expects an argument named `data` not `string`
 
--------------
-Version 3.2.0
--------------
+
+API changes 3.2.0
+-----------------
 - helper to convert values in mixin: convert_from_registers, convert_to_registers
 - import pymodbus.version -> from pymodbus import __version__, __version_full__
 - pymodbus.pymodbus_apply_logging_config(log_file_name="pymodbus.log") to enable file pymodbus_apply_logging_config
@@ -83,23 +60,16 @@ Version 3.2.0
 - client.protocol.<something> --> client.<something>
 - client.factory.<something> --> client.<something>
 
--------------
-Version 3.1.0
--------------
+
+API changes 3.1.0
+-----------------
 - Added --host to client_* examples, to allow easier use.
 - unit= in client calls are no longer converted to slave=, but raises a runtime exception.
 - Added missing client calls (all standard request are not available as methods).
 - client.mask_write_register() changed parameters.
 - server classes no longer accept reuse_port= (the socket do not accept it)
 
----------------------
-Version 3.0.1 / 3.0.2
----------------------
 
-No changes.
-
--------------
-Version 3.0.0
--------------
-
-Base
+API changes 3.0.0
+-----------------
+Base for recording changes.

@@ -8,3 +8,5 @@ python:
     extra_requirements:
         - documents
     version: 3.8
+    install:
+      - requirements: requirements.txt

@@ -8,6 +8,12 @@ build:
 sphinx:
   configuration: doc/conf.py
 
+python:
+  extra_requirements:
+    - documents
+  install:
+    - requirements: requirements.txt
+
 formats:
     - epub
     - pdf

@@ -22,7 +22,7 @@ github_doc_root = "https://github.com/pymodbus-dev/pymodbus/tree/master/doc/"
 # -- General configuration ------------------------------------------------
 extensions = ["sphinx.ext.autodoc", "sphinx_rtd_theme", "sphinx.ext.autosectionlabel"]
 source_suffix = [".rst"]
-master_doc = "source/index"
+master_doc = "index"
 project = "PyModbus"
 copyright = "See license"
 author = "Open Source volunteers"

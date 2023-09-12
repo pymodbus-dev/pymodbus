@@ -24,7 +24,7 @@ class ModbusException(Exception):
         :param string: The message to append to the error
         """
         self.string = string
-        super().__init__()
+        super().__init__(string)
 
     def __str__(self):
         """Return string representation."""

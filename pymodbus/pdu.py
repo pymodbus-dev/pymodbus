@@ -135,6 +135,7 @@ class ModbusResponse(ModbusPDU):
     """
 
     should_respond = True
+    function_code = 0x00
 
     def __init__(self, slave=0, **kwargs):
         """Proxy the lower level initializer.
@@ -146,9 +147,9 @@ class ModbusResponse(ModbusPDU):
         self.bits = []
         self.registers = []
 
-    def isError(self):
+    def isError(self) -> bool:
         """Check if the error is a success or failure."""
-        return self.function_code > 0x80  # pylint: disable=no-member
+        return self.function_code > 0x80
 
 
 # --------------------------------------------------------------------------- #

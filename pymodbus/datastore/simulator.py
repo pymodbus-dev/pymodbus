@@ -661,7 +661,7 @@ class ModbusSimulatorContext:
         if cell.type in (CellType.BITS, CellType.UINT16):
             value = reg.value + 1
             if maxval and value > maxval:
-                value = minval
+                value = maxval
             if minval and value < minval:
                 value = minval
             reg.value = value

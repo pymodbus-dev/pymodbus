@@ -298,7 +298,11 @@ class ModbusProtocol(asyncio.BaseProtocol):
             return
         Log.debug("Connection lost {} due to {}", self.comm_params.comm_name, reason)
         self.transport_close(intern=True)
-        if not self.is_server and not self.listener:
+        if (
+            not self.is_server
+            and not self.listener
+            and self.comm_params.reconnect_delay
+        ):
             self.reconnect_task = asyncio.create_task(self.do_reconnect())
         self.callback_disconnected(reason)
 

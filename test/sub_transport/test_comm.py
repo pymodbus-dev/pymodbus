@@ -136,6 +136,7 @@ class TestCommModbusProtocol:
     )
     async def test_connected_multiple(self, client, server):
         """Test connection and data exchange."""
+        client.comm_params.reconnect_delay = 0.0
         assert await server.transport_listen()
         assert await client.transport_connect()
         await asyncio.sleep(0.5)
@@ -174,6 +175,7 @@ class TestCommModbusProtocol:
         assert server2_connected.recv_buffer == test2_data + test_data
         client2.transport_close()
         server.transport_close()
+        await asyncio.sleep(0.5)
         assert not server.active_connections
 
 

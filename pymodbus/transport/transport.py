@@ -301,7 +301,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         if (
             not self.is_server
             and not self.listener
-            and not self.comm_params.reconnect_delay
+            and self.comm_params.reconnect_delay
         ):
             self.reconnect_task = asyncio.create_task(self.do_reconnect())
         self.callback_disconnected(reason)

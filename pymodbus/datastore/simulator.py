@@ -774,7 +774,7 @@ class ModbusSimulatorContext:
 
     @classmethod
     def build_value_from_registers(cls, registers, is_int):
-        """Build registers from int32 or float32"""
+        """Build int32 or float32 value from registers"""
         value_bytes = int.to_bytes(registers[0], 2, "big") + int.to_bytes(
             registers[1], 2, "big"
         )

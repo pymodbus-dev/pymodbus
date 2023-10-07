@@ -48,14 +48,14 @@ serial = [
     "pyserial>=3.5"
 ]
 repl = [
-    "aiohttp>=3.8.6",
+    "aiohttp>=3.9.0b0",
     "typer[all]>=0.7.0",
     "prompt-toolkit>=3.0.36",
     "pygments>=2.15.0",
     "click>=8.0.0"
 ]
 simulator = [
-    "aiohttp>=3.8.6"
+    "aiohttp>=3.9.0b0"
 ]
 documentation = [
     "recommonmark>=0.7.1",
@@ -86,13 +86,13 @@ all = [
     # "pymodbus[serial]",
     "pyserial>=3.5",
     # "pymodbus[repl]",
-    "aiohttp>=3.8.6",
+    "aiohttp>=3.9.0b0",
     "typer[all]>=0.7.0",
     "prompt-toolkit>=3.0.36",
     "pygments>=2.15.0",
     "click>=8.0.0",
     # "pymodbus[simulator]",
-    "aiohttp>=3.8.6",
+    "aiohttp>=3.9.0b0",
     # "pymodbus[documentation]",
     "recommonmark>=0.7.1",
     "Sphinx>=5.3.0",

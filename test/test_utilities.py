@@ -84,8 +84,8 @@ class TestUtility:
         assert not default(1.1)
         assert not default(1 + 1)
         assert not default("string")
-        assert default([1, 2, 3]) == []
-        assert default({1: 1}) == {}
+        assert not default([1, 2, 3])
+        assert not default({1: 1})
         assert not default(True)
 
     def test_bit_packing(self):

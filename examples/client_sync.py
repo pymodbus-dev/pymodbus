@@ -61,7 +61,7 @@ def setup_sync_client(description=None, cmdline=None):
         client = ModbusTcpClient(
             args.host,
             port=args.port,
-            # Common optional parameters:
+            # Common optional paramers:
             framer=args.framer,
             timeout=args.timeout,
             #    retries=3,
@@ -75,7 +75,7 @@ def setup_sync_client(description=None, cmdline=None):
         client = ModbusUdpClient(
             args.host,
             port=args.port,
-            # Common optional parameters:
+            # Common optional paramers:
             framer=args.framer,
             timeout=args.timeout,
             #    retries=3,
@@ -88,7 +88,7 @@ def setup_sync_client(description=None, cmdline=None):
     elif args.comm == "serial":
         client = ModbusSerialClient(
             port=args.port,  # serial port
-            # Common optional parameters:
+            # Common optional paramers:
             #    framer=ModbusRtuFramer,
             timeout=args.timeout,
             #    retries=3,
@@ -106,7 +106,7 @@ def setup_sync_client(description=None, cmdline=None):
         client = ModbusTlsClient(
             args.host,
             port=args.port,
-            # Common optional parameters:
+            # Common optional paramers:
             framer=args.framer,
             timeout=args.timeout,
             #    retries=3,

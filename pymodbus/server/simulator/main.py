@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """HTTP server for modbus simulator.
 
-The modbus simulator contain 3 distinct parts:
+The modbus simulator contain 3 distint parts:
 
 - Datastore simulator, to define registers and their behaviour including actions: (simulator)(../../datastore/simulator.py)
 - Modbus server: (server)(./http_server.py)

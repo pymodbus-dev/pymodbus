@@ -265,7 +265,7 @@ class TestBasicModbusProtocol:
         assert str(client) == f"ModbusProtocol({use_clc.comm_name})"
 
     def test_generate_ssl(self, use_clc):
-        """Test ssl generation"""
+        """Test ssl generattion"""
         with mock.patch("pymodbus.transport.transport.ssl.SSLContext"):
             sslctx = use_clc.generate_ssl(True, "cert_file", "key_file")
         assert sslctx

@@ -174,7 +174,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     ) -> ModbusResponse:
         """Diagnose restart communication (code 0x08 sub 0x01).
 
-        :param toggle: True if toggled.
+        :param toggle: True if toogled.
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:

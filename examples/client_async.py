@@ -57,7 +57,7 @@ def setup_async_client(description=None, cmdline=None):
         client = AsyncModbusTcpClient(
             args.host,
             port=args.port,  # on which port
-            # Common optional parameters:
+            # Common optional paramers:
             framer=args.framer,
             timeout=args.timeout,
             retries=3,
@@ -73,7 +73,7 @@ def setup_async_client(description=None, cmdline=None):
         client = AsyncModbusUdpClient(
             args.host,
             port=args.port,
-            # Common optional parameters:
+            # Common optional paramers:
             framer=args.framer,
             timeout=args.timeout,
             #    retries=3,
@@ -86,7 +86,7 @@ def setup_async_client(description=None, cmdline=None):
     elif args.comm == "serial":
         client = AsyncModbusSerialClient(
             args.port,
-            # Common optional parameters:
+            # Common optional paramers:
             #    framer=ModbusRtuFramer,
             timeout=args.timeout,
             #    retries=3,
@@ -104,7 +104,7 @@ def setup_async_client(description=None, cmdline=None):
         client = AsyncModbusTlsClient(
             args.host,
             port=args.port,
-            # Common optional parameters:
+            # Common optional paramers:
             framer=args.framer,
             timeout=args.timeout,
             #    retries=3,

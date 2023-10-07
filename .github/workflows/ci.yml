@@ -18,45 +18,33 @@ on:
 
 jobs:
   linters:
-    name: Linters
-    runs-on: ubuntu-latest
+    name: Linters - ${{ matrix.os.on }} - ${{ matrix.python.version }}
+    runs-on: ${{ matrix.os.on }}
     timeout-minutes: 10
     strategy:
       fail-fast: false
+      matrix:
+        os:
+          - on: ubuntu-latest
+          # - on: macos-latest
+          # - on: windows-latest
+        python:
+          - version: '3.8'
+          - version: '3.9'
+          - version: '3.10'
+          - version: '3.11'
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
-          python-version: 3.8
-
-      - name: venv restore
-        id: cache-venv
-        uses: syphar/restore-virtualenv@v1
-        with:
-          requirement_files: requirements.txt
-
-      - name: venv create
-        if: steps.cache-venv.outputs.cache-hit != 'true'
-        run: pip install -e . -r requirements.txt
-
-      - name: codespell
-        run: codespell
-
-      - name: pylint
-        run: pylint --recursive=y examples pymodbus test
-
-      - name: precommit (black, bandit, and ruff)
-        run: pre-commit run --all-files
-
-      - name: docs
-        run: cd doc; ./build_html
-
-      - name: mypy
-        run: mypy pymodbus
-
+          python-version: ${{ matrix.python.version }}
+          cache: 'pip'
+      - run: pip install -e . -r requirements.txt
+      - run: codespell
+      - run: pylint --recursive=y examples pymodbus test
+      - run: pre-commit run --all-files
+      - run: cd doc; ./build_html
+      - run: mypy pymodbus
 
   integreation_test:
     name: pytest - ${{ matrix.os.on }} - ${{ matrix.python.version }}
@@ -75,26 +63,14 @@ jobs:
           - version: '3.10'
           - version: '3.11'
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up ${{ matrix.python.version }}
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python.version }}
+          cache: 'pip'
+      - run: pip install -e . -r requirements.txt
 
-      - name: venv restore
-        id: cache-venv
-        uses: syphar/restore-virtualenv@v1
-        with:
-          requirement_files: requirements.txt
-
-      - name: venv create
-        if: steps.cache-venv.outputs.cache-hit != 'true'
-        run: pip install -e . -r requirements.txt
-
-      - name: pytest
-        run: pytest -n0  -v --full-trace --timeout=1200
+      - run: pytest -n0  -v --full-trace --timeout=1200
 
   analyze:
     name: Analyze Python
@@ -102,13 +78,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
       - uses: github/codeql-action/init@v2
         with:
           languages: python
-
       - uses: github/codeql-action/autobuild@v2
-
       - uses: github/codeql-action/analyze@v2
 
   ci_complete:

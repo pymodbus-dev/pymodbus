@@ -21,7 +21,7 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.factory import ServerDecoder
 from pymodbus.logging import Log
 from pymodbus.pdu import ExceptionResponse
-from pymodbus.server import (
+from pymodbus.server.async_io import (
     ModbusSerialServer,
     ModbusTcpServer,
     ModbusTlsServer,

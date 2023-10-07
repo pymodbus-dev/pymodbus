@@ -41,14 +41,12 @@ Supported versions
 
 Version `3.5.2 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.5.2>`_ is the current release.
 
-Version `2.5.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (python >= 2.7, no longer supported).
+Each release is `documented <https://pymodbus.readthedocs.io/en/latest/source/changelog.html>`_
 
-Each release is `documented <https://pymodbus.readthedocs.io/en/latest/changelog.html>`_
-
-A big thanks to all the `volunteers <https://pymodbus.readthedocs.io/en/latest/authors.html>`_ that helped make pymodbus a great project.
+A big thanks to all the `volunteers <https://pymodbus.readthedocs.io/en/latest/source/authors.html>`_ that helped make pymodbus a great project.
 
 .. important::
-   All API changes after 3.0.0 are documented in `API_changes.rst <https://pymodbus.readthedocs.io/en/latest/api_changes.html>`_
+   All API changes after 3.0.0 are documented in `API_changes.rst <https://github.com/pymodbus-dev/pymodbus/blob/dev/CHANGELOG.rst>`_
 
 
 Common features

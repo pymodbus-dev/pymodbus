@@ -142,7 +142,11 @@ permissions or a virtualenv currently running):
 
     pip install -U pymodbus
 
-This will install a base version of pymodbus.
+If you want to use the serial interface:
+
+    pip install -U pymodbus[serial]
+
+This will install pymodbus, r
 
 To install pymodbus with options run:
 
@@ -150,30 +154,26 @@ To install pymodbus with options run:
 
 Available options are:
 
-- **repl**, installs pymodbus REPL.
+- **repl**, install dependencies needed by pymodbus.repl
 
 - **serial**, installs serial drivers.
+
+- **simulator**, install dependencies needed by pymodbus.simulator
 
 - **documentation**, installs tools to generate documentation.
 
 - **development**, installs development tools needed to enable test/check of pymodbus changes.
 
-
-Or to install a specific release:
-
-    pip install -U pymodbus==X.Y.Z
-
+- **all**, installs all of the above
 
 
 Installing with github
 ----------------------
 
 Before cloning the repo, you need to install python3 (preferable 3.11)
-and make a virtual environment::
+and make and activate a virtual environment::
 
    python3 -m venv /path/to/new/virtual/environment
-
-To activate the virtual environment please do::
 
    source .venv/bin/activate
 
@@ -194,9 +194,7 @@ To get bleeding edge::
 
 Install required development tools::
 
-   pip install -r requirements.txt
-
-   pip install -e .
+   pip install -e ".[development]"
 
    pre-commit install
 
@@ -209,7 +207,6 @@ The repository contains a number of important branches and tags.
   * **dev** is where all development happens, this branch is not always stable.
   * **master** is where are releases are kept.
   * All releases are tagged with **vX.Y.Z** (e.g. v2.5.3)
-  * All prereleases are tagged with **vX.Y.ZrcQ** (e.g. v3.0.0.0rc1)
 
 If a maintenance release of an old version is needed (e.g. v2.5.4),
 the release tag is used to create a branch with the same name,
@@ -233,21 +230,28 @@ solving issues:
   * Functional testing against any reference we can find
   * The remaining edges of the protocol (that we think no one uses)
 
+There are 2 bigger projects ongoing:
+
+  * rewriting the internal part of all clients (both sync and async)
+  * Make the simulator datastore THE datastore
+
 
 Development Instructions
 ------------------------
 The current code base is compatible python >= 3.8.
 Here are some of the common commands to perform a range of activities
 
-   pip install -r requirements.txt   install all requirements
-
-   pip install -e .                  source directory is "release", useful for testing
-
    ./check_ci.sh                     run the same checks as CI runs on a pull request.
 
 
 Generate documentation
 ----------------------
+
+**Remark** Assumes that you have installed documentation tools:
+
+   pip install -e ".[documentation]"
+
+to build do:
 
    cd doc
    ./build_html

@@ -39,7 +39,7 @@ jobs:
         with:
           python-version: ${{ matrix.python.version }}
           cache: 'pip'
-      - run: pip install -e . -r requirements.txt
+      - run: pip install -e ".[all]"
       - run: codespell
       - run: pylint --recursive=y examples pymodbus test
       - run: pre-commit run --all-files
@@ -68,7 +68,7 @@ jobs:
         with:
           python-version: ${{ matrix.python.version }}
           cache: 'pip'
-      - run: pip install -e . -r requirements.txt
+      - run: pip install -e ".[all]"
 
       - run: pytest -n0  -v --full-trace --timeout=1200
 

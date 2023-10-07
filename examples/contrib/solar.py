@@ -29,7 +29,7 @@ def main():
     client = ModbusTcpClient(
         "modbusServer.lan",
         port=502,
-        # Common optional paramers:
+        # Common optional parameters:
         framer=ModbusSocketFramer,
         timeout=1,
         retry_on_empty=True,

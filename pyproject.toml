@@ -1,0 +1,269 @@
+[build-system]
+requires = ["setuptools>=61.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pymodbus"
+dynamic = ["version"]
+license = {text = "BSD-3-Clause"}
+authors = [{name = '"Galen Collins'}, {name = 'Jan Iversen"'}]
+maintainers = [{name = '"dhoomakethu'}, {name = 'janiversen"'}]
+description = "A fully featured modbus protocol stack in python"
+keywords = ["modbus", "asyncio", "scada", "client", "server", "simulator"]
+readme = "README.rst"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Framework :: AsyncIO",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Unix",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: OS Independent",
+    "Operating System :: Microsoft",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: System :: Networking",
+    "Topic :: Utilities",
+]
+requires-python = ">=3.8.0"
+
+[project.urls]
+Homepage = "https://github.com/pymodbus-dev/pymodbus/"
+"Source Code" = "https://github.com/pymodbus-dev/pymodbus"
+"Bug Reports" = "https://github.com/pymodbus-dev/pymodbus/issues"
+"Docs: Dev" = "https://pymodbus.readthedocs.io/en/latest/?badge=latest"
+Discord = "https://discord.gg/vcP8qAz2"
+
+[project.scripts]
+"pymodbus.console" = "pymodbus.repl.client.main:main"
+"pymodbus.server" = "pymodbus.repl.server.main:app"
+"pymodbus.simulator" = "pymodbus.server.simulator.main:main"
+
+[project.optional-dependencies]
+serial = [
+    "pyserial>=3.5"
+]
+repl = [
+    "aiohttp>=3.8.6",
+    "typer[all]>=0.7.0",
+    "prompt-toolkit>=3.0.36",
+    "pygments>=2.15.0",
+    "click>=8.0.0"
+]
+simulator = [
+    "aiohttp>=3.8.6"
+]
+documentation = [
+    "recommonmark>=0.7.1",
+    "Sphinx>=5.3.0",
+    "sphinx-rtd-theme>=1.1.1"
+]
+development = [
+    "codespell>=2.2.2",
+    "coverage>=7.1.0",
+    "mypy>=1.3.0",
+    "pre-commit>=3.1.1",
+    "pyflakes>=3.0.1",
+    "pydocstyle>=6.3.0",
+    "pycodestyle>=2.10.0",
+    "pylint>=2.17.2",
+    "pytest>=7.3.1",
+    "pytest-asyncio>=0.20.3",
+    "pytest-cov>=4.1.0",
+    "pytest-timeout>=2.1.0",
+    "pytest-xdist>=3.3.1",
+    "ruff>=0.0.287",
+    "twine>=4.0.2",
+    "types-Pygments",
+    "types-pyserial"
+]
+all = [
+    # "pymodbus[serial]",
+    "pyserial>=3.5",
+    # "pymodbus[repl]",
+    "aiohttp>=3.8.6",
+    "typer[all]>=0.7.0",
+    "prompt-toolkit>=3.0.36",
+    "pygments>=2.15.0",
+    "click>=8.0.0",
+    # "pymodbus[simulator]",
+    "aiohttp>=3.8.6",
+    # "pymodbus[documentation]",
+    "recommonmark>=0.7.1",
+    "Sphinx>=5.3.0",
+    "sphinx-rtd-theme>=1.1.1",
+    # "pymodbus[dev]",
+    "codespell>=2.2.2",
+    "coverage>=7.1.0",
+    "mypy>=1.3.0",
+    "pre-commit>=3.1.1",
+    "pyflakes>=3.0.1",
+    "pydocstyle>=6.3.0",
+    "pycodestyle>=2.10.0",
+    "pylint>=2.17.2",
+    "pytest>=7.3.1",
+    "pytest-asyncio>=0.20.3",
+    "pytest-cov>=4.1.0",
+    "pytest-timeout>=2.1.0",
+    "pytest-xdist>=3.3.1",
+    "ruff>=0.0.287",
+    "twine>=4.0.2",
+    "types-Pygments",
+    "types-pyserial"
+]
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = true
+platforms = ["'Linux'", "'Mac OS X'", "'Win'"]
+
+[tool.setuptools.exclude-package-data]
+pymodbus = [
+    "examples",
+    "test",
+    "doc",
+]
+
+[tool.setuptools.package-data]
+pymodbus = [
+    "py.typed",
+    "server/simulator/setup.json",
+    "server/simulator/web/**/*"
+]
+
+[tool.setuptools.packages.find]
+include = ["pymodbus*"]
+namespaces = false
+
+[tool.setuptools.dynamic]
+version = {attr = "pymodbus.__version__"}
+
+[tool.pylint.main]
+ignore-paths = [
+    "pymodbus/transport/serial_asyncio",
+    "doc"
+]
+ignore-patterns = '^\.#'
+persistent = "no"
+load-plugins = [
+    "pylint.extensions.bad_builtin",
+    "pylint.extensions.check_elif",
+    "pylint.extensions.code_style",
+    "pylint.extensions.comparison_placement",
+    "pylint.extensions.confusing_elif",
+    "pylint.extensions.docparams",
+    "pylint.extensions.docstyle",
+    "pylint.extensions.eq_without_hash",
+    "pylint.extensions.for_any_all",
+    "pylint.extensions.overlapping_exceptions",
+    "pylint.extensions.private_import",
+    "pylint.extensions.set_membership",
+    "pylint.extensions.typing"
+]
+jobs = "0"
+py-version = "3.8"
+
+[tool.pylint.messages_control]
+enable = "all"
+disable = [
+    "duplicate-code",     # TBD
+    "file-ignored",       # ONLY to be used with extreme care.
+    "format",             # NOT wanted, handled by black
+    "locally-disabled",   # NOT wanted
+    "suppressed-message"  # NOT wanted"""
+]
+
+[tool.pylint.reports]
+output-format = "text"
+
+[tool.pylint.logging]
+logging-format-style = "new"
+
+[tool.pylint.similarities]
+ignore-imports = "no"
+ignore-signatures = "no"
+
+[tool.pylint.variables]
+dummy-variables-rgx = ""
+
+[tool.pylint.format]
+max-module-lines = "2000"
+
+[tool.pylint.basic]
+good-names = "i,j,k,rr,fc,rq,fd,x,_"
+attr-rgx = "([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__))$"
+method-rgx = "[a-z_][a-zA-Z0-9_]{2,}$"
+
+[tool.pylint.design]
+max-args = "10"
+max-locals = "25"
+max-returns = "11"
+max-branches = "27"
+max-statements = "100"
+max-attributes = "20"
+max-public-methods = "25"
+
+[tool.pylint.classes]
+valid-metaclass-classmethod-first-arg = "mcs"
+
+[tool.pylint.imports]
+deprecated-modules = "regsub,TERMIOS,Bastion,rexec"
+
+[tool.pylint.exceptions]
+overgeneral-exceptions = "builtins.Exception"
+
+[tool.pylint.deprecated_builtins]
+bad-functions = "map,input"
+
+[tool.mypy]
+strict_optional = false
+exclude = "pymodbus/client/base.py"
+show_error_codes = true
+local_partial_types = true
+strict_equality = true
+warn_incomplete_stub = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unused_ignores = true
+enable_error_code = "ignore-without-code, redundant-self, truthy-iterable"
+disable_error_code = ["annotation-unchecked"]
+strict_concatenate = false
+disallow_subclassing_any = true
+disallow_untyped_decorators = true
+warn_unreachable = true
+
+[tool.distutils]
+bdist_wheel = {}
+
+[tool.distutils.egg_info]
+tag-svn-revision = false
+
+[tool.distutils.upload_docs]
+upload-dir = "build/sphinx/html"
+
+[tool.build-sphinx]
+source-dir = "doc/sphinx/"
+build-dir = "doc/sphinx/build"
+all_files = "1"
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+addopts = "-p no:warnings --dist loadscope --numprocesses auto"
+asyncio_mode = "auto"
+timeout = 40
+
+[tool.coverage.run]
+include = [
+    "examples/",
+    "pymodbus/",
+    "test/",
+]
+omit = ["examples/contrib/"]
+
+[tool.codespell]
+skip = "./doc/_build,./doc/source/_static,venv,.venv,.git,htmlcov,CHANGELOG.rst,.mypy_cache"
+ignore-words-list = "asend"

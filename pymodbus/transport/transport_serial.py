@@ -37,7 +37,7 @@ class SerialTransport(asyncio.Transport):
     @property
     def loop(self):
         """Return asyncio event loop."""
-        return self.async_loop._loop
+        return self.async_loop
 
     def get_protocol(self) -> asyncio.BaseProtocol:
         """Return protocol"""

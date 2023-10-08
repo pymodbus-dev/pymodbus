@@ -297,7 +297,7 @@ class TestBasicSerial:
         loop = asyncio.get_event_loop()
         reader = asyncio.StreamReader(loop=loop)
         comm = SerialTransport(loop, asyncio.StreamReaderProtocol(reader, loop=loop))
-        assert isinstance(comm.loop, asyncio.selector_events.BaseSelectorEventLoop)
+        assert isinstance(comm.loop, asyncio.AbstractEventLoop)
         protocol = comm.get_protocol()
         assert isinstance(protocol, asyncio.protocols.BaseProtocol)
         assert not hasattr(protocol, "loop")

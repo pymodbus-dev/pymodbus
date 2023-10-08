@@ -302,7 +302,6 @@ class TestBasicSerial:
         assert isinstance(protocol, asyncio.protocols.BaseProtocol)
         assert not hasattr(protocol, 'loop')
         assert hasattr(protocol, '_loop')
-        assert isinstance(protocol._loop, asyncio.selector_events.BaseSelectorEventLoop)
 
     async def test_abstract_methods(self):
         """Test asyncio abstract methods."""

@@ -37,7 +37,7 @@ class SerialTransport(asyncio.Transport):
     @property
     def loop(self):
         """Return asyncio event loop."""
-        return self._protocol._loop
+        return self.async_loop._loop
 
     def get_protocol(self) -> asyncio.BaseProtocol:
         """Return protocol"""
@@ -95,7 +95,7 @@ class SerialTransport(asyncio.Transport):
         try:
             data = self.sync_serial.read(1024)
         except serial.SerialException as exc:
-            self._protocol._loop.call_soon(self._call_connection_lost, exc)
+            self.async_loop.call_soon(self._call_connection_lost, exc)
             self.close()
         else:
             if data:
@@ -130,7 +130,7 @@ class SerialTransport(asyncio.Transport):
         except (BlockingIOError, InterruptedError):
             self._write_buffer.append(data)
         except serial.SerialException as exc:
-            self._protocol._loop.call_soon(self._call_connection_lost, exc)
+            self.async_loop.call_soon(self._call_connection_lost, exc)
             self.abort()
         else:
             if nlen == len(data):

@@ -291,7 +291,7 @@ class TestBasicSerial:
     async def test_init(self):
         """Test null modem init"""
         SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
-    
+
     async def test_loop(self):
         """Test access to asyncio event loop of the underlying protocol"""
         loop = asyncio.get_event_loop()
@@ -300,8 +300,8 @@ class TestBasicSerial:
         assert isinstance(comm.loop, asyncio.selector_events.BaseSelectorEventLoop)
         protocol = comm.get_protocol()
         assert isinstance(protocol, asyncio.protocols.BaseProtocol)
-        assert not hasattr(protocol, 'loop')
-        assert hasattr(protocol, '_loop')
+        assert not hasattr(protocol, "loop")
+        assert hasattr(protocol, "_loop")
 
     async def test_abstract_methods(self):
         """Test asyncio abstract methods."""

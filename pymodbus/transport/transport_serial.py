@@ -16,7 +16,7 @@ class SerialTransport(asyncio.Transport):
         """Initialize."""
         super().__init__()
         self.async_loop = loop
-        self._protocol:asyncio.BaseProtocol = protocol
+        self._protocol: asyncio.BaseProtocol = protocol
         self.sync_serial = serial.serial_for_url(*args, **kwargs)
         self._closing = False
         self._write_buffer = []

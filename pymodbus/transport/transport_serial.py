@@ -152,25 +152,23 @@ class SerialTransport(asyncio.Transport):
         except serial.SerialException as exc:
             self.close(exc=exc)
 
-    if os.name == "nt":
-
-        def _poll_read(self):
-            if self._has_reader:
-                try:
-                    self._has_reader = self.async_loop.call_later(
-                        self._poll_wait_time, self._poll_read
-                    )
-                    if self.sync_serial.in_waiting:
-                        self._read_ready()
-                except serial.SerialException as exc:
-                    self.close(exc=exc)
-
-        def _poll_write(self):
-            if self._has_writer:
-                self._has_writer = self.async_loop.call_later(
-                    self._poll_wait_time, self._poll_write
+    def _poll_read(self):
+        if self._has_reader:
+            try:
+                self._has_reader = self.async_loop.call_later(
+                    self._poll_wait_time, self._poll_read
                 )
-                self._write_ready()
+                if self.sync_serial.in_waiting:
+                    self._read_ready()
+            except serial.SerialException as exc:
+                self.close(exc=exc)
+
+    def _poll_write(self):
+        if self._has_writer:
+            self._has_writer = self.async_loop.call_later(
+                self._poll_wait_time, self._poll_write
+            )
+            self._write_ready()
 
 
 async def create_serial_connection(loop, protocol_factory, *args, **kwargs):

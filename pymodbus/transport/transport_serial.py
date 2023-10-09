@@ -145,12 +145,13 @@ class SerialTransport(asyncio.Transport):
         try:
             if nlen := self.sync_serial.write(data) < len(data):
                 self._write_buffer = data[nlen:]
-                return
+                return True
             self.flush()
         except (BlockingIOError, InterruptedError):
-            return
+            return True
         except serial.SerialException as exc:
             self.close(exc=exc)
+        return False
 
     def _poll_read(self):
         if self._has_reader:
@@ -164,11 +165,12 @@ class SerialTransport(asyncio.Transport):
                 self.close(exc=exc)
 
     def _poll_write(self):
-        if self._has_writer:
+        if not self._has_writer:
+            return
+        if self._write_ready():
             self._has_writer = self.async_loop.call_later(
                 self._poll_wait_time, self._poll_write
             )
-            self._write_ready()
 
 
 async def create_serial_connection(loop, protocol_factory, *args, **kwargs):

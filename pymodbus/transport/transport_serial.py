@@ -49,12 +49,11 @@ class SerialTransport(asyncio.Transport):
             else:
                 self.async_loop.remove_reader(self.sync_serial.fileno())
             self._has_reader = False
-        self._remove_writer()
+        self.flush()
         self.sync_serial.close()
         self.sync_serial = None
         with contextlib.suppress(Exception):
             self._protocol.connection_lost(exc)
-        self._write_buffer.clear()
 
     def write(self, data):
         """Write some data to the transport."""
@@ -68,7 +67,12 @@ class SerialTransport(asyncio.Transport):
 
     def flush(self):
         """Clear output buffer and stops any more data being written"""
-        self._remove_writer()
+        if self._has_writer:
+            if os.name == "nt":
+                self._has_writer.cancel()
+            else:
+                self.async_loop.remove_writer(self.sync_serial.fileno())
+            self._has_writer = False
         self._write_buffer.clear()
 
     # ------------------------------------------------
@@ -142,8 +146,7 @@ class SerialTransport(asyncio.Transport):
             if nlen := self.sync_serial.write(data) < len(data):
                 self._write_buffer = data[nlen:]
                 return
-            self._write_buffer.clear()
-            self._remove_writer()
+            self.flush()
         except (BlockingIOError, InterruptedError):
             return
         except serial.SerialException as exc:
@@ -168,18 +171,6 @@ class SerialTransport(asyncio.Transport):
                     self._poll_wait_time, self._poll_write
                 )
                 self._write_ready()
-
-        def _remove_writer(self):
-            if self._has_writer:
-                self._has_writer.cancel()
-            self._has_writer = False
-
-    else:
-
-        def _remove_writer(self):
-            if self._has_writer:
-                self.async_loop.remove_writer(self.sync_serial.fileno())
-                self._has_writer = False
 
 
 async def create_serial_connection(loop, protocol_factory, *args, **kwargs):

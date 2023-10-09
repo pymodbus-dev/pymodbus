@@ -38,6 +38,11 @@ class SerialTransport(asyncio.Transport):
 
     def close(self, exc=None):
         """Close the transport gracefully."""
+        if not self.sync_serial:
+            return
+        with contextlib.suppress(Exception):
+            self.sync_serial.flush()
+
         if self._has_reader:
             if os.name == "nt":
                 self._has_reader.cancel()
@@ -45,7 +50,11 @@ class SerialTransport(asyncio.Transport):
                 self.async_loop.remove_reader(self.sync_serial.fileno())
             self._has_reader = False
         self._remove_writer()
-        self.async_loop.call_soon(self._call_connection_lost, exc)
+        self.sync_serial.close()
+        self.sync_serial = None
+        with contextlib.suppress(Exception):
+            self._protocol.connection_lost(exc)
+        self._write_buffer.clear()
 
     def write(self, data):
         """Write some data to the transport."""
@@ -121,7 +130,7 @@ class SerialTransport(asyncio.Transport):
         try:
             data = self.sync_serial.read(1024)
         except serial.SerialException as exc:
-            self.close(exc)
+            self.close(exc=exc)
         else:
             if data:
                 self._protocol.data_received(data)
@@ -138,7 +147,7 @@ class SerialTransport(asyncio.Transport):
         except (BlockingIOError, InterruptedError):
             return
         except serial.SerialException as exc:
-            self.close(exc)
+            self.close(exc=exc)
 
     if os.name == "nt":
 
@@ -151,8 +160,7 @@ class SerialTransport(asyncio.Transport):
                     if self.sync_serial.in_waiting:
                         self._read_ready()
                 except serial.SerialException as exc:
-                    self.async_loop.call_soon(self._call_connection_lost, exc)
-                    self.abort()
+                    self.close(exc=exc)
 
         def _poll_write(self):
             if self._has_writer:
@@ -172,21 +180,6 @@ class SerialTransport(asyncio.Transport):
             if self._has_writer:
                 self.async_loop.remove_writer(self.sync_serial.fileno())
                 self._has_writer = False
-
-    def _call_connection_lost(self, exc):
-        """Close the connection."""
-        if self.sync_serial:
-            with contextlib.suppress(Exception):
-                self.sync_serial.flush()
-
-            self.sync_serial.close()
-            self.sync_serial = None
-        if self._protocol:
-            with contextlib.suppress(Exception):
-                self._protocol.connection_lost(exc)
-
-            self._write_buffer.clear()
-        self._write_buffer.clear()
 
 
 async def create_serial_connection(loop, protocol_factory, *args, **kwargs):

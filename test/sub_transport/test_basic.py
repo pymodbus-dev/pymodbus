@@ -323,6 +323,7 @@ class TestBasicSerial:
         comm.write(b"abcd")
         comm.flush()
         comm.close()
+        comm = SerialTransport(mock.MagicMock(), mock.Mock(), "dummy")
         comm.abort()
         assert await create_serial_connection(
             asyncio.get_running_loop(), mock.Mock, url="dummy"

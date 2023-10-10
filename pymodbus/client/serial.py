@@ -141,11 +141,14 @@ class ModbusSerialClient(ModbusBaseClient):
 
         self.last_frame_end = None
 
-        """
-        Calculate the duration of 1 byte [sec]
-        _t0 = (1 startbit + byte size + stopbits) / baudrate
-        """
         self._t0 = float(1 + bytesize + stopbits) / self.comm_params.baudrate
+
+        # Check every 4 bytes / 2 registers if the reading is ready
+        self._recv_interval = self._t0 * 4
+        # Set a minimum of 1ms for high baudrates
+        if self._recv_interval < 0.001:
+            self._recv_interval = 0.001 #1ms
+
 
         if self.comm_params.baudrate > 19200:
             self.silent_interval = 1.75 / 1000  # ms
@@ -248,9 +251,7 @@ class ModbusSerialClient(ModbusBaseClient):
             if available and available != size:
                 more_data = True
                 size = available
-
-            # Wait for duration of receiving 1 byte
-            time.sleep(self._t0)
+            time.sleep(self._recv_interval)
         return size
 
     def recv(self, size):

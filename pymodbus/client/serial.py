@@ -146,9 +146,7 @@ class ModbusSerialClient(ModbusBaseClient):
         # Check every 4 bytes / 2 registers if the reading is ready
         self._recv_interval = self._t0 * 4
         # Set a minimum of 1ms for high baudrates
-        if self._recv_interval < 0.001:
-            self._recv_interval = 0.001 #1ms
-
+        _recv_interval = max(_recv_interval, 0.001)
 
         if self.comm_params.baudrate > 19200:
             self.silent_interval = 1.75 / 1000  # ms

@@ -19,7 +19,8 @@ class SerialTransport(asyncio.Transport):
         self._protocol: asyncio.BaseProtocol = protocol
         self.sync_serial = serial.serial_for_url(*args, **kwargs)
         self._write_buffer = []
-        self._has_reader = False
+        self.poll_task = None
+        self.test_task = None
         self._has_writer = False
         self._poll_wait_time = 0.0005
         self.sync_serial.timeout = 0
@@ -27,14 +28,11 @@ class SerialTransport(asyncio.Transport):
 
     def setup(self):
         """Prepare to read/write"""
-        self.async_loop.call_soon(self._protocol.connection_made, self)
         if os.name == "nt":
-            self._has_reader = self.async_loop.call_later(
-                self._poll_wait_time, self._poll_read
-            )
+            self.poll_task = asyncio.create_task(self._polling_task())
         else:
             self.async_loop.add_reader(self.sync_serial.fileno(), self._read_ready)
-            self._has_reader = True
+        self.async_loop.call_soon(self._protocol.connection_made, self)
 
     def close(self, exc=None):
         """Close the transport gracefully."""
@@ -43,12 +41,12 @@ class SerialTransport(asyncio.Transport):
         with contextlib.suppress(Exception):
             self.sync_serial.flush()
 
-        if self._has_reader:
-            if os.name == "nt":
-                self._has_reader.cancel()
-            else:
-                self.async_loop.remove_reader(self.sync_serial.fileno())
-            self._has_reader = False
+        if self.poll_task:
+            self.poll_task.cancel()
+            _ = asyncio.ensure_future(self.poll_task)
+            self.test_task = None
+        else:
+            self.async_loop.remove_reader(self.sync_serial.fileno())
         self.flush()
         self.sync_serial.close()
         self.sync_serial = None
@@ -59,20 +57,14 @@ class SerialTransport(asyncio.Transport):
         """Write some data to the transport."""
         self._write_buffer.append(data)
         if not self._has_writer:
-            if os.name == "nt":
-                self._has_writer = self.async_loop.call_soon(self._poll_write)
-            else:
+            if not self.poll_task:
                 self.async_loop.add_writer(self.sync_serial.fileno(), self._write_ready)
                 self._has_writer = True
 
     def flush(self):
         """Clear output buffer and stops any more data being written"""
-        if self._has_writer:
-            if os.name == "nt":
-                self._has_writer.cancel()
-            else:
-                self.async_loop.remove_writer(self.sync_serial.fileno())
-            self._has_writer = False
+        if not self.poll_task:
+            self.async_loop.remove_writer(self.sync_serial.fileno())
         self._write_buffer.clear()
 
     # ------------------------------------------------
@@ -151,24 +143,19 @@ class SerialTransport(asyncio.Transport):
             self.close(exc=exc)
         return False
 
-    def _poll_read(self):
-        if self._has_reader:
-            try:
-                self._has_reader = self.async_loop.call_later(
-                    self._poll_wait_time, self._poll_read
-                )
+    async def _polling_task(self):
+        """Poll and try to read/write."""
+        try:
+            while True:
+                await asyncio.sleep(self._poll_wait_time)
+                if self._write_buffer:
+                    self._write_ready()
                 if self.sync_serial.in_waiting:
                     self._read_ready()
-            except serial.SerialException as exc:
-                self.close(exc=exc)
-
-    def _poll_write(self):
-        if not self._has_writer:
-            return
-        if self._write_ready():
-            self._has_writer = self.async_loop.call_later(
-                self._poll_wait_time, self._poll_write
-            )
+        except serial.SerialException as exc:
+            self.close(exc=exc)
+        except asyncio.CancelledError:
+            pass
 
 
 async def create_serial_connection(loop, protocol_factory, *args, **kwargs):

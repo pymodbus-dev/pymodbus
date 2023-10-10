@@ -130,6 +130,51 @@ class TestCommModbusProtocol:
         [
             (CommType.TCP, "localhost"),
             (CommType.TLS, "localhost"),
+            (CommType.UDP, "localhost"),
+            (CommType.SERIAL, "socket://localhost:5020"),
+        ],
+    )
+    async def x_test_large_packet(self, client, server):
+        """Test connection and data exchange."""
+        assert await server.transport_listen()
+        assert await client.transport_connect()
+        await asyncio.sleep(0.5)
+        assert len(server.active_connections) == 1
+        server_connected = list(server.active_connections.values())[0]
+        test_data = b"abcd" * 1000000
+        client.transport_send(test_data)
+        await asyncio.sleep(0.5)
+        assert server_connected.recv_buffer == test_data
+        assert not client.recv_buffer
+        client.transport_close()
+        server.transport_close()
+
+    @pytest.mark.parametrize(
+        ("use_comm_type", "use_host"),
+        [
+            (CommType.SERIAL, "socket://localhost:5020"),
+        ],
+    )
+    async def x_test_serial_poll(self, client, server):
+        """Test connection and data exchange."""
+        assert await server.transport_listen()
+        assert await client.transport_connect()
+        await asyncio.sleep(0.5)
+        assert len(server.active_connections) == 1
+        server_connected = list(server.active_connections.values())[0]
+        test_data = b"abcd" * 1000
+        client.transport_send(test_data)
+        await asyncio.sleep(0.5)
+        assert server_connected.recv_buffer == test_data
+        assert not client.recv_buffer
+        client.transport_close()
+        server.transport_close()
+
+    @pytest.mark.parametrize(
+        ("use_comm_type", "use_host"),
+        [
+            (CommType.TCP, "localhost"),
+            (CommType.TLS, "localhost"),
             # (CommType.UDP, "localhost"),  reuses same connection
             # (CommType.SERIAL, "socket://localhost:5020"), no multipoint
         ],

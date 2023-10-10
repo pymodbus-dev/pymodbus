@@ -20,7 +20,6 @@ class SerialTransport(asyncio.Transport):
         self.sync_serial = serial.serial_for_url(*args, **kwargs)
         self._write_buffer = []
         self.poll_task = None
-        self._has_writer = False
         self._poll_wait_time = 0.0005
         self.sync_serial.timeout = 0
         self.sync_serial.write_timeout = 0
@@ -55,10 +54,8 @@ class SerialTransport(asyncio.Transport):
     def write(self, data):
         """Write some data to the transport."""
         self._write_buffer.append(data)
-        if not self._has_writer:
-            if not self.poll_task:
-                self.async_loop.add_writer(self.sync_serial.fileno(), self._write_ready)
-                self._has_writer = True
+        if not self.poll_task:
+            self.async_loop.add_writer(self.sync_serial.fileno(), self._write_ready)
 
     def flush(self):
         """Clear output buffer and stops any more data being written"""
@@ -132,22 +129,25 @@ class SerialTransport(asyncio.Transport):
         """Asynchronously write buffered data."""
         data = b"".join(self._write_buffer)
         try:
-            if nlen := self.sync_serial.write(data) < len(data):
-                self._write_buffer = data[nlen:]
-                return True
+            if (nlen := self.sync_serial.write(data)) < len(data):
+                self._write_buffer = [data[nlen:]]
+                if not self.poll_task:
+                    self.async_loop.add_writer(
+                        self.sync_serial.fileno(), self._write_ready
+                    )
+                return
             self.flush()
         except (BlockingIOError, InterruptedError):
-            return True
+            return
         except serial.SerialException as exc:
             self.close(exc=exc)
-        return False
 
     async def _polling_task(self):
         """Poll and try to read/write."""
         try:
             while True:
                 await asyncio.sleep(self._poll_wait_time)
-                if self._write_buffer:
+                while self._write_buffer:
                     self._write_ready()
                 if self.sync_serial.in_waiting:
                     self._read_ready()

@@ -125,25 +125,33 @@ class TestCommModbusProtocol:
             assert not server.active_connections
         server.transport_close()
 
+    def wrapped_write(self, data):
+        """Wrap serial write, to split parameters."""
+        return self.serial_write(data[:2])
+
     @pytest.mark.parametrize(
         ("use_comm_type", "use_host"),
         [
-            (CommType.TCP, "localhost"),
-            (CommType.TLS, "localhost"),
-            (CommType.UDP, "localhost"),
             (CommType.SERIAL, "socket://localhost:5020"),
         ],
     )
-    async def x_test_large_packet(self, client, server):
+    async def test_split_serial_packet(self, client, server):
         """Test connection and data exchange."""
         assert await server.transport_listen()
         assert await client.transport_connect()
         await asyncio.sleep(0.5)
         assert len(server.active_connections) == 1
         server_connected = list(server.active_connections.values())[0]
-        test_data = b"abcd" * 1000000
-        client.transport_send(test_data)
-        await asyncio.sleep(0.5)
+        test_data = b"abcd"
+
+        self.serial_write = (  # pylint: disable=attribute-defined-outside-init
+            client.transport.sync_serial.write
+        )
+        with mock.patch.object(
+            client.transport.sync_serial, "write", wraps=self.wrapped_write
+        ):
+            client.transport_send(test_data)
+            await asyncio.sleep(0.5)
         assert server_connected.recv_buffer == test_data
         assert not client.recv_buffer
         client.transport_close()

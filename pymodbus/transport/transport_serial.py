@@ -132,12 +132,10 @@ class SerialTransport(asyncio.Transport):
     def _read_ready(self):
         """Test if there are data waiting."""
         try:
-            data = self.sync_serial.read(1024)
+            if data := self.sync_serial.read(1024):
+                self._protocol.data_received(data)
         except serial.SerialException as exc:
             self.close(exc=exc)
-        else:
-            if data:
-                self._protocol.data_received(data)
 
     def _write_ready(self):
         """Asynchronously write buffered data."""

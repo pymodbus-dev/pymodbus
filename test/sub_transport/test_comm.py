@@ -9,6 +9,7 @@ from pymodbus.transport import (
     CommType,
     ModbusProtocol,
 )
+from pymodbus.transport.transport_serial import SerialTransport
 
 
 FACTOR = 1.2 if not pytest.IS_WINDOWS else 4.2
@@ -123,6 +124,61 @@ class TestCommModbusProtocol:
         await asyncio.sleep(1)
         if use_comm_type != CommType.UDP:
             assert not server.active_connections
+        server.transport_close()
+
+    def wrapped_write(self, data):
+        """Wrap serial write, to split parameters."""
+        return self.serial_write(data[:2])
+
+    @pytest.mark.parametrize(
+        ("use_comm_type", "use_host"),
+        [
+            (CommType.SERIAL, "socket://localhost:5020"),
+        ],
+    )
+    async def test_split_serial_packet(self, client, server):
+        """Test connection and data exchange."""
+        assert await server.transport_listen()
+        assert await client.transport_connect()
+        await asyncio.sleep(0.5)
+        assert len(server.active_connections) == 1
+        server_connected = list(server.active_connections.values())[0]
+        test_data = b"abcd"
+
+        self.serial_write = (  # pylint: disable=attribute-defined-outside-init
+            client.transport.sync_serial.write
+        )
+        with mock.patch.object(
+            client.transport.sync_serial, "write", wraps=self.wrapped_write
+        ):
+            client.transport_send(test_data)
+            await asyncio.sleep(0.5)
+        assert server_connected.recv_buffer == test_data
+        assert not client.recv_buffer
+        client.transport_close()
+        server.transport_close()
+
+    @pytest.mark.parametrize(
+        ("use_comm_type", "use_host"),
+        [
+            (CommType.SERIAL, "socket://localhost:5020"),
+        ],
+    )
+    async def test_serial_poll(self, client, server):
+        """Test connection and data exchange."""
+        assert await server.transport_listen()
+        SerialTransport.force_poll = True
+        assert await client.transport_connect()
+        await asyncio.sleep(0.5)
+        SerialTransport.force_poll = False
+        assert len(server.active_connections) == 1
+        server_connected = list(server.active_connections.values())[0]
+        test_data = b"abcd" * 1000
+        client.transport_send(test_data)
+        await asyncio.sleep(0.5)
+        assert server_connected.recv_buffer == test_data
+        assert not client.recv_buffer
+        client.transport_close()
         server.transport_close()
 
     @pytest.mark.parametrize(

@@ -7,6 +7,22 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.5.3
+-------------
+* Simplify transport_serial (modbus use) (#1808)
+* Reduce transport_serial (#1807)
+* Change to pyproject.toml. (#1805)
+* fixes access to asyncio loop via loop property of SerialTransport (#1804)
+* Bump aiohttp to support python 3.12. (#1802)
+* README wrong links. (#1801)
+* CI caching. (#1796)
+* Solve pylint unhappy. (#1799)
+* Clean except last 7 days. (#1798)
+* Reconect_delay == 0, do not reconnect. (#1795)
+* Update simulator.py method docstring (#1793)
+* add type to isError. (#1781)
+* Allow repr(ModbusException) to return complete information (#1779)
+* Update docs. (#1777)
 
 
 Version 3.5.2

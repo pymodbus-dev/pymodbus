@@ -20,7 +20,6 @@ class SerialTransport(asyncio.Transport):
         self.sync_serial = serial.serial_for_url(*args, **kwargs)
         self._write_buffer = []
         self.poll_task = None
-        self.test_task = None
         self._has_writer = False
         self._poll_wait_time = 0.0005
         self.sync_serial.timeout = 0
@@ -44,7 +43,7 @@ class SerialTransport(asyncio.Transport):
         if self.poll_task:
             self.poll_task.cancel()
             _ = asyncio.ensure_future(self.poll_task)
-            self.test_task = None
+            self.poll_task = None
         else:
             self.async_loop.remove_reader(self.sync_serial.fileno())
         self.flush()

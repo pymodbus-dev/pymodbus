@@ -38,6 +38,7 @@ Prepare/make release on dev.
    * twine upload dist/*  (upload to pypi)
    * Double check Read me docs are updated
       * trigger build https://readthedocs.org/projects/pymodbus/builds/
+   * Mark release as active in readthedocs.org
 * Make an announcement in discussions.
 
 

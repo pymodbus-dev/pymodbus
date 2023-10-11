@@ -36,6 +36,8 @@ Thanks to
 - Kenny Johansson
 - Matthias Straka
 - Logan Gunthorpe
+- Marko Luther
+- Matthias Straka
 - Pavel Kostromitinov
 - peufeu2
 - Philip Couling
@@ -45,6 +47,7 @@ Thanks to
 - Totally a booplicate
 - WouterTuinstra
 - wriswith
+- yyokusa
 
 
 Pymodbus version 2 family

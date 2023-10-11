@@ -14,12 +14,13 @@ Prepare/make release on dev.
    * Control / Update API_changes.rst
    * Update CHANGELOG.rst
       * Add commits from last release, but selectively !
-        git log --oneline v3.5.1..HEAD > commit.log
-        git log --pretty="%an" v3.0.0..HEAD | sort -uf >> AUTHORS
+        git log --oneline v3.5.3..HEAD > commit.log
+        git log --pretty="%an" v3.0.0..HEAD | sort -uf > authors.log
         update AUTHORS
         cd doc; ./build_html
    * Commit, push and merge.
 * Checkout master locally
+   * git pull dev
    * git merge dev
    * git push
    * git branch -D master

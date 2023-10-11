@@ -1,4 +1,4 @@
-include requirements.txt
-include README.rst
+include pyproject.toml
+include README.md
 include CHANGELOG.rst
 include LICENSE

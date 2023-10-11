@@ -3,30 +3,34 @@
 
 An example of a multi threaded asynchronous server.
 
-usage: server_async.py [-h] [--comm {tcp,udp,serial,tls}]
-                       [--framer {ascii,binary,rtu,socket,tls}]
-                       [--log {critical,error,warning,info,debug}]
-                       [--port PORT] [--store {sequential,sparse,factory,none}]
-                       [--slaves SLAVES]
+usage::
 
-Command line options for examples
+    server_async.py [-h] [--comm {tcp,udp,serial,tls}]
+                    [--framer {ascii,binary,rtu,socket,tls}]
+                    [--log {critical,error,warning,info,debug}]
+                    [--port PORT] [--store {sequential,sparse,factory,none}]
+                    [--slaves SLAVES]
 
-options:
-  -h, --help            show this help message and exit
-  --comm {tcp,udp,serial,tls}
-                        "serial", "tcp", "udp" or "tls"
-  --framer {ascii,binary,rtu,socket,tls}
-                        "ascii", "binary", "rtu", "socket" or "tls"
-  --log {critical,error,warning,info,debug}
-                        "critical", "error", "warning", "info" or "debug"
-  --port PORT           the port to use
-  --baudrate BAUDRATE   the baud rate to use for the serial device
-  --store {sequential,sparse,factory,none}
-                        "sequential", "sparse", "factory" or "none"
-  --slaves SLAVES       number of slaves to respond to
+    -h, --help
+        show this help message and exit
+    -c, --comm {tcp,udp,serial,tls}
+        set communication, default is tcp
+    -f, --framer {ascii,binary,rtu,socket,tls}
+        set framer, default depends on --comm
+    -l, --log {critical,error,warning,info,debug}
+        set log level, default is info
+    -p, --port PORT
+        set port
+        set serial device baud rate
+    --store {sequential,sparse,factory,none}
+        set datastore type
+    --slaves SLAVES
+        set number of slaves to respond to
 
 The corresponding client can be started as:
+
     python3 client_sync.py
+
 """
 import asyncio
 import logging

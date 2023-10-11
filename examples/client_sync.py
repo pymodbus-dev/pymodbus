@@ -3,27 +3,32 @@
 
 An example of a single threaded synchronous client.
 
-usage: client_sync.py [-h] [-c {tcp,udp,serial,tls}]
-                       [-f {ascii,binary,rtu,socket,tls}]
-                       [-l {critical,error,warning,info,debug}] [-p PORT]
-                       [--baudrate BAUDRATE] [--host HOST]
+usage::
 
-Run asynchronous client.
+    client_sync.py [-h] [-c {tcp,udp,serial,tls}]
+                    [-f {ascii,binary,rtu,socket,tls}]
+                    [-l {critical,error,warning,info,debug}] [-p PORT]
+                    [--baudrate BAUDRATE] [--host HOST]
 
-options:
-  -h, --help            show this help message and exit
-  -c {tcp,udp,serial,tls}, --comm {tcp,udp,serial,tls}
-                        set communication, default is tcp
-  -f {ascii,binary,rtu,socket,tls}, --framer {ascii,binary,rtu,socket,tls}
-                        set framer, default depends on --comm
-  -l {critical,error,warning,info,debug}, --log {critical,error,warning,info,debug}
-                        set log level, default is info
-  -p PORT, --port PORT  set port
-  --baudrate BAUDRATE   set serial device baud rate
-  --host HOST           set host, default is 127.0.0.1
+    -h, --help
+        show this help message and exit
+    -c, --comm {tcp,udp,serial,tls}
+        set communication, default is tcp
+    -f, --framer {ascii,binary,rtu,socket,tls}
+        set framer, default depends on --comm
+    -l, --log {critical,error,warning,info,debug}
+        set log level, default is info
+    -p, --port PORT
+        set port
+    --baudrate BAUDRATE
+        set serial device baud rate
+    --host HOST
+        set host, default is 127.0.0.1
 
 The corresponding server must be started before e.g. as:
+
     python3 server_sync.py
+
 """
 import logging
 
@@ -56,7 +61,7 @@ def setup_sync_client(description=None, cmdline=None):
         client = ModbusTcpClient(
             args.host,
             port=args.port,
-            # Common optional paramers:
+            # Common optional parameters:
             framer=args.framer,
             timeout=args.timeout,
             #    retries=3,
@@ -70,7 +75,7 @@ def setup_sync_client(description=None, cmdline=None):
         client = ModbusUdpClient(
             args.host,
             port=args.port,
-            # Common optional paramers:
+            # Common optional parameters:
             framer=args.framer,
             timeout=args.timeout,
             #    retries=3,
@@ -83,7 +88,7 @@ def setup_sync_client(description=None, cmdline=None):
     elif args.comm == "serial":
         client = ModbusSerialClient(
             port=args.port,  # serial port
-            # Common optional paramers:
+            # Common optional parameters:
             #    framer=ModbusRtuFramer,
             timeout=args.timeout,
             #    retries=3,
@@ -101,7 +106,7 @@ def setup_sync_client(description=None, cmdline=None):
         client = ModbusTlsClient(
             args.host,
             port=args.port,
-            # Common optional paramers:
+            # Common optional parameters:
             framer=args.framer,
             timeout=args.timeout,
             #    retries=3,

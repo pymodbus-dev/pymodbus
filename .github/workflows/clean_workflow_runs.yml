@@ -14,6 +14,9 @@ jobs:
         with:
           token: ${{ github.token }}
           repository: ${{ github.repository }}
+          retain_days: 7
+          keep_minimum_runs: 0
+
 
   clear-cache:
     runs-on: ubuntu-latest

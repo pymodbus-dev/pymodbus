@@ -1,29 +1,26 @@
 #!/usr/bin/env python3
-"""Pymodbus Client modbus async call examples.
+"""Pymodbus Client modbus async all calls example.
 
-Please see:
-
-    async_template_call
-
+Please see method **async_template_call**
 for a template on how to make modbus calls and check for different
 error conditions.
 
-The handle_.... functions each handle a set of modbus calls with the
+The handle* functions each handle a set of modbus calls with the
 same register type (e.g. coils).
 
-All available modbus calls are present. The difference between async
-and sync is a single 'await' so the calls are not repeated.
+All available modbus calls are present.
 
 If you are performing a request that is not available in the client
-mixin, you have to perform the request like this instead:
+mixin, you have to perform the request like this instead::
 
-from pymodbus.diag_message import ClearCountersRequest
-from pymodbus.diag_message import ClearCountersResponse
+    from pymodbus.diag_message import ClearCountersRequest
+    from pymodbus.diag_message import ClearCountersResponse
 
-request  = ClearCountersRequest()
-response = client.execute(request)
-if isinstance(response, ClearCountersResponse):
-    ... do something with the response
+    request  = ClearCountersRequest()
+    response = client.execute(request)
+    if isinstance(response, ClearCountersResponse):
+        ... do something with the response
+
 
 This example uses client_async.py and client_sync.py to handle connection,
 and have the same options.

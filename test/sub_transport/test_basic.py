@@ -265,7 +265,7 @@ class TestBasicModbusProtocol:
         assert str(client) == f"ModbusProtocol({use_clc.comm_name})"
 
     def test_generate_ssl(self, use_clc):
-        """Test ssl generattion"""
+        """Test ssl generation"""
         with mock.patch("pymodbus.transport.transport.ssl.SSLContext"):
             sslctx = use_clc.generate_ssl(True, "cert_file", "key_file")
         assert sslctx
@@ -323,7 +323,12 @@ class TestBasicSerial:
         comm.write(b"abcd")
         comm.flush()
         comm.close()
+        comm = SerialTransport(mock.MagicMock(), mock.Mock(), "dummy")
         comm.abort()
-        assert await create_serial_connection(
+        transport, protocol = await create_serial_connection(
             asyncio.get_running_loop(), mock.Mock, url="dummy"
         )
+        await asyncio.sleep(0.1)
+        assert transport
+        assert protocol
+        transport.close()

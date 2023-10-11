@@ -112,8 +112,6 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         self.params.close_comm_on_error = bool(close_comm_on_error)
         self.params.strict = bool(strict)
         self.params.broadcast_enable = bool(broadcast_enable)
-        self.params.reconnect_delay = int(reconnect_delay)
-        self.reconnect_delay_max = int(reconnect_delay_max)
         self.on_reconnect_callback = on_reconnect_callback
         self.retry_on_empty: int = 0
         self.no_resend_on_retry = no_resend_on_retry
@@ -124,7 +122,6 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         self.transaction = DictTransactionManager(
             self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
         )
-        self.reconnect_delay = self.params.reconnect_delay
         self.reconnect_delay_current = self.params.reconnect_delay
         self.use_udp = False
         self.state = ModbusTransactionState.IDLE

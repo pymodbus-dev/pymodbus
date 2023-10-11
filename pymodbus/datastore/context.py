@@ -19,7 +19,7 @@ class ModbusBaseSlaveContext:  # pylint: disable=too-few-public-methods
     _fx_mapper.update([(i, "h") for i in (3, 6, 16, 22, 23)])
     _fx_mapper.update([(i, "c") for i in (1, 5, 15)])
 
-    def decode(self, fx):  # pylint: disable=invalid-name
+    def decode(self, fx):
         """Convert the function code to the datastore to.
 
         :param fx: The function we are working with

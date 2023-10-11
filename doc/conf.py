@@ -29,7 +29,7 @@ author = "Open Source volunteers"
 version = pymodbus_version
 release = pymodbus_version
 language = "en"
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["build", "Thumbs.db", ".DS_Store"]
 pygments_style = "sphinx"
 todo_include_todos = False
 

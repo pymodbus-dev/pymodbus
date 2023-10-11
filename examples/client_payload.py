@@ -2,8 +2,7 @@
 """Pymodbus Client Payload Example.
 
 This example shows how to build a client with a
-complicated memory layout using builder-
-
+complicated memory layout using builder.
 
 Works out of the box together with payload_server.py
 """

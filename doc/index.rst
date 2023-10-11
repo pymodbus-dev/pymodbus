@@ -1,8 +1,3 @@
-.. PyModbus documentation master file, created by
-   sphinx-quickstart on Wed Dec 20 12:31:10 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to PyModbus's documentation!
 ====================================
 
@@ -10,9 +5,8 @@ Welcome to PyModbus's documentation!
    :maxdepth: 8
    :caption: Contents:
 
-   readme.rst
-   changelog.rst
-   source/library/client.rst
+   source/readme.rst
+   source/client.rst
    source/library/server.rst
    source/library/nullmodem.rst
    source/library/simulator/simulator
@@ -22,11 +16,4 @@ Welcome to PyModbus's documentation!
    source/library/constants.rst
    source/library/pymodbus.rst
    source/examples.rst
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   source/authors.rst

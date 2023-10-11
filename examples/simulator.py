@@ -3,9 +3,9 @@
 
 An example of how to use the simulator (server) with a client.
 
-for usage see simulator
+for usage see documentation of simulator
 
-.. tip:: pymodbus.server starts the server directly from the commandline
+.. tip:: pymodbus.simulator starts the server directly from the commandline
 """
 import asyncio
 import logging

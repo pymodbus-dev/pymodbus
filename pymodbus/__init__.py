@@ -12,5 +12,5 @@ __all__ = [
 from pymodbus.logging import pymodbus_apply_logging_config
 
 
-__version__ = "3.5.3"
+__version__ = "3.5.4"
 __version_full__ = f"[pymodbus, version {__version__}]"

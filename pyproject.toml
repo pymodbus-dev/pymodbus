@@ -10,7 +10,7 @@ authors = [{name = '"Galen Collins'}, {name = 'Jan Iversen"'}]
 maintainers = [{name = '"dhoomakethu'}, {name = 'janiversen"'}]
 description = "A fully featured modbus protocol stack in python"
 keywords = ["modbus", "asyncio", "scada", "client", "server", "simulator"]
-readme = "README.rst"
+readme = "README.md"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
@@ -63,6 +63,7 @@ documentation = [
     "sphinx-rtd-theme>=1.1.1"
 ]
 development = [
+    "build>=1.0.3",
     "codespell>=2.2.2",
     "coverage>=7.1.0",
     "mypy>=1.3.0",
@@ -96,7 +97,8 @@ all = [
     "recommonmark>=0.7.1",
     "Sphinx>=5.3.0",
     "sphinx-rtd-theme>=1.1.1",
-    # "pymodbus[dev]",
+    # "pymodbus[development]",
+    "build>=1.0.3",
     "codespell>=2.2.2",
     "coverage>=7.1.0",
     "mypy>=1.3.0",

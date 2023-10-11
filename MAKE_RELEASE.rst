@@ -20,6 +20,7 @@ Prepare/make release on dev.
         cd doc; ./build_html
    * Commit, push and merge.
 * Checkout master locally
+   * git pull dev
    * git merge dev
    * git push
    * git branch -D master

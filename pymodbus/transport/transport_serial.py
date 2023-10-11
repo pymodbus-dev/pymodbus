@@ -41,13 +41,13 @@ class SerialTransport(asyncio.Transport):
         with contextlib.suppress(Exception):
             self.sync_serial.flush()
 
+        self.flush()
         if self.poll_task:
             self.poll_task.cancel()
             _ = asyncio.ensure_future(self.poll_task)
             self.poll_task = None
         else:
             self.async_loop.remove_reader(self.sync_serial.fileno())
-        self.flush()
         self.sync_serial.close()
         self.sync_serial = None
         with contextlib.suppress(Exception):

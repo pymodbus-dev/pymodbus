@@ -9,6 +9,7 @@ from pymodbus.transport import (
     CommType,
     ModbusProtocol,
 )
+from pymodbus.transport.transport_serial import SerialTransport
 
 
 FACTOR = 1.2 if not pytest.IS_WINDOWS else 4.2
@@ -163,11 +164,13 @@ class TestCommModbusProtocol:
             (CommType.SERIAL, "socket://localhost:5020"),
         ],
     )
-    async def x_test_serial_poll(self, client, server):
+    async def test_serial_poll(self, client, server):
         """Test connection and data exchange."""
         assert await server.transport_listen()
+        SerialTransport.force_poll = True
         assert await client.transport_connect()
         await asyncio.sleep(0.5)
+        SerialTransport.force_poll = False
         assert len(server.active_connections) == 1
         server_connected = list(server.active_connections.values())[0]
         test_data = b"abcd" * 1000

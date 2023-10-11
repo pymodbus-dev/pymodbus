@@ -12,6 +12,8 @@ with contextlib.suppress(ImportError):
 class SerialTransport(asyncio.Transport):
     """An asyncio serial transport."""
 
+    force_poll: bool = False
+
     def __init__(self, loop, protocol, *args, **kwargs):
         """Initialize."""
         super().__init__()
@@ -26,7 +28,7 @@ class SerialTransport(asyncio.Transport):
 
     def setup(self):
         """Prepare to read/write"""
-        if os.name == "nt":
+        if os.name == "nt" or self.force_poll:
             self.poll_task = asyncio.create_task(self._polling_task())
         else:
             self.async_loop.add_reader(self.sync_serial.fileno(), self._read_ready)

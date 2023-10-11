@@ -41,7 +41,7 @@ small and large not only programming but also documentation and testing.
 ## Supported versions
 
 Version
-[3.5.3](https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.5.3) is
+[3.5.4](https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.5.4) is
 the current release.
 
 Each release is

@@ -7,6 +7,11 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.5.4
+-------------
+* Release errors (pyproject.toml changes). (#1811)
+
+
 Version 3.5.3
 -------------
 * Simplify transport_serial (modbus use) (#1808)

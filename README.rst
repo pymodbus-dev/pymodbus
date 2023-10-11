@@ -39,7 +39,7 @@ There are challenges small and large not only programming but also documentation
 Supported versions
 ------------------
 
-Version `3.5.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.5.3>`_ is the current release.
+Version `3.5.4 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.5.4>`_ is the current release.
 
 Each release is `documented <https://pymodbus.readthedocs.io/en/latest/source/changelog.html>`_
 

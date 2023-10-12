@@ -318,7 +318,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
     def test_sync_serial_rtu_client_timeouts(self):
         """Test sync serial rtu."""
         client = ModbusSerialClient("/dev/null", framer=ModbusRtuFramer, baudrate=9600)
-        assert client.silent_interval == round((3.5 * 11 / 9600), 6)
+        assert client.silent_interval == round((3.5 * 10 / 9600), 6)
         client = ModbusSerialClient("/dev/null", framer=ModbusRtuFramer, baudrate=38400)
         assert client.silent_interval == round((1.75 / 1000), 6)
 

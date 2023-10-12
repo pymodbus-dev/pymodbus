@@ -1,9 +1,10 @@
 Authors
 =======
-All these version were not possible without volunteers!
+All these versions would not be possible without volunteers!
 
 This is a complete list for each major version.
 
+A big "thank you" to everybody who helped out.
 
 Pymodbus version 3 family
 -------------------------

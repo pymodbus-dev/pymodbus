@@ -17,3 +17,5 @@ Welcome to PyModbus's documentation!
    source/library/pymodbus.rst
    source/examples.rst
    source/authors.rst
+   source/changelog.rst
+   source/api_changes.rst

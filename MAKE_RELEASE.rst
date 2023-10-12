@@ -33,10 +33,12 @@ Prepare/make release on dev.
 * on local repo
    * git pull, check release tag is pulled
    * git checkout v3.0.0dev0
-   * python3 setup.py sdist bdist_wheel
+   * python3 -m build
+   * twine check dist/*
    * twine upload dist/*  (upload to pypi)
    * Double check Read me docs are updated
       * trigger build https://readthedocs.org/projects/pymodbus/builds/
+   * Mark release as active in readthedocs.org
 * Make an announcement in discussions.
 
 

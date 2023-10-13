@@ -31,10 +31,11 @@ The corresponding server must be started before e.g. as:
 """
 import logging
 
+from client_sync import run_sync_client, setup_sync_client
+
 import pymodbus.diag_message as req_diag
 import pymodbus.mei_message as req_mei
 import pymodbus.other_message as req_other
-from examples.client_sync import run_sync_client, setup_sync_client
 from pymodbus.exceptions import ModbusException
 
 

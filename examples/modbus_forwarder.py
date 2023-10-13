@@ -20,7 +20,8 @@ Both server and client are tcp based, but it can be easily modified to any serve
 import asyncio
 import logging
 
-from examples import helper
+import helper
+
 from pymodbus.client import ModbusTcpClient
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.remote import RemoteSlaveContext

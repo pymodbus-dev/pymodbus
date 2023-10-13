@@ -10,7 +10,8 @@ import asyncio
 import logging
 from collections import OrderedDict
 
-from examples.client_async import run_async_client, setup_async_client
+from client_async import run_async_client, setup_async_client
+
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 

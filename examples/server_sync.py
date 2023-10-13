@@ -36,8 +36,8 @@ a lot slower.
 """
 import logging
 
-from examples import helper
-from examples.server_async import setup_server
+import helper
+from server_async import setup_server
 
 # --------------------------------------------------------------------------- #
 # import the various client implementations

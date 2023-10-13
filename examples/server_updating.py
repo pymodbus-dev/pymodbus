@@ -34,7 +34,8 @@ The corresponding client can be started as:
 import asyncio
 import logging
 
-from examples.server_async import run_async_server, setup_server
+from server_async import run_async_server, setup_server
+
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,

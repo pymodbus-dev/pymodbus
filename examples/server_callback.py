@@ -7,7 +7,8 @@ when a value is written to it.
 import asyncio
 import logging
 
-from examples.server_async import run_async_server, setup_server
+from server_async import run_async_server, setup_server
+
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,

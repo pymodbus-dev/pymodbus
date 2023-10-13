@@ -1,7 +1,7 @@
-"""Helper for examples.
+"""Helper for commandline etc.
 
 Contains common functions get get_command_line() to avoid duplicating
-code that are not relevant for the examples as such, like e.g.
+code that are not relevant for the code as such, like e.g.
 get_command_line
 """
 import argparse

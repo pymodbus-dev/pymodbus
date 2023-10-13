@@ -32,10 +32,11 @@ The corresponding server must be started before e.g. as:
 import asyncio
 import logging
 
+from client_async import run_async_client, setup_async_client
+
 import pymodbus.diag_message as req_diag
 import pymodbus.mei_message as req_mei
 import pymodbus.other_message as req_other
-from examples.client_async import run_async_client, setup_async_client
 from pymodbus.exceptions import ModbusException
 
 

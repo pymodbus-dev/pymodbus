@@ -35,7 +35,8 @@ import logging
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
-from examples import helper
+import helper
+
 from pymodbus.client import (
     ModbusSerialClient,
     ModbusTcpClient,

@@ -1,6 +1,6 @@
 #!/bin/bash
 pushd ..
-zip -9 doc/source/_static/examples.zip examples
+zip -9 doc/source/_static/examples.zip examples/*
 tar -czf doc/source/_static/examples.tgz examples
 popd
 

@@ -1,5 +1,6 @@
 #!/bin/bash
 pushd ..
+rm -rf examples/__pycache__
 zip -9 doc/source/_static/examples.zip examples/*
 tar -czf doc/source/_static/examples.tgz examples
 popd

@@ -7,13 +7,13 @@ when a value is written to it.
 import asyncio
 import logging
 
-from server_async import run_async_server, setup_server
-
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
     ModbusSlaveContext,
 )
+
+from .server_async import run_async_server, setup_server
 
 
 _logger = logging.getLogger(__name__)

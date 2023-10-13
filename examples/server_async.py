@@ -35,8 +35,6 @@ The corresponding client can be started as:
 import asyncio
 import logging
 
-import helper
-
 from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
@@ -45,16 +43,14 @@ from pymodbus.datastore import (
     ModbusSparseDataBlock,
 )
 from pymodbus.device import ModbusDeviceIdentification
-
-# --------------------------------------------------------------------------- #
-# import the various client implementations
-# --------------------------------------------------------------------------- #
 from pymodbus.server import (
     StartAsyncSerialServer,
     StartAsyncTcpServer,
     StartAsyncTlsServer,
     StartAsyncUdpServer,
 )
+
+from .helper import get_certificate, get_commandline
 
 
 logging.basicConfig()
@@ -64,7 +60,7 @@ _logger.setLevel(logging.INFO)
 
 def setup_server(description=None, context=None, cmdline=None):
     """Run server setup."""
-    args = helper.get_commandline(server=True, description=description, cmdline=cmdline)
+    args = get_commandline(server=True, description=description, cmdline=cmdline)
     if context:
         args.context = context
     if not args.context:
@@ -210,11 +206,11 @@ async def run_async_server(args):
             # custom_functions=[],  # allow custom handling
             address=address,  # listen address
             framer=args.framer,  # The framer strategy to use
-            certfile=helper.get_certificate(
+            certfile=get_certificate(
                 "crt"
             ),  # The cert file path for TLS (used if sslctx is None)
             # sslctx=sslctx,  # The SSLContext to use for TLS (default None and auto create)
-            keyfile=helper.get_certificate(
+            keyfile=get_certificate(
                 "key"
             ),  # The key file path for TLS (used if sslctx is None)
             # password="none",  # The password for for decrypting the private key file

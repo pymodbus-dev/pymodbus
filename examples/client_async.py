@@ -32,8 +32,6 @@ import logging
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
-import helper
-
 from pymodbus.client import (
     AsyncModbusSerialClient,
     AsyncModbusTcpClient,
@@ -41,6 +39,8 @@ from pymodbus.client import (
     AsyncModbusUdpClient,
 )
 from pymodbus.exceptions import ModbusIOException
+
+from .helper import get_certificate, get_commandline
 
 
 logging.basicConfig()
@@ -50,9 +50,7 @@ _logger.setLevel("DEBUG")
 
 def setup_async_client(description=None, cmdline=None):
     """Run client setup."""
-    args = helper.get_commandline(
-        server=False, description=description, cmdline=cmdline
-    )
+    args = get_commandline(server=False, description=description, cmdline=cmdline)
     _logger.info("### Create client object")
     if args.comm == "tcp":
         client = AsyncModbusTcpClient(
@@ -114,8 +112,8 @@ def setup_async_client(description=None, cmdline=None):
             #    strict=True,
             # TLS setup parameters
             #    sslctx=sslctx,
-            certfile=helper.get_certificate("crt"),
-            keyfile=helper.get_certificate("key"),
+            certfile=get_certificate("crt"),
+            keyfile=get_certificate("key"),
             #    password="none",
             server_hostname="localhost",
         )

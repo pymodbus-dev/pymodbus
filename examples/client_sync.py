@@ -35,14 +35,14 @@ import logging
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
-import helper
-
 from pymodbus.client import (
     ModbusSerialClient,
     ModbusTcpClient,
     ModbusTlsClient,
     ModbusUdpClient,
 )
+
+from .helper import get_certificate, get_commandline
 
 
 logging.basicConfig()
@@ -52,7 +52,7 @@ _logger.setLevel("DEBUG")
 
 def setup_sync_client(description=None, cmdline=None):
     """Run client setup."""
-    args = helper.get_commandline(
+    args = get_commandline(
         server=False,
         description=description,
         cmdline=cmdline,
@@ -116,8 +116,8 @@ def setup_sync_client(description=None, cmdline=None):
             #    strict=True,
             # TLS setup parameters
             #    sslctx=None,
-            certfile=helper.get_certificate("crt"),
-            keyfile=helper.get_certificate("key"),
+            certfile=get_certificate("crt"),
+            keyfile=get_certificate("key"),
             #    password=None,
             server_hostname="localhost",
         )

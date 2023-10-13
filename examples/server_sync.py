@@ -36,9 +36,6 @@ a lot slower.
 """
 import logging
 
-import helper
-from server_async import setup_server
-
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
@@ -48,6 +45,9 @@ from pymodbus.server import (
     StartTlsServer,
     StartUdpServer,
 )
+
+from .helper import get_certificate
+from .server_async import setup_server
 
 
 _logger = logging.getLogger(__name__)
@@ -115,11 +115,11 @@ def run_sync_server(args):
             # custom_functions=[],  # allow custom handling
             address=address,  # listen address
             framer=args.framer,  # The framer strategy to use
-            certfile=helper.get_certificate(
+            certfile=get_certificate(
                 "crt"
             ),  # The cert file path for TLS (used if sslctx is None)
             # sslctx=None,  # The SSLContext to use for TLS (default None and auto create)
-            keyfile=helper.get_certificate(
+            keyfile=get_certificate(
                 "key"
             ),  # The key file path for TLS (used if sslctx is None)
             # password=None,  # The password for for decrypting the private key file

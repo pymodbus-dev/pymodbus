@@ -268,5 +268,5 @@ include = [
 omit = ["examples/contrib/"]
 
 [tool.codespell]
-skip = "./doc/_build,./doc/source/_static,venv,.venv,.git,htmlcov,CHANGELOG.rst,.mypy_cache"
+skip = "./build,./doc/source/_static,venv,.venv,.git,htmlcov,CHANGELOG.rst,.mypy_cache"
 ignore-words-list = "asend"

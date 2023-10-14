@@ -12,11 +12,11 @@ PyModbus - A Python Modbus Stack
 
 Pymodbus is a full Modbus protocol implementation offering client/server with synchronous/asynchronous API a well as simulators.
 
-Supported versions
-------------------
-
 Current release is `3.5.4 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.5.4>`_.
-All changes are `detailed <https://pymodbus.readthedocs.io/en/latest/source/channgelog.html>`_
+
+Bleeding edge (not released) is `dev <https://github.com/pymodbus-dev/pymodbus/tree/dev>`_.
+
+All changes are described in `release notes <https://pymodbus.readthedocs.io/en/latest/source/channgelog.html>`_
 and all API changes are `documented <https://pymodbus.readthedocs.io/en/latest/source/api_changes.html>`_
 
 A big thanks to all the `volunteers <https://pymodbus.readthedocs.io/en/latest/source/authors.html>`_ that helps make pymodbus a great project.
@@ -83,6 +83,8 @@ REPL Features
 - simulation of broken requests/responses
 - simulation of error responses (hard to provoke in real devices)
 
+`REPL documentation <https://https://pymodbus.readthedocs.io/en/dev/source/REPL.html>`_
+
 
 Simulator Features
 ^^^^^^^^^^^^^^^^^^
@@ -93,6 +95,8 @@ Simulator Features
 - allow distributed team members to work on a virtual device using internet
 - simulation of broken requests/responses
 - simulation of error responses (hard to provoke in real devices)
+
+`Simulator documentation <https://pymodbus.readthedocs.io/en/dev/source/simulator.html>`_
 
 Use Cases
 ---------
@@ -118,13 +122,13 @@ https://readthedocs.org/docs/pymodbus/en/latest/index.html
 
 
 
-Installation
-------------
+Install
+-------
 
 The library is available on pypi.org and github.com to install with
 
-- **`pip`** for those who just want to use the library
-- **`git clone`** for those who wants to help or just are curious
+- :code:`pip` for those who just want to use the library
+- :code:`git clone` for those who wants to help or just are curious
 
 Be aware that there are a number of project, who have forked pymodbus and
 
@@ -141,8 +145,8 @@ A growing number of Linux distributions include pymodbus in their standard insta
 
 You need to have python3 installed, preferable 3.11.
 
-Installing with pip
-^^^^^^^^^^^^^^^^^^^
+Install with pip
+^^^^^^^^^^^^^^^^
 
 You can install using pip by issuing the following
 commands in a terminal window::
@@ -178,8 +182,8 @@ It is possible to install old releases if needed::
    pip install pymodbus==3.5.4
 
 
-Installing with github
-^^^^^^^^^^^^^^^^^^^^^^
+Install with github
+^^^^^^^^^^^^^^^^^^^
 
 On github, fork https://github.com/pymodbus-dev/pymodbus.git
 
@@ -217,7 +221,7 @@ This installs dependencies in your virtual environment
 with pointers directly to the pymodbus directory,
 so any change you make is immediately available as if installed.
 
-It will also install `pre-commit` git hooks, ensuring your commit are verified.
+It will also install :code:`pre-commit` git hooks, ensuring your commit are verified.
 
 The repository contains a number of important branches and tags.
   * **dev** is where all development happens, this branch is not always stable.
@@ -253,10 +257,12 @@ so that others can benefit from the results.
 If you think, that something in the code is broken/not running well, please `open an issue <https://github.com/pymodbus-dev/pymodbus/issues/new>`_,
 read the Template-text first and then post your issue with your setup information.
 
+`Example documentation <https://pymodbus.readthedocs.io/en/dev/source/examples.html>`_
+
 
 Contributing
 ------------
-Just fork the repo and raise your Pull Request against `dev` branch.
+Just fork the repo and raise your Pull Request against :code:`dev` branch.
 
 We always have more work than time, so feel free to open a discussion / issue on a theme you want to solve.
 
@@ -305,6 +311,15 @@ Test your changes::
    pytest
 
 
+Architecture
+^^^^^^^^^^^^
+
+There are no documentation of the architecture (help is welcome), but most classes and
+methods are documented:
+
+`Pymodbus internals <https://pymodbus.readthedocs.io/en/dev/source/internals.html>`_
+
+
 Generate documentation
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -323,4 +338,4 @@ The documentation is available in <root>/build/html
 License Information
 -------------------
 
-Released under the `BSD License <LICENSE>`_
+Released under the `BSD License <https://github.com/pymodbus-dev/pymodbus/blob/dev/LICENSE>`_

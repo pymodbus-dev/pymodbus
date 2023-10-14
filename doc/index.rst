@@ -1,9 +1,12 @@
 Welcome to PyModbus's documentation!
 ====================================
 
+Please select a topic in the left hand column.
+
 .. toctree::
    :maxdepth: 8
    :caption: Contents:
+   :hidden:
 
    source/readme
    source/client

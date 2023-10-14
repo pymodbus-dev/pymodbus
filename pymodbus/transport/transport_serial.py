@@ -2,7 +2,7 @@
 import asyncio
 import contextlib
 import os
-from typing import Tuple
+from typing import Tuple, List
 
 
 with contextlib.suppress(ImportError):
@@ -20,7 +20,7 @@ class SerialTransport(asyncio.Transport):
         self.async_loop = loop
         self._protocol: asyncio.BaseProtocol = protocol
         self.sync_serial = serial.serial_for_url(*args, **kwargs)
-        self._write_buffer: list[bytes] = []
+        self._write_buffer: List[bytes] = []
         self.poll_task = None
         self._poll_wait_time = 0.0005
         self.sync_serial.timeout = 0
@@ -161,7 +161,7 @@ class SerialTransport(asyncio.Transport):
 
 async def create_serial_connection(
     loop, protocol_factory, *args, **kwargs
-) -> tuple[asyncio.Transport, asyncio.BaseProtocol]:
+) -> Tuple[asyncio.Transport, asyncio.BaseProtocol]:
     """Create a connection to a new serial port instance."""
     protocol = protocol_factory()
     transport = SerialTransport(loop, protocol, *args, **kwargs)

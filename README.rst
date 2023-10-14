@@ -64,7 +64,7 @@ Server Features
 ^^^^^^^^^^^^^^^
 
 * asynchronous implementation for high performance
-* synchronous API classes for convinience
+* synchronous API classes for convenience
 * simulate real life devices
 * full server control context (device information, counters, etc)
 * different backend datastores to manage register values
@@ -121,7 +121,7 @@ https://readthedocs.org/docs/pymodbus/en/latest/index.html
 Installation
 ------------
 
-The library is avaiable on pypi.org and github.com to install with
+The library is available on pypi.org and github.com to install with
 
 - **`pip`** for those who just want to use the library
 - **`git clone`** for those who wants to help or just are curious
@@ -153,7 +153,7 @@ If you want to use the serial interface::
 
    pip install pymodbus[serial]
 
-This will install pymodbus with the pyserial dependecy.
+This will install pymodbus with the pyserial dependency.
 
 Pymodbus offers a number of extra options:
 
@@ -190,7 +190,7 @@ Clone the source, and make a virtual environment::
    cd pymodbus
    python3 -m venv .venv
 
-Activate the virtual environment, this command needs repeated in every new termial::
+Activate the virtual environment, this command needs repeated in every new terminal::
 
    source .venv/bin/activate
 
@@ -274,7 +274,7 @@ solving issues:
 There are 2 bigger projects ongoing:
 
    * rewriting the internal part of all clients (both sync and async)
-   * Add features to and simulator, and enchance the web design
+   * Add features to and simulator, and enhance the web design
 
 
 Development Instructions

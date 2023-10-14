@@ -5,13 +5,13 @@ import importlib
 import json
 import os
 from time import time
-from typing import List
+from typing import Any, List, Optional, cast
 
 
 try:
     from aiohttp import web
 except ImportError:
-    web = None
+    web = cast(Any, None)
 
 import contextlib
 
@@ -124,7 +124,7 @@ class ModbusSimulatorServer:
         http_port: int = 8080,
         log_file: str = "server.log",
         json_file: str = "setup.json",
-        custom_actions_module: str = None,
+        custom_actions_module: Optional[str] = None,
     ):
         """Initialize http interface."""
         if not web:
@@ -157,7 +157,7 @@ class ModbusSimulatorServer:
             del server["port"]
         device = setup["device_list"][modbus_device]
         self.datastore_context = ModbusSimulatorContext(
-            device, custom_actions_dict or None
+            device, custom_actions_dict or {}
         )
         datastore = ModbusServerContext(slaves=self.datastore_context, single=True)
         comm = comm_class[server.pop("comm")]

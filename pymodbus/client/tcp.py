@@ -3,7 +3,7 @@ import asyncio
 import select
 import socket
 import time
-from typing import Any, Tuple, Type
+from typing import Any, Optional, Tuple, Type
 
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.exceptions import ConnectionException
@@ -40,7 +40,7 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
         host: str,
         port: int = 502,
         framer: Type[ModbusFramer] = ModbusSocketFramer,
-        source_address: Tuple[str, int] = None,
+        source_address: Optional[Tuple[str, int]] = None,
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
@@ -102,7 +102,7 @@ class ModbusTcpClient(ModbusBaseClient):
         host: str,
         port: int = 502,
         framer: Type[ModbusFramer] = ModbusSocketFramer,
-        source_address: Tuple[str, int] = None,
+        source_address: Optional[Tuple[str, int]] = None,
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus TCP Client."""

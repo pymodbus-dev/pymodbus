@@ -141,6 +141,7 @@ class ModbusSerialClient(ModbusBaseClient):
 
         self.last_frame_end = None
 
+        assert isinstance(self.comm_params.baudrate, int)
         self._t0 = float(1 + bytesize + stopbits) / self.comm_params.baudrate
 
         # Check every 4 bytes / 2 registers if the reading is ready

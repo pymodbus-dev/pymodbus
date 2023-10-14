@@ -17,7 +17,7 @@ logging.getLogger("pymodbus_internal").addHandler(__null())
 
 
 def pymodbus_apply_logging_config(
-    level: Union[str, int] = logging.DEBUG, log_file_name: str = None
+    level: Union[str, int] = logging.DEBUG, log_file_name: Union[str, None] = None
 ):
     """Apply basic logging configuration used by default by Pymodbus maintainers.
 

@@ -223,7 +223,7 @@ overgeneral-exceptions = "builtins.Exception"
 bad-functions = "map,input"
 
 [tool.mypy]
-strict_optional = false
+strict_optional = true
 exclude = "pymodbus/client/base.py"
 show_error_codes = true
 local_partial_types = true

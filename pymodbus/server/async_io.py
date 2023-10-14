@@ -5,7 +5,7 @@ import os
 import time
 import traceback
 from contextlib import suppress
-from typing import Union
+from typing import Optional, Union
 
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
@@ -84,7 +84,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 traceback.format_exc(),
             )
 
-    def callback_disconnected(self, call_exc: Exception) -> None:
+    def callback_disconnected(self, call_exc: Optional[Exception]) -> None:
         """Call when connection is lost."""
         try:
             if self.handler_task:
@@ -239,7 +239,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
             result = None
         return result
 
-    def callback_data(self, data: bytes, addr: tuple = None) -> int:
+    def callback_data(self, data: bytes, addr: Union[tuple, None] = None) -> int:
         """Handle received data."""
         if addr:
             self.receive_queue.put_nowait((data, addr))
@@ -563,7 +563,9 @@ class _serverList:
     :meta private:
     """
 
-    active_server: Union[ModbusTcpServer, ModbusUdpServer, ModbusSerialServer] = None
+    active_server: Union[
+        ModbusTcpServer, ModbusUdpServer, ModbusSerialServer, None
+    ] = None
 
     def __init__(self, server):
         """Register new server."""

@@ -229,7 +229,7 @@ def get_commands(client):
 class Result:
     """Represent result command."""
 
-    function_code: int = None
+    function_code: Union[int, None] = None
     data: Union[Dict[int, Any], Any] = None
 
     def __init__(self, result):

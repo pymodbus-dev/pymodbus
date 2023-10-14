@@ -14,13 +14,13 @@ class SerialTransport(asyncio.Transport):
 
     force_poll: bool = False
 
-    def __init__(self, loop, protocol, *args, **kwargs):
+    def __init__(self, loop, protocol, *args, **kwargs) -> None:
         """Initialize."""
         super().__init__()
         self.async_loop = loop
         self._protocol: asyncio.BaseProtocol = protocol
         self.sync_serial = serial.serial_for_url(*args, **kwargs)
-        self._write_buffer = []
+        self._write_buffer: list[bytes] = []
         self.poll_task = None
         self._poll_wait_time = 0.0005
         self.sync_serial.timeout = 0
@@ -53,13 +53,13 @@ class SerialTransport(asyncio.Transport):
         with contextlib.suppress(Exception):
             self._protocol.connection_lost(exc)
 
-    def write(self, data):
+    def write(self, data) -> None:
         """Write some data to the transport."""
         self._write_buffer.append(data)
         if not self.poll_task:
             self.async_loop.add_writer(self.sync_serial.fileno(), self._write_ready)
 
-    def flush(self):
+    def flush(self) -> None:
         """Clear output buffer and stops any more data being written"""
         if not self.poll_task:
             self.async_loop.remove_writer(self.sync_serial.fileno())
@@ -159,7 +159,9 @@ class SerialTransport(asyncio.Transport):
             pass
 
 
-async def create_serial_connection(loop, protocol_factory, *args, **kwargs):
+async def create_serial_connection(
+    loop, protocol_factory, *args, **kwargs
+) -> tuple[asyncio.Transport, asyncio.BaseProtocol]:
     """Create a connection to a new serial port instance."""
     protocol = protocol_factory()
     transport = SerialTransport(loop, protocol, *args, **kwargs)

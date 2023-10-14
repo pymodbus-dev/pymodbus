@@ -1,7 +1,7 @@
 """Modbus client async TLS communication."""
 import socket
 import ssl
-from typing import Any, Type
+from typing import Any, Optional, Type
 
 from pymodbus.client.tcp import AsyncModbusTcpClient, ModbusTcpClient
 from pymodbus.framer import ModbusFramer
@@ -44,11 +44,11 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         host: str,
         port: int = 802,
         framer: Type[ModbusFramer] = ModbusTlsFramer,
-        sslctx: ssl.SSLContext = None,
-        certfile: str = None,
-        keyfile: str = None,
-        password: str = None,
-        server_hostname: str = None,
+        sslctx: Optional[ssl.SSLContext] = None,
+        certfile: Optional[str] = None,
+        keyfile: Optional[str] = None,
+        password: Optional[str] = None,
+        server_hostname: Optional[str] = None,
         **kwargs: Any,
     ):
         """Initialize Asyncio Modbus TLS Client."""
@@ -113,11 +113,11 @@ class ModbusTlsClient(ModbusTcpClient):
         host: str,
         port: int = 802,
         framer: Type[ModbusFramer] = ModbusTlsFramer,
-        sslctx: ssl.SSLContext = None,
-        certfile: str = None,
-        keyfile: str = None,
-        password: str = None,
-        server_hostname: str = None,
+        sslctx: Optional[ssl.SSLContext] = None,
+        certfile: Optional[str] = None,
+        keyfile: Optional[str] = None,
+        password: Optional[str] = None,
+        server_hostname: Optional[str] = None,
         **kwargs: Any,
     ):
         """Initialize Modbus TLS Client."""

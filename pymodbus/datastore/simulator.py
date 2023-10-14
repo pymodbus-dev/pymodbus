@@ -3,7 +3,7 @@ import dataclasses
 import random
 import struct
 from datetime import datetime
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 
 WORD_SIZE = 16
@@ -30,7 +30,7 @@ class Cell:
     access: bool = False
     value: int = 0
     action: int = 0
-    action_kwargs: Dict[str, Any] = None
+    action_kwargs: Optional[Dict[str, Any]] = None
     count_read: int = 0
     count_write: int = 0
 

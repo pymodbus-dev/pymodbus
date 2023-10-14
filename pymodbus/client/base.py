@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import socket
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any, Callable, cast
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.exceptions import ConnectionException, ModbusIOException
@@ -53,20 +53,20 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     class _params:
         """Parameter class."""
 
-        retries: int = None
-        retry_on_empty: bool = None
-        close_comm_on_error: bool = None
-        strict: bool = None
-        broadcast_enable: bool = None
-        reconnect_delay: int = None
+        retries: int | None = None
+        retry_on_empty: bool | None = None
+        close_comm_on_error: bool | None = None
+        strict: bool | None = None
+        broadcast_enable: bool | None = None
+        reconnect_delay: int | None = None
 
-        source_address: tuple[str, int] = None
+        source_address: tuple[str, int] | None = None
 
-        server_hostname: str = None
+        server_hostname: str | None = None
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        framer: type[ModbusFramer] = None,
+        framer: type[ModbusFramer] | None = None,
         timeout: float = 3,
         retries: int = 3,
         retry_on_empty: bool = False,
@@ -118,14 +118,14 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         self.slaves: list[int] = []
 
         # Common variables.
-        self.framer = framer(ClientDecoder(), self)
+        self.framer = cast(type[ModbusFramer], framer)(ClientDecoder(), self)
         self.transaction = DictTransactionManager(
             self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
         )
-        self.reconnect_delay_current = self.params.reconnect_delay
+        self.reconnect_delay_current = cast(float, self.params.reconnect_delay)
         self.use_udp = False
         self.state = ModbusTransactionState.IDLE
-        self.last_frame_end: float = 0
+        self.last_frame_end: float | None = 0
         self.silent_interval: float = 0
 
     # ----------------------------------------------------------------------- #
@@ -164,7 +164,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             return 0
         return self.last_frame_end + self.silent_interval
 
-    def execute(self, request: ModbusRequest = None) -> ModbusResponse:
+    def execute(self, request: ModbusRequest | None = None) -> ModbusResponse:
         """Execute request and get response (call **sync/async**).
 
         :param request: The request to process
@@ -210,7 +210,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
 
         return resp
 
-    def callback_data(self, data: bytes, addr: tuple = None) -> int:
+    def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data
 
         returns number of bytes consumed
@@ -218,7 +218,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         self.framer.processIncomingPacket(data, self._handle_response, slave=0)
         return len(data)
 
-    def callback_disconnected(self, _reason: Exception) -> None:
+    def callback_disconnected(self, _reason: Exception | None) -> None:
         """Handle lost connection"""
         for tid in list(self.transaction):
             self.raise_future(

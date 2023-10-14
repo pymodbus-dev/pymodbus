@@ -13,33 +13,26 @@ The application can use either a :mod:`synchronous client` or a :mod:`asynchrono
 Using pymodbus client to set/get information from a device (server)
 is done in a few simple steps, like the following synchronous example::
 
-    # create client object
-    client = ModbusSerial("/dev/tty")
+    from pymodbus.client import ModbusTcpClient
 
-    # connect to device
-    client.connect()
+    client = ModbusTcpClient('MyDevice.lan')   # Create client object
+    client.connect()                           # connect to device, reconnect automatically
+    client.write_coil(1, True, slave=1)        # set information in device
+    result = client.read_coils(1, 1, slave=1)  # get information from device
+    print(result.bits[0])                      # use information
+    client.close()                             # Disconnect device
 
-    # set/set information for as many times as needed
-    rr = client.read_coils(0x01)
-    client.write_coil(0x01, values)
-
-    # disconnect device
-    client.close()
 
 and a asynchronous example::
 
-    # create client object
-    async_client = AsyncModbusSerial("/dev/tty")
+    from pymodbus.client import ModbusAsyncTcpClient
 
-    # connect to device
-    await async_client.connect()
-
-    # set/set information for as many times as needed
-    rr = await async_client.read_coils(0x01)
-    await async_client.write_coil(0x01, values)
-
-    # disconnect device
-    await async_client.close()
+    client = ModbusAsyncTcpClient('MyDevice.lan')    # Create client object
+    await client.connect()                           # connect to device, reconnect automatically
+    await client.write_coil(1, True, slave=1)        # set information in device
+    result = await client.read_coils(1, 1, slave=1)  # get information from device
+    print(result.bits[0])                            # use information
+    client.close()                                   # Disconnect device
 
 Large parts of the implementation are shared between the different classes,
 to ensure high stability and efficient maintenance.

@@ -3,7 +3,7 @@
 REPL implementation for client and server.
 
 ## Pymodbus Client
-Refer [REPL Client](./client/README.md)
+Refer [REPL Client](./client/README.rst)
 
 ## Pymodbus Server
-Refer [REPL Server](./server/README.md)
+Refer [REPL Server](./server/README.rst)

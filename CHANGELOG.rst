@@ -1,8 +1,8 @@
 Changelog
 =========
-All these version would not possible without a lot of work from volunteers!
+All these version would not be possible without a lot of work from volunteers!
 
-We, the maintainers, are greatful for all the pull requests small or big, that
+We, the maintainers, are greatful for each pull requests small or big, that
 helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.

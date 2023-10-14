@@ -10,7 +10,7 @@ authors = [{name = '"Galen Collins'}, {name = 'Jan Iversen"'}]
 maintainers = [{name = '"dhoomakethu'}, {name = 'janiversen"'}]
 description = "A fully featured modbus protocol stack in python"
 keywords = ["modbus", "asyncio", "scada", "client", "server", "simulator"]
-readme = "README.md"
+readme = "README.rst"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",

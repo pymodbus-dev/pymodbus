@@ -7,7 +7,6 @@ complicated memory layout using builder.
 Works out of the box together with payload_server.py
 """
 import asyncio
-import logging
 from collections import OrderedDict
 
 import client_async
@@ -16,8 +15,6 @@ from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 
 
-logging.basicConfig()
-_logger = logging.getLogger(__file__)
 ORDER_DICT = {"<": "LITTLE", ">": "BIG"}
 
 

@@ -39,7 +39,6 @@ import pymodbus.other_message as req_other
 from pymodbus.exceptions import ModbusException
 
 
-logging.basicConfig()
 _logger = logging.getLogger(__file__)
 _logger.setLevel("DEBUG")
 

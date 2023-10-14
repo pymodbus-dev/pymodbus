@@ -34,18 +34,10 @@ import logging
 
 import helper
 
-# --------------------------------------------------------------------------- #
-# import the various client implementations
-# --------------------------------------------------------------------------- #
-from pymodbus.client import (
-    ModbusSerialClient,
-    ModbusTcpClient,
-    ModbusTlsClient,
-    ModbusUdpClient,
-)
+import pymodbus.client as modbusClient
+from pymodbus import ModbusException
 
 
-logging.basicConfig()
 _logger = logging.getLogger(__file__)
 _logger.setLevel("DEBUG")
 
@@ -59,7 +51,7 @@ def setup_sync_client(description=None, cmdline=None):
     )
     _logger.info("### Create client object")
     if args.comm == "tcp":
-        client = ModbusTcpClient(
+        client = modbusClient.ModbusTcpClient(
             args.host,
             port=args.port,
             # Common optional parameters:
@@ -73,7 +65,7 @@ def setup_sync_client(description=None, cmdline=None):
             #    source_address=("localhost", 0),
         )
     elif args.comm == "udp":
-        client = ModbusUdpClient(
+        client = modbusClient.ModbusUdpClient(
             args.host,
             port=args.port,
             # Common optional parameters:
@@ -87,7 +79,7 @@ def setup_sync_client(description=None, cmdline=None):
             #    source_address=None,
         )
     elif args.comm == "serial":
-        client = ModbusSerialClient(
+        client = modbusClient.ModbusSerialClient(
             port=args.port,  # serial port
             # Common optional parameters:
             #    framer=ModbusRtuFramer,
@@ -104,7 +96,7 @@ def setup_sync_client(description=None, cmdline=None):
             #    handle_local_echo=False,
         )
     elif args.comm == "tls":  # pragma no cover
-        client = ModbusTlsClient(
+        client = modbusClient.ModbusTlsClient(
             args.host,
             port=args.port,
             # Common optional parameters:
@@ -136,12 +128,14 @@ def run_sync_client(client, modbus_calls=None):
 
 def run_a_few_calls(client):
     """Test connection works."""
-    rr = client.read_coils(32, 1, slave=1)
-    assert len(rr.bits) == 8
-    rr = client.read_holding_registers(4, 2, slave=1)
-    assert rr.registers[0] == 17
-    assert rr.registers[1] == 17
-
+    try:
+        rr = client.read_coils(32, 1, slave=1)
+        assert len(rr.bits) == 8
+        rr = client.read_holding_registers(4, 2, slave=1)
+        assert rr.registers[0] == 17
+        assert rr.registers[1] == 17
+    except ModbusException as exc:
+        raise exc
 
 def main(cmdline=None):
     """Combine setup and run."""

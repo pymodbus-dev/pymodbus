@@ -20,7 +20,6 @@ from pymodbus.transaction import (
 )
 
 
-logging.basicConfig()
 _logger = logging.getLogger(__file__)
 
 

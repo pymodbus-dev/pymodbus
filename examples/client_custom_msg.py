@@ -11,7 +11,6 @@ implementation from pymodbus::
 
 """
 import asyncio
-import logging
 import struct
 
 from pymodbus import Framer
@@ -19,13 +18,6 @@ from pymodbus.bit_read_message import ReadCoilsRequest
 from pymodbus.client import AsyncModbusTcpClient as ModbusClient
 from pymodbus.pdu import ModbusExceptions, ModbusRequest, ModbusResponse
 
-
-# --------------------------------------------------------------------------- #
-# configure the client logging
-# --------------------------------------------------------------------------- #
-logging.basicConfig()
-log = logging.getLogger(__file__)
-log.setLevel(logging.DEBUG)
 
 # --------------------------------------------------------------------------- #
 # create your custom message

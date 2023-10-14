@@ -22,7 +22,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
 
     **Parameters common to all clients**:
 
-    :param framer: (optional) Modbus Framer class.
+    :param framer: Modbus Framer class.
     :param timeout: (optional) Timeout for a request, in seconds.
     :param retries: (optional) Max number of retries per request.
     :param retry_on_empty: (optional) Retry on empty response.
@@ -66,7 +66,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        framer: type[ModbusFramer] | None = None,
+        framer: type[ModbusFramer],
         timeout: float = 3,
         retries: int = 3,
         retry_on_empty: bool = False,
@@ -118,7 +118,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         self.slaves: list[int] = []
 
         # Common variables.
-        self.framer = cast(type[ModbusFramer], framer)(ClientDecoder(), self)
+        self.framer = framer(ClientDecoder(), self)
         self.transaction = DictTransactionManager(
             self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
         )

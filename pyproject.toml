@@ -223,7 +223,6 @@ bad-functions = "map,input"
 
 [tool.mypy]
 strict_optional = false
-exclude = "pymodbus/client/base.py"
 show_error_codes = true
 local_partial_types = true
 strict_equality = true

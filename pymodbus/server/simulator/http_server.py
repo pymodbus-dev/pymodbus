@@ -1,5 +1,6 @@
 """HTTP server for modbus simulator."""
 import asyncio
+import contextlib
 import dataclasses
 import importlib
 import json
@@ -8,12 +9,8 @@ from time import time
 from typing import List
 
 
-try:
+with contextlib.suppress(ImportError):
     from aiohttp import web
-except ImportError:
-    web = None
-
-import contextlib
 
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.datastore.simulator import Label

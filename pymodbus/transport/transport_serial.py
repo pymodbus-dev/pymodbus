@@ -2,7 +2,7 @@
 import asyncio
 import contextlib
 import os
-from typing import Tuple, List
+from typing import List, Tuple
 
 
 with contextlib.suppress(ImportError):

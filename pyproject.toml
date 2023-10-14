@@ -147,7 +147,6 @@ version = {attr = "pymodbus.__version__"}
 [tool.pylint.main]
 init-hook='import sys; sys.path.append("examples")'
 ignore-paths = [
-    "pymodbus/transport/serial_asyncio",
     "doc"
 ]
 ignore-patterns = '^\.#'

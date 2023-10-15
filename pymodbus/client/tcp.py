@@ -17,11 +17,29 @@ from pymodbus.utilities import ModbusTransactionState
 class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
     """**AsyncModbusTcpClient**.
 
+    Fixed parameters:
+
     :param host: Host IP address or host name
-    :param port: (optional) Port used for communication
-    :param framer: (optional) Framer class
-    :param source_address: (optional) source address of client
-    :param kwargs: (optional) Experimental parameters
+
+    Optional parameters:
+
+    :param port: Port used for communication
+    :param framer: Framer class
+    :param source_address: source address of client
+
+    Common optional parameters:
+
+    :param timeout: Timeout for a request, in seconds.
+    :param retries: Max number of retries per request.
+    :param retry_on_empty: Retry on empty response.
+    :param close_comm_on_error: Close connection on error.
+    :param strict: Strict timing, 1.5 character between requests.
+    :param broadcast_enable: True to treat id 0 as broadcast address.
+    :param reconnect_delay: Minimum delay in milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in milliseconds before reconnecting.
+    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
+    :param kwargs: Experimental parameters.
 
     Example::
 
@@ -33,6 +51,8 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
             await client.connect()
             ...
             client.close()
+
+    Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
     def __init__(
@@ -68,20 +88,37 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
         )
         return await self.transport_connect()
 
-    @property
-    def connected(self):
-        """Return true if connected."""
-        return self.is_active()
+    def close(self, reconnect: bool = False) -> None:
+        """Close connection."""
+        super().close(reconnect=reconnect)
 
 
 class ModbusTcpClient(ModbusBaseClient):
     """**ModbusTcpClient**.
 
+    Fixed parameters:
+
     :param host: Host IP address or host name
-    :param port: (optional) Port used for communication
-    :param framer: (optional) Framer class
-    :param source_address: (optional) source address of client
-    :param kwargs: (optional) Experimental parameters
+
+    Optional parameters:
+
+    :param port: Port used for communication
+    :param framer: Framer class
+    :param source_address: source address of client
+
+    Common optional parameters:
+
+    :param timeout: Timeout for a request, in seconds.
+    :param retries: Max number of retries per request.
+    :param retry_on_empty: Retry on empty response.
+    :param close_comm_on_error: Close connection on error.
+    :param strict: Strict timing, 1.5 character between requests.
+    :param broadcast_enable: True to treat id 0 as broadcast address.
+    :param reconnect_delay: Minimum delay in milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in milliseconds before reconnecting.
+    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
+    :param kwargs: Experimental parameters.
 
     Example::
 
@@ -93,6 +130,8 @@ class ModbusTcpClient(ModbusBaseClient):
             client.connect()
             ...
             client.close()
+
+    Please refer to :ref:`Pymodbus internals` for advanced usage.
 
     Remark: There are no automatic reconnect as with AsyncModbusTcpClient
     """

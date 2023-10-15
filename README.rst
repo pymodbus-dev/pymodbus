@@ -1,6 +1,5 @@
 PyModbus - A Python Modbus Stack
 ================================
-
 .. image:: https://github.com/pymodbus-dev/pymodbus/actions/workflows/ci.yml/badge.svg?branch=dev
    :target: https://github.com/pymodbus-dev/pymodbus/actions/workflows/ci.yml
 .. image:: https://readthedocs.org/projects/pymodbus/badge/?version=latest
@@ -25,7 +24,6 @@ Source code on `github <https://pymodbus.readthedocs.io/en/latest/source/authors
 
 Pymodbus in a nutshell
 ----------------------
-
 Pymodbus consist of 5 parts:
 
 - **client**, connect to your favorite device(s)
@@ -36,7 +34,6 @@ Pymodbus consist of 5 parts:
 
 Common features
 ^^^^^^^^^^^^^^^
-
 * Full :download:`modbus standard protocol <_static/Modbus_Application_Protocol_V1_1b3.pdf>` implementation
 * Support for custom function codes
 * support serial (rs-485), tcp, tls and udp communication
@@ -51,7 +48,6 @@ Common features
 
 Client Features
 ^^^^^^^^^^^^^^^
-
 * asynchronous API and synchronous API for applications
 * very simple setup and call sequence (just 6 lines of code)
 * utilities to convert int/float to/from multiple registers
@@ -62,7 +58,6 @@ Client Features
 
 Server Features
 ^^^^^^^^^^^^^^^
-
 * asynchronous implementation for high performance
 * synchronous API classes for convenience
 * simulate real life devices
@@ -76,7 +71,6 @@ Server Features
 
 REPL Features
 ^^^^^^^^^^^^^
-
 - server/client commandline emulator
 - easy test of real device (client)
 - easy test of client app (server)
@@ -88,7 +82,6 @@ REPL Features
 
 Simulator Features
 ^^^^^^^^^^^^^^^^^^
-
 - server simulator with WEB interface
 - configure the structure of a real device
 - monitor traffic online
@@ -124,7 +117,6 @@ https://readthedocs.org/docs/pymodbus/en/latest/index.html
 
 Install
 -------
-
 The library is available on pypi.org and github.com to install with
 
 - :code:`pip` for those who just want to use the library
@@ -147,7 +139,6 @@ You need to have python3 installed, preferable 3.11.
 
 Install with pip
 ^^^^^^^^^^^^^^^^
-
 You can install using pip by issuing the following
 commands in a terminal window::
 
@@ -162,15 +153,10 @@ This will install pymodbus with the pyserial dependency.
 Pymodbus offers a number of extra options:
 
 - **repl**, needed by pymodbus.repl
-
 - **serial**, needed for serial communication
-
 - **simulator**, needed by pymodbus.simulator
-
 - **documentation**, needed to generate documentation
-
 - **development**, needed for development
-
 - **all**, installs all of the above
 
 which can be installed as::
@@ -184,7 +170,6 @@ It is possible to install old releases if needed::
 
 Install with github
 ^^^^^^^^^^^^^^^^^^^
-
 On github, fork https://github.com/pymodbus-dev/pymodbus.git
 
 Clone the source, and make a virtual environment::

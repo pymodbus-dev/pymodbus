@@ -36,10 +36,6 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     :param kwargs: (optional) Experimental parameters.
 
     .. tip::
-        Common parameters and all external methods for all clients are documented here,
-        and not repeated with each client.
-
-    .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect, from
         **reconnect_delay** to **reconnect_delay_max**.
         Set `reconnect_delay=0` to avoid automatic reconnection.
@@ -132,9 +128,9 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     # Client external interface
     # ----------------------------------------------------------------------- #
     @property
-    def connected(self):
-        """Connect internal."""
-        return True
+    def connected(self) -> bool:
+        """Return state of connection."""
+        return self.is_active()
 
     def register(self, custom_response_class: ModbusResponse) -> None:
         """Register a custom response class with the decoder (call **sync**).
@@ -147,7 +143,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         """
         self.framer.decoder.register(custom_response_class)
 
-    def close(self, reconnect=False) -> None:
+    def close(self, reconnect: bool = False) -> None:
         """Close connection."""
         if reconnect:
             self.connection_lost(asyncio.TimeoutError("Server not responding"))

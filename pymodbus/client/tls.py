@@ -13,19 +13,34 @@ from pymodbus.transport import CommParams, CommType
 class AsyncModbusTlsClient(AsyncModbusTcpClient):
     """**AsyncModbusTlsClient**.
 
-    :param host: Host IP address or host name
-    :param port: (optional) Port used for communication
-    :param framer: (optional) Framer class
-    :param source_address: (optional) Source address of client
-    :param sslctx: (optional) SSLContext to use for TLS
-    :param certfile: (optional) Cert file path for TLS server request
-    :param keyfile: (optional) Key file path for TLS server request
-    :param password: (optional) Password for for decrypting private key file
-    :param server_hostname: (optional) Bind certificate to host
-    :param kwargs: (optional) Experimental parameters
+    Fixed parameters:
 
-    ..tip::
-        See ModbusBaseClient for common parameters.
+    :param host: Host IP address or host name
+
+    Optional parameters:
+
+    :param port: Port used for communication
+    :param framer: Framer class
+    :param source_address: Source address of client
+    :param sslctx: SSLContext to use for TLS
+    :param certfile: Cert file path for TLS server request
+    :param keyfile: Key file path for TLS server request
+    :param password: Password for for decrypting private key file
+    :param server_hostname: Bind certificate to host
+
+    Common optional parameters:
+
+    :param timeout: Timeout for a request, in seconds.
+    :param retries: Max number of retries per request.
+    :param retry_on_empty: Retry on empty response.
+    :param close_comm_on_error: Close connection on error.
+    :param strict: Strict timing, 1.5 character between requests.
+    :param broadcast_enable: True to treat id 0 as broadcast address.
+    :param reconnect_delay: Minimum delay in milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in milliseconds before reconnecting.
+    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
+    :param kwargs: Experimental parameters.
 
     Example::
 
@@ -37,6 +52,8 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
             await client.connect()
             ...
             client.close()
+
+    Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
     def __init__(
@@ -79,19 +96,35 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
 class ModbusTlsClient(ModbusTcpClient):
     """**ModbusTlsClient**.
 
-    :param host: Host IP address or host name
-    :param port: (optional) Port used for communication
-    :param framer: (optional) Framer class
-    :param source_address: (optional) Source address of client
-    :param sslctx: (optional) SSLContext to use for TLS
-    :param certfile: (optional) Cert file path for TLS server request
-    :param keyfile: (optional) Key file path for TLS server request
-    :param password: (optional) Password for decrypting private key file
-    :param server_hostname: (optional) Bind certificate to host
-    :param kwargs: (optional) Experimental parameters
+    Fixed parameters:
 
-    ..tip::
-        See ModbusBaseClient for common parameters.
+    :param host: Host IP address or host name
+
+    Optional parameters:
+
+    :param port: Port used for communication
+    :param framer: Framer class
+    :param source_address: Source address of client
+    :param sslctx: SSLContext to use for TLS
+    :param certfile: Cert file path for TLS server request
+    :param keyfile: Key file path for TLS server request
+    :param password: Password for decrypting private key file
+    :param server_hostname: Bind certificate to host
+    :param kwargs: Experimental parameters
+
+    Common optional parameters:
+
+    :param timeout: Timeout for a request, in seconds.
+    :param retries: Max number of retries per request.
+    :param retry_on_empty: Retry on empty response.
+    :param close_comm_on_error: Close connection on error.
+    :param strict: Strict timing, 1.5 character between requests.
+    :param broadcast_enable: True to treat id 0 as broadcast address.
+    :param reconnect_delay: Minimum delay in milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in milliseconds before reconnecting.
+    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
+    :param kwargs: Experimental parameters.
 
     Example::
 
@@ -104,6 +137,7 @@ class ModbusTlsClient(ModbusTcpClient):
             ...
             client.close()
 
+    Please refer to :ref:`Pymodbus internals` for advanced usage.
 
     Remark: There are no automatic reconnect as with AsyncModbusTlsClient
     """

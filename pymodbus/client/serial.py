@@ -21,16 +21,32 @@ with suppress(ImportError):
 class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
     """**AsyncModbusSerialClient**.
 
-    :param port: Serial port used for communication.
-    :param framer: (optional) Framer class.
-    :param baudrate: (optional) Bits per second.
-    :param bytesize: (optional) Number of bits per byte 7-8.
-    :param parity: (optional) 'E'ven, 'O'dd or 'N'one
-    :param stopbits: (optional) Number of stop bits 0-2¡.
-    :param handle_local_echo: (optional) Discard local echo from dongle.
-    :param kwargs: (optional) Experimental parameters
+    Fixed parameters:
 
-    The serial communication is RS-485 based, and usually used with a usb RS485 dongle.
+    :param port: Serial port used for communication.
+
+    Optional parameters:
+
+    :param framer: Framer class.
+    :param baudrate: Bits per second.
+    :param bytesize: Number of bits per byte 7-8.
+    :param parity: 'E'ven, 'O'dd or 'N'one
+    :param stopbits: Number of stop bits 0-2.
+    :param handle_local_echo: Discard local echo from dongle.
+
+    Common optional parameters:
+
+    :param timeout: Timeout for a request, in seconds.
+    :param retries: Max number of retries per request.
+    :param retry_on_empty: Retry on empty response.
+    :param close_comm_on_error: Close connection on error.
+    :param strict: Strict timing, 1.5 character between requests.
+    :param broadcast_enable: True to treat id 0 as broadcast address.
+    :param reconnect_delay: Minimum delay in milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in milliseconds before reconnecting.
+    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
+    :param kwargs: Experimental parameters.
 
     Example::
 
@@ -42,6 +58,8 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
             await client.connect()
             ...
             client.close()
+
+    Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
     def __init__(
@@ -68,31 +86,46 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
             **kwargs,
         )
 
-    @property
-    def connected(self):
-        """Connect internal."""
-        return self.is_active()
-
     async def connect(self) -> bool:
         """Connect Async client."""
         self.reset_delay()
         Log.debug("Connecting to {}.", self.comm_params.host)
         return await self.transport_connect()
 
+    def close(self, reconnect: bool = False) -> None:
+        """Close connection."""
+        super().close(reconnect=reconnect)
+
 
 class ModbusSerialClient(ModbusBaseClient):
     """**ModbusSerialClient**.
 
-    :param port: Serial port used for communication.
-    :param framer: (optional) Framer class.
-    :param baudrate: (optional) Bits per second.
-    :param bytesize: (optional) Number of bits per byte 7-8.
-    :param parity: (optional) 'E'ven, 'O'dd or 'N'one
-    :param stopbits: (optional) Number of stop bits 0-2¡.
-    :param handle_local_echo: (optional) Discard local echo from dongle.
-    :param kwargs: (optional) Experimental parameters
+    Fixed parameters:
 
-    The serial communication is RS-485 based, and usually used with a usb RS485 dongle.
+    :param port: Serial port used for communication.
+
+    Optional parameters:
+
+    :param framer: Framer class.
+    :param baudrate: Bits per second.
+    :param bytesize: Number of bits per byte 7-8.
+    :param parity: 'E'ven, 'O'dd or 'N'one
+    :param stopbits: Number of stop bits 0-2.
+    :param handle_local_echo: Discard local echo from dongle.
+
+    Common optional parameters:
+
+    :param timeout: Timeout for a request, in seconds.
+    :param retries: Max number of retries per request.
+    :param retry_on_empty: Retry on empty response.
+    :param close_comm_on_error: Close connection on error.
+    :param strict: Strict timing, 1.5 character between requests.
+    :param broadcast_enable: True to treat id 0 as broadcast address.
+    :param reconnect_delay: Minimum delay in milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in milliseconds before reconnecting.
+    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
+    :param kwargs: Experimental parameters.
 
     Example::
 
@@ -105,6 +138,7 @@ class ModbusSerialClient(ModbusBaseClient):
             ...
             client.close()
 
+    Please refer to :ref:`Pymodbus internals` for advanced usage.
 
     Remark: There are no automatic reconnect as with AsyncModbusSerialClient
     """

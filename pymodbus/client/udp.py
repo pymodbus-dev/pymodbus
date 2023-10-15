@@ -19,14 +19,29 @@ class AsyncModbusUdpClient(
 ):
     """**AsyncModbusUdpClient**.
 
-    :param host: Host IP address or host name
-    :param port: (optional) Port used for communication.
-    :param framer: (optional) Framer class.
-    :param source_address: (optional) source address of client,
-    :param kwargs: (optional) Experimental parameters
+    Fixed parameters:
 
-    ..tip::
-        See ModbusBaseClient for common parameters.
+    :param host: Host IP address or host name
+
+    Optional parameters:
+
+    :param port: Port used for communication.
+    :param framer: Framer class.
+    :param source_address: source address of client,
+
+    Common optional parameters:
+
+    :param timeout: Timeout for a request, in seconds.
+    :param retries: Max number of retries per request.
+    :param retry_on_empty: Retry on empty response.
+    :param close_comm_on_error: Close connection on error.
+    :param strict: Strict timing, 1.5 character between requests.
+    :param broadcast_enable: True to treat id 0 as broadcast address.
+    :param reconnect_delay: Minimum delay in milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in milliseconds before reconnecting.
+    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
+    :param kwargs: Experimental parameters.
 
     Example::
 
@@ -38,6 +53,8 @@ class AsyncModbusUdpClient(
             await client.connect()
             ...
             client.close()
+
+    Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
     def __init__(
@@ -78,14 +95,29 @@ class AsyncModbusUdpClient(
 class ModbusUdpClient(ModbusBaseClient):
     """**ModbusUdpClient**.
 
-    :param host: Host IP address or host name
-    :param port: (optional) Port used for communication.
-    :param framer: (optional) Framer class.
-    :param source_address: (optional) source address of client,
-    :param kwargs: (optional) Experimental parameters
+    Fixed parameters:
 
-    ..tip::
-        See ModbusBaseClient for common parameters.
+    :param host: Host IP address or host name
+
+    Optional parameters:
+
+    :param port: Port used for communication.
+    :param framer: Framer class.
+    :param source_address: source address of client,
+
+    Common optional parameters:
+
+    :param timeout: Timeout for a request, in seconds.
+    :param retries: Max number of retries per request.
+    :param retry_on_empty: Retry on empty response.
+    :param close_comm_on_error: Close connection on error.
+    :param strict: Strict timing, 1.5 character between requests.
+    :param broadcast_enable: True to treat id 0 as broadcast address.
+    :param reconnect_delay: Minimum delay in milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in milliseconds before reconnecting.
+    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
+    :param kwargs: Experimental parameters.
 
     Example::
 
@@ -97,6 +129,8 @@ class ModbusUdpClient(ModbusBaseClient):
             client.connect()
             ...
             client.close()
+
+    Please refer to :ref:`Pymodbus internals` for advanced usage.
 
     Remark: There are no automatic reconnect as with AsyncModbusUdpClient
     """

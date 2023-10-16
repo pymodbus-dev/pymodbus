@@ -1,7 +1,9 @@
 """Modbus Client Common."""
+from __future__ import annotations
+
 import struct
 from enum import Enum
-from typing import Any, List, Tuple, Union
+from typing import Any
 
 import pymodbus.bit_read_message as pdu_bit_read
 import pymodbus.bit_write_message as pdu_bit_write
@@ -381,7 +383,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     def write_coils(
         self,
         address: int,
-        values: Union[List[bool], bool],
+        values: list[bool] | bool,
         slave: int = 0,
         **kwargs: Any,
     ) -> ModbusResponse:
@@ -398,7 +400,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         )
 
     def write_registers(
-        self, address: int, values: Union[List[int], int], slave: int = 0, **kwargs: Any
+        self, address: int, values: list[int] | int, slave: int = 0, **kwargs: Any
     ) -> ModbusResponse:
         """Write registers (code 0x10).
 
@@ -423,7 +425,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         """
         return self.execute(pdu_other_msg.ReportSlaveIdRequest(slave, **kwargs))
 
-    def read_file_record(self, records: List[Tuple], **kwargs: Any) -> ModbusResponse:
+    def read_file_record(self, records: list[tuple], **kwargs: Any) -> ModbusResponse:
         """Read file record (code 0x14).
 
         :param records: List of (Reference type, File number, Record Number, Record Length)
@@ -432,7 +434,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         """
         return self.execute(pdu_file_msg.ReadFileRecordRequest(records, **kwargs))
 
-    def write_file_record(self, records: List[Tuple], **kwargs: Any) -> ModbusResponse:
+    def write_file_record(self, records: list[tuple], **kwargs: Any) -> ModbusResponse:
         """Write file record (code 0x15).
 
         :param records: List of (Reference type, File number, Record Number, Record Length)
@@ -465,7 +467,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         read_address: int = 0,
         read_count: int = 0,
         write_address: int = 0,
-        values: Union[List[int], int] = 0,
+        values: list[int] | int = 0,
         slave: int = 0,
         **kwargs,
     ) -> ModbusResponse:
@@ -534,8 +536,8 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
     @classmethod
     def convert_from_registers(
-        cls, registers: List[int], data_type: DATATYPE
-    ) -> Union[int, float, str]:
+        cls, registers: list[int], data_type: DATATYPE
+    ) -> int | float | str:
         """Convert registers to int/float/str.
 
         :param registers: list of registers received from e.g. read_holding_registers()
@@ -558,8 +560,8 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
     @classmethod
     def convert_to_registers(
-        cls, value: Union[int, float, str], data_type: DATATYPE
-    ) -> List[int]:
+        cls, value: int | float | str, data_type: DATATYPE
+    ) -> list[int]:
         """Convert int/float/str to registers (16/32/64 bit).
 
         :param value: value to be converted

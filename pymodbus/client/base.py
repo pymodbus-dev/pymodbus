@@ -4,12 +4,12 @@ from __future__ import annotations
 import asyncio
 import socket
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any, Callable, Type, cast
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.factory import ClientDecoder
-from pymodbus.framer import ModbusFramer
+from pymodbus.framer import FRAMER_NAME_TO_CLASS, Framer, ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.transaction import DictTransactionManager
@@ -20,20 +20,23 @@ from pymodbus.utilities import ModbusTransactionState
 class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     """**ModbusBaseClient**
 
-    **Parameters common to all clients**:
+    Fixed parameters:
 
-    :param framer: (optional) Modbus Framer class.
-    :param timeout: (optional) Timeout for a request, in seconds.
-    :param retries: (optional) Max number of retries per request.
-    :param retry_on_empty: (optional) Retry on empty response.
-    :param close_comm_on_error: (optional) Close connection on error.
-    :param strict: (optional) Strict timing, 1.5 character between requests.
-    :param broadcast_enable: (optional) True to treat id 0 as broadcast address.
-    :param reconnect_delay: (optional) Minimum delay in milliseconds before reconnecting.
-    :param reconnect_delay_max: (optional) Maximum delay in milliseconds before reconnecting.
-    :param on_reconnect_callback: (optional) Function that will be called just before a reconnection attempt.
-    :param no_resend_on_retry: (optional) Do not resend request when retrying due to missing response.
-    :param kwargs: (optional) Experimental parameters.
+    :param framer: Framer enum name
+
+    Optional parameters:
+
+    :param timeout: Timeout for a request, in seconds.
+    :param retries: Max number of retries per request.
+    :param retry_on_empty: Retry on empty response.
+    :param close_comm_on_error: Close connection on error.
+    :param strict: Strict timing, 1.5 character between requests.
+    :param broadcast_enable: True to treat id 0 as broadcast address.
+    :param reconnect_delay: Minimum delay in milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in milliseconds before reconnecting.
+    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
+    :param kwargs: Experimental parameters.
 
     .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect, from
@@ -62,7 +65,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        framer: type[ModbusFramer] = None,
+        framer: Framer,
         timeout: float = 3,
         retries: int = 3,
         retry_on_empty: bool = False,
@@ -114,7 +117,9 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         self.slaves: list[int] = []
 
         # Common variables.
-        self.framer = framer(ClientDecoder(), self)
+        self.framer = FRAMER_NAME_TO_CLASS.get(
+            framer, cast(Type[ModbusFramer], framer)
+        )(ClientDecoder(), self)
         self.transaction = DictTransactionManager(
             self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
         )

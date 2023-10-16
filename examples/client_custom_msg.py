@@ -14,14 +14,10 @@ import asyncio
 import logging
 import struct
 
+from pymodbus import Framer
 from pymodbus.bit_read_message import ReadCoilsRequest
 from pymodbus.client import AsyncModbusTcpClient as ModbusClient
-
-# --------------------------------------------------------------------------- #
-# import the various server implementations
-# --------------------------------------------------------------------------- #
 from pymodbus.pdu import ModbusExceptions, ModbusRequest, ModbusResponse
-from pymodbus.transaction import ModbusSocketFramer
 
 
 # --------------------------------------------------------------------------- #
@@ -130,7 +126,7 @@ class Read16CoilsRequest(ReadCoilsRequest):
 
 async def main(host="localhost", port=5020):
     """Run versions of read coil."""
-    with ModbusClient(host=host, port=port, framer=ModbusSocketFramer) as client:
+    with ModbusClient(host=host, port=port, framer_name=Framer.SOCKET) as client:
         await client.connect()
 
         # new modbus function code.

@@ -1,14 +1,15 @@
 """Modbus client async TCP communication."""
+from __future__ import annotations
+
 import asyncio
 import select
 import socket
 import time
-from typing import Any, Tuple, Type
+from typing import Any
 
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.exceptions import ConnectionException
-from pymodbus.framer import ModbusFramer
-from pymodbus.framer.socket_framer import ModbusSocketFramer
+from pymodbus.framer import Framer
 from pymodbus.logging import Log
 from pymodbus.transport import CommType
 from pymodbus.utilities import ModbusTransactionState
@@ -24,11 +25,11 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
     Optional parameters:
 
     :param port: Port used for communication
-    :param framer: Framer class
     :param source_address: source address of client
 
     Common optional parameters:
 
+    :param framer: Framer enum name
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
@@ -59,8 +60,8 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
         self,
         host: str,
         port: int = 502,
-        framer: Type[ModbusFramer] = ModbusSocketFramer,
-        source_address: Tuple[str, int] = None,
+        framer: Framer = Framer.SOCKET,
+        source_address: tuple[str, int] = None,
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
@@ -71,7 +72,7 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
             kwargs["source_address"] = source_address
         ModbusBaseClient.__init__(
             self,
-            framer=framer,
+            framer,
             host=host,
             port=port,
             **kwargs,
@@ -103,11 +104,11 @@ class ModbusTcpClient(ModbusBaseClient):
     Optional parameters:
 
     :param port: Port used for communication
-    :param framer: Framer class
     :param source_address: source address of client
 
     Common optional parameters:
 
+    :param framer: Framer enum name
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
@@ -140,8 +141,8 @@ class ModbusTcpClient(ModbusBaseClient):
         self,
         host: str,
         port: int = 502,
-        framer: Type[ModbusFramer] = ModbusSocketFramer,
-        source_address: Tuple[str, int] = None,
+        framer: Framer = Framer.SOCKET,
+        source_address: tuple[str, int] = None,
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus TCP Client."""
@@ -149,7 +150,12 @@ class ModbusTcpClient(ModbusBaseClient):
             kwargs["CommType"] = CommType.TCP
         kwargs["use_sync"] = True
         self.transport = None
-        super().__init__(framer=framer, host=host, port=port, **kwargs)
+        super().__init__(
+            framer,
+            host=host,
+            port=port,
+            **kwargs,
+        )
         self.params.source_address = source_address
         self.socket = None
 

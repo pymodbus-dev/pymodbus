@@ -1,11 +1,12 @@
 """Modbus client async TLS communication."""
+from __future__ import annotations
+
 import socket
 import ssl
-from typing import Any, Type
+from typing import Any
 
 from pymodbus.client.tcp import AsyncModbusTcpClient, ModbusTcpClient
-from pymodbus.framer import ModbusFramer
-from pymodbus.framer.tls_framer import ModbusTlsFramer
+from pymodbus.framer import Framer
 from pymodbus.logging import Log
 from pymodbus.transport import CommParams, CommType
 
@@ -20,7 +21,6 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
     Optional parameters:
 
     :param port: Port used for communication
-    :param framer: Framer class
     :param source_address: Source address of client
     :param sslctx: SSLContext to use for TLS
     :param certfile: Cert file path for TLS server request
@@ -30,6 +30,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
 
     Common optional parameters:
 
+    :param framer: Framer enum name
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
@@ -60,7 +61,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         self,
         host: str,
         port: int = 802,
-        framer: Type[ModbusFramer] = ModbusTlsFramer,
+        framer: Framer = Framer.TLS,
         sslctx: ssl.SSLContext = None,
         certfile: str = None,
         keyfile: str = None,
@@ -103,7 +104,6 @@ class ModbusTlsClient(ModbusTcpClient):
     Optional parameters:
 
     :param port: Port used for communication
-    :param framer: Framer class
     :param source_address: Source address of client
     :param sslctx: SSLContext to use for TLS
     :param certfile: Cert file path for TLS server request
@@ -114,6 +114,7 @@ class ModbusTlsClient(ModbusTcpClient):
 
     Common optional parameters:
 
+    :param framer: Framer enum name
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
@@ -146,7 +147,7 @@ class ModbusTlsClient(ModbusTcpClient):
         self,
         host: str,
         port: int = 802,
-        framer: Type[ModbusFramer] = ModbusTlsFramer,
+        framer: Framer = Framer.TLS,
         sslctx: ssl.SSLContext = None,
         certfile: str = None,
         keyfile: str = None,

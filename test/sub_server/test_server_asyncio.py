@@ -8,6 +8,7 @@ from unittest import mock
 
 import pytest
 
+from pymodbus import Framer
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
@@ -16,7 +17,6 @@ from pymodbus.datastore import (
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.server import ModbusTcpServer, ModbusTlsServer, ModbusUdpServer
-from pymodbus.transaction import ModbusSocketFramer, ModbusTlsFramer
 
 
 _logger = logging.getLogger()
@@ -154,15 +154,15 @@ class TestAsyncioServer:
             args["identity"] = self.identity
         if do_tls:
             self.server = ModbusTlsServer(
-                self.context, ModbusTlsFramer, self.identity, SERV_ADDR
+                self.context, Framer.TLS, self.identity, SERV_ADDR
             )
         elif do_udp:
             self.server = ModbusUdpServer(
-                self.context, ModbusSocketFramer, self.identity, SERV_ADDR
+                self.context, Framer.SOCKET, self.identity, SERV_ADDR
             )
         else:
             self.server = ModbusTcpServer(
-                self.context, ModbusSocketFramer, self.identity, SERV_ADDR
+                self.context, Framer.SOCKET, self.identity, SERV_ADDR
             )
         assert self.server
         if do_forever:

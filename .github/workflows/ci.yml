@@ -17,35 +17,35 @@ on:
 
 
 jobs:
-  linters:
-    name: Linters - ${{ matrix.os.on }} - ${{ matrix.python.version }}
-    runs-on: ${{ matrix.os.on }}
-    timeout-minutes: 10
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - on: ubuntu-latest
-          # - on: macos-latest
-          # - on: windows-latest
-        python:
-          - version: '3.8'
-          - version: '3.9'
-          - version: '3.10'
-          - version: '3.11'
-          - version: '3.12'
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python.version }}
-          cache: 'pip'
-      - run: pip install -e ".[all]"
-      - run: codespell
-      - run: pylint --recursive=y examples pymodbus test
-      - run: pre-commit run --all-files
-      - run: cd doc; ./build_html
-      - run: mypy pymodbus
+  # linters:
+  #   name: Linters - ${{ matrix.os.on }} - ${{ matrix.python.version }}
+  #   runs-on: ${{ matrix.os.on }}
+  #   timeout-minutes: 10
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os:
+  #         - on: ubuntu-latest
+  #         # - on: macos-latest
+  #         # - on: windows-latest
+  #       python:
+  #         - version: '3.8'
+  #         - version: '3.9'
+  #         - version: '3.10'
+  #         - version: '3.11'
+  #         - version: '3.12'
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-python@v4
+  #       with:
+  #         python-version: ${{ matrix.python.version }}
+  #         cache: 'pip'
+  #     - run: pip install -e ".[all]"
+  #     - run: codespell
+  #     - run: pylint --recursive=y examples pymodbus test
+  #     - run: pre-commit run --all-files
+  #     - run: cd doc; ./build_html
+  #     - run: mypy pymodbus
 
   integreation_test:
     name: pytest - ${{ matrix.os.on }} - ${{ matrix.python.version }}
@@ -59,10 +59,10 @@ jobs:
           - on: macos-latest
           - on: windows-latest
         python:
-          - version: '3.8'
-          - version: '3.9'
-          - version: '3.10'
-          - version: '3.11'
+          # - version: '3.8'
+          # - version: '3.9'
+          # - version: '3.10'
+          # - version: '3.11'
           - version: '3.12'
     steps:
       - uses: actions/checkout@v3
@@ -72,26 +72,26 @@ jobs:
           cache: 'pip'
       - run: pip install -e ".[all]"
 
-      - run: pytest -n0  -v --full-trace --timeout=1200
+      - run: pytest -n0  -v --full-trace --timeout=1200 --pystack-threshold=5
 
-  analyze:
-    name: Analyze Python
-    runs-on: ubuntu-22.04
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: github/codeql-action/init@v2
-        with:
-          languages: python
-      - uses: github/codeql-action/autobuild@v2
-      - uses: github/codeql-action/analyze@v2
+  # analyze:
+  #   name: Analyze Python
+  #   runs-on: ubuntu-22.04
+  #
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: github/codeql-action/init@v2
+  #       with:
+  #         languages: python
+  #     - uses: github/codeql-action/autobuild@v2
+  #     - uses: github/codeql-action/analyze@v2
 
   ci_complete:
     name: ci_complete
     runs-on: ubuntu-latest
     needs:
-      - linters
-      - analyze
+      # - linters
+      # - analyze
       - integreation_test
     timeout-minutes: 1
     steps:

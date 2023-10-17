@@ -85,33 +85,33 @@ class CommParams:
     """Parameter class."""
 
     # generic
-    comm_name: str = None
-    comm_type: CommType = None
-    reconnect_delay: float = None
-    reconnect_delay_max: float = None
-    timeout_connect: float = None
+    comm_name: str | None = None
+    comm_type: CommType | None = None
+    reconnect_delay: float | None = None
+    reconnect_delay_max: float | None = None
+    timeout_connect: float | None = None
     host: str = "127.0.0.1"
     port: int = 0
     source_address: tuple[str, int] = ("0.0.0.0", 0)
     handle_local_echo: bool = False
 
     # tls
-    sslctx: ssl.SSLContext = None
+    sslctx: ssl.SSLContext | None = None
 
     # serial
-    baudrate: int = None
-    bytesize: int = None
-    parity: str = None
-    stopbits: int = None
+    baudrate: int | None = None
+    bytesize: int | None = None
+    parity: str | None = None
+    stopbits: int | None = None
 
     @classmethod
     def generate_ssl(
         cls,
         is_server: bool,
-        certfile: str = None,
-        keyfile: str = None,
-        password: str = None,
-        sslctx: ssl.SSLContext = None,
+        certfile: str | None = None,
+        keyfile: str | None = None,
+        password: str | None = None,
+        sslctx: ssl.SSLContext | None = None,
     ) -> ssl.SSLContext:
         """Generate sslctx from cert/key/passwor
 
@@ -134,7 +134,7 @@ class CommParams:
             )
         return new_sslctx
 
-    def copy(self):
+    def copy(self) -> CommParams:
         """Create a copy."""
         return dataclasses.replace(self)
 

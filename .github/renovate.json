@@ -1,0 +1,23 @@
+{
+  "extends": [
+    "config:recommended"
+  ],
+  "pre-commit": {
+    "enabled": true
+  },
+  "rangeStrategy": "bump",
+  "packageRules": [
+    {
+      "matchManagers": ["github-actions"],
+      "automerge": true
+    },
+    {
+      "matchPackagePatterns": ["mypy", "pre-commit", "ruff"],
+      "automerge": true
+    },
+    {
+      "matchPackagePatterns": ["ruff"],
+      "groupName": "ruff"
+    }
+  ]
+}

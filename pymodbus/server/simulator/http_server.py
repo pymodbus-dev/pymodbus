@@ -1,4 +1,6 @@
 """HTTP server for modbus simulator."""
+from __future__ import annotations
+
 import asyncio
 import contextlib
 import dataclasses
@@ -118,7 +120,7 @@ class ModbusSimulatorServer:
         http_port: int = 8080,
         log_file: str = "server.log",
         json_file: str = "setup.json",
-        custom_actions_module: str = None,
+        custom_actions_module: str | None = None,
     ):
         """Initialize http interface."""
         if AIOHTTP_MISSING:
@@ -139,7 +141,7 @@ class ModbusSimulatorServer:
             actions_module = importlib.import_module(custom_actions_module)
             custom_actions_dict = actions_module.custom_actions_dict
         else:
-            custom_actions_dict = None
+            custom_actions_dict = {}
         server = setup["server_list"][modbus_server]
         if server["comm"] != "serial":
             server["address"] = (server["host"], server["port"])
@@ -147,7 +149,7 @@ class ModbusSimulatorServer:
             del server["port"]
         device = setup["device_list"][modbus_device]
         self.datastore_context = ModbusSimulatorContext(
-            device, custom_actions_dict or None
+            device, custom_actions_dict or {}
         )
         datastore = ModbusServerContext(slaves=self.datastore_context, single=True)
         comm = comm_class[server.pop("comm")]

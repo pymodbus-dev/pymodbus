@@ -1,4 +1,6 @@
 """Pymodbus ModbusSimulatorContext."""
+from __future__ import annotations
+
 import dataclasses
 import random
 import struct
@@ -30,7 +32,7 @@ class Cell:
     access: bool = False
     value: int = 0
     action: int = 0
-    action_kwargs: Dict[str, Any] = None
+    action_kwargs: Dict[str, Any] | None = None
     count_read: int = 0
     count_write: int = 0
 

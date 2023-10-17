@@ -19,7 +19,7 @@ ignore = [
     "RUF013",  # implicit Optional
     "RUF015"  # next(iter(list)) instead of list[0]
 ]
-line-length = 120
+line-length = 88
 select = [
     "B007",   # Loop control variable {name} not used within loop body
     "B014",   # Exception handler with duplicate exception

@@ -143,7 +143,7 @@ enable = "all"
 disable = [
     "duplicate-code",     # TBD
     "file-ignored",       # ONLY to be used with extreme care.
-    "format",             # NOT wanted, handled by black
+    "format",             # NOT wanted, handled by ruff
     "locally-disabled",   # NOT wanted
     "suppressed-message"  # NOT wanted"""
 ]

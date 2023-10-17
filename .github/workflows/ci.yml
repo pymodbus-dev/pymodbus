@@ -72,7 +72,7 @@ jobs:
           cache: 'pip'
       - run: pip install -e ".[all]"
 
-      - run: pytest -n0  -v --full-trace --timeout=1200
+      - run: pytest -v --full-trace --timeout=1200
 
   analyze:
     name: Analyze Python

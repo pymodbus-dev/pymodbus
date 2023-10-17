@@ -34,13 +34,13 @@ The corresponding client can be started as:
 import asyncio
 import logging
 
+import server_async
+
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
     ModbusSlaveContext,
 )
-
-from .server_async import run_async_server, setup_server
 
 
 _logger = logging.getLogger(__name__)
@@ -97,7 +97,7 @@ def setup_updating_server(cmdline=None):
     datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
     context = ModbusSlaveContext(di=datablock, co=datablock, hr=datablock, ir=datablock)
     context = ModbusServerContext(slaves=context, single=True)
-    return setup_server(
+    return server_async.setup_server(
         description="Run asynchronous server.", context=context, cmdline=cmdline
     )
 
@@ -105,7 +105,7 @@ def setup_updating_server(cmdline=None):
 async def run_updating_server(args):
     """Start updating_task concurrently with the current task"""
     task = asyncio.create_task(updating_task(args.context))
-    await run_async_server(args)  # start the server
+    await server_async.run_async_server(args)  # start the server
     task.cancel()
 
 

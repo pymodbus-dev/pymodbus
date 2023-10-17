@@ -31,12 +31,12 @@ The corresponding server must be started before e.g. as:
 """
 import logging
 
+import client_sync
+
 import pymodbus.diag_message as req_diag
 import pymodbus.mei_message as req_mei
 import pymodbus.other_message as req_other
 from pymodbus.exceptions import ModbusException
-
-from .client_sync import run_sync_client, setup_sync_client
 
 
 logging.basicConfig()
@@ -226,8 +226,10 @@ def run_sync_calls(client):
 
 def main(cmdline=None):
     """Combine setup and run."""
-    client = setup_sync_client(description="Run synchronous client.", cmdline=cmdline)
-    run_sync_client(client, modbus_calls=run_sync_calls)
+    client = client_sync.setup_sync_client(
+        description="Run synchronous client.", cmdline=cmdline
+    )
+    client_sync.run_sync_client(client, modbus_calls=run_sync_calls)
 
 
 if __name__ == "__main__":

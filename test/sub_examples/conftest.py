@@ -1,12 +1,20 @@
 """Fixtures for examples tests."""
 import asyncio
+import sys
 
 import pytest
 import pytest_asyncio
 
-from examples.server_async import run_async_server, setup_server
 from pymodbus.server import ServerAsyncStop
 from pymodbus.transport import NULLMODEM_HOST
+
+
+sys.path.extend(["examples", "../examples", "../../examples"])
+
+from examples.server_async import (  # noqa: E402  # pylint: disable=wrong-import-position
+    run_async_server,
+    setup_server,
+)
 
 
 @pytest.fixture(name="use_host")

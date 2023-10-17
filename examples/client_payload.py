@@ -10,10 +10,10 @@ import asyncio
 import logging
 from collections import OrderedDict
 
+import client_async
+
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
-
-from .client_async import run_async_client, setup_async_client
 
 
 logging.basicConfig()
@@ -139,8 +139,10 @@ async def run_payload_calls(client):
 
 async def main(cmdline=None):
     """Combine the setup and run"""
-    client = setup_async_client(description="Run asynchronous client.", cmdline=cmdline)
-    await run_async_client(client, modbus_calls=run_payload_calls)
+    client = client_async.setup_async_client(
+        description="Run asynchronous client.", cmdline=cmdline
+    )
+    await client_async.run_async_client(client, modbus_calls=run_payload_calls)
 
 
 if __name__ == "__main__":

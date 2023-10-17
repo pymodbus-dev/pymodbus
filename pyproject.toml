@@ -6,8 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "pymodbus"
 dynamic = ["version"]
 license = {text = "BSD-3-Clause"}
-authors = [{name = '"Galen Collins'}, {name = 'Jan Iversen"'}]
-maintainers = [{name = '"dhoomakethu'}, {name = 'janiversen"'}]
+authors = [{name = "Galen Collins"}, {name = "Jan Iversen"}]
+maintainers = [{name = "dhoomakethu"}, {name = "janiversen"}]
 description = "A fully featured modbus protocol stack in python"
 keywords = ["modbus", "asyncio", "scada", "client", "server", "simulator"]
 readme = "README.rst"

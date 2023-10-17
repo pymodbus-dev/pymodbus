@@ -65,10 +65,8 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tm.client = mock.MagicMock()
         self._tm.client.framer = mock.MagicMock()
         self._tm._set_adu_size()  # pylint: disable=protected-access
-        assert (
-            not self._tm._calculate_response_length(  # pylint: disable=protected-access
-                0
-            )
+        assert not self._tm._calculate_response_length(  # pylint: disable=protected-access
+            0
         )
         self._tm.base_adu_size = 10
         assert (

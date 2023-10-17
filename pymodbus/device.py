@@ -220,23 +220,15 @@ class ModbusDeviceIdentification:
     # -------------------------------------------------------------------------#
     #  Properties
     # -------------------------------------------------------------------------#
-    VendorName = dict_property(
-        lambda s: s.__data, 0  # pylint: disable=protected-access
-    )
-    ProductCode = dict_property(
-        lambda s: s.__data, 1  # pylint: disable=protected-access
-    )
-    MajorMinorRevision = dict_property(
-        lambda s: s.__data, 2  # pylint: disable=protected-access
-    )
+    # fmt: off
+    VendorName = dict_property(lambda s: s.__data, 0)  # pylint: disable=protected-access
+    ProductCode = dict_property(lambda s: s.__data, 1)  # pylint: disable=protected-access
+    MajorMinorRevision = dict_property(lambda s: s.__data, 2)  # pylint: disable=protected-access
     VendorUrl = dict_property(lambda s: s.__data, 3)  # pylint: disable=protected-access
-    ProductName = dict_property(
-        lambda s: s.__data, 4  # pylint: disable=protected-access
-    )
+    ProductName = dict_property(lambda s: s.__data, 4)  # pylint: disable=protected-access
     ModelName = dict_property(lambda s: s.__data, 5)  # pylint: disable=protected-access
-    UserApplicationName = dict_property(
-        lambda s: s.__data, 6  # pylint: disable=protected-access
-    )
+    UserApplicationName = dict_property(lambda s: s.__data, 6)  # pylint: disable=protected-access
+    # fmt: on
 
 
 class DeviceInformationFactory:  # pylint: disable=too-few-public-methods
@@ -428,27 +420,17 @@ class ModbusCountersHandler:
     # -------------------------------------------------------------------------#
     #  Properties
     # -------------------------------------------------------------------------#
-    BusMessage = dict_property(
-        lambda s: s.__data, 0  # pylint: disable=protected-access
-    )
-    BusCommunicationError = dict_property(
-        lambda s: s.__data, 1  # pylint: disable=protected-access
-    )
-    BusExceptionError = dict_property(
-        lambda s: s.__data, 2  # pylint: disable=protected-access
-    )
-    SlaveMessage = dict_property(
-        lambda s: s.__data, 3  # pylint: disable=protected-access
-    )
-    SlaveNoResponse = dict_property(
-        lambda s: s.__data, 4  # pylint: disable=protected-access
-    )
+    # fmt: off
+    BusMessage = dict_property(lambda s: s.__data, 0)  # pylint: disable=protected-access
+    BusCommunicationError = dict_property(lambda s: s.__data, 1)  # pylint: disable=protected-access
+    BusExceptionError = dict_property(lambda s: s.__data, 2)  # pylint: disable=protected-access
+    SlaveMessage = dict_property(lambda s: s.__data, 3)  # pylint: disable=protected-access
+    SlaveNoResponse = dict_property(lambda s: s.__data, 4)  # pylint: disable=protected-access
     SlaveNAK = dict_property(lambda s: s.__data, 5)  # pylint: disable=protected-access
     SlaveBusy = dict_property(lambda s: s.__data, 6)  # pylint: disable=protected-access
-    BusCharacterOverrun = dict_property(
-        lambda s: s.__data, 7  # pylint: disable=protected-access
-    )
+    BusCharacterOverrun = dict_property(lambda s: s.__data, 7)  # pylint: disable=protected-access
     Event = dict_property(lambda s: s.__data, 8)  # pylint: disable=protected-access
+    # fmt: on
 
 
 # ---------------------------------------------------------------------------#

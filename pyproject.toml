@@ -78,7 +78,7 @@ development = [
     "pytest-cov>=4.1.0",
     "pytest-timeout>=2.2.0",
     "pytest-xdist>=3.3.1",
-    "ruff>=0.0.287",
+    "ruff>=0.1.0",
     "twine>=4.0.2",
     "types-Pygments",
     "types-pyserial"

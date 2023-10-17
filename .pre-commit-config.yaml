@@ -12,7 +12,7 @@ repos:
     -   id: check-added-large-files
 # run ruff with --fix before black
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.0.287'
+    rev: 'v0.1.0'
     hooks:
     -   id: ruff
         args: [--fix, --exit-non-zero-on-fix]

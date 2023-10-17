@@ -17,10 +17,6 @@ from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
 
 
-with suppress(ImportError):
-    pass
-
-
 # --------------------------------------------------------------------------- #
 # Protocol Handlers
 # --------------------------------------------------------------------------- #

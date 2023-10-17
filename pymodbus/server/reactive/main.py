@@ -14,12 +14,10 @@ from enum import Enum
 
 try:
     from aiohttp import web
+
+    AIOHTTP_MISSING = False
 except ImportError:
-    print(
-        "Reactive server requires aiohttp. "
-        'Please install with "pip install aiohttp" and try again.'
-    )
-    sys.exit(1)
+    AIOHTTP_MISSING = True
 
 from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
@@ -199,6 +197,11 @@ class ReactiveServer:
 
     def __init__(self, host, port, modbus_server):
         """Initialize."""
+        if AIOHTTP_MISSING:
+            raise RuntimeError(
+                "Reactive server requires aiohttp. "
+                'Please install with "pip install aiohttp" and try again.'
+            )
         self._web_app = web.Application()
         self._runner = web.AppRunner(self._web_app)
         self._host = host

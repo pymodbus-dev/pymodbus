@@ -21,6 +21,8 @@ jobs:
     name: Linters
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      PRE_COMMIT_HOME: ~/.venv
     strategy:
       fail-fast: false
       matrix:

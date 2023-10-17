@@ -49,7 +49,7 @@ jobs:
         id: cache-venv
         uses: syphar/restore-virtualenv@v1
         with:
-          requirement_files: pyproject.toml
+          requirement_files: [ pyproject.toml, pre-commit-config.yaml ]
 
       - name: venv create
         if: steps.cache-venv.outputs.cache-hit != 'true'
@@ -101,7 +101,7 @@ jobs:
         id: cache-venv
         uses: syphar/restore-virtualenv@v1
         with:
-          requirement_files: pyproject.toml
+          requirement_files: [ pyproject.toml, pre-commit-config.yaml ]
 
       - name: venv create
         if: steps.cache-venv.outputs.cache-hit != 'true'

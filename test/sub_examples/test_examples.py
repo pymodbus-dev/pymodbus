@@ -18,7 +18,6 @@ from examples.client_calls import template_call
 from examples.client_custom_msg import main as main_custom_client
 from examples.client_payload import main as main_payload_calls
 from examples.datastore_simulator import main as main_datastore_simulator
-from examples.helper import get_framer
 from examples.message_generator import generate_messages
 from examples.message_parser import main as main_parse_messages
 from examples.server_async import setup_server
@@ -184,8 +183,7 @@ class TestAsyncExamples:
             return
         if use_comm == "serial":
             use_port = f"socket://{use_host}:{use_port}"
-        framer = get_framer(use_framer)
-        await run_async_simple_client(use_comm, use_host, use_port, framer=framer)
+        await run_async_simple_client(use_comm, use_host, use_port, framer=use_framer)
 
 
 @pytest.mark.parametrize("use_host", ["localhost"])
@@ -231,6 +229,5 @@ class TestSyncExamples:
         sleep(1)
         if use_comm == "serial":
             use_port = f"socket://{use_host}:{use_port}"
-        framer = get_framer(use_framer)
-        run_sync_simple_client(use_comm, use_host, use_port, framer=framer)
+        run_sync_simple_client(use_comm, use_host, use_port, framer=use_framer)
         ServerStop()

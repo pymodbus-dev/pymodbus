@@ -1,14 +1,15 @@
 """Modbus client async serial communication."""
+from __future__ import annotations
+
 import asyncio
 import time
 from contextlib import suppress
 from functools import partial
-from typing import Any, Type
+from typing import Any
 
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.exceptions import ConnectionException
-from pymodbus.framer import ModbusFramer
-from pymodbus.framer.rtu_framer import ModbusRtuFramer
+from pymodbus.framer import Framer
 from pymodbus.logging import Log
 from pymodbus.transport import CommType
 from pymodbus.utilities import ModbusTransactionState
@@ -27,7 +28,6 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
 
     Optional parameters:
 
-    :param framer: Framer class.
     :param baudrate: Bits per second.
     :param bytesize: Number of bits per byte 7-8.
     :param parity: 'E'ven, 'O'dd or 'N'one
@@ -36,6 +36,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
 
     Common optional parameters:
 
+    :param framer: Framer enum name
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
@@ -65,7 +66,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
     def __init__(
         self,
         port: str,
-        framer: Type[ModbusFramer] = ModbusRtuFramer,
+        framer: Framer = Framer.RTU,
         baudrate: int = 19200,
         bytesize: int = 8,
         parity: str = "N",
@@ -76,7 +77,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         asyncio.Protocol.__init__(self)
         ModbusBaseClient.__init__(
             self,
-            framer=framer,
+            framer,
             CommType=CommType.SERIAL,
             host=port,
             baudrate=baudrate,
@@ -106,7 +107,6 @@ class ModbusSerialClient(ModbusBaseClient):
 
     Optional parameters:
 
-    :param framer: Framer class.
     :param baudrate: Bits per second.
     :param bytesize: Number of bits per byte 7-8.
     :param parity: 'E'ven, 'O'dd or 'N'one
@@ -115,6 +115,7 @@ class ModbusSerialClient(ModbusBaseClient):
 
     Common optional parameters:
 
+    :param framer: Framer enum name
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
@@ -150,7 +151,7 @@ class ModbusSerialClient(ModbusBaseClient):
     def __init__(
         self,
         port: str,
-        framer: Type[ModbusFramer] = ModbusRtuFramer,
+        framer: Framer = Framer.RTU,
         baudrate: int = 19200,
         bytesize: int = 8,
         parity: str = "N",
@@ -162,7 +163,7 @@ class ModbusSerialClient(ModbusBaseClient):
         kwargs["use_sync"] = True
         ModbusBaseClient.__init__(
             self,
-            framer=framer,
+            framer,
             CommType=CommType.SERIAL,
             host=port,
             baudrate=baudrate,
@@ -207,10 +208,9 @@ class ModbusSerialClient(ModbusBaseClient):
                 baudrate=self.comm_params.baudrate,
                 parity=self.comm_params.parity,
             )
-            if isinstance(self.framer, ModbusRtuFramer):
-                if self.params.strict:
-                    self.socket.interCharTimeout = self.inter_char_timeout
-                self.last_frame_end = None
+            if self.params.strict:
+                self.socket.interCharTimeout = self.inter_char_timeout
+            self.last_frame_end = None
         except serial.SerialException as msg:
             Log.error("{}", msg)
             self.close()

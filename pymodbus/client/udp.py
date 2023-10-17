@@ -1,12 +1,13 @@
 """Modbus client async UDP communication."""
+from __future__ import annotations
+
 import asyncio
 import socket
-from typing import Any, Tuple, Type
+from typing import Any
 
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.exceptions import ConnectionException
-from pymodbus.framer import ModbusFramer
-from pymodbus.framer.socket_framer import ModbusSocketFramer
+from pymodbus.framer import Framer
 from pymodbus.logging import Log
 from pymodbus.transport import CommType
 
@@ -26,11 +27,11 @@ class AsyncModbusUdpClient(
     Optional parameters:
 
     :param port: Port used for communication.
-    :param framer: Framer class.
     :param source_address: source address of client,
 
     Common optional parameters:
 
+    :param framer: Framer enum name
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
@@ -61,15 +62,20 @@ class AsyncModbusUdpClient(
         self,
         host: str,
         port: int = 502,
-        framer: Type[ModbusFramer] = ModbusSocketFramer,
-        source_address: Tuple[str, int] = None,
+        framer: Framer = Framer.SOCKET,
+        source_address: tuple[str, int] = None,
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus UDP Client."""
         asyncio.DatagramProtocol.__init__(self)
         asyncio.Protocol.__init__(self)
         ModbusBaseClient.__init__(
-            self, framer=framer, CommType=CommType.UDP, host=host, port=port, **kwargs
+            self,
+            framer,
+            CommType=CommType.UDP,
+            host=host,
+            port=port,
+            **kwargs,
         )
         self.params.source_address = source_address
 
@@ -102,11 +108,11 @@ class ModbusUdpClient(ModbusBaseClient):
     Optional parameters:
 
     :param port: Port used for communication.
-    :param framer: Framer class.
     :param source_address: source address of client,
 
     Common optional parameters:
 
+    :param framer: Framer enum name
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
@@ -139,15 +145,19 @@ class ModbusUdpClient(ModbusBaseClient):
         self,
         host: str,
         port: int = 502,
-        framer: Type[ModbusFramer] = ModbusSocketFramer,
-        source_address: Tuple[str, int] = None,
+        framer: Framer = Framer.SOCKET,
+        source_address: tuple[str, int] = None,
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus UDP Client."""
         kwargs["use_sync"] = True
         self.transport = None
         super().__init__(
-            framer=framer, port=port, host=host, CommType=CommType.UDP, **kwargs
+            framer,
+            port=port,
+            host=host,
+            CommType=CommType.UDP,
+            **kwargs,
         )
         self.params.source_address = source_address
 

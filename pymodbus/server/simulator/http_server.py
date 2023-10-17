@@ -24,13 +24,6 @@ from pymodbus.server.async_io import (
     ModbusTlsServer,
     ModbusUdpServer,
 )
-from pymodbus.transaction import (
-    ModbusAsciiFramer,
-    ModbusBinaryFramer,
-    ModbusRtuFramer,
-    ModbusSocketFramer,
-    ModbusTlsFramer,
-)
 
 
 MAX_FILTER = 1000
@@ -135,13 +128,6 @@ class ModbusSimulatorServer:
             "tls": ModbusTlsServer,
             "udp": ModbusUdpServer,
         }
-        framer_class = {
-            "ascii": ModbusAsciiFramer,
-            "binary": ModbusBinaryFramer,
-            "rtu": ModbusRtuFramer,
-            "socket": ModbusSocketFramer,
-            "tls": ModbusTlsFramer,
-        }
         if custom_actions_module:
             actions_module = importlib.import_module(custom_actions_module)
             custom_actions_dict = actions_module.custom_actions_dict
@@ -158,7 +144,7 @@ class ModbusSimulatorServer:
         )
         datastore = ModbusServerContext(slaves=self.datastore_context, single=True)
         comm = comm_class[server.pop("comm")]
-        framer = framer_class[server.pop("framer")]
+        framer = server.pop("framer")
         if "identity" in server:
             server["identity"] = ModbusDeviceIdentification(
                 info_name=server["identity"]

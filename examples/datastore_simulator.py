@@ -25,11 +25,10 @@ import argparse
 import asyncio
 import logging
 
-from pymodbus import pymodbus_apply_logging_config
+from pymodbus import Framer, pymodbus_apply_logging_config
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server import StartAsyncTcpServer
-from pymodbus.transaction import ModbusSocketFramer
 
 
 logging.basicConfig()
@@ -141,7 +140,7 @@ def setup_simulator(setup=None, actions=None, cmdline=None):
     args = get_commandline(cmdline=cmdline)
     pymodbus_apply_logging_config(args.log.upper())
     _logger.setLevel(args.log.upper())
-    args.framer = ModbusSocketFramer
+    args.framer = Framer.SOCKET
     args.port = int(args.port)
 
     _logger.info("### Create datastore")

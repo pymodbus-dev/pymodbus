@@ -11,15 +11,9 @@ from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.factory import ServerDecoder
-from pymodbus.framer import ModbusFramer
+from pymodbus.framer import FRAMER_NAME_TO_CLASS, Framer, ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.transaction import (
-    ModbusAsciiFramer,
-    ModbusRtuFramer,
-    ModbusSocketFramer,
-    ModbusTlsFramer,
-)
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
 
 
@@ -283,7 +277,8 @@ class ModbusBaseServer(ModbusProtocol):
         self.handle_local_echo = False
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
-        self.framer = framer
+
+        self.framer = FRAMER_NAME_TO_CLASS.get(framer, framer)
         self.serving: asyncio.Future = asyncio.Future()
 
     def callback_new_connection(self):
@@ -323,7 +318,7 @@ class ModbusTcpServer(ModbusBaseServer):
     def __init__(
         self,
         context,
-        framer=ModbusSocketFramer,
+        framer=Framer.SOCKET,
         identity=None,
         address=("", 502),
         ignore_missing_slaves=False,
@@ -383,7 +378,7 @@ class ModbusTlsServer(ModbusTcpServer):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         context,
-        framer=ModbusTlsFramer,
+        framer=Framer.TLS,
         identity=None,
         address=("", 502),
         sslctx=None,
@@ -449,7 +444,7 @@ class ModbusUdpServer(ModbusBaseServer):
     def __init__(
         self,
         context,
-        framer=ModbusSocketFramer,
+        framer=Framer.SOCKET,
         identity=None,
         address=("", 502),
         ignore_missing_slaves=False,
@@ -503,7 +498,7 @@ class ModbusSerialServer(ModbusBaseServer):
     """
 
     def __init__(
-        self, context, framer=ModbusRtuFramer, identity=None, **kwargs
+        self, context, framer=Framer.RTU, identity=None, **kwargs
     ):  # pragma: no cover
         """Initialize the socket server.
 
@@ -625,7 +620,7 @@ async def StartAsyncTcpServer(  # pylint: disable=invalid-name,dangerous-default
     """
     kwargs.pop("host", None)
     server = ModbusTcpServer(
-        context, kwargs.pop("framer", ModbusSocketFramer), identity, address, **kwargs
+        context, kwargs.pop("framer", Framer.SOCKET), identity, address, **kwargs
     )
     await _serverList.run(server, custom_functions)
 
@@ -657,7 +652,7 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default
     kwargs.pop("host", None)
     server = ModbusTlsServer(
         context,
-        kwargs.pop("framer", ModbusTlsFramer),
+        kwargs.pop("framer", Framer.TLS),
         identity,
         address,
         sslctx,
@@ -687,7 +682,7 @@ async def StartAsyncUdpServer(  # pylint: disable=invalid-name,dangerous-default
     """
     kwargs.pop("host", None)
     server = ModbusUdpServer(
-        context, kwargs.pop("framer", ModbusSocketFramer), identity, address, **kwargs
+        context, kwargs.pop("framer", Framer.SOCKET), identity, address, **kwargs
     )
     await _serverList.run(server, custom_functions)
 
@@ -707,7 +702,7 @@ async def StartAsyncSerialServer(  # pylint: disable=invalid-name,dangerous-defa
     :param kwargs: The rest
     """
     server = ModbusSerialServer(
-        context, kwargs.pop("framer", ModbusAsciiFramer), identity=identity, **kwargs
+        context, kwargs.pop("framer", Framer.RTU), identity=identity, **kwargs
     )
     await _serverList.run(server, custom_functions)
 

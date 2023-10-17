@@ -29,6 +29,8 @@ The corresponding server must be started before e.g. as:
 import asyncio
 import logging
 
+import helper
+
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
@@ -40,8 +42,6 @@ from pymodbus.client import (
 )
 from pymodbus.exceptions import ModbusIOException
 
-from .helper import get_certificate, get_commandline
-
 
 logging.basicConfig()
 _logger = logging.getLogger(__file__)
@@ -50,7 +50,9 @@ _logger.setLevel("DEBUG")
 
 def setup_async_client(description=None, cmdline=None):
     """Run client setup."""
-    args = get_commandline(server=False, description=description, cmdline=cmdline)
+    args = helper.get_commandline(
+        server=False, description=description, cmdline=cmdline
+    )
     _logger.info("### Create client object")
     if args.comm == "tcp":
         client = AsyncModbusTcpClient(
@@ -112,8 +114,8 @@ def setup_async_client(description=None, cmdline=None):
             #    strict=True,
             # TLS setup parameters
             #    sslctx=sslctx,
-            certfile=get_certificate("crt"),
-            keyfile=get_certificate("key"),
+            certfile=helper.get_certificate("crt"),
+            keyfile=helper.get_certificate("key"),
             #    password="none",
             server_hostname="localhost",
         )

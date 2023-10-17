@@ -32,6 +32,8 @@ The corresponding server must be started before e.g. as:
 """
 import logging
 
+import helper
+
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
@@ -42,8 +44,6 @@ from pymodbus.client import (
     ModbusUdpClient,
 )
 
-from .helper import get_certificate, get_commandline
-
 
 logging.basicConfig()
 _logger = logging.getLogger(__file__)
@@ -52,7 +52,7 @@ _logger.setLevel("DEBUG")
 
 def setup_sync_client(description=None, cmdline=None):
     """Run client setup."""
-    args = get_commandline(
+    args = helper.get_commandline(
         server=False,
         description=description,
         cmdline=cmdline,
@@ -116,8 +116,8 @@ def setup_sync_client(description=None, cmdline=None):
             #    strict=True,
             # TLS setup parameters
             #    sslctx=None,
-            certfile=get_certificate("crt"),
-            keyfile=get_certificate("key"),
+            certfile=helper.get_certificate("crt"),
+            keyfile=helper.get_certificate("key"),
             #    password=None,
             server_hostname="localhost",
         )

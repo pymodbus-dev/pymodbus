@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      PRE_COMMIT_HOME: ~/.venv
+      PRE_COMMIT_HOME: /home/runner/.virtualenvs/.venv
     strategy:
       fail-fast: false
       matrix:

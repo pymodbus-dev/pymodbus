@@ -1,7 +1,6 @@
 """Modbus client async serial communication."""
 import asyncio
 import time
-from contextlib import suppress
 from functools import partial
 from typing import Any, Type
 
@@ -14,8 +13,13 @@ from pymodbus.transport import CommType
 from pymodbus.utilities import ModbusTransactionState
 
 
-with suppress(ImportError):
+try:
     import serial
+except ImportError:
+    raise ImportError(  # pylint: disable=raise-missing-from
+        "Serial client requires pyserial "
+        'Please install with "pip install pyserial" and try again.'
+    )
 
 
 class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):

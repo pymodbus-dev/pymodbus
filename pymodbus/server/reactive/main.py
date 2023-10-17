@@ -15,11 +15,10 @@ from enum import Enum
 try:
     from aiohttp import web
 except ImportError:
-    print(
+    raise ImportError(  # pylint: disable=raise-missing-from
         "Reactive server requires aiohttp. "
         'Please install with "pip install aiohttp" and try again.'
     )
-    sys.exit(1)
 
 from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext

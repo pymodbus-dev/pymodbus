@@ -9,8 +9,13 @@ from time import time
 from typing import List
 
 
-with contextlib.suppress(ImportError):
+try:
     from aiohttp import web
+except ImportError:
+    raise ImportError(  # pylint: disable=raise-missing-from
+        "Simulator server requires aiohttp. "
+        'Please install with "pip install aiohttp" and try again.'
+    )
 
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.datastore.simulator import Label
@@ -124,8 +129,6 @@ class ModbusSimulatorServer:
         custom_actions_module: str = None,
     ):
         """Initialize http interface."""
-        if not web:
-            raise RuntimeError("aiohttp not installed!")
         with open(json_file, encoding="utf-8") as file:
             setup = json.load(file)
 

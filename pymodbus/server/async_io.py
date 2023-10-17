@@ -23,10 +23,6 @@ from pymodbus.transaction import (
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
 
 
-with suppress(ImportError):
-    pass
-
-
 # --------------------------------------------------------------------------- #
 # Protocol Handlers
 # --------------------------------------------------------------------------- #

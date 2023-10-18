@@ -77,26 +77,20 @@ def dict_property(store, index):
         getter = lambda self: store(  # pylint: disable=unnecessary-lambda-assignment
             self
         )[index]
-        setter = (
-            lambda self, value: store(  # pylint: disable=unnecessary-lambda-assignment
-                self
-            ).__setitem__(index, value)
-        )
+        setter = lambda self, value: store(  # pylint: disable=unnecessary-lambda-assignment
+            self
+        ).__setitem__(index, value)
     elif isinstance(store, str):
         getter = lambda self: self.__getattribute__(  # pylint: disable=unnecessary-dunder-call,unnecessary-lambda-assignment
             store
-        )[
-            index
-        ]
+        )[index]
         setter = lambda self, value: self.__getattribute__(  # pylint: disable=unnecessary-dunder-call,unnecessary-lambda-assignment
             store
-        ).__setitem__(
-            index, value
-        )
+        ).__setitem__(index, value)
     else:
-        getter = lambda self: store[  # pylint: disable=unnecessary-lambda-assignment
-            index
-        ]
+        getter = (
+            lambda self: store[index]  # pylint: disable=unnecessary-lambda-assignment
+        )
         setter = lambda self, value: store.__setitem__(  # pylint: disable=unnecessary-lambda-assignment
             index, value
         )

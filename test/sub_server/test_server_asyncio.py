@@ -323,13 +323,13 @@ class TestAsyncioServer:
 
     async def test_async_udp_server_roundtrip(self):
         """Test sending and receiving data on udp socket"""
-        expected_response = b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"  # value of 17 as per context
+        expected_response = (
+            b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"
+        )  # value of 17 as per context
         BasicClient.dataTo = TEST_DATA  # slave 1, read register
         BasicClient.done = asyncio.Future()
         await self.start_server(do_udp=True)
-        random_port = self.server.transport._sock.getsockname()[  # pylint: disable=protected-access
-            1
-        ]
+        random_port = self.server.transport._sock.getsockname()[1]  # pylint: disable=protected-access
         transport, _ = await self.loop.create_datagram_endpoint(
             BasicClient, remote_addr=("127.0.0.1", random_port)
         )

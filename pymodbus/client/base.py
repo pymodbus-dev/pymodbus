@@ -219,7 +219,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         self.framer.processIncomingPacket(data, self._handle_response, slave=0)
         return len(data)
 
-    def callback_disconnected(self, _reason: Exception) -> None:
+    def callback_disconnected(self, _reason: Exception | None) -> None:
         """Handle lost connection"""
         for tid in list(self.transaction):
             self.raise_future(

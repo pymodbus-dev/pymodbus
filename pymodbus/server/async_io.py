@@ -1,11 +1,12 @@
 """Implementation of a Threaded Modbus Server."""
 # pylint: disable=missing-type-doc
+from __future__ import annotations
+
 import asyncio
 import os
 import time
 import traceback
 from contextlib import suppress
-from typing import Union
 
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
@@ -74,7 +75,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 traceback.format_exc(),
             )
 
-    def callback_disconnected(self, call_exc: Exception) -> None:
+    def callback_disconnected(self, call_exc: Exception | None) -> None:
         """Call when connection is lost."""
         try:
             if self.handler_task:
@@ -229,9 +230,9 @@ class ModbusServerRequestHandler(ModbusProtocol):
             result = None
         return result
 
-    def callback_data(self, data: bytes, addr: tuple = None) -> int:
+    def callback_data(self, data: bytes, addr: tuple = ()) -> int:
         """Handle received data."""
-        if addr:
+        if addr != ():
             self.receive_queue.put_nowait((data, addr))
         else:
             self.receive_queue.put_nowait(data)
@@ -554,7 +555,7 @@ class _serverList:
     :meta private:
     """
 
-    active_server: Union[ModbusTcpServer, ModbusUdpServer, ModbusSerialServer] = None
+    active_server: ModbusTcpServer | ModbusUdpServer | ModbusSerialServer
 
     def __init__(self, server):
         """Register new server."""

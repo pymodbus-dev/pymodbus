@@ -1,9 +1,11 @@
 """Pymodbus ModbusSimulatorContext."""
+from __future__ import annotations
+
 import dataclasses
 import random
 import struct
 from datetime import datetime
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable
 
 
 WORD_SIZE = 16
@@ -30,7 +32,7 @@ class Cell:
     access: bool = False
     value: int = 0
     action: int = 0
-    action_kwargs: Dict[str, Any] = None
+    action_kwargs: dict[str, Any] | None = None
     count_read: int = 0
     count_write: int = 0
 
@@ -452,18 +454,18 @@ class ModbusSimulatorContext:
     start_time = int(datetime.now().timestamp())
 
     def __init__(
-        self, config: Dict[str, Any], custom_actions: Dict[str, Callable]
+        self, config: dict[str, Any], custom_actions: dict[str, Callable]
     ) -> None:
         """Initialize."""
-        self.registers: List[int] = []
-        self.fc_offset: Dict[int, int] = {}
+        self.registers: list[int] = []
+        self.fc_offset: dict[int, int] = {}
         self.register_count = 0
         self.type_exception = False
-        self.action_name_to_id: Dict[str, int] = {}
-        self.action_id_to_name: List[str] = []
-        self.action_methods: List[Callable] = []
-        self.registerType_name_to_id: Dict[str, int] = {}
-        self.registerType_id_to_name: List[str] = []
+        self.action_name_to_id: dict[str, int] = {}
+        self.action_id_to_name: list[str] = []
+        self.action_methods: list[Callable] = []
+        self.registerType_name_to_id: dict[str, int] = {}
+        self.registerType_id_to_name: list[str] = []
         Setup(self).setup(config, custom_actions)
 
     # --------------------------------------------

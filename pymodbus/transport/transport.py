@@ -374,7 +374,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         """Call when connection is succcesfull."""
         Log.debug("callback_connected called")
 
-    def callback_disconnected(self, exc: Exception) -> None:
+    def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""
         Log.debug("callback_disconnected called: {}", exc)
 

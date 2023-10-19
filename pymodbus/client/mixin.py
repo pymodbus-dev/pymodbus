@@ -48,7 +48,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     def __init__(self):
         """Initialize."""
 
-    def execute(self, request: ModbusRequest) -> ModbusResponse | Awaitable[ModbusResponse]:
+    def execute(
+        self, request: ModbusRequest
+    ) -> ModbusResponse | Awaitable[ModbusResponse]:
         """Execute request (code ???).
 
         :param request: Request to send

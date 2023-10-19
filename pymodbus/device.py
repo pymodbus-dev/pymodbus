@@ -4,6 +4,8 @@ These are the device management handlers.  They should be
 maintained in the server context and the various methods
 should be inserted in the correct locations.
 """
+from __future__ import annotations
+
 
 __all__ = [
     "ModbusPlusStatistics",
@@ -15,7 +17,6 @@ import struct
 
 # pylint: disable=missing-type-doc
 from collections import OrderedDict
-from typing import List
 
 from pymodbus.constants import INTERNAL_ERROR, DeviceInformation
 from pymodbus.events import ModbusEvent
@@ -450,7 +451,7 @@ class ModbusControlBlock:
     __counters = ModbusCountersHandler()
     __identity = ModbusDeviceIdentification()
     __plus = ModbusPlusStatistics()
-    __events: List[ModbusEvent] = []
+    __events: list[ModbusEvent] = []
 
     # -------------------------------------------------------------------------#
     #  Magic

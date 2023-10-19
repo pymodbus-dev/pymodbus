@@ -3,6 +3,8 @@
 A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
 """
+from __future__ import annotations
+
 
 __all__ = [
     "pack_bitstring",
@@ -17,7 +19,6 @@ __all__ = [
 
 # pylint: disable=missing-type-doc
 import struct
-from typing import List
 
 
 class ModbusTransactionState:  # pylint: disable=too-few-public-methods
@@ -101,7 +102,7 @@ def dict_property(store, index):
 # --------------------------------------------------------------------------- #
 # Bit packing functions
 # --------------------------------------------------------------------------- #
-def pack_bitstring(bits: List[bool]) -> bytes:
+def pack_bitstring(bits: list[bool]) -> bytes:
     """Create a bytestring out of a list of bits.
 
     :param bits: A list of bits
@@ -128,7 +129,7 @@ def pack_bitstring(bits: List[bool]) -> bytes:
     return ret
 
 
-def unpack_bitstring(data: bytes) -> List[bool]:
+def unpack_bitstring(data: bytes) -> list[bool]:
     """Create bit list out of a bytestring.
 
     :param data: The modbus data packet to decode

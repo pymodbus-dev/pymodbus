@@ -62,11 +62,11 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         host: str,
         port: int = 802,
         framer: Framer = Framer.TLS,
-        sslctx: ssl.SSLContext = None,
-        certfile: str = None,
-        keyfile: str = None,
-        password: str = None,
-        server_hostname: str = None,
+        sslctx: ssl.SSLContext | None = None,
+        certfile: str | None = None,
+        keyfile: str | None = None,
+        password: str | None = None,
+        server_hostname: str | None = None,
         **kwargs: Any,
     ):
         """Initialize Asyncio Modbus TLS Client."""
@@ -148,11 +148,11 @@ class ModbusTlsClient(ModbusTcpClient):
         host: str,
         port: int = 802,
         framer: Framer = Framer.TLS,
-        sslctx: ssl.SSLContext = None,
-        certfile: str = None,
-        keyfile: str = None,
-        password: str = None,
-        server_hostname: str = None,
+        sslctx: ssl.SSLContext | None = None,
+        certfile: str | None = None,
+        keyfile: str | None = None,
+        password: str | None = None,
+        server_hostname: str | None = None,
         **kwargs: Any,
     ):
         """Initialize Modbus TLS Client."""

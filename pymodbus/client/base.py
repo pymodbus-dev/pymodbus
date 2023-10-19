@@ -52,16 +52,16 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     class _params:
         """Parameter class."""
 
-        retries: int = None
-        retry_on_empty: bool = None
-        close_comm_on_error: bool = None
-        strict: bool = None
-        broadcast_enable: bool = None
-        reconnect_delay: int = None
+        retries: int | None = None
+        retry_on_empty: bool | None = None
+        close_comm_on_error: bool | None = None
+        strict: bool | None = None
+        broadcast_enable: bool | None = None
+        reconnect_delay: int | None = None
 
-        source_address: tuple[str, int] = None
+        source_address: tuple[str, int] | None = None
 
-        server_hostname: str = None
+        server_hostname: str | None = None
 
     def __init__(  # pylint: disable=too-many-arguments
         self,

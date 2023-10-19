@@ -63,7 +63,7 @@ class AsyncModbusUdpClient(
         host: str,
         port: int = 502,
         framer: Framer = Framer.SOCKET,
-        source_address: tuple[str, int] = None,
+        source_address: tuple[str, int] | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus UDP Client."""
@@ -146,7 +146,7 @@ class ModbusUdpClient(ModbusBaseClient):
         host: str,
         port: int = 502,
         framer: Framer = Framer.SOCKET,
-        source_address: tuple[str, int] = None,
+        source_address: tuple[str, int] | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus UDP Client."""

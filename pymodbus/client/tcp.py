@@ -61,7 +61,7 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
         host: str,
         port: int = 502,
         framer: Framer = Framer.SOCKET,
-        source_address: tuple[str, int] = None,
+        source_address: tuple[str, int] | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
@@ -142,7 +142,7 @@ class ModbusTcpClient(ModbusBaseClient):
         host: str,
         port: int = 502,
         framer: Framer = Framer.SOCKET,
-        source_address: tuple[str, int] = None,
+        source_address: tuple[str, int] | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus TCP Client."""

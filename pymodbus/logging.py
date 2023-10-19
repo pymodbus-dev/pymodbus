@@ -2,10 +2,11 @@
 
 Released under the the BSD license
 """
+from __future__ import annotations
+
 import logging
 from binascii import b2a_hex
 from logging import NullHandler as __null
-from typing import Union
 
 from pymodbus.utilities import hexlify_packets
 
@@ -17,7 +18,7 @@ logging.getLogger("pymodbus_internal").addHandler(__null())
 
 
 def pymodbus_apply_logging_config(
-    level: Union[str, int] = logging.DEBUG, log_file_name: str = None
+    level: str | int = logging.DEBUG, log_file_name: str | None = None
 ):
     """Apply basic logging configuration used by default by Pymodbus maintainers.
 

@@ -95,10 +95,10 @@ class ReactiveModbusSlaveContext(ModbusSlaveContext):
 
     def __init__(
         self,
-        discrete_inputs: BaseModbusDataBlock = None,
-        coils: BaseModbusDataBlock = None,
-        input_registers: BaseModbusDataBlock = None,
-        holding_registers: BaseModbusDataBlock = None,
+        discrete_inputs: BaseModbusDataBlock,
+        coils: BaseModbusDataBlock,
+        input_registers: BaseModbusDataBlock,
+        holding_registers: BaseModbusDataBlock,
         zero_mode: bool = False,
         randomize: int = 0,
         change_rate: int = 0,

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import struct
+from collections.abc import Awaitable
 from enum import Enum
 from typing import Any
 
@@ -47,7 +48,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     def __init__(self):
         """Initialize."""
 
-    def execute(self, request: ModbusRequest) -> ModbusResponse:
+    def execute(self, request: ModbusRequest) -> ModbusResponse | Awaitable[ModbusResponse]:
         """Execute request (code ???).
 
         :param request: Request to send

@@ -3,6 +3,8 @@
 A collection of utilities for building and decoding
 modbus messages payloads.
 """
+from __future__ import annotations
+
 
 __all__ = [
     "BinaryPayloadBuilder",
@@ -11,7 +13,6 @@ __all__ = [
 
 # pylint: disable=missing-type-doc
 from struct import pack, unpack
-from typing import List
 
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ParameterException
@@ -111,7 +112,7 @@ class BinaryPayloadBuilder:
         Log.debug("{}", payload)
         return payload
 
-    def to_coils(self) -> List[bool]:
+    def to_coils(self) -> list[bool]:
         """Convert the payload buffer into a coil layout that can be used as a context block.
 
         :returns: The coil layout to use as a block
@@ -120,7 +121,7 @@ class BinaryPayloadBuilder:
         coils = [bool(int(bit)) for reg in payload for bit in format(reg, "016b")]
         return coils
 
-    def build(self) -> List[bytes]:
+    def build(self) -> list[bytes]:
         """Return the payload buffer as a list.
 
         This list is two bytes per element and can
@@ -133,7 +134,7 @@ class BinaryPayloadBuilder:
         buffer += b"\x00" * (length % 2)
         return [buffer[i : i + 2] for i in range(0, length, 2)]
 
-    def add_bits(self, values: List[bool]) -> None:
+    def add_bits(self, values: list[bool]) -> None:
         """Add a collection of bits to be encoded.
 
         If these are less than a multiple of eight,

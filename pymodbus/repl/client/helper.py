@@ -232,7 +232,7 @@ class Result:
     """Represent result command."""
 
     function_code: int | None = None
-    data: dict[int, Any] | Any = None
+    data: dict[int, Any] | None = None
 
     def __init__(self, result):
         """Initialize.

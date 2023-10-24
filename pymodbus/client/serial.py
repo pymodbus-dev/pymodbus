@@ -34,7 +34,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
     :param baudrate: Bits per second.
     :param bytesize: Number of bits per byte 7-8.
     :param parity: 'E'ven, 'O'dd or 'N'one
-    :param stopbits: Number of stop bits 0-2.
+    :param stopbits: Number of stop bits 1, 1.5, 2.
     :param handle_local_echo: Discard local echo from dongle.
 
     Common optional parameters:

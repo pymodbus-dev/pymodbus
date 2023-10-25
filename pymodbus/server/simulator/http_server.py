@@ -259,7 +259,10 @@ class ModbusSimulatorServer:
         """Handle static html."""
         if not (page := request.path[1:]):
             page = "index.html"
-        file = os.path.join(self.web_path, page)
+        unsafe_file = os.path.join(self.web_path, page)
+        file = os.path.normpath(unsafe_file)
+        if not file.startswith(self.web_path):
+            raise ValueError(f"File access outside {self.web_path} not permitted.")
         try:
             with open(file, encoding="utf-8"):
                 return web.FileResponse(file)

@@ -51,8 +51,9 @@ class SerialTransport(asyncio.Transport):
             self.async_loop.remove_reader(self.sync_serial.fileno())
         self.sync_serial.close()
         self.sync_serial = None
-        with contextlib.suppress(Exception):
-            self._protocol.connection_lost(exc)
+        if exc:
+            with contextlib.suppress(Exception):
+                self._protocol.connection_lost(exc)
 
     def write(self, data) -> None:
         """Write some data to the transport."""

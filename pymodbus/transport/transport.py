@@ -279,7 +279,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
     # ---------------------------------- #
     # ModbusProtocol asyncio standard methods #
     # ---------------------------------- #
-    def connection_made(self, transport: asyncio.BaseTransport):
+    def connection_made(self, transport: asyncio.BaseTransport) -> None:
         """Call from asyncio, when a connection is made.
 
         :param transport: socket etc. representing the connection.
@@ -289,7 +289,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.reset_delay()
         self.callback_connected()
 
-    def connection_lost(self, reason: Exception):
+    def connection_lost(self, reason: Exception | None) -> None:
         """Call from asyncio, when the connection is lost or closed.
 
         :param reason: None or an exception object
@@ -306,14 +306,14 @@ class ModbusProtocol(asyncio.BaseProtocol):
             self.reconnect_task = asyncio.create_task(self.do_reconnect())
         self.callback_disconnected(reason)
 
-    def data_received(self, data: bytes):
+    def data_received(self, data: bytes) -> None:
         """Call when some data is received.
 
         :param data: non-empty bytes object with incoming data.
         """
         self.datagram_received(data, None)
 
-    def datagram_received(self, data: bytes, addr: tuple):
+    def datagram_received(self, data: bytes, addr: tuple) -> None:
         """Receive datagram (UDP connections)."""
         if self.comm_params.handle_local_echo and self.sent_buffer:
             if data.startswith(self.sent_buffer):
@@ -354,7 +354,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 ":hex",
             )
 
-    def eof_received(self):
+    def eof_received(self) -> None:
         """Accept other end terminates connection."""
         Log.debug("-> transport: received eof")
 
@@ -444,7 +444,9 @@ class ModbusProtocol(asyncio.BaseProtocol):
     # ---------------- #
     # Internal methods #
     # ---------------- #
-    async def create_nullmodem(self, port):
+    async def create_nullmodem(
+        self, port
+    ) -> tuple[asyncio.Transport, asyncio.BaseProtocol]:
         """Bypass create_ and use null modem"""
         if self.is_server:
             # Listener object
@@ -454,7 +456,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         # connect object
         return NullModem.set_connection(port, self)
 
-    def handle_new_connection(self):
+    def handle_new_connection(self) -> ModbusProtocol:
         """Handle incoming connect."""
         if not self.is_server:
             # Clients reuse the same object.
@@ -465,7 +467,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         new_protocol.listener = self
         return new_protocol
 
-    async def do_reconnect(self):
+    async def do_reconnect(self) -> None:
         """Handle reconnect as a task."""
         try:
             self.reconnect_delay_current = self.comm_params.reconnect_delay
@@ -489,7 +491,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
     # ----------------- #
     # The magic methods #
     # ----------------- #
-    async def __aenter__(self):
+    async def __aenter__(self) -> ModbusProtocol:
         """Implement the client with async enter block."""
         return self
 

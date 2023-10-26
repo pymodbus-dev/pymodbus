@@ -156,10 +156,14 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.is_server = is_server
         self.is_closing = False
 
-        self.transport: asyncio.BaseTransport = None
-        self.loop: asyncio.AbstractEventLoop = None
+        self.loop: asyncio.AbstractEventLoop = None  # type: ignore[assignment]
+        self.transport: asyncio.BaseTransport | None = None
         self.recv_buffer: bytes = b""
-        self.call_create: Callable[[], Coroutine[Any, Any, Any]] = lambda: None
+
+        async def _noop():
+            ...
+
+        self.call_create: Callable[[], Coroutine[Any, Any, Any]] = _noop
         if self.is_server:
             self.active_connections: dict[str, ModbusProtocol] = {}
         else:
@@ -398,11 +402,11 @@ class ModbusProtocol(asyncio.BaseProtocol):
             self.sent_buffer += data
         if self.comm_params.comm_type == CommType.UDP:
             if addr:
-                self.transport.sendto(data, addr=addr)  # type: ignore[attr-defined]
+                self.transport.sendto(data, addr=addr)  # type: ignore[union-attr]
             else:
-                self.transport.sendto(data)  # type: ignore[attr-defined]
+                self.transport.sendto(data)  # type: ignore[union-attr]
         else:
-            self.transport.write(data)  # type: ignore[attr-defined]
+            self.transport.write(data)  # type: ignore[union-attr]
 
     def transport_close(self, intern: bool = False, reconnect: bool = False) -> None:
         """Close connection.

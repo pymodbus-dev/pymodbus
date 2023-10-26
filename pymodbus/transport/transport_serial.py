@@ -20,7 +20,7 @@ class SerialTransport(asyncio.Transport):
         super().__init__()
         self.async_loop = loop
         self._protocol: asyncio.BaseProtocol = protocol
-        self.sync_serial = serial.serial_for_url(*args, **kwargs)
+        self.sync_serial: serial.Serial | None = serial.serial_for_url(*args, **kwargs)
         self._write_buffer: list[bytes] = []
         self.poll_task: asyncio.Task | None = None
         self._poll_wait_time = 0.0005
@@ -59,12 +59,12 @@ class SerialTransport(asyncio.Transport):
     def write(self, data) -> None:
         """Write some data to the transport."""
         self._write_buffer.append(data)
-        if not self.poll_task:
+        if not self.poll_task and self.sync_serial:
             self.async_loop.add_writer(self.sync_serial.fileno(), self._write_ready)
 
     def flush(self) -> None:
         """Clear output buffer and stops any more data being written."""
-        if not self.poll_task:
+        if not self.poll_task and self.sync_serial:
             self.async_loop.remove_writer(self.sync_serial.fileno())
         self._write_buffer.clear()
 

@@ -266,9 +266,11 @@ class ModbusProtocol(asyncio.BaseProtocol):
             self.loop = asyncio.get_running_loop()
         self.is_closing = False
         try:
-            self.transport = await self.call_create()
-            if isinstance(self.transport, tuple):
-                self.transport = self.transport[0]
+            _transport = await self.call_create()
+            if isinstance(_transport, tuple):
+                self.transport = _transport[0]
+            else:
+                self.transport = _transport
         except OSError as exc:
             Log.warning("Failed to start server {}", exc)
             # self.transport_close(intern=True)
@@ -435,7 +437,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
     def reset_delay(self) -> None:
         """Reset wait time before next reconnect to minimal period."""
-        self.reconnect_delay_current = self.comm_params.reconnect_delay
+        self.reconnect_delay_current = self.comm_params.reconnect_delay or 0
 
     def is_active(self) -> bool:
         """Return true if connected/listening."""
@@ -469,6 +471,12 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
     async def do_reconnect(self) -> None:
         """Handle reconnect as a task."""
+        if not (
+            self.comm_params.reconnect_delay and self.comm_params.reconnect_delay_max
+        ):
+            raise AssertionError(
+                "do_reconnect should not be called if reconnect_delay is None"
+            )
         try:
             self.reconnect_delay_current = self.comm_params.reconnect_delay
             while True:
@@ -519,7 +527,7 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
         asyncio.DatagramTransport.__init__(self)
         asyncio.Transport.__init__(self)
         self.protocol: ModbusProtocol = protocol
-        self.other_modem: NullModem = None
+        self.other_modem: NullModem | None = None
         self.listen = listen
         self.manipulator: Callable[[bytes], list[bytes]] | None = None
         self._is_closing = False
@@ -605,6 +613,8 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
 
     def write(self, data: bytes) -> None:
         """Send data."""
+        if not self.other_modem:
+            raise AssertionError("Missing other_modem")
         if not self.manipulator:
             self.other_modem.protocol.data_received(data)
             return

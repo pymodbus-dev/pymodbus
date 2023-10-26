@@ -4,6 +4,7 @@ on:
     branches:
       - dev
       - master
+      - dev_*
     tags:
       - v*
   pull_request:
@@ -13,8 +14,6 @@ on:
     # Sunday at 02:10 UTC.
     - cron: '10 2 * * 0'
   workflow_dispatch:
-
-# Test with new caching.
 
 jobs:
   testing:
@@ -48,11 +47,23 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
 
+      - name: Set venv path (NON Windows)
+        if: matrix.os != 'windows-latest'
+        run: |
+          echo "VIRTUAL_ENV=${{ github.workspace }}/venv" >> $GITHUB_ENV
+          echo ${{ github.workspace }}/venv/bin >> $GITHUB_PATH
+
+      - name: Set venv path (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo "VIRTUAL_ENV=${{ github.workspace }}\\venv" >> $Env:GITHUB_ENV
+          echo "${{ github.workspace }}\\venv\\Scripts" >> $Env:GITHUB_PATH
+
       - name: Restore base Python virtual environment
         id: cache-venv
         uses: actions/cache@v3.3.2
         with:
-          path: ${{ github.workspace }}/venv
+          path: ${{ env.VIRTUAL_ENV }}
           key: >-
             ${{ runner.os }}-${{ matrix.python }}-venv-${{
               hashFiles('pyproject.toml') }}-${{
@@ -61,19 +72,20 @@ jobs:
       - name: Create venv (NEW CACHE)
         if: steps.cache-venv.outputs.cache-hit != 'true'
         run: |
-          python -m venv ${{ github.workspace }}/venv
-          echo ${{ github.workspace }}/venv/bin >> $GITHUB_PATH
+          python -m venv ${{ env.VIRTUAL_ENV }}
+          python -m pip install --upgrade pip
           pip install -e ".[all]"
 
-      - name: Activate vertial environment (EXISTING CACHE)
-        if: steps.cache-venv.outputs.cache-hit == 'true'
+      - name: CHECK pytest
         run: |
-          echo ${{ github.workspace }}/venv/bin >> $GITHUB_PATH
+          env
+          which pytest
+          which codespell
+          which mypy
 
       - name: codespell
         if: matrix.run_doc == true
         run: |
-          echo $PATH
           codespell
 
       - name: dcoumentation
@@ -98,11 +110,13 @@ jobs:
 
       - name: pytest
         run: |
+          env
           pytest -n0  -v --full-trace --timeout=1200
 
   analyze:
     name: Analyze Python
     runs-on: ubuntu-22.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v3
 
@@ -122,4 +136,4 @@ jobs:
       - testing
     timeout-minutes: 1
     steps:
-      - run: ls
+      - run: echo 'finish job'

@@ -525,7 +525,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     # code 0x2B sub 0x0D: CANopen General Reference Request and Response, NOT IMPLEMENTED
 
     def read_device_information(
-        self, read_code: int = None, object_id: int = 0x00, **kwargs: Any
+        self, read_code: int | None = None, object_id: int = 0x00, **kwargs: Any
     ) -> ModbusResponse | Awaitable[ModbusResponse]:
         """Read FIFO queue (code 0x2B sub 0x0E).
 

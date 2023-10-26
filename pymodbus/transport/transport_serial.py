@@ -22,7 +22,7 @@ class SerialTransport(asyncio.Transport):
         self._protocol: asyncio.BaseProtocol = protocol
         self.sync_serial = serial.serial_for_url(*args, **kwargs)
         self._write_buffer: list[bytes] = []
-        self.poll_task = None
+        self.poll_task: asyncio.Task | None = None
         self._poll_wait_time = 0.0005
         self.sync_serial.timeout = 0
         self.sync_serial.write_timeout = 0
@@ -35,7 +35,7 @@ class SerialTransport(asyncio.Transport):
             self.async_loop.add_reader(self.sync_serial.fileno(), self._read_ready)
         self.async_loop.call_soon(self._protocol.connection_made, self)
 
-    def close(self, exc=None):
+    def close(self, exc: Exception | None = None) -> None:
         """Close the transport gracefully."""
         if not self.sync_serial:
             return
@@ -115,7 +115,7 @@ class SerialTransport(asyncio.Transport):
         """Return True if the transport is closing or closed."""
         return False
 
-    def abort(self):
+    def abort(self) -> None:
         """Close the transport immediately."""
         self.close()
 

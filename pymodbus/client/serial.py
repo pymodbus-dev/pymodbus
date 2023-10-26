@@ -169,8 +169,7 @@ class ModbusSerialClient(ModbusBaseClient):
         """Initialize Modbus Serial Client."""
         self.transport = None
         kwargs["use_sync"] = True
-        ModbusBaseClient.__init__(
-            self,
+        super().__init__(
             framer,
             CommType=CommType.SERIAL,
             host=port,

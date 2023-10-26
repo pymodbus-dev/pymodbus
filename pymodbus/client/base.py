@@ -123,10 +123,10 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         self.transaction = DictTransactionManager(
             self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
         )
-        self.reconnect_delay_current = self.params.reconnect_delay
+        self.reconnect_delay_current = self.params.reconnect_delay or 0
         self.use_udp = False
         self.state = ModbusTransactionState.IDLE
-        self.last_frame_end: float = 0
+        self.last_frame_end: float | None = 0
         self.silent_interval: float = 0
 
     # ----------------------------------------------------------------------- #
@@ -165,7 +165,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             return 0
         return self.last_frame_end + self.silent_interval
 
-    def execute(self, request: ModbusRequest = None) -> ModbusResponse:
+    def execute(self, request: ModbusRequest | None = None) -> ModbusResponse:
         """Execute request and get response (call **sync/async**).
 
         :param request: The request to process
@@ -211,7 +211,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
 
         return resp
 
-    def callback_data(self, data: bytes, addr: tuple = None) -> int:
+    def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data
 
         returns number of bytes consumed

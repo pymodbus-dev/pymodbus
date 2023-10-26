@@ -66,8 +66,7 @@ jobs:
           path: ${{ env.VIRTUAL_ENV }}
           key: >-
             ${{ runner.os }}-${{ matrix.python }}-venv-${{
-              hashFiles('pyproject.toml') }}-${{
-              hashFiles('.pre-commit-config.yaml') }}
+              hashFiles('pyproject.toml') }}
 
       - name: Create venv (NEW CACHE)
         if: steps.cache-venv.outputs.cache-hit != 'true'
@@ -96,10 +95,10 @@ jobs:
         run: |
           mypy pymodbus
 
-      - name: precommit
+      - name: ruff
         if: matrix.run_lint == true
         run: |
-          pre-commit run --all-files
+          ruff .
 
       - name: pytest
         run: |

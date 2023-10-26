@@ -6,7 +6,7 @@ trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
 
 
 codespell
-pre-commit run --all-files
+ruff check --fix --exit-non-zero-on-fix .
 pylint --recursive=y examples pymodbus test
 mypy pymodbus
 pytest --numprocesses auto

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Redirect output to stderr.
+exec 1>&2
+
+exec ruff check --fix --exit-non-zero-on-fix .

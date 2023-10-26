@@ -181,35 +181,30 @@ class ModbusProtocol(asyncio.BaseProtocol):
             host = self.comm_params.host
             port = int(self.comm_params.port)
         if self.comm_params.comm_type == CommType.SERIAL:
-            host, port = self.init_setup_serial(host, port)
-            if not host and not port:
+            if NULLMODEM_HOST in host:
+                host, port = NULLMODEM_HOST, int(host[9:].split(":")[1])
+            elif self.is_server and host.startswith("socket"):
+                # format is "socket://<host>:port"
+                self.comm_params.comm_type = CommType.TCP
+                parts = host.split(":")
+                host, port = parts[1][2:], int(parts[2])
+            else:
+                self.call_create = lambda: create_serial_connection(
+                    self.loop,
+                    self.handle_new_connection,
+                    host,
+                    baudrate=self.comm_params.baudrate,
+                    bytesize=self.comm_params.bytesize,
+                    parity=self.comm_params.parity,
+                    stopbits=self.comm_params.stopbits,
+                    timeout=self.comm_params.timeout_connect,
+                )
                 return
         if host == NULLMODEM_HOST:
             self.call_create = lambda: self.create_nullmodem(port)
             return
         # TCP/TLS/UDP
         self.init_setup_connect_listen(host, port)
-
-    def init_setup_serial(self, host: str, _port: int) -> tuple[str, int]:
-        """Split host for serial if needed."""
-        if NULLMODEM_HOST in host:
-            return NULLMODEM_HOST, int(host[9:].split(":")[1])
-        if self.is_server and host.startswith("socket"):
-            # format is "socket://<host>:port"
-            self.comm_params.comm_type = CommType.TCP
-            parts = host.split(":")
-            return parts[1][2:], int(parts[2])
-        self.call_create = lambda: create_serial_connection(
-            self.loop,
-            self.handle_new_connection,
-            host,
-            baudrate=self.comm_params.baudrate,
-            bytesize=self.comm_params.bytesize,
-            parity=self.comm_params.parity,
-            stopbits=self.comm_params.stopbits,
-            timeout=self.comm_params.timeout_connect,
-        )
-        return None, None
 
     def init_setup_connect_listen(self, host: str, port: int) -> None:
         """Handle connect/listen handler."""

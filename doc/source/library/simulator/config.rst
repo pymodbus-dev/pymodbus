@@ -90,7 +90,7 @@ Server configuration examples
                 "identity": {
                     "VendorName": "pymodbus",
                     "ProductCode": "PM",
-                    "VendorUrl": "https://github.com/riptideio/pymodbus/",
+                    "VendorUrl": "https://github.com/pymodbus-dev/pymodbus",
                     "ProductName": "pymodbus Server",
                     "ModelName": "pymodbus Server",
                     "MajorMinorRevision": "3.1.0"
@@ -109,7 +109,7 @@ Server configuration examples
                 "identity": {
                     "VendorName": "pymodbus",
                     "ProductCode": "PM",
-                    "VendorUrl": "https://github.com/riptideio/pymodbus/",
+                    "VendorUrl": "https://github.com/pymodbus-dev/pymodbus",
                     "ProductName": "pymodbus Server",
                     "ModelName": "pymodbus Server",
                     "MajorMinorRevision": "3.1.0"
@@ -126,7 +126,7 @@ Server configuration examples
                 "identity": {
                     "VendorName": "pymodbus",
                     "ProductCode": "PM",
-                    "VendorUrl": "https://github.com/riptideio/pymodbus/",
+                    "VendorUrl": "https://github.com/pymodbus-dev/pymodbus",
                     "ProductName": "pymodbus Server",
                     "ModelName": "pymodbus Server",
                     "MajorMinorRevision": "3.1.0"
@@ -141,7 +141,7 @@ Server configuration examples
                 "identity": {
                     "VendorName": "pymodbus",
                     "ProductCode": "PM",
-                    "VendorUrl": "https://github.com/riptideio/pymodbus/",
+                    "VendorUrl": "https://github.com/pymodbus-dev/pymodbus",
                     "ProductName": "pymodbus Server",
                     "ModelName": "pymodbus Server",
                     "MajorMinorRevision": "3.1.0"

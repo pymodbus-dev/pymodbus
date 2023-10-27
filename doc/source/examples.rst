@@ -20,20 +20,20 @@ You need to modify the code to adapt it to your situation.
 
 Simple asynchronous client
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-Source: `examples/simple_async_client.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/simple_async_client.py>`_
+Source: :github:`examples/simple_async_client.py`
 
 .. literalinclude:: ../../examples/simple_async_client.py
 
 Simple synchronous client
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-Source: `examples/simple_sync_client.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/simple_sync_client.py>`_
+Source: :github:`examples/simple_sync_client.py`
 
 .. literalinclude:: ../../examples/simple_sync_client.py
 
 
 Client performance sync vs async
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Source: `examples/client_performance.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/client_performance.py>`_
+Source: :github:`examples/client_performance.py`
 
 .. literalinclude:: ../../examples/client_performance.py
 
@@ -54,7 +54,7 @@ because they are tested automatilly with each dev branch commit using CI.
 
 Client asynchronous calls
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-Source: `examples/client_async_calls.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/client_async_calls.py>`_
+Source: :github:`examples/client_async_calls.py`
 
 .. automodule:: examples.client_async_calls
     :undoc-members:
@@ -63,7 +63,7 @@ Source: `examples/client_async_calls.py <https://github.com/pymodbus-dev/pymodbu
 
 Client asynchronous
 ^^^^^^^^^^^^^^^^^^^
-Source: `examples/client_async.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/client_async.py>`_
+Source: :github:`examples/client_async.py`
 
 .. automodule:: examples.client_async
     :undoc-members:
@@ -72,7 +72,7 @@ Source: `examples/client_async.py <https://github.com/pymodbus-dev/pymodbus/blob
 
 Client calls
 ^^^^^^^^^^^^
-Source: `examples/client_calls.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/client_calls.py>`_
+Source: :github:`examples/client_calls.py`
 
 .. automodule:: examples.client_calls
     :undoc-members:
@@ -81,7 +81,7 @@ Source: `examples/client_calls.py <https://github.com/pymodbus-dev/pymodbus/blob
 
 Client custom message
 ^^^^^^^^^^^^^^^^^^^^^
-Source: `examples/client_custom_msg.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/client_custom_msg.py>`_
+Source: :github:`examples/client_custom_msg.py`
 
 .. automodule:: examples.client_custom_msg
     :undoc-members:
@@ -90,7 +90,7 @@ Source: `examples/client_custom_msg.py <https://github.com/pymodbus-dev/pymodbus
 
 Client payload
 ^^^^^^^^^^^^^^
-Source: `examples/client_payload.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/client_payload.py>`_
+Source: :github:`examples/client_payload.py`
 
 .. automodule:: examples.client_payload
     :undoc-members:
@@ -98,7 +98,7 @@ Source: `examples/client_payload.py <https://github.com/pymodbus-dev/pymodbus/bl
 
 Client synchronous
 ^^^^^^^^^^^^^^^^^^
-Source: `examples/client_sync.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/client_sync.py>`_
+Source: :github:`examples/client_sync.py`
 
 .. automodule:: examples.client_sync
     :undoc-members:
@@ -107,7 +107,7 @@ Source: `examples/client_sync.py <https://github.com/pymodbus-dev/pymodbus/blob/
 
 Server asynchronous
 ^^^^^^^^^^^^^^^^^^^
-Source: `examples/server_async.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/server_async.py>`_
+Source: :github:`examples/server_async.py`
 
 .. automodule:: examples.server_async
     :undoc-members:
@@ -116,7 +116,7 @@ Source: `examples/server_async.py <https://github.com/pymodbus-dev/pymodbus/blob
 
 Server callback
 ^^^^^^^^^^^^^^^
-Source: `examples/server_callback.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/server_callback.py>`_
+Source: :github:`examples/server_callback.py`
 
 .. automodule:: examples.server_callback
     :undoc-members:
@@ -125,7 +125,7 @@ Source: `examples/server_callback.py <https://github.com/pymodbus-dev/pymodbus/b
 
 Server tracer
 ^^^^^^^^^^^^^
-Source: `examples/server_hook.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/server_hook.py>`_
+Source: :github:`examples/server_hook.py`
 
 .. automodule:: examples.server_hook
     :undoc-members:
@@ -134,7 +134,7 @@ Source: `examples/server_hook.py <https://github.com/pymodbus-dev/pymodbus/blob/
 
 Server payload
 ^^^^^^^^^^^^^^
-Source: `examples/server_payload.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/server_payload.py>`_
+Source: :github:`examples/server_payload.py`
 
 .. automodule:: examples.server_payload
     :undoc-members:
@@ -143,7 +143,7 @@ Source: `examples/server_payload.py <https://github.com/pymodbus-dev/pymodbus/bl
 
 Server synchronous
 ^^^^^^^^^^^^^^^^^^
-Source: `examples/server_sync.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/server_sync.py>`_
+Source: :github:`examples/server_sync.py`
 
 .. automodule:: examples.server_sync
     :undoc-members:
@@ -152,7 +152,7 @@ Source: `examples/server_sync.py <https://github.com/pymodbus-dev/pymodbus/blob/
 
 Server updating
 ^^^^^^^^^^^^^^^
-Source: `examples/server_updating.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/server_updating.py>`_
+Source: :github:`examples/server_updating.py`
 
 .. automodule:: examples.server_updating
     :undoc-members:
@@ -161,7 +161,7 @@ Source: `examples/server_updating.py <https://github.com/pymodbus-dev/pymodbus/b
 
 Simulator example
 ^^^^^^^^^^^^^^^^^
-Source: `examples/simulator.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/simulator.py>`_
+Source: :github:`examples/simulator.py`
 
 .. automodule:: examples.simulator
     :undoc-members:
@@ -170,7 +170,7 @@ Source: `examples/simulator.py <https://github.com/pymodbus-dev/pymodbus/blob/de
 
 Simulator datastore example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Source: `examples/datastore_simulator.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/datastore_simulator.py>`_
+Source: :github:`examples/datastore_simulator.py`
 
 .. automodule:: examples.datastore_simulator
     :undoc-members:
@@ -179,7 +179,7 @@ Source: `examples/datastore_simulator.py <https://github.com/pymodbus-dev/pymodb
 
 Message generator
 ^^^^^^^^^^^^^^^^^
-Source: `examples/message_generator.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/message_generator.py>`_
+Source: :github:`examples/message_generator.py`
 
 .. automodule:: examples.message_generator
     :undoc-members:
@@ -188,7 +188,7 @@ Source: `examples/message_generator.py <https://github.com/pymodbus-dev/pymodbus
 
 Message Parser
 ^^^^^^^^^^^^^^
-Source: `examples/message_parser.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/message_parser.py>`_
+Source: :github:`examples/message_parser.py`
 
 .. automodule:: examples.message_parser
     :undoc-members:
@@ -197,7 +197,7 @@ Source: `examples/message_parser.py <https://github.com/pymodbus-dev/pymodbus/bl
 
 Modbus forwarder
 ^^^^^^^^^^^^^^^^
-Source: `examples/modbus_forwarder.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/modbus_forwarder.py>`_
+Source: :github:`examples/modbus_forwarder.py`
 
 .. automodule:: examples.modbus_forwarder
     :undoc-members:
@@ -212,7 +212,7 @@ The pymodbus team thanks for sharing the examples.
 
 Solar
 ^^^^^
-Source: :`examples/contrib/solar.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/contrib/solar.py>`_
+Source: :github:`examples/contrib/solar.py`
 
 .. automodule:: examples.contrib.solar
     :undoc-members:
@@ -221,7 +221,7 @@ Source: :`examples/contrib/solar.py <https://github.com/pymodbus-dev/pymodbus/bl
 
 Redis datastore
 ^^^^^^^^^^^^^^^
-Source: `examples/contrib/redis_datastore.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/contrib/redis_datastore.py>`_
+Source: :github:`examples/contrib/redis_datastore.py`
 
 .. automodule:: examples.contrib.redis_datastore
     :undoc-members:
@@ -230,7 +230,7 @@ Source: `examples/contrib/redis_datastore.py <https://github.com/pymodbus-dev/py
 
 Serial Forwarder
 ^^^^^^^^^^^^^^^^
-Source: `examples/contrib/serial_forwarder.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/contrib/serial_forwarder.py>`_
+Source: :github:`examples/contrib/serial_forwarder.py`
 
 .. automodule:: examples.contrib.serial_forwarder
     :undoc-members:
@@ -239,7 +239,7 @@ Source: `examples/contrib/serial_forwarder.py <https://github.com/pymodbus-dev/p
 
 Sqlalchemy datastore
 ^^^^^^^^^^^^^^^^^^^^
-Source: `examples/contrib/sql_datastore.py <https://github.com/pymodbus-dev/pymodbus/blob/dev/examples/contrib/sql_datastore.py>`_
+Source: :github:`examples/contrib/sql_datastore.py`
 
 .. automodule:: examples.contrib.sql_datastore
     :undoc-members:

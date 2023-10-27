@@ -72,7 +72,7 @@ def setup_server(description=None, context=None, cmdline=None):
         # This is because many devices exhibit this kind of behavior (but not all)
         if args.store == "sequential":
             # Continuing, use a sequential block without gaps.
-            datablock = ModbusSequentialDataBlock(0x00, [1, 0 , 0] * 100)
+            datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
         elif args.store == "sparse":
             # Continuing, or use a sparse DataBlock which can have gaps
             datablock = ModbusSparseDataBlock({0x00: 0, 0x05: 1})

@@ -69,16 +69,16 @@ development = [
     "coverage>=7.1.0",
     "mypy>=1.6.0",
     "pre-commit>=3.5.0",
-    "pyflakes>=3.0.1",
-    "pydocstyle>=6.3.0",
-    "pycodestyle>=2.11.1",
+#    "pyflakes>=3.0.1",
+#    "pydocstyle>=6.3.0",
+#    "pycodestyle>=2.11.1",
     "pylint>=2.17.2",
     "pytest>=7.3.1",
     "pytest-asyncio>=0.20.3",
     "pytest-cov>=4.1.0",
     "pytest-timeout>=2.2.0",
     "pytest-xdist>=3.3.1",
-    "ruff>=0.1.0",
+    "ruff>=0.1.3",
     "twine>=4.0.2",
     "types-Pygments",
     "types-pyserial"
@@ -247,8 +247,12 @@ exclude = [
     "build",
     "doc"
 ]
+line-length = 88
+# indent-width = 4
+
+[tool.ruff.lint]
 ignore = [
-    "D202",  # No blank lines allowed after function docstring (to work with black)
+    "D202",  # No blank lines allowed after function docstring
     "D400",  # docstrings ending in period
     "E501",  # line too long
     "E731",  # lambda expressions
@@ -260,7 +264,6 @@ ignore = [
     "RUF013",  # implicit Optional
     "RUF015"  # next(iter(list)) instead of list[0]
 ]
-line-length = 88
 select = [
     "B007",   # Loop control variable {name} not used within loop body
     "B014",   # Exception handler with duplicate exception
@@ -286,6 +289,8 @@ select = [
     # "TRY",    # tryceratops
     "TRY004", # Prefer TypeError exception for invalid type
 ]
+fixable = ["ALL"]
+unfixable = []
 
 [tool.ruff.pydocstyle]
 convention = "pep257"
@@ -293,3 +298,9 @@ convention = "pep257"
 [tool.ruff.isort]
 lines-after-imports = 2
 known-local-folder = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

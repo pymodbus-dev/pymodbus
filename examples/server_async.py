@@ -38,6 +38,7 @@ import logging
 import helper
 
 from pymodbus import __version__ as pymodbus_version
+from pymodbus import Framer
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
@@ -71,7 +72,7 @@ def setup_server(description=None, context=None, cmdline=None):
         # This is because many devices exhibit this kind of behavior (but not all)
         if args.store == "sequential":
             # Continuing, use a sequential block without gaps.
-            datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
+            datablock = ModbusSequentialDataBlock(0x00, [1, 0 , 0] * 100)
         elif args.store == "sparse":
             # Continuing, or use a sparse DataBlock which can have gaps
             datablock = ModbusSparseDataBlock({0x00: 0, 0x05: 1})
@@ -155,7 +156,7 @@ async def run_async_server(args):
             # TBD port=
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
-            framer=args.framer,  # The framer strategy to use
+            framer=Framer(args.framer),  # The framer strategy to use
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
@@ -171,7 +172,7 @@ async def run_async_server(args):
             identity=args.identity,  # server identify
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
-            framer=args.framer,  # The framer strategy to use
+            framer=Framer(args.framer),  # The framer strategy to use
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
@@ -186,7 +187,7 @@ async def run_async_server(args):
             # timeout=1,  # waiting time for request to complete
             port=args.port,  # serial port
             # custom_functions=[],  # allow custom handling
-            framer=args.framer,  # The framer strategy to use
+            framer=Framer(args.framer),  # The framer strategy to use
             # stopbits=1,  # The number of stop bits to use
             # bytesize=8,  # The bytesize of the serial messages
             # parity="N",  # Which kind of parity to use
@@ -205,7 +206,7 @@ async def run_async_server(args):
             identity=args.identity,  # server identify
             # custom_functions=[],  # allow custom handling
             address=address,  # listen address
-            framer=args.framer,  # The framer strategy to use
+            framer=Framer(args.framer),  # The framer strategy to use
             certfile=helper.get_certificate(
                 "crt"
             ),  # The cert file path for TLS (used if sslctx is None)

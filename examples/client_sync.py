@@ -37,6 +37,7 @@ import helper
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
+from pymodbus import Framer
 from pymodbus.client import (
     ModbusSerialClient,
     ModbusTcpClient,
@@ -63,7 +64,7 @@ def setup_sync_client(description=None, cmdline=None):
             args.host,
             port=args.port,
             # Common optional parameters:
-            framer=args.framer,
+            framer=Framer(args.framer),
             timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,y
@@ -77,7 +78,7 @@ def setup_sync_client(description=None, cmdline=None):
             args.host,
             port=args.port,
             # Common optional parameters:
-            framer=args.framer,
+            framer=Framer(args.framer),
             timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,
@@ -108,7 +109,7 @@ def setup_sync_client(description=None, cmdline=None):
             args.host,
             port=args.port,
             # Common optional parameters:
-            framer=args.framer,
+            framer=Framer(args.framer),
             timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,

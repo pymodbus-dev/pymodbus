@@ -39,6 +39,7 @@ import logging
 import helper
 import server_async
 
+from pymodbus import Framer
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
@@ -67,7 +68,7 @@ def run_sync_server(args):
             # TBD port=
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
-            framer=args.framer,  # The framer strategy to use
+            framer=Framer(args.framer),  # The framer strategy to use
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
@@ -80,7 +81,7 @@ def run_sync_server(args):
             identity=args.identity,  # server identify
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
-            framer=args.framer,  # The framer strategy to use
+            framer=Framer(args.framer),  # The framer strategy to use
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
@@ -95,7 +96,7 @@ def run_sync_server(args):
             # timeout=1,  # waiting time for request to complete
             port=args.port,  # serial port
             # custom_functions=[],  # allow custom handling
-            framer=args.framer,  # The framer strategy to use
+            framer=Framer(args.framer),  # The framer strategy to use
             # stopbits=1,  # The number of stop bits to use
             # bytesize=7,  # The bytesize of the serial messages
             # parity="E",  # Which kind of parity to use
@@ -114,7 +115,7 @@ def run_sync_server(args):
             identity=args.identity,  # server identify
             # custom_functions=[],  # allow custom handling
             address=address,  # listen address
-            framer=args.framer,  # The framer strategy to use
+            framer=Framer(args.framer),  # The framer strategy to use
             certfile=helper.get_certificate(
                 "crt"
             ),  # The cert file path for TLS (used if sslctx is None)
@@ -134,8 +135,7 @@ def run_sync_server(args):
 def sync_helper():
     """Combine setup and run."""
     run_args = server_async.setup_server(description="Run synchronous server.")
-    server = run_sync_server(run_args)
-    server.shutdown()
+    run_sync_server(run_args)
 
 
 if __name__ == "__main__":

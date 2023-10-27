@@ -44,7 +44,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     # Test Construction
     # ----------------------------------------------------------------------- #
     def setup_method(self):
-        """Set up the test environment"""
+        """Set up the test environment."""
         self.client = None
         self.decoder = ServerDecoder()
         self._tcp = ModbusSocketFramer(decoder=self.decoder, client=None)
@@ -206,14 +206,14 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     # ----------------------------------------------------------------------- #
 
     def test_dict_transaction_manager_tid(self):
-        """Test the dict transaction manager TID"""
+        """Test the dict transaction manager TID."""
         for tid in range(1, self._manager.getNextTID() + 10):
             assert tid + 1 == self._manager.getNextTID()
         self._manager.reset()
         assert self._manager.getNextTID() == 1
 
     def test_get_dict_fifo_transaction_manager_transaction(self):
-        """Test the dict transaction manager"""
+        """Test the dict transaction manager."""
 
         class Request:  # pylint: disable=too-few-public-methods
             """Request."""
@@ -229,7 +229,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert handle.message == result.message
 
     def test_delete_dict_fifo_transaction_manager_transaction(self):
-        """Test the dict transaction manager"""
+        """Test the dict transaction manager."""
 
         class Request:  # pylint: disable=too-few-public-methods
             """Request."""
@@ -249,14 +249,14 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     # Queue based transaction manager
     # ----------------------------------------------------------------------- #
     def test_fifo_transaction_manager_tid(self):
-        """Test the fifo transaction manager TID"""
+        """Test the fifo transaction manager TID."""
         for tid in range(1, self._queue_manager.getNextTID() + 10):
             assert tid + 1 == self._queue_manager.getNextTID()
         self._queue_manager.reset()
         assert self._queue_manager.getNextTID() == 1
 
     def test_get_fifo_transaction_manager_transaction(self):
-        """Test the fifo transaction manager"""
+        """Test the fifo transaction manager."""
 
         class Request:  # pylint: disable=too-few-public-methods
             """Request."""
@@ -272,7 +272,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert handle.message == result.message
 
     def test_delete_fifo_transaction_manager_transaction(self):
-        """Test the fifo transaction manager"""
+        """Test the fifo transaction manager."""
 
         class Request:  # pylint: disable=too-few-public-methods
             """Request."""
@@ -292,7 +292,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     # TCP tests
     # ----------------------------------------------------------------------- #
     def test_tcp_framer_transaction_ready(self):
-        """Test a tcp frame transaction"""
+        """Test a tcp frame transaction."""
         msg = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
         assert not self._tcp.isFrameReady()
         assert not self._tcp.checkFrame()
@@ -305,7 +305,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert self._ascii.getFrame() == b""
 
     def test_tcp_framer_transaction_full(self):
-        """Test a full tcp frame transaction"""
+        """Test a full tcp frame transaction."""
         msg = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
         self._tcp._buffer = msg  # pylint: disable=protected-access
         assert self._tcp.checkFrame()
@@ -314,7 +314,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tcp.advanceFrame()
 
     def test_tcp_framer_transaction_half(self):
-        """Test a half completed tcp frame transaction"""
+        """Test a half completed tcp frame transaction."""
         msg1 = b"\x00\x01\x12\x34\x00"
         msg2 = b"\x04\xff\x02\x12\x34"
         self._tcp._buffer = msg1  # pylint: disable=protected-access
@@ -328,7 +328,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tcp.advanceFrame()
 
     def test_tcp_framer_transaction_half2(self):
-        """Test a half completed tcp frame transaction"""
+        """Test a half completed tcp frame transaction."""
         msg1 = b"\x00\x01\x12\x34\x00\x04\xff"
         msg2 = b"\x02\x12\x34"
         self._tcp._buffer = msg1  # pylint: disable=protected-access
@@ -342,7 +342,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tcp.advanceFrame()
 
     def test_tcp_framer_transaction_half3(self):
-        """Test a half completed tcp frame transaction"""
+        """Test a half completed tcp frame transaction."""
         msg1 = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12"
         msg2 = b"\x34"
         self._tcp._buffer = msg1  # pylint: disable=protected-access
@@ -356,7 +356,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tcp.advanceFrame()
 
     def test_tcp_framer_transaction_short(self):
-        """Test that we can get back on track after an invalid message"""
+        """Test that we can get back on track after an invalid message."""
         msg1 = b"\x99\x99\x99\x99\x00\x01\x00\x01"
         msg2 = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
         self._tcp._buffer = msg1  # pylint: disable=protected-access
@@ -372,7 +372,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tcp.advanceFrame()
 
     def test_tcp_framer_populate(self):
-        """Test a tcp frame packet build"""
+        """Test a tcp frame packet build."""
         expected = ModbusRequest()
         expected.transaction_id = 0x0001
         expected.protocol_id = 0x1234
@@ -387,7 +387,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tcp.advanceFrame()
 
     def test_tcp_framer_packet(self):
-        """Test a tcp frame packet build"""
+        """Test a tcp frame packet build."""
         old_encode = ModbusRequest.encode
         ModbusRequest.encode = lambda self: b""
         message = ModbusRequest()
@@ -404,7 +404,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     # TLS tests
     # ----------------------------------------------------------------------- #
     def test_framer_tls_framer_transaction_ready(self):
-        """Test a tls frame transaction"""
+        """Test a tls frame transaction."""
         msg = b"\x01\x12\x34\x00\x08"
         assert not self._tls.isFrameReady()
         assert not self._tls.checkFrame()
@@ -417,7 +417,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert self._tls.getFrame() == b""
 
     def test_framer_tls_framer_transaction_full(self):
-        """Test a full tls frame transaction"""
+        """Test a full tls frame transaction."""
         msg = b"\x01\x12\x34\x00\x08"
         self._tls._buffer = msg  # pylint: disable=protected-access
         assert self._tls.checkFrame()
@@ -426,7 +426,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tls.advanceFrame()
 
     def test_framer_tls_framer_transaction_half(self):
-        """Test a half completed tls frame transaction"""
+        """Test a half completed tls frame transaction."""
         msg1 = b""
         msg2 = b"\x01\x12\x34\x00\x08"
         self._tls._buffer = msg1  # pylint: disable=protected-access
@@ -440,7 +440,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tls.advanceFrame()
 
     def test_framer_tls_framer_transaction_short(self):
-        """Test that we can get back on track after an invalid message"""
+        """Test that we can get back on track after an invalid message."""
         msg1 = b""
         msg2 = b"\x01\x12\x34\x00\x08"
         self._tls._buffer = msg1  # pylint: disable=protected-access
@@ -456,7 +456,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tls.advanceFrame()
 
     def test_framer_tls_framer_decode(self):
-        """Testmessage decoding"""
+        """Testmessage decoding."""
         msg1 = b""
         msg2 = b"\x01\x12\x34\x00\x08"
         result = self._tls.decode_data(msg1)
@@ -519,7 +519,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert not self._tls._buffer  # pylint: disable=protected-access
 
     def test_framer_tls_framer_populate(self):
-        """Test a tls frame packet build"""
+        """Test a tls frame packet build."""
         ModbusRequest()
         msg = b"\x01\x12\x34\x00\x08"
         self._tls._buffer = msg  # pylint: disable=protected-access
@@ -529,7 +529,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tls.advanceFrame()
 
     def test_framer_tls_framer_packet(self):
-        """Test a tls frame packet build"""
+        """Test a tls frame packet build."""
         old_encode = ModbusRequest.encode
         ModbusRequest.encode = lambda self: b""
         message = ModbusRequest()
@@ -543,7 +543,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     # RTU tests
     # ----------------------------------------------------------------------- #
     def test_rtu_framer_transaction_ready(self):
-        """Test if the checks for a complete frame work"""
+        """Test if the checks for a complete frame work."""
         assert not self._rtu.isFrameReady()
 
         msg_parts = [b"\x00\x01\x00", b"\x00\x00\x01\xfc\x1b"]
@@ -556,7 +556,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert self._rtu.checkFrame()
 
     def test_rtu_framer_transaction_full(self):
-        """Test a full rtu frame transaction"""
+        """Test a full rtu frame transaction."""
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
         stripped_msg = msg[1:-2]
         self._rtu._buffer = msg  # pylint: disable=protected-access
@@ -566,7 +566,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._rtu.advanceFrame()
 
     def test_rtu_framer_transaction_half(self):
-        """Test a half completed rtu frame transaction"""
+        """Test a half completed rtu frame transaction."""
         msg_parts = [b"\x00\x01\x00", b"\x00\x00\x01\xfc\x1b"]
         stripped_msg = b"".join(msg_parts)[1:-2]
         self._rtu._buffer = msg_parts[0]  # pylint: disable=protected-access
@@ -579,7 +579,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._rtu.advanceFrame()
 
     def test_rtu_framer_populate(self):
-        """Test a rtu frame packet build"""
+        """Test a rtu frame packet build."""
         request = ModbusRequest()
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
         self._rtu._buffer = msg  # pylint: disable=protected-access
@@ -593,7 +593,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert not request.slave_id
 
     def test_rtu_framer_packet(self):
-        """Test a rtu frame packet build"""
+        """Test a rtu frame packet build."""
         old_encode = ModbusRequest.encode
         ModbusRequest.encode = lambda self: b""
         message = ModbusRequest()
@@ -605,7 +605,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         ModbusRequest.encode = old_encode
 
     def test_rtu_decode_exception(self):
-        """Test that the RTU framer can decode errors"""
+        """Test that the RTU framer can decode errors."""
         message = b"\x00\x90\x02\x9c\x01"
         self._rtu._buffer = message  # pylint: disable=protected-access
         result = self._rtu.checkFrame()
@@ -659,7 +659,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     # ASCII tests
     # ----------------------------------------------------------------------- #
     def test_ascii_framer_transaction_ready(self):
-        """Test a ascii frame transaction"""
+        """Test a ascii frame transaction."""
         msg = b":F7031389000A60\r\n"
         assert not self._ascii.isFrameReady()
         assert not self._ascii.checkFrame()
@@ -672,7 +672,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert not self._ascii.getFrame()
 
     def test_ascii_framer_transaction_full(self):
-        """Test a full ascii frame transaction"""
+        """Test a full ascii frame transaction."""
         msg = b"sss:F7031389000A60\r\n"
         pack = a2b_hex(msg[6:-4])
         self._ascii._buffer = msg  # pylint: disable=protected-access
@@ -682,7 +682,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._ascii.advanceFrame()
 
     def test_ascii_framer_transaction_half(self):
-        """Test a half completed ascii frame transaction"""
+        """Test a half completed ascii frame transaction."""
         msg1 = b"sss:F7031389"
         msg2 = b"000A60\r\n"
         pack = a2b_hex(msg1[6:] + msg2[:-4])
@@ -697,13 +697,13 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._ascii.advanceFrame()
 
     def test_ascii_framer_populate(self):
-        """Test a ascii frame packet build"""
+        """Test a ascii frame packet build."""
         request = ModbusRequest()
         self._ascii.populateResult(request)
         assert not request.slave_id
 
     def test_ascii_framer_packet(self):
-        """Test a ascii frame packet build"""
+        """Test a ascii frame packet build."""
         old_encode = ModbusRequest.encode
         ModbusRequest.encode = lambda self: b""
         message = ModbusRequest()
@@ -732,7 +732,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     # Binary tests
     # ----------------------------------------------------------------------- #
     def test_binary_framer_transaction_ready(self):
-        """Test a binary frame transaction"""
+        """Test a binary frame transaction."""
         msg = TEST_MESSAGE
         assert not self._binary.isFrameReady()
         assert not self._binary.checkFrame()
@@ -745,7 +745,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert not self._binary.getFrame()
 
     def test_binary_framer_transaction_full(self):
-        """Test a full binary frame transaction"""
+        """Test a full binary frame transaction."""
         msg = TEST_MESSAGE
         pack = msg[2:-3]
         self._binary._buffer = msg  # pylint: disable=protected-access
@@ -755,7 +755,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._binary.advanceFrame()
 
     def test_binary_framer_transaction_half(self):
-        """Test a half completed binary frame transaction"""
+        """Test a half completed binary frame transaction."""
         msg1 = b"\x7b\x01\x03\x00"
         msg2 = b"\x00\x00\x05\x85\xC9\x7d"
         pack = msg1[2:] + msg2[:-3]
@@ -771,13 +771,13 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._binary.advanceFrame()
 
     def test_binary_framer_populate(self):
-        """Test a binary frame packet build"""
+        """Test a binary frame packet build."""
         request = ModbusRequest()
         self._binary.populateResult(request)
         assert not request.slave_id
 
     def test_binary_framer_packet(self):
-        """Test a binary frame packet build"""
+        """Test a binary frame packet build."""
         old_encode = ModbusRequest.encode
         ModbusRequest.encode = lambda self: b""
         message = ModbusRequest()

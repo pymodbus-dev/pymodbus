@@ -23,7 +23,6 @@ _logger = logging.getLogger(__name__)
 
 def setup_payload_server(cmdline=None):
     """Define payload for server and do setup."""
-
     # ----------------------------------------------------------------------- #
     # build your payload
     # ----------------------------------------------------------------------- #
@@ -60,7 +59,7 @@ def setup_payload_server(cmdline=None):
 
 
 async def main(cmdline=None):
-    """Combine setup and run"""
+    """Combine setup and run."""
     run_args = setup_payload_server(cmdline=cmdline)
     await server_async.run_async_server(run_args)
 

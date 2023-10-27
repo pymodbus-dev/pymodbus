@@ -245,7 +245,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
 
 class ModbusBaseServer(ModbusProtocol):
-    """Common functionality for all server classes"""
+    """Common functionality for all server classes."""
 
     def __init__(
         self,

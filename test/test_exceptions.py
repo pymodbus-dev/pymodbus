@@ -22,7 +22,7 @@ class TestExceptions:  # pylint: disable=too-few-public-methods
     ]
 
     def test_exceptions(self):
-        """Test all module exceptions"""
+        """Test all module exceptions."""
         for exc in self.exceptions:
             with pytest.raises(ModbusException, match="Modbus Error:"):
                 raise exc

@@ -72,7 +72,7 @@ else:
 
 
 class CommType(Enum):
-    """Type of transport"""
+    """Type of transport."""
 
     TCP = 1
     TLS = 2
@@ -113,7 +113,7 @@ class CommParams:
         password: str | None = None,
         sslctx: ssl.SSLContext | None = None,
     ) -> ssl.SSLContext:
-        """Generate sslctx from cert/key/passwor
+        """Generate sslctx from cert/key/passwor.
 
         MODBUS/TCP Security Protocol Specification demands TLSv2 at least
         """
@@ -447,7 +447,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
     async def create_nullmodem(
         self, port
     ) -> tuple[asyncio.Transport, asyncio.BaseProtocol]:
-        """Bypass create_ and use null modem"""
+        """Bypass create_ and use null modem."""
         if self.is_server:
             # Listener object
             self.transport = NullModem.set_listener(port, self)
@@ -515,7 +515,7 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
     connections: dict[NullModem, int] = {}
 
     def __init__(self, protocol: ModbusProtocol, listen: int | None = None) -> None:
-        """Create half part of null modem"""
+        """Create half part of null modem."""
         asyncio.DatagramTransport.__init__(self)
         asyncio.Transport.__init__(self)
         self.protocol: ModbusProtocol = protocol
@@ -582,7 +582,7 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
     # ---------------- #
 
     def close(self) -> None:
-        """Close null modem"""
+        """Close null modem."""
         if self._is_closing:
             return
         self._is_closing = True
@@ -600,11 +600,11 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
             self.protocol.connection_lost(None)
 
     def sendto(self, data: bytes, _addr: Any = None) -> None:
-        """Send datagrame"""
+        """Send datagrame."""
         self.write(data)
 
     def write(self, data: bytes) -> None:
-        """Send data"""
+        """Send data."""
         if not self.manipulator:
             self.other_modem.protocol.data_received(data)
             return
@@ -620,7 +620,7 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
         self.close()
 
     def can_write_eof(self) -> bool:
-        """Allow to write eof"""
+        """Allow to write eof."""
         return False
 
     def get_write_buffer_size(self) -> int:
@@ -628,16 +628,16 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
         return 1024
 
     def get_write_buffer_limits(self) -> tuple[int, int]:
-        """Set flush limits"""
+        """Set flush limits."""
         return (1, 1024)
 
     def set_write_buffer_limits(
         self, high: int | None = None, low: int | None = None
     ) -> None:
-        """Set flush limits"""
+        """Set flush limits."""
 
     def write_eof(self) -> None:
-        """Write eof"""
+        """Write eof."""
 
     def get_protocol(self) -> ModbusProtocol | asyncio.BaseProtocol:
         """Return current protocol."""
@@ -647,7 +647,7 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
         """Set current protocol."""
 
     def is_closing(self) -> bool:
-        """Return true if closing"""
+        """Return true if closing."""
         return self._is_closing
 
     def is_reading(self) -> bool:

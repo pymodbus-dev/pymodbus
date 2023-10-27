@@ -25,7 +25,7 @@ _logger = logging.getLogger(__file__)
 
 
 def get_commandline(cmdline):
-    """Parse the command line options"""
+    """Parse the command line options."""
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -63,12 +63,12 @@ class Decoder:
     """
 
     def __init__(self, framer, encode=False):
-        """Initialize a new instance of the decoder"""
+        """Initialize a new instance of the decoder."""
         self.framer = framer
         self.encode = encode
 
     def decode(self, message):
-        """Attempt to decode the supplied message"""
+        """Attempt to decode the supplied message."""
         value = message if self.encode else c.encode(message, "hex_codec")
         print("=" * 80)
         print(f"Decoding Message {value}")
@@ -94,12 +94,12 @@ class Decoder:
                 self.check_errors(decoder, message)
 
     def check_errors(self, decoder, message):
-        """Attempt to find message errors"""
+        """Attempt to find message errors."""
         txt = f"Unable to parse message - {message} with {decoder}"
         _logger.error(txt)
 
     def report(self, message):  # pragma no cover
-        """Print the message information"""
+        """Print the message information."""
         print(
             "%-15s = %s"  # pylint: disable=consider-using-f-string
             % (
@@ -143,7 +143,7 @@ class Decoder:
 
 
 def parse_messages(cmdline=None):
-    """Do a helper method to generate the messages to parse"""
+    """Do a helper method to generate the messages to parse."""
     args = get_commandline(cmdline=cmdline)
     _logger.setLevel(args.log.upper())
     if not args.message:  # pragma no cover
@@ -163,7 +163,7 @@ def parse_messages(cmdline=None):
 
 
 def main(cmdline=None):
-    """Run program"""
+    """Run program."""
     parse_messages(cmdline=cmdline)
 
 

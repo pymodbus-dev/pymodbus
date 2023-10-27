@@ -1,4 +1,4 @@
-"""Test example server/client async
+"""Test example server/client async.
 
 This is a thorough test of the clientexamples.
 
@@ -39,7 +39,7 @@ class TestExamples:
     @staticmethod
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
-        """Return next port"""
+        """Return next port."""
         base_ports[__class__.__name__] += 1
         return base_ports[__class__.__name__]
 
@@ -120,7 +120,7 @@ class TestAsyncExamples:
     @staticmethod
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
-        """Return next port"""
+        """Return next port."""
         base_ports[__class__.__name__] += 1
         return base_ports[__class__.__name__]
 
@@ -204,7 +204,7 @@ class TestSyncExamples:
     @staticmethod
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
-        """Return next port"""
+        """Return next port."""
         base_ports[__class__.__name__] += 1
         return base_ports[__class__.__name__]
 

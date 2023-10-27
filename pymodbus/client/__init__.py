@@ -1,4 +1,4 @@
-"""Client"""
+"""Client."""
 
 __all__ = [
     "AsyncModbusSerialClient",

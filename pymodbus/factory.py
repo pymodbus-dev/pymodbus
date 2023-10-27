@@ -174,7 +174,7 @@ class ServerDecoder:
             self.__sub_lookup[f.function_code][f.sub_function_code] = f
 
     def decode(self, message):
-        """Decode a request packet
+        """Decode a request packet.
 
         :param message: The raw modbus request packet
         :return: The decoded modbus message or None if error

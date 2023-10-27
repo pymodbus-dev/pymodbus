@@ -34,7 +34,6 @@ _logger = logging.getLogger(__file__)
 
 async def setup_forwarder(args):
     """Do setup forwarder."""
-
     return args
 
 
@@ -66,7 +65,7 @@ async def run_forwarder(args):
 
 
 async def async_helper():
-    """Combine setup and run"""
+    """Combine setup and run."""
     cmd_args = helper.get_commandline(
         server=True,
         description="Run asynchronous forwarder.",

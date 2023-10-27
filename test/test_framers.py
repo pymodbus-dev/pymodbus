@@ -337,7 +337,6 @@ def test_recv_packet(rtu_framer):
 
 def test_process(rtu_framer):
     """Test process."""
-
     rtu_framer._buffer = TEST_MESSAGE  # pylint: disable=protected-access
     with pytest.raises(ModbusIOException):
         rtu_framer._process(None)  # pylint: disable=protected-access

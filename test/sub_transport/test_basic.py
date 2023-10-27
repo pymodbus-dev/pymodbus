@@ -28,13 +28,13 @@ class TestBasicModbusProtocol:
     @staticmethod
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
-        """Return next port"""
+        """Return next port."""
         base_ports[__class__.__name__] += 1
         return base_ports[__class__.__name__]
 
     @pytest.mark.parametrize("use_comm_type", COMM_TYPES)
     async def test_init_nullmodem(self, client, server):
-        """Test init()"""
+        """Test init()."""
         client.comm_params.sslctx = None
         assert client.unique_id == str(id(client))
         assert not hasattr(client, "active_connections")
@@ -47,7 +47,7 @@ class TestBasicModbusProtocol:
         ("use_host", "use_comm_type"), [("socket://127.0.0.1:7001", CommType.SERIAL)]
     )
     async def test_init_serial(self, client, server):
-        """Test init()"""
+        """Test init()."""
         assert client.unique_id == str(id(client))
         assert not client.is_server
         server.comm_params.sslctx = None
@@ -162,7 +162,7 @@ class TestBasicModbusProtocol:
         assert not client.sent_buffer
 
     async def test_broadcast_local_echo(self, client):
-        """Test transport_send() with broadcast and echo packets"""
+        """Test transport_send() with broadcast and echo packets."""
         client.comm_params.handle_local_echo = True
         client.transport = mock.Mock()
         client.recv_buffer = b""
@@ -265,7 +265,7 @@ class TestBasicModbusProtocol:
         assert str(client) == f"ModbusProtocol({use_clc.comm_name})"
 
     def test_generate_ssl(self, use_clc):
-        """Test ssl generation"""
+        """Test ssl generation."""
         with mock.patch("pymodbus.transport.transport.ssl.SSLContext"):
             sslctx = use_clc.generate_ssl(True, "cert_file", "key_file")
         assert sslctx
@@ -284,12 +284,12 @@ class TestBasicSerial:
     @staticmethod
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
-        """Return next port"""
+        """Return next port."""
         base_ports[__class__.__name__] += 1
         return base_ports[__class__.__name__]
 
     async def test_init(self):
-        """Test null modem init"""
+        """Test null modem init."""
         SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
 
     async def test_abstract_methods(self):

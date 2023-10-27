@@ -42,7 +42,7 @@ RESPONSE_JUNK = 3
 
 @dataclasses.dataclass()
 class CallTracer:
-    """Define call/response traces"""
+    """Define call/response traces."""
 
     call: bool = False
     fc: int = -1
@@ -53,7 +53,7 @@ class CallTracer:
 
 @dataclasses.dataclass()
 class CallTypeMonitor:
-    """Define Request/Response monitor"""
+    """Define Request/Response monitor."""
 
     active: bool = False
     trace_response: bool = False
@@ -66,7 +66,7 @@ class CallTypeMonitor:
 
 @dataclasses.dataclass()
 class CallTypeResponse:
-    """Define Response manipulation"""
+    """Define Response manipulation."""
 
     active: int = RESPONSE_INACTIVE
     split: int = 0

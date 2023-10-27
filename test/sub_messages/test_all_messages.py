@@ -69,21 +69,21 @@ class TestAllMessages:
     ]
 
     def test_initializing_slave_address_request(self):
-        """Test that every request can initialize the slave id"""
+        """Test that every request can initialize the slave id."""
         slave_id = 0x12
         for factory in self.requests:
             request = factory(slave_id)
             assert request.slave_id == slave_id
 
     def test_initializing_slave_address_response(self):
-        """Test that every response can initialize the slave id"""
+        """Test that every response can initialize the slave id."""
         slave_id = 0x12
         for factory in self.responses:
             response = factory(slave_id)
             assert response.slave_id == slave_id
 
     def test_forwarding_kwargs_to_pdu(self):
-        """Test that the kwargs are forwarded to the pdu correctly"""
+        """Test that the kwargs are forwarded to the pdu correctly."""
         request = ReadCoilsRequest(1, 5, slave=0x12, transaction=0x12, protocol=0x12)
         assert request.slave_id == 0x12
         assert request.transaction_id == 0x12

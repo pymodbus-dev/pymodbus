@@ -29,7 +29,7 @@ class TestMeiMessage:
     # -----------------------------------------------------------------------#
 
     def test_read_device_information_request_encode(self):
-        """Test basic bit message encoding/decoding"""
+        """Test basic bit message encoding/decoding."""
         params = {"read_code": DeviceInformation.BASIC, "object_id": 0x00}
         handle = ReadDeviceInformationRequest(**params)
         result = handle.encode()
@@ -37,14 +37,14 @@ class TestMeiMessage:
         assert str(handle) == "ReadDeviceInformationRequest(1,0)"
 
     def test_read_device_information_request_decode(self):
-        """Test basic bit message encoding/decoding"""
+        """Test basic bit message encoding/decoding."""
         handle = ReadDeviceInformationRequest()
         handle.decode(b"\x0e\x01\x00")
         assert handle.read_code == DeviceInformation.BASIC
         assert not handle.object_id
 
     def test_read_device_information_request(self):
-        """Test basic bit message encoding/decoding"""
+        """Test basic bit message encoding/decoding."""
         context = None
         control = ModbusControlBlock()
         control.Identity.VendorName = "Company"
@@ -68,7 +68,7 @@ class TestMeiMessage:
         assert result.information[0x81] == ["Test", "Repeated"]
 
     def test_read_device_information_request_error(self):
-        """Test basic bit message encoding/decoding"""
+        """Test basic bit message encoding/decoding."""
         handle = ReadDeviceInformationRequest()
         handle.read_code = -1
         assert handle.execute(None).function_code == 0xAB
@@ -80,7 +80,7 @@ class TestMeiMessage:
         assert handle.execute(None).function_code == 0xAB
 
     def test_read_device_information_encode(self):
-        """Test that the read fifo queue response can encode"""
+        """Test that the read fifo queue response can encode."""
         message = b"\x0e\x01\x83\x00\x00\x03"
         message += TEST_MESSAGE
         dataset = {
@@ -111,7 +111,7 @@ class TestMeiMessage:
         assert result == message
 
     def test_read_device_information_encode_long(self):
-        """Test that the read fifo queue response can encode"""
+        """Test that the read fifo queue response can encode."""
         longstring = (
             "Lorem ipsum dolor sit amet, consectetur adipiscing "
             "elit. Vivamus rhoncus massa turpis, sit amet ultrices"
@@ -136,7 +136,7 @@ class TestMeiMessage:
         assert str(handle) == "ReadDeviceInformationResponse(1)"
 
     def test_read_device_information_decode(self):
-        """Test that the read device information response can decode"""
+        """Test that the read device information response can decode."""
         message = b"\x0e\x01\x01\x00\x00\x05"
         message += TEST_MESSAGE
         message += b"\x81\x04Test\x81\x08Repeated\x81\x07Another"
@@ -150,7 +150,7 @@ class TestMeiMessage:
         assert handle.information[0x81] == [b"Test", b"Repeated", b"Another"]
 
     def test_rtu_frame_size(self):
-        """Test that the read device information response can decode"""
+        """Test that the read device information response can decode."""
         message = (
             b"\x04\x2B\x0E\x01\x81\x00\x01\x01\x00\x06\x66\x6F\x6F\x62\x61\x72\xD7\x3B"
         )

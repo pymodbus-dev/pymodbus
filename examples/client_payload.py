@@ -138,7 +138,7 @@ async def run_payload_calls(client):
 
 
 async def main(cmdline=None):
-    """Combine the setup and run"""
+    """Combine the setup and run."""
     client = client_async.setup_async_client(
         description="Run asynchronous client.", cmdline=cmdline
     )

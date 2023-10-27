@@ -21,7 +21,7 @@ _logger.setLevel(logging.DEBUG)
 
 
 class CallbackDataBlock(ModbusSequentialDataBlock):
-    """A datablock that stores the new value in memory,
+    """A datablock that stores the new value in memory,.
 
     and passes the operation to a message queue for further processing.
     """

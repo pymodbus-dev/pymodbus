@@ -35,7 +35,7 @@ class TestUtility:
     """Unittest for the pymod.utilities module."""
 
     def setup_method(self):
-        """Initialize the test environment"""
+        """Initialize the test environment."""
         self.data = struct.pack(  # pylint: disable=attribute-defined-outside-init
             ">HHHH", 0x1234, 0x2345, 0x3456, 0x4567
         )
@@ -54,12 +54,12 @@ class TestUtility:
         ]
 
     def teardown_method(self):
-        """Clean up the test environment"""
+        """Clean up the test environment."""
         del self.bits
         del self.string
 
     def test_dict_property(self):
-        """Test all string <=> bit packing functions"""
+        """Test all string <=> bit packing functions."""
         result = DictPropertyTester()
         assert result.l_1 == "a"
         assert result.l_2 == "b"
@@ -79,7 +79,7 @@ class TestUtility:
         assert result.g_1 == "x"
 
     def test_default_value(self):
-        """Test all string <=> bit packing functions"""
+        """Test all string <=> bit packing functions."""
         assert not default(1)
         assert not default(1.1)
         assert not default(1 + 1)
@@ -89,16 +89,16 @@ class TestUtility:
         assert not default(True)
 
     def test_bit_packing(self):
-        """Test all string <=> bit packing functions"""
+        """Test all string <=> bit packing functions."""
         assert unpack_bitstring(b"\x55") == self.bits
         assert pack_bitstring(self.bits) == b"\x55"
 
     def test_longitudinal_redundancycheck(self):
-        """Test the longitudinal redundancy check code"""
+        """Test the longitudinal redundancy check code."""
         assert checkLRC(self.data, 0x1C)
         assert checkLRC(self.string, 0x0C)
 
     def test_cyclic_redundancy_check(self):
-        """Test the cyclic redundancy check code"""
+        """Test the cyclic redundancy check code."""
         assert checkCRC(self.data, 0xE2DB)
         assert checkCRC(self.string, 0x889E)

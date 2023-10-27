@@ -91,7 +91,7 @@ curl -X POST http://{}:{} -d "{{"response_type": "error", "error_code": 4}}"
 
 
 class ReactiveModbusSlaveContext(ModbusSlaveContext):
-    """Reactive Modbus slave context"""
+    """Reactive Modbus slave context."""
 
     def __init__(
         self,
@@ -332,7 +332,6 @@ class ReactiveServer:
 
     async def run_async(self, repl_mode=False):
         """Run Web app."""
-
         try:
             await self._runner.setup()
             site = web.TCPSite(self._runner, self._host, self._port)

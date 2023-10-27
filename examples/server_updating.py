@@ -56,7 +56,6 @@ async def updating_task(context):
     It should be noted that getValues and setValues are not safe
     against concurrent use.
     """
-
     fc_as_hex = 3
     slave_id = 0x00
     address = 0x10
@@ -103,14 +102,14 @@ def setup_updating_server(cmdline=None):
 
 
 async def run_updating_server(args):
-    """Start updating_task concurrently with the current task"""
+    """Start updating_task concurrently with the current task."""
     task = asyncio.create_task(updating_task(args.context))
     await server_async.run_async_server(args)  # start the server
     task.cancel()
 
 
 async def main(cmdline=None):
-    """Combine setup and run"""
+    """Combine setup and run."""
     run_args = setup_updating_server(cmdline=cmdline)
     await run_updating_server(run_args)
 

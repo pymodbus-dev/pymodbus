@@ -13,7 +13,7 @@ WORD_SIZE = 16
 
 @dataclasses.dataclass(frozen=True)
 class CellType:
-    """Define single cell types"""
+    """Define single cell types."""
 
     INVALID: int = 0
     BITS: int = 1
@@ -202,7 +202,7 @@ class Setup:
         self.runtime.registers[start].action_kwargs = action_kwargs
 
     def handle_setup_section(self):
-        """Load setup section"""
+        """Load setup section."""
         layout = Label.try_get(Label.setup, self.config)
         self.runtime.fc_offset = {key: 0 for key in range(25)}
         size_co = Label.try_get(Label.co_size, layout)
@@ -240,7 +240,7 @@ class Setup:
         del self.config[Label.setup]
 
     def handle_invalid_address(self):
-        """Handle invalid address"""
+        """Handle invalid address."""
         for entry in Label.try_get(Label.invalid, self.config):
             if isinstance(entry, int):
                 entry = [entry, entry]
@@ -254,7 +254,7 @@ class Setup:
         del self.config[Label.invalid]
 
     def handle_write_allowed(self):
-        """Handle write allowed"""
+        """Handle write allowed."""
         for entry in Label.try_get(Label.write, self.config):
             if isinstance(entry, int):
                 entry = [entry, entry]
@@ -271,7 +271,7 @@ class Setup:
         del self.config[Label.write]
 
     def handle_types(self):
-        """Handle the different types"""
+        """Handle the different types."""
         for section, type_entry in self.config_types.items():
             layout = Label.try_get(section, self.config)
             for entry in layout:
@@ -359,7 +359,7 @@ class Setup:
 
 
 class ModbusSimulatorContext:
-    """Modbus simulator
+    """Modbus simulator.
 
     :param config: A dict with structure as shown below.
     :param actions: A dict with "<name>": <function> structure.
@@ -737,11 +737,10 @@ class ModbusSimulatorContext:
     # --------------------------------------------
 
     def validate_type(self, func_code, real_address, count):
-        """Check if request is done against correct type
+        """Check if request is done against correct type.
 
         :meta private:
         """
-
         if func_code in self._bits_func_code:
             # Bit access
             check = (CellType.BITS, -1)
@@ -764,7 +763,7 @@ class ModbusSimulatorContext:
 
     @classmethod
     def build_registers_from_value(cls, value, is_int):
-        """Build registers from int32 or float32"""
+        """Build registers from int32 or float32."""
         regs = [0, 0]
         if is_int:
             value_bytes = int.to_bytes(value, 4, "big")
@@ -776,7 +775,7 @@ class ModbusSimulatorContext:
 
     @classmethod
     def build_value_from_registers(cls, registers, is_int):
-        """Build int32 or float32 value from registers"""
+        """Build int32 or float32 value from registers."""
         value_bytes = int.to_bytes(registers[0], 2, "big") + int.to_bytes(
             registers[1], 2, "big"
         )

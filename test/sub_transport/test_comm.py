@@ -21,7 +21,7 @@ class TestCommModbusProtocol:
     @staticmethod
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
-        """Return next port"""
+        """Return next port."""
         base_ports[__class__.__name__] += 1
         return base_ports[__class__.__name__]
 
@@ -241,7 +241,7 @@ class TestCommNullModem:
     @staticmethod
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
-        """Return next port"""
+        """Return next port."""
         base_ports[__class__.__name__] += 2
         return base_ports[__class__.__name__]
 

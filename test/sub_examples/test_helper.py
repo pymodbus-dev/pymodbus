@@ -10,7 +10,7 @@ class TestHelperExamples:
     """Test helper functions in examples."""
 
     def test_commandline_server_defaults(self):
-        """Test defaults"""
+        """Test defaults."""
         args = helper.get_commandline(server=True, cmdline=[])
         assert args.comm == "tcp"
         assert args.log == "info"
@@ -22,7 +22,7 @@ class TestHelperExamples:
         assert not args.context
 
     def test_commandline_client_defaults(self):
-        """Test defaults"""
+        """Test defaults."""
         args = helper.get_commandline(server=False, cmdline=[])
         assert args.comm == "tcp"
         assert args.log == "info"
@@ -32,7 +32,7 @@ class TestHelperExamples:
         assert args.port
 
     def test_commandline(self):
-        """Test defaults"""
+        """Test defaults."""
         args = helper.get_commandline(
             server=False, cmdline=["--log", "debug", "--comm", "udp"]
         )

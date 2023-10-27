@@ -102,30 +102,30 @@ class TestFactory:
         self.server = ServerDecoder()
 
     def test_exception_lookup(self):
-        """Test that we can look up exception messages"""
+        """Test that we can look up exception messages."""
         for func, _ in self.exception:
             response = self.client.lookupPduClass(func)
             assert response
 
     def test_response_lookup(self):
-        """Test a working response factory lookup"""
+        """Test a working response factory lookup."""
         for func, _ in self.response:
             response = self.client.lookupPduClass(func)
             assert response
 
     def test_request_lookup(self):
-        """Test a working request factory lookup"""
+        """Test a working request factory lookup."""
         for func, _ in self.request:
             request = self.client.lookupPduClass(func)
             assert request
 
     def test_response_working(self):
-        """Test a working response factory decoders"""
+        """Test a working response factory decoders."""
         for _func, msg in self.response:
             self.client.decode(msg)
 
     def test_response_errors(self):
-        """Test a response factory decoder exceptions"""
+        """Test a response factory decoder exceptions."""
         with pytest.raises(ModbusException):
             self.client._helper(self.bad[0][1])  # pylint: disable=protected-access
         assert (
@@ -133,18 +133,18 @@ class TestFactory:
         ), "Failed to decode error PDU"
 
     def test_requests_working(self):
-        """Test a working request factory decoders"""
+        """Test a working request factory decoders."""
         for _func, msg in self.request:
             self.server.decode(msg)
 
     def test_client_factory_fails(self):
-        """Tests that a client factory will fail to decode a bad message"""
+        """Tests that a client factory will fail to decode a bad message."""
         self.client._helper = _raise_exception  # pylint: disable=protected-access
         actual = self.client.decode(None)
         assert not actual
 
     def test_server_factory_fails(self):
-        """Tests that a server factory will fail to decode a bad message"""
+        """Tests that a server factory will fail to decode a bad message."""
         self.server._helper = _raise_exception  # pylint: disable=protected-access
         actual = self.server.decode(None)
         assert not actual
@@ -205,7 +205,7 @@ class TestFactory:
     # ---------------------------------------------------------------------------#
 
     def test_request_errors(self):
-        """Test a request factory decoder exceptions"""
+        """Test a request factory decoder exceptions."""
         for func, msg in self.bad:
             result = self.server.decode(msg)
             assert result.ErrorCode == 1, "Failed to decode invalid requests"

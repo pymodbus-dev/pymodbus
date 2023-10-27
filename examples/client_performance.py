@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test performance of client: sync vs. async
+"""Test performance of client: sync vs. async.
 
 This example show how much faster the async version is.
 

@@ -76,13 +76,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[all]"
 
-      - name: CHECK pytest
-        run: |
-          env
-          which pytest
-          which codespell
-          which mypy
-
       - name: codespell
         if: matrix.run_doc == true
         run: |

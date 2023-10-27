@@ -189,7 +189,7 @@ class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
     """
 
     def __init__(self, data=0x0000, **kwargs):
-        """Initialize a simple diagnostic request
+        """Initialize a simple diagnostic request.
 
         The data defaults to 0x0000 if not provided as over half
         of the functions require it.

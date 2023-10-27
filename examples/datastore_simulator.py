@@ -119,7 +119,7 @@ demo_actions = {
 
 
 def get_commandline(cmdline=None):
-    """Read and validate command line arguments"""
+    """Read and validate command line arguments."""
     parser = argparse.ArgumentParser(description="Run datastore simulator example.")
     parser.add_argument(
         "--log",
@@ -175,7 +175,7 @@ async def run_server_simulator(args):
 
 
 async def main(cmdline=None):
-    """Combine setup and run"""
+    """Combine setup and run."""
     run_args = setup_simulator(cmdline=cmdline)
     await run_server_simulator(run_args)
 

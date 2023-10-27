@@ -50,7 +50,7 @@ class CustomModbusResponse(ModbusResponse):  # pragma no cover
         self.values = values or []
 
     def encode(self):
-        """Encode response pdu
+        """Encode response pdu.
 
         :returns: The encoded packet message
         """
@@ -60,7 +60,7 @@ class CustomModbusResponse(ModbusResponse):  # pragma no cover
         return res
 
     def decode(self, data):
-        """Decode response pdu
+        """Decode response pdu.
 
         :param data: The packet data to decode
         """
@@ -109,7 +109,7 @@ class Read16CoilsRequest(ReadCoilsRequest):
     """Read 16 coils in one request."""
 
     def __init__(self, address, **kwargs):
-        """Initialize a new instance
+        """Initialize a new instance.
 
         :param address: The address to start reading from
         """

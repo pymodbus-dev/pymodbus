@@ -39,7 +39,7 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
         return True
 
     def getValues(self, fc_as_hex, _address, _count=1):
-        """Get values from real call in validate"""
+        """Get values from real call in validate."""
         if fc_as_hex in self._write_fc:
             return [0]
         group_fx = self.decode(fc_as_hex)

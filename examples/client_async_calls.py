@@ -230,7 +230,7 @@ async def run_async_calls(client):
 
 
 async def main(cmdline=None):
-    """Combine setup and run"""
+    """Combine setup and run."""
     testclient = client_async.setup_async_client(
         description="Run asynchronous client.", cmdline=cmdline
     )

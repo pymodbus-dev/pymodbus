@@ -12,7 +12,7 @@ class TestNullModem:
     @staticmethod
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
-        """Return next port"""
+        """Return next port."""
         base_ports[__class__.__name__] += 2
         return base_ports[__class__.__name__]
 
@@ -33,7 +33,7 @@ class TestNullModem:
         modem.close()  # test _is_closing works.
 
     def test_listen(self, dummy_protocol, use_port):
-        """Test listener (shared list)"""
+        """Test listener (shared list)."""
         protocol = dummy_protocol(is_server=True)
         listen = NullModem.set_listener(use_port, protocol)
         assert NullModem.listeners[use_port] == protocol
@@ -55,7 +55,7 @@ class TestNullModem:
         listen2.close()
 
     def test_listen_triangle(self, dummy_protocol, use_port):
-        """Test listener (shared list)"""
+        """Test listener (shared list)."""
         use_port2 = use_port + 1
         listen1 = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
         listen2 = NullModem.set_listener(use_port2, dummy_protocol(is_server=True))
@@ -88,12 +88,12 @@ class TestNullModem:
         modem_b.protocol.connection_lost.assert_called_once()
 
     def test_connect_no_listen(self, dummy_protocol, use_port):
-        """Test connect without listen"""
+        """Test connect without listen."""
         with pytest.raises(asyncio.TimeoutError):
             NullModem.set_connection(use_port, dummy_protocol())
 
     def test_listen_close(self, dummy_protocol, use_port):
-        """Test connect without listen"""
+        """Test connect without listen."""
         listen = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
         modem, _ = NullModem.set_connection(use_port, dummy_protocol())
         listen.close()
@@ -192,7 +192,7 @@ class TestNullModem:
         """Test manipulator."""
 
         def manipulator(data):
-            """Test manipulator"""
+            """Test manipulator."""
             data = [data]
             data.extend(add_text)
             return data

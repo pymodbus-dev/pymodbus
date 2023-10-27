@@ -38,7 +38,7 @@ BASE_PORTS = {
 
 @pytest.fixture(name="base_ports", scope="package")
 def get_base_ports():
-    """Return base_ports"""
+    """Return base_ports."""
     return BASE_PORTS
 
 

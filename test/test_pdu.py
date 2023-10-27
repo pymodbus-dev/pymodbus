@@ -22,7 +22,7 @@ class TestPdu:
     exception = ExceptionResponse(1, 1)
 
     def test_not_impelmented(self):
-        """Test a base classes for not implemented functions"""
+        """Test a base classes for not implemented functions."""
         for request in self.bad_requests:
             with pytest.raises(NotImplementedException):
                 request.encode()
@@ -32,7 +32,7 @@ class TestPdu:
                 request.decode(None)
 
     def test_error_methods(self):
-        """Test all error methods"""
+        """Test all error methods."""
         self.illegal.decode("12345")
         self.illegal.execute(None)
 
@@ -42,7 +42,7 @@ class TestPdu:
         assert self.exception.exception_code == 1
 
     def test_request_exception_factory(self):
-        """Test all error methods"""
+        """Test all error methods."""
         request = ModbusRequest()
         request.function_code = 1
         errors = {ModbusExceptions.decode(c): c for c in range(1, 20)}
@@ -51,7 +51,7 @@ class TestPdu:
             assert str(result) == f"Exception Response(129, 1, {error})"
 
     def test_calculate_rtu_frame_size(self):
-        """Test the calculation of Modbus/RTU frame sizes"""
+        """Test the calculation of Modbus/RTU frame sizes."""
         with pytest.raises(NotImplementedException):
             ModbusRequest.calculateRtuFrameSize(b"")
         ModbusRequest._rtu_frame_size = 5  # pylint: disable=protected-access

@@ -293,7 +293,7 @@ class TestSimulator:
             ModbusSimulatorContext(exc_setup, None)
 
     def test_simulator_validate_illegal(self):
-        """Test validation without exceptions"""
+        """Test validation without exceptions."""
         illegal_cell_list = (0, 1, 2, 3, 4, 6, 9, 15)
         write_cell_list = (
             5,
@@ -459,7 +459,7 @@ class TestSimulator:
         assert values[0] or values[1]
 
     def test_simulator_action_timestamp(self):
-        """Test action timestamp"""
+        """Test action timestamp."""
         exc_setup = copy.deepcopy(self.default_config)
         exc_simulator = ModbusSimulatorContext(exc_setup, None)
         addr = 12
@@ -469,7 +469,7 @@ class TestSimulator:
         exc_simulator.getValues(FX_READ_REG, addr, 1)
 
     def test_simulator_action_reset(self):
-        """Test action reset"""
+        """Test action reset."""
         exc_setup = copy.deepcopy(self.default_config)
         exc_simulator = ModbusSimulatorContext(exc_setup, None)
         addr = 12
@@ -495,7 +495,7 @@ class TestSimulator:
     def test_simulator_action_increment(
         self, celltype, minval, maxval, value, expected
     ):
-        """Test action increment"""
+        """Test action increment."""
         exc_setup = copy.deepcopy(self.default_config)
         exc_simulator = ModbusSimulatorContext(exc_setup, None)
         action = exc_simulator.action_name_to_id[Label.increment]
@@ -538,7 +538,7 @@ class TestSimulator:
         ],
     )
     def test_simulator_action_random(self, celltype, minval, maxval):
-        """Test action random"""
+        """Test action random."""
         exc_setup = copy.deepcopy(self.default_config)
         exc_simulator = ModbusSimulatorContext(exc_setup, None)
         action = exc_simulator.action_name_to_id[Label.random]
@@ -574,7 +574,7 @@ class TestSimulator:
         ),
     )
     async def test_simulator_server_tcp(self):
-        """Test init simulator server"""
+        """Test init simulator server."""
         task = ModbusSimulatorServer()
         await task.run_forever(only_start=True)
         await asyncio.sleep(5)

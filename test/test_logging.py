@@ -11,7 +11,7 @@ class TestLogging:
     """Tests of pymodbus logging."""
 
     def test_log_dont_call_build_msg(self):
-        """Verify that build_msg is not called unnecessary"""
+        """Verify that build_msg is not called unnecessary."""
         with mock.patch("pymodbus.logging.Log.build_msg") as build_msg_mock:
             Log.setLevel(logging.INFO)
             Log.debug("test")
@@ -22,7 +22,7 @@ class TestLogging:
             build_msg_mock.assert_called_once()
 
     def test_log_simple(self):
-        """Test simple string"""
+        """Test simple string."""
         txt = "simple string"
         log_txt = Log.build_msg(txt)
         assert log_txt == txt
@@ -36,6 +36,6 @@ class TestLogging:
         ],
     )
     def test_log_parms(self, txt, result, params):
-        """Test string with parameters (old f-string)"""
+        """Test string with parameters (old f-string)."""
         log_txt = Log.build_msg(txt, *params)
         assert log_txt == result

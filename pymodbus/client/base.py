@@ -18,7 +18,7 @@ from pymodbus.utilities import ModbusTransactionState
 
 
 class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
-    """**ModbusBaseClient**
+    """**ModbusBaseClient**.
 
     Fixed parameters:
 
@@ -212,7 +212,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         return resp
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
-        """Handle received data
+        """Handle received data.
 
         returns number of bytes consumed
         """
@@ -220,7 +220,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         return len(data)
 
     def callback_disconnected(self, _reason: Exception | None) -> None:
-        """Handle lost connection"""
+        """Handle lost connection."""
         for tid in list(self.transaction):
             self.raise_future(
                 self.transaction.getTransaction(tid),
@@ -292,7 +292,6 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         :returns: The current instance of the client
         :raises ConnectionException:
         """
-
         if not self.connect():
             raise ConnectionException(f"Failed to connect[{self.__str__()}]")
         return self

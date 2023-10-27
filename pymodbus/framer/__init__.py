@@ -1,4 +1,4 @@
-"""Framer"""
+"""Framer."""
 __all__ = [
     "Framer",
     "FRAMER_NAME_TO_CLASS",

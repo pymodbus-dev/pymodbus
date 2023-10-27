@@ -18,7 +18,7 @@ class DummyProtocol(ModbusProtocol):
     """Use in connection_made calls."""
 
     def __init__(self, is_server=False):  # pylint: disable=super-init-not-called
-        """Initialize"""
+        """Initialize."""
         self.comm_params = CommParams()
         self.transport = None
         self.is_server = is_server
@@ -46,7 +46,7 @@ class DummyProtocol(ModbusProtocol):
 
 @pytest.fixture(name="dummy_protocol")
 def prepare_dummy_protocol():
-    """Return transport object"""
+    """Return transport object."""
     return DummyProtocol
 
 
@@ -58,13 +58,13 @@ def prepare_cwd_certificate():
 
 @pytest.fixture(name="use_comm_type")
 def prepare_dummy_use_comm_type():
-    """Return default comm_type"""
+    """Return default comm_type."""
     return CommType.TCP
 
 
 @pytest.fixture(name="use_host")
 def prepare_nullmodem_host():
-    """Return default host"""
+    """Return default host."""
     return NULLMODEM_HOST
 
 

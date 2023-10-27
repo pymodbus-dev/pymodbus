@@ -71,7 +71,7 @@ class Manipulator:
         )
 
     async def run(self):
-        """Attach Run server"""
+        """Attach Run server."""
         await self.server.serve_forever()
 
 

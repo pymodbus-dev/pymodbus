@@ -42,7 +42,7 @@ class Log:
 
     @classmethod
     def apply_logging_config(cls, level, log_file_name):
-        """Apply basic logging configuration"""
+        """Apply basic logging configuration."""
         if level == logging.NOTSET:
             level = cls._logger.getEffectiveLevel()
         if isinstance(level, str):
@@ -61,7 +61,7 @@ class Log:
 
     @classmethod
     def setLevel(cls, level):
-        """Apply basic logging level"""
+        """Apply basic logging level."""
         cls._logger.setLevel(level)
 
     @classmethod

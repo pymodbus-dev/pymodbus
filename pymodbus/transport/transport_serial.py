@@ -28,7 +28,7 @@ class SerialTransport(asyncio.Transport):
         self.sync_serial.write_timeout = 0
 
     def setup(self):
-        """Prepare to read/write"""
+        """Prepare to read/write."""
         if os.name == "nt" or self.force_poll:
             self.poll_task = asyncio.create_task(self._polling_task())
         else:
@@ -62,7 +62,7 @@ class SerialTransport(asyncio.Transport):
             self.async_loop.add_writer(self.sync_serial.fileno(), self._write_ready)
 
     def flush(self) -> None:
-        """Clear output buffer and stops any more data being written"""
+        """Clear output buffer and stops any more data being written."""
         if not self.poll_task:
             self.async_loop.remove_writer(self.sync_serial.fileno())
         self._write_buffer.clear()
@@ -76,15 +76,15 @@ class SerialTransport(asyncio.Transport):
         return self.async_loop
 
     def get_protocol(self) -> asyncio.BaseProtocol:
-        """Return protocol"""
+        """Return protocol."""
         return self._protocol
 
     def set_protocol(self, protocol: asyncio.BaseProtocol) -> None:
-        """Set protocol"""
+        """Set protocol."""
         self._protocol = protocol
 
     def get_write_buffer_limits(self) -> tuple[int, int]:
-        """Return buffer sizes"""
+        """Return buffer sizes."""
         return (1, 1024)
 
     def can_write_eof(self):

@@ -250,10 +250,8 @@ line-length = 88
 
 [tool.ruff.lint]
 ignore = [
-    "D400",  # docstrings ending in period
     "E501",  # line too long
     "E731",  # lambda expressions
-    "PT019",  # Bug: https://github.com/m-burst/flake8-pytest-style/issues/202
     "S101",  # Use of `assert`
     "S311",  # PRNG for cryptography
     "S104",  # binding on all interfaces

@@ -44,7 +44,7 @@ class TestPayloadUtility:
     # ----------------------------------------------------------------------- #
 
     def test_little_endian_payload_builder(self):
-        """Test basic bit message encoding/decoding"""
+        """Test basic bit message encoding/decoding."""
         builder = BinaryPayloadBuilder(byteorder=Endian.LITTLE, wordorder=Endian.LITTLE)
         builder.add_8bit_uint(1)
         builder.add_16bit_uint(2)
@@ -62,7 +62,7 @@ class TestPayloadUtility:
         assert self.little_endian_payload == builder.encode()
 
     def test_big_endian_payload_builder(self):
-        """Test basic bit message encoding/decoding"""
+        """Test basic bit message encoding/decoding."""
         builder = BinaryPayloadBuilder(byteorder=Endian.BIG)
         builder.add_8bit_uint(1)
         builder.add_16bit_uint(2)
@@ -80,7 +80,7 @@ class TestPayloadUtility:
         assert self.big_endian_payload == builder.encode()
 
     def test_payload_builder_reset(self):
-        """Test basic bit message encoding/decoding"""
+        """Test basic bit message encoding/decoding."""
         builder = BinaryPayloadBuilder()
         builder.add_8bit_uint(0x12)
         builder.add_8bit_uint(0x34)
@@ -93,7 +93,7 @@ class TestPayloadUtility:
         assert not builder.build()
 
     def test_payload_builder_with_raw_payload(self):
-        """Test basic bit message encoding/decoding"""
+        """Test basic bit message encoding/decoding."""
         _coils1 = [
             False,
             False,
@@ -185,7 +185,7 @@ class TestPayloadUtility:
     # ----------------------------------------------------------------------- #
 
     def test_little_endian_payload_decoder(self):
-        """Test basic bit message encoding/decoding"""
+        """Test basic bit message encoding/decoding."""
         decoder = BinaryPayloadDecoder(
             self.little_endian_payload, byteorder=Endian.LITTLE, wordorder=Endian.LITTLE
         )
@@ -204,7 +204,7 @@ class TestPayloadUtility:
         assert self.bitstring == decoder.decode_bits()
 
     def test_big_endian_payload_decoder(self):
-        """Test basic bit message encoding/decoding"""
+        """Test basic bit message encoding/decoding."""
         decoder = BinaryPayloadDecoder(self.big_endian_payload, byteorder=Endian.BIG)
         assert decoder.decode_8bit_uint() == 1
         assert decoder.decode_16bit_uint() == 2
@@ -221,7 +221,7 @@ class TestPayloadUtility:
         assert self.bitstring == decoder.decode_bits()
 
     def test_payload_decoder_reset(self):
-        """Test the payload decoder reset functionality"""
+        """Test the payload decoder reset functionality."""
         decoder = BinaryPayloadDecoder(b"\x12\x34")
         assert decoder.decode_8bit_uint() == 0x12
         assert decoder.decode_8bit_uint() == 0x34
@@ -229,7 +229,7 @@ class TestPayloadUtility:
         assert decoder.decode_16bit_uint() == 0x3412
 
     def test_payload_decoder_register_factory(self):
-        """Test the payload decoder reset functionality"""
+        """Test the payload decoder reset functionality."""
         payload = [1, 2, 3, 4]
         decoder = BinaryPayloadDecoder.fromRegisters(payload, byteorder=Endian.LITTLE)
         encoded = b"\x00\x01\x00\x02\x00\x03\x00\x04"
@@ -242,7 +242,7 @@ class TestPayloadUtility:
             BinaryPayloadDecoder.fromRegisters("abcd")
 
     def test_payload_decoder_coil_factory(self):
-        """Test the payload decoder reset functionality"""
+        """Test the payload decoder reset functionality."""
         payload = [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1]
         decoder = BinaryPayloadDecoder.fromCoils(payload, byteorder=Endian.LITTLE)
         encoded = b"\x88\x11"

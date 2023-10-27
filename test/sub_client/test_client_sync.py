@@ -36,7 +36,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
     # -----------------------------------------------------------------------#
 
     def test_basic_syn_udp_client(self):
-        """Test the basic methods for the udp sync client"""
+        """Test the basic methods for the udp sync client."""
         # receive/send
         client = ModbusUdpClient("127.0.0.1")
         client.socket = mockSocket()
@@ -55,12 +55,12 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         assert str(client) == "ModbusUdpClient(127.0.0.1:502)"
 
     def test_udp_client_is_socket_open(self):
-        """Test the udp client is_socket_open method"""
+        """Test the udp client is_socket_open method."""
         client = ModbusUdpClient("127.0.0.1")
         assert client.is_socket_open()
 
     def test_udp_client_send(self):
-        """Test the udp client send method"""
+        """Test the udp client send method."""
         client = ModbusUdpClient("127.0.0.1")
         with pytest.raises(ConnectionException):
             client.send(None)
@@ -69,7 +69,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         assert client.send("1234") == 4
 
     def test_udp_client_recv(self):
-        """Test the udp client receive method"""
+        """Test the udp client receive method."""
         client = ModbusUdpClient("127.0.0.1")
         with pytest.raises(ConnectionException):
             client.recv(1024)
@@ -79,7 +79,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         assert client.recv(4) == b"\x00" * 4
 
     def test_udp_client_recv_duplicate(self):
-        """Test the udp client receive method"""
+        """Test the udp client receive method."""
         test_msg = b"\x00\x01\x00\x00\x00\x05\x01\x04\x02\x00\x03"
         client = ModbusUdpClient("127.0.0.1")
         client.socket = mockSocket(copy_send=False)
@@ -111,7 +111,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
 
     @mock.patch("pymodbus.client.tcp.select")
     def test_basic_syn_tcp_client(self, mock_select):
-        """Test the basic methods for the tcp sync client"""
+        """Test the basic methods for the tcp sync client."""
         # receive/send
         mock_select.select.return_value = [True]
         client = ModbusTcpClient("127.0.0.1")
@@ -131,12 +131,12 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         assert str(client) == "ModbusTcpClient(127.0.0.1:502)"
 
     def test_tcp_client_is_socket_open(self):
-        """Test the tcp client is_socket_open method"""
+        """Test the tcp client is_socket_open method."""
         client = ModbusTcpClient("127.0.0.1")
         assert not client.is_socket_open()
 
     def test_tcp_client_send(self):
-        """Test the tcp client send method"""
+        """Test the tcp client send method."""
         client = ModbusTcpClient("127.0.0.1")
         with pytest.raises(ConnectionException):
             client.send(None)
@@ -147,7 +147,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
     @mock.patch("pymodbus.client.tcp.time")
     @mock.patch("pymodbus.client.tcp.select")
     def test_tcp_client_recv(self, mock_select, mock_time):
-        """Test the tcp client receive method"""
+        """Test the tcp client receive method."""
         mock_select.select.return_value = [True]
         mock_time.time.side_effect = count()
         client = ModbusTcpClient("127.0.0.1")
@@ -217,7 +217,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
 
     @mock.patch("pymodbus.client.tcp.select")
     def test_basic_syn_tls_client(self, mock_select):
-        """Test the basic methods for the tls sync client"""
+        """Test the basic methods for the tls sync client."""
         # receive/send
         mock_select.select.return_value = [True]
         client = ModbusTlsClient("localhost")
@@ -242,7 +242,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         assert client.recv(1) == b"\x45"
 
     def test_tls_client_send(self):
-        """Test the tls client send method"""
+        """Test the tls client send method."""
         client = ModbusTlsClient("127.0.0.1")
         with pytest.raises(ConnectionException):
             client.send(None)
@@ -253,7 +253,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
     @mock.patch("pymodbus.client.tcp.time")
     @mock.patch("pymodbus.client.tcp.select")
     def test_tls_client_recv(self, mock_select, mock_time):
-        """Test the tls client receive method"""
+        """Test the tls client receive method."""
         mock_select.select.return_value = [True]
         client = ModbusTlsClient("127.0.0.1")
         with pytest.raises(ConnectionException):
@@ -355,7 +355,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client.close()
 
     def test_serial_client_connect(self):
-        """Test the serial client connection method"""
+        """Test the serial client connection method."""
         with mock.patch.object(serial, "Serial") as mock_method:
             mock_method.return_value = mock.MagicMock()
             client = ModbusSerialClient("/dev/null")
@@ -368,7 +368,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
 
     @mock.patch("serial.Serial")
     def test_serial_client_is_socket_open(self, mock_serial):
-        """Test the serial client is_socket_open method"""
+        """Test the serial client is_socket_open method."""
         client = ModbusSerialClient("/dev/null")
         assert not client.is_socket_open()
         client.socket = mock_serial
@@ -376,7 +376,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
 
     @mock.patch("serial.Serial")
     def test_serial_client_send(self, mock_serial):
-        """Test the serial client send method"""
+        """Test the serial client send method."""
         mock_serial.in_waiting = None
         mock_serial.write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
         client = ModbusSerialClient("/dev/null")
@@ -390,7 +390,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
 
     @mock.patch("serial.Serial")
     def test_serial_client_cleanup_buffer_before_send(self, mock_serial):
-        """Test the serial client send method"""
+        """Test the serial client send method."""
         mock_serial.in_waiting = 4
         mock_serial.read = lambda x: b"1" * x
         mock_serial.write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
@@ -404,7 +404,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         assert client.send("1234") == 4
 
     def test_serial_client_recv(self):
-        """Test the serial client receive method"""
+        """Test the serial client receive method."""
         client = ModbusSerialClient("/dev/null")
         with pytest.raises(ConnectionException):
             client.recv(1024)

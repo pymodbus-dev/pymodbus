@@ -191,22 +191,25 @@ or the bleeding edge::
 
    git checkout dev
 
+Some distributions have an old pip, which needs to be upgraded:
+
+   pip install --upgrade pip
+
 Install required development tools::
 
    pip install ".[development]"
-   pre-commit install
 
 Install all (allows creation of documentation etc):
 
    pip install ".[all]"
-   pre-commit install
 
+Install git hooks, that helps control the commit and avoid errors when submitting a Pull Request:
+
+  cp githooks/* .git/hooks
 
 This installs dependencies in your virtual environment
 with pointers directly to the pymodbus directory,
 so any change you make is immediately available as if installed.
-
-It will also install :code:`pre-commit` git hooks, ensuring your commit are verified.
 
 The repository contains a number of important branches and tags.
   * **dev** is where all development happens, this branch is not always stable.

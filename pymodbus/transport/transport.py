@@ -188,8 +188,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         ):
             # format is "socket://<host>:port"
             self.comm_params.comm_type = CommType.TCP
-            host = host.strip("socket://")
-            parts = host.split(":")
+            parts = host.strip("socket://").split(":")
             host, port = parts[0], int(parts[1])
         self.init_setup_connect_listen(host, port)
 

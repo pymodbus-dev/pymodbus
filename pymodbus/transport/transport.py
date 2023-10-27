@@ -159,14 +159,18 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.transport: asyncio.BaseTransport = None
         self.loop: asyncio.AbstractEventLoop = None
         self.recv_buffer: bytes = b""
-        self.call_create: Callable[[], Coroutine[Any, Any, Any]] = lambda: None
+
+        async def _noop():
+            ...
+
+        self.call_create: Callable[[], Coroutine[Any, Any, Any]] = _noop
         if self.is_server:
             self.active_connections: dict[str, ModbusProtocol] = {}
         else:
-            self.listener: ModbusProtocol = None
+            self.listener: ModbusProtocol | None = None
             self.unique_id: str = str(id(self))
-            self.reconnect_task: asyncio.Task = None
-            self.reconnect_delay_current: float = 0.0
+            self.reconnect_task: asyncio.Task | None = None
+            self.reconnect_delay_current = 0.0
             self.sent_buffer: bytes = b""
 
         # ModbusProtocol specific setup
@@ -313,7 +317,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         """
         self.datagram_received(data, None)
 
-    def datagram_received(self, data: bytes, addr: tuple) -> None:
+    def datagram_received(self, data: bytes, addr: tuple | None) -> None:
         """Receive datagram (UDP connections)."""
         if self.comm_params.handle_local_echo and self.sent_buffer:
             if data.startswith(self.sent_buffer):
@@ -378,7 +382,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         """Call when connection is lost."""
         Log.debug("callback_disconnected called: {}", exc)
 
-    def callback_data(self, data: bytes, addr: tuple = None) -> int:
+    def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
         Log.debug("callback_data called: {} addr={}", data, ":hex", addr)
         return 0
@@ -386,7 +390,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
     # ----------------------------------- #
     # Helper methods for external classes #
     # ----------------------------------- #
-    def transport_send(self, data: bytes, addr: tuple = None) -> None:
+    def transport_send(self, data: bytes, addr: tuple | None = None) -> None:
         """Send request.
 
         :param data: non-empty bytes object with data to send.
@@ -514,14 +518,14 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
     listeners: dict[int, ModbusProtocol] = {}
     connections: dict[NullModem, int] = {}
 
-    def __init__(self, protocol: ModbusProtocol, listen: int = None) -> None:
+    def __init__(self, protocol: ModbusProtocol, listen: int | None = None) -> None:
         """Create half part of null modem"""
         asyncio.DatagramTransport.__init__(self)
         asyncio.Transport.__init__(self)
         self.protocol: ModbusProtocol = protocol
         self.other_modem: NullModem = None
         self.listen = listen
-        self.manipulator: Callable[[bytes], list[bytes]] = None
+        self.manipulator: Callable[[bytes], list[bytes]] | None = None
         self._is_closing = False
 
     # -------------------------- #
@@ -631,7 +635,9 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
         """Set flush limits"""
         return (1, 1024)
 
-    def set_write_buffer_limits(self, high: int = None, low: int = None) -> None:
+    def set_write_buffer_limits(
+        self, high: int | None = None, low: int | None = None
+    ) -> None:
         """Set flush limits"""
 
     def write_eof(self) -> None:

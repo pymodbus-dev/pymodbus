@@ -230,7 +230,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
             result = None
         return result
 
-    def callback_data(self, data: bytes, addr: tuple = ()) -> int:
+    def callback_data(self, data: bytes, addr: tuple | None = ()) -> int:
         """Handle received data."""
         if addr != ():
             self.receive_queue.put_nowait((data, addr))

@@ -23,7 +23,6 @@ _logger = logging.getLogger(__name__)
 
 def setup_payload_server(cmdline=None):
     """Define payload for server and do setup."""
-
     # ----------------------------------------------------------------------- #
     # build your payload
     # ----------------------------------------------------------------------- #

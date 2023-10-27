@@ -34,7 +34,6 @@ _logger = logging.getLogger(__file__)
 
 async def setup_forwarder(args):
     """Do setup forwarder."""
-
     return args
 
 

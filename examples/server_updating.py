@@ -56,7 +56,6 @@ async def updating_task(context):
     It should be noted that getValues and setValues are not safe
     against concurrent use.
     """
-
     fc_as_hex = 3
     slave_id = 0x00
     address = 0x10

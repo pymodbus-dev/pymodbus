@@ -26,7 +26,6 @@ from pymodbus.pdu import ExceptionResponse
 
 def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
     """Run sync client."""
-
     # activate debugging
     pymodbus_apply_logging_config("DEBUG")
 

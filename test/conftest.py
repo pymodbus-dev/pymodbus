@@ -45,8 +45,7 @@ def get_base_ports():
 @pytest.fixture(name="system_health_check", autouse=True)
 async def _check_system_health():
     """Check Thread, asyncio.task and NullModem for leftovers."""
-    task = asyncio.current_task()
-    if task:
+    if task := asyncio.current_task():
         task.set_name("main loop")
     start_threads = {thread.getName(): thread for thread in thread_enumerate()}
     start_tasks = {task.get_name(): task for task in asyncio.all_tasks()}

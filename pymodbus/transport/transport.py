@@ -304,6 +304,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
             and self.comm_params.reconnect_delay
         ):
             self.reconnect_task = asyncio.create_task(self.do_reconnect())
+            self.reconnect_task.set_name("transport reconnect")
         self.callback_disconnected(reason)
 
     def data_received(self, data: bytes) -> None:

@@ -384,6 +384,7 @@ class MockTransport:
             self.retries -= 1
             return
         self.delayed_resp_task = asyncio.create_task(self.delayed_resp())
+        self.delayed_resp_task.set_name("delayed response")
 
     def close(self):
         """Close the transport."""

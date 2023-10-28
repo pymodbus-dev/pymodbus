@@ -77,6 +77,7 @@ async def _run_server(
     """Run server."""
     run_args = setup_server(cmdline=mock_cls)
     task = asyncio.create_task(run_async_server(run_args))
+    task.set_name("mock_server")
     await asyncio.sleep(0.1)
     yield mock_cls
     await ServerAsyncStop()

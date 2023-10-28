@@ -215,6 +215,7 @@ class ModbusSimulatorServer:
             app["modbus_server"] = asyncio.create_task(
                 self.modbus_server.serve_forever()
             )
+            app["modbus_server"].set_name("simulator modbus server")
         except Exception as exc:
             Log.error("Error starting modbus server, reason: {}", exc)
             raise exc

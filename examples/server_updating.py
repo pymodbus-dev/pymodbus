@@ -50,7 +50,6 @@ async def updating_task(context):
     """Update values in server.
 
     This task runs continuously beside the server
-    (via asyncio.create_task in run_updating_server).
     It will increment some values each two seconds.
 
     It should be noted that getValues and setValues are not safe
@@ -104,6 +103,7 @@ def setup_updating_server(cmdline=None):
 async def run_updating_server(args):
     """Start updating_task concurrently with the current task."""
     task = asyncio.create_task(updating_task(args.context))
+    task.set_name("example updating task")
     await server_async.run_async_server(args)  # start the server
     task.cancel()
 

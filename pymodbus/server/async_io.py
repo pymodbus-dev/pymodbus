@@ -68,6 +68,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
             # schedule the connection handler on the event loop
             self.handler_task = asyncio.create_task(self.handle())
+            self.handler_task.set_name("server connection handler")
         except Exception as exc:  # pragma: no cover pylint: disable=broad-except
             Log.error(
                 "Server callback_connected exception: {}; {}",

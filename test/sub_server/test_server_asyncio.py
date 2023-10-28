@@ -167,6 +167,7 @@ class TestAsyncioServer:
         assert self.server
         if do_forever:
             self.task = asyncio.create_task(self.server.serve_forever())
+            self.task.set_name("Run server")
             self.task.add_done_callback(self.handle_task)
             assert not self.task.cancelled()
             await asyncio.sleep(0.5)

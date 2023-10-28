@@ -57,8 +57,8 @@ async def _check_system_health():
         for thread in thread_enumerate():
             name = thread.getName()
             if not (
-                (name in start_threads)
-                or (name == "asyncio_0")
+                name in start_threads
+                or name.startswith("asyncio_")
                 or (sys.version_info.minor == 8 and name.startswith("ThreadPoolExecutor"))
             ):
                 thread.join(1.0)

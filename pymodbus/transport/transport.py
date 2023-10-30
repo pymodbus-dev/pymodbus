@@ -176,9 +176,9 @@ class ModbusProtocol(asyncio.BaseProtocol):
         else:
             host = self.comm_params.host
             port = int(self.comm_params.port)
-        if NULLMODEM_HOST in host:
-            if self.comm_params.comm_type == CommType.SERIAL:
-                host, port = NULLMODEM_HOST, int(host[9:].split(":")[1])
+        if self.comm_params.comm_type == CommType.SERIAL and NULLMODEM_HOST in host:
+            host, port = NULLMODEM_HOST, int(host[9:].split(":")[1])
+        if host == NULLMODEM_HOST:
             self.call_create = lambda: self.create_nullmodem(port)
             return
         if (

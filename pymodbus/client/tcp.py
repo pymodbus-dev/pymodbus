@@ -149,7 +149,6 @@ class ModbusTcpClient(ModbusBaseClient):
         if "CommType" not in kwargs:
             kwargs["CommType"] = CommType.TCP
         kwargs["use_sync"] = True
-        self.transport = None
         super().__init__(
             framer,
             host=host,
@@ -160,7 +159,7 @@ class ModbusTcpClient(ModbusBaseClient):
         self.socket = None
 
     @property
-    def connected(self):
+    def connected(self) -> bool:
         """Connect internal."""
         return self.socket is not None
 

@@ -167,7 +167,6 @@ class ModbusSerialClient(ModbusBaseClient):
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus Serial Client."""
-        self.transport = None
         kwargs["use_sync"] = True
         super().__init__(
             framer,

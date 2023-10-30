@@ -183,14 +183,14 @@ class ModbusSerialClient(ModbusBaseClient):
 
         self.last_frame_end = None
 
-        self._t0 = float(1 + bytesize + stopbits) / self.comm_params.baudrate
+        self._t0 = float(1 + bytesize + stopbits) / baudrate
 
         # Check every 4 bytes / 2 registers if the reading is ready
         self._recv_interval = self._t0 * 4
         # Set a minimum of 1ms for high baudrates
         self._recv_interval = max(self._recv_interval, 0.001)
 
-        if self.comm_params.baudrate > 19200:
+        if baudrate > 19200:
             self.silent_interval = 1.75 / 1000  # ms
         else:
             self.inter_char_timeout = 1.5 * self._t0

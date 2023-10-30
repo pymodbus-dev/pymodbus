@@ -522,7 +522,7 @@ class ModbusSerialServer(ModbusBaseServer):
         :param request_tracer: Callback method for tracing
         """
         super().__init__(
-            CommParams(
+            params=CommParams(
                 comm_type=CommType.SERIAL,
                 comm_name="server_listener",
                 reconnect_delay=kwargs.get("reconnect_delay", 2),
@@ -534,13 +534,13 @@ class ModbusSerialServer(ModbusBaseServer):
                 baudrate=kwargs.get("baudrate", 19200),
                 stopbits=kwargs.get("stopbits", 1),
             ),
-            context,
-            kwargs.get("ignore_missing_slaves", False),
-            kwargs.get("broadcast_enable", False),
-            kwargs.get("request_tracer", None),
-            kwargs.get("response_manipulator", None),
-            kwargs.get("identity", None),
-            framer,
+            context=context,
+            ignore_missing_slaves=kwargs.get("ignore_missing_slaves", False),
+            broadcast_enable=kwargs.get("broadcast_enable", False),
+            response_manipulator=kwargs.get("response_manipulator", None),
+            request_tracer=kwargs.get("request_tracer", None),
+            identity=kwargs.get("identity", None),
+            framer=framer,
         )
         self.handle_local_echo = kwargs.get("handle_local_echo", False)
 

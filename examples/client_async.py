@@ -65,8 +65,6 @@ def setup_async_client(description=None, cmdline=None):
             reconnect_delay=1,
             reconnect_delay_max=10,
             #    retry_on_empty=False,
-            #    close_comm_on_error=False,
-            #    strict=True,
             # TCP setup parameters
             #    source_address=("localhost", 0),
         )
@@ -79,8 +77,6 @@ def setup_async_client(description=None, cmdline=None):
             timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,
-            #    close_comm_on_error=False,
-            #    strict=True,
             # UDP setup parameters
             #    source_address=None,
         )
@@ -92,8 +88,6 @@ def setup_async_client(description=None, cmdline=None):
             timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,
-            #    close_comm_on_error=False,
-            #    strict=True,
             # Serial setup parameters
             baudrate=args.baudrate,
             #    bytesize=8,

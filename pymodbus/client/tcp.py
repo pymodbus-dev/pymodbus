@@ -7,7 +7,7 @@ import socket
 import time
 from typing import Any
 
-from pymodbus.client.base import ModbusBaseClient
+from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import Framer
 from pymodbus.logging import Log
@@ -33,11 +33,9 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
-    :param close_comm_on_error: Close connection on error.
-    :param strict: Strict timing, 1.5 character between requests.
     :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param reconnect_delay: Minimum delay in milliseconds before reconnecting.
-    :param reconnect_delay_max: Maximum delay in milliseconds before reconnecting.
+    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
     :param no_resend_on_retry: Do not resend request when retrying due to missing response.
     :param kwargs: Experimental parameters.
@@ -77,7 +75,6 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
             port=port,
             **kwargs,
         )
-        self.params.source_address = source_address
 
     async def connect(self) -> bool:
         """Initiate connection to start client."""
@@ -94,7 +91,7 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
         super().close(reconnect=reconnect)
 
 
-class ModbusTcpClient(ModbusBaseClient):
+class ModbusTcpClient(ModbusBaseSyncClient):
     """**ModbusTcpClient**.
 
     Fixed parameters:
@@ -115,8 +112,8 @@ class ModbusTcpClient(ModbusBaseClient):
     :param close_comm_on_error: Close connection on error.
     :param strict: Strict timing, 1.5 character between requests.
     :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param reconnect_delay: Minimum delay in milliseconds before reconnecting.
-    :param reconnect_delay_max: Maximum delay in milliseconds before reconnecting.
+    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
     :param no_resend_on_retry: Do not resend request when retrying due to missing response.
     :param kwargs: Experimental parameters.
@@ -148,7 +145,6 @@ class ModbusTcpClient(ModbusBaseClient):
         """Initialize Modbus TCP Client."""
         if "CommType" not in kwargs:
             kwargs["CommType"] = CommType.TCP
-        kwargs["use_sync"] = True
         super().__init__(
             framer,
             host=host,

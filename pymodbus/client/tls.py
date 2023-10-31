@@ -34,11 +34,9 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
-    :param close_comm_on_error: Close connection on error.
-    :param strict: Strict timing, 1.5 character between requests.
     :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param reconnect_delay: Minimum delay in milliseconds before reconnecting.
-    :param reconnect_delay_max: Maximum delay in milliseconds before reconnecting.
+    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
     :param no_resend_on_retry: Do not resend request when retrying due to missing response.
     :param kwargs: Experimental parameters.
@@ -81,7 +79,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
             ),
             **kwargs,
         )
-        self.params.server_hostname = server_hostname
+        self.server_hostname = server_hostname
 
     async def connect(self) -> bool:
         """Initiate connection to start client."""
@@ -121,8 +119,8 @@ class ModbusTlsClient(ModbusTcpClient):
     :param close_comm_on_error: Close connection on error.
     :param strict: Strict timing, 1.5 character between requests.
     :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param reconnect_delay: Minimum delay in milliseconds before reconnecting.
-    :param reconnect_delay_max: Maximum delay in milliseconds before reconnecting.
+    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
     :param no_resend_on_retry: Do not resend request when retrying due to missing response.
     :param kwargs: Experimental parameters.

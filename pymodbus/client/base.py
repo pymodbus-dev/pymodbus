@@ -54,8 +54,6 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         timeout: float = 3,
         retries: int = 3,
         retry_on_empty: bool = False,
-        close_comm_on_error: bool = False,
-        strict: bool = True,
         broadcast_enable: bool = False,
         reconnect_delay: float = 0.1,
         reconnect_delay_max: float = 300,
@@ -357,21 +355,25 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
     ) -> None:
         """Initialize a client instance."""
         ModbusClientMixin.__init__(self)
-        self.comm_params = CommParams(
-            comm_type=kwargs.get("CommType"),
-            comm_name="comm",
-            source_address=kwargs.get("source_address", ("0.0.0.0", 0)),
-            reconnect_delay=reconnect_delay,
-            reconnect_delay_max=reconnect_delay_max,
-            timeout_connect=timeout,
-            host=kwargs.get("host", None),
-            port=kwargs.get("port", 0),
-            sslctx=kwargs.get("sslctx", None),
-            baudrate=kwargs.get("baudrate", None),
-            bytesize=kwargs.get("bytesize", None),
-            parity=kwargs.get("parity", None),
-            stopbits=kwargs.get("stopbits", None),
-            handle_local_echo=kwargs.get("handle_local_echo", False),
+        ModbusProtocol.__init__(
+            self,
+            CommParams(
+                comm_type=kwargs.get("CommType"),
+                comm_name="comm",
+                source_address=kwargs.get("source_address", ("0.0.0.0", 0)),
+                reconnect_delay=reconnect_delay,
+                reconnect_delay_max=reconnect_delay_max,
+                timeout_connect=timeout,
+                host=kwargs.get("host", None),
+                port=kwargs.get("port", 0),
+                sslctx=kwargs.get("sslctx", None),
+                baudrate=kwargs.get("baudrate", None),
+                bytesize=kwargs.get("bytesize", None),
+                parity=kwargs.get("parity", None),
+                stopbits=kwargs.get("stopbits", None),
+                handle_local_echo=kwargs.get("handle_local_echo", False),
+            ),
+            False,
         )
         self.params = self._params()
         self.params.retries = int(retries)

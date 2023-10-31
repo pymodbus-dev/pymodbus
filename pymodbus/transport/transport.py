@@ -156,8 +156,8 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.is_server = is_server
         self.is_closing = False
 
-        self.transport: asyncio.BaseTransport = None
-        self.loop: asyncio.AbstractEventLoop = None
+        self.transport: asyncio.BaseTransport | None = None
+        self.loop: asyncio.AbstractEventLoop
         self.recv_buffer: bytes = b""
 
         async def _noop():
@@ -244,8 +244,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
     async def transport_connect(self) -> bool:
         """Handle generic connect and call on to specific transport connect."""
         Log.debug("Connecting {}", self.comm_params.comm_name)
-        if not self.loop:
-            self.loop = asyncio.get_running_loop()
+        self.loop = asyncio.get_running_loop()
         self.is_closing = False
         try:
             self.transport, _protocol = await asyncio.wait_for(
@@ -264,12 +263,11 @@ class ModbusProtocol(asyncio.BaseProtocol):
     async def transport_listen(self) -> bool:
         """Handle generic listen and call on to specific transport listen."""
         Log.debug("Awaiting connections {}", self.comm_params.comm_name)
-        if not self.loop:
-            self.loop = asyncio.get_running_loop()
+        self.loop = asyncio.get_running_loop()
         self.is_closing = False
         try:
             self.transport = await self.call_create()
-            if isinstance(self.transport, tuple):
+            if self.transport and isinstance(self.transport, tuple):
                 self.transport = self.transport[0]
         except OSError as exc:
             Log.warning("Failed to start server {}", exc)
@@ -399,11 +397,11 @@ class ModbusProtocol(asyncio.BaseProtocol):
             self.sent_buffer += data
         if self.comm_params.comm_type == CommType.UDP:
             if addr:
-                self.transport.sendto(data, addr=addr)  # type: ignore[attr-defined]
+                self.transport.sendto(data, addr=addr)  # type: ignore[union-attr]
             else:
-                self.transport.sendto(data)  # type: ignore[attr-defined]
+                self.transport.sendto(data)  # type: ignore[union-attr]
         else:
-            self.transport.write(data)  # type: ignore[attr-defined]
+            self.transport.write(data)  # type: ignore[union-attr]
 
     def transport_close(self, intern: bool = False, reconnect: bool = False) -> None:
         """Close connection.

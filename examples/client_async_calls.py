@@ -160,7 +160,7 @@ async def async_execute_information_requests(client):
 
     rr = await client.report_slave_id(slave=SLAVE)
     assert not rr.isError()  # test that call was OK
-    # assert rr.status
+    # assert not rr.status
 
     rr = await client.read_exception_status(slave=SLAVE)
     assert not rr.isError()  # test that call was OK
@@ -189,7 +189,7 @@ async def async_execute_diagnostic_requests(client):
     await client.diag_read_diagnostic_register(slave=SLAVE)
     await client.diag_change_ascii_input_delimeter(slave=SLAVE)
 
-    # NOT WORKING: _await client.diag_force_listen_only(slave=SLAVE)
+    # NOT WORKING: await client.diag_force_listen_only(slave=SLAVE)
 
     await client.diag_clear_counters()
     await client.diag_read_bus_comm_error_count(slave=SLAVE)

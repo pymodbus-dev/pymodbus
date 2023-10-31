@@ -13,10 +13,10 @@ implementation from pymodbus::
 import asyncio
 import struct
 
-from pymodbus import Framer
+from pymodbus import Framer, ModbusExceptions
 from pymodbus.bit_read_message import ReadCoilsRequest
 from pymodbus.client import AsyncModbusTcpClient as ModbusClient
-from pymodbus.pdu import ModbusExceptions, ModbusRequest, ModbusResponse
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 
 
 # --------------------------------------------------------------------------- #

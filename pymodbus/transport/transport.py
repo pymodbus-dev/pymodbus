@@ -88,7 +88,7 @@ class CommParams:
     comm_name: str | None = None
     comm_type: CommType | None = None
     reconnect_delay: float | None = None
-    reconnect_delay_max: float | None = None
+    reconnect_delay_max: float = 0.0
     timeout_connect: float | None = None
     host: str = "127.0.0.1"
     port: int = 0
@@ -433,7 +433,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
     def reset_delay(self) -> None:
         """Reset wait time before next reconnect to minimal period."""
-        self.reconnect_delay_current = self.comm_params.reconnect_delay
+        self.reconnect_delay_current = self.comm_params.reconnect_delay or 0.0
 
     def is_active(self) -> bool:
         """Return true if connected/listening."""
@@ -468,7 +468,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
     async def do_reconnect(self) -> None:
         """Handle reconnect as a task."""
         try:
-            self.reconnect_delay_current = self.comm_params.reconnect_delay
+            self.reconnect_delay_current = self.comm_params.reconnect_delay or 0.0
             while True:
                 Log.debug(
                     "Wait {} {} ms before reconnecting.",

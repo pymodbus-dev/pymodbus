@@ -13,7 +13,7 @@ implementation from pymodbus::
 import asyncio
 import struct
 
-from pymodbus import Framer, ModbusExceptions
+from pymodbus import Framer, ModbusException
 from pymodbus.bit_read_message import ReadCoilsRequest
 from pymodbus.client import AsyncModbusTcpClient as ModbusClient
 from pymodbus.pdu import ModbusRequest, ModbusResponse
@@ -85,9 +85,9 @@ class CustomModbusRequest(ModbusRequest):
     def execute(self, context):  # pragma no cover
         """Execute."""
         if not 1 <= self.count <= 0x7D0:
-            return self.doException(ModbusExceptions.IllegalValue)
+            return self.doException(ModbusException.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
-            return self.doException(ModbusExceptions.IllegalAddress)
+            return self.doException(ModbusException.IllegalAddress)
         values = context.getValues(self.function_code, self.address, self.count)
         return CustomModbusResponse(values)
 

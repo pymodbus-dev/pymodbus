@@ -88,7 +88,7 @@ class CommParams:
     comm_name: str | None = None
     comm_type: CommType | None = None
     reconnect_delay: float | None = None
-    reconnect_delay_max: float | None = None
+    reconnect_delay_max: float = 0.0
     timeout_connect: float | None = None
     host: str = "127.0.0.1"
     port: int = 0
@@ -180,39 +180,36 @@ class ModbusProtocol(asyncio.BaseProtocol):
         else:
             host = self.comm_params.host
             port = int(self.comm_params.port)
-        if self.comm_params.comm_type == CommType.SERIAL:
-            host, port = self.init_setup_serial(host, port)
-            if not host and not port:
-                return
+        if self.comm_params.comm_type == CommType.SERIAL and NULLMODEM_HOST in host:
+            host, port = NULLMODEM_HOST, int(host[9:].split(":")[1])
         if host == NULLMODEM_HOST:
             self.call_create = lambda: self.create_nullmodem(port)
             return
-        # TCP/TLS/UDP
-        self.init_setup_connect_listen(host, port)
-
-    def init_setup_serial(self, host: str, _port: int) -> tuple[str, int]:
-        """Split host for serial if needed."""
-        if NULLMODEM_HOST in host:
-            return NULLMODEM_HOST, int(host[9:].split(":")[1])
-        if self.is_server and host.startswith("socket"):
+        if (
+            self.comm_params.comm_type == CommType.SERIAL
+            and self.is_server
+            and host.startswith("socket")
+        ):
             # format is "socket://<host>:port"
             self.comm_params.comm_type = CommType.TCP
             parts = host.split(":")
-            return parts[1][2:], int(parts[2])
-        self.call_create = lambda: create_serial_connection(
-            self.loop,
-            self.handle_new_connection,
-            host,
-            baudrate=self.comm_params.baudrate,
-            bytesize=self.comm_params.bytesize,
-            parity=self.comm_params.parity,
-            stopbits=self.comm_params.stopbits,
-            timeout=self.comm_params.timeout_connect,
-        )
-        return None, None
+            host, port = parts[1][2:], int(parts[2])
+        self.init_setup_connect_listen(host, port)
 
     def init_setup_connect_listen(self, host: str, port: int) -> None:
         """Handle connect/listen handler."""
+        if self.comm_params.comm_type == CommType.SERIAL:
+            self.call_create = lambda: create_serial_connection(
+                self.loop,
+                self.handle_new_connection,
+                host,
+                baudrate=self.comm_params.baudrate,
+                bytesize=self.comm_params.bytesize,
+                parity=self.comm_params.parity,
+                stopbits=self.comm_params.stopbits,
+                timeout=self.comm_params.timeout_connect,
+            )
+            return
         if self.comm_params.comm_type == CommType.UDP:
             if self.is_server:
                 self.call_create = lambda: self.loop.create_datagram_endpoint(
@@ -440,7 +437,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
     def reset_delay(self) -> None:
         """Reset wait time before next reconnect to minimal period."""
-        self.reconnect_delay_current = self.comm_params.reconnect_delay
+        self.reconnect_delay_current = self.comm_params.reconnect_delay or 0.0
 
     def is_active(self) -> bool:
         """Return true if connected/listening."""
@@ -475,7 +472,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
     async def do_reconnect(self) -> None:
         """Handle reconnect as a task."""
         try:
-            self.reconnect_delay_current = self.comm_params.reconnect_delay
+            self.reconnect_delay_current = self.comm_params.reconnect_delay or 0.0
             while True:
                 Log.debug(
                     "Wait {} {} ms before reconnecting.",

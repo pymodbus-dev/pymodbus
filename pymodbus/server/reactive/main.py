@@ -243,6 +243,7 @@ class ReactiveServer:
                 app["modbus_server"] = asyncio.create_task(
                     self._modbus_server.serve_forever()
                 )
+                app["modbus_server"].set_name("reactive modbus server")
             else:
                 app["modbus_server"] = asyncio.ensure_future(
                     self._modbus_server.serve_forever()

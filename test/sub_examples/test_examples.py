@@ -58,6 +58,7 @@ class TestExamples:
         """Test server/client with payload."""
         cmdargs = ["--port", str(use_port), "--host", use_host]
         task = asyncio.create_task(run_callback_server(cmdline=cmdargs))
+        task.set_name("run callback_server")
         await asyncio.sleep(0.1)
         testclient = setup_async_client(cmdline=cmdargs)
         await run_async_client(testclient, modbus_calls=run_a_few_calls)
@@ -71,6 +72,7 @@ class TestExamples:
         """Test server simulator."""
         cmdargs = ["--port", str(use_port), "--host", use_host]
         task = asyncio.create_task(main_updating_server(cmdline=cmdargs))
+        task.set_name("run main_updating_server")
         await asyncio.sleep(0.1)
         client = setup_async_client(cmdline=cmdargs)
         await run_async_client(client, modbus_calls=run_a_few_calls)
@@ -84,6 +86,7 @@ class TestExamples:
         """Test server simulator."""
         cmdargs = ["--port", str(use_port), "--host", use_host]
         task = asyncio.create_task(main_datastore_simulator(cmdline=cmdargs))
+        task.set_name("run main_datastore_simulator")
         await asyncio.sleep(0.1)
         testclient = setup_async_client(cmdline=cmdargs)
         await run_async_client(testclient, modbus_calls=run_a_few_calls)
@@ -164,6 +167,7 @@ class TestAsyncExamples:
     async def test_payload(self, mock_clc, mock_cls):
         """Test server/client with payload."""
         task = asyncio.create_task(main_payload_server(cmdline=mock_cls))
+        task.set_name("run main_payload_server")
         await asyncio.sleep(0.1)
         await main_payload_calls(cmdline=mock_clc)
         await asyncio.sleep(0.1)

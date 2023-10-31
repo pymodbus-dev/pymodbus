@@ -156,7 +156,6 @@ class ModbusTlsClient(ModbusTcpClient):
         **kwargs: Any,
     ):
         """Initialize Modbus TLS Client."""
-        self.transport = None
         super().__init__(
             host, CommType=CommType.TLS, port=port, framer=framer, **kwargs
         )
@@ -166,7 +165,7 @@ class ModbusTlsClient(ModbusTcpClient):
         self.params.server_hostname = server_hostname
 
     @property
-    def connected(self):
+    def connected(self) -> bool:
         """Connect internal."""
         return self.transport is not None
 

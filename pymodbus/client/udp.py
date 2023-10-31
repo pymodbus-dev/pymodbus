@@ -151,7 +151,6 @@ class ModbusUdpClient(ModbusBaseClient):
     ) -> None:
         """Initialize Modbus UDP Client."""
         kwargs["use_sync"] = True
-        self.transport = None
         super().__init__(
             framer,
             port=port,
@@ -164,7 +163,7 @@ class ModbusUdpClient(ModbusBaseClient):
         self.socket = None
 
     @property
-    def connected(self):
+    def connected(self) -> bool:
         """Connect internal."""
         return self.socket is not None
 

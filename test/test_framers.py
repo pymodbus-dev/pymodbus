@@ -5,7 +5,7 @@ import pytest
 
 from pymodbus import Framer
 from pymodbus.bit_read_message import ReadCoilsRequest
-from pymodbus.client import ModbusBaseClient
+from pymodbus.client.base import ModbusBaseClient
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer

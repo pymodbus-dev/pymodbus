@@ -17,7 +17,6 @@ from pymodbus.exceptions import ModbusException
 from pymodbus.transaction import ModbusSocketFramer
 
 
-logging.basicConfig()
 _logger = logging.getLogger(__file__)
 _logger.setLevel(logging.DEBUG)
 

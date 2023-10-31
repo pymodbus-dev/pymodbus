@@ -34,13 +34,7 @@ import logging
 
 import client_async
 
-import pymodbus.diag_message as req_diag
-import pymodbus.mei_message as req_mei
-import pymodbus.other_message as req_other
-from pymodbus.exceptions import ModbusException
 
-
-logging.basicConfig()
 _logger = logging.getLogger(__file__)
 _logger.setLevel("DEBUG")
 
@@ -56,14 +50,14 @@ async def async_template_call(client):
     """Show complete modbus call, async version."""
     try:
         rr = await client.read_coils(1, 1, slave=SLAVE)
-    except ModbusException as exc:
+    except client_async.ModbusException as exc:
         txt = f"ERROR: exception in pymodbus {exc}"
         _logger.error(txt)
         raise exc
     if rr.isError():
         txt = "ERROR: pymodbus returned an error!"
         _logger.error(txt)
-        raise ModbusException(txt)
+        raise client_async.ModbusException(txt)
 
     # Validate data
     txt = f"### Template coils response: {rr.bits!s}"
@@ -160,24 +154,24 @@ async def async_handle_input_registers(client):
 async def async_execute_information_requests(client):
     """Execute extended information requests."""
     _logger.info("### Running information requests.")
-    rr = await client.execute(req_mei.ReadDeviceInformationRequest(slave=SLAVE))
+    rr = await client.read_device_information(slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.information[0] == b"Pymodbus"
 
-    rr = await client.execute(req_other.ReportSlaveIdRequest(slave=SLAVE))
-    assert not rr.isError()  # test that call was OK
-    # assert rr.status
-
-    rr = await client.execute(req_other.ReadExceptionStatusRequest(slave=SLAVE))
+    rr = await client.report_slave_id(slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     # assert not rr.status
 
-    rr = await client.execute(req_other.GetCommEventCounterRequest(slave=SLAVE))
+    rr = await client.read_exception_status(slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    # assert not rr.status
+
+    rr = await client.diag_get_comm_event_counter(slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     # assert rr.status
     # assert not rr.count
 
-    rr = await client.execute(req_other.GetCommEventLogRequest(slave=SLAVE))
+    rr = await client.diag_get_comm_event_log(slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     # assert rr.status
     # assert not (rr.event_count + rr.message_count + len(rr.events))
@@ -187,32 +181,27 @@ async def async_execute_diagnostic_requests(client):
     """Execute extended diagnostic requests."""
     _logger.info("### Running diagnostic requests.")
     message = b"OK"
-    rr = await client.execute(
-        req_diag.ReturnQueryDataRequest(message=message, slave=SLAVE)
-    )
+    rr = await client.diag_query_data(msg=message, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.message == message
 
-    await client.execute(req_diag.RestartCommunicationsOptionRequest(slave=SLAVE))
-    await client.execute(req_diag.ReturnDiagnosticRegisterRequest(slave=SLAVE))
-    await client.execute(req_diag.ChangeAsciiInputDelimiterRequest(slave=SLAVE))
+    await client.diag_restart_communication(True, slave=SLAVE)
+    await client.diag_read_diagnostic_register(slave=SLAVE)
+    await client.diag_change_ascii_input_delimeter(slave=SLAVE)
 
-    # NOT WORKING: _check_call(await client.execute(req_diag.ForceListenOnlyModeRequest(slave=SLAVE)))
-    # does not send a response
+    # NOT WORKING: await client.diag_force_listen_only(slave=SLAVE)
 
-    await client.execute(req_diag.ClearCountersRequest())
-    await client.execute(req_diag.ReturnBusCommunicationErrorCountRequest(slave=SLAVE))
-    await client.execute(req_diag.ReturnBusExceptionErrorCountRequest(slave=SLAVE))
-    await client.execute(req_diag.ReturnSlaveMessageCountRequest(slave=SLAVE))
-    await client.execute(req_diag.ReturnSlaveNoResponseCountRequest(slave=SLAVE))
-    await client.execute(req_diag.ReturnSlaveNAKCountRequest(slave=SLAVE))
-    await client.execute(req_diag.ReturnSlaveBusyCountRequest(slave=SLAVE))
-    await client.execute(
-        req_diag.ReturnSlaveBusCharacterOverrunCountRequest(slave=SLAVE)
-    )
-    await client.execute(req_diag.ReturnIopOverrunCountRequest(slave=SLAVE))
-    await client.execute(req_diag.ClearOverrunCountRequest(slave=SLAVE))
-    # NOT WORKING _check_call(await client.execute(req_diag.GetClearModbusPlusRequest(slave=SLAVE)))
+    await client.diag_clear_counters()
+    await client.diag_read_bus_comm_error_count(slave=SLAVE)
+    await client.diag_read_bus_exception_error_count(slave=SLAVE)
+    await client.diag_read_slave_message_count(slave=SLAVE)
+    await client.diag_read_slave_no_response_count(slave=SLAVE)
+    await client.diag_read_slave_nak_count(slave=SLAVE)
+    await client.diag_read_slave_busy_count(slave=SLAVE)
+    await client.diag_read_bus_char_overrun_count(slave=SLAVE)
+    await client.diag_read_iop_overrun_count(slave=SLAVE)
+    await client.diag_clear_overrun_counter(slave=SLAVE)
+    # NOT WORKING await client.diag_getclear_modbus_response(slave=SLAVE)
 
 
 # ------------------------

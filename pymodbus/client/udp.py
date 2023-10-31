@@ -5,7 +5,7 @@ import asyncio
 import socket
 from typing import Any
 
-from pymodbus.client.base import ModbusBaseClient
+from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import Framer
 from pymodbus.logging import Log
@@ -38,8 +38,8 @@ class AsyncModbusUdpClient(
     :param close_comm_on_error: Close connection on error.
     :param strict: Strict timing, 1.5 character between requests.
     :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param reconnect_delay: Minimum delay in milliseconds before reconnecting.
-    :param reconnect_delay_max: Maximum delay in milliseconds before reconnecting.
+    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
     :param no_resend_on_retry: Do not resend request when retrying due to missing response.
     :param kwargs: Experimental parameters.
@@ -77,7 +77,7 @@ class AsyncModbusUdpClient(
             port=port,
             **kwargs,
         )
-        self.params.source_address = source_address
+        self.source_address = source_address
 
     @property
     def connected(self):
@@ -98,7 +98,7 @@ class AsyncModbusUdpClient(
         return await self.transport_connect()
 
 
-class ModbusUdpClient(ModbusBaseClient):
+class ModbusUdpClient(ModbusBaseSyncClient):
     """**ModbusUdpClient**.
 
     Fixed parameters:
@@ -119,8 +119,8 @@ class ModbusUdpClient(ModbusBaseClient):
     :param close_comm_on_error: Close connection on error.
     :param strict: Strict timing, 1.5 character between requests.
     :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param reconnect_delay: Minimum delay in milliseconds before reconnecting.
-    :param reconnect_delay_max: Maximum delay in milliseconds before reconnecting.
+    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
     :param no_resend_on_retry: Do not resend request when retrying due to missing response.
     :param kwargs: Experimental parameters.
@@ -150,7 +150,6 @@ class ModbusUdpClient(ModbusBaseClient):
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus UDP Client."""
-        kwargs["use_sync"] = True
         super().__init__(
             framer,
             port=port,

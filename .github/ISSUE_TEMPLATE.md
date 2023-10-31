@@ -30,5 +30,5 @@ Before opening a new issue, make sure you do the following:
 # please use the following to format logs when posting them here
 import pymodbus
 
-pymodbus.pymodbus_apply_logging_config()
+pymodbus.pymodbus_apply_logging_config("DEBUG")
 ```

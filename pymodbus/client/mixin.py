@@ -538,6 +538,20 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
             pdu_mei.ReadDeviceInformationRequest(read_code, object_id, **kwargs)
         )
 
+    def send_mei_custom_message(
+        self, mei_type: int, data: bytearray = b'', slave: int = 0, **kwargs: Any
+    ) -> ModbusResponse | Awaitable[ModbusResponse]:
+        """Read FIFO queue (code 0x2B sub 0x0E).
+
+        :param read_code: The device information read code
+        :param object_id: The object to read from
+        :param kwargs:
+        :raises ModbusException:
+        """
+        return self.execute(
+            pdu_mei.mei_custom_request(mei_type, data, slave, **kwargs)
+        )
+
     # ------------------
     # Converter methods
     # ------------------

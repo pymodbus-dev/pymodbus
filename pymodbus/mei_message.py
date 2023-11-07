@@ -3,6 +3,8 @@
 __all__ = [
     "ReadDeviceInformationRequest",
     "ReadDeviceInformationResponse",
+    "mei_custom_request",
+    "mei_custom_response"
 ]
 
 # pylint: disable=missing-type-doc
@@ -10,6 +12,7 @@ import struct
 
 from pymodbus.constants import DeviceInformation, MoreData
 from pymodbus.device import DeviceInformationFactory, ModbusControlBlock
+from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 
@@ -117,7 +120,7 @@ class ReadDeviceInformationResponse(ModbusResponse):
 
     @classmethod
     def calculateRtuFrameSize(cls, buffer):
-        """Calculate the size of the message.
+        """Calculate the size of the message
 
         :param buffer: A buffer containing the data that have been received.
         :returns: The number of bytes in the response.
@@ -219,3 +222,136 @@ class ReadDeviceInformationResponse(ModbusResponse):
         :returns: The string representation of the response
         """
         return f"ReadDeviceInformationResponse({self.read_code})"
+
+
+
+# ---------------------------------------------------------------------------#
+#  MEI CUSTOM REQUEST
+# ---------------------------------------------------------------------------#
+class mei_custom_request(ModbusRequest):
+    """mei_custom_request.
+
+    
+    """
+
+    function_code = 0x2B
+    sub_function_code = None # 0x0E
+    function_code_name = "mei_custom_request"
+    m_data = b''
+    m_data_len = 0
+    # _rtu_frame_size = 7
+    #_rtu_byte_count_pos = 6
+    #_pdu_length = 5  # func + adress1 + adress2 + outputQuant1 + outputQuant2
+
+    def __init__(self, mei_type, data, slave, **kwargs):
+        """Initialize a new instance.
+
+        :param read_code: The device information read code
+        :param object_id: The object to read from
+        """
+        ModbusRequest.__init__(self, slave, **kwargs)
+        self.sub_function_code = mei_type # or DeviceInformation.BASIC
+        self.m_data = data
+        if self.m_data is not None:
+          self.m_data_len = len(self.m_data)
+
+    def encode(self):
+        """Encode the request packet.
+
+        :returns: The byte encoded packet
+        """
+        packet = struct.pack(">BB", self.sub_function_code, self.m_data_len)
+        if self.m_data_len > 0:
+          packet = packet + self.m_data
+
+        #packet = struct.pack(
+        #    ">BBB", self.sub_function_code, self.m_data_len, self.m_data
+        #)
+        
+        return packet
+
+    def decode(self, data):
+        """Decode data part of the message.
+
+        :param data: The incoming data
+        """
+        params = struct.unpack(">BBB", data)
+        self.sub_function_code, self.read_code, self.object_id = params
+
+    def execute(self, _context):
+        """Run a read exception status request against the store.
+
+        :returns: The populated response
+        """
+        if not 0x00 <= self.object_id <= 0xFF:
+            return self.doException(merror.IllegalValue)
+        if not 0x00 <= self.read_code <= 0x04:
+            return self.doException(merror.IllegalValue)
+
+        information = DeviceInformationFactory.get(_MCB, self.read_code, self.object_id)
+        return mei_custom_request(self.read_code, information)
+
+    def __str__(self):
+        """Build a representation of the request.
+
+        :returns: The string representation of the request
+        """
+        params = (self.read_code, self.object_id)
+        return (
+            "mei_custom_request(%d,%d)"  # pylint: disable=consider-using-f-string
+            % params
+        )
+
+
+
+class mei_custom_response(ModbusResponse):
+    """mei_custom_request response."""
+
+    function_code = 0x2B
+    sub_function_code = 0x41
+
+    @classmethod
+    def calculateRtuFrameSize(cls, buffer):
+        """Calculate the size of the message
+
+        :param buffer: A buffer containing the data that have been received.
+        :returns: The number of bytes in the response.
+        """
+        size = 4  # skip the header information
+        count = int(buffer[3])
+        return size + count + 2
+        
+    def __init__(self, **kwargs):
+        """Initialize a new instance.
+
+        :param read_code: The device information read code
+        :param information: The requested information request
+        """
+        ModbusResponse.__init__(self, **kwargs)
+        self.m_data = b''
+        self.m_data_len = 0
+        self.m_mei_type = None
+
+    def decode(self, data):
+        """Decode a the response.
+
+        :param data: The packet data to decode
+        """
+        self.m_mei_type = int(data[0])
+        self.m_data_len = int(data[1])
+        self.m_data = data[2:]
+        
+        # self.m_data_len = len(self.m_data)
+        if self.m_data_len != len(self.m_data):
+          self.m_data_len = 0
+          self.m_data = b''
+          self.m_mei_type = None
+          raise ModbusException("Mismatch between data_len and len of received data")
+
+    def __str__(self):
+        """Build a representation of the response.
+
+        :returns: The string representation of the response
+        """
+        return f"mei_custom_response({self.m_mei_type}: {self.m_data})"
+

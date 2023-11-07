@@ -73,6 +73,8 @@ from pymodbus.logging import Log
 from pymodbus.mei_message import (
     ReadDeviceInformationRequest,
     ReadDeviceInformationResponse,
+    mei_custom_request,
+    mei_custom_response,
 )
 from pymodbus.other_message import (
     GetCommEventCounterRequest,
@@ -138,6 +140,7 @@ class ServerDecoder:
         MaskWriteRegisterRequest,
         ReadFifoQueueRequest,
         ReadDeviceInformationRequest,
+        mei_custom_request,
     ]
     __sub_function_table = [
         ReturnQueryDataRequest,
@@ -158,6 +161,7 @@ class ServerDecoder:
         ClearOverrunCountRequest,
         GetClearModbusPlusRequest,
         ReadDeviceInformationRequest,
+        mei_custom_request,
     ]
 
     @classmethod
@@ -174,7 +178,7 @@ class ServerDecoder:
             self.__sub_lookup[f.function_code][f.sub_function_code] = f
 
     def decode(self, message):
-        """Decode a request packet.
+        """Decode a request packet
 
         :param message: The raw modbus request packet
         :return: The decoded modbus message or None if error
@@ -272,6 +276,7 @@ class ClientDecoder:
         MaskWriteRegisterResponse,
         ReadFifoQueueResponse,
         ReadDeviceInformationResponse,
+        mei_custom_response,
     ]
     __sub_function_table = [
         ReturnQueryDataResponse,
@@ -292,6 +297,7 @@ class ClientDecoder:
         ClearOverrunCountResponse,
         GetClearModbusPlusResponse,
         ReadDeviceInformationResponse,
+        mei_custom_response,
     ]
 
     def __init__(self):

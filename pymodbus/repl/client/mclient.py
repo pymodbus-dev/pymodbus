@@ -25,6 +25,7 @@ from pymodbus.diag_message import (
 )
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.mei_message import ReadDeviceInformationRequest
+from pymodbus.mei_message import mei_custom_request
 from pymodbus.other_message import (
     GetCommEventCounterRequest,
     GetCommEventLogRequest,
@@ -295,6 +296,24 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
                 "next object id": resp.next_object_id,
                 "more follows": resp.more_follows,
                 "space left": resp.space_left,
+            }
+        return ExtendedRequestSupport._process_exception(resp, slave=request.slave_id)
+    
+    def send_mei_custom_message(self, mei_type, data = b'', slave = 0, **kwargs):
+        """Read the identification and additional information of remote slave.
+
+        :param read_code:  Read Device ID code (0x01/0x02/0x03/0x04)
+        :param object_id: Identification of the first object to obtain.
+        :param kwargs:
+        :return:
+        """
+        request = mei_custom_request(mei_type, data, slave, **kwargs)
+        resp = self.execute(request)  # pylint: disable=no-member
+        if not resp.isError():
+            return {
+                "m_data": resp.m_data,
+                "m_data_len": resp.m_data_len,
+                "m_mei_type": resp.m_mei_type,
             }
         return ExtendedRequestSupport._process_exception(resp, slave=request.slave_id)
 

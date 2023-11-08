@@ -1,6 +1,6 @@
 """Pymodbus: Modbus Protocol Implementation.
 
-Released under the the BSD license
+Released under the BSD license
 """
 from __future__ import annotations
 
@@ -92,30 +92,30 @@ class Log:
 
     @classmethod
     def info(cls, txt, *args):
-        """Log info messagees."""
+        """Log info messages."""
         if cls._logger.isEnabledFor(logging.INFO):
             cls._logger.info(cls.build_msg(txt, *args))
 
     @classmethod
     def debug(cls, txt, *args):
-        """Log debug messagees."""
+        """Log debug messages."""
         if cls._logger.isEnabledFor(logging.DEBUG):
             cls._logger.debug(cls.build_msg(txt, *args))
 
     @classmethod
     def warning(cls, txt, *args):
-        """Log warning messagees."""
+        """Log warning messages."""
         if cls._logger.isEnabledFor(logging.WARNING):
             cls._logger.warning(cls.build_msg(txt, *args))
 
     @classmethod
     def error(cls, txt, *args):
-        """Log error messagees."""
+        """Log error messages."""
         if cls._logger.isEnabledFor(logging.ERROR):
             cls._logger.error(cls.build_msg(txt, *args))
 
     @classmethod
     def critical(cls, txt, *args):
-        """Log critical messagees."""
+        """Log critical messages."""
         if cls._logger.isEnabledFor(logging.CRITICAL):
             cls._logger.critical(cls.build_msg(txt, *args))

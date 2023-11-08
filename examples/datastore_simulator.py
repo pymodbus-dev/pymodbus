@@ -31,7 +31,6 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server import StartAsyncTcpServer
 
 
-logging.basicConfig()
 _logger = logging.getLogger(__file__)
 
 demo_config = {

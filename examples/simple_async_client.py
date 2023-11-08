@@ -11,15 +11,13 @@ The corresponding server must be started before e.g. as:
 """
 import asyncio
 
-from pymodbus import Framer, pymodbus_apply_logging_config
-from pymodbus.client import (
-    AsyncModbusSerialClient,
-    AsyncModbusTcpClient,
-    AsyncModbusTlsClient,
-    AsyncModbusUdpClient,
+import pymodbus.client as ModbusClient
+from pymodbus import (
+    ExceptionResponse,
+    Framer,
+    ModbusException,
+    pymodbus_apply_logging_config,
 )
-from pymodbus.exceptions import ModbusException
-from pymodbus.pdu import ExceptionResponse
 
 
 async def run_async_simple_client(comm, host, port, framer=Framer.SOCKET):
@@ -29,7 +27,7 @@ async def run_async_simple_client(comm, host, port, framer=Framer.SOCKET):
 
     print("get client")
     if comm == "tcp":
-        client = AsyncModbusTcpClient(
+        client = ModbusClient.AsyncModbusTcpClient(
             host,
             port=port,
             framer=framer,
@@ -41,7 +39,7 @@ async def run_async_simple_client(comm, host, port, framer=Framer.SOCKET):
             # source_address=("localhost", 0),
         )
     elif comm == "udp":
-        client = AsyncModbusUdpClient(
+        client = ModbusClient.AsyncModbusUdpClient(
             host,
             port=port,
             framer=framer,
@@ -53,7 +51,7 @@ async def run_async_simple_client(comm, host, port, framer=Framer.SOCKET):
             # source_address=None,
         )
     elif comm == "serial":
-        client = AsyncModbusSerialClient(
+        client = ModbusClient.AsyncModbusSerialClient(
             port,
             framer=framer,
             # timeout=10,
@@ -68,7 +66,7 @@ async def run_async_simple_client(comm, host, port, framer=Framer.SOCKET):
             # handle_local_echo=False,
         )
     elif comm == "tls":
-        client = AsyncModbusTlsClient(
+        client = ModbusClient.AsyncModbusTlsClient(
             host,
             port=port,
             framer=Framer.TLS,

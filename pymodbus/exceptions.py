@@ -4,7 +4,6 @@ Custom exceptions to be used in the Modbus code.
 """
 
 __all__ = [
-    "ModbusException",
     "ModbusIOException",
     "ParameterException",
     "NotImplementedException",

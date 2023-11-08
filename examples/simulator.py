@@ -16,7 +16,6 @@ from pymodbus.datastore import ModbusSimulatorContext
 from pymodbus.server import ModbusSimulatorServer, get_simulator_commandline
 
 
-logging.basicConfig()
 _logger = logging.getLogger(__file__)
 
 

@@ -13,15 +13,13 @@ The corresponding server must be started before e.g. as:
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
-from pymodbus import Framer, pymodbus_apply_logging_config
-from pymodbus.client import (
-    ModbusSerialClient,
-    ModbusTcpClient,
-    ModbusTlsClient,
-    ModbusUdpClient,
+import pymodbus.client as ModbusClient
+from pymodbus import (
+    ExceptionResponse,
+    Framer,
+    ModbusException,
+    pymodbus_apply_logging_config,
 )
-from pymodbus.exceptions import ModbusException
-from pymodbus.pdu import ExceptionResponse
 
 
 def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
@@ -31,7 +29,7 @@ def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
 
     print("get client")
     if comm == "tcp":
-        client = ModbusTcpClient(
+        client = ModbusClient.ModbusTcpClient(
             host,
             port=port,
             framer=framer,
@@ -43,7 +41,7 @@ def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
             # source_address=("localhost", 0),
         )
     elif comm == "udp":
-        client = ModbusUdpClient(
+        client = ModbusClient.ModbusUdpClient(
             host,
             port=port,
             framer=framer,
@@ -55,7 +53,7 @@ def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
             # source_address=None,
         )
     elif comm == "serial":
-        client = ModbusSerialClient(
+        client = ModbusClient.ModbusSerialClient(
             port,
             framer=framer,
             # timeout=10,
@@ -70,7 +68,7 @@ def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
             # handle_local_echo=False,
         )
     elif comm == "tls":
-        client = ModbusTlsClient(
+        client = ModbusClient.ModbusTlsClient(
             host,
             port=port,
             framer=Framer.TLS,

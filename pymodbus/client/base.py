@@ -46,7 +46,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     **Application methods, common to all clients**:
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         framer: Framer,
         timeout: float = 3,

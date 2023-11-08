@@ -53,7 +53,6 @@ from pymodbus.server import (
 )
 
 
-logging.basicConfig()
 _logger = logging.getLogger(__file__)
 _logger.setLevel(logging.INFO)
 

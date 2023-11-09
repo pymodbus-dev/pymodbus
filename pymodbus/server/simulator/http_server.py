@@ -161,7 +161,6 @@ class ModbusSimulatorServer:
         self.serving: asyncio.Future = asyncio.Future()
         self.log_file = log_file
         self.site = None
-        self.runner: web.AppRunner
         self.http_host = http_host
         self.http_port = http_port
         self.web_path = os.path.join(os.path.dirname(__file__), "web")
@@ -237,9 +236,9 @@ class ModbusSimulatorServer:
     async def run_forever(self, only_start=False):
         """Start modbus and http servers."""
         try:
-            self.runner = web.AppRunner(self.web_app)
-            await self.runner.setup()
-            self.site = web.TCPSite(self.runner, self.http_host, self.http_port)
+            runner = web.AppRunner(self.web_app)
+            await runner.setup()
+            self.site = web.TCPSite(runner, self.http_host, self.http_port)
             await self.site.start()
         except Exception as exc:
             Log.error("Error starting http server, reason: {}", exc)
@@ -251,7 +250,7 @@ class ModbusSimulatorServer:
 
     async def stop(self):
         """Stop modbus and http servers."""
-        await self.runner.cleanup()
+        await self.site.stop()
         self.site = None
         if not self.serving.done():
             self.serving.set_result(True)

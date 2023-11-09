@@ -257,7 +257,6 @@ ignore = [
     "S311",  # PRNG for cryptography
     "S104",  # binding on all interfaces
     "RUF012",  # typing.ClassVar
-    "RUF013",  # implicit Optional
     "RUF015"  # next(iter(list)) instead of list[0]
 ]
 select = [

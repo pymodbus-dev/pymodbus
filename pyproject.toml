@@ -56,7 +56,7 @@ repl = [
     "click>=8.0.0"
 ]
 simulator = [
-    "aiohttp==3.9.0b0"
+    "aiohttp>=3.9.0b0"
 ]
 documentation = [
     "recommonmark>=0.7.1",

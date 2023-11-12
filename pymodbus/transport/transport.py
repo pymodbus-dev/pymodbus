@@ -517,7 +517,7 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
         asyncio.DatagramTransport.__init__(self)
         asyncio.Transport.__init__(self)
         self.protocol: ModbusProtocol = protocol
-        self.other_modem: NullModem = None
+        self.other_modem: NullModem
         self.listen = listen
         self.manipulator: Callable[[bytes], list[bytes]] | None = None
         self._is_closing = False
@@ -590,10 +590,10 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
         if self.connections:
             with suppress(KeyError):
                 del self.connections[self]
-        if self.other_modem:
-            self.other_modem.other_modem = None
+        if hasattr(self, "other_modem"):
+            del self.other_modem.other_modem
             self.other_modem.close()
-            self.other_modem = None
+            del self.other_modem
         if self.protocol:
             self.protocol.connection_lost(None)
 

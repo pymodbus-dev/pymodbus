@@ -159,7 +159,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.transport: asyncio.BaseTransport = None
         self.loop: asyncio.AbstractEventLoop = None
         self.recv_buffer: bytes = b""
-        self.call_create: Callable[[], Coroutine[Any, Any, Any]] = lambda: None
+        self.call_create: Callable[[], Coroutine[Any, Any, Any]] = lambda: None  # type: ignore[assignment]
         if self.is_server:
             self.active_connections: dict[str, ModbusProtocol] = {}
         else:

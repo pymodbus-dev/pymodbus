@@ -414,7 +414,8 @@ class ModbusProtocol(asyncio.BaseProtocol):
         if self.transport:
             if hasattr(self.transport, "abort"):
                 self.transport.abort()
-            self.transport.close()
+            else:
+                self.transport.close()
             self.transport = None
         self.recv_buffer = b""
         if self.is_server:

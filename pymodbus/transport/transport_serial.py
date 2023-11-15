@@ -117,7 +117,7 @@ class SerialTransport(asyncio.Transport):
         return False
 
     def abort(self) -> None:
-        """Close the transport immediately."""
+        """Old alias for closing the connection."""
         self.close()
 
     # ------------------------------------------------

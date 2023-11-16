@@ -612,7 +612,7 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
     # Dummy methods #
     # ------------- #
     def abort(self) -> None:
-        """Old alias for closing the connection."""
+        """Alias for closing the connection."""
         self.close()
 
     def can_write_eof(self) -> bool:

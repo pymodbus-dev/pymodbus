@@ -412,8 +412,6 @@ class ModbusProtocol(asyncio.BaseProtocol):
         if not intern:
             self.is_closing = True
         if self.transport:
-            if hasattr(self.transport, "abort"):
-                self.transport.abort()
             self.transport.close()
             self.transport = None  # type: ignore[assignment]
         self.recv_buffer = b""
@@ -614,7 +612,7 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
     # Dummy methods #
     # ------------- #
     def abort(self) -> None:
-        """Abort connection."""
+        """Alias for closing the connection."""
         self.close()
 
     def can_write_eof(self) -> bool:

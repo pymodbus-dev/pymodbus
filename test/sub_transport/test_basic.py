@@ -188,13 +188,11 @@ class TestBasicModbusProtocol:
 
     async def test_transport_close(self, server, dummy_protocol):
         """Test transport_close()."""
-        dummy_protocol.abort = mock.MagicMock()
         dummy_protocol.close = mock.MagicMock()
         server.connection_made(dummy_protocol())
         server.recv_buffer = b"abc"
         server.reconnect_task = mock.MagicMock()
         server.transport_close()
-        dummy_protocol.abort.assert_called_once()
         dummy_protocol.close.assert_called_once()
         assert not server.recv_buffer
         await server.transport_listen()

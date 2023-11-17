@@ -51,7 +51,7 @@ class SerialTransport(asyncio.Transport):
         else:
             self.async_loop.remove_reader(self.sync_serial.fileno())
         self.sync_serial.close()
-        self.sync_serial = None
+        self.sync_serial = None  # type: ignore[assignment]
         if exc:
             with contextlib.suppress(Exception):
                 self._protocol.connection_lost(exc)

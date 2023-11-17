@@ -156,10 +156,10 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.is_server = is_server
         self.is_closing = False
 
-        self.transport: asyncio.BaseTransport = None
-        self.loop: asyncio.AbstractEventLoop = None
+        self.transport: asyncio.BaseTransport = None  # type: ignore[assignment]
+        self.loop: asyncio.AbstractEventLoop = None  # type: ignore[assignment]
         self.recv_buffer: bytes = b""
-        self.call_create: Callable[[], Coroutine[Any, Any, Any]] = lambda: None
+        self.call_create: Callable[[], Coroutine[Any, Any, Any]] = lambda: None  # type: ignore[assignment, return-value]
         if self.is_server:
             self.active_connections: dict[str, ModbusProtocol] = {}
         else:
@@ -413,7 +413,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
             self.is_closing = True
         if self.transport:
             self.transport.close()
-            self.transport = None
+            self.transport = None  # type: ignore[assignment]
         self.recv_buffer = b""
         if self.is_server:
             for _key, value in self.active_connections.items():
@@ -515,7 +515,7 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
         asyncio.DatagramTransport.__init__(self)
         asyncio.Transport.__init__(self)
         self.protocol: ModbusProtocol = protocol
-        self.other_modem: NullModem = None
+        self.other_modem: NullModem = None  # type: ignore[assignment]
         self.listen = listen
         self.manipulator: Callable[[bytes], list[bytes]] | None = None
         self._is_closing = False
@@ -589,9 +589,9 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
             with suppress(KeyError):
                 del self.connections[self]
         if self.other_modem:
-            self.other_modem.other_modem = None
+            self.other_modem.other_modem = None  # type: ignore[assignment]
             self.other_modem.close()
-            self.other_modem = None
+            self.other_modem = None  # type: ignore[assignment]
         if self.protocol:
             self.protocol.connection_lost(None)
 

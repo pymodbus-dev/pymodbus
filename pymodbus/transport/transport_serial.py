@@ -51,7 +51,7 @@ class SerialTransport(asyncio.Transport):
         else:
             self.async_loop.remove_reader(self.sync_serial.fileno())
         self.sync_serial.close()
-        self.sync_serial = None
+        self.sync_serial = None  # type: ignore[assignment]
         if exc:
             with contextlib.suppress(Exception):
                 self._protocol.connection_lost(exc)
@@ -117,7 +117,7 @@ class SerialTransport(asyncio.Transport):
         return False
 
     def abort(self) -> None:
-        """Close the transport immediately."""
+        """Alias for closing the connection."""
         self.close()
 
     # ------------------------------------------------

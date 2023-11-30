@@ -322,6 +322,8 @@ to build do::
 
 The documentation is available in <root>/build/html
 
+Remark: this generates a new zip/tgz file of examples which are uploaded.
+
 
 License Information
 -------------------

@@ -287,7 +287,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         readsize = f"read of {size_txt} bytes"
         msg = (
             f"{self}: Connection unexpectedly closed "
-            f"{duration} seconds into {readsize}"
+            f"{duration:.3f} seconds into {readsize}"
         )
         if data:
             result = b"".join(data)

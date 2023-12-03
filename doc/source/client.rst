@@ -149,7 +149,7 @@ the timeout it throws an exception. If connected successfully reconnecting later
 
 The line :mod:`await client.write_coil(1, True, slave=1)` is an example of a write request, set address 1 to True on device 1 (slave).
 
-The line :mod:`result = await client.read_coils(2, 1, slave=1)` is an example of a read request, get the value of address 2, 3 and 4 (count = 3) from device 1 (slave).
+The line :mod:`result = await client.read_coils(2, 3, slave=1)` is an example of a read request, get the value of address 2, 3 and 4 (count = 3) from device 1 (slave).
 
 The last line :mod:`client.close()` closes the connection and render the object inactive.
 

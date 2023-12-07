@@ -10,7 +10,6 @@ helps make pymodbus a better product.
 Version 3.6.1
 -------------
 
-
 Version 3.6.0
 -------------
 * doc: Fix a code mismatch in client.rst

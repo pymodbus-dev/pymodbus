@@ -34,7 +34,7 @@ Pymodbus consist of 5 parts:
 
 Common features
 ^^^^^^^^^^^^^^^
-* Full :download:`modbus standard protocol <_static/Modbus_Application_Protocol_V1_1b3.pdf>` implementation
+* Full `modbus standard protocol <_static/Modbus_Application_Protocol_V1_1b3.pdf>`_ implementation
 * Support for custom function codes
 * support serial (rs-485), tcp, tls and udp communication
 * support all standard frames: socket, rtu, rtu-over-tcp, tcp and ascii

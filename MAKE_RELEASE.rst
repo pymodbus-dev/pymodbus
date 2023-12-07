@@ -18,6 +18,7 @@ Prepare/make release on dev.
         git log --pretty="%an" v3.0.0..HEAD | sort -uf > authors.log
         update AUTHORS
         cd doc; ./build_html
+   * twine check dist/*
    * Commit, push and merge.
 * Checkout master locally
    * git pull dev
@@ -33,8 +34,8 @@ Prepare/make release on dev.
 * on local repo
    * git pull, check release tag is pulled
    * git checkout v3.0.0dev0
+   * rm -rf build/* dist/*
    * python3 -m build
-   * twine check dist/*
    * twine upload dist/*  (upload to pypi)
    * Double check Read me docs are updated
       * trigger build https://readthedocs.org/projects/pymodbus/builds/

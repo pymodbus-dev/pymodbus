@@ -9,6 +9,7 @@ helps make pymodbus a better product.
 
 Version 3.6.1
 -------------
+* Solve pypi upload error.
 
 Version 3.6.0
 -------------

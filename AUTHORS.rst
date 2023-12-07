@@ -15,15 +15,19 @@ Thanks to
 - Alex Ruddick
 - Alexandre CUER
 - Alois Hockenschlohe
+- Arjan
 - banana-sun
 - Blaise Thompson
 - cgernert
 - corollaries
+- Chandler Riehm
 - Chris Hung
 - Christian Krause
 - dhoomakethu
+- DominicDataP
 - Dries
 - duc996
+- Farzad Panahi
 - Fredo70
 - Gao Fang
 - Ghostkeeper
@@ -31,14 +35,19 @@ Thanks to
 - Hayden Roche
 - Iktek
 - Jakob Ruhe
+- Jakob Schlyter
 - James Braza
 - jan iversen
+- Jerome Velociter
 - Joe Burmeister
 - Kenny Johansson
 - Matthias Straka
 - Logan Gunthorpe
 - Marko Luther
+- Logan Gunthorpe
+- Marko Luther
 - Matthias Straka
+- Mickaël Schoentgen
 - Pavel Kostromitinov
 - peufeu2
 - Philip Couling

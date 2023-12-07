@@ -16,7 +16,7 @@ from pymodbus.logging import Log
 
 
 class ModbusTlsFramer(ModbusFramer):
-    """Modbus TLS Frame controller
+    """Modbus TLS Frame controller.
 
     No prefix MBAP header before decrypted PDU is used as a message frame for
     Modbus Security Application Protocol.  It allows us to easily separate

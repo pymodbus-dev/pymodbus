@@ -16,3 +16,4 @@ build/
 /dist/
 /pymodbus.egg-info/
 venv
+downloaded_files/

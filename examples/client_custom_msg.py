@@ -11,25 +11,13 @@ implementation from pymodbus::
 
 """
 import asyncio
-import logging
 import struct
 
+from pymodbus import Framer
 from pymodbus.bit_read_message import ReadCoilsRequest
 from pymodbus.client import AsyncModbusTcpClient as ModbusClient
-
-# --------------------------------------------------------------------------- #
-# import the various server implementations
-# --------------------------------------------------------------------------- #
 from pymodbus.pdu import ModbusExceptions, ModbusRequest, ModbusResponse
-from pymodbus.transaction import ModbusSocketFramer
 
-
-# --------------------------------------------------------------------------- #
-# configure the client logging
-# --------------------------------------------------------------------------- #
-logging.basicConfig()
-log = logging.getLogger(__file__)
-log.setLevel(logging.DEBUG)
 
 # --------------------------------------------------------------------------- #
 # create your custom message
@@ -54,7 +42,7 @@ class CustomModbusResponse(ModbusResponse):  # pragma no cover
         self.values = values or []
 
     def encode(self):
-        """Encode response pdu
+        """Encode response pdu.
 
         :returns: The encoded packet message
         """
@@ -64,7 +52,7 @@ class CustomModbusResponse(ModbusResponse):  # pragma no cover
         return res
 
     def decode(self, data):
-        """Decode response pdu
+        """Decode response pdu.
 
         :param data: The packet data to decode
         """
@@ -113,7 +101,7 @@ class Read16CoilsRequest(ReadCoilsRequest):
     """Read 16 coils in one request."""
 
     def __init__(self, address, **kwargs):
-        """Initialize a new instance
+        """Initialize a new instance.
 
         :param address: The address to start reading from
         """
@@ -130,7 +118,7 @@ class Read16CoilsRequest(ReadCoilsRequest):
 
 async def main(host="localhost", port=5020):
     """Run versions of read coil."""
-    with ModbusClient(host=host, port=port, framer=ModbusSocketFramer) as client:
+    with ModbusClient(host=host, port=port, framer_name=Framer.SOCKET) as client:
         await client.connect()
 
         # new modbus function code.

@@ -58,8 +58,7 @@ class TestReadRegisterMessages:
             ReadWriteMultipleRegistersRequest(
                 write_registers=0xAB,
                 **arguments,
-            ): b"\x00\x01\x00\x05\x00\x01\x00"
-            b"\x01\x02\x00\xAB",
+            ): b"\x00\x01\x00\x05\x00\x01\x00" b"\x01\x02\x00\xAB",
         }
         self.response_read = {
             ReadRegistersResponseBase(self.values): TEST_MESSAGE,

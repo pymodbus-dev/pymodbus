@@ -29,20 +29,12 @@ The corresponding server must be started before e.g. as:
 import asyncio
 import logging
 
-# --------------------------------------------------------------------------- #
-# import the various client implementations
-# --------------------------------------------------------------------------- #
-from examples import helper
-from pymodbus.client import (
-    AsyncModbusSerialClient,
-    AsyncModbusTcpClient,
-    AsyncModbusTlsClient,
-    AsyncModbusUdpClient,
-)
-from pymodbus.exceptions import ModbusIOException
+import helper
+
+import pymodbus.client as modbusClient
+from pymodbus import ModbusException
 
 
-logging.basicConfig()
 _logger = logging.getLogger(__file__)
 _logger.setLevel("DEBUG")
 
@@ -54,7 +46,7 @@ def setup_async_client(description=None, cmdline=None):
     )
     _logger.info("### Create client object")
     if args.comm == "tcp":
-        client = AsyncModbusTcpClient(
+        client = modbusClient.AsyncModbusTcpClient(
             args.host,
             port=args.port,  # on which port
             # Common optional parameters:
@@ -64,13 +56,11 @@ def setup_async_client(description=None, cmdline=None):
             reconnect_delay=1,
             reconnect_delay_max=10,
             #    retry_on_empty=False,
-            #    close_comm_on_error=False,
-            #    strict=True,
             # TCP setup parameters
             #    source_address=("localhost", 0),
         )
     elif args.comm == "udp":
-        client = AsyncModbusUdpClient(
+        client = modbusClient.AsyncModbusUdpClient(
             args.host,
             port=args.port,
             # Common optional parameters:
@@ -78,21 +68,17 @@ def setup_async_client(description=None, cmdline=None):
             timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,
-            #    close_comm_on_error=False,
-            #    strict=True,
             # UDP setup parameters
             #    source_address=None,
         )
     elif args.comm == "serial":
-        client = AsyncModbusSerialClient(
+        client = modbusClient.AsyncModbusSerialClient(
             args.port,
             # Common optional parameters:
             #    framer=ModbusRtuFramer,
             timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,
-            #    close_comm_on_error=False,
-            #    strict=True,
             # Serial setup parameters
             baudrate=args.baudrate,
             #    bytesize=8,
@@ -101,7 +87,7 @@ def setup_async_client(description=None, cmdline=None):
             #    handle_local_echo=False,
         )
     elif args.comm == "tls":
-        client = AsyncModbusTlsClient(
+        client = modbusClient.AsyncModbusTlsClient(
             args.host,
             port=args.port,
             # Common optional parameters:
@@ -140,7 +126,7 @@ async def run_a_few_calls(client):
         rr = await client.read_holding_registers(4, 2, slave=1)
         assert rr.registers[0] == 17
         assert rr.registers[1] == 17
-    except ModbusIOException:
+    except ModbusException:
         pass
 
 

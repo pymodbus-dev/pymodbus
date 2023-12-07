@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Test performance of client: sync vs. async
+"""Test performance of client: sync vs. async.
 
 This example show how much faster the async version is.
 
 example run:
 
-(pymodbus) jan@MacMini examples % ./client_performance.py
+(pymodbus) % ./client_performance.py
 --- Testing sync client v3.4.1
 running 1000 call (each 10 registers), took 114.10 seconds
 Averages 114.10 ms pr call and 11.41 ms pr register.
@@ -16,8 +16,8 @@ Averages 0.33 ms pr call and 0.03 ms pr register.
 import asyncio
 import time
 
+from pymodbus import Framer
 from pymodbus.client import AsyncModbusSerialClient, ModbusSerialClient
-from pymodbus.transaction import ModbusRtuFramer
 
 
 LOOP_COUNT = 1000
@@ -29,7 +29,7 @@ def run_sync_client_test():
     print("--- Testing sync client v3.4.1")
     client = ModbusSerialClient(
         "/dev/ttys007",
-        framer=ModbusRtuFramer,
+        framer_name=Framer.RTU,
         baudrate=9600,
     )
     client.connect()
@@ -56,7 +56,7 @@ async def run_async_client_test():
     print("--- Testing async client v3.4.1")
     client = AsyncModbusSerialClient(
         "/dev/ttys007",
-        framer=ModbusRtuFramer,
+        framer_name=Framer.RTU,
         baudrate=9600,
     )
     await client.connect()

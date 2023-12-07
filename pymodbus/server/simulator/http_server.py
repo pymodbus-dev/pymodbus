@@ -1,19 +1,21 @@
 """HTTP server for modbus simulator."""
+from __future__ import annotations
+
 import asyncio
+import contextlib
 import dataclasses
 import importlib
 import json
 import os
 from time import time
-from typing import List
 
 
 try:
     from aiohttp import web
-except ImportError:
-    web = None
 
-import contextlib
+    AIOHTTP_MISSING = False
+except ImportError:
+    AIOHTTP_MISSING = True
 
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.datastore.simulator import Label
@@ -26,13 +28,6 @@ from pymodbus.server.async_io import (
     ModbusTcpServer,
     ModbusTlsServer,
     ModbusUdpServer,
-)
-from pymodbus.transaction import (
-    ModbusAsciiFramer,
-    ModbusBinaryFramer,
-    ModbusRtuFramer,
-    ModbusSocketFramer,
-    ModbusTlsFramer,
 )
 
 
@@ -47,7 +42,7 @@ RESPONSE_JUNK = 3
 
 @dataclasses.dataclass()
 class CallTracer:
-    """Define call/response traces"""
+    """Define call/response traces."""
 
     call: bool = False
     fc: int = -1
@@ -58,7 +53,7 @@ class CallTracer:
 
 @dataclasses.dataclass()
 class CallTypeMonitor:
-    """Define Request/Response monitor"""
+    """Define Request/Response monitor."""
 
     active: bool = False
     trace_response: bool = False
@@ -71,7 +66,7 @@ class CallTypeMonitor:
 
 @dataclasses.dataclass()
 class CallTypeResponse:
-    """Define Response manipulation"""
+    """Define Response manipulation."""
 
     active: int = RESPONSE_INACTIVE
     split: int = 0
@@ -124,11 +119,14 @@ class ModbusSimulatorServer:
         http_port: int = 8080,
         log_file: str = "server.log",
         json_file: str = "setup.json",
-        custom_actions_module: str = None,
+        custom_actions_module: str | None = None,
     ):
         """Initialize http interface."""
-        if not web:
-            raise RuntimeError("aiohttp not installed!")
+        if AIOHTTP_MISSING:
+            raise RuntimeError(
+                "Simulator server requires aiohttp. "
+                'Please install with "pip install aiohttp" and try again.'
+            )
         with open(json_file, encoding="utf-8") as file:
             setup = json.load(file)
 
@@ -138,18 +136,11 @@ class ModbusSimulatorServer:
             "tls": ModbusTlsServer,
             "udp": ModbusUdpServer,
         }
-        framer_class = {
-            "ascii": ModbusAsciiFramer,
-            "binary": ModbusBinaryFramer,
-            "rtu": ModbusRtuFramer,
-            "socket": ModbusSocketFramer,
-            "tls": ModbusTlsFramer,
-        }
         if custom_actions_module:
             actions_module = importlib.import_module(custom_actions_module)
             custom_actions_dict = actions_module.custom_actions_dict
         else:
-            custom_actions_dict = None
+            custom_actions_dict = {}
         server = setup["server_list"][modbus_server]
         if server["comm"] != "serial":
             server["address"] = (server["host"], server["port"])
@@ -157,11 +148,11 @@ class ModbusSimulatorServer:
             del server["port"]
         device = setup["device_list"][modbus_device]
         self.datastore_context = ModbusSimulatorContext(
-            device, custom_actions_dict or None
+            device, custom_actions_dict or {}
         )
         datastore = ModbusServerContext(slaves=self.datastore_context, single=True)
         comm = comm_class[server.pop("comm")]
-        framer = framer_class[server.pop("framer")]
+        framer = server.pop("framer")
         if "identity" in server:
             server["identity"] = ModbusDeviceIdentification(
                 info_name=server["identity"]
@@ -170,6 +161,7 @@ class ModbusSimulatorServer:
         self.serving: asyncio.Future = asyncio.Future()
         self.log_file = log_file
         self.site = None
+        self.runner: web.AppRunner
         self.http_host = http_host
         self.http_port = http_port
         self.web_path = os.path.join(os.path.dirname(__file__), "web")
@@ -210,8 +202,8 @@ class ModbusSimulatorServer:
             with open(html_file, encoding="utf-8") as handle:
                 self.generator_html[entry][0] = handle.read()
         self.refresh_rate = 0
-        self.register_filter: List[int] = []
-        self.call_list: List[tuple] = []
+        self.register_filter: list[int] = []
+        self.call_list: list[tuple] = []
         self.request_lookup = ServerDecoder.getFCdict()
         self.call_monitor = CallTypeMonitor()
         self.call_response = CallTypeResponse()
@@ -224,6 +216,7 @@ class ModbusSimulatorServer:
             app["modbus_server"] = asyncio.create_task(
                 self.modbus_server.serve_forever()
             )
+            app["modbus_server"].set_name("simulator modbus server")
         except Exception as exc:
             Log.error("Error starting modbus server, reason: {}", exc)
             raise exc
@@ -244,9 +237,9 @@ class ModbusSimulatorServer:
     async def run_forever(self, only_start=False):
         """Start modbus and http servers."""
         try:
-            runner = web.AppRunner(self.web_app)
-            await runner.setup()
-            self.site = web.TCPSite(runner, self.http_host, self.http_port)
+            self.runner = web.AppRunner(self.web_app)
+            await self.runner.setup()
+            self.site = web.TCPSite(self.runner, self.http_host, self.http_port)
             await self.site.start()
         except Exception as exc:
             Log.error("Error starting http server, reason: {}", exc)
@@ -258,7 +251,7 @@ class ModbusSimulatorServer:
 
     async def stop(self):
         """Stop modbus and http servers."""
-        await self.site.stop()
+        await self.runner.cleanup()
         self.site = None
         if not self.serving.done():
             self.serving.set_result(True)
@@ -268,7 +261,9 @@ class ModbusSimulatorServer:
         """Handle static html."""
         if not (page := request.path[1:]):
             page = "index.html"
-        file = os.path.join(self.web_path, page)
+        file = os.path.normpath(os.path.join(self.web_path, page))
+        if not file.startswith(self.web_path):
+            raise ValueError(f"File access outside {self.web_path} not permitted.")
         try:
             with open(file, encoding="utf-8"):
                 return web.FileResponse(file)

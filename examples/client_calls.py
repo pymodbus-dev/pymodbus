@@ -31,14 +31,9 @@ The corresponding server must be started before e.g. as:
 """
 import logging
 
-import pymodbus.diag_message as req_diag
-import pymodbus.mei_message as req_mei
-import pymodbus.other_message as req_other
-from examples.client_sync import run_sync_client, setup_sync_client
-from pymodbus.exceptions import ModbusException
+import client_sync
 
 
-logging.basicConfig()
 _logger = logging.getLogger(__file__)
 _logger.setLevel("DEBUG")
 
@@ -54,14 +49,14 @@ def template_call(client):
     """Show complete modbus call, sync version."""
     try:
         rr = client.read_coils(32, 1, slave=SLAVE)
-    except ModbusException as exc:
+    except client_sync.ModbusException as exc:
         txt = f"ERROR: exception in pymodbus {exc}"
         _logger.error(txt)
         raise exc
     if rr.isError():
         txt = "ERROR: pymodbus returned an error!"
         _logger.error(txt)
-        raise ModbusException(txt)
+        raise client_sync.ModbusException(txt)
 
     # Validate data
     txt = f"### Template coils response: {rr.bits!s}"
@@ -158,24 +153,24 @@ def handle_input_registers(client):
 def execute_information_requests(client):  # pragma no cover
     """Execute extended information requests."""
     _logger.info("### Running information requests.")
-    rr = client.execute(req_mei.ReadDeviceInformationRequest(slave=SLAVE))
+    rr = client.read_device_information(slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.information[0] == b"Pymodbus"
 
-    rr = client.execute(req_other.ReportSlaveIdRequest(slave=SLAVE))
-    assert not rr.isError()  # test that call was OK
-    # assert rr.status
-
-    rr = client.execute(req_other.ReadExceptionStatusRequest(slave=SLAVE))
+    rr = client.report_slave_id(slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     # assert not rr.status
 
-    rr = client.execute(req_other.GetCommEventCounterRequest(slave=SLAVE))
+    rr = client.read_exception_status(slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    # assert not rr.status
+
+    rr = client.diag_get_comm_event_counter(slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     # assert rr.status
     # assert not rr.count
 
-    rr = client.execute(req_other.GetCommEventLogRequest(slave=SLAVE))
+    rr = client.diag_get_comm_event_log(slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     # assert rr.status
     # assert not (rr.event_count + rr.message_count + len(rr.events))
@@ -185,28 +180,27 @@ def execute_diagnostic_requests(client):  # pragma no cover
     """Execute extended diagnostic requests."""
     _logger.info("### Running diagnostic requests.")
     message = b"OK"
-    rr = client.execute(req_diag.ReturnQueryDataRequest(message=message, slave=SLAVE))
+    rr = client.diag_query_data(msg=message, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.message == message
 
-    client.execute(req_diag.RestartCommunicationsOptionRequest(slave=SLAVE))
-    client.execute(req_diag.ReturnDiagnosticRegisterRequest(slave=SLAVE))
-    client.execute(req_diag.ChangeAsciiInputDelimiterRequest(slave=SLAVE))
+    client.diag_restart_communication(True, slave=SLAVE)
+    client.diag_read_diagnostic_register(slave=SLAVE)
+    client.diag_change_ascii_input_delimeter(slave=SLAVE)
 
-    # NOT WORKING: _check_call(client.execute(req_diag.ForceListenOnlyModeRequest(slave=SLAVE)))
-    # does not send a response
+    # NOT WORKING: await client.diag_force_listen_only(slave=SLAVE)
 
-    client.execute(req_diag.ClearCountersRequest())
-    client.execute(req_diag.ReturnBusCommunicationErrorCountRequest(slave=SLAVE))
-    client.execute(req_diag.ReturnBusExceptionErrorCountRequest(slave=SLAVE))
-    client.execute(req_diag.ReturnSlaveMessageCountRequest(slave=SLAVE))
-    client.execute(req_diag.ReturnSlaveNoResponseCountRequest(slave=SLAVE))
-    client.execute(req_diag.ReturnSlaveNAKCountRequest(slave=SLAVE))
-    client.execute(req_diag.ReturnSlaveBusyCountRequest(slave=SLAVE))
-    client.execute(req_diag.ReturnSlaveBusCharacterOverrunCountRequest(slave=SLAVE))
-    client.execute(req_diag.ReturnIopOverrunCountRequest(slave=SLAVE))
-    client.execute(req_diag.ClearOverrunCountRequest(slave=SLAVE))
-    # NOT WORKING _check_call(client.execute(req_diag.GetClearModbusPlusRequest(slave=SLAVE)))
+    client.diag_clear_counters()
+    client.diag_read_bus_comm_error_count(slave=SLAVE)
+    client.diag_read_bus_exception_error_count(slave=SLAVE)
+    client.diag_read_slave_message_count(slave=SLAVE)
+    client.diag_read_slave_no_response_count(slave=SLAVE)
+    client.diag_read_slave_nak_count(slave=SLAVE)
+    client.diag_read_slave_busy_count(slave=SLAVE)
+    client.diag_read_bus_char_overrun_count(slave=SLAVE)
+    client.diag_read_iop_overrun_count(slave=SLAVE)
+    client.diag_clear_overrun_counter(slave=SLAVE)
+    # NOT WORKING client.diag_getclear_modbus_response(slave=SLAVE)
 
 
 # ------------------------
@@ -225,8 +219,10 @@ def run_sync_calls(client):
 
 def main(cmdline=None):
     """Combine setup and run."""
-    client = setup_sync_client(description="Run synchronous client.", cmdline=cmdline)
-    run_sync_client(client, modbus_calls=run_sync_calls)
+    client = client_sync.setup_sync_client(
+        description="Run synchronous client.", cmdline=cmdline
+    )
+    client_sync.run_sync_client(client, modbus_calls=run_sync_calls)
 
 
 if __name__ == "__main__":

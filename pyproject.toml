@@ -1,16 +1,16 @@
 [build-system]
-requires = ["setuptools>=61.2"]
+requires = ["setuptools>=68.2.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "pymodbus"
 dynamic = ["version"]
 license = {text = "BSD-3-Clause"}
-authors = [{name = '"Galen Collins'}, {name = 'Jan Iversen"'}]
-maintainers = [{name = '"dhoomakethu'}, {name = 'janiversen"'}]
+authors = [{name = "Galen Collins"}, {name = "Jan Iversen"}]
+maintainers = [{name = "dhoomakethu"}, {name = "janiversen"}]
 description = "A fully featured modbus protocol stack in python"
 keywords = ["modbus", "asyncio", "scada", "client", "server", "simulator"]
-readme = "README.md"
+readme = "README.rst"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
@@ -26,6 +26,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: System :: Networking",
     "Topic :: Utilities",
 ]
@@ -48,14 +49,16 @@ serial = [
     "pyserial>=3.5"
 ]
 repl = [
-    "aiohttp>=3.8.6",
+    "aiohttp>=3.8.6;python_version<'3.12'",
+    "aiohttp>=3.9.0b0;python_version=='3.12'",
     "typer[all]>=0.7.0",
     "prompt-toolkit>=3.0.36",
     "pygments>=2.15.0",
     "click>=8.0.0"
 ]
 simulator = [
-    "aiohttp>=3.8.6"
+    "aiohttp>=3.8.6;python_version<'3.12'",
+    "aiohttp>=3.9.0b0;python_version=='3.12'"
 ]
 documentation = [
     "recommonmark>=0.7.1",
@@ -66,56 +69,20 @@ development = [
     "build>=1.0.3",
     "codespell>=2.2.2",
     "coverage>=7.1.0",
-    "mypy>=1.3.0",
-    "pre-commit>=3.1.1",
-    "pyflakes>=3.0.1",
-    "pydocstyle>=6.3.0",
-    "pycodestyle>=2.10.0",
+    "mypy>=1.6.0",
     "pylint>=2.17.2",
     "pytest>=7.3.1",
     "pytest-asyncio>=0.20.3",
     "pytest-cov>=4.1.0",
-    "pytest-timeout>=2.1.0",
+    "pytest-timeout>=2.2.0",
     "pytest-xdist>=3.3.1",
-    "ruff>=0.0.287",
+    "ruff>=0.1.3",
     "twine>=4.0.2",
     "types-Pygments",
     "types-pyserial"
 ]
 all = [
-    # "pymodbus[serial]",
-    "pyserial>=3.5",
-    # "pymodbus[repl]",
-    "aiohttp>=3.8.6",
-    "typer[all]>=0.7.0",
-    "prompt-toolkit>=3.0.36",
-    "pygments>=2.15.0",
-    "click>=8.0.0",
-    # "pymodbus[simulator]",
-    "aiohttp>=3.8.6",
-    # "pymodbus[documentation]",
-    "recommonmark>=0.7.1",
-    "Sphinx>=5.3.0",
-    "sphinx-rtd-theme>=1.1.1",
-    # "pymodbus[development]",
-    "build>=1.0.3",
-    "codespell>=2.2.2",
-    "coverage>=7.1.0",
-    "mypy>=1.3.0",
-    "pre-commit>=3.1.1",
-    "pyflakes>=3.0.1",
-    "pydocstyle>=6.3.0",
-    "pycodestyle>=2.10.0",
-    "pylint>=2.17.2",
-    "pytest>=7.3.1",
-    "pytest-asyncio>=0.20.3",
-    "pytest-cov>=4.1.0",
-    "pytest-timeout>=2.1.0",
-    "pytest-xdist>=3.3.1",
-    "ruff>=0.0.287",
-    "twine>=4.0.2",
-    "types-Pygments",
-    "types-pyserial"
+    "pymodbus[serial, repl, simulator, documentation, development]"
 ]
 
 [tool.setuptools]
@@ -145,8 +112,8 @@ namespaces = false
 version = {attr = "pymodbus.__version__"}
 
 [tool.pylint.main]
+init-hook='import sys; sys.path.append("examples")'
 ignore-paths = [
-    "pymodbus/transport/serial_asyncio",
     "doc"
 ]
 ignore-patterns = '^\.#'
@@ -174,7 +141,7 @@ enable = "all"
 disable = [
     "duplicate-code",     # TBD
     "file-ignored",       # ONLY to be used with extreme care.
-    "format",             # NOT wanted, handled by black
+    "format",             # NOT wanted, handled by ruff
     "locally-disabled",   # NOT wanted
     "suppressed-message"  # NOT wanted"""
 ]
@@ -222,8 +189,7 @@ overgeneral-exceptions = "builtins.Exception"
 bad-functions = "map,input"
 
 [tool.mypy]
-strict_optional = false
-exclude = "pymodbus/client/base.py"
+strict_optional = true
 show_error_codes = true
 local_partial_types = true
 strict_equality = true
@@ -267,5 +233,69 @@ include = [
 omit = ["examples/contrib/"]
 
 [tool.codespell]
-skip = "./doc/_build,./doc/source/_static,venv,.venv,.git,htmlcov,CHANGELOG.rst,.mypy_cache"
+skip = "./build,./doc/source/_static,venv,.venv,.git,htmlcov,CHANGELOG.rst,.mypy_cache"
 ignore-words-list = "asend"
+
+[tool.ruff]
+target-version="py38"
+exclude = [
+    "venv",
+    ".venv",
+    ".git",
+    "build",
+    "doc",
+    "contrib"
+]
+line-length = 88
+# indent-width = 4
+
+[tool.ruff.lint]
+ignore = [
+    "E501",  # line too long
+    "E731",  # lambda expressions
+    "S101",  # Use of `assert`
+    "S311",  # PRNG for cryptography
+    "S104",  # binding on all interfaces
+    "RUF012",  # typing.ClassVar
+    "RUF015"  # next(iter(list)) instead of list[0]
+]
+select = [
+    "B007",   # Loop control variable {name} not used within loop body
+    "B014",   # Exception handler with duplicate exception
+    "C",      # complexity
+    "D",      # docstrings
+    "E",      # pycodestyle errors
+    "F",      # pyflakes
+    "I",      # isort
+    "PGH",    # pygrep-hooks
+    "PLC",    # pylint
+    "PT",     # flake8-pytest-style
+    "RUF",    # ruff builtins
+    "S",      # bandit
+    "SIM105", # flake8-simplify
+    "SIM117", #
+    "SIM118", #
+    "SIM201", #
+    "SIM212", #
+    "SIM300", #
+    "SIM401", #
+    "UP",     # pyupgrade
+    "W",      # pycodestyle warnings
+    # "TRY",    # tryceratops
+    "TRY004", # Prefer TypeError exception for invalid type
+]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.isort]
+lines-after-imports = 2
+known-local-folder = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

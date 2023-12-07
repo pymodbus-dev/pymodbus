@@ -37,7 +37,7 @@ but not :ref:`REPL client classes`
    :maxdepth: 4
    :hidden:
 
-   config
-   datastore
-   web
-   restapi
+   library/simulator/config
+   library/simulator/datastore
+   library/simulator/web
+   library/simulator/restapi

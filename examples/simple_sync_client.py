@@ -13,33 +13,23 @@ The corresponding server must be started before e.g. as:
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
-from pymodbus import pymodbus_apply_logging_config
-from pymodbus.client import (
-    ModbusSerialClient,
-    ModbusTcpClient,
-    ModbusTlsClient,
-    ModbusUdpClient,
-)
-from pymodbus.exceptions import ModbusException
-from pymodbus.pdu import ExceptionResponse
-from pymodbus.transaction import (
-    #    ModbusAsciiFramer,
-    #    ModbusBinaryFramer,
-    ModbusRtuFramer,
-    ModbusSocketFramer,
-    ModbusTlsFramer,
+import pymodbus.client as ModbusClient
+from pymodbus import (
+    ExceptionResponse,
+    Framer,
+    ModbusException,
+    pymodbus_apply_logging_config,
 )
 
 
-def run_sync_simple_client(comm, host, port, framer=ModbusSocketFramer):
+def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
     """Run sync client."""
-
     # activate debugging
     pymodbus_apply_logging_config("DEBUG")
 
     print("get client")
     if comm == "tcp":
-        client = ModbusTcpClient(
+        client = ModbusClient.ModbusTcpClient(
             host,
             port=port,
             framer=framer,
@@ -51,10 +41,10 @@ def run_sync_simple_client(comm, host, port, framer=ModbusSocketFramer):
             # source_address=("localhost", 0),
         )
     elif comm == "udp":
-        client = ModbusUdpClient(
+        client = ModbusClient.ModbusUdpClient(
             host,
             port=port,
-            framer=ModbusSocketFramer,
+            framer=framer,
             # timeout=10,
             # retries=3,
             # retry_on_empty=False,
@@ -63,9 +53,9 @@ def run_sync_simple_client(comm, host, port, framer=ModbusSocketFramer):
             # source_address=None,
         )
     elif comm == "serial":
-        client = ModbusSerialClient(
+        client = ModbusClient.ModbusSerialClient(
             port,
-            framer=ModbusRtuFramer,
+            framer=framer,
             # timeout=10,
             # retries=3,
             # retry_on_empty=False,
@@ -78,10 +68,10 @@ def run_sync_simple_client(comm, host, port, framer=ModbusSocketFramer):
             # handle_local_echo=False,
         )
     elif comm == "tls":
-        client = ModbusTlsClient(
+        client = ModbusClient.ModbusTlsClient(
             host,
             port=port,
-            framer=ModbusTlsFramer,
+            framer=Framer.TLS,
             # timeout=10,
             # retries=3,
             # retry_on_empty=False,

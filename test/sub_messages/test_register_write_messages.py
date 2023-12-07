@@ -128,13 +128,13 @@ class TestWriteRegisterMessages:
         # -----------------------------------------------------------------------#
 
     def test_mask_write_register_request_encode(self):
-        """Test basic bit message encoding/decoding"""
+        """Test basic bit message encoding/decoding."""
         handle = MaskWriteRegisterRequest(0x0000, 0x0101, 0x1010)
         result = handle.encode()
         assert result == b"\x00\x00\x01\x01\x10\x10"
 
     def test_mask_write_register_request_decode(self):
-        """Test basic bit message encoding/decoding"""
+        """Test basic bit message encoding/decoding."""
         request = b"\x00\x04\x00\xf2\x00\x25"
         handle = MaskWriteRegisterRequest()
         handle.decode(request)
@@ -143,7 +143,7 @@ class TestWriteRegisterMessages:
         assert handle.or_mask == 0x0025
 
     def test_mask_write_register_request_execute(self):
-        """Test write register request valid execution"""
+        """Test write register request valid execution."""
         # The test uses the 4 nibbles of the 16-bit values to test
         # the combinations:
         #     and_mask=0, or_mask=0
@@ -157,7 +157,7 @@ class TestWriteRegisterMessages:
         assert context.last_values == [0x0AF5]
 
     def test_mask_write_register_request_invalid_execute(self):
-        """Test write register request execute with invalid data"""
+        """Test write register request execute with invalid data."""
         context = MockContext(valid=False, default=0x0000)
         handle = MaskWriteRegisterRequest(0x0000, -1, 0x1010)
         result = handle.execute(context)
@@ -176,13 +176,13 @@ class TestWriteRegisterMessages:
         # -----------------------------------------------------------------------#
 
     def test_mask_write_register_response_encode(self):
-        """Test basic bit message encoding/decoding"""
+        """Test basic bit message encoding/decoding."""
         handle = MaskWriteRegisterResponse(0x0000, 0x0101, 0x1010)
         result = handle.encode()
         assert result == b"\x00\x00\x01\x01\x10\x10"
 
     def test_mask_write_register_response_decode(self):
-        """Test basic bit message encoding/decoding"""
+        """Test basic bit message encoding/decoding."""
         request = b"\x00\x04\x00\xf2\x00\x25"
         handle = MaskWriteRegisterResponse()
         handle.decode(request)

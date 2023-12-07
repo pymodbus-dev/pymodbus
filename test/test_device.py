@@ -47,7 +47,7 @@ class TestDataStore:
         self.control.reset()
 
     def test_update_identity(self):
-        """Test device identification reading"""
+        """Test device identification reading."""
         self.control.Identity.update(self.ident)
         assert self.control.Identity.VendorName == "Bashwork"
         assert self.control.Identity.ProductCode == "PTM"
@@ -58,7 +58,7 @@ class TestDataStore:
         assert self.control.Identity.UserApplicationName == "pytest"
 
     def test_device_identification_factory(self):
-        """Test device identification reading"""
+        """Test device identification reading."""
         self.control.Identity.update(self.ident)
         result = DeviceInformationFactory.get(
             self.control, DeviceInformation.SPECIFIC, 0x00
@@ -153,12 +153,12 @@ class TestDataStore:
         ]
 
     def test_basic_commands(self):
-        """Test device identification reading"""
+        """Test device identification reading."""
         assert str(self.ident) == "DeviceIdentity"
         assert str(self.control) == "ModbusControl"
 
     def test_modbus_device_identification_get(self):
-        """Test device identification reading"""
+        """Test device identification reading."""
         assert self.ident[0x00] == "Bashwork"
         assert self.ident[0x01] == "PTM"
         assert self.ident[0x02] == "1.0"
@@ -172,13 +172,13 @@ class TestDataStore:
         assert not self.ident[0x54]
 
     def test_modbus_device_identification_summary(self):
-        """Test device identification summary creation"""
+        """Test device identification summary creation."""
         summary = sorted(self.ident.summary().values())
         expected = sorted(list(self.info.values())[:0x07])  # remove private
         assert summary == expected
 
     def test_modbus_device_identification_set(self):
-        """Test a device identification writing"""
+        """Test a device identification writing."""
         self.ident[0x07] = "y"
         self.ident[0x08] = "y"
         self.ident[0x10] = "public"
@@ -190,7 +190,7 @@ class TestDataStore:
         assert self.ident[0x54] == "testing"
 
     def test_modbus_control_block_ascii_modes(self):
-        """Test a server control block ascii mode"""
+        """Test a server control block ascii mode."""
         assert id(self.control) == id(ModbusControlBlock())
         self.control.Mode = "RTU"
         assert self.control.Mode == "RTU"
@@ -198,7 +198,7 @@ class TestDataStore:
         assert self.control.Mode != "FAKE"
 
     def test_modbus_control_block_counters(self):
-        """Tests the MCB counters methods"""
+        """Tests the MCB counters methods."""
         assert not self.control.Counter.BusMessage
         for _ in range(10):
             self.control.Counter.BusMessage += 1
@@ -211,7 +211,7 @@ class TestDataStore:
         assert not self.control.Counter.SlaveMessage
 
     def test_modbus_control_block_update(self):
-        """Tests the MCB counters update methods"""
+        """Tests the MCB counters update methods."""
         values = {"SlaveMessage": 5, "BusMessage": 5}
         self.control.Counter.BusMessage += 1
         self.control.Counter.SlaveMessage += 1
@@ -220,19 +220,19 @@ class TestDataStore:
         assert self.control.Counter.BusMessage == 6
 
     def test_modbus_control_block_iterator(self):
-        """Tests the MCB counters iterator"""
+        """Tests the MCB counters iterator."""
         self.control.Counter.reset()
         for _, count in self.control:
             assert not count
 
     def test_modbus_counters_handler_iterator(self):
-        """Tests the MCB counters iterator"""
+        """Tests the MCB counters iterator."""
         self.control.Counter.reset()
         for _, count in self.control.Counter:
             assert not count
 
     def test_modbus_control_block_counter_summary(self):
-        """Tests retrieving the current counter summary"""
+        """Tests retrieving the current counter summary."""
         assert not self.control.Counter.summary()
         for _ in range(10):
             self.control.Counter.BusMessage += 1
@@ -244,14 +244,14 @@ class TestDataStore:
         assert not self.control.Counter.summary()
 
     def test_modbus_control_block_listen(self):
-        """Test the MCB listen flag methods"""
+        """Test the MCB listen flag methods."""
         self.control.ListenOnly = False
         assert not self.control.ListenOnly
         self.control.ListenOnly = not self.control.ListenOnly
         assert self.control.ListenOnly
 
     def test_modbus_control_block_delimiter(self):
-        """Tests the MCB delimiter setting methods"""
+        """Tests the MCB delimiter setting methods."""
         self.control.Delimiter = b"\r"
         assert self.control.Delimiter == b"\r"
         self.control.Delimiter = "="
@@ -260,7 +260,7 @@ class TestDataStore:
         assert self.control.Delimiter == b"="
 
     def test_modbus_control_block_diagnostic(self):
-        """Tests the MCB delimiter setting methods"""
+        """Tests the MCB delimiter setting methods."""
         assert self.control.getDiagnosticRegister() == [False] * 16
         for i in (1, 3, 4, 6):
             self.control.setDiagnostic({i: True})
@@ -272,14 +272,14 @@ class TestDataStore:
             self.control.setDiagnostic({i: False})
 
     def test_modbus_control_block_invalid_diagnostic(self):
-        """Tests querying invalid MCB counters methods"""
+        """Tests querying invalid MCB counters methods."""
         assert not self.control.getDiagnostic(-1)
         assert not self.control.getDiagnostic(17)
         assert not self.control.getDiagnostic(None)
         assert not self.control.getDiagnostic([1, 2, 3])
 
     def test_clearing_control_events(self):
-        """Test adding and clearing modbus events"""
+        """Test adding and clearing modbus events."""
         assert self.control.Events == []
         event = ModbusEvent()
         self.control.addEvent(event)
@@ -290,7 +290,7 @@ class TestDataStore:
         assert self.control.Counter.Event == 1
 
     def test_retrieving_control_events(self):
-        """Test adding and removing a host"""
+        """Test adding and removing a host."""
         assert self.control.Events == []
         event = RemoteReceiveEvent()
         self.control.addEvent(event)
@@ -299,7 +299,7 @@ class TestDataStore:
         assert packet == b"\x40"
 
     def test_modbus_plus_statistics(self):
-        """Test device identification reading"""
+        """Test device identification reading."""
         default = [0x0000] * 55
         statistics = ModbusPlusStatistics()
         assert default == statistics.encode()
@@ -308,7 +308,7 @@ class TestDataStore:
         assert default == self.control.Plus.encode()
 
     def test_modbus_plus_statistics_helpers(self):
-        """Test modbus plus statistics helper methods"""
+        """Test modbus plus statistics helper methods."""
         statistics = ModbusPlusStatistics()
         summary = [
             [0],

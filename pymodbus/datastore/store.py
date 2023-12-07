@@ -52,7 +52,7 @@ from pymodbus.exceptions import NotImplementedException, ParameterException
 #  Datablock Storage
 # ---------------------------------------------------------------------------#
 class BaseModbusDataBlock:
-    """Base class for a modbus datastore
+    """Base class for a modbus datastore.
 
     Derived classes must create the following fields:
             @address The starting address point

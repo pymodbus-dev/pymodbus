@@ -3,6 +3,8 @@
 A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
 """
+from __future__ import annotations
+
 
 __all__ = [
     "pack_bitstring",
@@ -17,7 +19,6 @@ __all__ = [
 
 # pylint: disable=missing-type-doc
 import struct
-from typing import List
 
 
 class ModbusTransactionState:  # pylint: disable=too-few-public-methods
@@ -77,26 +78,20 @@ def dict_property(store, index):
         getter = lambda self: store(  # pylint: disable=unnecessary-lambda-assignment
             self
         )[index]
-        setter = (
-            lambda self, value: store(  # pylint: disable=unnecessary-lambda-assignment
-                self
-            ).__setitem__(index, value)
-        )
+        setter = lambda self, value: store(  # pylint: disable=unnecessary-lambda-assignment
+            self
+        ).__setitem__(index, value)
     elif isinstance(store, str):
         getter = lambda self: self.__getattribute__(  # pylint: disable=unnecessary-dunder-call,unnecessary-lambda-assignment
             store
-        )[
-            index
-        ]
+        )[index]
         setter = lambda self, value: self.__getattribute__(  # pylint: disable=unnecessary-dunder-call,unnecessary-lambda-assignment
             store
-        ).__setitem__(
-            index, value
-        )
+        ).__setitem__(index, value)
     else:
-        getter = lambda self: store[  # pylint: disable=unnecessary-lambda-assignment
-            index
-        ]
+        getter = (
+            lambda self: store[index]  # pylint: disable=unnecessary-lambda-assignment
+        )
         setter = lambda self, value: store.__setitem__(  # pylint: disable=unnecessary-lambda-assignment
             index, value
         )
@@ -107,7 +102,7 @@ def dict_property(store, index):
 # --------------------------------------------------------------------------- #
 # Bit packing functions
 # --------------------------------------------------------------------------- #
-def pack_bitstring(bits: List[bool]) -> bytes:
+def pack_bitstring(bits: list[bool]) -> bytes:
     """Create a bytestring out of a list of bits.
 
     :param bits: A list of bits
@@ -134,7 +129,7 @@ def pack_bitstring(bits: List[bool]) -> bytes:
     return ret
 
 
-def unpack_bitstring(data: bytes) -> List[bool]:
+def unpack_bitstring(data: bytes) -> list[bool]:
     """Create bit list out of a bytestring.
 
     :param data: The modbus data packet to decode

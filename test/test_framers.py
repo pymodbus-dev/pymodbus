@@ -3,8 +3,9 @@ from unittest import mock
 
 import pytest
 
+from pymodbus import Framer
 from pymodbus.bit_read_message import ReadCoilsRequest
-from pymodbus.client import ModbusBaseClient
+from pymodbus.client.base import ModbusBaseClient
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
@@ -308,7 +309,7 @@ def test_send_packet(rtu_framer):
     """Test send packet."""
     message = TEST_MESSAGE
     client = ModbusBaseClient(
-        framer=ModbusAsciiFramer,
+        Framer.ASCII,
         host="localhost",
         port=BASE_PORT + 1,
         CommType=CommType.TCP,
@@ -336,7 +337,6 @@ def test_recv_packet(rtu_framer):
 
 def test_process(rtu_framer):
     """Test process."""
-
     rtu_framer._buffer = TEST_MESSAGE  # pylint: disable=protected-access
     with pytest.raises(ModbusIOException):
         rtu_framer._process(None)  # pylint: disable=protected-access

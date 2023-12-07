@@ -1,17 +1,25 @@
 """Fixtures for examples tests."""
 import asyncio
+import sys
 
 import pytest
 import pytest_asyncio
 
-from examples.server_async import run_async_server, setup_server
 from pymodbus.server import ServerAsyncStop
 from pymodbus.transport import NULLMODEM_HOST
 
 
+sys.path.extend(["examples", "../examples", "../../examples"])
+
+from examples.server_async import (  # noqa: E402  # pylint: disable=wrong-import-position
+    run_async_server,
+    setup_server,
+)
+
+
 @pytest.fixture(name="use_host")
 def define_use_host():
-    """Set default host"""
+    """Set default host."""
     return NULLMODEM_HOST
 
 
@@ -69,6 +77,7 @@ async def _run_server(
     """Run server."""
     run_args = setup_server(cmdline=mock_cls)
     task = asyncio.create_task(run_async_server(run_args))
+    task.set_name("mock_server")
     await asyncio.sleep(0.1)
     yield mock_cls
     await ServerAsyncStop()

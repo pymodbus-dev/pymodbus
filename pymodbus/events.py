@@ -140,7 +140,7 @@ class RemoteSendEvent(ModbusEvent):
 
 
 class EnteredListenModeEvent(ModbusEvent):
-    """Enter Remote device Listen Only Mode
+    """Enter Remote device Listen Only Mode.
 
     The remote device stores this type of event byte when it enters
     the Listen Only Mode. The event is defined by a content of 04 hex.

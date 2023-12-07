@@ -1,10 +1,10 @@
 name: CI
-
 on:
   push:
     branches:
       - dev
       - master
+      - dev_*
     tags:
       - v*
   pull_request:
@@ -15,83 +15,117 @@ on:
     - cron: '10 2 * * 0'
   workflow_dispatch:
 
-
 jobs:
-  linters:
-    name: Linters - ${{ matrix.os.on }} - ${{ matrix.python.version }}
-    runs-on: ${{ matrix.os.on }}
-    timeout-minutes: 10
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - on: ubuntu-latest
-          # - on: macos-latest
-          # - on: windows-latest
-        python:
-          - version: '3.8'
-          - version: '3.9'
-          - version: '3.10'
-          - version: '3.11'
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python.version }}
-          cache: 'pip'
-      - run: pip install -e ".[all]"
-      - run: codespell
-      - run: pylint --recursive=y examples pymodbus test
-      - run: pre-commit run --all-files
-      - run: cd doc; ./build_html
-      - run: mypy pymodbus
-
-  integreation_test:
-    name: pytest - ${{ matrix.os.on }} - ${{ matrix.python.version }}
-    runs-on: ${{ matrix.os.on }}
+  testing:
+    name: ${{ matrix.os }} - ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - on: ubuntu-latest
-          - on: macos-latest
-          - on: windows-latest
-        python:
-          - version: '3.8'
-          - version: '3.9'
-          - version: '3.10'
-          - version: '3.11'
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python.version }}
-          cache: 'pip'
-      - run: pip install -e ".[all]"
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        include:
+          - python: '3.8'
+            run_lint: true
+          - python: '3.12'
+            run_doc: true
+            run_lint: true
+          - os: macos-latest
+            run_doc: false
+            run_lint: false
+          - os: windows-latest
+            run_doc: false
+            run_lint: false
 
-      - run: pytest -n0  -v --full-trace --timeout=1200
+    steps:
+      - name: Checkout repo from github
+        uses: actions/checkout@v4.1.0
+
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v4.7.1
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Set venv path (NON Windows)
+        if: matrix.os != 'windows-latest'
+        run: |
+          echo "VIRTUAL_ENV=${{ github.workspace }}/venv" >> $GITHUB_ENV
+          echo ${{ github.workspace }}/venv/bin >> $GITHUB_PATH
+
+      - name: Set venv path (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo "VIRTUAL_ENV=${{ github.workspace }}\\venv" >> $Env:GITHUB_ENV
+          echo "${{ github.workspace }}\\venv\\Scripts" >> $Env:GITHUB_PATH
+
+      - name: Restore base Python virtual environment
+        id: cache-venv
+        uses: actions/cache@v3.3.2
+        with:
+          path: ${{ env.VIRTUAL_ENV }}
+          key: >-
+            ${{ runner.os }}-${{ matrix.python }}-venv-${{
+              hashFiles('pyproject.toml') }}
+
+      - name: Create venv (NEW CACHE)
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: |
+          python -m venv ${{ env.VIRTUAL_ENV }}
+          python -m pip install --upgrade pip
+          pip install -e ".[all]"
+
+      - name: codespell
+        if: matrix.run_doc == true
+        run: |
+          codespell
+
+      - name: dcoumentation
+        if: matrix.run_doc == true
+        run: |
+          cd doc; ./build_html
+
+      - name: pylint
+        if: matrix.run_lint == true
+        run: |
+          pylint --recursive=y examples pymodbus test
+
+      - name: mypy
+        if: matrix.run_lint == true
+        run: |
+          mypy pymodbus
+
+      - name: ruff
+        if: matrix.run_lint == true
+        run: |
+          ruff .
+
+      - name: pytest
+        run: |
+          env
+          pytest -v --full-trace --timeout=1200
 
   analyze:
     name: Analyze Python
     runs-on: ubuntu-22.04
-
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v3
+
       - uses: github/codeql-action/init@v2
         with:
           languages: python
+
       - uses: github/codeql-action/autobuild@v2
+
       - uses: github/codeql-action/analyze@v2
 
   ci_complete:
     name: ci_complete
     runs-on: ubuntu-latest
     needs:
-      - linters
       - analyze
-      - integreation_test
+      - testing
     timeout-minutes: 1
     steps:
-      - name: Dummy
-        run: ls
+      - run: echo 'finish job'

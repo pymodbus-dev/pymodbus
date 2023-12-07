@@ -1,4 +1,4 @@
-"""Test example server/client async
+"""Test example server/client async.
 
 This is a thorough test of the clientexamples.
 
@@ -18,7 +18,6 @@ from examples.client_calls import template_call
 from examples.client_custom_msg import main as main_custom_client
 from examples.client_payload import main as main_payload_calls
 from examples.datastore_simulator import main as main_datastore_simulator
-from examples.helper import get_framer
 from examples.message_generator import generate_messages
 from examples.message_parser import main as main_parse_messages
 from examples.server_async import setup_server
@@ -40,7 +39,7 @@ class TestExamples:
     @staticmethod
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
-        """Return next port"""
+        """Return next port."""
         base_ports[__class__.__name__] += 1
         return base_ports[__class__.__name__]
 
@@ -59,6 +58,7 @@ class TestExamples:
         """Test server/client with payload."""
         cmdargs = ["--port", str(use_port), "--host", use_host]
         task = asyncio.create_task(run_callback_server(cmdline=cmdargs))
+        task.set_name("run callback_server")
         await asyncio.sleep(0.1)
         testclient = setup_async_client(cmdline=cmdargs)
         await run_async_client(testclient, modbus_calls=run_a_few_calls)
@@ -72,6 +72,7 @@ class TestExamples:
         """Test server simulator."""
         cmdargs = ["--port", str(use_port), "--host", use_host]
         task = asyncio.create_task(main_updating_server(cmdline=cmdargs))
+        task.set_name("run main_updating_server")
         await asyncio.sleep(0.1)
         client = setup_async_client(cmdline=cmdargs)
         await run_async_client(client, modbus_calls=run_a_few_calls)
@@ -85,6 +86,7 @@ class TestExamples:
         """Test server simulator."""
         cmdargs = ["--port", str(use_port), "--host", use_host]
         task = asyncio.create_task(main_datastore_simulator(cmdline=cmdargs))
+        task.set_name("run main_datastore_simulator")
         await asyncio.sleep(0.1)
         testclient = setup_async_client(cmdline=cmdargs)
         await run_async_client(testclient, modbus_calls=run_a_few_calls)
@@ -121,7 +123,7 @@ class TestAsyncExamples:
     @staticmethod
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
-        """Return next port"""
+        """Return next port."""
         base_ports[__class__.__name__] += 1
         return base_ports[__class__.__name__]
 
@@ -165,6 +167,7 @@ class TestAsyncExamples:
     async def test_payload(self, mock_clc, mock_cls):
         """Test server/client with payload."""
         task = asyncio.create_task(main_payload_server(cmdline=mock_cls))
+        task.set_name("run main_payload_server")
         await asyncio.sleep(0.1)
         await main_payload_calls(cmdline=mock_clc)
         await asyncio.sleep(0.1)
@@ -184,8 +187,7 @@ class TestAsyncExamples:
             return
         if use_comm == "serial":
             use_port = f"socket://{use_host}:{use_port}"
-        framer = get_framer(use_framer)
-        await run_async_simple_client(use_comm, use_host, use_port, framer=framer)
+        await run_async_simple_client(use_comm, use_host, use_port, framer=use_framer)
 
 
 @pytest.mark.parametrize("use_host", ["localhost"])
@@ -206,7 +208,7 @@ class TestSyncExamples:
     @staticmethod
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
-        """Return next port"""
+        """Return next port."""
         base_ports[__class__.__name__] += 1
         return base_ports[__class__.__name__]
 
@@ -231,6 +233,5 @@ class TestSyncExamples:
         sleep(1)
         if use_comm == "serial":
             use_port = f"socket://{use_host}:{use_port}"
-        framer = get_framer(use_framer)
-        run_sync_simple_client(use_comm, use_host, use_port, framer=framer)
+        run_sync_simple_client(use_comm, use_host, use_port, framer=use_framer)
         ServerStop()

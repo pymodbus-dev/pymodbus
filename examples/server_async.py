@@ -35,7 +35,8 @@ The corresponding client can be started as:
 import asyncio
 import logging
 
-from examples import helper
+import helper
+
 from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
@@ -44,10 +45,6 @@ from pymodbus.datastore import (
     ModbusSparseDataBlock,
 )
 from pymodbus.device import ModbusDeviceIdentification
-
-# --------------------------------------------------------------------------- #
-# import the various client implementations
-# --------------------------------------------------------------------------- #
 from pymodbus.server import (
     StartAsyncSerialServer,
     StartAsyncTcpServer,
@@ -56,7 +53,6 @@ from pymodbus.server import (
 )
 
 
-logging.basicConfig()
 _logger = logging.getLogger(__file__)
 _logger.setLevel(logging.INFO)
 

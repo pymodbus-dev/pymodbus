@@ -3,6 +3,7 @@ How to explain pymodbus logs using https://rapidscada.net/modbus/ and requests.
 
 Created on 7/19/2023 to support Python 3.8 to 3.11 on macOS, Ubuntu, or Windows.
 """
+from __future__ import annotations
 
 import contextlib
 import os
@@ -10,7 +11,6 @@ import shutil
 import tempfile
 from dataclasses import dataclass
 from html.parser import HTMLParser
-from typing import List, Optional, Tuple, Union
 from urllib import request
 from urllib.error import HTTPError
 
@@ -27,10 +27,10 @@ class ParsedModbusResult:  # pylint: disable=too-many-instance-attributes
     unit_id: int
     func_code: int
     is_receive: bool
-    zero_index_reg: Optional[int] = None
-    quantity: Optional[int] = None
-    byte_count: Optional[int] = None
-    registers: Optional[List[int]] = None
+    zero_index_reg: int | None = None
+    quantity: int | None = None
+    byte_count: int | None = None
+    registers: list[int] | None = None
 
     def summarize(self) -> dict:
         """Get a summary representation for readability."""
@@ -46,7 +46,7 @@ def explain_with_rapid_scada(
     packet: str,
     is_modbus_tcp: bool = True,
     is_receive: bool = False,
-    timeout: Union[float, Tuple[float, float], None] = 15.0,
+    timeout: float | tuple[float, float] | None = 15.0,
 ) -> ParsedModbusResult:
     """
     Explain a Modbus packet using https://rapidscada.net/modbus/.
@@ -69,7 +69,7 @@ def explain_with_rapid_scada(
             self._data = []
 
         @property
-        def data(self) -> List[str]:
+        def data(self) -> list[str]:
             return self._data
 
         def handle_data(self, data: str) -> None:
@@ -101,7 +101,7 @@ def explain_with_rapid_scada(
     parser.feed(response_data)
 
     # pylint: disable-next=dangerous-default-value
-    def get_next_field(prior_field: str, data: List[str] = parser.data) -> str:
+    def get_next_field(prior_field: str, data: list[str] = parser.data) -> str:
         return data[data.index(prior_field) + 1]
 
     def parse_next_field(prior_field: str, split_index: int = 0) -> int:
@@ -114,7 +114,7 @@ def explain_with_rapid_scada(
         "func_code": parse_next_field("Function code"),
         "is_receive": is_receive,
     }
-    is_receive_fn_code: Tuple[bool, int] = is_receive, base_result_data["func_code"]
+    is_receive_fn_code: tuple[bool, int] = is_receive, base_result_data["func_code"]
     if is_receive_fn_code in [(False, 0x03), (True, 0x10)]:
         return ParsedModbusResult(
             **base_result_data,
@@ -136,7 +136,7 @@ def explain_with_rapid_scada(
     )
 
 
-def annotate_pymodbus_logs(file: Union[str, os.PathLike]) -> None:
+def annotate_pymodbus_logs(file: str | os.PathLike) -> None:
     """Annotate a pymodbus log file in-place with explanations."""
     with open(file, encoding="utf-8") as in_file, tempfile.NamedTemporaryFile(
         mode="w", encoding="utf-8", delete=False

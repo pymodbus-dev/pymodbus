@@ -15,14 +15,14 @@ class TestRemoteDataStore:
     """Unittest for the pymodbus.datastore.remote module."""
 
     def test_remote_slave_context(self):
-        """Test a modbus remote slave context"""
+        """Test a modbus remote slave context."""
         context = RemoteSlaveContext(None)
         assert str(context)
         with pytest.raises(NotImplementedException):
             context.reset()
 
     def test_remote_slave_set_values(self):
-        """Test setting values against a remote slave context"""
+        """Test setting values against a remote slave context."""
         client = mock.MagicMock()
         client.write_coils = lambda a, b: WriteMultipleCoilsResponse()
         client.write_registers = lambda a, b: ExceptionResponse(0x10, 0x02)
@@ -34,7 +34,7 @@ class TestRemoteDataStore:
         assert result.function_code == 0x90
 
     def test_remote_slave_get_values(self):
-        """Test getting values from a remote slave context"""
+        """Test getting values from a remote slave context."""
         client = mock.MagicMock()
         client.read_coils = lambda a, b: ReadCoilsResponse([1] * 10)
         client.read_input_registers = lambda a, b: ReadInputRegistersResponse([10] * 10)
@@ -54,7 +54,7 @@ class TestRemoteDataStore:
         assert result != [10] * 10
 
     def test_remote_slave_validate_values(self):
-        """Test validating against a remote slave context"""
+        """Test validating against a remote slave context."""
         client = mock.MagicMock()
         client.read_coils = lambda a, b: ReadCoilsResponse([1] * 10)
         client.read_input_registers = lambda a, b: ReadInputRegistersResponse([10] * 10)

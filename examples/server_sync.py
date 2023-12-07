@@ -36,8 +36,8 @@ a lot slower.
 """
 import logging
 
-from examples import helper
-from examples.server_async import setup_server
+import helper
+import server_async
 
 # --------------------------------------------------------------------------- #
 # import the various client implementations
@@ -133,7 +133,7 @@ def run_sync_server(args):
 
 def sync_helper():
     """Combine setup and run."""
-    run_args = setup_server(description="Run synchronous server.")
+    run_args = server_async.setup_server(description="Run synchronous server.")
     server = run_sync_server(run_args)
     server.shutdown()
 

@@ -43,7 +43,7 @@ class TestMultidrop:
         callback.assert_not_called()
 
     def test_wrong_id(self, framer, callback):
-        """Test frame wrong id"""
+        """Test frame wrong id."""
         serial_event = b"\x01\x03\x00\x01\x00}\xd4+"  # Frame with good CRC but other id
         framer.processIncomingPacket(serial_event, callback, self.slaves)
         callback.assert_not_called()

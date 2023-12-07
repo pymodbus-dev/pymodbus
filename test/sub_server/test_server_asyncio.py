@@ -8,6 +8,7 @@ from unittest import mock
 
 import pytest
 
+from pymodbus import Framer
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
@@ -16,7 +17,6 @@ from pymodbus.datastore import (
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.server import ModbusTcpServer, ModbusTlsServer, ModbusUdpServer
-from pymodbus.transaction import ModbusSocketFramer, ModbusTlsFramer
 
 
 _logger = logging.getLogger()
@@ -79,7 +79,7 @@ class BasicClient(asyncio.BaseProtocol):
 
     @classmethod
     def clear(cls):
-        """Prepare for new round"""
+        """Prepare for new round."""
         if BasicClient.transport:
             BasicClient.transport.close()
             BasicClient.transport = None
@@ -154,19 +154,20 @@ class TestAsyncioServer:
             args["identity"] = self.identity
         if do_tls:
             self.server = ModbusTlsServer(
-                self.context, ModbusTlsFramer, self.identity, SERV_ADDR
+                self.context, Framer.TLS, self.identity, SERV_ADDR
             )
         elif do_udp:
             self.server = ModbusUdpServer(
-                self.context, ModbusSocketFramer, self.identity, SERV_ADDR
+                self.context, Framer.SOCKET, self.identity, SERV_ADDR
             )
         else:
             self.server = ModbusTcpServer(
-                self.context, ModbusSocketFramer, self.identity, SERV_ADDR
+                self.context, Framer.SOCKET, self.identity, SERV_ADDR
             )
         assert self.server
         if do_forever:
             self.task = asyncio.create_task(self.server.serve_forever())
+            self.task.set_name("Run server")
             self.task.add_done_callback(self.handle_task)
             assert not self.task.cancelled()
             await asyncio.sleep(0.5)
@@ -179,7 +180,7 @@ class TestAsyncioServer:
         await asyncio.sleep(0.1)
 
     async def connect_server(self):
-        """Handle connect to server"""
+        """Handle connect to server."""
         BasicClient.connected = asyncio.Future()
         BasicClient.done = asyncio.Future()
         BasicClient.eof = asyncio.Future()
@@ -196,21 +197,21 @@ class TestAsyncioServer:
         await asyncio.sleep(0.1)
 
     async def test_async_start_server_no_loop(self):
-        """Test that the modbus tcp asyncio server starts correctly"""
+        """Test that the modbus tcp asyncio server starts correctly."""
         await self.start_server(do_forever=False)
 
     async def test_async_start_server(self):
-        """Test that the modbus tcp asyncio server starts correctly"""
+        """Test that the modbus tcp asyncio server starts correctly."""
         await self.start_server()
 
     async def test_async_tcp_server_serve_forever_twice(self):
-        """Call on serve_forever() twice should result in a runtime error"""
+        """Call on serve_forever() twice should result in a runtime error."""
         await self.start_server()
         with pytest.raises(RuntimeError):
             await self.server.serve_forever()
 
     async def test_async_tcp_server_receive_data(self):
-        """Test data sent on socket is received by internals - doesn't not process data"""
+        """Test data sent on socket is received by internals - doesn't not process data."""
         BasicClient.data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x19"
         await self.start_server()
         with mock.patch(
@@ -222,7 +223,7 @@ class TestAsyncioServer:
             assert process.call_args[1]["data"] == BasicClient.data
 
     async def test_async_tcp_server_roundtrip(self):
-        """Test sending and receiving data on tcp socket"""
+        """Test sending and receiving data on tcp socket."""
         expected_response = b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"
         BasicClient.data = TEST_DATA  # slave 1, read register
         await self.start_server()
@@ -231,7 +232,7 @@ class TestAsyncioServer:
         assert BasicClient.received_data, expected_response
 
     async def test_async_tcp_server_connection_lost(self):
-        """Test tcp stream interruption"""
+        """Test tcp stream interruption."""
         await self.start_server()
         await self.connect_server()
 
@@ -239,7 +240,7 @@ class TestAsyncioServer:
         await asyncio.sleep(0.2)  # so we have to wait a bit
 
     async def test_async_tcp_server_close_connection(self):
-        """Test server_close() while there are active TCP connections"""
+        """Test server_close() while there are active TCP connections."""
         await self.start_server()
         await self.connect_server()
 
@@ -249,7 +250,7 @@ class TestAsyncioServer:
         await self.server.server_close()
 
     async def test_async_tcp_server_no_slave(self):
-        """Test unknown slave exception"""
+        """Test unknown slave exception."""
         self.context = ModbusServerContext(
             slaves={0x01: self.store, 0x02: self.store}, single=False
         )
@@ -261,7 +262,7 @@ class TestAsyncioServer:
         self.server = None
 
     async def test_async_tcp_server_modbus_error(self):
-        """Test sending garbage data on a TCP socket should drop the connection"""
+        """Test sending garbage data on a TCP socket should drop the connection."""
         BasicClient.data = TEST_DATA
         await self.start_server()
         with mock.patch(
@@ -275,19 +276,19 @@ class TestAsyncioServer:
     # Test ModbusTlsProtocol
     # -----------------------------------------------------------------------#
     async def test_async_start_tls_server_no_loop(self):
-        """Test that the modbus tls asyncio server starts correctly"""
+        """Test that the modbus tls asyncio server starts correctly."""
         with mock.patch.object(ssl.SSLContext, "load_cert_chain"):
             await self.start_server(do_tls=True, do_forever=False, do_ident=True)
             assert self.server.control.Identity.VendorName == "VendorName"
 
     async def test_async_start_tls_server(self):
-        """Test that the modbus tls asyncio server starts correctly"""
+        """Test that the modbus tls asyncio server starts correctly."""
         with mock.patch.object(ssl.SSLContext, "load_cert_chain"):
             await self.start_server(do_tls=True, do_ident=True)
             assert self.server.control.Identity.VendorName == "VendorName"
 
     async def test_async_tls_server_serve_forever_twice(self):
-        """Call on serve_forever() twice should result in a runtime error"""
+        """Call on serve_forever() twice should result in a runtime error."""
         with mock.patch.object(ssl.SSLContext, "load_cert_chain"):
             await self.start_server(do_tls=True)
             with pytest.raises(RuntimeError):
@@ -298,38 +299,38 @@ class TestAsyncioServer:
     # -----------------------------------------------------------------------#
 
     async def test_async_start_udp_server_no_loop(self):
-        """Test that the modbus udp asyncio server starts correctly"""
+        """Test that the modbus udp asyncio server starts correctly."""
         await self.start_server(do_udp=True, do_forever=False, do_ident=True)
         assert self.server.control.Identity.VendorName == "VendorName"
         assert not self.server.transport
 
     async def test_async_start_udp_server(self):
-        """Test that the modbus udp asyncio server starts correctly"""
+        """Test that the modbus udp asyncio server starts correctly."""
         await self.start_server(do_udp=True, do_ident=True)
         assert self.server.control.Identity.VendorName == "VendorName"
         assert self.server.transport
 
     async def test_async_udp_server_serve_forever_close(self):
-        """Test StarAsyncUdpServer serve_forever() method"""
+        """Test StarAsyncUdpServer serve_forever() method."""
         await self.start_server(do_udp=True)
         await self.server.server_close()
         self.server = None
 
     async def test_async_udp_server_serve_forever_twice(self):
-        """Call on serve_forever() twice should result in a runtime error"""
+        """Call on serve_forever() twice should result in a runtime error."""
         await self.start_server(do_udp=True, do_ident=True)
         with pytest.raises(RuntimeError):
             await self.server.serve_forever()
 
     async def test_async_udp_server_roundtrip(self):
-        """Test sending and receiving data on udp socket"""
-        expected_response = b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"  # value of 17 as per context
+        """Test sending and receiving data on udp socket."""
+        expected_response = (
+            b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"
+        )  # value of 17 as per context
         BasicClient.dataTo = TEST_DATA  # slave 1, read register
         BasicClient.done = asyncio.Future()
         await self.start_server(do_udp=True)
-        random_port = self.server.transport._sock.getsockname()[  # pylint: disable=protected-access
-            1
-        ]
+        random_port = self.server.transport._sock.getsockname()[1]  # pylint: disable=protected-access
         transport, _ = await self.loop.create_datagram_endpoint(
             BasicClient, remote_addr=("127.0.0.1", random_port)
         )
@@ -338,7 +339,7 @@ class TestAsyncioServer:
         transport.close()
 
     async def test_async_udp_server_exception(self):
-        """Test sending garbage data on a TCP socket should drop the connection"""
+        """Test sending garbage data on a TCP socket should drop the connection."""
         BasicClient.dataTo = b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
         BasicClient.connected = asyncio.Future()
         BasicClient.done = asyncio.Future()
@@ -356,7 +357,7 @@ class TestAsyncioServer:
             assert not BasicClient.done.done()
 
     async def test_async_tcp_server_exception(self):
-        """Send garbage data on a TCP socket should drop the connection"""
+        """Send garbage data on a TCP socket should drop the connection."""
         BasicClient.data = b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
         await self.start_server()
         with mock.patch(

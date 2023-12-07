@@ -7,14 +7,13 @@ manipulate the messages to/from the modbus server
 import asyncio
 import logging
 
-from pymodbus import pymodbus_apply_logging_config
+from pymodbus import Framer, pymodbus_apply_logging_config
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
     ModbusSlaveContext,
 )
 from pymodbus.server import ModbusTcpServer
-from pymodbus.transaction import ModbusSocketFramer
 
 
 class Manipulator:
@@ -64,7 +63,7 @@ class Manipulator:
         )
         self.server = ModbusTcpServer(
             context,
-            ModbusSocketFramer,
+            Framer.SOCKET,
             None,
             ("127.0.0.1", 5020),
             request_tracer=self.server_request_tracer,
@@ -72,7 +71,7 @@ class Manipulator:
         )
 
     async def run(self):
-        """Attach Run server"""
+        """Attach Run server."""
         await self.server.serve_forever()
 
 

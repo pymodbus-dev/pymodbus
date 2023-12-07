@@ -34,7 +34,8 @@ The corresponding client can be started as:
 import asyncio
 import logging
 
-from examples.server_async import run_async_server, setup_server
+import server_async
+
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
@@ -49,13 +50,11 @@ async def updating_task(context):
     """Update values in server.
 
     This task runs continuously beside the server
-    (via asyncio.create_task in run_updating_server).
     It will increment some values each two seconds.
 
     It should be noted that getValues and setValues are not safe
     against concurrent use.
     """
-
     fc_as_hex = 3
     slave_id = 0x00
     address = 0x10
@@ -96,20 +95,21 @@ def setup_updating_server(cmdline=None):
     datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
     context = ModbusSlaveContext(di=datablock, co=datablock, hr=datablock, ir=datablock)
     context = ModbusServerContext(slaves=context, single=True)
-    return setup_server(
+    return server_async.setup_server(
         description="Run asynchronous server.", context=context, cmdline=cmdline
     )
 
 
 async def run_updating_server(args):
-    """Start updating_task concurrently with the current task"""
+    """Start updating_task concurrently with the current task."""
     task = asyncio.create_task(updating_task(args.context))
-    await run_async_server(args)  # start the server
+    task.set_name("example updating task")
+    await server_async.run_async_server(args)  # start the server
     task.cancel()
 
 
 async def main(cmdline=None):
-    """Combine setup and run"""
+    """Combine setup and run."""
     run_args = setup_updating_server(cmdline=cmdline)
     await run_updating_server(run_args)
 

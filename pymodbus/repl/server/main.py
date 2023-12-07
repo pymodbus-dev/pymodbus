@@ -1,4 +1,6 @@
 """Repl server main."""
+from __future__ import annotations
+
 import asyncio
 import contextlib
 import json
@@ -6,7 +8,6 @@ import logging
 import sys
 from enum import Enum
 from pathlib import Path
-from typing import List
 
 import typer
 
@@ -49,7 +50,7 @@ class ModbusFramerTypes(str, Enum):
     binary = "binary"  # pylint: disable=invalid-name
 
 
-def _completer(incomplete: str, valid_values: List[str]) -> List[str]:
+def _completer(incomplete: str, valid_values: list[str]) -> list[str]:
     """Complete value."""
     completion = []
     for name in valid_values:
@@ -58,19 +59,19 @@ def _completer(incomplete: str, valid_values: List[str]) -> List[str]:
     return completion
 
 
-def framers(incomplete: str) -> List[str]:
+def framers(incomplete: str) -> list[str]:
     """Return an autocompleted list of supported clouds."""
     _framers = ["socket", "rtu", "tls", "ascii", "binary"]
     return _completer(incomplete, _framers)
 
 
-def servers(incomplete: str) -> List[str]:
+def servers(incomplete: str) -> list[str]:
     """Return an autocompleted list of supported clouds."""
     _servers = ["tcp", "serial", "tls", "udp"]
     return _completer(incomplete, _servers)
 
 
-def process_extra_args(extra_args: List[str], modbus_config: dict) -> dict:
+def process_extra_args(extra_args: list[str], modbus_config: dict) -> dict:
     """Process extra args passed to server."""
     options_stripped = [x.strip().replace("--", "") for x in extra_args[::2]]
     extra_args_dict = dict(list(zip(options_stripped, extra_args[1::2])))
@@ -138,7 +139,7 @@ def run(
         help="Modbus framer to use",
     ),
     modbus_port: str = typer.Option("5020", "--modbus-port", "-p", help="Modbus port"),
-    modbus_slave_id: List[int] = typer.Option(
+    modbus_slave_id: list[int] = typer.Option(
         [1], "--slave-id", "-u", help="Supported Modbus slave id's"
     ),
     modbus_config_path: Path = typer.Option(

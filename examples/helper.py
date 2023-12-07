@@ -1,7 +1,7 @@
-"""Helper for examples.
+"""Helper for commandline etc.
 
 Contains common functions get get_command_line() to avoid duplicating
-code that are not relevant for the examples as such, like e.g.
+code that are not relevant for the code as such, like e.g.
 get_command_line
 """
 import argparse
@@ -9,32 +9,13 @@ import logging
 import os
 
 from pymodbus import pymodbus_apply_logging_config
-from pymodbus.transaction import (
-    ModbusAsciiFramer,
-    ModbusBinaryFramer,
-    ModbusRtuFramer,
-    ModbusSocketFramer,
-    ModbusTlsFramer,
-)
 
 
 _logger = logging.getLogger(__file__)
 
 
-def get_framer(framer):
-    """Convert framer name to framer class"""
-    framers = {
-        "ascii": ModbusAsciiFramer,
-        "binary": ModbusBinaryFramer,
-        "rtu": ModbusRtuFramer,
-        "socket": ModbusSocketFramer,
-        "tls": ModbusTlsFramer,
-    }
-    return framers[framer]
-
-
 def get_commandline(server=False, description=None, extras=None, cmdline=None):
-    """Read and validate command line arguments"""
+    """Read and validate command line arguments."""
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
         "-c",
@@ -123,7 +104,8 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
     }
     pymodbus_apply_logging_config(args.log.upper())
     _logger.setLevel(args.log.upper())
-    args.framer = get_framer(args.framer or comm_defaults[args.comm][0])
+    if not args.framer:
+        args.framer = comm_defaults[args.comm][0]
     args.port = args.port or comm_defaults[args.comm][1]
     if args.comm != "serial" and args.port:
         args.port = int(args.port)

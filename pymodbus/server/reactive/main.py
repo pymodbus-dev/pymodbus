@@ -14,12 +14,10 @@ from enum import Enum
 
 try:
     from aiohttp import web
+
+    AIOHTTP_MISSING = False
 except ImportError:
-    print(
-        "Reactive server requires aiohttp. "
-        'Please install with "pip install aiohttp" and try again.'
-    )
-    sys.exit(1)
+    AIOHTTP_MISSING = True
 
 from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
@@ -93,14 +91,14 @@ curl -X POST http://{}:{} -d "{{"response_type": "error", "error_code": 4}}"
 
 
 class ReactiveModbusSlaveContext(ModbusSlaveContext):
-    """Reactive Modbus slave context"""
+    """Reactive Modbus slave context."""
 
     def __init__(
         self,
-        discrete_inputs: BaseModbusDataBlock = None,
-        coils: BaseModbusDataBlock = None,
-        input_registers: BaseModbusDataBlock = None,
-        holding_registers: BaseModbusDataBlock = None,
+        discrete_inputs: BaseModbusDataBlock,
+        coils: BaseModbusDataBlock,
+        input_registers: BaseModbusDataBlock,
+        holding_registers: BaseModbusDataBlock,
         zero_mode: bool = False,
         randomize: int = 0,
         change_rate: int = 0,
@@ -199,6 +197,11 @@ class ReactiveServer:
 
     def __init__(self, host, port, modbus_server):
         """Initialize."""
+        if AIOHTTP_MISSING:
+            raise RuntimeError(
+                "Reactive server requires aiohttp. "
+                'Please install with "pip install aiohttp" and try again.'
+            )
         self._web_app = web.Application()
         self._runner = web.AppRunner(self._web_app)
         self._host = host
@@ -240,6 +243,7 @@ class ReactiveServer:
                 app["modbus_server"] = asyncio.create_task(
                     self._modbus_server.serve_forever()
                 )
+                app["modbus_server"].set_name("reactive modbus server")
             else:
                 app["modbus_server"] = asyncio.ensure_future(
                     self._modbus_server.serve_forever()
@@ -329,7 +333,6 @@ class ReactiveServer:
 
     async def run_async(self, repl_mode=False):
         """Run Web app."""
-
         try:
             await self._runner.setup()
             site = web.TCPSite(self._runner, self._host, self._port)

@@ -33,7 +33,7 @@ class TestModbusBitMessage:
         """Initialize the test environment and builds request/result encoding pairs."""
 
     def tearDown(self):
-        """Clean up the test environment"""
+        """Clean up the test environment."""
 
     def test_bit_write_base_requests(self):
         """Test bit write base."""

@@ -47,7 +47,7 @@ class ModbusStatus(int, enum.Enum):
     SLAVE_OFF = 0x00
 
     def __str__(self):
-        """Override to force int representation for enum members"""
+        """Override to force int representation for enum members."""
         return str(int(self))
 
 
@@ -76,7 +76,7 @@ class Endian(str, enum.Enum):
     LITTLE = "<"
 
     def __str__(self):
-        """Override to force str representation for enum members"""
+        """Override to force str representation for enum members."""
         return str.__str__(self)
 
 
@@ -98,7 +98,7 @@ class ModbusPlusOperation(int, enum.Enum):
     CLEAR_STATISTICS = 0x0004
 
     def __str__(self):
-        """Override to force int representation for enum members"""
+        """Override to force int representation for enum members."""
         return str(int(self))
 
 
@@ -135,7 +135,7 @@ class DeviceInformation(int, enum.Enum):
     SPECIFIC = 0x04
 
     def __str__(self):
-        """Override to force int representation for enum members"""
+        """Override to force int representation for enum members."""
         return str(int(self))
 
 
@@ -155,5 +155,5 @@ class MoreData(int, enum.Enum):
     KEEP_READING = 0xFF
 
     def __str__(self):
-        """Override to force int representation for enum members"""
+        """Override to force int representation for enum members."""
         return str(int(self))

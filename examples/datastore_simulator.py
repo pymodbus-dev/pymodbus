@@ -25,14 +25,12 @@ import argparse
 import asyncio
 import logging
 
-from pymodbus import pymodbus_apply_logging_config
+from pymodbus import Framer, pymodbus_apply_logging_config
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server import StartAsyncTcpServer
-from pymodbus.transaction import ModbusSocketFramer
 
 
-logging.basicConfig()
 _logger = logging.getLogger(__file__)
 
 demo_config = {
@@ -120,7 +118,7 @@ demo_actions = {
 
 
 def get_commandline(cmdline=None):
-    """Read and validate command line arguments"""
+    """Read and validate command line arguments."""
     parser = argparse.ArgumentParser(description="Run datastore simulator example.")
     parser.add_argument(
         "--log",
@@ -141,7 +139,7 @@ def setup_simulator(setup=None, actions=None, cmdline=None):
     args = get_commandline(cmdline=cmdline)
     pymodbus_apply_logging_config(args.log.upper())
     _logger.setLevel(args.log.upper())
-    args.framer = ModbusSocketFramer
+    args.framer = Framer.SOCKET
     args.port = int(args.port)
 
     _logger.info("### Create datastore")
@@ -176,7 +174,7 @@ async def run_server_simulator(args):
 
 
 async def main(cmdline=None):
-    """Combine setup and run"""
+    """Combine setup and run."""
     run_args = setup_simulator(cmdline=cmdline)
     await run_server_simulator(run_args)
 

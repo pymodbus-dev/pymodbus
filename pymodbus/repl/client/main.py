@@ -152,7 +152,6 @@ class CLI:  # pylint: disable=too-few-public-methods
 
     def __init__(self, client):
         """Set up client and keybindings."""
-
         use_keys = KeyBindings()
         history_file = pathlib.Path.home().joinpath(".pymodhis")
         self.client = client

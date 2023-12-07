@@ -1,8 +1,9 @@
 """asyncio serial support for modbus (based on pyserial)."""
+from __future__ import annotations
+
 import asyncio
 import contextlib
 import os
-from typing import Tuple
 
 
 with contextlib.suppress(ImportError):
@@ -14,27 +15,28 @@ class SerialTransport(asyncio.Transport):
 
     force_poll: bool = False
 
-    def __init__(self, loop, protocol, *args, **kwargs):
+    def __init__(self, loop, protocol, *args, **kwargs) -> None:
         """Initialize."""
         super().__init__()
         self.async_loop = loop
         self._protocol: asyncio.BaseProtocol = protocol
         self.sync_serial = serial.serial_for_url(*args, **kwargs)
-        self._write_buffer = []
-        self.poll_task = None
+        self._write_buffer: list[bytes] = []
+        self.poll_task: asyncio.Task | None = None
         self._poll_wait_time = 0.0005
         self.sync_serial.timeout = 0
         self.sync_serial.write_timeout = 0
 
     def setup(self):
-        """Prepare to read/write"""
+        """Prepare to read/write."""
         if os.name == "nt" or self.force_poll:
             self.poll_task = asyncio.create_task(self._polling_task())
+            self.poll_task.set_name("transport_serial poll")
         else:
             self.async_loop.add_reader(self.sync_serial.fileno(), self._read_ready)
         self.async_loop.call_soon(self._protocol.connection_made, self)
 
-    def close(self, exc=None):
+    def close(self, exc: Exception | None = None) -> None:
         """Close the transport gracefully."""
         if not self.sync_serial:
             return
@@ -49,18 +51,19 @@ class SerialTransport(asyncio.Transport):
         else:
             self.async_loop.remove_reader(self.sync_serial.fileno())
         self.sync_serial.close()
-        self.sync_serial = None
-        with contextlib.suppress(Exception):
-            self._protocol.connection_lost(exc)
+        self.sync_serial = None  # type: ignore[assignment]
+        if exc:
+            with contextlib.suppress(Exception):
+                self._protocol.connection_lost(exc)
 
-    def write(self, data):
+    def write(self, data) -> None:
         """Write some data to the transport."""
         self._write_buffer.append(data)
         if not self.poll_task:
             self.async_loop.add_writer(self.sync_serial.fileno(), self._write_ready)
 
-    def flush(self):
-        """Clear output buffer and stops any more data being written"""
+    def flush(self) -> None:
+        """Clear output buffer and stops any more data being written."""
         if not self.poll_task:
             self.async_loop.remove_writer(self.sync_serial.fileno())
         self._write_buffer.clear()
@@ -74,15 +77,15 @@ class SerialTransport(asyncio.Transport):
         return self.async_loop
 
     def get_protocol(self) -> asyncio.BaseProtocol:
-        """Return protocol"""
+        """Return protocol."""
         return self._protocol
 
     def set_protocol(self, protocol: asyncio.BaseProtocol) -> None:
-        """Set protocol"""
+        """Set protocol."""
         self._protocol = protocol
 
-    def get_write_buffer_limits(self) -> Tuple[int, int]:
-        """Return buffer sizes"""
+    def get_write_buffer_limits(self) -> tuple[int, int]:
+        """Return buffer sizes."""
         return (1, 1024)
 
     def can_write_eof(self):
@@ -113,8 +116,8 @@ class SerialTransport(asyncio.Transport):
         """Return True if the transport is closing or closed."""
         return False
 
-    def abort(self):
-        """Close the transport immediately."""
+    def abort(self) -> None:
+        """Alias for closing the connection."""
         self.close()
 
     # ------------------------------------------------
@@ -159,7 +162,9 @@ class SerialTransport(asyncio.Transport):
             pass
 
 
-async def create_serial_connection(loop, protocol_factory, *args, **kwargs):
+async def create_serial_connection(
+    loop, protocol_factory, *args, **kwargs
+) -> tuple[asyncio.Transport, asyncio.BaseProtocol]:
     """Create a connection to a new serial port instance."""
     protocol = protocol_factory()
     transport = SerialTransport(loop, protocol, *args, **kwargs)

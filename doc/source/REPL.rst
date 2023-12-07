@@ -346,7 +346,7 @@ Pymodbus REPL comes with many handy features such as payload decoder
 to directly retrieve the values in desired format and supports all
 the diagnostic function codes directly .
 
-For more info on REPL Client refer  `Pymodbus REPL Client <https://github.com/pymodbus-dev/pymodbus/blob/dev/pymodbus/repl/client/README.md>`_
+For more info on REPL Client refer  :github:`pymodbus/repl/client/README.rst`
 
 .. image:: https://asciinema.org/a/y1xOk7lm59U1bRBE2N1pDIj2o.png
    :target: https://asciinema.org/a/y1xOk7lm59U1bRBE2N1pDIj2o
@@ -357,7 +357,7 @@ Pymodbus REPL Server
 
 Pymodbus also comes with a REPL server to quickly run an asynchronous server with additional capabilities out of the box like simulating errors, delay, mangled messages etc.
 
-For more info on REPL Server refer `Pymodbus REPL Server <https://github.com/pymodbus-dev/pymodbus/blob/dev/pymodbus/repl/server/README.md>`_
+For more info on REPL Server refer :github:`pymodbus/repl/server/README.rst`
 
 .. image:: https://img.youtube.com/vi/OutaVz0JkWg/maxresdefault.jpg
    :target: https://youtu.be/OutaVz0JkWg

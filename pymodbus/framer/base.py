@@ -1,6 +1,8 @@
 """Framer start."""
 # pylint: disable=missing-type-doc
-from typing import Any, Dict, Union
+from __future__ import annotations
+
+from typing import Any
 
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.logging import Log
@@ -24,7 +26,7 @@ class ModbusFramer:
 
     def __init__(
         self,
-        decoder: Union[ClientDecoder, ServerDecoder],
+        decoder: ClientDecoder | ServerDecoder,
         client=None,
     ) -> None:
         """Initialize a new instance of the framer.
@@ -33,7 +35,7 @@ class ModbusFramer:
         """
         self.decoder = decoder
         self.client = client
-        self._header: Dict[str, Any] = {
+        self._header: dict[str, Any] = {
             "lrc": "0000",
             "len": 0,
             "uid": 0x00,

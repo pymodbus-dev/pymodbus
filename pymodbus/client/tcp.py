@@ -1,14 +1,15 @@
 """Modbus client async TCP communication."""
+from __future__ import annotations
+
 import asyncio
 import select
 import socket
 import time
-from typing import Any, Tuple, Type
+from typing import Any
 
-from pymodbus.client.base import ModbusBaseClient
+from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
-from pymodbus.framer import ModbusFramer
-from pymodbus.framer.socket_framer import ModbusSocketFramer
+from pymodbus.framer import Framer
 from pymodbus.logging import Log
 from pymodbus.transport import CommType
 from pymodbus.utilities import ModbusTransactionState
@@ -17,11 +18,27 @@ from pymodbus.utilities import ModbusTransactionState
 class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
     """**AsyncModbusTcpClient**.
 
+    Fixed parameters:
+
     :param host: Host IP address or host name
-    :param port: (optional) Port used for communication
-    :param framer: (optional) Framer class
-    :param source_address: (optional) source address of client
-    :param kwargs: (optional) Experimental parameters
+
+    Optional parameters:
+
+    :param port: Port used for communication
+    :param source_address: source address of client
+
+    Common optional parameters:
+
+    :param framer: Framer enum name
+    :param timeout: Timeout for a request, in seconds.
+    :param retries: Max number of retries per request.
+    :param retry_on_empty: Retry on empty response.
+    :param broadcast_enable: True to treat id 0 as broadcast address.
+    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
+    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
+    :param kwargs: Experimental parameters.
 
     Example::
 
@@ -33,14 +50,16 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
             await client.connect()
             ...
             client.close()
+
+    Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
     def __init__(
         self,
         host: str,
         port: int = 502,
-        framer: Type[ModbusFramer] = ModbusSocketFramer,
-        source_address: Tuple[str, int] = None,
+        framer: Framer = Framer.SOCKET,
+        source_address: tuple[str, int] | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
@@ -51,12 +70,11 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
             kwargs["source_address"] = source_address
         ModbusBaseClient.__init__(
             self,
-            framer=framer,
+            framer,
             host=host,
             port=port,
             **kwargs,
         )
-        self.params.source_address = source_address
 
     async def connect(self) -> bool:
         """Initiate connection to start client."""
@@ -68,20 +86,37 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
         )
         return await self.transport_connect()
 
-    @property
-    def connected(self):
-        """Return true if connected."""
-        return self.is_active()
+    def close(self, reconnect: bool = False) -> None:
+        """Close connection."""
+        super().close(reconnect=reconnect)
 
 
-class ModbusTcpClient(ModbusBaseClient):
+class ModbusTcpClient(ModbusBaseSyncClient):
     """**ModbusTcpClient**.
 
+    Fixed parameters:
+
     :param host: Host IP address or host name
-    :param port: (optional) Port used for communication
-    :param framer: (optional) Framer class
-    :param source_address: (optional) source address of client
-    :param kwargs: (optional) Experimental parameters
+
+    Optional parameters:
+
+    :param port: Port used for communication
+    :param source_address: source address of client
+
+    Common optional parameters:
+
+    :param framer: Framer enum name
+    :param timeout: Timeout for a request, in seconds.
+    :param retries: Max number of retries per request.
+    :param retry_on_empty: Retry on empty response.
+    :param close_comm_on_error: Close connection on error.
+    :param strict: Strict timing, 1.5 character between requests.
+    :param broadcast_enable: True to treat id 0 as broadcast address.
+    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
+    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
+    :param kwargs: Experimental parameters.
 
     Example::
 
@@ -94,6 +129,8 @@ class ModbusTcpClient(ModbusBaseClient):
             ...
             client.close()
 
+    Please refer to :ref:`Pymodbus internals` for advanced usage.
+
     Remark: There are no automatic reconnect as with AsyncModbusTcpClient
     """
 
@@ -101,21 +138,24 @@ class ModbusTcpClient(ModbusBaseClient):
         self,
         host: str,
         port: int = 502,
-        framer: Type[ModbusFramer] = ModbusSocketFramer,
-        source_address: Tuple[str, int] = None,
+        framer: Framer = Framer.SOCKET,
+        source_address: tuple[str, int] | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus TCP Client."""
         if "CommType" not in kwargs:
             kwargs["CommType"] = CommType.TCP
-        kwargs["use_sync"] = True
-        self.transport = None
-        super().__init__(framer=framer, host=host, port=port, **kwargs)
+        super().__init__(
+            framer,
+            host=host,
+            port=port,
+            **kwargs,
+        )
         self.params.source_address = source_address
         self.socket = None
 
     @property
-    def connected(self):
+    def connected(self) -> bool:
         """Connect internal."""
         return self.socket is not None
 
@@ -247,7 +287,7 @@ class ModbusTcpClient(ModbusBaseClient):
         readsize = f"read of {size_txt} bytes"
         msg = (
             f"{self}: Connection unexpectedly closed "
-            f"{duration} seconds into {readsize}"
+            f"{duration:.3f} seconds into {readsize}"
         )
         if data:
             result = b"".join(data)

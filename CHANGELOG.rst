@@ -1,11 +1,79 @@
 Changelog
 =========
-All these version would not possible without a lot of work from volunteers!
+All these version would not be possible without a lot of work from volunteers!
 
-We, the maintainers, are greatful for all the pull requests small or big, that
+We, the maintainers, are greatful for each pull requests small or big, that
 helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
+
+Version 3.6.0
+-------------
+* doc: Fix a code mismatch in client.rst
+* Update README.
+* truncated duration to milliseconds
+* Update examples for current dev.
+* Ignore all remaining implicit optional (#1888)
+* docstring
+* Remove unnecessary abort() call
+* Enable RUF013 (implicit optional) (#1882)
+* Support aiohttp 3.9.0b1 (#1886)
+* Actually perform aiohttp runner teardown
+* Pin to working aiohttp (#1884)
+* Docstring typo cleanup (#1879)
+* Clean client API imports. (#1819)
+* Update issue template.
+* Eliminiate implicit optional in reconnect_delay* (#1874)
+* Split client base in sync/async version (#1878)
+* Rework host/port and listener setup (#1866)
+* use baudrate directly (#1872)
+* Eliminate more implicit optional (#1871)
+* Fix serial server args order (#1870)
+* Relax test task/thread checker. (#1867)
+* Make doc link references version dependent. (#1864)
+* Remove pre-commit (#1860)
+* Ruff reduce ignores. (#1862)
+* Bump ruff to 0.1.3 and remove ruff.toml (#1861)
+* More elegant noop. (#1859)
+* Cache (#1829)
+* Eliminate more implicit optional (#1858)
+* Ignore files downloaded by pytest (#1857)
+* Avoid malicious user path input (#1855)
+* Add more return types to transport (#1852)
+* Do not attempt to close an already-closed serial connection (#1853)
+* Fix stopbits docstring typo (#1850)
+* Convert type hints to PEP585 (#1846)
+* Eliminate even more implicit optional (#1845)
+* Eliminate more implicit optionals in client (#1844)
+* Eliminate implicit optional in transport_serial (#1843)
+* Make client type annotations compatible with async client usage (#1842)
+* Merge pull request #1838 from pymodbus-dev/ruff
+* Eliminate implicit optional in simulator (#1841)
+* eliminate implicit optional for callback_disconnected (#1840)
+* pre-commit run --all-files
+* Update exclude paths
+* Replace black with ruff
+* Use other dependency groups for 'all' (#1834)
+* Cleanup author/maintainer fields (#1833)
+* Consistent messages if imports fail (#1831)
+* Client/Server framer as enum. (#1822)
+* Solve relative path in examples. (#1828)
+* Eliminate implicit optional for CommParams types (#1825)
+* Add 3.12 classifier (#1826)
+* Bump actions/stale to 8.0.0 (#1824)
+* Cleanup paths included in mypy/pylint (#1823)
+* Client documentation amended and updated. (#1820)
+* Import aiohttp in way pleasing mypy. (#1818)
+* Update doc, remove md files. (#1814)
+* Bump dependencies. (#1816)
+* Solve pylint / pytest.
+* fix pylint.
+* Examples are without parent module.
+* Wrong zip of examples.
+* Serial delay (#1810)
+* Add python 3.12. (#1800)
+* Release errors (pyproject.toml changes). (#1811)
+
 
 Version 3.5.4
 -------------

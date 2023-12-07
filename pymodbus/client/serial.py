@@ -1,36 +1,54 @@
 """Modbus client async serial communication."""
+from __future__ import annotations
+
 import asyncio
 import time
-from contextlib import suppress
 from functools import partial
-from typing import Any, Type
+from typing import Any
 
-from pymodbus.client.base import ModbusBaseClient
+from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
-from pymodbus.framer import ModbusFramer
-from pymodbus.framer.rtu_framer import ModbusRtuFramer
+from pymodbus.framer import Framer
 from pymodbus.logging import Log
 from pymodbus.transport import CommType
 from pymodbus.utilities import ModbusTransactionState
 
 
-with suppress(ImportError):
+try:
     import serial
+
+    PYSERIAL_MISSING = False
+except ImportError:
+    PYSERIAL_MISSING = True
 
 
 class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
     """**AsyncModbusSerialClient**.
 
-    :param port: Serial port used for communication.
-    :param framer: (optional) Framer class.
-    :param baudrate: (optional) Bits per second.
-    :param bytesize: (optional) Number of bits per byte 7-8.
-    :param parity: (optional) 'E'ven, 'O'dd or 'N'one
-    :param stopbits: (optional) Number of stop bits 0-2¡.
-    :param handle_local_echo: (optional) Discard local echo from dongle.
-    :param kwargs: (optional) Experimental parameters
+    Fixed parameters:
 
-    The serial communication is RS-485 based, and usually used with a usb RS485 dongle.
+    :param port: Serial port used for communication.
+
+    Optional parameters:
+
+    :param baudrate: Bits per second.
+    :param bytesize: Number of bits per byte 7-8.
+    :param parity: 'E'ven, 'O'dd or 'N'one
+    :param stopbits: Number of stop bits 1, 1.5, 2.
+    :param handle_local_echo: Discard local echo from dongle.
+
+    Common optional parameters:
+
+    :param framer: Framer enum name
+    :param timeout: Timeout for a request, in seconds.
+    :param retries: Max number of retries per request.
+    :param retry_on_empty: Retry on empty response.
+    :param broadcast_enable: True to treat id 0 as broadcast address.
+    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
+    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
+    :param kwargs: Experimental parameters.
 
     Example::
 
@@ -42,12 +60,14 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
             await client.connect()
             ...
             client.close()
+
+    Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
     def __init__(
         self,
         port: str,
-        framer: Type[ModbusFramer] = ModbusRtuFramer,
+        framer: Framer = Framer.RTU,
         baudrate: int = 19200,
         bytesize: int = 8,
         parity: str = "N",
@@ -55,10 +75,15 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
+        if PYSERIAL_MISSING:
+            raise RuntimeError(
+                "Serial client requires pyserial "
+                'Please install with "pip install pyserial" and try again.'
+            )
         asyncio.Protocol.__init__(self)
         ModbusBaseClient.__init__(
             self,
-            framer=framer,
+            framer,
             CommType=CommType.SERIAL,
             host=port,
             baudrate=baudrate,
@@ -68,31 +93,46 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
             **kwargs,
         )
 
-    @property
-    def connected(self):
-        """Connect internal."""
-        return self.is_active()
-
     async def connect(self) -> bool:
         """Connect Async client."""
         self.reset_delay()
         Log.debug("Connecting to {}.", self.comm_params.host)
         return await self.transport_connect()
 
+    def close(self, reconnect: bool = False) -> None:
+        """Close connection."""
+        super().close(reconnect=reconnect)
 
-class ModbusSerialClient(ModbusBaseClient):
+
+class ModbusSerialClient(ModbusBaseSyncClient):
     """**ModbusSerialClient**.
 
-    :param port: Serial port used for communication.
-    :param framer: (optional) Framer class.
-    :param baudrate: (optional) Bits per second.
-    :param bytesize: (optional) Number of bits per byte 7-8.
-    :param parity: (optional) 'E'ven, 'O'dd or 'N'one
-    :param stopbits: (optional) Number of stop bits 0-2¡.
-    :param handle_local_echo: (optional) Discard local echo from dongle.
-    :param kwargs: (optional) Experimental parameters
+    Fixed parameters:
 
-    The serial communication is RS-485 based, and usually used with a usb RS485 dongle.
+    :param port: Serial port used for communication.
+
+    Optional parameters:
+
+    :param baudrate: Bits per second.
+    :param bytesize: Number of bits per byte 7-8.
+    :param parity: 'E'ven, 'O'dd or 'N'one
+    :param stopbits: Number of stop bits 0-2.
+    :param handle_local_echo: Discard local echo from dongle.
+
+    Common optional parameters:
+
+    :param framer: Framer enum name
+    :param timeout: Timeout for a request, in seconds.
+    :param retries: Max number of retries per request.
+    :param retry_on_empty: Retry on empty response.
+    :param close_comm_on_error: Close connection on error.
+    :param strict: Strict timing, 1.5 character between requests.
+    :param broadcast_enable: True to treat id 0 as broadcast address.
+    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
+    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
+    :param kwargs: Experimental parameters.
 
     Example::
 
@@ -105,6 +145,7 @@ class ModbusSerialClient(ModbusBaseClient):
             ...
             client.close()
 
+    Please refer to :ref:`Pymodbus internals` for advanced usage.
 
     Remark: There are no automatic reconnect as with AsyncModbusSerialClient
     """
@@ -116,7 +157,7 @@ class ModbusSerialClient(ModbusBaseClient):
     def __init__(
         self,
         port: str,
-        framer: Type[ModbusFramer] = ModbusRtuFramer,
+        framer: Framer = Framer.RTU,
         baudrate: int = 19200,
         bytesize: int = 8,
         parity: str = "N",
@@ -124,11 +165,8 @@ class ModbusSerialClient(ModbusBaseClient):
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus Serial Client."""
-        self.transport = None
-        kwargs["use_sync"] = True
-        ModbusBaseClient.__init__(
-            self,
-            framer=framer,
+        super().__init__(
+            framer,
             CommType=CommType.SERIAL,
             host=port,
             baudrate=baudrate,
@@ -141,19 +179,14 @@ class ModbusSerialClient(ModbusBaseClient):
 
         self.last_frame_end = None
 
-        self._t0 = float(1 + 8 + 2) / self.comm_params.baudrate
+        self._t0 = float(1 + bytesize + stopbits) / baudrate
 
-        """
-        The minimum delay is 0.01s and the maximum can be set to 0.05s.
-        Setting too large a setting affects efficiency.
-        """
-        self._recv_interval = (
-            (round((100 * self._t0), 2) + 0.01)
-            if (round((100 * self._t0), 2) + 0.01) < 0.05
-            else 0.05
-        )
+        # Check every 4 bytes / 2 registers if the reading is ready
+        self._recv_interval = self._t0 * 4
+        # Set a minimum of 1ms for high baudrates
+        self._recv_interval = max(self._recv_interval, 0.001)
 
-        if self.comm_params.baudrate > 19200:
+        if baudrate > 19200:
             self.silent_interval = 1.75 / 1000  # ms
         else:
             self.inter_char_timeout = 1.5 * self._t0
@@ -178,10 +211,9 @@ class ModbusSerialClient(ModbusBaseClient):
                 baudrate=self.comm_params.baudrate,
                 parity=self.comm_params.parity,
             )
-            if isinstance(self.framer, ModbusRtuFramer):
-                if self.params.strict:
-                    self.socket.interCharTimeout = self.inter_char_timeout
-                self.last_frame_end = None
+            if self.params.strict:
+                self.socket.interCharTimeout = self.inter_char_timeout
+            self.last_frame_end = None
         except serial.SerialException as msg:
             Log.error("{}", msg)
             self.close()

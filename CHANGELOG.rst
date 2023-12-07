@@ -7,6 +7,10 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.6.2
+-------------
+* Set documentation to v3.6.2.
+
 Version 3.6.1
 -------------
 * Solve pypi upload error.

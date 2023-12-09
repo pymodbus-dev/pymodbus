@@ -18,5 +18,5 @@ from pymodbus.logging import pymodbus_apply_logging_config
 from pymodbus.pdu import ExceptionResponse
 
 
-__version__ = "3.6.2"
+__version__ = "3.7.0dev"
 __version_full__ = f"[pymodbus, version {__version__}]"

@@ -1,5 +1,6 @@
 """Test transport."""
 import asyncio
+import sys
 import time
 from unittest import mock
 
@@ -34,8 +35,9 @@ class TestCommModbusProtocol:
             (CommType.SERIAL, "socket://localhost:5004"),
         ],
     )
-    async def test_connect(self, client):
+    async def test_connect(self, client, use_port):
         """Test connect()."""
+        print(f"JAN test_connect --> {use_port}", file=sys.stderr)
         start = time.time()
         assert not await client.transport_connect()
         delta = time.time() - start
@@ -51,8 +53,9 @@ class TestCommModbusProtocol:
             (CommType.SERIAL, "/dev/tty007pymodbus_5008"),
         ],
     )
-    async def test_connect_not_ok(self, client):
+    async def test_connect_not_ok(self, client, use_port):
         """Test connect()."""
+        print(f"JAN test_connect_not_ok --> {use_port}", file=sys.stderr)
         start = time.time()
         assert not await client.transport_connect()
         delta = time.time() - start
@@ -68,8 +71,9 @@ class TestCommModbusProtocol:
             (CommType.SERIAL, "socket://localhost:5012"),
         ],
     )
-    async def test_listen(self, server):
+    async def test_listen(self, server, use_port):
         """Test listen()."""
+        print(f"JAN test_listen --> {use_port}", file=sys.stderr)
         assert await server.transport_listen()
         assert server.transport
         server.transport_close()
@@ -83,8 +87,9 @@ class TestCommModbusProtocol:
             (CommType.SERIAL, "/dev/tty007pymodbus_5016"),
         ],
     )
-    async def test_listen_not_ok(self, server):
+    async def test_listen_not_ok(self, server, use_port):
         """Test listen()."""
+        print(f"JAN test_listen_not_ok --> {use_port}", file=sys.stderr)
         assert not await server.transport_listen()
         assert not server.transport
         server.transport_close()
@@ -95,11 +100,12 @@ class TestCommModbusProtocol:
             (CommType.TCP, "localhost"),
             (CommType.TLS, "localhost"),
             (CommType.UDP, "localhost"),
-            (CommType.SERIAL, "socket://localhost:5020"),
+            (CommType.SERIAL, "socket://localhost:7302"),
         ],
     )
-    async def test_connected(self, client, server, use_comm_type):
+    async def test_connected(self, client, server, use_comm_type, use_port):
         """Test connection and data exchange."""
+        print(f"JAN test_connected --> {use_port}", file=sys.stderr)
         assert await server.transport_listen()
         assert await client.transport_connect()
         await asyncio.sleep(0.5)
@@ -133,11 +139,12 @@ class TestCommModbusProtocol:
     @pytest.mark.parametrize(
         ("use_comm_type", "use_host"),
         [
-            (CommType.SERIAL, "socket://localhost:5020"),
+            (CommType.SERIAL, "socket://localhost:7303"),
         ],
     )
-    async def test_split_serial_packet(self, client, server):
+    async def test_split_serial_packet(self, client, server, use_port):
         """Test connection and data exchange."""
+        print(f"JAN test_split_serial_packet --> {use_port}", file=sys.stderr)
         assert await server.transport_listen()
         assert await client.transport_connect()
         await asyncio.sleep(0.5)
@@ -161,11 +168,12 @@ class TestCommModbusProtocol:
     @pytest.mark.parametrize(
         ("use_comm_type", "use_host"),
         [
-            (CommType.SERIAL, "socket://localhost:5020"),
+            (CommType.SERIAL, "socket://localhost:7300"),
         ],
     )
-    async def test_serial_poll(self, client, server):
+    async def test_serial_poll(self, client, server, use_port):
         """Test connection and data exchange."""
+        print(f"JAN test_serial_poll --> {use_port}", file=sys.stderr)
         assert await server.transport_listen()
         SerialTransport.force_poll = True
         assert await client.transport_connect()
@@ -187,11 +195,12 @@ class TestCommModbusProtocol:
             (CommType.TCP, "localhost"),
             (CommType.TLS, "localhost"),
             # (CommType.UDP, "localhost"),  reuses same connection
-            # (CommType.SERIAL, "socket://localhost:5020"), no multipoint
+            # (CommType.SERIAL, "socket://localhost:7301"), no multipoint
         ],
     )
-    async def test_connected_multiple(self, client, server):
+    async def test_connected_multiple(self, client, server, use_port):
         """Test connection and data exchange."""
+        print(f"JAN test_connected_multiple --> {use_port}", file=sys.stderr)
         client.comm_params.reconnect_delay = 0.0
         assert await server.transport_listen()
         assert await client.transport_connect()

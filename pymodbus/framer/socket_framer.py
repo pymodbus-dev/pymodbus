@@ -1,6 +1,7 @@
 """Socket framer."""
 # pylint: disable=missing-type-doc
 import struct
+from typing import Tuple
 
 from pymodbus.exceptions import (
     InvalidMessageReceivedException,
@@ -60,7 +61,7 @@ class ModbusSocketFramer(ModbusFramer):
             return self._header["uid"] in slaves
         if (peer := self.transport.get_extra_info('peername')) is None:
             return self._header["uid"] in slaves
-        slave_id: tuple[str, int] = (peer[0], self._header["uid"])
+        slave_id: Tuple[str, int] = (peer[0], self._header["uid"])
         return slave_id in slaves
 
     # ----------------------------------------------------------------------- #

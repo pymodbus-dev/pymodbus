@@ -23,7 +23,7 @@ def pytest_configure():
 BASE_PORTS = {
     "TestBasicModbusProtocol": 7100,
     "TestBasicSerial": 7200,
-    "TestCommModbusProtocol": 7300,
+    "TestCommModbusProtocol": 7305,
     "TestCommNullModem": 7400,
     "TestExamples": 7500,
     "TestAsyncExamples": 7600,

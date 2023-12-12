@@ -191,8 +191,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
         slave_id = request.slave_id
         try:
             if self.server.is_server and self.comm_params.comm_type in (CommType.TCP,):
-                peer = self.transport.get_extra_info('peername')
-                if peer is not None:
+                if (peer := self.transport.get_extra_info('peername')) is not None:
                     slave_id = (peer[0], request.slave_id)
             context = self.server.context[slave_id]
             response = request.execute(context)

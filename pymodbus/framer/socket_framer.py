@@ -58,8 +58,7 @@ class ModbusSocketFramer(ModbusFramer):
             return True
         if self.transport is None:
             return self._header["uid"] in slaves
-        peer = self.transport.get_extra_info('peername')
-        if peer is None:
+        if (peer := self.transport.get_extra_info('peername')) is None:
             return self._header["uid"] in slaves
         slave_id: tuple[str, int] = (peer[0], self._header["uid"])
         return slave_id in slaves

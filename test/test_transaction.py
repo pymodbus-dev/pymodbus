@@ -47,11 +47,11 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Set up the test environment."""
         self.client = None
         self.decoder = ServerDecoder()
-        self._tcp = ModbusSocketFramer(decoder=self.decoder, client=None)
-        self._tls = ModbusTlsFramer(decoder=self.decoder, client=None)
-        self._rtu = ModbusRtuFramer(decoder=self.decoder, client=None)
-        self._ascii = ModbusAsciiFramer(decoder=self.decoder, client=None)
-        self._binary = ModbusBinaryFramer(decoder=self.decoder, client=None)
+        self._tcp = ModbusSocketFramer(decoder=self.decoder)
+        self._tls = ModbusTlsFramer(decoder=self.decoder)
+        self._rtu = ModbusRtuFramer(decoder=self.decoder)
+        self._ascii = ModbusAsciiFramer(decoder=self.decoder)
+        self._binary = ModbusBinaryFramer(decoder=self.decoder)
         self._manager = DictTransactionManager(self.client)
         self._queue_manager = FifoTransactionManager(self.client)
         self._tm = ModbusTransactionManager(self.client)

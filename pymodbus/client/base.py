@@ -91,7 +91,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         # Common variables.
         self.framer = FRAMER_NAME_TO_CLASS.get(
             framer, cast(Type[ModbusFramer], framer)
-        )(ClientDecoder(), self)
+        )(ClientDecoder(), client=self)
         self.transaction = DictTransactionManager(
             self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
         )
@@ -387,7 +387,7 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
         # Common variables.
         self.framer = FRAMER_NAME_TO_CLASS.get(
             framer, cast(Type[ModbusFramer], framer)
-        )(ClientDecoder(), self)
+        )(ClientDecoder(), client=self)
         self.transaction = DictTransactionManager(
             self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
         )

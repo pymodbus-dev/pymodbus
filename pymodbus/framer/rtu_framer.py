@@ -53,12 +53,12 @@ class ModbusRtuFramer(ModbusFramer):
 
     method = "rtu"
 
-    def __init__(self, decoder, client=None):
+    def __init__(self, decoder, **kwargs):
         """Initialize a new instance of the framer.
 
         :param decoder: The decoder factory implementation to use
         """
-        super().__init__(decoder, client)
+        super().__init__(decoder, **kwargs)
         self._hsize = 0x01
         self._end = b"\x0d\x0a"
         self._min_frame_size = 4

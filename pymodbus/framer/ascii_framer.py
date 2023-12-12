@@ -32,12 +32,12 @@ class ModbusAsciiFramer(ModbusFramer):
 
     method = "ascii"
 
-    def __init__(self, decoder, client=None):
+    def __init__(self, decoder, **kwargs):
         """Initialize a new instance of the framer.
 
         :param decoder: The decoder implementation to use
         """
-        super().__init__(decoder, client)
+        super().__init__(decoder, **kwargs)
         self._hsize = 0x02
         self._start = b":"
         self._end = b"\r\n"

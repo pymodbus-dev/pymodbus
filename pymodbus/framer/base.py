@@ -27,14 +27,14 @@ class ModbusFramer:
     def __init__(
         self,
         decoder: ClientDecoder | ServerDecoder,
-        client=None,
+        **kwargs
     ) -> None:
         """Initialize a new instance of the framer.
 
         :param decoder: The decoder implementation to use
         """
         self.decoder = decoder
-        self.client = client
+        self.client = kwargs.get('client')
         self._header: dict[str, Any] = {
             "lrc": "0000",
             "len": 0,

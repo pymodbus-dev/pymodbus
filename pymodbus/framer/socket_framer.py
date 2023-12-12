@@ -36,13 +36,31 @@ class ModbusSocketFramer(ModbusFramer):
 
     method = "socket"
 
-    def __init__(self, decoder, client=None):
+    def __init__(self, decoder, *, transport, **kwargs):
         """Initialize a new instance of the framer.
 
         :param decoder: The decoder factory implementation to use
         """
-        super().__init__(decoder, client)
+        super().__init__(decoder, **kwargs)
         self._hsize = 0x07
+        self.transport = transport
+    
+    def _validate_slave_id(self, slaves: list, single: bool) -> bool:
+        """Validate if the received data is valid for the client.
+
+        :param slaves: list of slave id for which the transaction is valid
+        :param single: Set to true to treat this as a single context
+        :return:
+        """
+        if single: # match any
+            return True
+        if 0 in slaves: # broadcast
+            return True
+        peer = self.transport.get_extra_info('peername')
+        if peer is not None:
+            slave_id = (peer[0], self._header["uid"])
+            return slave_id in slaves
+        return False
 
     # ----------------------------------------------------------------------- #
     # Private Helper Functions

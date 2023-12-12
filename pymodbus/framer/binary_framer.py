@@ -41,12 +41,12 @@ class ModbusBinaryFramer(ModbusFramer):
 
     method = "binary"
 
-    def __init__(self, decoder, client=None):
+    def __init__(self, decoder, **kwargs):
         """Initialize a new instance of the framer.
 
         :param decoder: The decoder implementation to use
         """
-        super().__init__(decoder, client)
+        super().__init__(decoder, **kwargs)
         # self._header.update({"crc": 0x0000})
         self._hsize = 0x01
         self._start = b"\x7b"  # {

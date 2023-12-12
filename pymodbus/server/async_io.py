@@ -63,7 +63,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
             self.running = True
             self.framer = self.server.framer(
                 self.server.decoder,
-                client=None,
+                transport=self.transport,
             )
 
             # schedule the connection handler on the event loop
@@ -181,6 +181,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
             self.server.request_tracer(request, *addr)
 
         broadcast = False
+        slave_id = None
         try:
             if self.server.broadcast_enable and not request.slave_id:
                 broadcast = True
@@ -189,10 +190,16 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 for slave_id in self.server.context.slaves():
                     response = request.execute(self.server.context[slave_id])
             else:
-                context = self.server.context[request.slave_id]
+                if self.server.is_server and self.comm_params.comm_type in (CommType.TCP,):
+                    peer = self.transport.get_extra_info('peername')
+                    if peer is not None:
+                        slave_id = (peer[0], request.slave_id)
+                else:
+                    slave_id = request.slave_id
+                context = self.server.context[slave_id]
                 response = request.execute(context)
         except NoSuchSlaveException:
-            Log.error("requested slave does not exist: {}", request.slave_id)
+            Log.error("requested slave does not exist: {}", slave_id)
             if self.server.ignore_missing_slaves:
                 return  # the client will simply timeout waiting for a response
             response = request.doException(merror.GatewayNoResponse)

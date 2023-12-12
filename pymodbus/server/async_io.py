@@ -180,24 +180,21 @@ class ModbusServerRequestHandler(ModbusProtocol):
         if self.server.request_tracer:
             self.server.request_tracer(request, *addr)
 
-        broadcast = False
-        slave_id = None
+        if self.server.broadcast_enable and not request.slave_id:
+            # if broadcasting then execute on all slave contexts,
+            # note response will be ignored
+            for slave_id in self.server.context.slaves():
+                request.execute(self.server.context[slave_id])
+            # no response when broadcasting
+            return
+
+        slave_id = request.slave_id
         try:
-            if self.server.broadcast_enable and not request.slave_id:
-                broadcast = True
-                # if broadcasting then execute on all slave contexts,
-                # note response will be ignored
-                for slave_id in self.server.context.slaves():
-                    response = request.execute(self.server.context[slave_id])
-            else:
-                if self.server.is_server and self.comm_params.comm_type in (CommType.TCP,):
-                    peer = self.transport.get_extra_info('peername')
-                    if peer is not None:
-                        slave_id = (peer[0], request.slave_id)
-                else:
-                    slave_id = request.slave_id
-                context = self.server.context[slave_id]
-                response = request.execute(context)
+            if self.server.is_server and self.comm_params.comm_type in (CommType.TCP,):
+                peer = self.transport.get_extra_info('peername', (None,))
+                slave_id = (peer[0], request.slave_id)
+            context = self.server.context[slave_id]
+            response = request.execute(context)
         except NoSuchSlaveException:
             Log.error("requested slave does not exist: {}", slave_id)
             if self.server.ignore_missing_slaves:
@@ -210,14 +207,12 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 traceback.format_exc(),
             )
             response = request.doException(merror.SlaveFailure)
-        # no response when broadcasting
-        if not broadcast:
-            response.transaction_id = request.transaction_id
-            response.slave_id = request.slave_id
-            skip_encoding = False
-            if self.server.response_manipulator:
-                response, skip_encoding = self.server.response_manipulator(response)
-            self.send(response, *addr, skip_encoding=skip_encoding)
+        response.transaction_id = request.transaction_id
+        response.slave_id = request.slave_id
+        skip_encoding = False
+        if self.server.response_manipulator:
+            response, skip_encoding = self.server.response_manipulator(response)
+        self.send(response, *addr, skip_encoding=skip_encoding)
 
     def send(self, message, addr, **kwargs):
         """Send message."""

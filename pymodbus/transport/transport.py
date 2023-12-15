@@ -54,7 +54,7 @@ import ssl
 import sys
 from contextlib import suppress
 from enum import Enum
-from typing import Any, Callable, Coroutine, Optional
+from typing import Any, Callable, Coroutine
 
 from pymodbus.logging import Log
 from pymodbus.transport.transport_serial import create_serial_connection

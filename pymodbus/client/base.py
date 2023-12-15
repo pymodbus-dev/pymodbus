@@ -66,7 +66,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             CommParams(
                 comm_type=kwargs.get("CommType"),
                 comm_name="comm",
-                source_address=kwargs.get("source_address", ("0.0.0.0", 0)),
+                source_address=kwargs.get("source_address", None),
                 reconnect_delay=reconnect_delay,
                 reconnect_delay_max=reconnect_delay_max,
                 timeout_connect=timeout,
@@ -358,7 +358,7 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
             CommParams(
                 comm_type=kwargs.get("CommType"),
                 comm_name="comm",
-                source_address=kwargs.get("source_address", ("0.0.0.0", 0)),
+                source_address=kwargs.get("source_address", None),
                 reconnect_delay=reconnect_delay,
                 reconnect_delay_max=reconnect_delay_max,
                 timeout_connect=timeout,

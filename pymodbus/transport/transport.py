@@ -54,7 +54,7 @@ import ssl
 import sys
 from contextlib import suppress
 from enum import Enum
-from typing import Any, Callable, Coroutine
+from typing import Any, Callable, Coroutine, Optional
 
 from pymodbus.logging import Log
 from pymodbus.transport.transport_serial import create_serial_connection
@@ -92,7 +92,7 @@ class CommParams:
     timeout_connect: float | None = None
     host: str = "127.0.0.1"
     port: int = 0
-    source_address: tuple[str, int] = ("0.0.0.0", 0)
+    source_address: tuple[str, int] | None = None
     handle_local_echo: bool = False
 
     # tls

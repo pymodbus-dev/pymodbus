@@ -115,7 +115,7 @@ class ModbusSimulatorServer:
         self,
         modbus_server: str = "server",
         modbus_device: str = "device",
-        http_host: str = "0.0.0.0",
+        http_host: str | None = None,
         http_port: int = 8080,
         log_file: str = "server.log",
         json_file: str = "setup.json",

@@ -90,7 +90,7 @@ class CommParams:
     reconnect_delay: float | None = None
     reconnect_delay_max: float = 0.0
     timeout_connect: float | None = None
-    host: str = "127.0.0.1"
+    host: str = "localhost" # On some machines this will now be ::1
     port: int = 0
     source_address: tuple[str, int] | None = None
     handle_local_echo: bool = False
@@ -171,8 +171,12 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
         # ModbusProtocol specific setup
         if self.is_server:
-            host = self.comm_params.source_address[0]
-            port = int(self.comm_params.source_address[1])
+            if self.comm_params is not None:
+                host = self.comm_params.source_address[0]
+                port = int(self.comm_params.source_address[1])
+            else:
+                host = None # Any host
+                port = 0 # Server will select an ephemeral port for itself
         else:
             host = self.comm_params.host
             port = int(self.comm_params.port)
@@ -192,7 +196,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
             host, port = parts[1][2:], int(parts[2])
         self.init_setup_connect_listen(host, port)
 
-    def init_setup_connect_listen(self, host: str, port: int) -> None:
+    def init_setup_connect_listen(self, host: str | None, port: int) -> None:
         """Handle connect/listen handler."""
         if self.comm_params.comm_type == CommType.SERIAL:
             self.call_create = lambda: create_serial_connection(

@@ -2,7 +2,7 @@
     "server_list": {
         "server": {
             "comm": "tcp",
-            "host": null,
+            "host": "0.0.0.0",
             "port": 5020,
             "ignore_missing_slaves": false,
             "framer": "socket",
@@ -36,7 +36,7 @@
         },
         "server_try_tls": {
             "comm": "tls",
-            "host": null,
+            "host": "0.0.0.0",
             "port": 5020,
             "certfile": "certificates/pymodbus.crt",
             "keyfile": "certificates/pymodbus.key",
@@ -53,7 +53,7 @@
         },
         "server_test_try_udp": {
             "comm": "udp",
-            "host": null,
+            "host": "0.0.0.0",
             "port": 5020,
             "ignore_missing_slaves": false,
             "framer": "socket",

@@ -26,6 +26,7 @@ class SerialTransport(asyncio.Transport):
         self._poll_wait_time = 0.0005
         self.sync_serial.timeout = 0
         self.sync_serial.write_timeout = 0
+        self.future: asyncio.Task | None = None
 
     def setup(self):
         """Prepare to read/write."""
@@ -46,7 +47,7 @@ class SerialTransport(asyncio.Transport):
         self.flush()
         if self.poll_task:
             self.poll_task.cancel()
-            _ = asyncio.ensure_future(self.poll_task)
+            self.future = asyncio.ensure_future(self.poll_task)
             self.poll_task = None
         else:
             self.async_loop.remove_reader(self.sync_serial.fileno())

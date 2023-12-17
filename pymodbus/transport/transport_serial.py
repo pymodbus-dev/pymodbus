@@ -26,7 +26,7 @@ class SerialTransport(asyncio.Transport):
         self._poll_wait_time = 0.0005
         self.sync_serial.timeout = 0
         self.sync_serial.write_timeout = 0
-        self.future = None
+        self.future: asyncio.Task | None = None
 
     def setup(self):
         """Prepare to read/write."""

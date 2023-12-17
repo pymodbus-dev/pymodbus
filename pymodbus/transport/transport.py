@@ -198,7 +198,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
             host, port = parts[1][2:], int(parts[2])
         self.init_setup_connect_listen(host, port)
 
-    def init_setup_connect_listen(self, host: str | None, port: int) -> None:
+    def init_setup_connect_listen(self, host: str, port: int) -> None:
         """Handle connect/listen handler."""
         if self.comm_params.comm_type == CommType.SERIAL:
             self.call_create = lambda: create_serial_connection(

@@ -5,7 +5,7 @@ import pytest
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder
-from pymodbus.framer import ModbusSocketFramer
+from pymodbus.framer import ModbusRtuFramer, ModbusSocketFramer
 
 
 class TestFaultyResponses:
@@ -29,6 +29,13 @@ class TestFaultyResponses:
         """Test ok frame."""
         framer.processIncomingPacket(self.good_frame, callback, self.slaves)
         callback.assert_called_once()
+
+    def test_1917_frame(self, callback):
+        """Test invalid frame in issue 1917."""
+        recv = b"\x01\x86\x02\x00\x01"
+        framer = ModbusRtuFramer(ClientDecoder())
+        framer.processIncomingPacket(recv, callback, self.slaves)
+        callback.assert_not_called()
 
     def test_faulty_frame1(self, framer, callback):
         """Test ok frame."""

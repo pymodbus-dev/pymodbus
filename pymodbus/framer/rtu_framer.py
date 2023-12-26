@@ -113,9 +113,9 @@ class ModbusRtuFramer(ModbusFramer):
         end of the message (python just doesn't have the resolution to
         check for millisecond delays).
         """
-        x = self._buffer
+        # x = self._buffer
         super().resetFrame()
-        self._buffer = x
+        # self._buffer = x
 
     def isFrameReady(self):
         """Check if we should continue decode logic.

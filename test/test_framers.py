@@ -371,7 +371,7 @@ def test_recv_split_packet():
     """Test receive packet."""
     response_ok = False
 
-    def _handle_response(reply):
+    def _handle_response(_reply):
         """Handle response."""
         nonlocal response_ok
         response_ok = True
@@ -383,10 +383,7 @@ def test_recv_split_packet():
         response_ok = False
         framer = ModbusSocketFramer(ClientDecoder())
         if i:
-            try:
-                framer.processIncomingPacket(part1, _handle_response, slave=0)
-            except Exception:
-                pytest.fail("Exception should not happen")
-            assert not response_ok
+            framer.processIncomingPacket(part1, _handle_response, slave=0)
+            assert not response_ok, "Response should not be accepted"
         framer.processIncomingPacket(part2, _handle_response, slave=0)
-        assert response_ok
+        assert response_ok, "Response is valid, but not accepted"

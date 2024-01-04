@@ -8,9 +8,12 @@ from pymodbus.bit_read_message import ReadCoilsRequest
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder
-from pymodbus.framer.ascii_framer import ModbusAsciiFramer
-from pymodbus.framer.binary_framer import ModbusBinaryFramer
-from pymodbus.framer.rtu_framer import ModbusRtuFramer
+from pymodbus.framer import (
+    ModbusAsciiFramer,
+    ModbusBinaryFramer,
+    ModbusRtuFramer,
+    ModbusSocketFramer,
+)
 from pymodbus.transport import CommType
 from pymodbus.utilities import ModbusTransactionState
 
@@ -26,6 +29,10 @@ def fixture_rtu_framer():
     """RTU framer."""
     return ModbusRtuFramer(ClientDecoder())
 
+@pytest.fixture(name="socket_framer")
+def fixture_socket_framer():
+    """Socket framer."""
+    return ModbusSocketFramer(ClientDecoder())
 
 @pytest.fixture(name="ascii_framer")
 def fixture_ascii_framer():
@@ -359,3 +366,27 @@ def test_decode_ascii_data(ascii_framer, data):
         assert data.get("fcode") == 1
     else:
         assert not data
+
+def test_recv_split_packet():
+    """Test receive packet."""
+    response_ok = False
+
+    def _handle_response(reply):
+        """Handle response."""
+        nonlocal response_ok
+        response_ok = True
+
+    message = bytearray(b"\x00\x01\x00\x00\x00\x0b\x01\x03\x08\x00\xb5\x12\x2f\x37\x21\x00\x03")
+    for i in range(0, len(message)):
+        part1 = message[:i]
+        part2 = message[i:]
+        response_ok = False
+        framer = ModbusSocketFramer(ClientDecoder())
+        if i:
+            try:
+                framer.processIncomingPacket(part1, _handle_response, slave=0)
+            except Exception:
+                pytest.fail("Exception should not happen")
+            assert not response_ok
+        framer.processIncomingPacket(part2, _handle_response, slave=0)
+        assert response_ok

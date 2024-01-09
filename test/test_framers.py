@@ -8,9 +8,12 @@ from pymodbus.bit_read_message import ReadCoilsRequest
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder
-from pymodbus.framer.ascii_framer import ModbusAsciiFramer
-from pymodbus.framer.binary_framer import ModbusBinaryFramer
-from pymodbus.framer.rtu_framer import ModbusRtuFramer
+from pymodbus.framer import (
+    ModbusAsciiFramer,
+    ModbusBinaryFramer,
+    ModbusRtuFramer,
+    ModbusSocketFramer,
+)
 from pymodbus.transport import CommType
 from pymodbus.utilities import ModbusTransactionState
 
@@ -26,6 +29,10 @@ def fixture_rtu_framer():
     """RTU framer."""
     return ModbusRtuFramer(ClientDecoder())
 
+@pytest.fixture(name="socket_framer")
+def fixture_socket_framer():
+    """Socket framer."""
+    return ModbusSocketFramer(ClientDecoder())
 
 @pytest.fixture(name="ascii_framer")
 def fixture_ascii_framer():
@@ -334,7 +341,6 @@ def test_recv_packet(rtu_framer):
     rtu_framer.client = client
     assert rtu_framer.recvPacket(len(message)) == message
 
-
 def test_process(rtu_framer):
     """Test process."""
     rtu_framer._buffer = TEST_MESSAGE  # pylint: disable=protected-access
@@ -359,3 +365,46 @@ def test_decode_ascii_data(ascii_framer, data):
         assert data.get("fcode") == 1
     else:
         assert not data
+
+def test_recv_split_packet():
+    """Test receive packet."""
+    response_ok = False
+
+    def _handle_response(_reply):
+        """Handle response."""
+        nonlocal response_ok
+        response_ok = True
+
+    message = bytearray(b"\x00\x01\x00\x00\x00\x0b\x01\x03\x08\x00\xb5\x12\x2f\x37\x21\x00\x03")
+    for i in range(0, len(message)):
+        part1 = message[:i]
+        part2 = message[i:]
+        response_ok = False
+        framer = ModbusSocketFramer(ClientDecoder())
+        if i:
+            framer.processIncomingPacket(part1, _handle_response, slave=0)
+            assert not response_ok, "Response should not be accepted"
+        framer.processIncomingPacket(part2, _handle_response, slave=0)
+        assert response_ok, "Response is valid, but not accepted"
+
+
+def test_recv_socket_exception_packet():
+    """Test receive packet."""
+    response_ok = False
+
+    def _handle_response(_reply):
+        """Handle response."""
+        nonlocal response_ok
+        response_ok = True
+
+    message = bytearray(b"\x00\x02\x00\x00\x00\x02\x01\x84\x02")
+    response_ok = False
+    framer = ModbusSocketFramer(ClientDecoder())
+    framer.processIncomingPacket(message, _handle_response, slave=0)
+    assert response_ok, "Response is valid, but not accepted"
+
+    message = bytearray(b"\x00\x01\x00\x00\x00\x0b\x01\x03\x08\x00\xb5\x12\x2f\x37\x21\x00\x03")
+    response_ok = False
+    framer = ModbusSocketFramer(ClientDecoder())
+    framer.processIncomingPacket(message, _handle_response, slave=0)
+    assert response_ok, "Response is valid, but not accepted"

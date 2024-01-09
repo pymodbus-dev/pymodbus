@@ -11,7 +11,7 @@ PyModbus - A Python Modbus Stack
 
 Pymodbus is a full Modbus protocol implementation offering client/server with synchronous/asynchronous API a well as simulators.
 
-Current release is `3.6.2 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.6.2>`_.
+Current release is `3.6.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.6.3>`_.
 
 Bleeding edge (not released) is `dev <https://github.com/pymodbus-dev/pymodbus/tree/dev>`_.
 
@@ -34,7 +34,7 @@ Pymodbus consist of 5 parts:
 
 Common features
 ^^^^^^^^^^^^^^^
-* Full `modbus standard protocol <_static/Modbus_Application_Protocol_V1_1b3.pdf>`_ implementation
+* Full modbus standard protocol implementation
 * Support for custom function codes
 * support serial (rs-485), tcp, tls and udp communication
 * support all standard frames: socket, rtu, rtu-over-tcp, tcp and ascii
@@ -44,6 +44,9 @@ Common features
 * thorough test suite, that test all corners of the library
 * automatically tested on Windows, Linux and MacOS combined with python 3.8 - 3.12
 * strongly typed API (py.typed present)
+
+The modbus protocol specification: Modbus_Application_Protocol_V1_1b3.pdf can be found on
+`modbus org <https://modbus.org>`_
 
 
 Client Features

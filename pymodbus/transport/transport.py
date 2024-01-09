@@ -90,9 +90,9 @@ class CommParams:
     reconnect_delay: float | None = None
     reconnect_delay_max: float = 0.0
     timeout_connect: float | None = None
-    host: str = "127.0.0.1"
+    host: str = "localhost" # On some machines this will now be ::1
     port: int = 0
-    source_address: tuple[str, int] = ("0.0.0.0", 0)
+    source_address: tuple[str, int] | None = None
     handle_local_echo: bool = False
 
     # tls
@@ -171,8 +171,14 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
         # ModbusProtocol specific setup
         if self.is_server:
-            host = self.comm_params.source_address[0]
-            port = int(self.comm_params.source_address[1])
+            if self.comm_params.source_address is not None:
+                host = self.comm_params.source_address[0]
+                port = int(self.comm_params.source_address[1])
+            else:
+                # This behaviour isn't quite right.
+                # It listens on any IPv4 address rather than the more natural default of any address (v6 or v4).
+                host = "0.0.0.0" # Any IPv4 host
+                port = 0 # Server will select an ephemeral port for itself
         else:
             host = self.comm_params.host
             port = int(self.comm_params.port)

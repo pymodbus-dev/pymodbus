@@ -247,6 +247,7 @@ class ModbusRtuFramer(ModbusFramer):
         :param message: Message to be sent over the bus
         :return:
         """
+        super().resetFrame()
         start = time.time()
         timeout = start + self.client.comm_params.timeout_connect
         while self.client.state != ModbusTransactionState.IDLE:

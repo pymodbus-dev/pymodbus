@@ -402,3 +402,9 @@ def test_recv_socket_exception_packet():
     framer = ModbusSocketFramer(ClientDecoder())
     framer.processIncomingPacket(message, _handle_response, slave=0)
     assert response_ok, "Response is valid, but not accepted"
+
+    message = bytearray(b"\x00\x01\x00\x00\x00\x0b\x01\x03\x08\x00\xb5\x12\x2f\x37\x21\x00\x03")
+    response_ok = False
+    framer = ModbusSocketFramer(ClientDecoder())
+    framer.processIncomingPacket(message, _handle_response, slave=0)
+    assert response_ok, "Response is valid, but not accepted"

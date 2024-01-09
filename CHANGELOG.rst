@@ -7,6 +7,16 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.6.3
+-------------
+* solve Socket_framer problem with Exception response (#1925)
+* Allow socket frames to be split in multiple packets (#1923)
+* Reset frame for serial connections.
+* Source address None not 0.0.0.0 for IPv6
+* Missing Copyright in License file
+* Correct wrong url to modbus protocol spec.
+* Fix serial port in TestComm.
+
 Version 3.6.2
 -------------
 * Set documentation to v3.6.2.

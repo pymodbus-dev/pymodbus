@@ -341,7 +341,6 @@ def test_recv_packet(rtu_framer):
     rtu_framer.client = client
     assert rtu_framer.recvPacket(len(message)) == message
 
-
 def test_process(rtu_framer):
     """Test process."""
     rtu_framer._buffer = TEST_MESSAGE  # pylint: disable=protected-access
@@ -387,3 +386,19 @@ def test_recv_split_packet():
             assert not response_ok, "Response should not be accepted"
         framer.processIncomingPacket(part2, _handle_response, slave=0)
         assert response_ok, "Response is valid, but not accepted"
+
+
+def test_recv_socket_exception_packet():
+    """Test receive packet."""
+    response_ok = False
+
+    def _handle_response(_reply):
+        """Handle response."""
+        nonlocal response_ok
+        response_ok = True
+
+    message = bytearray(b"\x00\x02\x00\x00\x00\x02\x01\x84\x02")
+    response_ok = False
+    framer = ModbusSocketFramer(ClientDecoder())
+    framer.processIncomingPacket(message, _handle_response, slave=0)
+    assert response_ok, "Response is valid, but not accepted"

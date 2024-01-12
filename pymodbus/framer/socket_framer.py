@@ -77,7 +77,7 @@ class ModbusSocketFramer(ModbusFramer):
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         """
-        length = self._hsize + self._header["len"] - 1
+        length = self._hsize + self._header["len"]
         self._buffer = self._buffer[length:]
         self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
 

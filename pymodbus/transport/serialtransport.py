@@ -32,7 +32,7 @@ class SerialTransport(asyncio.Transport):
         """Prepare to read/write."""
         if os.name == "nt" or self.force_poll:
             self.poll_task = asyncio.create_task(self._polling_task())
-            self.poll_task.set_name("transport_serial poll")
+            self.poll_task.set_name("SerialTransport poll")
         else:
             self.async_loop.add_reader(self.sync_serial.fileno(), self._read_ready)
         self.async_loop.call_soon(self._protocol.connection_made, self)

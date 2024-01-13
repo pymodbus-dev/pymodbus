@@ -8,7 +8,7 @@ from threading import enumerate as thread_enumerate
 import pytest
 
 from pymodbus.datastore import ModbusBaseSlaveContext
-from pymodbus.transport import NullModem
+from pymodbus.transport.transport import NullModem
 
 
 def pytest_configure():

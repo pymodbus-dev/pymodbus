@@ -3,7 +3,7 @@ import asyncio
 
 import pytest
 
-from pymodbus.transport import NullModem
+from pymodbus.transport.transport import NullModem
 
 
 class TestNullModem:

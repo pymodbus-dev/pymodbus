@@ -10,7 +10,7 @@ from pymodbus.transport import (
     CommType,
     ModbusProtocol,
 )
-from pymodbus.transport.transport_serial import SerialTransport
+from pymodbus.transport.serialtransport import SerialTransport
 
 
 FACTOR = 1.2 if not pytest.IS_WINDOWS else 4.2

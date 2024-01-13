@@ -10,8 +10,8 @@ from pymodbus.transport import (
     CommParams,
     CommType,
     ModbusProtocol,
-    NullModem,
 )
+from pymodbus.transport.transport import NullModem
 
 
 class DummyProtocol(ModbusProtocol):

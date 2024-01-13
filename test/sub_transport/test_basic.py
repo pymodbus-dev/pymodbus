@@ -8,7 +8,7 @@ from pymodbus.transport import (
     CommType,
     ModbusProtocol,
 )
-from pymodbus.transport.transport_serial import (
+from pymodbus.transport.serialtransport import (
     SerialTransport,
     create_serial_connection,
 )
@@ -274,7 +274,7 @@ class TestBasicModbusProtocol:
 
 
 @mock.patch(
-    "pymodbus.transport.transport_serial.serial.serial_for_url", mock.MagicMock()
+    "pymodbus.transport.serialtransport.serial.serial_for_url", mock.MagicMock()
 )
 class TestBasicSerial:
     """Test transport serial module."""

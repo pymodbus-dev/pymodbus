@@ -57,7 +57,7 @@ from enum import Enum
 from typing import Any, Callable, Coroutine
 
 from pymodbus.logging import Log
-from pymodbus.transport.transport_serial import create_serial_connection
+from pymodbus.transport.serialtransport import create_serial_connection
 
 
 NULLMODEM_HOST = "__pymodbus_nullmodem"

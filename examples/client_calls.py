@@ -150,7 +150,7 @@ def handle_input_registers(client):
     assert len(rr.registers) == 8
 
 
-def execute_information_requests(client):  # pragma no cover
+def execute_information_requests(client):
     """Execute extended information requests."""
     _logger.info("### Running information requests.")
     rr = client.read_device_information(slave=SLAVE)
@@ -176,7 +176,7 @@ def execute_information_requests(client):  # pragma no cover
     # assert not (rr.event_count + rr.message_count + len(rr.events))
 
 
-def execute_diagnostic_requests(client):  # pragma no cover
+def execute_diagnostic_requests(client):
     """Execute extended diagnostic requests."""
     _logger.info("### Running diagnostic requests.")
     message = b"OK"
@@ -226,4 +226,4 @@ def main(cmdline=None):
 
 
 if __name__ == "__main__":
-    main()  # pragma: no cover
+    main()

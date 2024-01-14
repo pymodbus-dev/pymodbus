@@ -81,7 +81,7 @@ async def run_async_simple_client(comm, host, port, framer=Framer.SOCKET):
             # password="none",
             server_hostname="localhost",
         )
-    else:  # pragma no cover
+    else:
         print(f"Unknown client {comm} selected")
         return
 
@@ -94,15 +94,15 @@ async def run_async_simple_client(comm, host, port, framer=Framer.SOCKET):
     try:
         # See all calls in client_calls.py
         rr = await client.read_coils(1, 1, slave=1)
-    except ModbusException as exc:  # pragma no cover
+    except ModbusException as exc:
         print(f"Received ModbusException({exc}) from library")
         client.close()
         return
-    if rr.isError():  # pragma no cover
+    if rr.isError():
         print(f"Received Modbus library error({rr})")
         client.close()
         return
-    if isinstance(rr, ExceptionResponse):  # pragma no cover
+    if isinstance(rr, ExceptionResponse):
         print(f"Received Modbus library exception ({rr})")
         # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
         client.close()
@@ -114,4 +114,4 @@ async def run_async_simple_client(comm, host, port, framer=Framer.SOCKET):
 if __name__ == "__main__":
     asyncio.run(
         run_async_simple_client("tcp", "127.0.0.1", 5020), debug=True
-    )  # pragma: no cover
+    )

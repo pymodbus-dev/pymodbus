@@ -95,7 +95,7 @@ def setup_sync_client(description=None, cmdline=None):
             #    stopbits=1,
             #    handle_local_echo=False,
         )
-    elif args.comm == "tls":  # pragma no cover
+    elif args.comm == "tls":
         client = modbusClient.ModbusTlsClient(
             args.host,
             port=args.port,
@@ -146,4 +146,4 @@ def main(cmdline=None):
 
 
 if __name__ == "__main__":
-    main()  # pragma: no cover
+    main()

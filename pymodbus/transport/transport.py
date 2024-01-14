@@ -65,7 +65,7 @@ NULLMODEM_HOST = "__pymodbus_nullmodem"
 if sys.version_info.minor == 11:
     USEEXCEPTIONS: tuple[type[Any], type[Any]] | type[Any] = OSError
 else:
-    USEEXCEPTIONS = (  # pragma: no cover
+    USEEXCEPTIONS = (
         asyncio.TimeoutError,
         OSError,
     )

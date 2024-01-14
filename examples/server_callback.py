@@ -66,4 +66,4 @@ async def run_callback_server(cmdline=None):
 
 
 if __name__ == "__main__":
-    asyncio.run(run_callback_server(), debug=True)  # pragma: no cover
+    asyncio.run(run_callback_server(), debug=True)

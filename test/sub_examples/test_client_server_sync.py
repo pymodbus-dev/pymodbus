@@ -25,10 +25,7 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.server import ServerStop
 
 
-if os.name == "nt":
-    SLEEPING = 5
-else:
-    SLEEPING = 1
+SLEEPING = 5 if os.name == "nt" else 1
 
 
 @pytest.mark.parametrize("use_host", ["localhost"])

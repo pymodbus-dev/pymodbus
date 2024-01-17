@@ -29,11 +29,6 @@ def fixture_rtu_framer():
     """RTU framer."""
     return ModbusRtuFramer(ClientDecoder())
 
-@pytest.fixture(name="socket_framer")
-def fixture_socket_framer():
-    """Socket framer."""
-    return ModbusSocketFramer(ClientDecoder())
-
 @pytest.fixture(name="ascii_framer")
 def fixture_ascii_framer():
     """Ascii framer."""

@@ -11,7 +11,6 @@ from pymodbus.transport import (
     CommType,
     ModbusProtocol,
 )
-from pymodbus.transport.transport import NullModem
 
 
 class DummyProtocol(ModbusProtocol):
@@ -48,12 +47,6 @@ class DummyProtocol(ModbusProtocol):
 def prepare_dummy_protocol():
     """Return transport object."""
     return DummyProtocol
-
-
-@pytest.fixture(name="cwd_certificate")
-def prepare_cwd_certificate():
-    """Prepare path to certificate."""
-    return os.path.dirname(__file__) + "/../../examples/certificates/pymodbus."
 
 
 @pytest.fixture(name="use_comm_type")
@@ -138,15 +131,3 @@ def prepare_transport_server(use_cls):
             True, certfile=cwd + "crt", keyfile=cwd + "key"
         )
     return transport
-
-
-@pytest.fixture(name="nullmodem")
-def prepare_nullmodem():
-    """Prepare nullmodem object."""
-    return NullModem(mock.Mock())
-
-
-@pytest.fixture(name="nullmodem_server")
-def prepare_nullmodem_server():
-    """Prepare nullmodem object."""
-    return NullModem(mock.Mock())

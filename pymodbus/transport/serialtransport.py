@@ -31,7 +31,7 @@ class SerialTransport(asyncio.Transport):
     def setup(self):
         """Prepare to read/write."""
         if os.name == "nt" or self.force_poll:
-            self.poll_task = asyncio.create_task(self._polling_task())
+            self.poll_task = asyncio.create_task(self.polling_task())
             self.poll_task.set_name("SerialTransport poll")
         else:
             self.async_loop.add_reader(self.sync_serial.fileno(), self._read_ready)
@@ -41,9 +41,6 @@ class SerialTransport(asyncio.Transport):
         """Close the transport gracefully."""
         if not self.sync_serial:
             return
-        with contextlib.suppress(Exception):
-            self.sync_serial.flush()
-
         self.flush()
         if self.poll_task:
             self.poll_task.cancel()
@@ -61,7 +58,7 @@ class SerialTransport(asyncio.Transport):
         """Write some data to the transport."""
         self._write_buffer.append(data)
         if not self.poll_task:
-            self.async_loop.add_writer(self.sync_serial.fileno(), self._write_ready)
+            self.async_loop.add_writer(self.sync_serial.fileno(), self.write_ready)
 
     def flush(self) -> None:
         """Clear output buffer and stops any more data being written."""
@@ -131,7 +128,7 @@ class SerialTransport(asyncio.Transport):
         except serial.SerialException as exc:
             self.close(exc=exc)
 
-    def _write_ready(self):
+    def write_ready(self):
         """Asynchronously write buffered data."""
         data = b"".join(self._write_buffer)
         try:
@@ -139,7 +136,7 @@ class SerialTransport(asyncio.Transport):
                 self._write_buffer = [data[nlen:]]
                 if not self.poll_task:
                     self.async_loop.add_writer(
-                        self.sync_serial.fileno(), self._write_ready
+                        self.sync_serial.fileno(), self.write_ready
                     )
                 return
             self.flush()
@@ -148,19 +145,17 @@ class SerialTransport(asyncio.Transport):
         except serial.SerialException as exc:
             self.close(exc=exc)
 
-    async def _polling_task(self):
+    async def polling_task(self):
         """Poll and try to read/write."""
         try:
-            while True:
+            while self.sync_serial:
                 await asyncio.sleep(self._poll_wait_time)
                 while self._write_buffer:
-                    self._write_ready()
+                    self.write_ready()
                 if self.sync_serial.in_waiting:
                     self._read_ready()
-        except serial.SerialException as exc:
-            self.close(exc=exc)
         except asyncio.CancelledError:
-            pass
+            self.close("Cancelled")
 
 
 async def create_serial_connection(

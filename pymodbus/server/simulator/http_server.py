@@ -98,17 +98,17 @@ class ModbusSimulatorServer:
 
     Example::
 
-        from pymodbus.server import StartAsyncSimulatorServer
+        from pymodbus.server.simulator.http_server import ModbusSimulatorServer
 
         async def run():
-            simulator = StartAsyncSimulatorServer(
+            simulator = ModbusSimulatorServer(
                 modbus_server="my server",
                 modbus_device="my device",
                 http_host="localhost",
                 http_port=8080)
-            await simulator.start()
+            await simulator.run_forever(only_start=True)
             ...
-            await simulator.close()
+            await simulator.stop()
     """
 
     def __init__(

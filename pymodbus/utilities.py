@@ -106,7 +106,8 @@ def pack_bitstring(bits: list[bool]) -> bytes:
     """Create a bytestring out of a list of bits.
 
     :param bits: A list of bits
-
+        bits are processed reversed() to keep their significance intact
+        
     example::
 
         bits   = [False, True, False, True]
@@ -114,7 +115,7 @@ def pack_bitstring(bits: list[bool]) -> bytes:
     """
     ret = b""
     i = packed = 0
-    for bit in bits:
+    for bit in reversed(bits):
         if bit:
             packed += 128
         i += 1

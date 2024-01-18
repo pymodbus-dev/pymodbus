@@ -233,16 +233,16 @@ source = [
 omit = ["examples/contrib/"]
 
 [tool.coverage.report]
-exclude_lines = [
+exclude_also = [
+    "except ImportError:",
     "_check_system_health",
-    "__main__",
+    "if __name__ == .__main__.:",
     ]
 skip_covered = true
-fail_under = 86.0
+fail_under = 86.5
 
 [tool.coverage.html]
 directory = "htmlcov"
-skip_covered = true
 
 
 [tool.codespell]

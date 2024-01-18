@@ -14,7 +14,6 @@ import pymodbus.mei_message as pdu_mei
 import pymodbus.other_message as pdu_other_msg
 import pymodbus.register_read_message as pdu_reg_read
 import pymodbus.register_write_message as pdu_req_write
-from pymodbus.constants import INTERNAL_ERROR
 from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 
@@ -49,11 +48,10 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         """Initialize."""
 
     def execute(
-        self, request: ModbusRequest
+        self, _request: ModbusRequest
     ) -> ModbusResponse | Awaitable[ModbusResponse]:
         """Execute request (code ???).
 
-        :param request: Request to send
         :raises ModbusException:
 
         Call with custom function codes.
@@ -61,7 +59,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         .. tip::
             Response is not interpreted.
         """
-        raise ModbusException(INTERNAL_ERROR)
+        return ModbusResponse()
 
     def read_coils(
         self, address: int, count: int = 1, slave: int = 0, **kwargs: Any

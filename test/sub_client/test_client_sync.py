@@ -1,4 +1,5 @@
 """Test client sync."""
+import socket
 from itertools import count
 from test.conftest import mockSocket
 from unittest import mock
@@ -46,13 +47,14 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
 
         # connect/disconnect
         assert client.connect()
+        assert client.connected
         client.close()
 
         # already closed socket
         client.socket = False
         client.close()
 
-        assert str(client) == "ModbusUdpClient(127.0.0.1:502)"
+        assert str(client) == "ModbusUdpClient 127.0.0.1:502"
 
     def test_udp_client_is_socket_open(self):
         """Test the udp client is_socket_open method."""
@@ -121,14 +123,18 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         assert client.recv(1) == b"\x45"
 
         # connect/disconnect
+        assert client.connected
         assert client.connect()
+        mock_select.select.side_effect = ValueError
+        with pytest.raises(ConnectionException):
+            client.recv(1)
         client.close()
 
         # already closed socket
         client.socket = False
         client.close()
 
-        assert str(client) == "ModbusTcpClient(127.0.0.1:502)"
+        assert str(client) == "ModbusTcpClient 127.0.0.1:502"
 
     def test_tcp_client_is_socket_open(self):
         """Test the tcp client is_socket_open method."""
@@ -227,13 +233,14 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         assert client.recv(1) == b"\x45"
 
         # connect/disconnect
+        assert not client.connected
         assert client.connect()
         client.close()
 
         # already closed socket
         client.socket = False
         client.close()
-        assert str(client) == "ModbusTlsClient(localhost:802)"
+        assert str(client) == "ModbusTlsClient localhost:802"
 
         client = ModbusTcpClient("127.0.0.1")
         client.socket = mockSocket()
@@ -340,6 +347,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         assert client.recv(1) == b"\x00"
 
         # connect/disconnect
+        assert client.connected
         assert client.connect()
         client.close()
 
@@ -348,7 +356,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         assert rtu_client.connect()
         assert rtu_client.socket.interCharTimeout == rtu_client.inter_char_timeout
         rtu_client.close()
-        assert "baud[19200])" in str(client)
+        assert str(client) == "ModbusSerialClient /dev/null:0"
 
         # already closed socket
         client.socket = False
@@ -388,6 +396,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client.state = 0
         assert client.send("1234") == 4
 
+
     @mock.patch("serial.Serial")
     def test_serial_client_cleanup_buffer_before_send(self, mock_serial):
         """Test the serial client send method."""
@@ -426,3 +435,14 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
             f"framer={client.framer}, timeout={client.comm_params.timeout_connect}>"
         )
         assert repr(client) == rep
+
+    def test_serial_client_with(self):
+        """Test with block."""
+        with mock.patch("pymodbus.client.serial.ModbusSerialClient.connect"), ModbusSerialClient("/dev/null") as client:
+                assert client
+                client.socket = mockSocket()
+
+    def test_syn_family(self):
+        """Test family test."""
+        assert ModbusTcpClient.get_address_family("::0") == socket.AF_INET6
+        assert ModbusTcpClient.get_address_family("192.168.1.1") == socket.AF_INET

@@ -190,10 +190,6 @@ class ModbusTlsClient(ModbusTcpClient):
             self.close()
         return self.socket is not None
 
-    def __str__(self):
-        """Build a string representation of the connection."""
-        return f"ModbusTlsClient({self.comm_params.host}:{self.comm_params.port})"
-
     def __repr__(self):
         """Return string representation."""
         return (

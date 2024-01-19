@@ -12,7 +12,6 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import Framer
 from pymodbus.logging import Log
 from pymodbus.transport import CommType
-from pymodbus.utilities import ModbusTransactionState
 
 
 class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
@@ -159,7 +158,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         """Connect internal."""
         return self.socket is not None
 
-    def connect(self):  # pylint: disable=invalid-overridden-method
+    def connect(self):
         """Connect to the modbus tcp server."""
         if self.socket:
             return True
@@ -183,31 +182,17 @@ class ModbusTcpClient(ModbusBaseSyncClient):
             self.close()
         return self.socket is not None
 
-    def close(self):  # pylint: disable=arguments-differ
+    def close(self):
         """Close the underlying socket connection."""
         if self.socket:
             self.socket.close()
         self.socket = None
-
-    def _check_read_buffer(self):
-        """Check read buffer."""
-        time_ = time.time()
-        end = time_ + self.comm_params.timeout_connect
-        data = None
-        ready = select.select([self.socket], [], [], end - time_)
-        if ready[0]:
-            data = self.socket.recv(1024)
-        return data
 
     def send(self, request):
         """Send data on the underlying socket."""
         super().send(request)
         if not self.socket:
             raise ConnectionException(str(self))
-        if self.state == ModbusTransactionState.RETRYING:
-            if data := self._check_read_buffer():
-                return data
-
         if request:
             return self.socket.send(request)
         return 0
@@ -299,13 +284,6 @@ class ModbusTcpClient(ModbusBaseSyncClient):
     def is_socket_open(self):
         """Check if socket is open."""
         return self.socket is not None
-
-    def __str__(self):
-        """Build a string representation of the connection.
-
-        :returns: The string representation
-        """
-        return f"ModbusTcpClient({self.comm_params.host}:{self.comm_params.port})"
 
     def __repr__(self):
         """Return string representation."""

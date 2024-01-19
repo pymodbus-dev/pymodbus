@@ -198,7 +198,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Connect internal."""
         return self.connect()
 
-    def connect(self):  # pylint: disable=invalid-overridden-method
+    def connect(self):
         """Connect to the modbus serial server."""
         if self.socket:
             return True
@@ -219,21 +219,15 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             self.close()
         return self.socket is not None
 
-    def close(self):  # pylint: disable=arguments-differ
+    def close(self):
         """Close the underlying socket connection."""
         if self.socket:
             self.socket.close()
         self.socket = None
 
     def _in_waiting(self):
-        """Return _in_waiting."""
-        in_waiting = "in_waiting" if hasattr(self.socket, "in_waiting") else "inWaiting"
-
-        if in_waiting == "in_waiting":
-            waitingbytes = getattr(self.socket, in_waiting)
-        else:
-            waitingbytes = getattr(self.socket, in_waiting)()
-        return waitingbytes
+        """Return waiting bytes."""
+        return getattr(self.socket, "in_waiting") if hasattr(self.socket, "in_waiting") else getattr(self.socket, "inWaiting")()
 
     def send(self, request):
         """Send data on the underlying socket.
@@ -246,20 +240,9 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         if not self.socket:
             raise ConnectionException(str(self))
         if request:
-            try:
-                if waitingbytes := self._in_waiting():
-                    result = self.socket.read(waitingbytes)
-                    if self.state == ModbusTransactionState.RETRYING:
-                        Log.debug(
-                            "Sending available data in recv buffer {}", result, ":hex"
-                        )
-                        return result
-                    Log.warning("Cleanup recv buffer before send: {}", result, ":hex")
-            except NotImplementedError:
-                pass
-            if self.state != ModbusTransactionState.SENDING:
-                Log.debug('New Transaction state "SENDING"')
-                self.state = ModbusTransactionState.SENDING
+            if waitingbytes := self._in_waiting():
+                result = self.socket.read(waitingbytes)
+                Log.warning("Cleanup recv buffer before send: {}", result, ":hex")
             size = self.socket.write(request)
             return size
         return 0
@@ -268,16 +251,10 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Wait for data."""
         size = 0
         more_data = False
-        if (
-            self.comm_params.timeout_connect is not None
-            and self.comm_params.timeout_connect
-        ):
-            condition = partial(
-                lambda start, timeout: (time.time() - start) <= timeout,
-                timeout=self.comm_params.timeout_connect,
-            )
-        else:
-            condition = partial(lambda dummy1, dummy2: True, dummy2=None)
+        condition = partial(
+            lambda start, timeout: (time.time() - start) <= timeout,
+            timeout=self.comm_params.timeout_connect,
+        )
         start = time.time()
         while condition(start):
             available = self._in_waiting()
@@ -306,14 +283,8 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     def is_socket_open(self):
         """Check if socket is open."""
         if self.socket:
-            if hasattr(self.socket, "is_open"):
-                return self.socket.is_open
-            return self.socket.isOpen()
+            return self.socket.is_open if hasattr(self.socket, "is_open") else self.socket.isOpen()
         return False
-
-    def __str__(self):
-        """Build a string representation of the connection."""
-        return f"ModbusSerialClient({self.framer} baud[{self.comm_params.baudrate}])"
 
     def __repr__(self):
         """Return string representation."""

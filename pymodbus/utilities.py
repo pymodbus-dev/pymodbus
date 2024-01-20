@@ -107,7 +107,6 @@ def pack_bitstring(bits: list[bool]) -> bytes:
 
     :param bits: A list of bits
         bits are processed reversed() to keep their significance intact
-        
     example::
 
         bits   = [False, True, False, True]

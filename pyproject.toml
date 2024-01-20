@@ -225,7 +225,7 @@ asyncio_mode = "auto"
 timeout = 40
 
 [tool.coverage.run]
-include = [
+source = [
     "examples/",
     "pymodbus/",
     "test/",
@@ -233,12 +233,17 @@ include = [
 omit = ["examples/contrib/"]
 
 [tool.coverage.report]
-exclude_lines = [
+exclude_also = [
+    "except ImportError:",
     "_check_system_health",
     "if __name__ == .__main__.:",
     ]
+skip_covered = true
+fail_under = 86.5
 
-ignore_errors = true
+[tool.coverage.html]
+directory = "htmlcov"
+
 
 [tool.codespell]
 skip = "./build,./doc/source/_static,venv,.venv,.git,htmlcov,CHANGELOG.rst,.mypy_cache"

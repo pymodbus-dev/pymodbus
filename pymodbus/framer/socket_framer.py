@@ -72,20 +72,21 @@ class ModbusSocketFramer(ModbusFramer):
 
         Return true if we were successful.
         """
-        if self.isFrameReady():
-            (
-                self._header["tid"],
-                self._header["pid"],
-                self._header["len"],
-                self._header["uid"],
-            ) = struct.unpack(">HHHB", self._buffer[0 : self._hsize])
+        if not self.isFrameReady():
+            return False
+        (
+            self._header["tid"],
+            self._header["pid"],
+            self._header["len"],
+            self._header["uid"],
+        ) = struct.unpack(">HHHB", self._buffer[0 : self._hsize])
 
-            # someone sent us an error? ignore it
-            if self._header["len"] < 2:
-                self.advanceFrame()
-            # we have at least a complete message, continue
-            elif len(self._buffer) - self._hsize + 1 >= self._header["len"]:
-                return True
+        # someone sent us an error? ignore it
+        if self._header["len"] < 2:
+            self.advanceFrame()
+        # we have at least a complete message, continue
+        elif len(self._buffer) - self._hsize + 1 >= self._header["len"]:
+            return True
         # we don't have enough of a message yet, wait
         return False
 
@@ -96,7 +97,7 @@ class ModbusSocketFramer(ModbusFramer):
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         """
-        length = self._hsize + self._header["len"] - 1
+        length = self._hsize + self._header["len"]
         self._buffer = self._buffer[length:]
         self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
 
@@ -115,7 +116,7 @@ class ModbusSocketFramer(ModbusFramer):
 
         :returns: The next full frame buffer
         """
-        length = self._hsize + self._header["len"] - 1
+        length = self._hsize + self._header["len"]
         return self._buffer[self._hsize : length]
 
     # ----------------------------------------------------------------------- #
@@ -148,23 +149,15 @@ class ModbusSocketFramer(ModbusFramer):
         The processed and decoded messages are pushed to the callback
         function to process and send.
         """
-        while True:
-            if not self.isFrameReady():
-                if len(self._buffer):
-                    # Possible error ???
-                    if self._header["len"] < 2:
-                        self._process(callback, tid, error=True)
-                break
-            if not self.checkFrame():
-                Log.debug("Frame check failed, ignoring!!")
-                self.resetFrame()
-                continue
-            if not self._validate_slave_id(slave, single):
-                header_txt = self._header["uid"]
-                Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
-                self.resetFrame()
-                continue
-            self._process(callback, tid)
+        if not self.checkFrame():
+            Log.debug("Frame check failed, ignoring!!")
+            return
+        if not self._validate_slave_id(slave, single):
+            header_txt = self._header["uid"]
+            Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
+            self.resetFrame()
+            return
+        self._process(callback, tid)
 
     def _process(self, callback, tid, error=False):
         """Process incoming packets irrespective error condition."""

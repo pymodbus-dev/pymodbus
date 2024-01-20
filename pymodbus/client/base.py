@@ -66,7 +66,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             CommParams(
                 comm_type=kwargs.get("CommType"),
                 comm_name="comm",
-                source_address=kwargs.get("source_address", ("0.0.0.0", 0)),
+                source_address=kwargs.get("source_address", None),
                 reconnect_delay=reconnect_delay,
                 reconnect_delay_max=reconnect_delay_max,
                 timeout_connect=timeout,
@@ -163,7 +163,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
                 resp = b"Broadcast write sent - no response expected"
                 break
             try:
-                req = self._build_response(request.transaction_id)
+                req = self.build_response(request.transaction_id)
                 resp = await asyncio.wait_for(
                     req, timeout=self.comm_params.timeout_connect
                 )
@@ -186,14 +186,6 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         self.framer.processIncomingPacket(data, self._handle_response, slave=0)
         return len(data)
 
-    def callback_disconnected(self, _reason: Exception | None) -> None:
-        """Handle lost connection."""
-        for tid in list(self.transaction):
-            self.raise_future(
-                self.transaction.getTransaction(tid),
-                ConnectionException("Connection lost during request"),
-            )
-
     async def connect(self):
         """Connect to the modbus remote host."""
 
@@ -212,7 +204,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             else:
                 Log.debug("Unrequested message: {}", reply, ":str")
 
-    def _build_response(self, tid):
+    def build_response(self, tid):
         """Return a deferred response for the current request."""
         my_future = asyncio.Future()
         if not self.transport:
@@ -229,26 +221,12 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
 
         :meta private:
         """
-        if self.state != ModbusTransactionState.RETRYING:
-            Log.debug('New Transaction state "SENDING"')
-            self.state = ModbusTransactionState.SENDING
-        return request
 
     def recv(self, size):
         """Receive data.
 
         :meta private:
         """
-        return size
-
-    @classmethod
-    def _get_address_family(cls, address):
-        """Get the correct address family."""
-        try:
-            _ = socket.inet_pton(socket.AF_INET6, address)
-        except OSError:  # not a valid ipv6 address
-            return socket.AF_INET
-        return socket.AF_INET6
 
     # ----------------------------------------------------------------------- #
     # The magic methods
@@ -259,8 +237,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         :returns: The current instance of the client
         :raises ConnectionException:
         """
-        if not self.connect():
-            raise ConnectionException(f"Failed to connect[{self.__str__()}]")
+        self.connect()
         return self
 
     async def __aenter__(self):
@@ -269,8 +246,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         :returns: The current instance of the client
         :raises ConnectionException:
         """
-        if not await self.connect():
-            raise ConnectionException(f"Failed to connect[{self.__str__()}]")
+        await self.connect()
         return self
 
     def __exit__(self, klass, value, traceback):
@@ -358,7 +334,7 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
             CommParams(
                 comm_type=kwargs.get("CommType"),
                 comm_name="comm",
-                source_address=kwargs.get("source_address", ("0.0.0.0", 0)),
+                source_address=kwargs.get("source_address", None),
                 reconnect_delay=reconnect_delay,
                 reconnect_delay_max=reconnect_delay_max,
                 timeout_connect=timeout,
@@ -400,11 +376,6 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
     # ----------------------------------------------------------------------- #
     # Client external interface
     # ----------------------------------------------------------------------- #
-    @property
-    def connected(self) -> bool:
-        """Return state of connection."""
-        return self.is_active()
-
     def register(self, custom_response_class: ModbusResponse) -> None:
         """Register a custom response class with the decoder (call **sync**).
 
@@ -415,13 +386,6 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
         have them interpreted automatically.
         """
         self.framer.decoder.register(custom_response_class)
-
-    def close(self, reconnect: bool = False) -> None:
-        """Close connection."""
-        if reconnect:
-            self.connection_lost(asyncio.TimeoutError("Server not responding"))
-        else:
-            self.transport_close()
 
     def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).
@@ -445,80 +409,6 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
         return self.transaction.execute(request)
 
     # ----------------------------------------------------------------------- #
-    # Merged client methods
-    # ----------------------------------------------------------------------- #
-    async def async_execute(self, request=None):
-        """Execute requests asynchronously."""
-        request.transaction_id = self.transaction.getNextTID()
-        packet = self.framer.buildPacket(request)
-
-        count = 0
-        while count <= self.params.retries:
-            if not count or not self.no_resend_on_retry:
-                self.transport_send(packet)
-            if self.params.broadcast_enable and not request.slave_id:
-                resp = b"Broadcast write sent - no response expected"
-                break
-            try:
-                req = self._build_response(request.transaction_id)
-                resp = await asyncio.wait_for(
-                    req, timeout=self.comm_params.timeout_connect
-                )
-                break
-            except asyncio.exceptions.TimeoutError:
-                count += 1
-        if count > self.params.retries:
-            self.close(reconnect=True)
-            raise ModbusIOException(
-                f"ERROR: No response received after {self.params.retries} retries"
-            )
-
-        return resp
-
-    def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
-        """Handle received data.
-
-        returns number of bytes consumed
-        """
-        self.framer.processIncomingPacket(data, self._handle_response, slave=0)
-        return len(data)
-
-    def callback_disconnected(self, _reason: Exception | None) -> None:
-        """Handle lost connection."""
-        for tid in list(self.transaction):
-            self.raise_future(
-                self.transaction.getTransaction(tid),
-                ConnectionException("Connection lost during request"),
-            )
-
-    async def connect(self):
-        """Connect to the modbus remote host."""
-
-    def raise_future(self, my_future, exc):
-        """Set exception of a future if not done."""
-        if not my_future.done():
-            my_future.set_exception(exc)
-
-    def _handle_response(self, reply, **_kwargs):
-        """Handle the processed response and link to correct deferred."""
-        if reply is not None:
-            tid = reply.transaction_id
-            if handler := self.transaction.getTransaction(tid):
-                if not handler.done():
-                    handler.set_result(reply)
-            else:
-                Log.debug("Unrequested message: {}", reply, ":str")
-
-    def _build_response(self, tid):
-        """Return a deferred response for the current request."""
-        my_future = asyncio.Future()
-        if not self.transport:
-            self.raise_future(my_future, ConnectionException("Client is not connected"))
-        else:
-            self.transaction.addTransaction(my_future, tid)
-        return my_future
-
-    # ----------------------------------------------------------------------- #
     # Internal methods
     # ----------------------------------------------------------------------- #
     def send(self, request):
@@ -539,13 +429,19 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
         return size
 
     @classmethod
-    def _get_address_family(cls, address):
+    def get_address_family(cls, address):
         """Get the correct address family."""
         try:
             _ = socket.inet_pton(socket.AF_INET6, address)
         except OSError:  # not a valid ipv6 address
             return socket.AF_INET
         return socket.AF_INET6
+
+    def connect(self):
+        """Connect to other end, overwritten."""
+
+    def close(self):
+        """Close connection, overwritten."""
 
     # ----------------------------------------------------------------------- #
     # The magic methods
@@ -556,25 +452,10 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
         :returns: The current instance of the client
         :raises ConnectionException:
         """
-        if not self.connect():
-            raise ConnectionException(f"Failed to connect[{self.__str__()}]")
-        return self
-
-    async def __aenter__(self):
-        """Implement the client with enter block.
-
-        :returns: The current instance of the client
-        :raises ConnectionException:
-        """
-        if not await self.connect():
-            raise ConnectionException(f"Failed to connect[{self.__str__()}]")
+        self.connect()
         return self
 
     def __exit__(self, klass, value, traceback):
-        """Implement the client with exit block."""
-        self.close()
-
-    async def __aexit__(self, klass, value, traceback):
         """Implement the client with exit block."""
         self.close()
 

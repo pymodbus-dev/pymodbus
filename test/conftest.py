@@ -8,7 +8,7 @@ from threading import enumerate as thread_enumerate
 import pytest
 
 from pymodbus.datastore import ModbusBaseSlaveContext
-from pymodbus.transport import NullModem
+from pymodbus.transport.transport import NullModem
 
 
 def pytest_configure():
@@ -51,8 +51,8 @@ async def _check_system_health():
     start_tasks = {task.get_name(): task for task in asyncio.all_tasks()}
     yield
     await asyncio.sleep(0.1)
-    all_clean = True
     for count in range(10):
+        all_clean = True
         error_text = f"ERROR tasks/threads hanging after {count} retries:\n"
         for thread in thread_enumerate():
             name = thread.getName()
@@ -72,7 +72,7 @@ async def _check_system_health():
                 all_clean = False
         if all_clean:
             break
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.3)
     assert all_clean, error_text
     assert not NullModem.is_dirty()
 

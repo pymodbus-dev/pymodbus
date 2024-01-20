@@ -91,4 +91,4 @@ async def run_simulator():
 
 
 if __name__ == "__main__":
-    asyncio.run(run_simulator(), debug=True)  # pragma no cover
+    asyncio.run(run_simulator(), debug=True)

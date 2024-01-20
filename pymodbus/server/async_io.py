@@ -69,7 +69,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
             # schedule the connection handler on the event loop
             self.handler_task = asyncio.create_task(self.handle())
             self.handler_task.set_name("server connection handler")
-        except Exception as exc:  # pragma: no cover pylint: disable=broad-except
+        except Exception as exc:  # pylint: disable=broad-except
             Log.error(
                 "Server callback_connected exception: {}; {}",
                 exc,
@@ -112,7 +112,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
         # if broadcast is enabled make sure to
         # process requests to address 0
-        if self.server.broadcast_enable:  # pragma: no cover
+        if self.server.broadcast_enable:
             if 0 not in slaves:
                 slaves.append(0)
 
@@ -224,7 +224,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
         else:
             Log.debug("Skipping sending response!!")
 
-    async def _recv_(self):  # pragma: no cover
+    async def _recv_(self):
         """Receive data from the network."""
         try:
             result = await self.receive_queue.get()
@@ -499,7 +499,7 @@ class ModbusSerialServer(ModbusBaseServer):
 
     def __init__(
         self, context, framer=Framer.RTU, identity=None, **kwargs
-    ):  # pragma: no cover
+    ):
         """Initialize the socket server.
 
         If the identity structure is not passed in, the ModbusControlBlock
@@ -692,7 +692,7 @@ async def StartAsyncSerialServer(  # pylint: disable=invalid-name,dangerous-defa
     identity=None,
     custom_functions=[],
     **kwargs,
-):  # pragma: no cover
+):
     """Start and run a serial modbus server.
 
     :param context: The ModbusServerContext datastore

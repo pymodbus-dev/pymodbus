@@ -103,7 +103,7 @@ jobs:
       - name: pytest
         run: |
           env
-          pytest -v --full-trace --timeout=1200
+          pytest -v --cov --full-trace --timeout=1200
 
   analyze:
     name: Analyze Python

@@ -1,14 +1,16 @@
 """Test transport."""
 import asyncio
+import os
 from unittest import mock
 
 import pytest
+import serial
 
 from pymodbus.transport import (
     CommType,
     ModbusProtocol,
 )
-from pymodbus.transport.transport_serial import (
+from pymodbus.transport.serialtransport import (
     SerialTransport,
     create_serial_connection,
 )
@@ -22,7 +24,7 @@ COMM_TYPES = [
 ]
 
 
-class TestBasicModbusProtocol:
+class TestBasicModbusProtocol:   # pylint: disable=too-many-public-methods
     """Test transport module."""
 
     @staticmethod
@@ -52,6 +54,11 @@ class TestBasicModbusProtocol:
         assert not client.is_server
         server.comm_params.sslctx = None
         assert server.is_server
+
+    async def test_init_source_addr(self, use_clc):
+        """Test callbacks."""
+        _client = ModbusProtocol(use_clc, True)
+
 
     async def test_connect(self, client, dummy_protocol):
         """Test properties."""
@@ -274,17 +281,10 @@ class TestBasicModbusProtocol:
 
 
 @mock.patch(
-    "pymodbus.transport.transport_serial.serial.serial_for_url", mock.MagicMock()
+    "pymodbus.transport.serialtransport.serial.serial_for_url", mock.MagicMock()
 )
 class TestBasicSerial:
     """Test transport serial module."""
-
-    @staticmethod
-    @pytest.fixture(name="use_port")
-    def get_port_in_class(base_ports):
-        """Return next port."""
-        base_ports[__class__.__name__] += 1
-        return base_ports[__class__.__name__]
 
     async def test_init(self):
         """Test null modem init."""
@@ -330,3 +330,35 @@ class TestBasicSerial:
         assert transport
         assert protocol
         transport.close()
+
+    async def test_serial_polling(self):
+        """Test polling."""
+        if os.name == "nt":
+            return
+
+        comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
+        comm.sync_serial = mock.MagicMock()
+        comm.sync_serial.read.side_effect = asyncio.CancelledError("test")
+        await comm.polling_task()
+
+    async def test_serial_ready(self):
+        """Test polling."""
+        if os.name == "nt":
+            return
+
+        comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
+        comm.sync_serial = mock.MagicMock()
+        comm.sync_serial.read.side_effect = serial.SerialException("test")
+        await comm.polling_task()
+
+    async def test_serial_write_ready(self):
+        """Test polling."""
+        if os.name == "nt":
+            return
+
+        comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
+        comm.sync_serial = mock.MagicMock()
+        comm.sync_serial.write.side_effect = BlockingIOError("test")
+        comm.write_ready()
+        comm.sync_serial.write.side_effect = serial.SerialException("test")
+        comm.write_ready()

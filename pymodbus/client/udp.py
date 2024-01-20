@@ -164,7 +164,7 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         """Connect internal."""
         return self.socket is not None
 
-    def connect(self):  # pylint: disable=invalid-overridden-method
+    def connect(self):
         """Connect to the modbus tcp server.
 
         :meta private:
@@ -172,7 +172,7 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         if self.socket:
             return True
         try:
-            family = ModbusUdpClient._get_address_family(self.comm_params.host)
+            family = ModbusUdpClient.get_address_family(self.comm_params.host)
             self.socket = socket.socket(family, socket.SOCK_DGRAM)
             self.socket.settimeout(self.comm_params.timeout_connect)
         except OSError as exc:
@@ -180,7 +180,7 @@ class ModbusUdpClient(ModbusBaseSyncClient):
             self.close()
         return self.socket is not None
 
-    def close(self):  # pylint: disable=arguments-differ
+    def close(self):
         """Close the underlying socket connection.
 
         :meta private:
@@ -217,10 +217,6 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         :meta private:
         """
         return True
-
-    def __str__(self):
-        """Build a string representation of the connection."""
-        return f"ModbusUdpClient({self.comm_params.host}:{self.comm_params.port})"
 
     def __repr__(self):
         """Return string representation."""

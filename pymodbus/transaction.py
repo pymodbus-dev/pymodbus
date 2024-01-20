@@ -100,7 +100,7 @@ class ModbusTransactionManager:
             return self.base_adu_size + 2  # Fcode(1), ExceptionCode(1)
         return None
 
-    def _validate_response(self, request, response, exp_resp_len):
+    def _validate_response(self, request, response, exp_resp_len, is_udp=False):
         """Validate Incoming response against request.
 
         :param request: Request sent
@@ -118,7 +118,7 @@ class ModbusTransactionManager:
         ):
             return False
 
-        if "length" in mbap and exp_resp_len:
+        if "length" in mbap and exp_resp_len and not is_udp:
             return mbap.get("length") == exp_resp_len
         return True
 
@@ -161,7 +161,9 @@ class ModbusTransactionManager:
                     else:
                         full = False
                     c_str = str(self.client)
+                    is_udp = False
                     if "modbusudpclient" in c_str.lower().strip():
+                        is_udp = True
                         full = True
                         if not expected_response_length:
                             expected_response_length = 1024
@@ -173,7 +175,8 @@ class ModbusTransactionManager:
                     )
                     while retries > 0:
                         valid_response = self._validate_response(
-                            request, response, expected_response_length
+                            request, response, expected_response_length,
+                            is_udp=is_udp
                         )
                         if valid_response:
                             if (

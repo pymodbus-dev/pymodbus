@@ -30,7 +30,7 @@ from pymodbus.pdu import ModbusExceptions, ModbusRequest, ModbusResponse
 # --------------------------------------------------------------------------- #
 
 
-class CustomModbusResponse(ModbusResponse):  # pragma no cover
+class CustomModbusResponse(ModbusResponse):
     """Custom modbus response."""
 
     function_code = 55
@@ -78,11 +78,11 @@ class CustomModbusRequest(ModbusRequest):
         """Encode."""
         return struct.pack(">HH", self.address, self.count)
 
-    def decode(self, data):  # pragma no cover
+    def decode(self, data):
         """Decode."""
         self.address, self.count = struct.unpack(">HH", data)
 
-    def execute(self, context):  # pragma no cover
+    def execute(self, context):
         """Execute."""
         if not 1 <= self.count <= 0x7D0:
             return self.doException(ModbusExceptions.IllegalValue)
@@ -134,4 +134,4 @@ async def main(host="localhost", port=5020):
 
 
 if __name__ == "__main__":
-    asyncio.run(main())  # pragma: no cover
+    asyncio.run(main())

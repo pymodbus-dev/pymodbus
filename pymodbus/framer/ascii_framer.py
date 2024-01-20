@@ -45,6 +45,9 @@ class ModbusAsciiFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     # Private Helper Functions
     # ----------------------------------------------------------------------- #
+    def _process(self, callback, error=False):
+        """Process incoming packets irrespective error condition."""
+
     def decode_data(self, data):
         """Decode data."""
         if len(data) > 1:

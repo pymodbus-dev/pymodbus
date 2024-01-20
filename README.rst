@@ -298,7 +298,7 @@ Make a pull request::
 
 Test your changes::
 
-   cd pytest
+   cd test
    pytest
 
 

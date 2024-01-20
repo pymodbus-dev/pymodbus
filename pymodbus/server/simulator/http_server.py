@@ -98,7 +98,7 @@ class ModbusSimulatorServer:
 
     Example::
 
-        from pymodbus.server.simulator.http_server import ModbusSimulatorServer
+        from pymodbus.server import ModbusSimulatorServer
 
         async def run():
             simulator = ModbusSimulatorServer(

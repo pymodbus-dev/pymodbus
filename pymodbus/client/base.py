@@ -346,6 +346,7 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
                 parity=kwargs.get("parity", None),
                 stopbits=kwargs.get("stopbits", None),
                 handle_local_echo=kwargs.get("handle_local_echo", False),
+                on_reconnect_callback = on_reconnect_callback,
             ),
             False,
         )
@@ -355,7 +356,6 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
         self.params.close_comm_on_error = bool(close_comm_on_error)
         self.params.strict = bool(strict)
         self.params.broadcast_enable = bool(broadcast_enable)
-        self.on_reconnect_callback = on_reconnect_callback
         self.retry_on_empty: int = 0
         self.no_resend_on_retry = no_resend_on_retry
         self.slaves: list[int] = []

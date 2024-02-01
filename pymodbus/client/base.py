@@ -355,7 +355,7 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
         self.params.close_comm_on_error = bool(close_comm_on_error)
         self.params.strict = bool(strict)
         self.params.broadcast_enable = bool(broadcast_enable)
-        self.on_reconnect_callback = on_reconnect_callback
+        self.params.on_reconnect_callback = on_reconnect_callback
         self.retry_on_empty: int = 0
         self.no_resend_on_retry = no_resend_on_retry
         self.slaves: list[int] = []

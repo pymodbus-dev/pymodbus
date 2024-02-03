@@ -46,6 +46,7 @@ BASE_PORTS = {
     "TestReconnectModbusProtocol": 8000,
     "TestClientServerSyncExamples": 8100,
     "TestClientServerAsyncExamples": 8200,
+    "TestNetwork": 8300,
 }
 
 

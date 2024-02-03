@@ -15,6 +15,13 @@ class ModbusProtocolStub(ModbusProtocol):
         """Initialize Network stub."""
         super().__init__(params, is_server)
 
+    async def start_run(self):
+        """Call need functions to start server/client."""
+        if  self.is_server:
+            return await self.transport_listen()
+        else:
+            return await self.transport_connect()
+
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
         response = self.stub_handle_data(data)

@@ -17,7 +17,7 @@ class TestNetwork:
         base_ports[__class__.__name__] += 1
         return base_ports[__class__.__name__]
 
-    async def test_double_packet(self, use_port, use_cls):
+    async def test_stub(self, use_port, use_cls):
         """Test double packet on network."""
         Log.debug("test_double_packet {}", use_port)
         client = AsyncModbusTcpClient(NULLMODEM_HOST, port=use_port)

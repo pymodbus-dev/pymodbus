@@ -17,12 +17,6 @@ from examples.server_async import (  # noqa: E402  # pylint: disable=wrong-impor
 )
 
 
-@pytest.fixture(name="use_host")
-def define_use_host():
-    """Set default host."""
-    return NULLMODEM_HOST
-
-
 @pytest.fixture(name="mock_clc")
 def define_commandline_client(
     use_comm,

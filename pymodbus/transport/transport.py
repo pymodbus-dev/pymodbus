@@ -202,6 +202,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 parity=self.comm_params.parity,
                 stopbits=self.comm_params.stopbits,
                 timeout=self.comm_params.timeout_connect,
+                exclusive=True,
             )
             return
         if self.comm_params.comm_type == CommType.UDP:

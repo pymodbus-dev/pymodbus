@@ -210,6 +210,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
                 stopbits=self.comm_params.stopbits,
                 baudrate=self.comm_params.baudrate,
                 parity=self.comm_params.parity,
+                exclusive=True,
             )
             if self.params.strict:
                 self.socket.interCharTimeout = self.inter_char_timeout

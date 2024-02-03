@@ -59,6 +59,8 @@ CLIENT_METHODS = [
     "set_baudrate",
     "get_timeout",
     "set_timeout",
+    "get_exclusive",
+    "set_exclusive",
     "get_serial_settings",
 ]
 CLIENT_ATTRIBUTES: list[str] = []

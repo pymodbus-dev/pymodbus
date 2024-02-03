@@ -100,6 +100,7 @@ def run_sync_server(args):
             # bytesize=7,  # The bytesize of the serial messages
             # parity="E",  # Which kind of parity to use
             baudrate=args.baudrate,  # The baud rate to use for the serial device
+            # exclusive=None,  # The exclusive access mode (POSIX only)
             # handle_local_echo=False,  # Handle local echo of the USB-to-RS485 adaptor
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,

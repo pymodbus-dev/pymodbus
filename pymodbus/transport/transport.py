@@ -95,6 +95,7 @@ class CommParams:
     bytesize: int | None = None
     parity: str | None = None
     stopbits: int | None = None
+    exclusive: bool | None = None
 
     @classmethod
     def generate_ssl(
@@ -202,6 +203,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 parity=self.comm_params.parity,
                 stopbits=self.comm_params.stopbits,
                 timeout=self.comm_params.timeout_connect,
+                exclusive=self.comm_params.exclusive,
             )
             return
         if self.comm_params.comm_type == CommType.UDP:

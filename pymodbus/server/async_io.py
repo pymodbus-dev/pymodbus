@@ -511,6 +511,7 @@ class ModbusSerialServer(ModbusBaseServer):
         :param parity: Which kind of parity to use
         :param baudrate: The baud rate to use for the serial device
         :param timeout: The timeout to use for the serial device
+        :param exclusive: Set exclusive access mode (POSIX only)
         :param handle_local_echo: (optional) Discard local echo from dongle.
         :param ignore_missing_slaves: True to not send errors on a request
                             to a missing slave
@@ -533,6 +534,7 @@ class ModbusSerialServer(ModbusBaseServer):
                 parity=kwargs.get("parity", "N"),
                 baudrate=kwargs.get("baudrate", 19200),
                 stopbits=kwargs.get("stopbits", 1),
+                exclusive=kwargs.get("exclusive", None),
             ),
             context=context,
             ignore_missing_slaves=kwargs.get("ignore_missing_slaves", False),

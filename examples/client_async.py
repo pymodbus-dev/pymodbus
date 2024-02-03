@@ -84,6 +84,7 @@ def setup_async_client(description=None, cmdline=None):
             #    bytesize=8,
             #    parity="N",
             #    stopbits=1,
+            #    exclusive=None,
             #    handle_local_echo=False,
         )
     elif args.comm == "tls":

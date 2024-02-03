@@ -388,6 +388,12 @@ def tcp(ctx, host, port, framer):
     default=2,
     type=float,
 )
+@click.option(
+    "--exclusive",
+    help="Set exclusive access mode (POSIX only).",
+    default=None,
+    type=bool,
+)
 def serial(  # pylint: disable=too-many-arguments
     ctx,
     method,
@@ -401,6 +407,7 @@ def serial(  # pylint: disable=too-many-arguments
     dsrdtr,
     timeout,
     write_timeout,
+    exclusive,
 ):
     """Define serial communication."""
     method = method.lower()
@@ -426,6 +433,7 @@ def serial(  # pylint: disable=too-many-arguments
         dsrdtr=dsrdtr,
         timeout=timeout,
         write_timeout=write_timeout,
+        exclusive=exclusive,
         **ctx.obj,
     )
     cli = CLI(client)

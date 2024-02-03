@@ -658,6 +658,22 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
         if self.is_socket_open():
             self.close()
 
+    def get_exclusive(self):
+        """Get exclusive access mode (POSIX only).
+
+        :return: Current exclusive access mode
+        """
+        return self.params.exclusive
+
+    def set_exclusive(self, value):
+        """Set exclusive access mode (POSIX only).
+
+        :param value: Possible values (True, False)
+        """
+        self.params.exclusive = bool(value)
+        if self.is_socket_open():
+            self.close()
+
     def get_serial_settings(self):
         """Get Current Serial port settings.
 
@@ -672,6 +688,7 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
             "read timeout": self.comm_params.timeout_connect,
             "t1.5": self.inter_char_timeout,
             "t3.5": self.silent_interval,
+            "exclusive": self.comm_params.exclusive,
         }
 
 

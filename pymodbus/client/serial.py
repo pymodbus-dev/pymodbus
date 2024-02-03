@@ -35,6 +35,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
     :param bytesize: Number of bits per byte 7-8.
     :param parity: 'E'ven, 'O'dd or 'N'one
     :param stopbits: Number of stop bits 1, 1.5, 2.
+    :param exclusive: Set exclusive access mode (POSIX only).
     :param handle_local_echo: Discard local echo from dongle.
 
     Common optional parameters:
@@ -72,6 +73,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         bytesize: int = 8,
         parity: str = "N",
         stopbits: int = 1,
+        exclusive: bool | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
@@ -90,6 +92,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
             bytesize=bytesize,
             parity=parity,
             stopbits=stopbits,
+            exclusive=exclusive,
             **kwargs,
         )
 
@@ -117,6 +120,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     :param bytesize: Number of bits per byte 7-8.
     :param parity: 'E'ven, 'O'dd or 'N'one
     :param stopbits: Number of stop bits 0-2.
+    :param exclusive: Set exclusive access mode (POSIX only).
     :param handle_local_echo: Discard local echo from dongle.
 
     Common optional parameters:
@@ -162,6 +166,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         bytesize: int = 8,
         parity: str = "N",
         stopbits: int = 1,
+        exclusive: bool | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus Serial Client."""
@@ -173,6 +178,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             bytesize=bytesize,
             parity=parity,
             stopbits=stopbits,
+            exclusive=exclusive,
             **kwargs,
         )
         self.socket = None
@@ -210,6 +216,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
                 stopbits=self.comm_params.stopbits,
                 baudrate=self.comm_params.baudrate,
                 parity=self.comm_params.parity,
+                exclusive=self.comm_params.exclusive,
             )
             if self.params.strict:
                 self.socket.interCharTimeout = self.inter_char_timeout

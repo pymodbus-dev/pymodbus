@@ -97,8 +97,6 @@ def prepare_commparams_client(use_port, use_host, use_comm_type):
     )
 
 
-
-
 @pytest.fixture(name="client")
 def prepare_protocol(use_clc):
     """Prepare transport object."""
@@ -165,6 +163,53 @@ class DummyProtocol(ModbusProtocol):
 def prepare_dummy_protocol():
     """Return transport object."""
     return DummyProtocol
+
+
+@pytest.fixture(name="mock_clc")
+def define_commandline_client(
+    use_comm,
+    use_framer,
+    use_port,
+    use_host,
+):
+    """Define commandline."""
+    my_port = str(use_port)
+    cmdline = ["--comm", use_comm, "--framer", use_framer, "--timeout", "0.1"]
+    if use_comm == "serial":
+        if use_host == NULLMODEM_HOST:
+            use_host = f"{use_host}:{my_port}"
+        else:
+            use_host = f"socket://{use_host}:{my_port}"
+        cmdline.extend(["--baudrate", "9600", "--port", use_host])
+    else:
+        cmdline.extend(["--port", my_port, "--host", use_host])
+    return cmdline
+
+
+@pytest.fixture(name="mock_cls")
+def define_commandline_server(
+    use_comm,
+    use_framer,
+    use_port,
+    use_host,
+):
+    """Define commandline."""
+    my_port = str(use_port)
+    cmdline = [
+        "--comm",
+        use_comm,
+        "--framer",
+        use_framer,
+    ]
+    if use_comm == "serial":
+        if use_host == NULLMODEM_HOST:
+            use_host = f"{use_host}:{my_port}"
+        else:
+            use_host = f"socket://{use_host}:{my_port}"
+        cmdline.extend(["--baudrate", "9600", "--port", use_host])
+    else:
+        cmdline.extend(["--port", my_port, "--host", use_host])
+    return cmdline
 
 
 @pytest.fixture(name="system_health_check", autouse=True)

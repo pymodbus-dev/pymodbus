@@ -8,10 +8,20 @@ from threading import enumerate as thread_enumerate
 from unittest import mock
 
 import pytest
+import pytest_asyncio
 
 from pymodbus.datastore import ModbusBaseSlaveContext
+from pymodbus.server import ServerAsyncStop
 from pymodbus.transport import NULLMODEM_HOST, CommParams, CommType, ModbusProtocol
 from pymodbus.transport.transport import NullModem
+
+
+sys.path.extend(["examples", "../examples", "../../examples"])
+
+from examples.server_async import (  # noqa: E402  # pylint: disable=wrong-import-position
+    run_async_server,
+    setup_server,
+)
 
 
 def pytest_configure():
@@ -210,6 +220,21 @@ def define_commandline_server(
     else:
         cmdline.extend(["--port", my_port, "--host", use_host])
     return cmdline
+
+
+@pytest_asyncio.fixture(name="mock_server")
+async def _run_server(
+    mock_cls,
+):
+    """Run server."""
+    run_args = setup_server(cmdline=mock_cls)
+    task = asyncio.create_task(run_async_server(run_args))
+    task.set_name("mock_server")
+    await asyncio.sleep(0.1)
+    yield mock_cls
+    await ServerAsyncStop()
+    task.cancel()
+    await task
 
 
 @pytest.fixture(name="system_health_check", autouse=True)

@@ -77,7 +77,7 @@ class ModbusSocketFramer(ModbusFramer):
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         """
-        length = self._hsize + self._header["len"]
+        length = self._hsize + self._header["len"] -1
         self._buffer = self._buffer[length:]
         self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
 
@@ -129,15 +129,16 @@ class ModbusSocketFramer(ModbusFramer):
         The processed and decoded messages are pushed to the callback
         function to process and send.
         """
-        if not self.checkFrame():
-            Log.debug("Frame check failed, ignoring!!")
-            return
-        if not self._validate_slave_id(slave, single):
-            header_txt = self._header["uid"]
-            Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
-            self.resetFrame()
-            return
-        self._process(callback, tid)
+        while True:
+            if not self.checkFrame():
+                Log.debug("Frame check failed, ignoring!!")
+                return
+            if not self._validate_slave_id(slave, single):
+                header_txt = self._header["uid"]
+                Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
+                self.resetFrame()
+                return
+            self._process(callback, tid)
 
     def _process(self, callback, tid, error=False):
         """Process incoming packets irrespective error condition."""

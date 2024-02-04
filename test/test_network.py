@@ -1,4 +1,6 @@
 """Test transport."""
+import asyncio
+
 import pytest
 
 from pymodbus.client import AsyncModbusTcpClient
@@ -31,36 +33,43 @@ class TestNetwork:
     async def test_double_packet(self, use_port, use_cls):
         """Test double packet on network."""
         old_data = b''
+        client = AsyncModbusTcpClient(NULLMODEM_HOST, port=use_port)
 
         def local_handle_data(data: bytes) -> bytes | None:
             """Handle server side for this test case."""
             nonlocal old_data
 
             addr = int(data[9])
-            response = data[0:5] + b'\x05\x00\x03\x02\x00' + (addr+10).to_bytes()
+            response = data[0:5] + b'\x05\x00\x03\x02\x00' + (addr*10).to_bytes()
 
             # 1, 4, 8 return correct data
             # 2, 5 return NO data
             # 3 return 2 + 3
             # 6 return 5 + half 6
             # 7 return second half 6 + 7
-            if addr in (2, 5):
+            if addr in (2, 0):
+                old_data = response
                 response = None
             elif addr == 3:
-                response = old_data
-            elif addr == 6:
-                response = old_data
-            elif addr == 7:
-                response = old_data
+                response = old_data + response
+            #elif addr == 6:
+            #    response = old_data
+            #elif addr == 7:
+            #    response = old_data
             return response
+
+        async def local_call(addr: int) -> bool:
+            """Call read_holding_register and control."""
+            nonlocal client
+            reply = await client.read_holding_registers(address=addr, count=1)
+            assert not reply.isError(), f"addr {addr} isError"
+            assert reply.registers[0] == addr * 10, f"addr {addr} value"
 
         stub = ModbusProtocolStub(use_cls, True, handler=local_handle_data)
         stub.stub_handle_data = local_handle_data
         await stub.start_run()
 
-        client = AsyncModbusTcpClient(NULLMODEM_HOST, port=use_port)
         assert await client.connect()
-        await client.read_holding_registers(address=1, count=1)
-        # await asyncio.gather(*[client.read_holding_registers(address=x, count=2) for x in range(0, 1000, 100)])
+        await asyncio.gather(*[local_call(x) for x in range(0, 8)])
         client.transport_close()
         stub.transport_close()

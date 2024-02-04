@@ -37,21 +37,21 @@ class TestNetwork:
             nonlocal old_data
 
             addr = int(data[9])
+            response = data[0:5] + b'\x05\x00\x03\x02\x00' + (addr+10).to_bytes()
+
             # 1, 4, 8 return correct data
             # 2, 5 return NO data
             # 3 return 2 + 3
             # 6 return 5 + half 6
             # 7 return second half 6 + 7
-
-            response = data[0:5] + b'\x05\x00\x03\x02\x00' + (addr+10).to_bytes()
             if addr in (2, 5):
-                return None
+                response = None
             elif addr == 3:
-                return old_data
+                response = old_data
             elif addr == 6:
-                return old_data
+                response = old_data
             elif addr == 7:
-                return old_data
+                response = old_data
             return response
 
         stub = ModbusProtocolStub(use_cls, True, handler=local_handle_data)

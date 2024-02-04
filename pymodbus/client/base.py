@@ -157,13 +157,13 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
 
         count = 0
         while count <= self.retries:
+            req = self.build_response(request.transaction_id)
             if not count or not self.no_resend_on_retry:
                 self.transport_send(packet)
             if self.broadcast_enable and not request.slave_id:
                 resp = b"Broadcast write sent - no response expected"
                 break
             try:
-                req = self.build_response(request.transaction_id)
                 resp = await asyncio.wait_for(
                     req, timeout=self.comm_params.timeout_connect
                 )

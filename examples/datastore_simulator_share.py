@@ -3,11 +3,16 @@
 
 An example of using simulator datastore with json interface.
 
+Detailed description of the device definition can be found at:
+
+    https://pymodbus.readthedocs.io/en/latest/source/library/simulator/config.html#device-entries
+
 usage::
 
-    server_simulator.py [-h]
+    datastore_simulator_share.py [-h]
                         [--log {critical,error,warning,info,debug}]
                         [--port PORT]
+                        [--test_client]
 
     -h, --help
         show this help message and exit
@@ -15,6 +20,8 @@ usage::
         set log level
     -p, --port PORT
         set port to use
+    --test_client
+        starts a client to test the configuration
 
 The corresponding client can be started as:
     python3 client_sync.py
@@ -25,7 +32,7 @@ import argparse
 import asyncio
 import logging
 
-from pymodbus import Framer, pymodbus_apply_logging_config
+from pymodbus import pymodbus_apply_logging_config
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server import StartAsyncTcpServer
@@ -129,24 +136,18 @@ def get_commandline(cmdline=None):
     )
     parser.add_argument("--port", help="set port", type=str, default="5020")
     parser.add_argument("--host", help="set interface", type=str, default="localhost")
+    parser.add_argument("--test_client", help="start client to test", action="store_true")
     args = parser.parse_args(cmdline)
-
     return args
 
 
-def setup_simulator(setup=None, actions=None, cmdline=None):
+def setup_simulator(setup=demo_config, actions=demo_actions, cmdline=None):
     """Run server setup."""
     args = get_commandline(cmdline=cmdline)
     pymodbus_apply_logging_config(args.log.upper())
     _logger.setLevel(args.log.upper())
-    args.framer = Framer.SOCKET
     args.port = int(args.port)
 
-    _logger.info("### Create datastore")
-    if not setup:
-        setup = demo_config
-    if not actions:
-        actions = demo_actions
     context = ModbusSimulatorContext(setup, actions)
     args.context = ModbusServerContext(slaves=context, single=True)
     args.identity = ModbusDeviceIdentification(
@@ -169,7 +170,6 @@ async def run_server_simulator(args):
     await StartAsyncTcpServer(
         context=args.context,
         address=(args.host, args.port),
-        framer=args.framer,
     )
 
 

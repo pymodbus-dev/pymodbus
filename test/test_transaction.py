@@ -13,7 +13,6 @@ from pymodbus.factory import ServerDecoder
 from pymodbus.pdu import ModbusRequest
 from pymodbus.transaction import (
     DictTransactionManager,
-    FifoTransactionManager,
     ModbusAsciiFramer,
     ModbusBinaryFramer,
     ModbusRtuFramer,
@@ -37,7 +36,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     _ascii = None
     _binary = None
     _manager = None
-    _queue_manager = None
     _tm = None
 
     # ----------------------------------------------------------------------- #
@@ -53,7 +51,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._ascii = ModbusAsciiFramer(decoder=self.decoder, client=None)
         self._binary = ModbusBinaryFramer(decoder=self.decoder, client=None)
         self._manager = DictTransactionManager(self.client)
-        self._queue_manager = FifoTransactionManager(self.client)
         self._tm = ModbusTransactionManager(self.client)
 
     # ----------------------------------------------------------------------- #
@@ -244,49 +241,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._manager.addTransaction(handle)
         self._manager.delTransaction(handle.transaction_id)
         assert not self._manager.getTransaction(handle.transaction_id)
-
-    # ----------------------------------------------------------------------- #
-    # Queue based transaction manager
-    # ----------------------------------------------------------------------- #
-    def test_fifo_transaction_manager_tid(self):
-        """Test the fifo transaction manager TID."""
-        for tid in range(1, self._queue_manager.getNextTID() + 10):
-            assert tid + 1 == self._queue_manager.getNextTID()
-        self._queue_manager.reset()
-        assert self._queue_manager.getNextTID() == 1
-
-    def test_get_fifo_transaction_manager_transaction(self):
-        """Test the fifo transaction manager."""
-
-        class Request:  # pylint: disable=too-few-public-methods
-            """Request."""
-
-        self._queue_manager.reset()
-        handle = Request()
-        handle.transaction_id = (  # pylint: disable=attribute-defined-outside-init
-            self._queue_manager.getNextTID()
-        )
-        handle.message = b"testing"  # pylint: disable=attribute-defined-outside-init
-        self._queue_manager.addTransaction(handle)
-        result = self._queue_manager.getTransaction(handle.transaction_id)
-        assert handle.message == result.message
-
-    def test_delete_fifo_transaction_manager_transaction(self):
-        """Test the fifo transaction manager."""
-
-        class Request:  # pylint: disable=too-few-public-methods
-            """Request."""
-
-        self._queue_manager.reset()
-        handle = Request()
-        handle.transaction_id = (  # pylint: disable=attribute-defined-outside-init
-            self._queue_manager.getNextTID()
-        )
-        handle.message = b"testing"  # pylint: disable=attribute-defined-outside-init
-
-        self._queue_manager.addTransaction(handle)
-        self._queue_manager.delTransaction(handle.transaction_id)
-        assert not self._queue_manager.getTransaction(handle.transaction_id)
 
     # ----------------------------------------------------------------------- #
     # TCP tests

@@ -96,7 +96,7 @@ class ModbusSocketFramer(ModbusFramer):
 
         :returns: The next full frame buffer
         """
-        length = self._hsize + self._header["len"]
+        length = self._hsize + self._header["len"] -1
         return self._buffer[self._hsize : length]
 
     # ----------------------------------------------------------------------- #

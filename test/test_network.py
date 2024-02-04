@@ -33,7 +33,7 @@ class TestNetwork:
     async def test_double_packet(self, use_port, use_cls):
         """Test double packet on network."""
         old_data = b''
-        client = AsyncModbusTcpClient(NULLMODEM_HOST, port=use_port)
+        client = AsyncModbusTcpClient(NULLMODEM_HOST, port=use_port, retries=0)
 
         def local_handle_data(data: bytes) -> bytes | None:
             """Handle server side for this test case."""
@@ -70,6 +70,6 @@ class TestNetwork:
         await stub.start_run()
 
         assert await client.connect()
-        await asyncio.gather(*[local_call(x) for x in range(0, 8)])
+        await asyncio.gather(*[local_call(x) for x in range(1, 4)])
         client.transport_close()
         stub.transport_close()

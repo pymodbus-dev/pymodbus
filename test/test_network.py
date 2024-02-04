@@ -1,4 +1,6 @@
 """Test transport."""
+from __future__ import annotations
+
 import asyncio
 
 import pytest
@@ -48,7 +50,7 @@ class TestNetwork:
             # 6 return 6 + 6 (wrong order
             # 8 return 7 + half 8
             # 9 return second half 8 + 9
-            if addr in (2, 5):
+            if addr in {2, 5}:
                 old_data = response
                 response = None
             elif addr == 3:

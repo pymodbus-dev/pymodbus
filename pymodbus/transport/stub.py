@@ -1,6 +1,8 @@
 """ModbusProtocol network stub."""
 from __future__ import annotations
 
+from typing import Callable
+
 from pymodbus.transport.transport import CommParams, ModbusProtocol
 
 
@@ -11,7 +13,7 @@ class ModbusProtocolStub(ModbusProtocol):
         self,
         params: CommParams,
         is_server: bool,
-        handler: callable | None = None,
+        handler: Callable[[bytes], bytes] | None = None,
     ) -> None:
         """Initialize a stub instance."""
         self.stub_handle_data = handler if handler else self.dummy_handler

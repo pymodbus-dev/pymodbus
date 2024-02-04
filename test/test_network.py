@@ -37,9 +37,22 @@ class TestNetwork:
             nonlocal old_data
 
             addr = int(data[9])
-            if addr == 1:
+            # 1, 4, 8 return correct data
+            # 2, 5 return NO data
+            # 3 return 2 + 3
+            # 6 return 5 + half 6
+            # 7 return second half 6 + 7
+
+            response = data[0:5] + b'\x05\x00\x03\x02\x00' + (addr+10).to_bytes()
+            if addr in (2, 5):
                 return None
-            return data
+            elif addr == 3:
+                return old_data
+            elif addr == 6:
+                return old_data
+            elif addr == 7:
+                return old_data
+            return response
 
         stub = ModbusProtocolStub(use_cls, True, handler=local_handle_data)
         stub.stub_handle_data = local_handle_data
@@ -47,7 +60,7 @@ class TestNetwork:
 
         client = AsyncModbusTcpClient(NULLMODEM_HOST, port=use_port)
         assert await client.connect()
-        await client.read_holding_registers(address=10, count=2)
+        await client.read_holding_registers(address=1, count=1)
         # await asyncio.gather(*[client.read_holding_registers(address=x, count=2) for x in range(0, 1000, 100)])
         client.transport_close()
         stub.transport_close()

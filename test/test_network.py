@@ -42,7 +42,7 @@ class TestNetwork:
             nonlocal old_data
 
             addr = int(data[9])
-            response = data[0:5] + b'\x05\x00\x03\x02\x00' + (addr*10).to_bytes()
+            response = data[0:5] + b'\x05\x00\x03\x02\x00' + (addr*10).to_bytes(1, 'big')
 
             # 1, 4, 7 return correct data
             # 2, 5 return NO data

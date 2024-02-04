@@ -10,10 +10,8 @@ class ModbusProtocolStub(ModbusProtocol):
     async def start_run(self):
         """Call need functions to start server/client."""
         if  self.is_server:
-            await self.transport_listen()
-        else:
-            await self.transport_connect()
-        self.transport = self
+            return await self.transport_listen()
+        return await self.transport_connect()
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
@@ -21,11 +19,13 @@ class ModbusProtocolStub(ModbusProtocol):
             self.transport_send(response)
         return len(data)
 
+    def callback_new_connection(self) -> ModbusProtocol:
+        """Call when listener receive new connection request."""
+        return ModbusProtocolStub(self.comm_params, False)
+
     # ---------------- #
     # external methods #
     # ---------------- #
     def stub_handle_data(self, data: bytes) -> bytes | None:
         """Handle received data."""
-        if len(data) > 5:
-            return data
-        return None
+        return data

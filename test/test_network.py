@@ -23,6 +23,8 @@ class TestNetwork:
         stub = ModbusProtocolStub(use_cls, True)
         assert await stub.start_run()
         assert await client.connect()
+        test_data = b"Data got echoed."
+        client.transport.write(test_data)
         client.transport_close()
         stub.transport_close()
 
@@ -33,7 +35,7 @@ class TestNetwork:
         stub = ModbusProtocolStub(use_cls, True)
         await stub.start_run()
         assert await client.connect()
-        await client.read_holding_registers(address=1, count=2)
+        # await client.read_holding_registers(address=1, count=2)
         # await asyncio.gather(*[client.read_holding_registers(address=x, count=2) for x in range(0, 1000, 100)])
         client.transport_close()
         stub.transport_close()

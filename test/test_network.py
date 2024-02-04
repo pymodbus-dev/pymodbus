@@ -1,5 +1,4 @@
 """Test transport."""
-
 import pytest
 
 from pymodbus.client import AsyncModbusTcpClient
@@ -24,5 +23,17 @@ class TestNetwork:
         stub = ModbusProtocolStub(use_cls, True)
         assert await stub.start_run()
         assert await client.connect()
+        client.transport_close()
+        stub.transport_close()
+
+    async def test_double_packet(self, use_port, use_cls):
+        """Test double packet on network."""
+        Log.debug("test_double_packet {}", use_port)
+        client = AsyncModbusTcpClient(NULLMODEM_HOST, port=use_port)
+        stub = ModbusProtocolStub(use_cls, True)
+        await stub.start_run()
+        assert await client.connect()
+        await client.read_holding_registers(address=1, count=2)
+        # await asyncio.gather(*[client.read_holding_registers(address=x, count=2) for x in range(0, 1000, 100)])
         client.transport_close()
         stub.transport_close()

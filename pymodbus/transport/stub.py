@@ -10,8 +10,10 @@ class ModbusProtocolStub(ModbusProtocol):
     async def start_run(self):
         """Call need functions to start server/client."""
         if  self.is_server:
-            return await self.transport_listen()
-        return await self.transport_connect()
+            await self.transport_listen()
+        else:
+            await self.transport_connect()
+        self.transport = self
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""

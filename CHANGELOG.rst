@@ -7,6 +7,28 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.6.4
+-------------
+* Update datastore_simulator example with client (#1967)
+* Test and correct receiving more than one packet (#1965)
+* Remove unused FifoTransactionManager. (#1966)
+* Always set exclusive serial port access. (#1964)
+* Add server/client network stub, to allow test of network packets. (#1963)
+* Combine conftest to a central file (#1962)
+* Call on_reconnect_callback. (#1959)
+* Readd ModbusBaseClient to external API.
+* Update README.rst
+* minor fix for typo and consistency (#1946)
+* More coverage. (#1947)
+* Client coverage 100%. (#1943)
+* Run coverage in CI with % check of coverage. (#1945)
+* transport 100% coverage. (#1941)
+* contrib example: TCP drainage simulator with two devices (#1936)
+* Remove "pragma no cover". (#1935)
+* transport_serial -> serialtransport. (#1933)
+* Fix behavior after Exception response (#1931)
+* Correct expected length for udp sync client. (#1930)
+
 Version 3.6.3
 -------------
 * solve Socket_framer problem with Exception response (#1925)

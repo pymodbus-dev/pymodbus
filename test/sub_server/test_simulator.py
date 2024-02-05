@@ -291,6 +291,14 @@ class TestSimulator:
         exc_setup[Label.repeat][0][Label.repeat_to] = [48, 500]
         with pytest.raises(RuntimeError):
             ModbusSimulatorContext(exc_setup, None)
+        exc_setup = copy.deepcopy(self.default_config)
+        exc_setup[Label.type_uint16].append(0)
+        ModbusSimulatorContext(exc_setup, None)
+        exc_setup = copy.deepcopy(self.default_config)
+        exc_setup[Label.type_uint16].append(250)
+        with pytest.raises(RuntimeError):
+            ModbusSimulatorContext(exc_setup, None)
+
 
     def test_simulator_validate_illegal(self):
         """Test validation without exceptions."""

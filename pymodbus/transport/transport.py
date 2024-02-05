@@ -51,24 +51,15 @@ from __future__ import annotations
 import asyncio
 import dataclasses
 import ssl
-import sys
 from contextlib import suppress
 from enum import Enum
 from typing import Any, Callable, Coroutine
 
 from pymodbus.logging import Log
-from pymodbus.transport.transport_serial import create_serial_connection
+from pymodbus.transport.serialtransport import create_serial_connection
 
 
 NULLMODEM_HOST = "__pymodbus_nullmodem"
-
-if sys.version_info.minor == 11:
-    USEEXCEPTIONS: tuple[type[Any], type[Any]] | type[Any] = OSError
-else:
-    USEEXCEPTIONS = (  # pragma: no cover
-        asyncio.TimeoutError,
-        OSError,
-    )
 
 
 class CommType(Enum):
@@ -94,6 +85,7 @@ class CommParams:
     port: int = 0
     source_address: tuple[str, int] | None = None
     handle_local_echo: bool = False
+    on_reconnect_callback: Callable[[], None] | None = None
 
     # tls
     sslctx: ssl.SSLContext | None = None
@@ -210,6 +202,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 parity=self.comm_params.parity,
                 stopbits=self.comm_params.stopbits,
                 timeout=self.comm_params.timeout_connect,
+                exclusive=True,
             )
             return
         if self.comm_params.comm_type == CommType.UDP:
@@ -254,13 +247,9 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 self.call_create(),
                 timeout=self.comm_params.timeout_connect,
             )
-        except USEEXCEPTIONS as exc:
+        except (asyncio.TimeoutError, OSError) as exc:  # pylint: disable=overlapping-except
             Log.warning("Failed to connect {}", exc)
-            # self.transport_close(intern=True, reconnect=True)
             return False
-        except Exception as exc:
-            Log.warning("Failed to connect UNKNOWN EXCEPTION {}", exc)
-            raise
         return bool(self.transport)
 
     async def transport_listen(self) -> bool:
@@ -480,6 +469,8 @@ class ModbusProtocol(asyncio.BaseProtocol):
                     self.reconnect_delay_current * 1000,
                 )
                 await asyncio.sleep(self.reconnect_delay_current)
+                if self.comm_params.on_reconnect_callback:
+                    self.comm_params.on_reconnect_callback()
                 if await self.transport_connect():
                     break
                 self.reconnect_delay_current = min(

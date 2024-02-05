@@ -1,16 +1,16 @@
 """Test transport."""
 import asyncio
-import sys
 import time
 from unittest import mock
 
 import pytest
 
+from pymodbus.logging import Log
 from pymodbus.transport import (
     CommType,
     ModbusProtocol,
 )
-from pymodbus.transport.transport_serial import SerialTransport
+from pymodbus.transport.serialtransport import SerialTransport
 
 
 FACTOR = 1.2 if not pytest.IS_WINDOWS else 4.2
@@ -37,7 +37,7 @@ class TestCommModbusProtocol:
     )
     async def test_connect(self, client, use_port):
         """Test connect()."""
-        print(f"JAN test_connect --> {use_port}", file=sys.stderr)
+        Log.debug("test_connect {}", use_port)
         start = time.time()
         assert not await client.transport_connect()
         delta = time.time() - start
@@ -55,7 +55,7 @@ class TestCommModbusProtocol:
     )
     async def test_connect_not_ok(self, client, use_port):
         """Test connect()."""
-        print(f"JAN test_connect_not_ok --> {use_port}", file=sys.stderr)
+        Log.debug("test_connect_not_ok {}", use_port)
         start = time.time()
         assert not await client.transport_connect()
         delta = time.time() - start
@@ -73,7 +73,7 @@ class TestCommModbusProtocol:
     )
     async def test_listen(self, server, use_port):
         """Test listen()."""
-        print(f"JAN test_listen --> {use_port}", file=sys.stderr)
+        Log.debug("test_listen {}", use_port)
         assert await server.transport_listen()
         assert server.transport
         server.transport_close()
@@ -89,7 +89,7 @@ class TestCommModbusProtocol:
     )
     async def test_listen_not_ok(self, server, use_port):
         """Test listen()."""
-        print(f"JAN test_listen_not_ok --> {use_port}", file=sys.stderr)
+        Log.debug("test_listen_not_ok {}", use_port)
         assert not await server.transport_listen()
         assert not server.transport
         server.transport_close()
@@ -105,7 +105,7 @@ class TestCommModbusProtocol:
     )
     async def test_connected(self, client, server, use_comm_type, use_port):
         """Test connection and data exchange."""
-        print(f"JAN test_connected --> {use_port}", file=sys.stderr)
+        Log.debug("test_connected {}", use_port)
         assert await server.transport_listen()
         assert await client.transport_connect()
         await asyncio.sleep(0.5)
@@ -144,7 +144,7 @@ class TestCommModbusProtocol:
     )
     async def test_split_serial_packet(self, client, server, use_port):
         """Test connection and data exchange."""
-        print(f"JAN test_split_serial_packet --> {use_port}", file=sys.stderr)
+        Log.debug("test_split_serial_packet {}", use_port)
         assert await server.transport_listen()
         assert await client.transport_connect()
         await asyncio.sleep(0.5)
@@ -173,7 +173,7 @@ class TestCommModbusProtocol:
     )
     async def test_serial_poll(self, client, server, use_port):
         """Test connection and data exchange."""
-        print(f"JAN test_serial_poll --> {use_port}", file=sys.stderr)
+        Log.debug("test_serial_poll {}", use_port)
         assert await server.transport_listen()
         SerialTransport.force_poll = True
         assert await client.transport_connect()
@@ -200,7 +200,7 @@ class TestCommModbusProtocol:
     )
     async def test_connected_multiple(self, client, server, use_port):
         """Test connection and data exchange."""
-        print(f"JAN test_connected_multiple --> {use_port}", file=sys.stderr)
+        Log.debug("test_connected {}", use_port)
         client.comm_params.reconnect_delay = 0.0
         assert await server.transport_listen()
         assert await client.transport_connect()

@@ -17,7 +17,7 @@ from examples.client_calls import main as main_client_calls
 from examples.client_calls import template_call
 from examples.client_custom_msg import main as main_custom_client
 from examples.client_payload import main as main_payload_calls
-from examples.datastore_simulator import main as main_datastore_simulator
+from examples.datastore_simulator_share import main as main_datastore_simulator_share
 from examples.message_generator import generate_messages
 from examples.message_parser import main as main_parse_messages
 from examples.server_async import setup_server
@@ -82,10 +82,10 @@ class TestExamples:
         task.cancel()
         await task
 
-    async def test_datastore_simulator(self, use_port, use_host):
+    async def test_datastore_simulator_share(self, use_port, use_host):
         """Test server simulator."""
         cmdargs = ["--port", str(use_port), "--host", use_host]
-        task = asyncio.create_task(main_datastore_simulator(cmdline=cmdargs))
+        task = asyncio.create_task(main_datastore_simulator_share(cmdline=cmdargs))
         task.set_name("run main_datastore_simulator")
         await asyncio.sleep(0.1)
         testclient = setup_async_client(cmdline=cmdargs)

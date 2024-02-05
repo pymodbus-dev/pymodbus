@@ -115,4 +115,4 @@ async def main(cmdline=None):
 
 
 if __name__ == "__main__":
-    asyncio.run(main(), debug=True)  # pragma: no cover
+    asyncio.run(main(), debug=True)

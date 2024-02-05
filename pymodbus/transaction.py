@@ -1,7 +1,6 @@
 """Collection of transaction based abstractions."""
 
 __all__ = [
-    "FifoTransactionManager",
     "DictTransactionManager",
     "ModbusSocketFramer",
     "ModbusTlsFramer",
@@ -100,7 +99,7 @@ class ModbusTransactionManager:
             return self.base_adu_size + 2  # Fcode(1), ExceptionCode(1)
         return None
 
-    def _validate_response(self, request, response, exp_resp_len):
+    def _validate_response(self, request, response, exp_resp_len, is_udp=False):
         """Validate Incoming response against request.
 
         :param request: Request sent
@@ -118,7 +117,7 @@ class ModbusTransactionManager:
         ):
             return False
 
-        if "length" in mbap and exp_resp_len:
+        if "length" in mbap and exp_resp_len and not is_udp:
             return mbap.get("length") == exp_resp_len
         return True
 
@@ -161,7 +160,9 @@ class ModbusTransactionManager:
                     else:
                         full = False
                     c_str = str(self.client)
+                    is_udp = False
                     if "modbusudpclient" in c_str.lower().strip():
+                        is_udp = True
                         full = True
                         if not expected_response_length:
                             expected_response_length = 1024
@@ -173,7 +174,8 @@ class ModbusTransactionManager:
                     )
                     while retries > 0:
                         valid_response = self._validate_response(
-                            request, response, expected_response_length
+                            request, response, expected_response_length,
+                            is_udp=is_udp
                         )
                         if valid_response:
                             if (
@@ -517,56 +519,3 @@ class DictTransactionManager(ModbusTransactionManager):
         """
         Log.debug("deleting transaction {}", tid)
         self.transactions.pop(tid, None)
-
-
-class FifoTransactionManager(ModbusTransactionManager):
-    """Implements a transaction.
-
-    For a manager where the results are returned in a FIFO manner.
-    """
-
-    def __init__(self, client, **kwargs):
-        """Initialize an instance of the ModbusTransactionManager.
-
-        :param client: The client socket wrapper
-        """
-        super().__init__(client, **kwargs)
-        self.transactions = []
-
-    def __iter__(self):
-        """Iterate over the current managed transactions.
-
-        :returns: An iterator of the managed transactions
-        """
-        return iter(self.transactions)
-
-    def addTransaction(self, request, tid=None):
-        """Add a transaction to the handler.
-
-        This holds the requests in case it needs to be resent.
-        After being sent, the request is removed.
-
-        :param request: The request to hold on to
-        :param tid: The overloaded transaction id to use
-        """
-        tid = tid if tid is not None else request.transaction_id
-        Log.debug("Adding transaction {}", tid)
-        self.transactions.append(request)
-
-    def getTransaction(self, tid):
-        """Return a transaction matching the referenced tid.
-
-        If the transaction does not exist, None is returned
-
-        :param tid: The transaction to retrieve
-        """
-        return self.transactions.pop(0) if self.transactions else None
-
-    def delTransaction(self, tid):
-        """Remove a transaction matching the referenced tid.
-
-        :param tid: The transaction to remove
-        """
-        Log.debug("Deleting transaction {}", tid)
-        if self.transactions:
-            self.transactions.pop(0)

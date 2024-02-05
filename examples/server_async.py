@@ -229,4 +229,4 @@ async def async_helper():
 
 
 if __name__ == "__main__":
-    asyncio.run(async_helper(), debug=True)  # pragma: no cover
+    asyncio.run(async_helper(), debug=True)

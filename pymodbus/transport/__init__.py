@@ -2,21 +2,15 @@
 __all__ = [
     "CommParams",
     "CommType",
-    "create_serial_connection",
     "ModbusProtocol",
-    "NullModem",
+    "ModbusProtocolStub",
     "NULLMODEM_HOST",
-    "SerialTransport",
 ]
 
+from pymodbus.transport.stub import ModbusProtocolStub
 from pymodbus.transport.transport import (
     NULLMODEM_HOST,
     CommParams,
     CommType,
     ModbusProtocol,
-    NullModem,
-)
-from pymodbus.transport.transport_serial import (
-    SerialTransport,
-    create_serial_connection,
 )

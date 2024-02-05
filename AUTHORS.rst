@@ -13,6 +13,7 @@ Thanks to
 - AKJ7
 - Alex
 - Alex Ruddick
+- Alexander Lanin
 - Alexandre CUER
 - Alois Hockenschlohe
 - Arjan
@@ -38,9 +39,11 @@ Thanks to
 - Jakob Ruhe
 - Jakob Schlyter
 - James Braza
+- James Hilliard
 - jan iversen
 - Jerome Velociter
 - Joe Burmeister
+- julian
 - Kenny Johansson
 - Matthias Straka
 - Logan Gunthorpe
@@ -54,6 +57,7 @@ Thanks to
 - Philip Couling
 - Sebastian Machuca
 - Sefa Keleş
+- Steffen Beyer
 - Thijs W
 - Totally a booplicate
 - WouterTuinstra

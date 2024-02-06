@@ -29,6 +29,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
+    :param close_comm_on_error: Close connection on error.
     :param broadcast_enable: True to treat id 0 as broadcast address.
     :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
@@ -46,12 +47,13 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     **Application methods, common to all clients**:
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         framer: Framer,
         timeout: float = 3,
         retries: int = 3,
         retry_on_empty: bool = False,
+        close_comm_on_error: bool = True,
         broadcast_enable: bool = False,
         reconnect_delay: float = 0.1,
         reconnect_delay_max: float = 300,
@@ -83,6 +85,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         )
         self.on_reconnect_callback = on_reconnect_callback
         self.retry_on_empty: int = 0
+        self.close_comm_on_error = close_comm_on_error
         self.no_resend_on_retry = no_resend_on_retry
         self.slaves: list[int] = []
         self.retries: int = retries
@@ -171,7 +174,8 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             except asyncio.exceptions.TimeoutError:
                 count += 1
         if count > self.retries:
-            self.close(reconnect=True)
+            if self.close_comm_on_error:
+                self.close(reconnect=True)
             raise ModbusIOException(
                 f"ERROR: No response received after {self.retries} retries"
             )

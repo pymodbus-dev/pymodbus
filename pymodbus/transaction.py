@@ -59,6 +59,7 @@ class ModbusTransactionManager:
         self.tid = 0
         self.client = client
         self.backoff = kwargs.get("backoff", 0.3)
+        self.close_comm_on_error = kwargs.get("close_comm_on_error", True)
         self.retry_on_empty = kwargs.get("retry_on_empty", False)
         self.retry_on_invalid = kwargs.get("retry_on_invalid", False)
         self.retries = kwargs.get("retries", 3)
@@ -233,7 +234,8 @@ class ModbusTransactionManager:
                             response = ModbusIOException(
                                 last_exception, request.function_code
                             )
-                        self.client.close()
+                        if self.close_comm_on_error:
+                            self.client.close()
                     if hasattr(self.client, "state"):
                         Log.debug(
                             "Changing transaction state from "
@@ -247,7 +249,8 @@ class ModbusTransactionManager:
                 # Handle decode errors in processIncomingPacket method
                 Log.error("Modbus IO exception {}", exc)
                 self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
-                self.client.close()
+                if self.close_comm_on_error:
+                    self.client.close()
                 return exc
 
     def _retry_transaction(self, retries, reason, packet, response_length, full=False):
@@ -316,7 +319,8 @@ class ModbusTransactionManager:
             # result2 = self._recv(response_length, full)
             Log.debug("RECV: {}", result, ":hex")
         except (OSError, ModbusIOException, InvalidMessageReceivedException) as msg:
-            self.client.close()
+            if self.close_comm_on_error:
+                self.client.close()
             Log.debug("Transaction failed. ({}) ", msg)
             last_exception = msg
             result = b""

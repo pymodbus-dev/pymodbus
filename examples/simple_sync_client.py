@@ -36,7 +36,6 @@ def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
             # timeout=10,
             # retries=3,
             # retry_on_empty=False,y
-            # strict=True,
             # source_address=("localhost", 0),
         )
     elif comm == "udp":
@@ -47,7 +46,6 @@ def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
             # timeout=10,
             # retries=3,
             # retry_on_empty=False,
-            # strict=True,
             # source_address=None,
         )
     elif comm == "serial":
@@ -72,7 +70,6 @@ def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
             # timeout=10,
             # retries=3,
             # retry_on_empty=False,
-            # strict=True,
             # sslctx=None,
             certfile="../examples/certificates/pymodbus.crt",
             keyfile="../examples/certificates/pymodbus.key",

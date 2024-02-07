@@ -91,6 +91,7 @@ def setup_sync_client(description=None, cmdline=None):
             #    parity="N",
             #    stopbits=1,
             #    handle_local_echo=False,
+            #    strict=True,
         )
     elif args.comm == "tls":
         client = modbusClient.ModbusTlsClient(
@@ -101,7 +102,6 @@ def setup_sync_client(description=None, cmdline=None):
             timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,
-            #    strict=True,
             # TLS setup parameters
             #    sslctx=None,
             certfile=helper.get_certificate("crt"),

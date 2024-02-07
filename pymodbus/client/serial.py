@@ -161,6 +161,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         bytesize: int = 8,
         parity: str = "N",
         stopbits: int = 1,
+        strict: bool = True,
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus Serial Client."""
@@ -175,6 +176,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             **kwargs,
         )
         self.socket = None
+        self.strict = bool(strict)
 
         self.last_frame_end = None
 
@@ -211,7 +213,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
                 parity=self.comm_params.parity,
                 exclusive=True,
             )
-            if self.params.strict:
+            if self.strict:
                 self.socket.interCharTimeout = self.inter_char_timeout
             self.last_frame_end = None
         except serial.SerialException as msg:

@@ -95,7 +95,6 @@ def setup_async_client(description=None, cmdline=None):
             timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,
-            #    close_comm_on_error=False,
             #    strict=True,
             # TLS setup parameters
             #    sslctx=sslctx,

@@ -303,10 +303,7 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
         retry_on_empty: bool | None = None
         broadcast_enable: bool | None = None
         reconnect_delay: int | None = None
-
         source_address: tuple[str, int] | None = None
-
-        server_hostname: str | None = None
 
     def __init__(
         self,

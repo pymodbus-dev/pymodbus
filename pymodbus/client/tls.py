@@ -158,7 +158,7 @@ class ModbusTlsClient(ModbusTcpClient):
         self.sslctx = CommParams.generate_ssl(
             False, certfile, keyfile, password, sslctx=sslctx
         )
-        self.params.server_hostname = server_hostname
+        self.server_hostname = server_hostname
 
     @property
     def connected(self) -> bool:
@@ -174,7 +174,7 @@ class ModbusTlsClient(ModbusTcpClient):
             if self.params.source_address:
                 sock.bind(self.params.source_address)
             self.socket = self.sslctx.wrap_socket(
-                sock, server_side=False, server_hostname=self.comm_params.host
+                sock, server_side=False, server_hostname=self.server_hostname
             )
             self.socket.settimeout(self.comm_params.timeout_connect)
             self.socket.connect((self.comm_params.host, self.comm_params.port))

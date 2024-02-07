@@ -278,7 +278,6 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
-    :param close_comm_on_error: Close connection on error.
     :param strict: Strict timing, 1.5 character between requests.
     :param broadcast_enable: True to treat id 0 as broadcast address.
     :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
@@ -303,7 +302,6 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
 
         retries: int | None = None
         retry_on_empty: bool | None = None
-        close_comm_on_error: bool | None = None
         strict: bool | None = None
         broadcast_enable: bool | None = None
         reconnect_delay: int | None = None
@@ -318,7 +316,6 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
         timeout: float = 3,
         retries: int = 3,
         retry_on_empty: bool = False,
-        close_comm_on_error: bool = False,
         strict: bool = True,
         broadcast_enable: bool = False,
         reconnect_delay: float = 0.1,
@@ -353,7 +350,6 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
         self.params = self._params()
         self.params.retries = int(retries)
         self.params.retry_on_empty = bool(retry_on_empty)
-        self.params.close_comm_on_error = bool(close_comm_on_error)
         self.params.strict = bool(strict)
         self.params.broadcast_enable = bool(broadcast_enable)
         self.retry_on_empty: int = 0

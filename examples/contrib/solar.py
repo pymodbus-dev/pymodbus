@@ -32,7 +32,6 @@ def main():
         framer=ModbusSocketFramer,
         timeout=1,
         retry_on_empty=True,
-        close_comm_on_error=True,
     )
     client.connect()
     _logger.info("### Client connected")

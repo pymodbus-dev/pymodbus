@@ -15,7 +15,7 @@ Current release is `3.6.4 <https://github.com/pymodbus-dev/pymodbus/releases/tag
 
 Bleeding edge (not released) is `dev <https://github.com/pymodbus-dev/pymodbus/tree/dev>`_.
 
-All changes are described in `release notes <https://pymodbus.readthedocs.io/en/latest/source/channgelog.html>`_
+All changes are described in `release notes <https://pymodbus.readthedocs.io/en/latest/source/changelog.html>`_
 and all API changes are `documented <https://pymodbus.readthedocs.io/en/latest/source/api_changes.html>`_
 
 A big thanks to all the `volunteers <https://pymodbus.readthedocs.io/en/latest/source/authors.html>`_ that helps make pymodbus a great project.

@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import socket
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, Type, cast, TypeVar, Generic
+from typing import Any, Awaitable, Callable, Type, cast
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.exceptions import ConnectionException, ModbusIOException

@@ -60,7 +60,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
-        ModbusClientMixin.__init__(self)
         ModbusProtocol.__init__(
             self,
             CommParams(
@@ -176,7 +175,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
                 f"ERROR: No response received after {self.retries} retries"
             )
 
-        return resp
+        return resp # type: ignore
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data.
@@ -319,7 +318,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse], ModbusProtocol):
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
-        ModbusClientMixin.__init__(self)
         ModbusProtocol.__init__(
             self,
             CommParams(

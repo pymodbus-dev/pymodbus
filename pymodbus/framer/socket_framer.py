@@ -43,6 +43,7 @@ class ModbusSocketFramer(ModbusFramer):
         """
         super().__init__(decoder, client)
         self._hsize = 0x07
+        self.max_workers = 65535
 
     # ----------------------------------------------------------------------- #
     # Private Helper Functions

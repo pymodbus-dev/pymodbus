@@ -44,6 +44,7 @@ class ModbusFramer:
             "crc": b"\x00\x00",
         }
         self._buffer = b""
+        self.max_workers = 1
 
     def _validate_slave_id(self, slaves: list, single: bool) -> bool:
         """Validate if the received data is valid for the client.

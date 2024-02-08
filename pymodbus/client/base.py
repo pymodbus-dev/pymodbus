@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import socket
+from asyncio import Task, Future
 from dataclasses import dataclass
 from typing import Any, Awaitable, Callable, Type, cast
 
@@ -92,6 +93,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         self.framer = FRAMER_NAME_TO_CLASS.get(
             framer, cast(Type[ModbusFramer], framer)
         )(ClientDecoder(), self)
+        self.request_queue: asyncio.Queue[tuple[Future, Any]] = asyncio.Queue()
         self.transaction = DictTransactionManager(
             self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
         )
@@ -99,6 +101,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float | None = 0
         self.silent_interval: float = 0
+        self.worker_tasks: list[Task] = []
 
     # ----------------------------------------------------------------------- #
     # Client external interface
@@ -143,15 +146,17 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         :returns: The result of the request execution
         :raises ConnectionException: Check exception text.
         """
-        if not self.transport:
+        if not self.transport and self.reconnect_task is None:
             raise ConnectionException(f"Not connected[{self!s}]")
         return self.async_execute(request)
 
     # ----------------------------------------------------------------------- #
     # Merged client methods
     # ----------------------------------------------------------------------- #
-    async def async_execute(self, request) -> ModbusResponse:
+    async def _async_execute(self, request) -> ModbusResponse:
         """Execute requests asynchronously."""
+        if self.reconnect_task is not None:
+            await self.reconnect_task
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
 
@@ -177,6 +182,36 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
             )
 
         return resp  # type: ignore[return-value]
+
+    async def _execute_worker(self):
+        """Process requests in order they were queued."""
+        while not self.request_queue.empty():
+            try:
+                my_future, request = await self.request_queue.get()
+            except asyncio.CancelledError:
+                break
+            try:
+                response = await self._async_execute(request)
+                my_future.set_result(response)
+            except asyncio.CancelledError as e:
+                my_future.set_exception(e)
+                break
+            except BaseException as e:
+                my_future.set_exception(e)
+        self.worker_tasks.remove(asyncio.current_task())
+
+    async def async_execute(self, request=None):
+        """Execute requests asynchronously using a worker queue."""
+        my_future = asyncio.Future()
+        await self.request_queue.put((my_future, request))
+        if not self.worker_tasks:
+            worker_task = asyncio.create_task(self._execute_worker())
+            self.worker_tasks.append(worker_task)
+        elif self.request_queue.qsize() > 0:
+            if self.framer.max_workers < len(self.worker_tasks):
+                worker_task = asyncio.create_task(self._execute_worker())
+                self.worker_tasks.append(worker_task)
+        return await my_future
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data.

@@ -599,4 +599,5 @@ async def test_client_build_response():
 async def test_client_mixin_execute():
     """Test dummy execute."""
     client = ModbusClientMixin()
-    assert client.execute(None)
+    with pytest.raises(NotImplementedError):
+        client.execute(None)

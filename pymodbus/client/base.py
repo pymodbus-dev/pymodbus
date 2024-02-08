@@ -150,7 +150,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     # ----------------------------------------------------------------------- #
     # Merged client methods
     # ----------------------------------------------------------------------- #
-    async def async_execute(self, request=None):
+    async def _async_execute(self, request):
         """Execute requests asynchronously."""
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
@@ -177,6 +177,14 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             )
 
         return resp
+
+    async def async_execute(self, request=None):
+        """Execute requests asynchronously."""
+        if hasattr(self, 'execute_lock'):
+            async with self.execute_lock:
+                return await self._async_execute(request)
+        else:
+            return await self._async_execute(request)
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data.

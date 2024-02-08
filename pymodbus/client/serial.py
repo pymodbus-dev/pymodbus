@@ -92,6 +92,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
             stopbits=stopbits,
             **kwargs,
         )
+        self.execute_lock = asyncio.Lock()
 
     async def connect(self) -> bool:
         """Connect Async client."""

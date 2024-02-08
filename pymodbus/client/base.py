@@ -60,6 +60,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
+        ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
         ModbusProtocol.__init__(
             self,
             CommParams(
@@ -175,7 +176,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
                 f"ERROR: No response received after {self.retries} retries"
             )
 
-        return resp # type: ignore[return-value]
+        return resp  # type: ignore[return-value]
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data.
@@ -265,6 +266,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
             f"{self.__class__.__name__} {self.comm_params.host}:{self.comm_params.port}"
         )
 
+
 class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse], ModbusProtocol):
     """**ModbusBaseClient**.
 
@@ -318,6 +320,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse], ModbusProtocol):
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
+        ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
         ModbusProtocol.__init__(
             self,
             CommParams(
@@ -335,7 +338,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse], ModbusProtocol):
                 parity=kwargs.get("parity", None),
                 stopbits=kwargs.get("stopbits", None),
                 handle_local_echo=kwargs.get("handle_local_echo", False),
-                on_reconnect_callback = on_reconnect_callback,
+                on_reconnect_callback=on_reconnect_callback,
             ),
             False,
         )

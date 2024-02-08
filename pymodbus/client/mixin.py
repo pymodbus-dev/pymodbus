@@ -46,6 +46,9 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         with await <method> (asynchronous) depending on the client used.
     """
 
+    def __init__(self):
+        """Initialize."""
+
     def execute(self, _request: ModbusRequest) -> T:
         """Execute request (code ???).
 

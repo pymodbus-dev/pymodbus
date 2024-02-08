@@ -175,7 +175,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
                 f"ERROR: No response received after {self.retries} retries"
             )
 
-        return resp # type: ignore
+        return resp # type: ignore[return-value]
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data.

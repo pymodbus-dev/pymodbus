@@ -302,8 +302,8 @@ Test your changes::
    pytest
 
 
-Architecture
-^^^^^^^^^^^^
+Internals
+^^^^^^^^^
 
 There are no documentation of the architecture (help is welcome), but most classes and
 methods are documented:

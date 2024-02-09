@@ -178,7 +178,7 @@ class TestDataStore:
         message = ReturnQueryDataResponse(b"\x00\x00")
         assert message.encode() == b"\x00\x00\x00\x00"
 
-    def test_restart_cmmunications_option(self):
+    def test_restart_communications_option(self):
         """Testing diagnostic message execution."""
         request = RestartCommunicationsOptionRequest(True)
         assert request.encode() == b"\x00\x01\xff\x00"

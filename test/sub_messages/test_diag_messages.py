@@ -97,8 +97,8 @@ class TestDataStore:
     ]
 
     responses = [
-        # (DiagnosticStatusResponse,                     b"\x00\x00\x00\x00"),
-        # (DiagnosticStatusSimpleResponse,               b"\x00\x00\x00\x00"),
+        (DiagnosticStatusResponse,                     b"\x00\x00\x00\x00"),
+        (DiagnosticStatusSimpleResponse,               b"\x00\x00\x00\x00"),
         (ReturnQueryDataResponse, b"\x00\x00\x00\x00"),
         (RestartCommunicationsOptionResponse, b"\x00\x01\x00\x00"),
         (ReturnDiagnosticRegisterResponse, b"\x00\x02\x00\x00"),
@@ -144,7 +144,7 @@ class TestDataStore:
         with pytest.raises(NotImplementedException):
             request.execute()
         assert request.encode() == b"\x12\x34\x12\x34"
-        DiagnosticStatusSimpleResponse(None)
+        DiagnosticStatusSimpleResponse()
 
     def test_diagnostic_response_decode(self):
         """Testing diagnostic request messages encoding."""
@@ -178,7 +178,7 @@ class TestDataStore:
         message = ReturnQueryDataResponse(b"\x00\x00")
         assert message.encode() == b"\x00\x00\x00\x00"
 
-    def test_restart_cmmunications_option(self):
+    def test_restart_communications_option(self):
         """Testing diagnostic message execution."""
         request = RestartCommunicationsOptionRequest(True)
         assert request.encode() == b"\x00\x01\xff\x00"

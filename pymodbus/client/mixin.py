@@ -160,7 +160,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(pdu_other_msg.ReadExceptionStatusRequest(slave, **kwargs))
 
-    def diag_query_data(self, msg: bytearray, slave: int = 0, **kwargs: Any) -> T:
+      
+    def diag_query_data(
+        self, msg: bytes, slave: int = 0, **kwargs: Any
+    ) -> T:
         """Diagnose query data (code 0x08 sub 0x00).
 
         :param msg: Message to be returned

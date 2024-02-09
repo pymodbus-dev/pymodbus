@@ -154,8 +154,8 @@ class SerialTransport(asyncio.Transport):
                     self.write_ready()
                 if self.sync_serial.in_waiting:
                     self._read_ready()
-        except asyncio.CancelledError:
-            self.close("Cancelled")
+        except asyncio.CancelledError as exc:
+            self.close(exc)
 
 
 async def create_serial_connection(

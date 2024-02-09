@@ -142,3 +142,9 @@ class ModbusFramer:
         self, _single, _callback, _slave, _tid=None, **kwargs
     ):
         """Process new packet pattern."""
+
+    def buildPacket(self, message):
+        """Create a ready to send modbus packet.
+
+        :param message: The populated request/response to send
+        """

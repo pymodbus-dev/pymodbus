@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import socket
 from dataclasses import dataclass
-from typing import Any, Callable, Type, cast
+from typing import Any, Awaitable, Callable, Type, cast
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.exceptions import ConnectionException, ModbusIOException
@@ -17,7 +17,7 @@ from pymodbus.transport import CommParams, ModbusProtocol
 from pymodbus.utilities import ModbusTransactionState
 
 
-class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
+class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProtocol):
     """**ModbusBaseClient**.
 
     Fixed parameters:
@@ -60,7 +60,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
-        ModbusClientMixin.__init__(self)
+        ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
         ModbusProtocol.__init__(
             self,
             CommParams(
@@ -136,7 +136,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             return 0
         return self.last_frame_end + self.silent_interval
 
-    def execute(self, request: ModbusRequest | None = None) -> ModbusResponse:
+    def execute(self, request: ModbusRequest | None = None):
         """Execute request and get response (call **sync/async**).
 
         :param request: The request to process
@@ -150,7 +150,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     # ----------------------------------------------------------------------- #
     # Merged client methods
     # ----------------------------------------------------------------------- #
-    async def async_execute(self, request=None):
+    async def async_execute(self, request=None) -> ModbusResponse:
         """Execute requests asynchronously."""
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
@@ -176,7 +176,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
                 f"ERROR: No response received after {self.retries} retries"
             )
 
-        return resp
+        return resp  # type: ignore[return-value]
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data.
@@ -266,7 +266,8 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             f"{self.__class__.__name__} {self.comm_params.host}:{self.comm_params.port}"
         )
 
-class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
+
+class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse], ModbusProtocol):
     """**ModbusBaseClient**.
 
     Fixed parameters:
@@ -319,7 +320,7 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
-        ModbusClientMixin.__init__(self)
+        ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
         ModbusProtocol.__init__(
             self,
             CommParams(
@@ -337,7 +338,7 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
                 parity=kwargs.get("parity", None),
                 stopbits=kwargs.get("stopbits", None),
                 handle_local_echo=kwargs.get("handle_local_echo", False),
-                on_reconnect_callback = on_reconnect_callback,
+                on_reconnect_callback=on_reconnect_callback,
             ),
             False,
         )

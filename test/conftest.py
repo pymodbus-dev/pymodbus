@@ -18,7 +18,7 @@ from pymodbus.transport.transport import NullModem
 
 sys.path.extend(["examples", "../examples", "../../examples"])
 
-from examples.server_async import (  # noqa: E402  # pylint: disable=wrong-import-position
+from examples.server_async import (  # pylint: disable=wrong-import-position
     run_async_server,
     setup_server,
 )

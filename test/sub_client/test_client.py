@@ -424,8 +424,7 @@ async def test_client_execute_broadcast():
     transport = MockTransport(base, request)
     base.connection_made(transport=transport)
 
-    response = await base.async_execute(request)
-    assert  response == b'Broadcast write sent - no response expected'
+    assert not await base.async_execute(request)
 
 async def test_client_protocol_retry():
     """Test the client protocol execute method with retries."""

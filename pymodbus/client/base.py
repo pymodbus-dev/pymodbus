@@ -161,7 +161,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
             if not count or not self.no_resend_on_retry:
                 self.transport_send(packet)
             if self.broadcast_enable and not request.slave_id:
-                resp = b"Broadcast write sent - no response expected"
+                resp = None
                 break
             try:
                 resp = await asyncio.wait_for(

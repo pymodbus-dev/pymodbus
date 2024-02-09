@@ -1,4 +1,6 @@
-Architecture =============
+Architecture
+=============
+
 The internal structure of pymodbus is a bit complicated, mostly due to the mixture of sync and async.
 
 The overall architecture can be viewed as:

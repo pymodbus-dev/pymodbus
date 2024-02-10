@@ -231,15 +231,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
     # ----------------------------------------------------------------------- #
     # The magic methods
     # ----------------------------------------------------------------------- #
-    def __enter__(self):
-        """Implement the client with enter block.
-
-        :returns: The current instance of the client
-        :raises ConnectionException:
-        """
-        self.connect()
-        return self
-
     async def __aenter__(self):
         """Implement the client with enter block.
 
@@ -248,10 +239,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         """
         await self.connect()
         return self
-
-    def __exit__(self, klass, value, traceback):
-        """Implement the client with exit block."""
-        self.close()
 
     async def __aexit__(self, klass, value, traceback):
         """Implement the client with exit block."""

@@ -186,7 +186,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         self.framer.processIncomingPacket(data, self._handle_response, slave=0)
         return len(data)
 
-    async def connect(self):
+    async def connect(self) -> bool:  # type: ignore[empty-body]
         """Connect to the modbus remote host."""
 
     def raise_future(self, my_future, exc):
@@ -414,7 +414,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse], ModbusProtocol):
             return socket.AF_INET
         return socket.AF_INET6
 
-    def connect(self):
+    def connect(self) -> bool:  # type: ignore[empty-body]
         """Connect to other end, overwritten."""
 
     def close(self):

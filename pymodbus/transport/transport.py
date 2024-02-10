@@ -116,10 +116,8 @@ class CommParams:
         )
         new_sslctx.check_hostname = False
         new_sslctx.verify_mode = ssl.CERT_NONE
-        new_sslctx.options |= ssl.OP_NO_TLSv1_1
-        new_sslctx.options |= ssl.OP_NO_TLSv1
-        new_sslctx.options |= ssl.OP_NO_SSLv3
-        new_sslctx.options |= ssl.OP_NO_SSLv2
+        new_sslctx.minimum_version = ssl.TLSVersion.TLSv1_1
+        new_sslctx.maximum_version = ssl.TLSVersion.TLSv1_3
         if certfile:
             new_sslctx.load_cert_chain(
                 certfile=certfile, keyfile=keyfile, password=password

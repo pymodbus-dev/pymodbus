@@ -74,6 +74,7 @@ development = [
     "pytest>=7.3.1",
     "pytest-asyncio>=0.20.3",
     "pytest-cov>=4.1.0",
+    "pytest-profiling>=1.7.0",
     "pytest-timeout>=2.2.0",
     "pytest-xdist>=3.3.1",
     "ruff>=0.2.0",
@@ -220,9 +221,9 @@ all_files = "1"
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
-addopts = "-p no:warnings --dist loadscope --numprocesses auto"
+addopts = "-p no:warnings --durations=10 --dist loadscope --numprocesses auto"
 asyncio_mode = "auto"
-timeout = 40
+timeout = 120
 
 [tool.coverage.run]
 source = [

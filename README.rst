@@ -274,7 +274,7 @@ There are 2 bigger projects ongoing:
    * Add features to and simulator, and enhance the web design
 
 
-Development Instructions
+Development instructions
 ------------------------
 The current code base is compatible with python >= 3.8.
 
@@ -295,12 +295,15 @@ Make a pull request::
 
    on github open a pull request, check that CI turns green and then wait for review comments.
 
-
 Test your changes::
 
    cd test
    pytest
 
+you can also do extended testing::
+
+   pytest --cov         <-- Coverage html report in build/html
+   pytest --profile     <-- Call profile report in prof
 
 Internals
 ^^^^^^^^^

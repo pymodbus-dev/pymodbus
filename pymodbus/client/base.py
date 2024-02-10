@@ -241,7 +241,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         return self
 
     async def __aexit__(self, klass, value, traceback):
-        """Implement the client with exit block."""
+        """Implement the client with aexit block."""
         self.close()
 
     def __str__(self):

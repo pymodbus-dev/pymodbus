@@ -150,7 +150,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
     # ----------------------------------------------------------------------- #
     # Merged client methods
     # ----------------------------------------------------------------------- #
-    async def async_execute(self, request=None) -> ModbusResponse:
+    async def async_execute(self, request) -> ModbusResponse:
         """Execute requests asynchronously."""
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
@@ -186,7 +186,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         self.framer.processIncomingPacket(data, self._handle_response, slave=0)
         return len(data)
 
-    async def connect(self):
+    async def connect(self) -> bool:  # type: ignore[empty-body]
         """Connect to the modbus remote host."""
 
     def raise_future(self, my_future, exc):
@@ -241,7 +241,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         return self
 
     async def __aexit__(self, klass, value, traceback):
-        """Implement the client with exit block."""
+        """Implement the client with aexit block."""
         self.close()
 
     def __str__(self):
@@ -414,7 +414,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse], ModbusProtocol):
             return socket.AF_INET
         return socket.AF_INET6
 
-    def connect(self):
+    def connect(self) -> bool:  # type: ignore[empty-body]
         """Connect to other end, overwritten."""
 
     def close(self):

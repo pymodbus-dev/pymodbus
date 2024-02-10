@@ -599,6 +599,7 @@ async def test_client_build_response():
     with pytest.raises(ConnectionException):
         await client.build_response(0)
 
+
 async def test_client_mixin_execute():
     """Test dummy execute for both sync and async."""
     client = ModbusClientMixin()

@@ -209,7 +209,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         # is received or timeout is expired.
         # If timeout expires returns the read data, also if its length is
         # less than the expected size.
-        self.socket.setblocking(0)
+        self.socket.setblocking(False)
 
         timeout = self.comm_params.timeout_connect
 

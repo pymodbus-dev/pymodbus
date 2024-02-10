@@ -243,7 +243,7 @@ async def _check_system_health():
     """Check Thread, asyncio.task and NullModem for leftovers."""
     if task := asyncio.current_task():
         task.set_name("main loop")
-    start_threads = {thread.getName(): thread for thread in thread_enumerate()}
+    start_threads = {thread.name: thread for thread in thread_enumerate()}
     start_tasks = {task.get_name(): task for task in asyncio.all_tasks()}
     yield
     await asyncio.sleep(0.1)
@@ -251,7 +251,7 @@ async def _check_system_health():
         all_clean = True
         error_text = f"ERROR tasks/threads hanging after {count} retries:\n"
         for thread in thread_enumerate():
-            name = thread.getName()
+            name = thread.name
             if not (
                 name in start_threads
                 or name.startswith("asyncio_")

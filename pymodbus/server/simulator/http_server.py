@@ -207,16 +207,17 @@ class ModbusSimulatorServer:
         self.request_lookup = ServerDecoder.getFCdict()
         self.call_monitor = CallTypeMonitor()
         self.call_response = CallTypeResponse()
+        self.api_key: web.AppKey = web.AppKey("modbus_server")
 
     async def start_modbus_server(self, app):
         """Start Modbus server as asyncio task."""
         try:
             if getattr(self.modbus_server, "start", None):
                 await self.modbus_server.start()
-            app["modbus_server"] = asyncio.create_task(
+            app[self.api_key] = asyncio.create_task(
                 self.modbus_server.serve_forever()
             )
-            app["modbus_server"].set_name("simulator modbus server")
+            app[self.api_key].set_name("simulator modbus server")
         except Exception as exc:
             Log.error("Error starting modbus server, reason: {}", exc)
             raise exc
@@ -228,9 +229,9 @@ class ModbusSimulatorServer:
         """Stop modbus server."""
         Log.info("Stopping modbus server")
         await self.modbus_server.shutdown()
-        app["modbus_server"].cancel()
+        app[self.api_key].cancel()
         with contextlib.suppress(asyncio.exceptions.CancelledError):
-            await app["modbus_server"]
+            await app[self.api_key]
 
         Log.info("Modbus server Stopped")
 

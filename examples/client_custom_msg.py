@@ -118,7 +118,7 @@ class Read16CoilsRequest(ReadCoilsRequest):
 
 async def main(host="localhost", port=5020):
     """Run versions of read coil."""
-    with ModbusClient(host=host, port=port, framer_name=Framer.SOCKET) as client:
+    async with ModbusClient(host=host, port=port, framer_name=Framer.SOCKET) as client:
         await client.connect()
 
         # new modbus function code.

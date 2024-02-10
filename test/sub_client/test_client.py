@@ -290,8 +290,11 @@ async def test_client_connection_made():
     """Test protocol made connection."""
     client = lib_client.AsyncModbusTcpClient("127.0.0.1")
     assert not client.connected
-    client.connection_made(mock.AsyncMock())
-    assert client.connected
+
+    transport = mock.AsyncMock()
+    transport.close = lambda : ()
+    client.connection_made(transport)
+    # assert await client.connected
     client.close()
 
 

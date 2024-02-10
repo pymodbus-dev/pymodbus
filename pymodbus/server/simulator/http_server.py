@@ -207,7 +207,7 @@ class ModbusSimulatorServer:
         self.request_lookup = ServerDecoder.getFCdict()
         self.call_monitor = CallTypeMonitor()
         self.call_response = CallTypeResponse()
-        self.api_key = web.AppKey("modbus_server")
+        self.api_key: web.AppKey = web.AppKey("modbus_server")
 
     async def start_modbus_server(self, app):
         """Start Modbus server as asyncio task."""

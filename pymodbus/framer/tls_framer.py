@@ -108,7 +108,7 @@ class ModbusTlsFramer(ModbusFramer):
         if (result := self.decoder.decode(data)) is None:
             raise ModbusIOException("Unable to decode request")
         if error and result.function_code < 0x80:
-            raise InvalidMessageReceivedException(result)
+            raise InvalidMessageReceivedException(str(result))
         self.populateResult(result)
         self.advanceFrame()
         callback(result)  # defer or push to a thread?

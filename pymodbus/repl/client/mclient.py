@@ -582,14 +582,14 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
 
         :return: Current Stop bits
         """
-        return self.params.stopbits
+        return self.comm_params.stopbits
 
     def set_stopbits(self, value):
         """Set stop bit.
 
         :param value: Possible values (1, 1.5, 2)
         """
-        self.params.stopbits = float(value)
+        self.comm_params.stopbits = float(value)
         if self.is_socket_open():
             self.close()
 
@@ -615,14 +615,14 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
 
         :return: Current parity setting
         """
-        return self.params.parity
+        return self.comm_params.parity
 
     def set_parity(self, value):
         """Set parity Setter.
 
         :param value: Possible values ("N", "E", "O", "M", "S")
         """
-        self.params.parity = value
+        self.comm_params.parity = value
         if self.is_socket_open():
             self.close()
 

@@ -46,7 +46,7 @@ def make_response_dict(resp):
     return resp_dict
 
 
-def handle_brodcast(func):
+def handle_broadcast(func):
     """Handle broadcast."""
 
     @functools.wraps(func)
@@ -121,7 +121,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
             return {"function_code": resp.function_code, "bits": resp.bits}
         return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
-    @handle_brodcast
+    @handle_broadcast
     def write_coil(self, address, value, slave=0, **kwargs):
         """Write `value` to coil at `address`.
 
@@ -136,7 +136,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         )
         return resp
 
-    @handle_brodcast
+    @handle_broadcast
     def write_coils(self, address, values, slave=0, **kwargs):
         """Write `value` to coil at `address`.
 
@@ -151,7 +151,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         )
         return resp
 
-    @handle_brodcast
+    @handle_broadcast
     def write_register(self, address, value, slave=0, **kwargs):
         """Write `value` to register at `address`.
 
@@ -166,7 +166,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         )
         return resp
 
-    @handle_brodcast
+    @handle_broadcast
     def write_registers(self, address, values, slave=0, **kwargs):
         """Write list of `values` to registers starting at `address`.
 

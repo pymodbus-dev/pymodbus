@@ -88,12 +88,6 @@ class NumericChoice(click.Choice):
         if value in self.choices:
             return self.typ(value)
 
-        if ctx is not None and ctx.token_normalize_func is not None:
-            value = ctx.token_normalize_func(value)
-            for choice in self.casted_choices:  # pylint: disable=no-member
-                if ctx.token_normalize_func(choice) == value:
-                    return choice
-
         self.fail(
             f"invalid choice: {value}. (choose from {', '.join(self.choices)})",
             param,

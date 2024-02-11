@@ -73,42 +73,42 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
         if self.slave:
             kwargs["slave"] = self.slave
         self.__get_callbacks = {
-            "d": lambda a, c: self._client.read_discrete_inputs(
+            "d": lambda a, c: self._client.read_discrete_inputs(  # pylint: disable=unnecessary-lambda
                 a, c, **kwargs
             ),
-            "c": lambda a, c: self._client.read_coils(
+            "c": lambda a, c: self._client.read_coils(  # pylint: disable=unnecessary-lambda
                 a, c, **kwargs
             ),
-            "h": lambda a, c: self._client.read_holding_registers(
+            "h": lambda a, c: self._client.read_holding_registers(  # pylint: disable=unnecessary-lambda
                 a, c, **kwargs
             ),
-            "i": lambda a, c: self._client.read_input_registers(
+            "i": lambda a, c: self._client.read_input_registers(  # pylint: disable=unnecessary-lambda
                 a, c, **kwargs
             ),
         }
         self.__set_callbacks = {
-            "d5": lambda a, v: self._client.write_coil(
+            "d5": lambda a, v: self._client.write_coil(  # pylint: disable=unnecessary-lambda
                 a, v, **kwargs
             ),
-            "d15": lambda a, v: self._client.write_coils(
+            "d15": lambda a, v: self._client.write_coils(  # pylint: disable=unnecessary-lambda
                 a, v, **kwargs
             ),
-            "c5": lambda a, v: self._client.write_coil(
+            "c5": lambda a, v: self._client.write_coil(  # pylint: disable=unnecessary-lambda
                 a, v, **kwargs
             ),
-            "c15": lambda a, v: self._client.write_coils(
+            "c15": lambda a, v: self._client.write_coils(  # pylint: disable=unnecessary-lambda
                 a, v, **kwargs
             ),
-            "h6": lambda a, v: self._client.write_register(
+            "h6": lambda a, v: self._client.write_register(  # pylint: disable=unnecessary-lambda
                 a, v, **kwargs
             ),
-            "h16": lambda a, v: self._client.write_registers(
+            "h16": lambda a, v: self._client.write_registers(  # pylint: disable=unnecessary-lambda
                 a, v, **kwargs
             ),
-            "i6": lambda a, v: self._client.write_register(
+            "i6": lambda a, v: self._client.write_register(  # pylint: disable=unnecessary-lambda
                 a, v, **kwargs
             ),
-            "i16": lambda a, v: self._client.write_registers(
+            "i16": lambda a, v: self._client.write_registers(  # pylint: disable=unnecessary-lambda
                 a, v, **kwargs
             ),
         }

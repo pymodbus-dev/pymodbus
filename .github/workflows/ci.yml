@@ -103,7 +103,7 @@ jobs:
       - name: pytest
         run: |
           env
-          pytest --cov --cov-report=
+          pytest --cov 
 
   analyze:
     name: Analyze Python

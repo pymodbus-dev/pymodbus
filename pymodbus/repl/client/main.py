@@ -64,16 +64,6 @@ def bottom_toolbar():
     )
 
 
-class CaseInsenstiveChoice(click.Choice):
-    """Do case Insensitive choice for click commands and options."""
-
-    def convert(self, value, param, ctx):
-        """Convert args to uppercase for evaluation."""
-        if value is None:
-            return None
-        return super().convert(value.strip().upper(), param, ctx)
-
-
 class NumericChoice(click.Choice):
     """Do numeric choice for click arguments and options."""
 
@@ -342,7 +332,7 @@ def tcp(ctx, host, port, framer):
     "PARITY_NONE, PARITY_EVEN, PARITY_ODD PARITY_MARK, "
     'PARITY_SPACE. Default to "N"',
     default="N",
-    type=CaseInsenstiveChoice(["N", "E", "O", "M", "S"]),
+    type=click.Choice(["N", "E", "O", "M", "S"], case_sensitive=False),
 )
 @click.option(
     "--stopbits",

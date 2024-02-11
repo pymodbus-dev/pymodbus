@@ -1,18 +1,16 @@
 """Configure pytest."""
 import asyncio
-import os
 import platform
 import sys
 from collections import deque
 from threading import enumerate as thread_enumerate
-from unittest import mock
 
 import pytest
 import pytest_asyncio
 
 from pymodbus.datastore import ModbusBaseSlaveContext
 from pymodbus.server import ServerAsyncStop
-from pymodbus.transport import NULLMODEM_HOST, CommParams, CommType, ModbusProtocol
+from pymodbus.transport import NULLMODEM_HOST, CommParams, CommType
 from pymodbus.transport.transport import NullModem
 
 
@@ -34,19 +32,22 @@ def pytest_configure():
 # Generic fixtures
 # -----------------------------------------------------------------------#
 BASE_PORTS = {
-    "TestBasicModbusProtocol": 7100,
-    "TestBasicSerial": 7200,
-    "TestCommModbusProtocol": 7305,
-    "TestCommNullModem": 7400,
-    "TestExamples": 7500,
-    "TestAsyncExamples": 7600,
-    "TestSyncExamples": 7700,
-    "TestModbusProtocol": 7800,
-    "TestNullModem": 7900,
-    "TestReconnectModbusProtocol": 8000,
-    "TestClientServerSyncExamples": 8100,
-    "TestClientServerAsyncExamples": 8200,
-    "TestNetwork": 8300,
+    "TestTransportNullModem": 7100,
+    "TestTransportNullModemComm": 7150,
+    "TestTransportProtocol1": 7200,
+    "TestTransportProtocol2": 7300,
+    "TestTransportSerial": 7400,
+
+    "TestCommNullModem": 7500,
+    "TestCommModbusProtocol": 7700,
+    "TestExamples": 7800,
+    "TestAsyncExamples": 7900,
+    "TestSyncExamples": 8000,
+    "TestModbusProtocol": 8100,
+    "TestReconnectModbusProtocol": 8200,
+    "TestClientServerSyncExamples": 8300,
+    "TestClientServerAsyncExamples": 8400,
+    "TestNetwork": 8500,
 }
 
 
@@ -106,74 +107,6 @@ def prepare_commparams_client(use_port, use_host, use_comm_type):
         parity="E",
         stopbits=2,
     )
-
-
-@pytest.fixture(name="client")
-def prepare_protocol(use_clc):
-    """Prepare transport object."""
-    transport = ModbusProtocol(use_clc, False)
-    transport.callback_connected = mock.Mock()
-    transport.callback_disconnected = mock.Mock()
-    transport.callback_data = mock.Mock(return_value=0)
-    if use_clc.comm_type == CommType.TLS:
-        cwd = os.path.dirname(__file__) + "/../examples/certificates/pymodbus."
-        transport.comm_params.sslctx = use_clc.generate_ssl(
-            False, certfile=cwd + "crt", keyfile=cwd + "key"
-        )
-    if use_clc.comm_type == CommType.SERIAL:
-        transport.comm_params.host = f"socket://localhost:{transport.comm_params.port}"
-    return transport
-
-
-@pytest.fixture(name="server")
-def prepare_transport_server(use_cls):
-    """Prepare transport object."""
-    transport = ModbusProtocol(use_cls, True)
-    transport.callback_connected = mock.Mock()
-    transport.callback_disconnected = mock.Mock()
-    transport.callback_data = mock.Mock(return_value=0)
-    if use_cls.comm_type == CommType.TLS:
-        cwd = os.path.dirname(__file__) + "/../examples/certificates/pymodbus."
-        transport.comm_params.sslctx = use_cls.generate_ssl(
-            True, certfile=cwd + "crt", keyfile=cwd + "key"
-        )
-    return transport
-
-
-class DummyProtocol(ModbusProtocol):
-    """Use in connection_made calls."""
-
-    def __init__(self, is_server=False):  # pylint: disable=super-init-not-called
-        """Initialize."""
-        self.comm_params = CommParams()
-        self.transport = None
-        self.is_server = is_server
-        self.is_closing = False
-        self.data = b""
-        self.connection_made = mock.Mock()
-        self.connection_lost = mock.Mock()
-        self.reconnect_task: asyncio.Task = None
-
-    def handle_new_connection(self):
-        """Handle incoming connect."""
-        if not self.is_server:
-            # Clients reuse the same object.
-            return self
-        return DummyProtocol()
-
-    def close(self):
-        """Simulate close."""
-        self.is_closing = True
-
-    def data_received(self, data):
-        """Call when some data is received."""
-        self.data += data
-
-
-@pytest.fixture(name="dummy_protocol")
-def prepare_dummy_protocol():
-    """Return transport object."""
-    return DummyProtocol
 
 
 @pytest.fixture(name="mock_clc")

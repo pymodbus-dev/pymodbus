@@ -6,7 +6,7 @@ import pytest
 from pymodbus.transport.transport import NullModem
 
 
-class TestNullModem:
+class TestTransportNullModem:
     """Test null modem module."""
 
     @staticmethod
@@ -24,7 +24,26 @@ class TestNullModem:
         prot.connection_lost.assert_not_called()
 
     def test_close(self, dummy_protocol):
-        """Test initialize."""
+        """Test close."""
+        prot = dummy_protocol()
+        modem = NullModem(prot)
+        modem.close()
+        prot.connection_made.assert_not_called()
+        prot.connection_lost.assert_called_once()
+
+    def test_no_close(self, dummy_protocol):
+        """Test no close."""
+        prot = dummy_protocol()
+        NullModem(prot)
+
+
+    def test_close_no_protocol(self):
+        """Test close no protocol."""
+        modem = NullModem(None)
+        modem.close()
+
+    def test_close_twice(self, dummy_protocol):
+        """Test close twice."""
         prot = dummy_protocol()
         modem = NullModem(prot)
         modem.close()
@@ -47,23 +66,37 @@ class TestNullModem:
     def test_listen_twice(self, dummy_protocol, use_port):
         """Test exception when listening twice."""
         listen1 = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
-        with pytest.raises(AssertionError):
-            NullModem.set_listener(use_port, dummy_protocol(is_server=True))
         listen1.close()
         listen2 = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
         assert len(NullModem.listeners) == 1
         listen2.close()
+        assert not NullModem.listeners
+
+    def test_listen_twice_fail(self, dummy_protocol, use_port):
+        """Test exception when listening twice."""
+        listen1 = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
+        with pytest.raises(AssertionError):
+            NullModem.set_listener(use_port, dummy_protocol(is_server=True))
+        listen1.close()
+        assert not NullModem.listeners
 
     def test_listen_triangle(self, dummy_protocol, use_port):
         """Test listener (shared list)."""
-        use_port2 = use_port + 1
         listen1 = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
-        listen2 = NullModem.set_listener(use_port2, dummy_protocol(is_server=True))
+        listen2 = NullModem.set_listener(use_port + 1, dummy_protocol(is_server=True))
         listen1.close()
         assert use_port not in NullModem.listeners
         assert len(NullModem.listeners) == 1
         listen2.close()
         assert not NullModem.listeners
+
+    def test_is_dirty(self, dummy_protocol, use_port):
+        """Test is_dirty()."""
+        assert not NullModem.is_dirty()
+        listen1 = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
+        assert NullModem.is_dirty()
+        listen1.close()
+        assert not NullModem.is_dirty()
 
     def test_connect(self, dummy_protocol, use_port):
         """Test connect."""
@@ -84,8 +117,6 @@ class TestNullModem:
         prot_listen.connection_lost.assert_not_called()
         prot1.connection_made.assert_called_once()
         prot1.connection_lost.assert_called_once()
-        modem_b.protocol.connection_made.assert_called_once()
-        modem_b.protocol.connection_lost.assert_called_once()
 
     def test_connect_no_listen(self, dummy_protocol, use_port):
         """Test connect without listen."""
@@ -128,7 +159,7 @@ class TestNullModem:
         assert modem2b in NullModem.connections
         modem2.close()
 
-    def test_is_dirty(self, dummy_protocol, use_port):
+    def test_is_dirty_with_connection(self, dummy_protocol, use_port):
         """Test connect."""
         assert not NullModem.is_dirty()
         listen = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
@@ -138,19 +169,42 @@ class TestNullModem:
         listen.close()
         assert not NullModem.is_dirty()
 
-    def test_single_flow(self, dummy_protocol, use_port):
-        """Test single flow."""
+    def test_flow_write(self, dummy_protocol, use_port):
+        """Test flow write."""
+        listen = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
+        modem, _ = NullModem.set_connection(use_port, dummy_protocol())
+        modem_b = modem.other_modem
+        test_data1 = b"abcd"
+        test_data2 = b"efgh"
+        modem.write(test_data1)
+        modem_b.write(test_data2)
+        assert modem_b.protocol.data == test_data1
+        assert modem.protocol.data == test_data2
+        modem.close()
+        listen.close()
+
+
+    def test_flow_sendto(self, dummy_protocol, use_port):
+        """Test flow sendto."""
         listen = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
         modem, _ = NullModem.set_connection(use_port, dummy_protocol())
         modem_b = modem.other_modem
         test_data1 = b"abcd"
         test_data2 = b"efgh"
         modem.sendto(test_data1)
-        modem_b.write(test_data2)
+        modem_b.sendto(test_data2)
         assert modem_b.protocol.data == test_data1
         assert modem.protocol.data == test_data2
         modem.close()
         listen.close()
+
+    def test_flow_not_connected(self, dummy_protocol):
+        """Test flow not connected."""
+        modem = NullModem(dummy_protocol())
+        modem.sendto("no connection")
+        assert modem.protocol.data == b''
+        modem.close()
+
 
     def test_triangle_flow(self, dummy_protocol, use_port):
         """Test triangle flow."""

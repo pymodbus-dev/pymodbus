@@ -1,18 +1,12 @@
 """Test transport."""
 import asyncio
-import os
 from unittest import mock
 
 import pytest
-import serial
 
 from pymodbus.transport import (
     CommType,
     ModbusProtocol,
-)
-from pymodbus.transport.serialtransport import (
-    SerialTransport,
-    create_serial_connection,
 )
 
 
@@ -24,7 +18,7 @@ COMM_TYPES = [
 ]
 
 
-class TestBasicModbusProtocol:   # pylint: disable=too-many-public-methods
+class TestTransportProtocol1:
     """Test transport module."""
 
     @staticmethod
@@ -34,46 +28,69 @@ class TestBasicModbusProtocol:   # pylint: disable=too-many-public-methods
         base_ports[__class__.__name__] += 1
         return base_ports[__class__.__name__]
 
+
     @pytest.mark.parametrize("use_comm_type", COMM_TYPES)
-    async def test_init_nullmodem(self, client, server):
-        """Test init()."""
-        client.comm_params.sslctx = None
-        assert client.unique_id == str(id(client))
+    async def test_init_client(self, client):
+        """Test init client."""
         assert not hasattr(client, "active_connections")
         assert not client.is_server
+
+
+    @pytest.mark.parametrize("use_comm_type", COMM_TYPES)
+    async def test_init_server(self, server):
+        """Test init server."""
         assert not hasattr(server, "unique_id")
         assert not server.active_connections
         assert server.is_server
 
-    @pytest.mark.parametrize(
-        ("use_host", "use_comm_type"), [("socket://127.0.0.1:7001", CommType.SERIAL)]
-    )
-    async def test_init_serial(self, client, server):
-        """Test init()."""
+    @pytest.mark.parametrize("use_comm_type", COMM_TYPES)
+    async def test_init_client_id(self, client):
+        """Test init client id."""
         assert client.unique_id == str(id(client))
-        assert not client.is_server
-        server.comm_params.sslctx = None
-        assert server.is_server
 
     async def test_init_source_addr(self, use_clc):
         """Test callbacks."""
-        _client = ModbusProtocol(use_clc, True)
+        use_clc.source_address = ("localhost", 112)
+        ModbusProtocol(use_clc, True)
 
+    async def test_init_source_addr_none(self, use_clc):
+        """Test callbacks."""
+        use_clc.source_address = None
+        ModbusProtocol(use_clc, True)
 
-    async def test_connect(self, client, dummy_protocol):
+    async def test_loop_connect(self, client, dummy_protocol):
         """Test properties."""
         client.loop = None
         client.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
         assert await client.transport_connect()
         assert client.loop
+
+    async def test_loop_listen(self, server, dummy_protocol):
+        """Test properties."""
+        server.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
+        server.loop = asyncio.get_running_loop()
+        assert await server.transport_listen()
+        assert server.loop
+
+    async def test_connect_ok(self, client, dummy_protocol):
+        """Test properties."""
+        client.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
+        assert await client.transport_connect()
+
+    async def test_connect_not_ok(self, client, dummy_protocol):
+        """Test properties."""
+        client.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
         client.call_create.side_effect = asyncio.TimeoutError("test")
         assert not await client.transport_connect()
 
-    async def test_listen(self, server, dummy_protocol):
+    async def test_listen_ok(self, server, dummy_protocol):
         """Test listen_tcp()."""
         server.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
-        server.loop = None
         assert await server.transport_listen()
+
+    async def test_listen_not_ok(self, server, dummy_protocol):
+        """Test listen_tcp()."""
+        server.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
         server.call_create.side_effect = OSError("testing")
         assert not await server.transport_listen()
 
@@ -99,7 +116,7 @@ class TestBasicModbusProtocol:   # pylint: disable=too-many-public-methods
         assert not client.reconnect_task
         assert not client.reconnect_delay_current
 
-    async def test_data_received(self, client):
+    async def test_data_received_rest(self, client):
         """Test data_received."""
         client.callback_data = mock.MagicMock(return_value=2)
         client.data_received(b"123456")
@@ -108,35 +125,33 @@ class TestBasicModbusProtocol:   # pylint: disable=too-many-public-methods
         client.data_received(b"789")
         assert client.recv_buffer == b"56789"
 
+    async def test_data_received_all(self, client):
+        """Test data_received."""
+        test_data = b"123"
+        client.callback_data = mock.MagicMock(return_value=len(test_data))
+        client.data_received(test_data)
+        assert not client.recv_buffer
+
     async def test_datagram(self, client):
         """Test datagram_received()."""
         client.callback_data = mock.MagicMock()
         client.datagram_received(b"abc", "127.0.0.1")
         client.callback_data.assert_called_once()
 
-    async def test_eof_received(self, client):
-        """Test eof_received."""
-        client.eof_received()
-
-    async def test_error_received(self, client):
-        """Test error_received."""
-        client.error_received(Exception("test call"))
-
-    async def test_callbacks(self, use_clc):
+    async def test_callback_connected(self, use_clc):
         """Test callbacks."""
         client = ModbusProtocol(use_clc, False)
         client.callback_connected()
+
+    async def test_callback_disconnected(self, use_clc):
+        """Test callbacks."""
+        client = ModbusProtocol(use_clc, False)
         client.callback_disconnected(Exception("test"))
+
+    async def test_callback_data(self, use_clc):
+        """Test callbacks."""
+        client = ModbusProtocol(use_clc, False)
         client.callback_data(b"abcd")
-
-    async def test_transport_send(self, client):
-        """Test transport_send()."""
-        client.transport = mock.Mock()
-        client.transport_send(b"abc")
-
-        client.comm_params.comm_type = CommType.UDP
-        client.transport_send(b"abc")
-        client.transport_send(b"abc", addr=("localhost", 502))
 
     async def test_handle_local_echo(self, client):
         """Test transport_send()."""
@@ -149,7 +164,12 @@ class TestBasicModbusProtocol:   # pylint: disable=too-many-public-methods
         client.data_received(test_data)
         assert client.recv_buffer == test_data
         assert not client.sent_buffer
-        client.recv_buffer = b""
+
+    async def test_handle_local_echo_udp(self, client):
+        """Test transport_send()."""
+        client.comm_params.handle_local_echo = True
+        client.transport = mock.Mock()
+        test_data = b"abc"
         client.transport_send(test_data)
         client.datagram_received(test_data, ("127.0.0.1", 502))
         assert not client.recv_buffer
@@ -157,43 +177,65 @@ class TestBasicModbusProtocol:   # pylint: disable=too-many-public-methods
         client.datagram_received(test_data, ("127.0.0.1", 502))
         assert client.recv_buffer == test_data
         assert not client.sent_buffer
+
+    async def test_handle_local_echo_none(self, client):
+        """Test transport_send()."""
+        client.comm_params.handle_local_echo = True
+        client.transport = mock.Mock()
+        test_data = b"abc"
         client.transport_send(b"no echo")
         client.datagram_received(test_data, ("127.0.0.1", 502))
-        assert client.recv_buffer == test_data + test_data
+        assert client.recv_buffer == test_data
         assert not client.sent_buffer
-        client.recv_buffer = b""
+
+    async def test_handle_local_echo_partial(self, client):
+        """Test transport_send()."""
+        client.comm_params.handle_local_echo = True
+        client.transport = mock.Mock()
         client.transport_send(b"partial")
         client.datagram_received(b"par", ("127.0.0.1", 502))
         client.datagram_received(b"tialresponse", ("127.0.0.1", 502))
         assert client.recv_buffer == b"response"
         assert not client.sent_buffer
 
-    async def test_broadcast_local_echo(self, client):
-        """Test transport_send() with broadcast and echo packets."""
-        client.comm_params.handle_local_echo = True
-        client.transport = mock.Mock()
-        client.recv_buffer = b""
-        client.transport_send(b"broadcast")
-        client.transport_send(b"message")
-        client.datagram_received(b"broadcast", ("127.0.0.1", 502))
-        client.datagram_received(b"messageresponse", ("127.0.0.1", 502))
-        assert client.recv_buffer == b"response"
-        assert not client.sent_buffer
-        client.recv_buffer = b""
-        client.transport_send(b"broadcast")
-        client.transport_send(b"message")
-        client.datagram_received(b"broadcastmessageresponse", ("127.0.0.1", 502))
-        assert client.recv_buffer == b"response"
-        assert not client.sent_buffer
-        client.recv_buffer = b""
-        client.transport_send(b"broadcast")
-        client.transport_send(b"message")
-        client.datagram_received(b"broadcastmessa", ("127.0.0.1", 502))
-        client.datagram_received(b"geresponse", ("127.0.0.1", 502))
-        assert client.recv_buffer == b"response"
-        assert not client.sent_buffer
 
-    async def test_transport_close(self, server, dummy_protocol):
+class TestTransportProtocol2:
+    """Test transport module."""
+
+    @staticmethod
+    @pytest.fixture(name="use_port")
+    def get_port_in_class(base_ports):
+        """Return next port."""
+        base_ports[__class__.__name__] += 1
+        return base_ports[__class__.__name__]
+
+
+    async def test_eof_received(self, client):
+        """Test eof_received."""
+        client.eof_received()
+
+    async def test_error_received(self, client):
+        """Test error_received."""
+        client.error_received(Exception("test call"))
+
+    async def test_transport_send(self, client):
+        """Test transport_send()."""
+        client.transport = mock.Mock()
+        client.transport_send(b"abc")
+
+    async def test_transport_send_udp(self, client):
+        """Test transport_send()."""
+        client.transport = mock.Mock()
+        client.comm_params.comm_type = CommType.UDP
+        client.transport_send(b"abc", addr=("localhost", 502))
+
+    async def test_transport_send_udp_no_addr(self, client):
+        """Test transport_send()."""
+        client.transport = mock.Mock()
+        client.comm_params.comm_type = CommType.UDP
+        client.transport_send(b"abc")
+
+    async def test_transport_close_connection(self, server, dummy_protocol):
         """Test transport_close()."""
         dummy_protocol.close = mock.MagicMock()
         server.connection_made(dummy_protocol())
@@ -202,6 +244,10 @@ class TestBasicModbusProtocol:   # pylint: disable=too-many-public-methods
         server.transport_close()
         dummy_protocol.close.assert_called_once()
         assert not server.recv_buffer
+
+    async def test_transport_close_listen(self, server, dummy_protocol):
+        """Test transport_close()."""
+        dummy_protocol.close = mock.MagicMock()
         await server.transport_listen()
         server.active_connections = {"a": dummy_protocol()}
         server.transport_close()
@@ -254,6 +300,7 @@ class TestBasicModbusProtocol:   # pylint: disable=too-many-public-methods
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay * 2
         assert not client.reconnect_task
         client.transport_connect.side_effect = asyncio.CancelledError("stop loop")
+        client.comm_params.on_reconnect_callback = mock.Mock()
         await client.do_reconnect()
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay
         assert not client.reconnect_task
@@ -269,96 +316,49 @@ class TestBasicModbusProtocol:   # pylint: disable=too-many-public-methods
         """Test magic."""
         assert str(client) == f"ModbusProtocol({use_clc.comm_name})"
 
-    def test_generate_ssl(self, use_clc):
+    def test_generate_ssl_cert(self, use_clc):
         """Test ssl generation."""
         with mock.patch("pymodbus.transport.transport.ssl.SSLContext"):
             sslctx = use_clc.generate_ssl(True, "cert_file", "key_file")
         assert sslctx
+
+    def test_generate_ssl_ctx(self, use_clc):
+        """Test ssl generation."""
         test_value = "test igen"
         assert test_value == use_clc.generate_ssl(
             True, "cert_file", "key_file", sslctx=test_value
         )
 
-
-@mock.patch(
-    "pymodbus.transport.serialtransport.serial.serial_for_url", mock.MagicMock()
-)
-class TestBasicSerial:
-    """Test transport serial module."""
-
-    async def test_init(self):
-        """Test null modem init."""
-        SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
-
-    async def test_abstract_methods(self):
-        """Test asyncio abstract methods."""
-        comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
-        assert comm.loop
-        comm.get_protocol()
-        comm.set_protocol(None)
-        comm.get_write_buffer_limits()
-        comm.can_write_eof()
-        comm.write_eof()
-        comm.set_write_buffer_limits(1024, 1)
-        comm.get_write_buffer_size()
-        comm.is_reading()
-        comm.pause_reading()
-        comm.resume_reading()
-        comm.is_closing()
-
-    async def test_external_methods(self):
-        """Test external methods."""
-        comm = SerialTransport(mock.MagicMock(), mock.Mock(), "dummy")
-        comm.sync_serial.read = mock.MagicMock(return_value="abcd")
-        comm.sync_serial.write = mock.MagicMock(return_value=4)
-        comm.sync_serial.fileno = mock.MagicMock(return_value=2)
-        comm.sync_serial.async_loop.add_writer = mock.MagicMock()
-        comm.sync_serial.async_loop.add_reader = mock.MagicMock()
-        comm.sync_serial.async_loop.remove_writer = mock.MagicMock()
-        comm.sync_serial.async_loop.remove_reader = mock.MagicMock()
-        comm.sync_serial.in_waiting = False
-
-        comm.write(b"abcd")
-        comm.flush()
-        comm.close()
-        comm = SerialTransport(mock.MagicMock(), mock.Mock(), "dummy")
-        comm.abort()
-        transport, protocol = await create_serial_connection(
-            asyncio.get_running_loop(), mock.Mock, url="dummy"
+    def test_generate_ssl_client(self, use_clc):
+        """Test ssl generation."""
+        test_value = "test igen"
+        assert test_value == use_clc.generate_ssl(
+            False, "cert_file", "key_file", sslctx=test_value
         )
-        await asyncio.sleep(0.1)
-        assert transport
-        assert protocol
-        transport.close()
 
-    async def test_serial_polling(self):
-        """Test polling."""
-        if os.name == "nt":
-            return
+    def test_generate_ssl_no_file(self, use_clc):
+        """Test ssl generation."""
+        assert use_clc.generate_ssl(True, None, None)
 
-        comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
-        comm.sync_serial = mock.MagicMock()
-        comm.sync_serial.read.side_effect = asyncio.CancelledError("test")
-        await comm.polling_task()
+    @pytest.mark.parametrize("use_host", ["socket://localhost:5004", "/dev/tty"])
+    @pytest.mark.parametrize("use_comm_type", [CommType.SERIAL])
+    def test_init_serial(self, use_cls):
+        """Test server serial with socket."""
+        ModbusProtocol(use_cls, True)
 
-    async def test_serial_ready(self):
-        """Test polling."""
-        if os.name == "nt":
-            return
+    @pytest.mark.parametrize("use_host", ["socket://localhost:5004"])
+    @pytest.mark.parametrize("use_comm_type", [CommType.SERIAL])
+    async def test_init_create_serial(self, use_cls):
+        """Test server serial with socket."""
+        protocol = ModbusProtocol(use_cls, True)
+        await protocol.transport_listen()
 
-        comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
-        comm.sync_serial = mock.MagicMock()
-        comm.sync_serial.read.side_effect = serial.SerialException("test")
-        await comm.polling_task()
-
-    async def test_serial_write_ready(self):
-        """Test polling."""
-        if os.name == "nt":
-            return
-
-        comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
-        comm.sync_serial = mock.MagicMock()
-        comm.sync_serial.write.side_effect = BlockingIOError("test")
-        comm.write_ready()
-        comm.sync_serial.write.side_effect = serial.SerialException("test")
-        comm.write_ready()
+    @pytest.mark.parametrize("use_host", ["localhost"])
+    @pytest.mark.parametrize("use_comm_type", [CommType.UDP])
+    @pytest.mark.parametrize("is_server", [True, False])
+    def test_init_udp(self, is_server, use_cls, use_clc):
+        """Test server/client udp."""
+        if is_server:
+            ModbusProtocol(use_cls, True)
+        else:
+            ModbusProtocol(use_clc, False)

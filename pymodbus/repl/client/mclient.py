@@ -379,7 +379,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
             }
         return ExtendedRequestSupport._process_exception(resp, slave=request.slave_id)
 
-    def return_query_data(self, message=0, **kwargs):
+    def return_query_data(self, message=b"\x00", **kwargs):
         """Loop back data sent in response.
 
         :param message: Message to be looped back

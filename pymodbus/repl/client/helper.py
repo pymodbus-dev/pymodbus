@@ -83,7 +83,7 @@ class Command:
             self._params = signature.parameters
             self.args = self.create_completion()
         else:
-            self._params = ""
+            self._params = {}
 
         if self.name.startswith("client.") and slave:
             self.args.update(**DEFAULT_KWARGS)
@@ -232,7 +232,7 @@ class Result:
     """Represent result command."""
 
     function_code: int | None = None
-    data: dict[int, Any] | None = None
+    data: dict[str, Any] = {}
 
     def __init__(self, result):
         """Initialize.

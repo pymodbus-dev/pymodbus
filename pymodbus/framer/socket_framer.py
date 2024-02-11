@@ -147,7 +147,7 @@ class ModbusSocketFramer(ModbusFramer):
             self.resetFrame()
             raise ModbusIOException("Unable to decode request")
         if error and result.function_code < 0x80:
-            raise InvalidMessageReceivedException(result)
+            raise InvalidMessageReceivedException(str(result))
         self.populateResult(result)
         self.advanceFrame()
         if tid and tid != result.transaction_id:

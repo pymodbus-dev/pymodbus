@@ -221,7 +221,7 @@ all_files = "1"
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
-addopts = "--durations=10 --dist loadscope --numprocesses auto"
+addopts = "--cov-report html --durations=10 --dist loadscope --numprocesses auto"
 asyncio_mode = "auto"
 timeout = 120
 
@@ -232,6 +232,7 @@ source = [
     "test/",
 ]
 omit = ["examples/contrib/"]
+branch = true
 
 [tool.coverage.report]
 exclude_also = [
@@ -240,10 +241,10 @@ exclude_also = [
     "if __name__ == .__main__.:",
     ]
 skip_covered = true
-fail_under = 86.5
+fail_under = 84.0
 
 [tool.coverage.html]
-directory = "htmlcov"
+directory = "build/cov"
 
 
 [tool.codespell]

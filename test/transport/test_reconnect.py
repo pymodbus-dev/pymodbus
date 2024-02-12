@@ -5,7 +5,7 @@ from unittest import mock
 import pytest
 
 
-class TestReconnectModbusProtocol:
+class TestTransportReconnect:
     """Test transport module, base part."""
 
     @staticmethod

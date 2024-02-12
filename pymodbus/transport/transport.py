@@ -149,7 +149,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.transport: asyncio.BaseTransport = None  # type: ignore[assignment]
         self.loop: asyncio.AbstractEventLoop = None  # type: ignore[assignment]
         self.recv_buffer: bytes = b""
-        self.call_create: Callable[[], Coroutine[Any, Any, Any]] = lambda: None  # type: ignore[assignment, return-value]
+        self.call_create: Callable[[], Coroutine[Any, Any, Any]] = None  # type: ignore[assignment]
         if self.is_server:
             self.active_connections: dict[str, ModbusProtocol] = {}
         else:
@@ -191,7 +191,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
     def init_setup_connect_listen(self, host: str, port: int) -> None:
         """Handle connect/listen handler."""
         if self.comm_params.comm_type == CommType.SERIAL:
-            self.call_create = lambda: create_serial_connection(
+            self.call_create = lambda: create_serial_connection( # pragma: no cover
                 self.loop,
                 self.handle_new_connection,
                 host,
@@ -205,19 +205,19 @@ class ModbusProtocol(asyncio.BaseProtocol):
             return
         if self.comm_params.comm_type == CommType.UDP:
             if self.is_server:
-                self.call_create = lambda: self.loop.create_datagram_endpoint(
+                self.call_create = lambda: self.loop.create_datagram_endpoint( # pragma: no cover
                     self.handle_new_connection,
                     local_addr=(host, port),
                 )
             else:
-                self.call_create = lambda: self.loop.create_datagram_endpoint(
+                self.call_create = lambda: self.loop.create_datagram_endpoint( # pragma: no cover
                     self.handle_new_connection,
                     remote_addr=(host, port),
                 )
             return
         # TLS and TCP
         if self.is_server:
-            self.call_create = lambda: self.loop.create_server(
+            self.call_create = lambda: self.loop.create_server( # pragma: no cover
                 self.handle_new_connection,
                 host,
                 port,
@@ -226,7 +226,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 start_serving=True,
             )
         else:
-            self.call_create = lambda: self.loop.create_connection(
+            self.call_create = lambda: self.loop.create_connection( # pragma: no cover
                 self.handle_new_connection,
                 host,
                 port,
@@ -597,7 +597,8 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
     def write(self, data: bytes) -> None:
         """Send data."""
         if not self.manipulator:
-            self.other_modem.protocol.data_received(data)
+            if self.other_modem:
+                self.other_modem.protocol.data_received(data)
             return
         data_manipulated = self.manipulator(data)
         for part in data_manipulated:

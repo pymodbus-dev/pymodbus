@@ -19,9 +19,9 @@ class SerialTransport(asyncio.Transport):
         """Initialize."""
         super().__init__()
         self.async_loop = loop
-        self._protocol: asyncio.BaseProtocol = protocol
+        self.intern_protocol: asyncio.BaseProtocol = protocol
         self.sync_serial = serial.serial_for_url(*args, **kwargs)
-        self._write_buffer: list[bytes] = []
+        self.intern_write_buffer: list[bytes] = []
         self.poll_task: asyncio.Task | None = None
         self._poll_wait_time = 0.0005
         self.sync_serial.timeout = 0
@@ -34,8 +34,8 @@ class SerialTransport(asyncio.Transport):
             self.poll_task = asyncio.create_task(self.polling_task())
             self.poll_task.set_name("SerialTransport poll")
         else:
-            self.async_loop.add_reader(self.sync_serial.fileno(), self._read_ready)
-        self.async_loop.call_soon(self._protocol.connection_made, self)
+            self.async_loop.add_reader(self.sync_serial.fileno(), self.intern_read_ready)
+        self.async_loop.call_soon(self.intern_protocol.connection_made, self)
 
     def close(self, exc: Exception | None = None) -> None:
         """Close the transport gracefully."""
@@ -52,19 +52,19 @@ class SerialTransport(asyncio.Transport):
         self.sync_serial = None  # type: ignore[assignment]
         if exc:
             with contextlib.suppress(Exception):
-                self._protocol.connection_lost(exc)
+                self.intern_protocol.connection_lost(exc)
 
     def write(self, data) -> None:
         """Write some data to the transport."""
-        self._write_buffer.append(data)
+        self.intern_write_buffer.append(data)
         if not self.poll_task:
-            self.async_loop.add_writer(self.sync_serial.fileno(), self.write_ready)
+            self.async_loop.add_writer(self.sync_serial.fileno(), self.intern_write_ready)
 
     def flush(self) -> None:
         """Clear output buffer and stops any more data being written."""
         if not self.poll_task:
             self.async_loop.remove_writer(self.sync_serial.fileno())
-        self._write_buffer.clear()
+        self.intern_write_buffer.clear()
 
     # ------------------------------------------------
     # Dummy methods needed to please asyncio.Transport.
@@ -76,11 +76,11 @@ class SerialTransport(asyncio.Transport):
 
     def get_protocol(self) -> asyncio.BaseProtocol:
         """Return protocol."""
-        return self._protocol
+        return self.intern_protocol
 
     def set_protocol(self, protocol: asyncio.BaseProtocol) -> None:
         """Set protocol."""
-        self._protocol = protocol
+        self.intern_protocol = protocol
 
     def get_write_buffer_limits(self) -> tuple[int, int]:
         """Return buffer sizes."""
@@ -98,7 +98,7 @@ class SerialTransport(asyncio.Transport):
 
     def get_write_buffer_size(self):
         """Return The number of bytes in the write buffer."""
-        return len(self._write_buffer)
+        return len(self.intern_write_buffer)
 
     def is_reading(self) -> bool:
         """Return true if read is active."""
@@ -120,23 +120,23 @@ class SerialTransport(asyncio.Transport):
 
     # ------------------------------------------------
 
-    def _read_ready(self):
+    def intern_read_ready(self):
         """Test if there are data waiting."""
         try:
             if data := self.sync_serial.read(1024):
-                self._protocol.data_received(data)
+                self.intern_protocol.data_received(data)
         except serial.SerialException as exc:
             self.close(exc=exc)
 
-    def write_ready(self):
+    def intern_write_ready(self):
         """Asynchronously write buffered data."""
-        data = b"".join(self._write_buffer)
+        data = b"".join(self.intern_write_buffer)
         try:
             if (nlen := self.sync_serial.write(data)) < len(data):
-                self._write_buffer = [data[nlen:]]
+                self.intern_write_buffer = [data[nlen:]]
                 if not self.poll_task:
                     self.async_loop.add_writer(
-                        self.sync_serial.fileno(), self.write_ready
+                        self.sync_serial.fileno(), self.intern_write_ready
                     )
                 return
             self.flush()
@@ -150,10 +150,10 @@ class SerialTransport(asyncio.Transport):
         try:
             while self.sync_serial:
                 await asyncio.sleep(self._poll_wait_time)
-                while self._write_buffer:
-                    self.write_ready()
+                while self.intern_write_buffer:
+                    self.intern_write_ready()
                 if self.sync_serial.in_waiting:
-                    self._read_ready()
+                    self.intern_read_ready()
         except asyncio.CancelledError as exc:
             self.close(exc)
 

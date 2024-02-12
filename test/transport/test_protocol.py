@@ -340,13 +340,13 @@ class TestTransportProtocol2:
         """Test ssl generation."""
         assert use_clc.generate_ssl(True, None, None)
 
-    @pytest.mark.parametrize("use_host", ["socket://localhost:5004", "/dev/tty"])
+    @pytest.mark.parametrize("use_host", ["socket://localhost:5005", "/dev/tty"])
     @pytest.mark.parametrize("use_comm_type", [CommType.SERIAL])
     def test_init_serial(self, use_cls):
         """Test server serial with socket."""
         ModbusProtocol(use_cls, True)
 
-    @pytest.mark.parametrize("use_host", ["socket://localhost:5004"])
+    @pytest.mark.parametrize("use_host", ["socket://localhost:5006"])
     @pytest.mark.parametrize("use_comm_type", [CommType.SERIAL])
     async def test_init_create_serial(self, use_cls):
         """Test server serial with socket."""

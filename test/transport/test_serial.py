@@ -83,7 +83,7 @@ class TestTransportSerial:
         transport, protocol = await create_serial_connection(
             asyncio.get_running_loop(), mock.Mock, url="dummy"
         )
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0)
         assert transport
         assert protocol
         transport.close()
@@ -96,7 +96,7 @@ class TestTransportSerial:
         transport, protocol = await create_serial_connection(
             asyncio.get_running_loop(), mock.Mock, url="dummy"
         )
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0)
         transport.write(b"abcd")
         transport.close()
         SerialTransport.force_poll = False

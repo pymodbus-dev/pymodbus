@@ -38,7 +38,7 @@ __________          _____             .___  __________              .__
  |    |    \___  /    Y    (  <_> ) /_/ |    |    |   \  ___/|  |_> >  |__
  |____|    / ____\____|__  /\____/\____ | /\ |____|_  /\___  >   __/|____/
            \/            \/            \/ \/        \/     \/|__|
-                                        v1.3.0 - {pymodbus_version}
+                                        v1.3.1 - {pymodbus_version}
 ----------------------------------------------------------------------------
 """
 
@@ -64,16 +64,6 @@ def bottom_toolbar():
     )
 
 
-class CaseInsenstiveChoice(click.Choice):
-    """Do case Insensitive choice for click commands and options."""
-
-    def convert(self, value, param, ctx):
-        """Convert args to uppercase for evaluation."""
-        if value is None:
-            return None
-        return super().convert(value.strip().upper(), param, ctx)
-
-
 class NumericChoice(click.Choice):
     """Do numeric choice for click arguments and options."""
 
@@ -87,12 +77,6 @@ class NumericChoice(click.Choice):
         # Exact match
         if value in self.choices:
             return self.typ(value)
-
-        if ctx is not None and ctx.token_normalize_func is not None:
-            value = ctx.token_normalize_func(value)
-            for choice in self.casted_choices:  # pylint: disable=no-member
-                if ctx.token_normalize_func(choice) == value:
-                    return choice
 
         self.fail(
             f"invalid choice: {value}. (choose from {', '.join(self.choices)})",
@@ -348,7 +332,7 @@ def tcp(ctx, host, port, framer):
     "PARITY_NONE, PARITY_EVEN, PARITY_ODD PARITY_MARK, "
     'PARITY_SPACE. Default to "N"',
     default="N",
-    type=CaseInsenstiveChoice(["N", "E", "O", "M", "S"]),
+    type=click.Choice(["N", "E", "O", "M", "S"], case_sensitive=False),
 )
 @click.option(
     "--stopbits",

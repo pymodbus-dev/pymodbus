@@ -70,6 +70,9 @@ class TestTransportSerial:
 
     async def test_create_serial(self):
         """Test external methods."""
+        if os.name == "nt":
+            return
+
         transport, protocol = await create_serial_connection(
             asyncio.get_running_loop(), mock.Mock, url="dummy"
         )

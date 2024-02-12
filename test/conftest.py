@@ -38,9 +38,8 @@ BASE_PORTS = {
     "TestTransportProtocol2": 7300,
     "TestTransportSerial": 7400,
     "TestTransportReconnect": 7500,
+    "TestTransportComm": 7600,
 
-    "TestCommNullModem": 7600,
-    "TestCommModbusProtocol": 7700,
     "TestExamples": 7800,
     "TestAsyncExamples": 7900,
     "TestSyncExamples": 8000,

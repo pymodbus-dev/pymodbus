@@ -581,7 +581,7 @@ class _serverList:
         if os.name == "nt":
             await asyncio.sleep(1)
         else:
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0)
         cls.active_server = None
 
     @classmethod
@@ -597,7 +597,7 @@ class _serverList:
         if os.name == "nt":
             time.sleep(10)
         else:
-            time.sleep(0.5)
+            time.sleep(0.1)
 
 
 async def StartAsyncTcpServer(  # pylint: disable=invalid-name,dangerous-default-value

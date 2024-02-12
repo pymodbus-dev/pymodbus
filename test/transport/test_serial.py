@@ -172,6 +172,7 @@ class TestTransportSerial:
         comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
         comm.sync_serial = mock.MagicMock()
         comm.sync_serial.write.return_value = 3
+        comm.async_loop.add_writer = mock.Mock()
         comm.intern_write_buffer.append(b"abcd")
         comm.intern_write_ready()
 

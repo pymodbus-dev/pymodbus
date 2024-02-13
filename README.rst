@@ -80,7 +80,7 @@ REPL Features
 - simulation of broken requests/responses
 - simulation of error responses (hard to provoke in real devices)
 
-`REPL documentation <https://https://pymodbus.readthedocs.io/en/dev/source/REPL.html>`_
+`REPL documentation <https://github.com/pymodbus-dev/repl>`_
 
 
 Simulator Features

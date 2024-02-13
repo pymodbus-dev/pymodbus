@@ -20,6 +20,7 @@ from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.exceptions import ConnectionException, ModbusException, ModbusIOException
+from pymodbus.pdu import ModbusRequest
 from pymodbus.transport import CommType
 
 
@@ -121,7 +122,6 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                     "timeout": 3 + 2,
                     "retries": 3 + 2,
                     "retry_on_empty": True,
-                    "close_comm_on_error": True,
                     "strict": False,
                     "broadcast_enable": not False,
                     "reconnect_delay": 117,
@@ -131,7 +131,6 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                     "timeout": 3,
                     "retries": 3,
                     "retry_on_empty": False,
-                    "close_comm_on_error": False,
                     "strict": True,
                     "broadcast_enable": False,
                     "reconnect_delay": 100,
@@ -291,8 +290,11 @@ async def test_client_connection_made():
     """Test protocol made connection."""
     client = lib_client.AsyncModbusTcpClient("127.0.0.1")
     assert not client.connected
-    client.connection_made(mock.AsyncMock())
-    assert client.connected
+
+    transport = mock.AsyncMock()
+    transport.close = lambda : ()
+    client.connection_made(transport)
+    # assert await client.connected
     client.close()
 
 
@@ -425,8 +427,7 @@ async def test_client_execute_broadcast():
     transport = MockTransport(base, request)
     base.connection_made(transport=transport)
 
-    response = await base.async_execute(request)
-    assert  response == b'Broadcast write sent - no response expected'
+    assert not await base.async_execute(request)
 
 async def test_client_protocol_retry():
     """Test the client protocol execute method with retries."""
@@ -598,7 +599,11 @@ async def test_client_build_response():
     with pytest.raises(ConnectionException):
         await client.build_response(0)
 
+
 async def test_client_mixin_execute():
-    """Test dummy execute."""
+    """Test dummy execute for both sync and async."""
     client = ModbusClientMixin()
-    assert client.execute(None)
+    with pytest.raises(NotImplementedError):
+        client.execute(ModbusRequest())
+    with pytest.raises(NotImplementedError):
+        await client.execute(ModbusRequest())

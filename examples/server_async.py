@@ -158,7 +158,6 @@ async def run_async_server(args):
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
-            # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif args.comm == "udp":
         address = (
@@ -174,7 +173,6 @@ async def run_async_server(args):
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
-            # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif args.comm == "serial":
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600
@@ -216,7 +214,6 @@ async def run_async_server(args):
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
-            # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     return server
 

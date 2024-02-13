@@ -125,7 +125,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
-    :param close_comm_on_error: Close connection on error.
     :param strict: Strict timing, 1.5 character between requests.
     :param broadcast_enable: True to treat id 0 as broadcast address.
     :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
@@ -162,6 +161,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         bytesize: int = 8,
         parity: str = "N",
         stopbits: int = 1,
+        strict: bool = True,
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus Serial Client."""
@@ -176,6 +176,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             **kwargs,
         )
         self.socket = None
+        self.strict = bool(strict)
 
         self.last_frame_end = None
 
@@ -210,8 +211,9 @@ class ModbusSerialClient(ModbusBaseSyncClient):
                 stopbits=self.comm_params.stopbits,
                 baudrate=self.comm_params.baudrate,
                 parity=self.comm_params.parity,
+                exclusive=True,
             )
-            if self.params.strict:
+            if self.strict:
                 self.socket.interCharTimeout = self.inter_char_timeout
             self.last_frame_end = None
         except serial.SerialException as msg:

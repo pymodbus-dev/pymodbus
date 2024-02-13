@@ -1,13 +1,16 @@
 """Modbus Clients to be used with REPL."""
 # pylint: disable=missing-type-doc
 import functools
+from typing import TYPE_CHECKING
 
 from pymodbus.client import ModbusSerialClient as _ModbusSerialClient
 from pymodbus.client import ModbusTcpClient as _ModbusTcpClient
+from pymodbus.client.base import ModbusBaseSyncClient as _ModbusBaseSyncClient
 from pymodbus.diag_message import (
     ChangeAsciiInputDelimiterRequest,
     ClearCountersRequest,
     ClearOverrunCountRequest,
+    DiagnosticStatusResponse,
     ForceListenOnlyModeRequest,
     GetClearModbusPlusRequest,
     RestartCommunicationsOptionRequest,
@@ -24,14 +27,22 @@ from pymodbus.diag_message import (
     ReturnSlaveNoResponseCountRequest,
 )
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.mei_message import ReadDeviceInformationRequest
+from pymodbus.mei_message import (
+    ReadDeviceInformationRequest,
+    ReadDeviceInformationResponse,
+)
 from pymodbus.other_message import (
     GetCommEventCounterRequest,
+    GetCommEventCounterResponse,
     GetCommEventLogRequest,
+    GetCommEventLogResponse,
     ReadExceptionStatusRequest,
+    ReadExceptionStatusResponse,
     ReportSlaveIdRequest,
+    ReportSlaveIdResponse,
 )
 from pymodbus.pdu import ExceptionResponse, ModbusExceptions
+from pymodbus.register_write_message import MaskWriteRegisterResponse
 
 
 def make_response_dict(resp):
@@ -46,7 +57,7 @@ def make_response_dict(resp):
     return resp_dict
 
 
-def handle_brodcast(func):
+def handle_broadcast(func):
     """Handle broadcast."""
 
     @functools.wraps(func)
@@ -63,8 +74,11 @@ def handle_brodcast(func):
 
     return _wrapper
 
-
-class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
+if TYPE_CHECKING:
+    _Base = _ModbusBaseSyncClient
+else:
+    _Base = object
+class ExtendedRequestSupport(_Base):  # pylint: disable=(too-many-public-methods
     """Extended request support."""
 
     @staticmethod
@@ -98,7 +112,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param kwargs:
         :returns: List of register values
         """
-        resp = super().read_coils(  # pylint: disable=no-member
+        resp = super().read_coils(
             address, count, slave, **kwargs
         )
         if not resp.isError():
@@ -114,14 +128,14 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param kwargs:
         :return: List of bits
         """
-        resp = super().read_discrete_inputs(  # pylint: disable=no-member
+        resp = super().read_discrete_inputs(
             address, count, slave, **kwargs
         )
         if not resp.isError():
             return {"function_code": resp.function_code, "bits": resp.bits}
         return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
-    @handle_brodcast
+    @handle_broadcast
     def write_coil(self, address, value, slave=0, **kwargs):
         """Write `value` to coil at `address`.
 
@@ -131,12 +145,12 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param kwargs:
         :return:
         """
-        resp = super().write_coil(  # pylint: disable=no-member
+        resp = super().write_coil(
             address, value, slave, **kwargs
         )
         return resp
 
-    @handle_brodcast
+    @handle_broadcast
     def write_coils(self, address, values, slave=0, **kwargs):
         """Write `value` to coil at `address`.
 
@@ -146,12 +160,12 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param kwargs:
         :return:
         """
-        resp = super().write_coils(  # pylint: disable=no-member
+        resp = super().write_coils(
             address, values, slave, **kwargs
         )
         return resp
 
-    @handle_brodcast
+    @handle_broadcast
     def write_register(self, address, value, slave=0, **kwargs):
         """Write `value` to register at `address`.
 
@@ -161,12 +175,12 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param kwargs:
         :return:
         """
-        resp = super().write_register(  # pylint: disable=no-member
+        resp = super().write_register(
             address, value, slave, **kwargs
         )
         return resp
 
-    @handle_brodcast
+    @handle_broadcast
     def write_registers(self, address, values, slave=0, **kwargs):
         """Write list of `values` to registers starting at `address`.
 
@@ -176,7 +190,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param kwargs:
         :return:
         """
-        resp = super().write_registers(  # pylint: disable=no-member
+        resp = super().write_registers(
             address, values, slave, **kwargs
         )
         return resp
@@ -190,7 +204,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param kwargs:
         :return:
         """
-        resp = super().read_holding_registers(  # pylint: disable=no-member
+        resp = super().read_holding_registers(
             address, count, slave, **kwargs
         )
         if not resp.isError():
@@ -206,7 +220,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param kwargs:
         :return:
         """
-        resp = super().read_input_registers(  # pylint: disable=no-member
+        resp = super().read_input_registers(
             address, count, slave, **kwargs
         )
         if not resp.isError():
@@ -235,7 +249,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param kwargs:
         :return:
         """
-        resp = super().readwrite_registers(  # pylint: disable=no-member
+        resp = super().readwrite_registers(
             read_address=read_address,
             read_count=read_count,
             write_address=write_address,
@@ -264,7 +278,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param kwargs:
         :return:
         """
-        resp = super().mask_write_register(  # pylint: disable=no-member
+        resp: MaskWriteRegisterResponse = super().mask_write_register(
             address=address, and_mask=and_mask, or_mask=or_mask, slave=slave, **kwargs
         )
         if not resp.isError():
@@ -285,7 +299,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :return:
         """
         request = ReadDeviceInformationRequest(read_code, object_id, **kwargs)
-        resp = self.execute(request)  # pylint: disable=no-member
+        resp: ReadDeviceInformationResponse = self.execute(request)
         if not resp.isError():
             return {
                 "function_code": resp.function_code,
@@ -306,7 +320,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :return:
         """
         request = ReportSlaveIdRequest(slave, **kwargs)
-        resp = self.execute(request)  # pylint: disable=no-member
+        resp: ReportSlaveIdResponse = self.execute(request)
         if not resp.isError():
             return {
                 "function_code": resp.function_code,
@@ -324,7 +338,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :return:
         """
         request = ReadExceptionStatusRequest(slave, **kwargs)
-        resp = self.execute(request)  # pylint: disable=no-member
+        resp: ReadExceptionStatusResponse = self.execute(request)
         if not resp.isError():
             return {"function_code": resp.function_code, "status": resp.status}
         return ExtendedRequestSupport._process_exception(resp, slave=request.slave_id)
@@ -338,7 +352,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :return:
         """
         request = GetCommEventCounterRequest(**kwargs)
-        resp = self.execute(request)  # pylint: disable=no-member
+        resp: GetCommEventCounterResponse = self.execute(request)
         if not resp.isError():
             return {
                 "function_code": resp.function_code,
@@ -357,7 +371,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :return:
         """
         request = GetCommEventLogRequest(**kwargs)
-        resp = self.execute(request)  # pylint: disable=no-member
+        resp: GetCommEventLogResponse = self.execute(request)
         if not resp.isError():
             return {
                 "function_code": resp.function_code,
@@ -370,7 +384,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
     def _execute_diagnostic_request(self, request):
         """Execute diagnostic request."""
-        resp = self.execute(request)  # pylint: disable=no-member
+        resp: DiagnosticStatusResponse = self.execute(request)
         if not resp.isError():
             return {
                 "function code": resp.function_code,
@@ -379,7 +393,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
             }
         return ExtendedRequestSupport._process_exception(resp, slave=request.slave_id)
 
-    def return_query_data(self, message=0, **kwargs):
+    def return_query_data(self, message=b"\x00", **kwargs):
         """Loop back data sent in response.
 
         :param message: Message to be looped back
@@ -582,14 +596,14 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
 
         :return: Current Stop bits
         """
-        return self.params.stopbits
+        return self.comm_params.stopbits
 
     def set_stopbits(self, value):
         """Set stop bit.
 
         :param value: Possible values (1, 1.5, 2)
         """
-        self.params.stopbits = float(value)
+        self.comm_params.stopbits = float(value)
         if self.is_socket_open():
             self.close()
 
@@ -615,14 +629,14 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
 
         :return: Current parity setting
         """
-        return self.params.parity
+        return self.comm_params.parity
 
     def set_parity(self, value):
         """Set parity Setter.
 
         :param value: Possible values ("N", "E", "O", "M", "S")
         """
-        self.params.parity = value
+        self.comm_params.parity = value
         if self.is_socket_open():
             self.close()
 

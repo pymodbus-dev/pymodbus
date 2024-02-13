@@ -116,8 +116,6 @@ class ModbusTlsClient(ModbusTcpClient):
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
-    :param close_comm_on_error: Close connection on error.
-    :param strict: Strict timing, 1.5 character between requests.
     :param broadcast_enable: True to treat id 0 as broadcast address.
     :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
@@ -160,7 +158,7 @@ class ModbusTlsClient(ModbusTcpClient):
         self.sslctx = CommParams.generate_ssl(
             False, certfile, keyfile, password, sslctx=sslctx
         )
-        self.params.server_hostname = server_hostname
+        self.server_hostname = server_hostname
 
     @property
     def connected(self) -> bool:
@@ -176,7 +174,7 @@ class ModbusTlsClient(ModbusTcpClient):
             if self.params.source_address:
                 sock.bind(self.params.source_address)
             self.socket = self.sslctx.wrap_socket(
-                sock, server_side=False, server_hostname=self.comm_params.host
+                sock, server_side=False, server_hostname=self.server_hostname
             )
             self.socket.settimeout(self.comm_params.timeout_connect)
             self.socket.connect((self.comm_params.host, self.comm_params.port))

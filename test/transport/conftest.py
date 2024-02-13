@@ -1,16 +1,15 @@
-"""Fixtures for transport tests."""
+"""Configure pytest."""
 import asyncio
 import os
+import sys
 from unittest import mock
 
 import pytest
 
-from pymodbus.transport import (
-    NULLMODEM_HOST,
-    CommParams,
-    CommType,
-    ModbusProtocol,
-)
+from pymodbus.transport import CommParams, CommType, ModbusProtocol
+
+
+sys.path.extend(["examples", "../examples", "../../examples"])
 
 
 class DummyProtocol(ModbusProtocol):
@@ -47,58 +46,6 @@ class DummyProtocol(ModbusProtocol):
 def prepare_dummy_protocol():
     """Return transport object."""
     return DummyProtocol
-
-
-@pytest.fixture(name="use_comm_type")
-def prepare_dummy_use_comm_type():
-    """Return default comm_type."""
-    return CommType.TCP
-
-
-@pytest.fixture(name="use_host")
-def prepare_nullmodem_host():
-    """Return default host."""
-    return NULLMODEM_HOST
-
-
-@pytest.fixture(name="use_cls")
-def prepare_commparams_server(use_port, use_host, use_comm_type):
-    """Prepare CommParamsClass object."""
-    if use_host == NULLMODEM_HOST and use_comm_type == CommType.SERIAL:
-        use_host = f"{NULLMODEM_HOST}:{use_port}"
-    return CommParams(
-        comm_name="test comm",
-        comm_type=use_comm_type,
-        reconnect_delay=0,
-        reconnect_delay_max=0,
-        timeout_connect=0,
-        source_address=(use_host, use_port),
-        baudrate=9600,
-        bytesize=8,
-        parity="E",
-        stopbits=2,
-    )
-
-
-@pytest.fixture(name="use_clc")
-def prepare_commparams_client(use_port, use_host, use_comm_type):
-    """Prepare CommParamsClass object."""
-    if use_host == NULLMODEM_HOST and use_comm_type == CommType.SERIAL:
-        use_host = f"{NULLMODEM_HOST}:{use_port}"
-    timeout = 10 if not pytest.IS_WINDOWS else 2
-    return CommParams(
-        comm_name="test comm",
-        comm_type=use_comm_type,
-        reconnect_delay=0.1,
-        reconnect_delay_max=0.35,
-        timeout_connect=timeout,
-        host=use_host,
-        port=use_port,
-        baudrate=9600,
-        bytesize=8,
-        parity="E",
-        stopbits=2,
-    )
 
 
 @pytest.fixture(name="client")

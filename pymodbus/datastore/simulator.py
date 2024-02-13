@@ -37,7 +37,7 @@ class Cell:
     count_write: int = 0
 
 
-class TextCell:
+class TextCell:  # pylint: disable=too-few-public-methods
     """A textual representation of a single cell."""
 
     type: str
@@ -486,7 +486,7 @@ class ModbusSimulatorContext:
     def get_text_register(self, register):
         """Get raw register."""
         reg = self.registers[register]
-        text_cell = TextCell()  # pylint: disable=no-value-for-parameter
+        text_cell = TextCell()
         text_cell.type = self.registerType_id_to_name[reg.type]
         text_cell.access = str(reg.access)
         text_cell.count_read = str(reg.count_read)

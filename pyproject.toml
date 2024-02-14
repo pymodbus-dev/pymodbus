@@ -49,7 +49,7 @@ serial = [
 repl = [
     "aiohttp>=3.8.6;python_version<'3.12'",
     "aiohttp>=3.9.0b0;python_version=='3.12'",
-    "pymodbus-repl@git+https://github.com/pymodbus-dev/repl"
+#    "pymodbus-repl@git+https://github.com/pymodbus-dev/repl"
 ]
 
 simulator = [

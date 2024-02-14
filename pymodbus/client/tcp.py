@@ -53,6 +53,8 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
+    socket: socket.socket | None
+
     def __init__(
         self,
         host: str,
@@ -130,6 +132,8 @@ class ModbusTcpClient(ModbusBaseSyncClient):
 
     Remark: There are no automatic reconnect as with AsyncModbusTcpClient
     """
+
+    socket: socket.socket | None
 
     def __init__(
         self,
@@ -219,7 +223,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         else:
             recv_size = size
 
-        data = []
+        data: list[bytes] = []
         data_length = 0
         time_ = time.time()
         end = time_ + timeout

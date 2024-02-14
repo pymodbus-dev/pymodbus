@@ -222,13 +222,13 @@ class ServerDecoder:
 
         return request
 
-    def register(self, function=None):
+    def register(self, function):
         """Register a function and sub function class with the decoder.
 
         :param function: Custom function class to register
         :raises MessageRegisterException:
         """
-        if function and not issubclass(function, ModbusRequest):
+        if not issubclass(function, ModbusRequest):
             raise MessageRegisterException(
                 f'"{function.__class__.__name__}" is Not a valid Modbus Message'
                 ". Class needs to be derived from "

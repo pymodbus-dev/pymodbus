@@ -51,3 +51,11 @@ Prepare release on dev for new commits.
 ------------------------------------------------------------
 * Make pull request "prepare dev", with the following:
    * Update pymodbus/__init__.py with version number (__version__ X.Y.Zpre)
+
+
+------------------------------------------------------------
+Architecture documentation.
+------------------------------------------------------------
+* install graphviz
+* pyreverse -k -o jpg pymodbus 
+

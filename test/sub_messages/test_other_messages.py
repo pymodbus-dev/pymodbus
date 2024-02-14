@@ -15,18 +15,18 @@ class TestOtherMessage:
     ]
 
     responses = [
-        lambda: pymodbus_message.ReadExceptionStatusResponse(0x12),
-        lambda: pymodbus_message.GetCommEventCounterResponse(0x12),
+        pymodbus_message.ReadExceptionStatusResponse(0x12),
+        pymodbus_message.GetCommEventCounterResponse(0x12),
         pymodbus_message.GetCommEventLogResponse,
-        lambda: pymodbus_message.ReportSlaveIdResponse(0x12),
+        pymodbus_message.ReportSlaveIdResponse(0x12),
     ]
 
     def test_other_messages_to_string(self):
         """Test other messages to string."""
         for message in self.requests:
-            assert str(message())
+            assert str(message)
         for message in self.responses:
-            assert str(message())
+            assert str(message)
 
     def test_read_exception_status(self):
         """Test read exception status."""

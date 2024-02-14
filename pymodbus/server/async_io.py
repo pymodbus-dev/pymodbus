@@ -49,7 +49,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
         self.running = False
         self.receive_queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
-        self.framer: ModbusFramer = None
+        self.framer: ModbusFramer
 
     def _log_exception(self):
         """Show log exception."""

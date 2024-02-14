@@ -80,7 +80,7 @@ REPL Features
 - simulation of broken requests/responses
 - simulation of error responses (hard to provoke in real devices)
 
-`REPL documentation <https://https://pymodbus.readthedocs.io/en/dev/source/REPL.html>`_
+`REPL documentation <https://github.com/pymodbus-dev/repl>`_
 
 
 Simulator Features
@@ -274,7 +274,7 @@ There are 2 bigger projects ongoing:
    * Add features to and simulator, and enhance the web design
 
 
-Development Instructions
+Development instructions
 ------------------------
 The current code base is compatible with python >= 3.8.
 
@@ -295,15 +295,18 @@ Make a pull request::
 
    on github open a pull request, check that CI turns green and then wait for review comments.
 
-
 Test your changes::
 
    cd test
    pytest
 
+you can also do extended testing::
 
-Architecture
-^^^^^^^^^^^^
+   pytest --cov         <-- Coverage html report in build/html
+   pytest --profile     <-- Call profile report in prof
+
+Internals
+^^^^^^^^^
 
 There are no documentation of the architecture (help is welcome), but most classes and
 methods are documented:

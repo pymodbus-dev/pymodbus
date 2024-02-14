@@ -137,6 +137,8 @@ class ModbusUdpClient(ModbusBaseSyncClient):
     Remark: There are no automatic reconnect as with AsyncModbusUdpClient
     """
 
+    socket: socket.socket | None
+
     def __init__(
         self,
         host: str,

@@ -40,8 +40,6 @@ Homepage = "https://github.com/pymodbus-dev/pymodbus/"
 Discord = "https://discord.gg/vcP8qAz2"
 
 [project.scripts]
-"pymodbus.console" = "pymodbus.repl.client.main:main"
-"pymodbus.server" = "pymodbus.repl.server.main:app"
 "pymodbus.simulator" = "pymodbus.server.simulator.main:main"
 
 [project.optional-dependencies]
@@ -49,13 +47,9 @@ serial = [
     "pyserial>=3.5"
 ]
 repl = [
-    "aiohttp>=3.8.6;python_version<'3.12'",
-    "aiohttp>=3.9.0b0;python_version=='3.12'",
-    "typer[all]>=0.7.0",
-    "prompt-toolkit>=3.0.36",
-    "pygments>=2.15.0",
-    "click>=8.0.0"
+   "pymodbus-repl@git+https://github.com/pymodbus-dev/repl"
 ]
+
 simulator = [
     "aiohttp>=3.8.6;python_version<'3.12'",
     "aiohttp>=3.9.0b0;python_version=='3.12'"

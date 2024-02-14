@@ -206,7 +206,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
 
     def build_response(self, tid):
         """Return a deferred response for the current request."""
-        my_future = asyncio.Future()
+        my_future: asyncio.Future = asyncio.Future()
         if not self.transport:
             self.raise_future(my_future, ConnectionException("Client is not connected"))
         else:

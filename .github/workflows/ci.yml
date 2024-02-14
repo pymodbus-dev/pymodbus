@@ -73,7 +73,7 @@ jobs:
         run: |
           python -m venv ${{ env.VIRTUAL_ENV }}
           python -m pip install --upgrade pip
-          pip install -e ".[all]"
+          pip install ".[all]"
 
       - name: codespell
         if: matrix.run_doc == true
@@ -103,7 +103,7 @@ jobs:
       - name: pytest
         run: |
           env
-          pytest -v --cov --full-trace --timeout=1200
+          pytest --cov 
 
   analyze:
     name: Analyze Python

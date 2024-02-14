@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import socket
 from dataclasses import dataclass
-from typing import Any, Callable, Type, cast
+from typing import Any, Awaitable, Callable, Type, cast
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.exceptions import ConnectionException, ModbusIOException
@@ -17,7 +17,7 @@ from pymodbus.transport import CommParams, ModbusProtocol
 from pymodbus.utilities import ModbusTransactionState
 
 
-class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
+class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProtocol):
     """**ModbusBaseClient**.
 
     Fixed parameters:
@@ -62,7 +62,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
-        ModbusClientMixin.__init__(self)
+        ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
         ModbusProtocol.__init__(
             self,
             CommParams(
@@ -139,7 +139,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             return 0
         return self.last_frame_end + self.silent_interval
 
-    def execute(self, request: ModbusRequest | None = None) -> ModbusResponse:
+    def execute(self, request: ModbusRequest | None = None):
         """Execute request and get response (call **sync/async**).
 
         :param request: The request to process
@@ -153,7 +153,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     # ----------------------------------------------------------------------- #
     # Merged client methods
     # ----------------------------------------------------------------------- #
-    async def async_execute(self, request=None):
+    async def async_execute(self, request) -> ModbusResponse:
         """Execute requests asynchronously."""
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
@@ -164,7 +164,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             if not count or not self.no_resend_on_retry:
                 self.transport_send(packet)
             if self.broadcast_enable and not request.slave_id:
-                resp = b"Broadcast write sent - no response expected"
+                resp = None
                 break
             try:
                 resp = await asyncio.wait_for(
@@ -180,7 +180,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
                 f"ERROR: No response received after {self.retries} retries"
             )
 
-        return resp
+        return resp  # type: ignore[return-value]
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data.
@@ -190,7 +190,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         self.framer.processIncomingPacket(data, self._handle_response, slave=0)
         return len(data)
 
-    async def connect(self):
+    async def connect(self) -> bool:  # type: ignore[empty-body]
         """Connect to the modbus remote host."""
 
     def raise_future(self, my_future, exc):
@@ -210,7 +210,7 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
 
     def build_response(self, tid):
         """Return a deferred response for the current request."""
-        my_future = asyncio.Future()
+        my_future: asyncio.Future = asyncio.Future()
         if not self.transport:
             self.raise_future(my_future, ConnectionException("Client is not connected"))
         else:
@@ -235,15 +235,6 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
     # ----------------------------------------------------------------------- #
     # The magic methods
     # ----------------------------------------------------------------------- #
-    def __enter__(self):
-        """Implement the client with enter block.
-
-        :returns: The current instance of the client
-        :raises ConnectionException:
-        """
-        self.connect()
-        return self
-
     async def __aenter__(self):
         """Implement the client with enter block.
 
@@ -253,12 +244,8 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
         await self.connect()
         return self
 
-    def __exit__(self, klass, value, traceback):
-        """Implement the client with exit block."""
-        self.close()
-
     async def __aexit__(self, klass, value, traceback):
-        """Implement the client with exit block."""
+        """Implement the client with aexit block."""
         self.close()
 
     def __str__(self):
@@ -270,7 +257,8 @@ class ModbusBaseClient(ModbusClientMixin, ModbusProtocol):
             f"{self.__class__.__name__} {self.comm_params.host}:{self.comm_params.port}"
         )
 
-class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
+
+class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse], ModbusProtocol):
     """**ModbusBaseClient**.
 
     Fixed parameters:
@@ -323,7 +311,7 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
-        ModbusClientMixin.__init__(self)
+        ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
         ModbusProtocol.__init__(
             self,
             CommParams(
@@ -341,7 +329,7 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
                 parity=kwargs.get("parity", None),
                 stopbits=kwargs.get("stopbits", None),
                 handle_local_echo=kwargs.get("handle_local_echo", False),
-                on_reconnect_callback = on_reconnect_callback,
+                on_reconnect_callback=on_reconnect_callback,
             ),
             False,
         )
@@ -430,7 +418,7 @@ class ModbusBaseSyncClient(ModbusClientMixin, ModbusProtocol):
             return socket.AF_INET
         return socket.AF_INET6
 
-    def connect(self):
+    def connect(self) -> bool:  # type: ignore[empty-body]
         """Connect to other end, overwritten."""
 
     def close(self):

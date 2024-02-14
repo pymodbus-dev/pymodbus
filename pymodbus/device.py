@@ -113,7 +113,7 @@ class ModbusPlusStatistics:
 
         :returns: 54 16-bit words representing the status
         """
-        total, values = [], sum(self.__data.values(), [])
+        total, values = [], sum(self.__data.values(), [])  # noqa: RUF017
         for i in range(0, len(values), 2):
             total.append((values[i] << 8) | values[i + 1])
         return total

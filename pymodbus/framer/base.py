@@ -27,7 +27,7 @@ class ModbusFramer:
     def __init__(
         self,
         decoder: ClientDecoder | ServerDecoder,
-        client=None,
+        client,
     ) -> None:
         """Initialize a new instance of the framer.
 
@@ -140,5 +140,11 @@ class ModbusFramer:
 
     def frameProcessIncomingPacket(
         self, _single, _callback, _slave, _tid=None, **kwargs
-    ):
+    ) -> None:
         """Process new packet pattern."""
+
+    def buildPacket(self, message) -> bytes:  # type:ignore[empty-body]
+        """Create a ready to send modbus packet.
+
+        :param message: The populated request/response to send
+        """

@@ -11,7 +11,6 @@ Please select a topic in the left hand column.
    source/readme
    source/client
    source/server
-   source/REPL
    source/simulator
    source/examples
    source/authors

@@ -22,7 +22,7 @@ Install directly from the github repo
 
 ::
 
-   $ pip install "git+https://github.com/dhoomakethu/pymodbus-repl"
+   $ pip install "git+https://github.com/pymodbus-dev/repl"
 
 Usage Instructions
 ------------------

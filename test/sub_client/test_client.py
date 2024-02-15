@@ -261,7 +261,7 @@ async def test_client_instanciate(
     client.connect = lambda: False
     client.transport = None
     with pytest.raises(ConnectionException):
-        client.execute()
+        await client.execute(ModbusRequest())
 
 async def test_serial_not_installed():
     """Try to instantiate clients."""

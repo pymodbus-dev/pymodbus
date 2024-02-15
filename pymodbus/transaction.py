@@ -1,4 +1,6 @@
 """Collection of transaction based abstractions."""
+from __future__ import annotations
+
 
 __all__ = [
     "DictTransactionManager",
@@ -27,6 +29,7 @@ from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
 from pymodbus.logging import Log
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.utilities import ModbusTransactionState, hexlify_packets
 
 
@@ -121,7 +124,7 @@ class ModbusTransactionManager:
             return mbap.get("length") == exp_resp_len
         return True
 
-    def execute(self, request):  # noqa: C901
+    def execute(self, request: ModbusRequest) -> ModbusResponse | bytes | ModbusIOException:  # noqa: C901
         """Start the producer to send the next request to consumer.write(Frame(request))."""
         with self._transaction_lock:
             try:
@@ -137,10 +140,11 @@ class ModbusTransactionManager:
                 ):
                     Log.debug("Clearing current Frame: - {}", _buffer)
                     self.client.framer.resetFrame()
-                if broadcast := (
-                    self.client.params.broadcast_enable and not request.slave_id
-                ):
-                    self._transact(request, None, broadcast=True)
+                if self.client.params.broadcast_enable and not request.slave_id:
+                    request.expect_response = False
+                response: ModbusResponse | bytes | ModbusIOException
+                if not request.expect_response:
+                    self._transact(request, None)
                     response = b"Broadcast write sent - no response expected"
                 else:
                     expected_response_length = None
@@ -170,7 +174,6 @@ class ModbusTransactionManager:
                         request,
                         expected_response_length,
                         full=full,
-                        broadcast=broadcast,
                     )
                     while retries > 0:
                         valid_response = self._validate_response(
@@ -250,7 +253,9 @@ class ModbusTransactionManager:
                 self.client.close()
                 return exc
 
-    def _retry_transaction(self, retries, reason, packet, response_length, full=False):
+    def _retry_transaction(
+            self, retries, reason, request: ModbusRequest, response_length, full=False
+    ):
         """Retry transaction."""
         Log.debug("Retry on {} response - {}", reason, retries)
         Log.debug('Changing transaction state from "WAITING_FOR_REPLY" to "RETRYING"')
@@ -267,22 +272,21 @@ class ModbusTransactionManager:
                 if response_length == in_waiting:
                     result = self._recv(response_length, full)
                     return result, None
-        return self._transact(packet, response_length, full=full)
+        return self._transact(request, response_length, full=full)
 
-    def _transact(self, packet, response_length, full=False, broadcast=False):
+    def _transact(self, request: ModbusRequest, response_length, full=False):
         """Do a Write and Read transaction.
 
         :param packet: packet to be sent
         :param response_length:  Expected response length
         :param full: the target device was notorious for its no response. Dont
             waste time this time by partial querying
-        :param broadcast:
         :return: response
         """
         last_exception = None
         try:
             self.client.connect()
-            packet = self.client.framer.buildPacket(packet)
+            packet = self.client.framer.buildPacket(request)
             Log.debug("SEND: {}", packet, ":hex")
             size = self._send(packet)
             if (
@@ -298,7 +302,7 @@ class ModbusTransactionManager:
             if self.client.comm_params.handle_local_echo is True:
                 if self._recv(size, full) != packet:
                     return b"", "Wrong local echo"
-            if broadcast:
+            if not request.expect_response:
                 if size:
                     Log.debug(
                         'Changing transaction state from "SENDING" '
@@ -484,7 +488,7 @@ class DictTransactionManager(ModbusTransactionManager):
         """
         return iter(self.transactions.keys())
 
-    def addTransaction(self, request, tid=None):
+    def addTransaction(self, request: ModbusRequest, tid=None):
         """Add a transaction to the handler.
 
         This holds the requests in case it needs to be resent.
@@ -497,7 +501,7 @@ class DictTransactionManager(ModbusTransactionManager):
         Log.debug("Adding transaction {}", tid)
         self.transactions[tid] = request
 
-    def getTransaction(self, tid):
+    def getTransaction(self, tid) -> ModbusRequest | None:
         """Return a transaction matching the referenced tid.
 
         If the transaction does not exist, None is returned

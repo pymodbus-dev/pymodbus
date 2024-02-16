@@ -205,7 +205,7 @@ class ModbusRtuFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def frameProcessIncomingPacket(self, single, callback, slave, _tid=None, **kwargs):
+    def frameProcessIncomingPacket(self, _single, callback, slave, _tid=None, **kwargs):
         """Process new packet pattern."""
         broadcast = not slave[0]
         skip_cur_frame = False
@@ -218,12 +218,13 @@ class ModbusRtuFramer(ModbusFramer):
                 self.resetFrame()
                 skip_cur_frame = True
                 continue
-            if not self._validate_slave_id(slave, single):
-                header_txt = self._header["uid"]
-                Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
-                self.resetFrame()
-                skip_cur_frame = True
-                continue
+            # handled in getFrameStart
+            # if not self._validate_slave_id(slave, single):
+            #     header_txt = self._header["uid"]
+            #     Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
+            #     self.resetFrame()
+            #     skip_cur_frame = True
+            #     continue
             self._process(callback)
 
     def buildPacket(self, message):

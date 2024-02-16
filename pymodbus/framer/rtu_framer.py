@@ -238,7 +238,8 @@ class ModbusRtuFramer(ModbusFramer):
         )
         packet += struct.pack(">H", computeCRC(packet))
         # Ensure that transaction is actually the slave id for serial comms
-        message.transaction_id = message.slave_id
+        if message.slave_id:
+            message.transaction_id = message.slave_id
         return packet
 
     def sendPacket(self, message):

@@ -113,12 +113,17 @@ async def main(comm: CommType):
 async def client_calls(client):
     """Test client API."""
     Log.debug("--> Client calls starting.")
-    _resp = await client.read_holding_registers(address=124, count=4, slave=1)
+    _resp = await client.read_holding_registers(address=124, count=4, slave=0)
 
 def handle_stub_data(transport: ModbusProtocol, data: bytes):
     """Respond to request at transport level."""
     Log.debug("--> stub called with request {}.", data, ":hex")
     response = b'\x01\x03\x08\x00\x05\x00\x05\x00\x00\x00\x00\x0c\xd7'
+
+    # Multiple send is allowed, to test fragmentation
+    #  for data in response:
+    #    to_send = data.to_bytes()
+    #    transport.transport_send(to_send)
     transport.transport_send(response)
 
 

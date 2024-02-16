@@ -405,7 +405,7 @@ def test_build_packet(framer, message):
     ("framer", "message"),
     [
         (ModbusAsciiFramer, b':01010001000AF3\r\n',),
-        (ModbusBinaryFramer, b'{\x01\x01\x00\x01\x00\n\xed\xcd}',),
+        (ModbusBinaryFramer, b'A{\x01\x01\x00\x01\x00\n\xed\xcd}',),
         (ModbusRtuFramer, b"\x01\x01\x03\x01\x00\n\xed\x89",),
         (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x01\x01\x00\x01\x00\n',),
     ]
@@ -450,3 +450,8 @@ def test_decode_data(framer, message, expected):
     decoded = test_framer.decode_data(message)
     assert decoded["fcode"] == expected["fcode"]
     assert decoded["slave"] == expected["slave"]
+
+def test_binary_framer_preflight():
+    """Test binary framer _preflight."""
+    test_framer =  ModbusBinaryFramer(ClientDecoder())
+    assert test_framer._preflight(b'A{B}C') == b'A{{B}}C'  # pylint: disable=protected-access

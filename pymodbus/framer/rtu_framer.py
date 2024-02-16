@@ -205,7 +205,7 @@ class ModbusRtuFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def frameProcessIncomingPacket(self, single, callback, slave, _tid=None, **kwargs):
+    def frameProcessIncomingPacket(self, _single, callback, slave, _tid=None, **kwargs):
         """Process new packet pattern."""
         broadcast = not slave[0]
         skip_cur_frame = False

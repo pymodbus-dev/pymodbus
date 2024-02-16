@@ -410,10 +410,11 @@ def test_build_packet(framer, message):
         (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x01\x01\x00\x01\x00\n',),
     ]
 )
-def test_processincomingpacket_ok(framer, message):
+@pytest.mark.parametrize(("slave"), [0x01, 0x02])
+def test_processincomingpacket_ok(framer, message, slave):
     """Test processIncomingPacket."""
     test_framer =  framer(ClientDecoder())
-    test_framer.processIncomingPacket(message, mock.Mock(), 0x01)
+    test_framer.processIncomingPacket(message, mock.Mock(), slave)
 
 
 @pytest.mark.parametrize(

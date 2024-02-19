@@ -8,6 +8,7 @@ import importlib
 import json
 import os
 from time import time
+from typing import TYPE_CHECKING
 
 
 try:
@@ -16,6 +17,8 @@ try:
     AIOHTTP_MISSING = False
 except ImportError:
     AIOHTTP_MISSING = True
+if TYPE_CHECKING:  # type checkers do not understand the Raise RuntimeError in __init__()
+    from aiohttp import web
 
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.datastore.simulator import Label

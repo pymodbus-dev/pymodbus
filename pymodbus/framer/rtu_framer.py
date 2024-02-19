@@ -1,4 +1,9 @@
 """RTU framer."""
+from __future__ import annotations
+
+import asyncio
+import contextlib
+
 # pylint: disable=missing-type-doc
 import struct
 import time
@@ -64,6 +69,8 @@ class ModbusRtuFramer(ModbusFramer):
         self._min_frame_size = 4
         self.function_codes = decoder.lookup.keys() if decoder else {}
         self.message_handler = MessageRTU([0], True)
+        self._queue: asyncio.Queue | None = None
+        self._worker: asyncio.Task | None = None
 
     def decode_data(self, data):
         """Decode data."""
@@ -167,6 +174,67 @@ class ModbusRtuFramer(ModbusFramer):
             Log.debug("Frame advanced, resetting header!!")
             callback(result)  # defer or push to a thread?
 
+    async def asyncProcess(self, exec_request):
+        """Queue the request and start the worker task if needed."""
+        if self._queue is None:
+            self._queue = asyncio.Queue()
+        if self._worker is None:
+            self._worker = asyncio.create_task(self._worker_task())
+        future: asyncio.Future = asyncio.Future()
+        await self._queue.put((future, exec_request))
+        return await future
+
+    async def _worker_task(self):
+        """Worker task to process request queue."""
+        try:
+            while self._queue is not None:
+                future, exec_request = await self._queue.get()
+                try:
+                    future.set_result(await exec_request)
+                except asyncio.CancelledError as e:
+                    future.set_exception(e)
+                    raise e
+                except BaseException as e:
+                    future.set_exception(e)
+                finally:
+                    self._queue.task_done()
+        except asyncio.CancelledError as e:
+            while self._queue is not None:
+                try:
+                    future, _ = self._queue.get_nowait()
+                    future.set_exception(e)
+                    self._queue.task_done()
+                except asyncio.QueueEmpty:
+                    self._queue = None
+                    self._worker = None
+                    break
+            raise e
+
+    async def drain(self, cancel_pending: bool = False):
+        """Finish processing any pending requests and prepare to shut down.
+
+        Drains any remaining requests in the queue and shuts down the worker
+        task.
+
+        :param cancel_pending: If we should cancel any pending requests
+        """
+        worker = self._worker
+        queue = self._queue
+        if cancel_pending and worker is not None:
+            worker.cancel()
+        if queue is not None:
+            await queue.join()
+        if worker is not None and not worker.cancelled():
+            worker.cancel()
+        if worker is not None:
+            with contextlib.suppress(asyncio.CancelledError):
+                await worker
+
+    @property
+    def drained(self):
+        """Check if the queue is drained."""
+        return self._queue is None
+
     def buildPacket(self, message):
         """Create a ready to send modbus packet.
 
@@ -236,3 +304,8 @@ class ModbusRtuFramer(ModbusFramer):
         result = self.client.recv(size)
         self.client.last_frame_end = round(time.time(), 6)
         return result
+
+    def __del__(self):
+        """Cancel the worker task if needed."""
+        if self._worker is not None:
+            self._worker.cancel()

@@ -131,6 +131,18 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         else:
             super().close()
 
+    async def drain(self, cancel_pending: bool = False):
+        """Finish processing any pending requests and prepare to shut down.
+
+        :param cancel_pending: If we should cancel any pending requests
+        """
+        await self.framer.drain(cancel_pending)
+
+    @property
+    def drained(self):
+        """Check if the queue is drained."""
+        return self.framer.drained
+
     def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).
 
@@ -148,15 +160,17 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         :returns: The result of the request execution
         :raises ConnectionException: Check exception text.
         """
-        if not self.transport:
+        if not self.transport and self.reconnect_task is None:
             raise ConnectionException(f"Not connected[{self!s}]")
         return self.async_execute(request)
 
     # ----------------------------------------------------------------------- #
     # Merged client methods
     # ----------------------------------------------------------------------- #
-    async def async_execute(self, request) -> ModbusResponse:
+    async def _async_execute(self, request) -> ModbusResponse:
         """Execute requests asynchronously."""
+        if self.reconnect_task is not None:
+            await self.reconnect_task
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
 
@@ -182,6 +196,10 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
             )
 
         return resp  # type: ignore[return-value]
+
+    async def async_execute(self, request) -> ModbusResponse:
+        """Execute requests asynchronously with framer."""
+        return await self.framer.asyncProcess(self._async_execute(request))
 
     def callback_new_connection(self):
         """Call when listener receive new connection request."""
@@ -251,6 +269,10 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
 
     async def __aexit__(self, klass, value, traceback):
         """Implement the client with aexit block."""
+        cancel_pending = False
+        if klass is asyncio.CancelledError:
+            cancel_pending = True
+        await self.drain(cancel_pending)
         self.close()
 
     def __str__(self):

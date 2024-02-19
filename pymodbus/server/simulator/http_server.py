@@ -163,7 +163,7 @@ class ModbusSimulatorServer:
         self.modbus_server = comm(framer=framer, context=datastore, **server)
         self.serving: asyncio.Future = asyncio.Future()
         self.log_file = log_file
-        self.site = None
+        self.site: web.TCPSite | None = None
         self.runner: web.AppRunner
         self.http_host = http_host
         self.http_port = http_port
@@ -206,7 +206,7 @@ class ModbusSimulatorServer:
                 self.generator_html[entry][0] = handle.read()
         self.refresh_rate = 0
         self.register_filter: list[int] = []
-        self.call_list: list[tuple] = []
+        self.call_list: list[CallTracer] = []
         self.request_lookup = ServerDecoder.getFCdict()
         self.call_monitor = CallTypeMonitor()
         self.call_response = CallTypeResponse()
@@ -534,7 +534,7 @@ class ModbusSimulatorServer:
         self.call_monitor.range_start = range_start
         self.call_monitor.range_stop = range_stop
         self.call_monitor.function = (
-            int(params["function"]) if params["function"] else ""
+            int(params["function"]) if params["function"] else -1
         )
         self.call_monitor.hex = "show_hex" in params
         self.call_monitor.decode = "show_decode" in params
@@ -602,7 +602,7 @@ class ModbusSimulatorServer:
                 fc=response.function_code,
                 address=response.address if hasattr(response, "address") else -1,
                 count=response.count if hasattr(response, "count") else -1,
-                data="-",
+                data=b"-",
             )
             self.call_list.append(tracer)
             self.call_monitor.trace_response = False
@@ -649,7 +649,7 @@ class ModbusSimulatorServer:
         """
         if self.call_monitor.function not in {-1, request.function_code}:
             return
-        address = (request.address if hasattr(request, "address") else -1,)
+        address = request.address if hasattr(request, "address") else -1
         if self.call_monitor.range_start != -1 and address != -1:
             if (
                 self.call_monitor.range_start > address
@@ -661,7 +661,7 @@ class ModbusSimulatorServer:
             fc=request.function_code,
             address=address,
             count=request.count if hasattr(request, "count") else -1,
-            data="-",
+            data=b"-",
         )
         self.call_list.append(tracer)
         self.call_monitor.trace_response = True

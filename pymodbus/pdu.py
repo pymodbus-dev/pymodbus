@@ -108,6 +108,7 @@ class ModbusRequest(ModbusPDU):
         :param slave: Modbus slave slave ID
         """
         super().__init__(slave, **kwargs)
+        self.expect_response = kwargs.get("expect_response", True)
 
     def doException(self, exception):
         """Build an error response based on the function.

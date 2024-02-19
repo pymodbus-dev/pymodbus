@@ -136,7 +136,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
             return 0
         return self.last_frame_end + self.silent_interval
 
-    def execute(self, request: ModbusRequest | None = None):
+    def execute(self, request: ModbusRequest):
         """Execute request and get response (call **sync/async**).
 
         :param request: The request to process
@@ -150,18 +150,22 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
     # ----------------------------------------------------------------------- #
     # Merged client methods
     # ----------------------------------------------------------------------- #
-    async def async_execute(self, request) -> ModbusResponse:
+    async def async_execute(
+            self, request: ModbusRequest
+    ) -> ModbusResponse | None:
         """Execute requests asynchronously."""
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
 
         count = 0
+        resp = None
         while count <= self.retries:
             req = self.build_response(request.transaction_id)
             if not count or not self.no_resend_on_retry:
                 self.transport_send(packet)
             if self.broadcast_enable and not request.slave_id:
-                resp = None
+                request.expect_response = False
+            if not request.expect_response:
                 break
             try:
                 resp = await asyncio.wait_for(
@@ -176,7 +180,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
                 f"ERROR: No response received after {self.retries} retries"
             )
 
-        return resp  # type: ignore[return-value]
+        return resp
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data.
@@ -189,7 +193,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
     async def connect(self) -> bool:  # type: ignore[empty-body]
         """Connect to the modbus remote host."""
 
-    def raise_future(self, my_future, exc):
+    def raise_future(self, my_future: asyncio.Future, exc):
         """Set exception of a future if not done."""
         if not my_future.done():
             my_future.set_exception(exc)
@@ -374,7 +378,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse], ModbusProtocol):
             return 0
         return self.last_frame_end + self.silent_interval
 
-    def execute(self, request: ModbusRequest | None = None) -> ModbusResponse:
+    def execute(self, request: ModbusRequest):
         """Execute request and get response (call **sync/async**).
 
         :param request: The request to process

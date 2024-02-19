@@ -45,13 +45,16 @@ I have both methods implemented, and leave it up to the user to change
 based on their preference.
 """
 # pylint: disable=missing-type-doc
-from pymodbus.exceptions import NotImplementedException, ParameterException
+from abc import ABC, abstractmethod
+from typing import Iterable
+
+from pymodbus.exceptions import ParameterException
 
 
 # ---------------------------------------------------------------------------#
 #  Datablock Storage
 # ---------------------------------------------------------------------------#
-class BaseModbusDataBlock:
+class BaseModbusDataBlock(ABC):
     """Base class for a modbus datastore.
 
     Derived classes must create the following fields:
@@ -83,32 +86,32 @@ class BaseModbusDataBlock:
             self.default_value
         ] * len(self.values)
 
+    @abstractmethod
     def validate(self, address:int, count=1) -> bool:
         """Check to see if the request is in range.
 
         :param address: The starting address
         :param count: The number of values to test for
-        :raises NotImplementedException:
+        :raises TypeError:
         """
-        raise NotImplementedException("Datastore Address Check")
 
+    @abstractmethod
     def getValues(self, address:int, count=1) -> Iterable:
         """Return the requested values from the datastore.
 
         :param address: The starting address
         :param count: The number of values to retrieve
-        :raises NotImplementedException:
+        :raises TypeError:
         """
-        raise NotImplementedException("Datastore Value Retrieve")
 
+    @abstractmethod
     def setValues(self, address:int, values) -> None:
         """Return the requested values from the datastore.
 
         :param address: The starting address
         :param values: The values to store
-        :raises NotImplementedException:
+        :raises TypeError:
         """
-        raise NotImplementedException("Datastore Value Retrieve")
 
     def __str__(self):
         """Build a representation of the datastore.

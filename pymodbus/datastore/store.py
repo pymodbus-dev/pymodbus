@@ -83,7 +83,7 @@ class BaseModbusDataBlock:
             self.default_value
         ] * len(self.values)
 
-    def validate(self, address, count=1):
+    def validate(self, address:int, count=1) -> bool:
         """Check to see if the request is in range.
 
         :param address: The starting address
@@ -92,7 +92,7 @@ class BaseModbusDataBlock:
         """
         raise NotImplementedException("Datastore Address Check")
 
-    def getValues(self, address, count=1):
+    def getValues(self, address:int, count=1) -> Iterable:
         """Return the requested values from the datastore.
 
         :param address: The starting address
@@ -101,7 +101,7 @@ class BaseModbusDataBlock:
         """
         raise NotImplementedException("Datastore Value Retrieve")
 
-    def setValues(self, address, values):
+    def setValues(self, address:int, values) -> None:
         """Return the requested values from the datastore.
 
         :param address: The starting address

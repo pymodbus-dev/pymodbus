@@ -7,7 +7,7 @@ import dataclasses
 import importlib
 import json
 import os
-from time import time
+from time import sleep
 from typing import TYPE_CHECKING
 
 
@@ -621,7 +621,7 @@ class ModbusSimulatorServer:
                     "Delaying response by {}s for all incoming requests",
                     self.call_response.delay,
                 )
-                time.sleep(self.call_response.delay)  # change to async
+                sleep(self.call_response.delay)  # change to async
             else:
                 pass
                 # self.call_response.change_rate

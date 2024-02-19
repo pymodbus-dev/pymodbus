@@ -17,8 +17,6 @@ try:
     AIOHTTP_MISSING = False
 except ImportError:
     AIOHTTP_MISSING = True
-if TYPE_CHECKING:  # type checkers do not understand the Raise RuntimeError in __init__()
-    from aiohttp import web
 
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.datastore.simulator import Label
@@ -33,6 +31,9 @@ from pymodbus.server.async_io import (
     ModbusUdpServer,
 )
 
+
+if TYPE_CHECKING:  # type checkers do not understand the Raise RuntimeError in __init__()
+    from aiohttp import web
 
 MAX_FILTER = 1000
 

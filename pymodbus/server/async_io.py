@@ -554,17 +554,12 @@ class _serverList:
 
     active_server: ModbusTcpServer | ModbusUdpServer | ModbusSerialServer
 
-    def __init__(self, server):
-        """Register new server."""
-        self.server = server
-        self.loop = asyncio.get_event_loop()
-
     @classmethod
     async def run(cls, server, custom_functions):
         """Help starting/stopping server."""
         for func in custom_functions:
             server.decoder.register(func)
-        cls.active_server = _serverList(server)
+        cls.active_server = server
         with suppress(asyncio.exceptions.CancelledError):
             await server.serve_forever()
 
@@ -573,7 +568,7 @@ class _serverList:
         """Wait for server stop."""
         if not cls.active_server:
             raise RuntimeError("ServerAsyncStop called without server task active.")
-        await cls.active_server.server.shutdown()
+        await cls.active_server.shutdown()
         if os.name == "nt":
             await asyncio.sleep(1)
         else:

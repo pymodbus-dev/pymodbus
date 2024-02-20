@@ -285,7 +285,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     def is_socket_open(self):
         """Check if socket is open."""
         if self.socket:
-            return self.socket.is_open if hasattr(self.socket, "is_open") else self.socket.isOpen()
+            return self.socket.is_open
         return False
 
     def __repr__(self):

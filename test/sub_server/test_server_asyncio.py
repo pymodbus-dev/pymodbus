@@ -125,7 +125,7 @@ class TestAsyncioServer:
 
         # teardown
         if self.server is not None:
-            await self.server.server_close()
+            await self.server.shutdown()
             self.server = None
         if self.task is not None:
             await asyncio.sleep(0.1)
@@ -239,15 +239,15 @@ class TestAsyncioServer:
         BasicClient.transport.close()
         await asyncio.sleep(0.2)  # so we have to wait a bit
 
-    async def test_async_tcp_server_close_connection(self):
-        """Test server_close() while there are active TCP connections."""
+    async def test_async_tcp_server_shutdown_connection(self):
+        """Test server shutdown() while there are active TCP connections."""
         await self.start_server()
         await self.connect_server()
 
         # On Windows we seem to need to give this an extra chance to finish,
         # otherwise there ends up being an active connection at the assert.
         await asyncio.sleep(0.5)
-        await self.server.server_close()
+        await self.server.shutdown()
 
     async def test_async_tcp_server_no_slave(self):
         """Test unknown slave exception."""
@@ -258,7 +258,7 @@ class TestAsyncioServer:
         await self.start_server()
         await self.connect_server()
         assert not BasicClient.eof.done()
-        await self.server.server_close()
+        await self.server.shutdown()
         self.server = None
 
     async def test_async_tcp_server_modbus_error(self):
@@ -313,7 +313,7 @@ class TestAsyncioServer:
     async def test_async_udp_server_serve_forever_close(self):
         """Test StarAsyncUdpServer serve_forever() method."""
         await self.start_server(do_udp=True)
-        await self.server.server_close()
+        await self.server.shutdown()
         self.server = None
 
     async def test_async_udp_server_serve_forever_twice(self):

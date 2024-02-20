@@ -20,9 +20,9 @@ try:
     PYSERIAL_MISSING = False
 except ImportError:
     PYSERIAL_MISSING = True
-
-if TYPE_CHECKING:
-    import serial  # type checkers do not understand the Raise RuntimeError in __init__()
+    if TYPE_CHECKING:  # always False at runtime
+        # type checkers do not understand the Raise RuntimeError in __init__()
+        import serial
 
 class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
     """**AsyncModbusSerialClient**.

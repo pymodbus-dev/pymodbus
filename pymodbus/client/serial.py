@@ -272,9 +272,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Read data from the underlying descriptor."""
         super().recv(size)
         if not self.socket:
-            raise ConnectionException(
-                self.__str__()  # pylint: disable=unnecessary-dunder-call
-            )
+            raise ConnectionException(str(self))
         if size is None:
             size = self._wait_for_data()
         if size > self._in_waiting():

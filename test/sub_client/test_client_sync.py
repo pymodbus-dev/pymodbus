@@ -359,7 +359,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         assert str(client) == "ModbusSerialClient /dev/null:0"
 
         # already closed socket
-        client.socket = False
+        client.socket = None
         client.close()
 
     def test_serial_client_connect(self):

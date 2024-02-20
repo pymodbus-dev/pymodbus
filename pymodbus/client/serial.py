@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import time
 from functools import partial
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
@@ -20,7 +20,9 @@ try:
     PYSERIAL_MISSING = False
 except ImportError:
     PYSERIAL_MISSING = True
-
+    if TYPE_CHECKING:  # always False at runtime
+        # type checkers do not understand the Raise RuntimeError in __init__()
+        import serial
 
 class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
     """**AsyncModbusSerialClient**.
@@ -175,7 +177,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             stopbits=stopbits,
             **kwargs,
         )
-        self.socket = None
+        self.socket: serial.Serial | None = None
         self.strict = bool(strict)
 
         self.last_frame_end = None
@@ -272,9 +274,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Read data from the underlying descriptor."""
         super().recv(size)
         if not self.socket:
-            raise ConnectionException(
-                self.__str__()  # pylint: disable=unnecessary-dunder-call
-            )
+            raise ConnectionException(str(self))
         if size is None:
             size = self._wait_for_data()
         if size > self._in_waiting():

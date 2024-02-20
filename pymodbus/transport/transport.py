@@ -91,10 +91,10 @@ class CommParams:
     sslctx: ssl.SSLContext | None = None
 
     # serial
-    baudrate: int | None = None
-    bytesize: int | None = None
-    parity: str | None = None
-    stopbits: int | None = None
+    baudrate: int = -1
+    bytesize: int = -1
+    parity: str = ''
+    stopbits: int = -1
 
     @classmethod
     def generate_ssl(

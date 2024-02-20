@@ -552,7 +552,7 @@ class _serverList:
     :meta private:
     """
 
-    active_server: ModbusTcpServer | ModbusUdpServer | ModbusSerialServer
+    active_server: ModbusTcpServer | ModbusUdpServer | ModbusSerialServer | None
 
     @classmethod
     async def run(cls, server, custom_functions):

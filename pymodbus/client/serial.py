@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import time
 from functools import partial
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
@@ -21,6 +21,8 @@ try:
 except ImportError:
     PYSERIAL_MISSING = True
 
+if TYPE_CHECKING:
+    import serial  # type checkers do not understand the Raise RuntimeError in __init__()
 
 class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
     """**AsyncModbusSerialClient**.
@@ -175,7 +177,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             stopbits=stopbits,
             **kwargs,
         )
-        self.socket = None
+        self.socket: serial.Serial | None = None
         self.strict = bool(strict)
 
         self.last_frame_end = None

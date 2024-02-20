@@ -216,7 +216,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
     # ----------------------------------------------------------------------- #
     # Internal methods
     # ----------------------------------------------------------------------- #
-    def send(self, request):
+    def send(self, request) -> int:  # type: ignore [empty-body]
         """Send request.
 
         :meta private:

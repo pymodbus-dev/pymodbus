@@ -215,7 +215,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         # less than the expected size.
         self.socket.setblocking(False)
 
-        timeout = self.comm_params.timeout_connect
+        timeout = self.comm_params.timeout_connect or 0
 
         # If size isn't specified read up to 4096 bytes at a time.
         if size is None:

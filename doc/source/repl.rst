@@ -167,7 +167,7 @@ SERIAL
    client.get_stopbits                          Number of stop bits.
    client.get_timeout                           Serial Port Read timeout.
    client.idle_time                             Bus Idle Time to initiate next transaction
-   client.inter_char_timeout                    Read Only!
+   client.inter_byte_timeout                    Read Only!
    client.is_socket_open                        c l i e n t . i s   s o c k e t   o p e n
    client.mask_write_register                   Mask content of holding register at `address`          with `and_mask` and `or_mask`.
    client.method                                Read Only!

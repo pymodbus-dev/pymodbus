@@ -150,7 +150,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     """
 
     state = ModbusTransactionState.IDLE
-    inter_char_timeout: float = 0
+    inter_byte_timeout: float = 0
     silent_interval: float = 0
 
     def __init__(
@@ -190,7 +190,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         if baudrate > 19200:
             self.silent_interval = 1.75 / 1000  # ms
         else:
-            self.inter_char_timeout = 1.5 * self._t0
+            self.inter_byte_timeout = 1.5 * self._t0
             self.silent_interval = 3.5 * self._t0
         self.silent_interval = round(self.silent_interval, 6)
 
@@ -214,7 +214,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
                 exclusive=True,
             )
             if self.strict:
-                self.socket.interCharTimeout = self.inter_char_timeout
+                self.socket.inter_byte_timeout = self.inter_byte_timeout
             self.last_frame_end = None
         except serial.SerialException as msg:
             Log.error("{}", msg)

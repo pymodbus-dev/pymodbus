@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import os
-import time
 import traceback
 from contextlib import suppress
 
@@ -569,10 +568,6 @@ class _serverList:
         if not cls.active_server:
             raise RuntimeError("ServerAsyncStop called without server task active.")
         await cls.active_server.shutdown()
-        if os.name == "nt":
-            await asyncio.sleep(1)
-        else:
-            await asyncio.sleep(0)
         cls.active_server = None
 
     @classmethod
@@ -584,11 +579,8 @@ class _serverList:
         if not cls.active_server.loop.is_running():
             Log.info("ServerStop called with loop stopped.")
             return
-        asyncio.run_coroutine_threadsafe(cls.async_stop(), cls.active_server.loop)
-        if os.name == "nt":
-            time.sleep(10)
-        else:
-            time.sleep(0.1)
+        future = asyncio.run_coroutine_threadsafe(cls.async_stop(), cls.active_server.loop)
+        future.result(timeout=10 if os.name == 'nt' else 0.1)
 
 
 async def StartAsyncTcpServer(  # pylint: disable=invalid-name,dangerous-default-value

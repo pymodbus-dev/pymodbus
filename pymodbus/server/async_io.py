@@ -283,10 +283,6 @@ class ModbusBaseServer(ModbusProtocol):
         return ModbusServerRequestHandler(self)
 
     async def shutdown(self):
-        """Shutdown server."""
-        await self.server_close()
-
-    async def server_close(self):
         """Close server."""
         if not self.serving.done():
             self.serving.set_result(True)

@@ -17,7 +17,7 @@ The tool is intended for users with advanced modbus protocol knowledge.
 
 When testing a client the server is replaced by a stub and the nullmodem solution.
 
-There are 2 functions which can be modified to test the client functionality.
+There are 4 functions which can be modified to test the client/server functionality.
 
 *** client_calls(client) ***
 
@@ -27,11 +27,11 @@ There are 2 functions which can be modified to test the client functionality.
 
 *** server_calls(transport) ***
 
-    Called to send data to the server (remark data is frame+request)
+    Called when the server is listening and stub connected.
 
-    The function generates frame+request and sends it, then control the response.
+    Send raw data packets to the server (remark data is frame+request)
 
-*** handle_stub_data(transport, is_server, data) ***
+*** handle_client_data(transport, data) ***
 
     Called when data is received from the client/server (remark data is frame+request)
 
@@ -78,7 +78,7 @@ class TransportStub(ModbusProtocol):
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
-        self.stub_handle_data(self, self.is_server, data)
+        self.stub_handle_data(self, data)
         return len(data)
 
     def callback_new_connection(self) -> ModbusProtocol:
@@ -108,7 +108,7 @@ class ClientTester:  # pylint: disable=too-few-public-methods
             raise RuntimeError("ERROR: CommType not implemented")
         server_params = self.client.comm_params.copy()
         server_params.source_address = (f"{NULLMODEM_HOST}:5004", 5004)
-        self.stub = TransportStub(server_params, True, handle_stub_data)
+        self.stub = TransportStub(server_params, True, handle_client_data)
 
 
     async def run(self):
@@ -155,8 +155,10 @@ class ServerTester:  # pylint: disable=too-few-public-methods
             )
         else:
             raise RuntimeError("ERROR: CommType not implemented")
-        server_params = self.server.comm_params.copy()
-        self.stub = TransportStub(server_params, False, handle_stub_data)
+        client_params = self.server.comm_params.copy()
+        client_params.host = client_params.source_address[0]
+        client_params.port = client_params.source_address[1]
+        self.stub = TransportStub(client_params, False, handle_server_data)
 
 
     async def run(self):
@@ -193,18 +195,24 @@ async def server_calls(transport: ModbusProtocol):
     _resp = await transport.transport_send(b'ABCD')
 
 
-def handle_stub_data(transport: ModbusProtocol, is_server: bool, data: bytes):
+def handle_client_data(transport: ModbusProtocol, data: bytes):
     """Respond to request at transport level."""
     Log.debug("--> stub called with request {}.", data, ":hex")
-    if not is_server:
-        response = b'\x01\x03\x08\x00\x05\x00\x05\x00\x00\x00\x00\x0c\xd7'
+    response = b'\x01\x03\x08\x00\x05\x00\x05\x00\x00\x00\x00\x0c\xd7'
 
-        # Multiple send is allowed, to test fragmentation
-        #  for data in response:
-        #    to_send = data.to_bytes()
-        #    transport.transport_send(to_send)
-        transport.transport_send(response)
+    # Multiple send is allowed, to test fragmentation
+    #  for data in response:
+    #    to_send = data.to_bytes()
+    #    transport.transport_send(to_send)
+    transport.transport_send(response)
+
+
+def handle_server_data(transport: ModbusProtocol, data: bytes):
+    """Respond to request at transport level."""
+    Log.debug("--> stub called with request {}.", data, ":hex")
 
 
 if __name__ == "__main__":
+    # True for Server test, False for Client test
+    # asyncio.run(main(CommType.SERIAL, False), debug=True)
     asyncio.run(main(CommType.TCP, True), debug=True)

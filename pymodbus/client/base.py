@@ -12,7 +12,7 @@ from pymodbus.factory import ClientDecoder
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, Framer, ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
-from pymodbus.transaction import DictTransactionManager
+from pymodbus.transaction import ModbusTransactionManager
 from pymodbus.transport import CommParams, ModbusProtocol
 from pymodbus.utilities import ModbusTransactionState
 
@@ -92,7 +92,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         self.framer = FRAMER_NAME_TO_CLASS.get(
             framer, cast(Type[ModbusFramer], framer)
         )(ClientDecoder(), self)
-        self.transaction = DictTransactionManager(
+        self.transaction = ModbusTransactionManager(
             self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
         )
         self.use_udp = False
@@ -341,7 +341,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse], ModbusProtocol):
         self.framer = FRAMER_NAME_TO_CLASS.get(
             framer, cast(Type[ModbusFramer], framer)
         )(ClientDecoder(), self)
-        self.transaction = DictTransactionManager(
+        self.transaction = ModbusTransactionManager(
             self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
         )
         self.reconnect_delay_current = self.params.reconnect_delay or 0

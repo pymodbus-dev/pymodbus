@@ -67,7 +67,7 @@ class TestTransportProtocol1:
         """Test properties."""
         server.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
         server.loop = asyncio.get_running_loop()
-        assert await server.transport_listen()
+        assert await server.listen()
         assert server.loop
 
     async def test_connect_ok(self, client, dummy_protocol):
@@ -84,13 +84,13 @@ class TestTransportProtocol1:
     async def test_listen_ok(self, server, dummy_protocol):
         """Test listen_tcp()."""
         server.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
-        assert await server.transport_listen()
+        assert await server.listen()
 
     async def test_listen_not_ok(self, server, dummy_protocol):
         """Test listen_tcp()."""
         server.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
         server.call_create.side_effect = OSError("testing")
-        assert not await server.transport_listen()
+        assert not await server.listen()
 
     async def test_connection_made(self, client, use_clc, dummy_protocol):
         """Test connection_made()."""
@@ -246,7 +246,7 @@ class TestTransportProtocol2:
     async def test_transport_close_listen(self, server, dummy_protocol):
         """Test transport_close()."""
         dummy_protocol.close = mock.MagicMock()
-        await server.transport_listen()
+        await server.listen()
         server.active_connections = {"a": dummy_protocol()}
         server.transport_close()
         server.transport_close()
@@ -280,7 +280,7 @@ class TestTransportProtocol2:
     async def test_create_nullmodem(self, client, server):
         """Test create_nullmodem."""
         assert not await client.connect()
-        await server.transport_listen()
+        await server.listen()
         assert await client.connect()
         client.transport_close()
         server.transport_close()
@@ -349,7 +349,7 @@ class TestTransportProtocol2:
     async def test_init_create_serial(self, use_cls):
         """Test server serial with socket."""
         protocol = ModbusProtocol(use_cls, True)
-        await protocol.transport_listen()
+        await protocol.listen()
 
     @pytest.mark.parametrize("use_host", ["localhost"])
     @pytest.mark.parametrize("use_comm_type", [CommType.UDP])

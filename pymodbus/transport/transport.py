@@ -249,7 +249,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
             return False
         return bool(self.transport)
 
-    async def transport_listen(self) -> bool:
+    async def listen(self) -> bool:
         """Handle generic listen and call on to specific transport listen."""
         Log.debug("Awaiting connections {}", self.comm_params.comm_name)
         self.is_closing = False

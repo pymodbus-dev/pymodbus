@@ -74,7 +74,7 @@ class TestTransportComm:
     async def test_listen(self, server, use_port):
         """Test listen()."""
         Log.debug("test_listen {}", use_port)
-        assert await server.transport_listen()
+        assert await server.listen()
         assert server.transport
         server.transport_close()
 
@@ -90,7 +90,7 @@ class TestTransportComm:
     async def test_listen_not_ok(self, server, use_port):
         """Test listen()."""
         Log.debug("test_listen_not_ok {}", use_port)
-        assert not await server.transport_listen()
+        assert not await server.listen()
         assert not server.transport
         server.transport_close()
 
@@ -106,7 +106,7 @@ class TestTransportComm:
     async def test_connected(self, client, server, use_comm_type, use_port):
         """Test connection and data exchange."""
         Log.debug("test_connected {}", use_port)
-        assert await server.transport_listen()
+        assert await server.listen()
         assert await client.connect()
         await asyncio.sleep(0.5)
         assert len(server.active_connections) == 1
@@ -145,7 +145,7 @@ class TestTransportComm:
     async def test_split_serial_packet(self, client, server, use_port):
         """Test connection and data exchange."""
         Log.debug("test_split_serial_packet {}", use_port)
-        assert await server.transport_listen()
+        assert await server.listen()
         assert await client.connect()
         await asyncio.sleep(0.5)
         assert len(server.active_connections) == 1
@@ -174,7 +174,7 @@ class TestTransportComm:
     async def test_serial_poll(self, client, server, use_port):
         """Test connection and data exchange."""
         Log.debug("test_serial_poll {}", use_port)
-        assert await server.transport_listen()
+        assert await server.listen()
         SerialTransport.force_poll = True
         assert await client.connect()
         await asyncio.sleep(0.5)
@@ -202,7 +202,7 @@ class TestTransportComm:
         """Test connection and data exchange."""
         Log.debug("test_connected {}", use_port)
         client.comm_params.reconnect_delay = 0.0
-        assert await server.transport_listen()
+        assert await server.listen()
         assert await client.connect()
         await asyncio.sleep(0.5)
         assert len(server.active_connections) == 1

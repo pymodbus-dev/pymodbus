@@ -73,7 +73,7 @@ class TransportStub(ModbusProtocol):
     async def start_run(self):
         """Call need functions to start server/client."""
         if  self.is_server:
-            return await self.transport_listen()
+            return await self.listen()
         return await self.connect()
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
@@ -166,7 +166,7 @@ class ServerTester:  # pylint: disable=too-few-public-methods
         """Execute test run."""
         pymodbus_apply_logging_config()
         Log.debug("--> Start testing.")
-        await self.server.transport_listen()
+        await self.server.listen()
         await self.stub.start_run()
         await server_calls(self.stub)
         Log.debug("--> Shutting down.")

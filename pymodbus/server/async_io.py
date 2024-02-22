@@ -294,7 +294,7 @@ class ModbusBaseServer(ModbusProtocol):
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
             )
-        await self.transport_listen()
+        await self.listen()
         Log.info("Server listening.")
         await self.serving
         Log.info("Server graceful shutdown.")

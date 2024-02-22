@@ -192,11 +192,11 @@ async def client_calls(client):
 
 async def server_calls(transport: ModbusProtocol):
     """Test client API."""
-    Log.debug("--> Client calls starting.")
-    _resp = transport.transport_send(b'\x00\x01\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01')
+    Log.debug("--> Server calls starting.")
+    _resp = transport.transport_send(b'\x00\x02\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01' +
+        b'\x01\x00\x03\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01')
     await asyncio.sleep(1)
-    print("--> JIX done")
-
+    print("---> all done")
 
 def handle_client_data(transport: ModbusProtocol, data: bytes):
     """Respond to request at transport level."""

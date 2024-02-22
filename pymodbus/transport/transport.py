@@ -53,6 +53,7 @@ import dataclasses
 import ssl
 from contextlib import suppress
 from enum import Enum
+from functools import partial
 from typing import Any, Callable, Coroutine
 
 from pymodbus.logging import Log
@@ -175,7 +176,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         if self.comm_params.comm_type == CommType.SERIAL and NULLMODEM_HOST in host:
             host, port = NULLMODEM_HOST, int(host[9:].split(":")[1])
         if host == NULLMODEM_HOST:
-            self.call_create = lambda: self.create_nullmodem(port)
+            self.call_create = partial(self.create_nullmodem, port)
             return
         if (
             self.comm_params.comm_type == CommType.SERIAL
@@ -191,7 +192,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
     def init_setup_connect_listen(self, host: str, port: int) -> None:
         """Handle connect/listen handler."""
         if self.comm_params.comm_type == CommType.SERIAL:
-            self.call_create = lambda: create_serial_connection( # pragma: no cover
+            self.call_create = partial(create_serial_connection,
                 self.loop,
                 self.handle_new_connection,
                 host,

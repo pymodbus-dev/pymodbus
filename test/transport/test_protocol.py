@@ -60,10 +60,8 @@ class TestTransportProtocol1:
 
     async def test_loop_connect(self, client, dummy_protocol):
         """Test properties."""
-        client.loop = None
         client.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
         assert await client.transport_connect()
-        assert client.loop
 
     async def test_loop_listen(self, server, dummy_protocol):
         """Test properties."""
@@ -342,7 +340,7 @@ class TestTransportProtocol2:
 
     @pytest.mark.parametrize("use_host", ["socket://localhost:5005", "/dev/tty"])
     @pytest.mark.parametrize("use_comm_type", [CommType.SERIAL])
-    def test_init_serial(self, use_cls):
+    async def test_init_serial(self, use_cls):
         """Test server serial with socket."""
         ModbusProtocol(use_cls, True)
 
@@ -356,7 +354,7 @@ class TestTransportProtocol2:
     @pytest.mark.parametrize("use_host", ["localhost"])
     @pytest.mark.parametrize("use_comm_type", [CommType.UDP])
     @pytest.mark.parametrize("is_server", [True, False])
-    def test_init_udp(self, is_server, use_cls, use_clc):
+    async def test_init_udp(self, is_server, use_cls, use_clc):
         """Test server/client udp."""
         if is_server:
             ModbusProtocol(use_cls, True)

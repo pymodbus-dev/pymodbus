@@ -43,13 +43,13 @@ class DummyProtocol(ModbusProtocol):
 
 
 @pytest.fixture(name="dummy_protocol")
-def prepare_dummy_protocol():
+async def prepare_dummy_protocol():
     """Return transport object."""
     return DummyProtocol
 
 
 @pytest.fixture(name="client")
-def prepare_protocol(use_clc):
+async def prepare_protocol(use_clc):
     """Prepare transport object."""
     transport = ModbusProtocol(use_clc, False)
     transport.callback_connected = mock.Mock()
@@ -66,7 +66,7 @@ def prepare_protocol(use_clc):
 
 
 @pytest.fixture(name="server")
-def prepare_transport_server(use_cls):
+async def prepare_transport_server(use_cls):
     """Prepare transport object."""
     transport = ModbusProtocol(use_cls, True)
     transport.callback_connected = mock.Mock()

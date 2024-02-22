@@ -206,7 +206,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
             return
         if self.comm_params.comm_type == CommType.UDP:
             if self.is_server:
-                self.call_create = lambda: self.loop.create_datagram_endpoint( # pragma: no cover
+                self.call_create = partial(self.loop.create_datagram_endpoint,
                     self.handle_new_connection,
                     local_addr=(host, port),
                 )

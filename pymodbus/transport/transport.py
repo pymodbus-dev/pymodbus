@@ -218,7 +218,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
             return
         # TLS and TCP
         if self.is_server:
-            self.call_create = lambda: self.loop.create_server( # pragma: no cover
+            self.call_create = partial(self.loop.create_server,
                 self.handle_new_connection,
                 host,
                 port,

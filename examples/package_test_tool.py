@@ -158,6 +158,7 @@ class ServerTester:  # pylint: disable=too-few-public-methods
         client_params = self.server.comm_params.copy()
         client_params.host = client_params.source_address[0]
         client_params.port = client_params.source_address[1]
+        client_params.timeout_connect = 1.0
         self.stub = TransportStub(client_params, False, handle_server_data)
 
 
@@ -169,7 +170,7 @@ class ServerTester:  # pylint: disable=too-few-public-methods
         await self.stub.start_run()
         await server_calls(self.stub)
         Log.debug("--> Shutting down.")
-        self.server.shutdown()
+        await self.server.shutdown()
 
 
 async def main(comm: CommType, use_server: bool):
@@ -192,7 +193,9 @@ async def client_calls(client):
 async def server_calls(transport: ModbusProtocol):
     """Test client API."""
     Log.debug("--> Client calls starting.")
-    _resp = await transport.transport_send(b'ABCD')
+    _resp = transport.transport_send(b'\x00\x01\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01')
+    await asyncio.sleep(1)
+    print("--> JIX done")
 
 
 def handle_client_data(transport: ModbusProtocol, data: bytes):

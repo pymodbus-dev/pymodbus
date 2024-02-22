@@ -147,7 +147,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.is_closing = False
 
         self.transport: asyncio.BaseTransport = None  # type: ignore[assignment]
-        self.loop: asyncio.AbstractEventLoop = None  # type: ignore[assignment]
+        self.loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
         self.recv_buffer: bytes = b""
         self.call_create: Callable[[], Coroutine[Any, Any, Any]] = None  # type: ignore[assignment]
         if self.is_server:
@@ -237,8 +237,6 @@ class ModbusProtocol(asyncio.BaseProtocol):
     async def transport_connect(self) -> bool:
         """Handle generic connect and call on to specific transport connect."""
         Log.debug("Connecting {}", self.comm_params.comm_name)
-        if not self.loop:
-            self.loop = asyncio.get_running_loop()
         self.is_closing = False
         try:
             self.transport, _protocol = await asyncio.wait_for(
@@ -253,8 +251,6 @@ class ModbusProtocol(asyncio.BaseProtocol):
     async def transport_listen(self) -> bool:
         """Handle generic listen and call on to specific transport listen."""
         Log.debug("Awaiting connections {}", self.comm_params.comm_name)
-        if not self.loop:
-            self.loop = asyncio.get_running_loop()
         self.is_closing = False
         try:
             self.transport = await self.call_create()

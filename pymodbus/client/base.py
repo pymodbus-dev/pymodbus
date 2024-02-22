@@ -254,7 +254,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         )
 
 
-class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse], ModbusProtocol):
+class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
     """**ModbusBaseClient**.
 
     Fixed parameters:
@@ -308,26 +308,22 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse], ModbusProtocol):
     ) -> None:
         """Initialize a client instance."""
         ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
-        ModbusProtocol.__init__(
-            self,
-            CommParams(
-                comm_type=kwargs.get("CommType"),
-                comm_name="comm",
-                source_address=kwargs.get("source_address", None),
-                reconnect_delay=reconnect_delay,
-                reconnect_delay_max=reconnect_delay_max,
-                timeout_connect=timeout,
-                host=kwargs.get("host", None),
-                port=kwargs.get("port", 0),
-                sslctx=kwargs.get("sslctx", None),
-                baudrate=kwargs.get("baudrate", None),
-                bytesize=kwargs.get("bytesize", None),
-                parity=kwargs.get("parity", None),
-                stopbits=kwargs.get("stopbits", None),
-                handle_local_echo=kwargs.get("handle_local_echo", False),
-                on_reconnect_callback=on_reconnect_callback,
-            ),
-            False,
+        self.comm_params = CommParams(
+            comm_type=kwargs.get("CommType"),
+            comm_name="comm",
+            source_address=kwargs.get("source_address", None),
+            reconnect_delay=reconnect_delay,
+            reconnect_delay_max=reconnect_delay_max,
+            timeout_connect=timeout,
+            host=kwargs.get("host", None),
+            port=kwargs.get("port", 0),
+            sslctx=kwargs.get("sslctx", None),
+            baudrate=kwargs.get("baudrate", None),
+            bytesize=kwargs.get("bytesize", None),
+            parity=kwargs.get("parity", None),
+            stopbits=kwargs.get("stopbits", None),
+            handle_local_echo=kwargs.get("handle_local_echo", False),
+            on_reconnect_callback=on_reconnect_callback,
         )
         self.params = self._params()
         self.params.retries = int(retries)
@@ -349,6 +345,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse], ModbusProtocol):
         self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float | None = 0
         self.silent_interval: float = 0
+        self.transport = None
 
     # ----------------------------------------------------------------------- #
     # Client external interface

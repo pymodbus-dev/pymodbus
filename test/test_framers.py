@@ -287,7 +287,7 @@ def test_rtu_incoming_packet(rtu_framer, data):
         assert mock_reset.call_count == (1 if reset_called else 0)
 
 
-def test_send_packet(rtu_framer):
+async def test_send_packet(rtu_framer):
     """Test send packet."""
     message = TEST_MESSAGE
     client = ModbusBaseClient(

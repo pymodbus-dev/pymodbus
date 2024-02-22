@@ -42,7 +42,7 @@ class TestTransportComm:
         assert not await client.connect()
         delta = time.time() - start
         assert delta < client.comm_params.timeout_connect * FACTOR
-        client.transport_close()
+        client.close()
 
     @pytest.mark.parametrize(
         ("use_comm_type", "use_host"),
@@ -60,7 +60,7 @@ class TestTransportComm:
         assert not await client.connect()
         delta = time.time() - start
         assert delta < client.comm_params.timeout_connect * FACTOR
-        client.transport_close()
+        client.close()
 
     @pytest.mark.parametrize(
         ("use_comm_type", "use_host"),
@@ -76,7 +76,7 @@ class TestTransportComm:
         Log.debug("test_listen {}", use_port)
         assert await server.listen()
         assert server.transport
-        server.transport_close()
+        server.close()
 
     @pytest.mark.parametrize(
         ("use_comm_type", "use_host"),
@@ -92,7 +92,7 @@ class TestTransportComm:
         Log.debug("test_listen_not_ok {}", use_port)
         assert not await server.listen()
         assert not server.transport
-        server.transport_close()
+        server.close()
 
     @pytest.mark.parametrize(
         ("use_comm_type", "use_host"),
@@ -112,7 +112,7 @@ class TestTransportComm:
         assert len(server.active_connections) == 1
         server_connected = list(server.active_connections.values())[0]
         test_data = b"abcd"
-        client.transport_send(test_data)
+        client.send(test_data)
         await asyncio.sleep(0.5)
         assert server_connected.recv_buffer == test_data
         assert not client.recv_buffer
@@ -120,17 +120,17 @@ class TestTransportComm:
         if use_comm_type == CommType.UDP:
             sock = client.transport.get_extra_info("socket")
             addr = sock.getsockname()
-            server_connected.transport_send(test_data, addr=addr)
+            server_connected.send(test_data, addr=addr)
         else:
-            server_connected.transport_send(test_data)
+            server_connected.send(test_data)
         await asyncio.sleep(1)
         assert client.recv_buffer == test_data
         assert not server_connected.recv_buffer
-        client.transport_close()
+        client.close()
         await asyncio.sleep(1)
         if use_comm_type != CommType.UDP:
             assert not server.active_connections
-        server.transport_close()
+        server.close()
 
     def wrapped_write(self, data):
         """Wrap serial write, to split parameters."""
@@ -158,12 +158,12 @@ class TestTransportComm:
         with mock.patch.object(
             client.transport.sync_serial, "write", wraps=self.wrapped_write
         ):
-            client.transport_send(test_data)
+            client.send(test_data)
             await asyncio.sleep(0.5)
         assert server_connected.recv_buffer == test_data
         assert not client.recv_buffer
-        client.transport_close()
-        server.transport_close()
+        client.close()
+        server.close()
 
     @pytest.mark.parametrize(
         ("use_comm_type", "use_host"),
@@ -182,12 +182,12 @@ class TestTransportComm:
         assert len(server.active_connections) == 1
         server_connected = list(server.active_connections.values())[0]
         test_data = b"abcd" * 1000
-        client.transport_send(test_data)
+        client.send(test_data)
         await asyncio.sleep(0.5)
         assert server_connected.recv_buffer == test_data
         assert not client.recv_buffer
-        client.transport_close()
-        server.transport_close()
+        client.close()
+        server.close()
 
     @pytest.mark.parametrize(
         ("use_comm_type", "use_host"),
@@ -218,27 +218,27 @@ class TestTransportComm:
         server2_connected = list(server.active_connections.values())[1]
 
         test_data = b"abcd"
-        client.transport_send(test_data)
+        client.send(test_data)
         test2_data = b"efghij"
-        client2.transport_send(test2_data)
+        client2.send(test2_data)
         await asyncio.sleep(0.5)
         assert server_connected.recv_buffer == test_data
         assert server2_connected.recv_buffer == test2_data
 
-        server_connected.transport_send(test2_data)
-        server2_connected.transport_send(test_data)
+        server_connected.send(test2_data)
+        server2_connected.send(test_data)
         await asyncio.sleep(0.5)
         assert client.recv_buffer == test2_data
         assert client2.recv_buffer == test_data
 
-        client.transport_close()
+        client.close()
         await asyncio.sleep(0.5)
         assert len(server.active_connections) == 1
 
-        client2.transport_send(test_data)
+        client2.send(test_data)
         await asyncio.sleep(0.5)
         assert server2_connected.recv_buffer == test2_data + test_data
-        client2.transport_close()
-        server.transport_close()
+        client2.close()
+        server.close()
         await asyncio.sleep(0.5)
         assert not server.active_connections

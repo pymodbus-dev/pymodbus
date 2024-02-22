@@ -24,7 +24,7 @@ class TestTransportReconnect:
         assert not client.reconnect_task
         assert not client.reconnect_delay_current
         assert client.call_create.called
-        client.transport_close()
+        client.close()
 
     async def test_reconnect_call(self, client):
         """Test connection_lost()."""
@@ -40,7 +40,7 @@ class TestTransportReconnect:
         assert client.call_create.call_count == 2
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay * 2
         assert client.comm_params.on_reconnect_callback.called
-        client.transport_close()
+        client.close()
 
     async def test_multi_reconnect_call(self, client):
         """Test connection_lost()."""
@@ -58,7 +58,7 @@ class TestTransportReconnect:
         await asyncio.sleep(client.reconnect_delay_current * 1.8)
         assert client.call_create.call_count >= 4
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay_max
-        client.transport_close()
+        client.close()
 
     async def test_reconnect_call_ok(self, client):
         """Test connection_lost()."""
@@ -71,4 +71,4 @@ class TestTransportReconnect:
         assert client.call_create.call_count == 2
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay
         assert not client.reconnect_task
-        client.transport_close()
+        client.close()

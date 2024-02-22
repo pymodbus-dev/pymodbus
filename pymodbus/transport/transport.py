@@ -259,7 +259,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 self.transport = self.transport[0]
         except OSError as exc:
             Log.warning("Failed to start server {}", exc)
-            # self.transport_close(intern=True)
+            # self.close(intern=True)
             return False
         return True
 
@@ -284,7 +284,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         if not self.transport or self.is_closing:
             return
         Log.debug("Connection lost {} due to {}", self.comm_params.comm_name, reason)
-        self.transport_close(intern=True)
+        self.close(intern=True)
         if (
             not self.is_server
             and not self.listener
@@ -374,7 +374,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
     # ----------------------------------- #
     # Helper methods for external classes #
     # ----------------------------------- #
-    def transport_send(self, data: bytes, addr: tuple | None = None) -> None:
+    def send(self, data: bytes, addr: tuple | None = None) -> None:
         """Send request.
 
         :param data: non-empty bytes object with data to send.
@@ -391,7 +391,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         else:
             self.transport.write(data)  # type: ignore[attr-defined]
 
-    def transport_close(self, intern: bool = False, reconnect: bool = False) -> None:
+    def close(self, intern: bool = False, reconnect: bool = False) -> None:
         """Close connection.
 
         :param intern: (default false), True if called internally (temporary close)
@@ -409,7 +409,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
             for _key, value in self.active_connections.items():
                 value.listener = None
                 value.callback_disconnected(None)
-                value.transport_close()
+                value.close()
             self.active_connections = {}
             return
         if not reconnect and self.reconnect_task:
@@ -485,7 +485,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
     async def __aexit__(self, _class, _value, _traceback) -> None:
         """Implement the client with async exit block."""
-        self.transport_close()
+        self.close()
 
     def __str__(self) -> str:
         """Build a string representation of the connection."""

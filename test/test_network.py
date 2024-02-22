@@ -35,7 +35,7 @@ class ModbusProtocolStub(ModbusProtocol):
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
         if (response := self.stub_handle_data(data)):
-            self.transport_send(response)
+            self.send(response)
         return len(data)
 
     def callback_new_connection(self) -> ModbusProtocol:
@@ -70,8 +70,8 @@ class TestNetwork:
         assert await client.connect()
         test_data = b"Data got echoed."
         client.transport.write(test_data)
-        client.transport_close()
-        stub.transport_close()
+        client.close()
+        stub.close()
 
     async def test_double_packet(self, use_port, use_cls):
         """Test double packet on network."""
@@ -122,5 +122,5 @@ class TestNetwork:
 
         assert await client.connect()
         await asyncio.gather(*[local_call(x) for x in range(1, 10)])
-        client.transport_close()
-        stub.transport_close()
+        client.close()
+        stub.close()

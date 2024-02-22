@@ -33,7 +33,7 @@ class DummyProtocol(ModbusProtocol):
             return self
         return DummyProtocol()
 
-    def close(self):
+    def close(self):  # pylint: disable=arguments-differ
         """Simulate close."""
         self.is_closing = True
 

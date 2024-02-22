@@ -124,12 +124,12 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         """
         self.framer.decoder.register(custom_response_class)
 
-    def close(self, reconnect: bool = False) -> None:
+    def close(self, reconnect: bool = False) -> None:  # type: ignore[override] # pylint: disable=arguments-differ
         """Close connection."""
         if reconnect:
             self.connection_lost(asyncio.TimeoutError("Server not responding"))
         else:
-            self.transport_close()
+            super().close()
 
     def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).
@@ -164,7 +164,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         while count <= self.retries:
             req = self.build_response(request.transaction_id)
             if not count or not self.no_resend_on_retry:
-                self.transport_send(packet)
+                self.send(packet)
             if self.broadcast_enable and not request.slave_id:
                 resp = None
                 break
@@ -221,12 +221,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
     # ----------------------------------------------------------------------- #
     # Internal methods
     # ----------------------------------------------------------------------- #
-    def send(self, request) -> int:  # type: ignore [empty-body]
-        """Send request.
-
-        :meta private:
-        """
-
     def recv(self, size):
         """Receive data.
 

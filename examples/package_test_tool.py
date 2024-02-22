@@ -193,7 +193,7 @@ async def client_calls(client):
 async def server_calls(transport: ModbusProtocol):
     """Test client API."""
     Log.debug("--> Server calls starting.")
-    _resp = transport.transport_send(b'\x00\x02\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01' +
+    _resp = transport.send(b'\x00\x02\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01' +
         b'\x07\x00\x03\x00\x00\x06\x01\x03\x00\x00\x00\x01')
     await asyncio.sleep(1)
     print("---> all done")
@@ -206,8 +206,8 @@ def handle_client_data(transport: ModbusProtocol, data: bytes):
     # Multiple send is allowed, to test fragmentation
     #  for data in response:
     #    to_send = data.to_bytes()
-    #    transport.transport_send(to_send)
-    transport.transport_send(response)
+    #    transport.send(to_send)
+    transport.send(response)
 
 
 def handle_server_data(_transport: ModbusProtocol, data: bytes):

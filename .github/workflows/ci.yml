@@ -101,7 +101,7 @@ jobs:
           ruff .
 
       - name: pytest
-        if: ${{ (matrix.os != 'ubuntu-latest') && (matrix.python != '3.12') }}
+        if: ${{ (matrix.os != 'ubuntu-latest') || (matrix.python != '3.12') }}
         run: |
           env
           pytest

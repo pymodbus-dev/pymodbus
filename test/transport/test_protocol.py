@@ -61,7 +61,7 @@ class TestTransportProtocol1:
     async def test_loop_connect(self, client, dummy_protocol):
         """Test properties."""
         client.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
-        assert await client.transport_connect()
+        assert await client.connect()
 
     async def test_loop_listen(self, server, dummy_protocol):
         """Test properties."""
@@ -73,13 +73,13 @@ class TestTransportProtocol1:
     async def test_connect_ok(self, client, dummy_protocol):
         """Test properties."""
         client.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
-        assert await client.transport_connect()
+        assert await client.connect()
 
     async def test_connect_not_ok(self, client, dummy_protocol):
         """Test properties."""
         client.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
         client.call_create.side_effect = asyncio.TimeoutError("test")
-        assert not await client.transport_connect()
+        assert not await client.connect()
 
     async def test_listen_ok(self, server, dummy_protocol):
         """Test listen_tcp()."""
@@ -279,9 +279,9 @@ class TestTransportProtocol2:
 
     async def test_create_nullmodem(self, client, server):
         """Test create_nullmodem."""
-        assert not await client.transport_connect()
+        assert not await client.connect()
         await server.transport_listen()
-        assert await client.transport_connect()
+        assert await client.connect()
         client.transport_close()
         server.transport_close()
 
@@ -293,11 +293,11 @@ class TestTransportProtocol2:
     async def test_do_reconnect(self, client):
         """Test do_reconnect()."""
         client.comm_params.reconnect_delay = 0.01
-        client.transport_connect = mock.AsyncMock(side_effect=[False, True])
+        client.connect = mock.AsyncMock(side_effect=[False, True])
         await client.do_reconnect()
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay * 2
         assert not client.reconnect_task
-        client.transport_connect.side_effect = asyncio.CancelledError("stop loop")
+        client.connect.side_effect = asyncio.CancelledError("stop loop")
         client.comm_params.on_reconnect_callback = mock.Mock()
         await client.do_reconnect()
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay

@@ -29,7 +29,7 @@ class ModbusProtocolStub(ModbusProtocol):
         """Call need functions to start server/client."""
         if  self.is_server:
             return await self.transport_listen()
-        return await self.transport_connect()
+        return await self.connect()
 
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:

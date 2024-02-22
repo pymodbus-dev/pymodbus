@@ -19,7 +19,7 @@ class TestTransportReconnect:
         """Test connection_lost()."""
         client.loop = asyncio.get_running_loop()
         client.call_create = mock.AsyncMock(return_value=(None, None))
-        await client.transport_connect()
+        await client.connect()
         client.connection_lost(RuntimeError("Connection lost"))
         assert not client.reconnect_task
         assert not client.reconnect_delay_current
@@ -31,7 +31,7 @@ class TestTransportReconnect:
         client.comm_params.on_reconnect_callback = mock.MagicMock()
         client.loop = asyncio.get_running_loop()
         client.call_create = mock.AsyncMock(return_value=(None, None))
-        await client.transport_connect()
+        await client.connect()
         client.connection_made(mock.Mock())
         client.connection_lost(RuntimeError("Connection lost"))
         assert client.reconnect_task
@@ -46,7 +46,7 @@ class TestTransportReconnect:
         """Test connection_lost()."""
         client.loop = asyncio.get_running_loop()
         client.call_create = mock.AsyncMock(return_value=(None, None))
-        await client.transport_connect()
+        await client.connect()
         client.connection_made(mock.Mock())
         client.connection_lost(RuntimeError("Connection lost"))
         await asyncio.sleep(client.reconnect_delay_current * 1.8)
@@ -64,7 +64,7 @@ class TestTransportReconnect:
         """Test connection_lost()."""
         client.loop = asyncio.get_running_loop()
         client.call_create = mock.AsyncMock(return_value=(mock.Mock(), mock.Mock()))
-        await client.transport_connect()
+        await client.connect()
         client.connection_made(mock.Mock())
         client.connection_lost(RuntimeError("Connection lost"))
         await asyncio.sleep(client.reconnect_delay_current * 1.8)

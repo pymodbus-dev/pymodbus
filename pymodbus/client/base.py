@@ -108,6 +108,11 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         """Return state of connection."""
         return self.is_active()
 
+    async def base_connect(self) -> bool:
+        """Call transport connect."""
+        return await super().connect()
+
+
     def register(self, custom_response_class: ModbusResponse) -> None:
         """Register a custom response class with the decoder (call **sync**).
 

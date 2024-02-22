@@ -235,7 +235,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 ssl=self.comm_params.sslctx,
             )
 
-    async def transport_connect(self) -> bool:
+    async def connect(self) -> bool:
         """Handle generic connect and call on to specific transport connect."""
         Log.debug("Connecting {}", self.comm_params.comm_name)
         self.is_closing = False
@@ -466,7 +466,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 await asyncio.sleep(self.reconnect_delay_current)
                 if self.comm_params.on_reconnect_callback:
                     self.comm_params.on_reconnect_callback()
-                if await self.transport_connect():
+                if await self.connect():
                     break
                 self.reconnect_delay_current = min(
                     2 * self.reconnect_delay_current,

@@ -39,7 +39,7 @@ class TestTransportComm:
         """Test connect()."""
         Log.debug("test_connect {}", use_port)
         start = time.time()
-        assert not await client.transport_connect()
+        assert not await client.connect()
         delta = time.time() - start
         assert delta < client.comm_params.timeout_connect * FACTOR
         client.transport_close()
@@ -57,7 +57,7 @@ class TestTransportComm:
         """Test connect()."""
         Log.debug("test_connect_not_ok {}", use_port)
         start = time.time()
-        assert not await client.transport_connect()
+        assert not await client.connect()
         delta = time.time() - start
         assert delta < client.comm_params.timeout_connect * FACTOR
         client.transport_close()
@@ -107,7 +107,7 @@ class TestTransportComm:
         """Test connection and data exchange."""
         Log.debug("test_connected {}", use_port)
         assert await server.transport_listen()
-        assert await client.transport_connect()
+        assert await client.connect()
         await asyncio.sleep(0.5)
         assert len(server.active_connections) == 1
         server_connected = list(server.active_connections.values())[0]
@@ -146,7 +146,7 @@ class TestTransportComm:
         """Test connection and data exchange."""
         Log.debug("test_split_serial_packet {}", use_port)
         assert await server.transport_listen()
-        assert await client.transport_connect()
+        assert await client.connect()
         await asyncio.sleep(0.5)
         assert len(server.active_connections) == 1
         server_connected = list(server.active_connections.values())[0]
@@ -176,7 +176,7 @@ class TestTransportComm:
         Log.debug("test_serial_poll {}", use_port)
         assert await server.transport_listen()
         SerialTransport.force_poll = True
-        assert await client.transport_connect()
+        assert await client.connect()
         await asyncio.sleep(0.5)
         SerialTransport.force_poll = False
         assert len(server.active_connections) == 1
@@ -203,7 +203,7 @@ class TestTransportComm:
         Log.debug("test_connected {}", use_port)
         client.comm_params.reconnect_delay = 0.0
         assert await server.transport_listen()
-        assert await client.transport_connect()
+        assert await client.connect()
         await asyncio.sleep(0.5)
         assert len(server.active_connections) == 1
         server_connected = list(server.active_connections.values())[0]
@@ -212,7 +212,7 @@ class TestTransportComm:
         client2.callback_connected = mock.Mock()
         client2.callback_disconnected = mock.Mock()
         client2.callback_data = mock.Mock(return_value=0)
-        assert await client2.transport_connect()
+        assert await client2.connect()
         await asyncio.sleep(0.5)
         assert len(server.active_connections) == 2
         server2_connected = list(server.active_connections.values())[1]

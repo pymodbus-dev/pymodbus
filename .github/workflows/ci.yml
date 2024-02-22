@@ -101,11 +101,13 @@ jobs:
           ruff .
 
       - name: pytest
+        if: matrix.os != 'ubuntu-latestt'
         run: |
           env
           pytest
 
       - name: pytest coverage
+        if: matrix.os == 'ubuntu-latestt'
         run: |
           env
           pytest --cov

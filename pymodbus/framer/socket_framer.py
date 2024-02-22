@@ -68,6 +68,7 @@ class ModbusSocketFramer(ModbusFramer):
         elif len(self._buffer) - self._hsize + 1 >= self._header["len"]:
             return True
         # we don't have enough of a message yet, wait
+        Log.debug("Frame check failed, missing part of message!!")
         return False
 
     def advanceFrame(self):
@@ -131,7 +132,6 @@ class ModbusSocketFramer(ModbusFramer):
         """
         while True:
             if not self.checkFrame():
-                Log.debug("Frame check failed, ignoring!!")
                 return
             if not self._validate_slave_id(slave, single):
                 header_txt = self._header["uid"]

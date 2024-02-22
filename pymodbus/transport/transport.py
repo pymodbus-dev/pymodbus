@@ -227,7 +227,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 start_serving=True,
             )
         else:
-            self.call_create = lambda: self.loop.create_connection( # pragma: no cover
+            self.call_create = partial(self.loop.create_connection,
                 self.handle_new_connection,
                 host,
                 port,

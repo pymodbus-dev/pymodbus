@@ -51,15 +51,15 @@ async def prepare_dummy_protocol():
 @pytest.fixture(name="client")
 async def prepare_protocol(use_clc):
     """Prepare transport object."""
+    if use_clc.comm_type == CommType.TLS:
+        cwd = os.path.dirname(__file__) + "/../../examples/certificates/pymodbus."
+        use_clc.sslctx = use_clc.generate_ssl(
+            False, certfile=cwd + "crt", keyfile=cwd + "key"
+        )
     transport = ModbusProtocol(use_clc, False)
     transport.callback_connected = mock.Mock()
     transport.callback_disconnected = mock.Mock()
     transport.callback_data = mock.Mock(return_value=0)
-    if use_clc.comm_type == CommType.TLS:
-        cwd = os.path.dirname(__file__) + "/../../examples/certificates/pymodbus."
-        transport.comm_params.sslctx = use_clc.generate_ssl(
-            False, certfile=cwd + "crt", keyfile=cwd + "key"
-        )
     if use_clc.comm_type == CommType.SERIAL:
         transport.comm_params.host = f"socket://localhost:{transport.comm_params.port}"
     return transport

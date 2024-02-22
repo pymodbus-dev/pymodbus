@@ -101,9 +101,16 @@ jobs:
           ruff .
 
       - name: pytest
+        if: matrix.os != 'ubuntu-latest'
         run: |
           env
-          pytest --cov 
+          pytest
+
+      - name: pytest_cov
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+          env
+          pytest --cov
 
   analyze:
     name: Analyze Python

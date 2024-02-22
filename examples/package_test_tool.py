@@ -210,7 +210,7 @@ def handle_client_data(transport: ModbusProtocol, data: bytes):
     transport.transport_send(response)
 
 
-def handle_server_data(transport: ModbusProtocol, data: bytes):
+def handle_server_data(_transport: ModbusProtocol, data: bytes):
     """Respond to request at transport level."""
     Log.debug("--> stub called with request {}.", data, ":hex")
 

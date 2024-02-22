@@ -211,7 +211,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                     local_addr=(host, port),
                 )
             else:
-                self.call_create = lambda: self.loop.create_datagram_endpoint( # pragma: no cover
+                self.call_create = partial(self.loop.create_datagram_endpoint,
                     self.handle_new_connection,
                     remote_addr=(host, port),
                 )

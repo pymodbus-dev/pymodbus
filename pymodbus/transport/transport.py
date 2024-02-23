@@ -51,6 +51,7 @@ from __future__ import annotations
 import asyncio
 import dataclasses
 import ssl
+from abc import abstractmethod
 from contextlib import suppress
 from enum import Enum
 from functools import partial
@@ -353,10 +354,9 @@ class ModbusProtocol(asyncio.BaseProtocol):
     # --------- #
     # callbacks #
     # --------- #
+    @abstractmethod
     def callback_new_connection(self) -> ModbusProtocol:
         """Call when listener receive new connection request."""
-        Log.debug("callback_new_connection called")
-        return ModbusProtocol(self.comm_params, False)
 
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""

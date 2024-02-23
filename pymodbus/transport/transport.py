@@ -264,9 +264,9 @@ class ModbusProtocol(asyncio.BaseProtocol):
             return False
         return True
 
-    # ---------------------------------- #
+    # --------------------------------------- #
     # ModbusProtocol asyncio standard methods #
-    # ---------------------------------- #
+    # --------------------------------------- #
     def connection_made(self, transport: asyncio.BaseTransport) -> None:
         """Call from asyncio, when a connection is made.
 
@@ -374,7 +374,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
     # Helper methods for external classes #
     # ----------------------------------- #
     def send(self, data: bytes, addr: tuple | None = None) -> None:
-        """Send request.
+        """Send modbus message.
 
         :param data: non-empty bytes object with data to send.
         :param addr: optional addr, only used for UDP server.

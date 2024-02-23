@@ -39,6 +39,7 @@ BASE_PORTS = {
     "TestTransportSerial": 7400,
     "TestTransportReconnect": 7500,
     "TestTransportComm": 7600,
+    "TestMessage": 7700,
 
     "TestExamples": 7800,
     "TestAsyncExamples": 7900,

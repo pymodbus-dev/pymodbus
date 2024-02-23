@@ -56,6 +56,11 @@ class ModbusServerRequestHandler(ModbusProtocol):
             "Handler for stream [{}] has been canceled", self.comm_params.comm_name
         )
 
+    def callback_new_connection(self) -> ModbusProtocol:
+        """Call when listener receive new connection request."""
+        Log.debug("callback_new_connection called")
+        return ModbusServerRequestHandler(self)
+
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
         try:
@@ -160,7 +165,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
                         exc,
                         self.comm_params.comm_name,
                     )
-                    self.transport_close()
+                    self.close()
                     self.callback_disconnected(exc)
                 else:
                     Log.error("Unknown error occurred {}", exc)
@@ -209,15 +214,15 @@ class ModbusServerRequestHandler(ModbusProtocol):
             skip_encoding = False
             if self.server.response_manipulator:
                 response, skip_encoding = self.server.response_manipulator(response)
-            self.send(response, *addr, skip_encoding=skip_encoding)
+            self.server_send(response, *addr, skip_encoding=skip_encoding)
 
-    def send(self, message, addr, **kwargs):
+    def server_send(self, message, addr, **kwargs):
         """Send message."""
         if kwargs.get("skip_encoding", False):
-            self.transport_send(message, addr=addr)
+            self.send(message, addr=addr)
         elif message.should_respond:
             pdu = self.framer.buildPacket(message)
-            self.transport_send(pdu, addr=addr)
+            self.send(pdu, addr=addr)
         else:
             Log.debug("Skipping sending response!!")
 
@@ -286,7 +291,7 @@ class ModbusBaseServer(ModbusProtocol):
         """Close server."""
         if not self.serving.done():
             self.serving.set_result(True)
-        self.transport_close()
+        self.close()
 
     async def serve_forever(self):
         """Start endless loop."""
@@ -294,11 +299,22 @@ class ModbusBaseServer(ModbusProtocol):
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
             )
-        await self.transport_listen()
+        await self.listen()
         Log.info("Server listening.")
         await self.serving
         Log.info("Server graceful shutdown.")
 
+    def callback_connected(self) -> None:
+        """Call when connection is succcesfull."""
+
+    def callback_disconnected(self, exc: Exception | None) -> None:
+        """Call when connection is lost."""
+        Log.debug("callback_disconnected called: {}", exc)
+
+    def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
+        """Handle received data."""
+        Log.debug("callback_data called: {} addr={}", data, ":hex", addr)
+        return 0
 
 class ModbusTcpServer(ModbusBaseServer):
     """A modbus threaded tcp socket server.

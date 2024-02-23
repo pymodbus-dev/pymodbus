@@ -89,7 +89,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
             self.comm_params.host,
             self.comm_params.port,
         )
-        return await self.transport_connect()
+        return await self.base_connect()
 
 
 class ModbusTlsClient(ModbusTcpClient):

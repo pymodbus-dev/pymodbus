@@ -61,36 +61,36 @@ class TestTransportProtocol1:
     async def test_loop_connect(self, client, dummy_protocol):
         """Test properties."""
         client.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
-        assert await client.transport_connect()
+        assert await client.connect()
 
     async def test_loop_listen(self, server, dummy_protocol):
         """Test properties."""
         server.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
         server.loop = asyncio.get_running_loop()
-        assert await server.transport_listen()
+        assert await server.listen()
         assert server.loop
 
     async def test_connect_ok(self, client, dummy_protocol):
         """Test properties."""
         client.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
-        assert await client.transport_connect()
+        assert await client.connect()
 
     async def test_connect_not_ok(self, client, dummy_protocol):
         """Test properties."""
         client.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
         client.call_create.side_effect = asyncio.TimeoutError("test")
-        assert not await client.transport_connect()
+        assert not await client.connect()
 
     async def test_listen_ok(self, server, dummy_protocol):
         """Test listen_tcp()."""
         server.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
-        assert await server.transport_listen()
+        assert await server.listen()
 
     async def test_listen_not_ok(self, server, dummy_protocol):
         """Test listen_tcp()."""
         server.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
         server.call_create.side_effect = OSError("testing")
-        assert not await server.transport_listen()
+        assert not await server.listen()
 
     async def test_connection_made(self, client, use_clc, dummy_protocol):
         """Test connection_made()."""
@@ -110,7 +110,7 @@ class TestTransportProtocol1:
         assert not client.recv_buffer
         assert client.reconnect_task
         client.callback_disconnected.assert_called_once()
-        client.transport_close()
+        client.close()
         assert not client.reconnect_task
         assert not client.reconnect_delay_current
 
@@ -152,11 +152,11 @@ class TestTransportProtocol1:
         client.callback_data(b"abcd")
 
     async def test_handle_local_echo(self, client):
-        """Test transport_send()."""
+        """Test send()."""
         client.comm_params.handle_local_echo = True
         client.transport = mock.Mock()
         test_data = b"abc"
-        client.transport_send(test_data)
+        client.send(test_data)
         client.data_received(test_data)
         assert not client.recv_buffer
         client.data_received(test_data)
@@ -164,11 +164,11 @@ class TestTransportProtocol1:
         assert not client.sent_buffer
 
     async def test_handle_local_echo_udp(self, client):
-        """Test transport_send()."""
+        """Test send()."""
         client.comm_params.handle_local_echo = True
         client.transport = mock.Mock()
         test_data = b"abc"
-        client.transport_send(test_data)
+        client.send(test_data)
         client.datagram_received(test_data, ("127.0.0.1", 502))
         assert not client.recv_buffer
         assert not client.sent_buffer
@@ -177,20 +177,20 @@ class TestTransportProtocol1:
         assert not client.sent_buffer
 
     async def test_handle_local_echo_none(self, client):
-        """Test transport_send()."""
+        """Test send()."""
         client.comm_params.handle_local_echo = True
         client.transport = mock.Mock()
         test_data = b"abc"
-        client.transport_send(b"no echo")
+        client.send(b"no echo")
         client.datagram_received(test_data, ("127.0.0.1", 502))
         assert client.recv_buffer == test_data
         assert not client.sent_buffer
 
     async def test_handle_local_echo_partial(self, client):
-        """Test transport_send()."""
+        """Test send()."""
         client.comm_params.handle_local_echo = True
         client.transport = mock.Mock()
-        client.transport_send(b"partial")
+        client.send(b"partial")
         client.datagram_received(b"par", ("127.0.0.1", 502))
         client.datagram_received(b"tialresponse", ("127.0.0.1", 502))
         assert client.recv_buffer == b"response"
@@ -216,52 +216,55 @@ class TestTransportProtocol2:
         """Test error_received."""
         client.error_received(Exception("test call"))
 
-    async def test_transport_send(self, client):
-        """Test transport_send()."""
+    async def test_send(self, client):
+        """Test send()."""
         client.transport = mock.Mock()
-        client.transport_send(b"abc")
+        client.send(b"abc")
 
-    async def test_transport_send_udp(self, client):
-        """Test transport_send()."""
-        client.transport = mock.Mock()
-        client.comm_params.comm_type = CommType.UDP
-        client.transport_send(b"abc", addr=("localhost", 502))
-
-    async def test_transport_send_udp_no_addr(self, client):
-        """Test transport_send()."""
+    async def test_send_udp(self, client):
+        """Test send()."""
         client.transport = mock.Mock()
         client.comm_params.comm_type = CommType.UDP
-        client.transport_send(b"abc")
+        client.send(b"abc", addr=("localhost", 502))
 
-    async def test_transport_close_connection(self, server, dummy_protocol):
-        """Test transport_close()."""
-        dummy_protocol.close = mock.MagicMock()
-        server.connection_made(dummy_protocol())
+    async def test_send_udp_no_addr(self, client):
+        """Test send()."""
+        client.transport = mock.Mock()
+        client.comm_params.comm_type = CommType.UDP
+        client.send(b"abc")
+
+    async def test_close_connection(self, server, dummy_protocol):
+        """Test close()."""
+        prot = dummy_protocol()
+        prot.close = mock.MagicMock()
+        server.connection_made(prot)
         server.recv_buffer = b"abc"
         server.reconnect_task = mock.MagicMock()
-        server.transport_close()
-        dummy_protocol.close.assert_called_once()
+        server.close()
+        prot.close.assert_called_once()
         assert not server.recv_buffer
 
-    async def test_transport_close_listen(self, server, dummy_protocol):
-        """Test transport_close()."""
-        dummy_protocol.close = mock.MagicMock()
-        await server.transport_listen()
-        server.active_connections = {"a": dummy_protocol()}
-        server.transport_close()
-        server.transport_close()
+    async def test_close_listen(self, server, dummy_protocol):
+        """Test close()."""
+        prot = dummy_protocol()
+        prot.close = mock.MagicMock()
+        await server.listen()
+        server.active_connections = {"a": prot}
+        server.close()
+        server.close()
         assert not server.active_connections
 
-    async def test_transport_close2(self, server, client, dummy_protocol):
-        """Test transport_close()."""
-        dummy_protocol.abort = mock.Mock()
-        dummy_protocol.close = mock.Mock()
-        client.connection_made(dummy_protocol())
+    async def test_close2(self, server, client, dummy_protocol):
+        """Test close()."""
+        prot = dummy_protocol()
+        prot.abort = mock.Mock()
+        prot.close = mock.Mock()
+        client.connection_made(prot)
         client.recv_buffer = b"abc"
         client.reconnect_task = mock.MagicMock()
         client.listener = server
         server.active_connections = {client.unique_id: dummy_protocol}
-        client.transport_close()
+        client.close()
         assert not server.active_connections
 
     async def test_reset_delay(self, client, use_clc):
@@ -275,15 +278,15 @@ class TestTransportProtocol2:
         assert not client.is_active()
         client.connection_made(mock.Mock())
         assert client.is_active()
-        client.transport_close()
+        client.close()
 
     async def test_create_nullmodem(self, client, server):
         """Test create_nullmodem."""
-        assert not await client.transport_connect()
-        await server.transport_listen()
-        assert await client.transport_connect()
-        client.transport_close()
-        server.transport_close()
+        assert not await client.connect()
+        await server.listen()
+        assert await client.connect()
+        client.close()
+        server.close()
 
     async def test_handle_new_connection(self, client, server):
         """Test handle_new_connection()."""
@@ -293,11 +296,11 @@ class TestTransportProtocol2:
     async def test_do_reconnect(self, client):
         """Test do_reconnect()."""
         client.comm_params.reconnect_delay = 0.01
-        client.transport_connect = mock.AsyncMock(side_effect=[False, True])
+        client.connect = mock.AsyncMock(side_effect=[False, True])
         await client.do_reconnect()
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay * 2
         assert not client.reconnect_task
-        client.transport_connect.side_effect = asyncio.CancelledError("stop loop")
+        client.connect.side_effect = asyncio.CancelledError("stop loop")
         client.comm_params.on_reconnect_callback = mock.Mock()
         await client.do_reconnect()
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay
@@ -305,14 +308,14 @@ class TestTransportProtocol2:
 
     async def test_with_magic(self, client):
         """Test magic."""
-        client.transport_close = mock.MagicMock()
+        client.close = mock.MagicMock()
         async with client:
             pass
-        client.transport_close.assert_called_once()
+        client.close.assert_called_once()
 
     async def test_str_magic(self, use_clc, client):
         """Test magic."""
-        assert str(client) == f"ModbusProtocol({use_clc.comm_name})"
+        assert str(client) == f"DummyProtocol({use_clc.comm_name})"
 
     def test_generate_ssl_cert(self, use_clc):
         """Test ssl generation."""
@@ -349,7 +352,7 @@ class TestTransportProtocol2:
     async def test_init_create_serial(self, use_cls):
         """Test server serial with socket."""
         protocol = ModbusProtocol(use_cls, True)
-        await protocol.transport_listen()
+        await protocol.listen()
 
     @pytest.mark.parametrize("use_host", ["localhost"])
     @pytest.mark.parametrize("use_comm_type", [CommType.UDP])

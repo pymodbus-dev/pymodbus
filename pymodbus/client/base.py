@@ -108,6 +108,11 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         """Return state of connection."""
         return self.is_active()
 
+    async def base_connect(self) -> bool:
+        """Call transport connect."""
+        return await super().connect()
+
+
     def register(self, custom_response_class: ModbusResponse) -> None:
         """Register a custom response class with the decoder (call **sync**).
 
@@ -119,12 +124,12 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         """
         self.framer.decoder.register(custom_response_class)
 
-    def close(self, reconnect: bool = False) -> None:
+    def close(self, reconnect: bool = False) -> None:  # type: ignore[override] # pylint: disable=arguments-differ
         """Close connection."""
         if reconnect:
             self.connection_lost(asyncio.TimeoutError("Server not responding"))
         else:
-            self.transport_close()
+            super().close()
 
     def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).
@@ -159,7 +164,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         while count <= self.retries:
             req = self.build_response(request.transaction_id)
             if not count or not self.no_resend_on_retry:
-                self.transport_send(packet)
+                self.send(packet)
             if self.broadcast_enable and not request.slave_id:
                 resp = None
                 break
@@ -177,6 +182,16 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
             )
 
         return resp  # type: ignore[return-value]
+
+    def callback_new_connection(self):
+        """Call when listener receive new connection request."""
+
+    def callback_connected(self) -> None:
+        """Call when connection is succcesfull."""
+
+    def callback_disconnected(self, exc: Exception | None) -> None:
+        """Call when connection is lost."""
+        Log.debug("callback_disconnected called: {}", exc)
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data.
@@ -216,12 +231,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
     # ----------------------------------------------------------------------- #
     # Internal methods
     # ----------------------------------------------------------------------- #
-    def send(self, request) -> int:  # type: ignore [empty-body]
-        """Send request.
-
-        :meta private:
-        """
-
     def recv(self, size):
         """Receive data.
 

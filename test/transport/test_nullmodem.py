@@ -1,5 +1,6 @@
 """Test transport."""
 import asyncio
+from unittest import mock
 
 import pytest
 
@@ -16,54 +17,62 @@ class TestTransportNullModem:
         base_ports[__class__.__name__] += 2
         return base_ports[__class__.__name__]
 
-    def test_init(self, dummy_protocol):
+    async def test_init(self, dummy_protocol):
         """Test initialize."""
         prot = dummy_protocol()
+        prot.connection_made = mock.Mock()
+        prot.connection_lost = mock.Mock()
         NullModem(prot)
         prot.connection_made.assert_not_called()
         prot.connection_lost.assert_not_called()
 
-    def test_close(self, dummy_protocol):
+    async def test_close(self, dummy_protocol):
         """Test close."""
         prot = dummy_protocol()
+        prot.connection_made = mock.Mock()
+        prot.connection_lost = mock.Mock()
         modem = NullModem(prot)
         modem.close()
         prot.connection_made.assert_not_called()
         prot.connection_lost.assert_called_once()
 
-    def test_no_close(self, dummy_protocol):
+    async def test_no_close(self, dummy_protocol):
         """Test no close."""
         prot = dummy_protocol()
         NullModem(prot)
 
 
-    def test_close_no_protocol(self):
+    async def test_close_no_protocol(self):
         """Test close no protocol."""
         modem = NullModem(None)
         modem.close()
 
-    def test_close_twice(self, dummy_protocol):
+    async def test_close_twice(self, dummy_protocol):
         """Test close twice."""
         prot = dummy_protocol()
+        prot.connection_made = mock.Mock()
+        prot.connection_lost = mock.Mock()
         modem = NullModem(prot)
         modem.close()
         prot.connection_made.assert_not_called()
         prot.connection_lost.assert_called_once()
         modem.close()  # test _is_closing works.
 
-    def test_listen(self, dummy_protocol, use_port):
+    async def test_listen(self, dummy_protocol, use_port):
         """Test listener (shared list)."""
-        protocol = dummy_protocol(is_server=True)
-        listen = NullModem.set_listener(use_port, protocol)
-        assert NullModem.listeners[use_port] == protocol
+        prot = dummy_protocol(is_server=True)
+        prot.connection_made = mock.Mock()
+        prot.connection_lost = mock.Mock()
+        listen = NullModem.set_listener(use_port, prot)
+        assert NullModem.listeners[use_port] == prot
         assert len(NullModem.listeners) == 1
         assert not NullModem.connections
         listen.close()
         assert not NullModem.listeners
-        protocol.connection_made.assert_not_called()
-        protocol.connection_lost.assert_not_called()
+        prot.connection_made.assert_not_called()
+        prot.connection_lost.assert_not_called()
 
-    def test_listen_twice(self, dummy_protocol, use_port):
+    async def test_listen_twice(self, dummy_protocol, use_port):
         """Test exception when listening twice."""
         listen1 = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
         listen1.close()
@@ -72,7 +81,7 @@ class TestTransportNullModem:
         listen2.close()
         assert not NullModem.listeners
 
-    def test_listen_twice_fail(self, dummy_protocol, use_port):
+    async def test_listen_twice_fail(self, dummy_protocol, use_port):
         """Test exception when listening twice."""
         listen1 = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
         with pytest.raises(AssertionError):
@@ -80,7 +89,7 @@ class TestTransportNullModem:
         listen1.close()
         assert not NullModem.listeners
 
-    def test_listen_triangle(self, dummy_protocol, use_port):
+    async def test_listen_triangle(self, dummy_protocol, use_port):
         """Test listener (shared list)."""
         listen1 = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
         listen2 = NullModem.set_listener(use_port + 1, dummy_protocol(is_server=True))
@@ -90,7 +99,7 @@ class TestTransportNullModem:
         listen2.close()
         assert not NullModem.listeners
 
-    def test_is_dirty(self, dummy_protocol, use_port):
+    async def test_is_dirty(self, dummy_protocol, use_port):
         """Test is_dirty()."""
         assert not NullModem.is_dirty()
         listen1 = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
@@ -98,11 +107,15 @@ class TestTransportNullModem:
         listen1.close()
         assert not NullModem.is_dirty()
 
-    def test_connect(self, dummy_protocol, use_port):
+    async def test_connect(self, dummy_protocol, use_port):
         """Test connect."""
         prot_listen = dummy_protocol(is_server=True)
+        prot_listen.connection_made = mock.Mock()
+        prot_listen.connection_lost = mock.Mock()
         listen = NullModem.set_listener(use_port, prot_listen)
         prot1 = dummy_protocol()
+        prot1.connection_made = mock.Mock()
+        prot1.connection_lost = mock.Mock()
         modem, _ = NullModem.set_connection(use_port, prot1)
         modem_b = modem.other_modem
         assert modem.protocol != listen.protocol
@@ -118,12 +131,12 @@ class TestTransportNullModem:
         prot1.connection_made.assert_called_once()
         prot1.connection_lost.assert_called_once()
 
-    def test_connect_no_listen(self, dummy_protocol, use_port):
+    async def test_connect_no_listen(self, dummy_protocol, use_port):
         """Test connect without listen."""
         with pytest.raises(asyncio.TimeoutError):
             NullModem.set_connection(use_port, dummy_protocol())
 
-    def test_listen_close(self, dummy_protocol, use_port):
+    async def test_listen_close(self, dummy_protocol, use_port):
         """Test connect without listen."""
         listen = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
         modem, _ = NullModem.set_connection(use_port, dummy_protocol())
@@ -132,7 +145,7 @@ class TestTransportNullModem:
         assert not NullModem.listeners
         modem.close()
 
-    def test_connect_multiple(self, dummy_protocol, use_port):
+    async def test_connect_multiple(self, dummy_protocol, use_port):
         """Test multiple connect."""
         listen1 = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
         modem1, _ = NullModem.set_connection(use_port, dummy_protocol())
@@ -159,7 +172,7 @@ class TestTransportNullModem:
         assert modem2b in NullModem.connections
         modem2.close()
 
-    def test_is_dirty_with_connection(self, dummy_protocol, use_port):
+    async def test_is_dirty_with_connection(self, dummy_protocol, use_port):
         """Test connect."""
         assert not NullModem.is_dirty()
         listen = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
@@ -169,7 +182,7 @@ class TestTransportNullModem:
         listen.close()
         assert not NullModem.is_dirty()
 
-    def test_flow_write(self, dummy_protocol, use_port):
+    async def test_flow_write(self, dummy_protocol, use_port):
         """Test flow write."""
         listen = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
         modem, _ = NullModem.set_connection(use_port, dummy_protocol())
@@ -178,13 +191,13 @@ class TestTransportNullModem:
         test_data2 = b"efgh"
         modem.write(test_data1)
         modem_b.write(test_data2)
-        assert modem_b.protocol.data == test_data1
-        assert modem.protocol.data == test_data2
+        assert modem_b.protocol.recv_buffer == test_data1
+        assert modem.protocol.recv_buffer == test_data2
         modem.close()
         listen.close()
 
 
-    def test_flow_sendto(self, dummy_protocol, use_port):
+    async def test_flow_sendto(self, dummy_protocol, use_port):
         """Test flow sendto."""
         listen = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
         modem, _ = NullModem.set_connection(use_port, dummy_protocol())
@@ -193,20 +206,20 @@ class TestTransportNullModem:
         test_data2 = b"efgh"
         modem.sendto(test_data1)
         modem_b.sendto(test_data2)
-        assert modem_b.protocol.data == test_data1
-        assert modem.protocol.data == test_data2
+        assert modem_b.protocol.recv_buffer == test_data1
+        assert modem.protocol.recv_buffer == test_data2
         modem.close()
         listen.close()
 
-    def test_flow_not_connected(self, dummy_protocol):
+    async def test_flow_not_connected(self, dummy_protocol):
         """Test flow not connected."""
         modem = NullModem(dummy_protocol())
         modem.sendto("no connection")
-        assert modem.protocol.data == b''
+        assert modem.protocol.recv_buffer == b''
         modem.close()
 
 
-    def test_triangle_flow(self, dummy_protocol, use_port):
+    async def test_triangle_flow(self, dummy_protocol, use_port):
         """Test triangle flow."""
         listen = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
         modem1, _ = NullModem.set_connection(use_port, dummy_protocol())
@@ -219,16 +232,16 @@ class TestTransportNullModem:
         test_data4 = b"mnop"
         modem1.write(test_data1)
         modem1b.write(test_data2)
-        assert modem1b.protocol.data == test_data1
-        assert modem1.protocol.data == test_data2
-        assert modem2b.protocol.data == b""
-        assert modem2.protocol.data == b""
+        assert modem1b.protocol.recv_buffer == test_data1
+        assert modem1.protocol.recv_buffer == test_data2
+        assert modem2b.protocol.recv_buffer == b""
+        assert modem2.protocol.recv_buffer == b""
         modem2.write(test_data3)
         modem2b.write(test_data4)
-        assert modem1b.protocol.data == test_data1
-        assert modem1.protocol.data == test_data2
-        assert modem2b.protocol.data == test_data3
-        assert modem2.protocol.data == test_data4
+        assert modem1b.protocol.recv_buffer == test_data1
+        assert modem1.protocol.recv_buffer == test_data2
+        assert modem2b.protocol.recv_buffer == test_data3
+        assert modem2.protocol.recv_buffer == test_data4
         modem1.close()
         modem2.close()
         listen.close()
@@ -242,7 +255,7 @@ class TestTransportNullModem:
             [b"MANIPULATED", b"and", b"much more"],
         ],
     )
-    def test_manipulator(self, add_text, dummy_protocol, use_port):
+    async def test_manipulator(self, add_text, dummy_protocol, use_port):
         """Test manipulator."""
 
         def manipulator(data):
@@ -262,12 +275,12 @@ class TestTransportNullModem:
         modem_b.write(data1)
         modem_b.write(data2)
         x = b"".join(part for part in add_text)
-        assert modem.protocol.data == data1 + data2
-        assert modem_b.protocol.data == data1 + x + data2 + x
+        assert modem.protocol.recv_buffer == data1 + data2
+        assert modem_b.protocol.recv_buffer == data1 + x + data2 + x
         modem.close()
         listen.close()
 
-    def test_abstract_methods(self, dummy_protocol):
+    async def test_abstract_methods(self, dummy_protocol):
         """Test asyncio abstract methods."""
         modem = NullModem(dummy_protocol())
         modem.abort()

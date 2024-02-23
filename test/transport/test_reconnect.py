@@ -19,19 +19,19 @@ class TestTransportReconnect:
         """Test connection_lost()."""
         client.loop = asyncio.get_running_loop()
         client.call_create = mock.AsyncMock(return_value=(None, None))
-        await client.transport_connect()
+        await client.connect()
         client.connection_lost(RuntimeError("Connection lost"))
         assert not client.reconnect_task
         assert not client.reconnect_delay_current
         assert client.call_create.called
-        client.transport_close()
+        client.close()
 
     async def test_reconnect_call(self, client):
         """Test connection_lost()."""
         client.comm_params.on_reconnect_callback = mock.MagicMock()
         client.loop = asyncio.get_running_loop()
         client.call_create = mock.AsyncMock(return_value=(None, None))
-        await client.transport_connect()
+        await client.connect()
         client.connection_made(mock.Mock())
         client.connection_lost(RuntimeError("Connection lost"))
         assert client.reconnect_task
@@ -40,13 +40,13 @@ class TestTransportReconnect:
         assert client.call_create.call_count == 2
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay * 2
         assert client.comm_params.on_reconnect_callback.called
-        client.transport_close()
+        client.close()
 
     async def test_multi_reconnect_call(self, client):
         """Test connection_lost()."""
         client.loop = asyncio.get_running_loop()
         client.call_create = mock.AsyncMock(return_value=(None, None))
-        await client.transport_connect()
+        await client.connect()
         client.connection_made(mock.Mock())
         client.connection_lost(RuntimeError("Connection lost"))
         await asyncio.sleep(client.reconnect_delay_current * 1.8)
@@ -58,17 +58,17 @@ class TestTransportReconnect:
         await asyncio.sleep(client.reconnect_delay_current * 1.8)
         assert client.call_create.call_count >= 4
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay_max
-        client.transport_close()
+        client.close()
 
     async def test_reconnect_call_ok(self, client):
         """Test connection_lost()."""
         client.loop = asyncio.get_running_loop()
         client.call_create = mock.AsyncMock(return_value=(mock.Mock(), mock.Mock()))
-        await client.transport_connect()
+        await client.connect()
         client.connection_made(mock.Mock())
         client.connection_lost(RuntimeError("Connection lost"))
         await asyncio.sleep(client.reconnect_delay_current * 1.8)
         assert client.call_create.call_count == 2
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay
         assert not client.reconnect_task
-        client.transport_close()
+        client.close()

@@ -1,11 +1,13 @@
 """Configure pytest."""
-import asyncio
+from __future__ import annotations
+
 import os
 import sys
 from unittest import mock
 
 import pytest
 
+from pymodbus.logging import Log
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
 
 
@@ -15,31 +17,27 @@ sys.path.extend(["examples", "../examples", "../../examples"])
 class DummyProtocol(ModbusProtocol):
     """Use in connection_made calls."""
 
-    def __init__(self, is_server=False):  # pylint: disable=super-init-not-called
+    def __init__(self, params=CommParams(), is_server=False):
         """Initialize."""
-        self.comm_params = CommParams()
-        self.transport = None
-        self.is_server = is_server
-        self.is_closing = False
-        self.data = b""
-        self.connection_made = mock.Mock()
-        self.connection_lost = mock.Mock()
-        self.reconnect_task: asyncio.Task = None
+        #  self.connection_made = mock.Mock()
+        #  self.connection_lost = mock.Mock()
+        super().__init__(params, is_server)
 
-    def handle_new_connection(self):
-        """Handle incoming connect."""
-        if not self.is_server:
-            # Clients reuse the same object.
-            return self
-        return DummyProtocol()
+    def callback_new_connection(self) -> ModbusProtocol:
+        """Call when listener receive new connection request."""
+        return DummyProtocol(params=self.comm_params, is_server=False)
 
-    def close(self):
-        """Simulate close."""
-        self.is_closing = True
+    def callback_connected(self) -> None:
+        """Call when connection is succcesfull."""
 
-    def data_received(self, data):
-        """Call when some data is received."""
-        self.data += data
+    def callback_disconnected(self, exc: Exception | None) -> None:
+        """Call when connection is lost."""
+        Log.debug("callback_disconnected called: {}", exc)
+
+    def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
+        """Handle received data."""
+        Log.debug("callback_data called: {} addr={}", data, ":hex", addr)
+        return 0
 
 
 @pytest.fixture(name="dummy_protocol")
@@ -56,7 +54,7 @@ async def prepare_protocol(use_clc):
         use_clc.sslctx = use_clc.generate_ssl(
             False, certfile=cwd + "crt", keyfile=cwd + "key"
         )
-    transport = ModbusProtocol(use_clc, False)
+    transport = DummyProtocol(params=use_clc, is_server=False)
     transport.callback_connected = mock.Mock()
     transport.callback_disconnected = mock.Mock()
     transport.callback_data = mock.Mock(return_value=0)
@@ -73,7 +71,7 @@ async def prepare_transport_server(use_cls):
         use_cls.sslctx = use_cls.generate_ssl(
             True, certfile=cwd + "crt", keyfile=cwd + "key"
         )
-    transport = ModbusProtocol(use_cls, True)
+    transport = DummyProtocol(params=use_cls, is_server=True)
     transport.callback_connected = mock.Mock()
     transport.callback_disconnected = mock.Mock()
     transport.callback_data = mock.Mock(return_value=0)

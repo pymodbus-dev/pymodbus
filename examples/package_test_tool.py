@@ -73,13 +73,20 @@ class TransportStub(ModbusProtocol):
     async def start_run(self):
         """Call need functions to start server/client."""
         if  self.is_server:
-            return await self.transport_listen()
-        return await self.transport_connect()
+            return await self.listen()
+        return await self.connect()
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
         self.stub_handle_data(self, data)
         return len(data)
+
+    def callback_connected(self) -> None:
+        """Call when connection is succcesfull."""
+
+    def callback_disconnected(self, exc: Exception | None) -> None:
+        """Call when connection is lost."""
+        Log.debug("callback_disconnected called: {}", exc)
 
     def callback_new_connection(self) -> ModbusProtocol:
         """Call when listener receive new connection request."""
@@ -166,7 +173,7 @@ class ServerTester:  # pylint: disable=too-few-public-methods
         """Execute test run."""
         pymodbus_apply_logging_config()
         Log.debug("--> Start testing.")
-        await self.server.transport_listen()
+        await self.server.listen()
         await self.stub.start_run()
         await server_calls(self.stub)
         Log.debug("--> Shutting down.")
@@ -193,7 +200,7 @@ async def client_calls(client):
 async def server_calls(transport: ModbusProtocol):
     """Test client API."""
     Log.debug("--> Server calls starting.")
-    _resp = transport.transport_send(b'\x00\x02\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01' +
+    _resp = transport.send(b'\x00\x02\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01' +
         b'\x07\x00\x03\x00\x00\x06\x01\x03\x00\x00\x00\x01')
     await asyncio.sleep(1)
     print("---> all done")
@@ -206,8 +213,8 @@ def handle_client_data(transport: ModbusProtocol, data: bytes):
     # Multiple send is allowed, to test fragmentation
     #  for data in response:
     #    to_send = data.to_bytes()
-    #    transport.transport_send(to_send)
-    transport.transport_send(response)
+    #    transport.send(to_send)
+    transport.send(response)
 
 
 def handle_server_data(_transport: ModbusProtocol, data: bytes):

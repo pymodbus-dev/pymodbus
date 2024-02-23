@@ -51,6 +51,7 @@ from __future__ import annotations
 import asyncio
 import dataclasses
 import ssl
+from abc import abstractmethod
 from contextlib import suppress
 from enum import Enum
 from functools import partial
@@ -235,7 +236,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 ssl=self.comm_params.sslctx,
             )
 
-    async def transport_connect(self) -> bool:
+    async def connect(self) -> bool:
         """Handle generic connect and call on to specific transport connect."""
         Log.debug("Connecting {}", self.comm_params.comm_name)
         self.is_closing = False
@@ -249,7 +250,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
             return False
         return bool(self.transport)
 
-    async def transport_listen(self) -> bool:
+    async def listen(self) -> bool:
         """Handle generic listen and call on to specific transport listen."""
         Log.debug("Awaiting connections {}", self.comm_params.comm_name)
         self.is_closing = False
@@ -259,7 +260,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 self.transport = self.transport[0]
         except OSError as exc:
             Log.warning("Failed to start server {}", exc)
-            # self.transport_close(intern=True)
+            # self.close(intern=True)
             return False
         return True
 
@@ -284,7 +285,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         if not self.transport or self.is_closing:
             return
         Log.debug("Connection lost {} due to {}", self.comm_params.comm_name, reason)
-        self.transport_close(intern=True)
+        self.close(intern=True)
         if (
             not self.is_server
             and not self.listener
@@ -353,28 +354,26 @@ class ModbusProtocol(asyncio.BaseProtocol):
     # --------- #
     # callbacks #
     # --------- #
+    @abstractmethod
     def callback_new_connection(self) -> ModbusProtocol:
         """Call when listener receive new connection request."""
-        Log.debug("callback_new_connection called")
-        return ModbusProtocol(self.comm_params, False)
 
+    @abstractmethod
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
-        Log.debug("callback_connected called")
 
+    @abstractmethod
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""
-        Log.debug("callback_disconnected called: {}", exc)
 
+    @abstractmethod
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
-        Log.debug("callback_data called: {} addr={}", data, ":hex", addr)
-        return 0
 
     # ----------------------------------- #
     # Helper methods for external classes #
     # ----------------------------------- #
-    def transport_send(self, data: bytes, addr: tuple | None = None) -> None:
+    def send(self, data: bytes, addr: tuple | None = None) -> None:
         """Send request.
 
         :param data: non-empty bytes object with data to send.
@@ -391,7 +390,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         else:
             self.transport.write(data)  # type: ignore[attr-defined]
 
-    def transport_close(self, intern: bool = False, reconnect: bool = False) -> None:
+    def close(self, intern: bool = False, reconnect: bool = False) -> None:
         """Close connection.
 
         :param intern: (default false), True if called internally (temporary close)
@@ -409,7 +408,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
             for _key, value in self.active_connections.items():
                 value.listener = None
                 value.callback_disconnected(None)
-                value.transport_close()
+                value.close()
             self.active_connections = {}
             return
         if not reconnect and self.reconnect_task:
@@ -466,7 +465,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 await asyncio.sleep(self.reconnect_delay_current)
                 if self.comm_params.on_reconnect_callback:
                     self.comm_params.on_reconnect_callback()
-                if await self.transport_connect():
+                if await self.connect():
                     break
                 self.reconnect_delay_current = min(
                     2 * self.reconnect_delay_current,
@@ -485,7 +484,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
     async def __aexit__(self, _class, _value, _traceback) -> None:
         """Implement the client with async exit block."""
-        self.transport_close()
+        self.close()
 
     def __str__(self) -> str:
         """Build a string representation of the connection."""

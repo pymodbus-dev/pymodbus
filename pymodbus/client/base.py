@@ -183,6 +183,10 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
 
         return resp  # type: ignore[return-value]
 
+    def callback_new_connection(self):
+        """Call when listener receive new connection request."""
+        return None
+
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data.
 

@@ -15,9 +15,8 @@ sys.path.extend(["examples", "../examples", "../../examples"])
 class DummyProtocol(ModbusProtocol):
     """Use in connection_made calls."""
 
-    def __init__(self, is_server=False):  # pylint: disable=super-init-not-called
+    def __init__(self, is_server=False):
         """Initialize."""
-        self.comm_params = CommParams()
         self.transport = None
         self.is_server = is_server
         self.is_closing = False
@@ -25,12 +24,10 @@ class DummyProtocol(ModbusProtocol):
         self.connection_made = mock.Mock()
         self.connection_lost = mock.Mock()
         self.reconnect_task: asyncio.Task = None
+        super().__init__(CommParams(), is_server)
 
-    def handle_new_connection(self):
-        """Handle incoming connect."""
-        if not self.is_server:
-            # Clients reuse the same object.
-            return self
+    def callback_new_connection(self) -> ModbusProtocol:
+        """Call when listener receive new connection request."""
         return DummyProtocol()
 
     def close(self):  # pylint: disable=arguments-differ

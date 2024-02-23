@@ -56,6 +56,11 @@ class ModbusServerRequestHandler(ModbusProtocol):
             "Handler for stream [{}] has been canceled", self.comm_params.comm_name
         )
 
+    def callback_new_connection(self) -> ModbusProtocol:
+        """Call when listener receive new connection request."""
+        Log.debug("callback_new_connection called")
+        return ModbusServerRequestHandler(self)
+
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
         try:

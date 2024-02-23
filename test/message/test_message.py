@@ -6,7 +6,7 @@ from pymodbus.message import MessageType
 from pymodbus.transport import CommParams
 
 
-class TestMessage:
+class TestMessage:  # pylint: disable=too-few-public-methods
     """Test message module."""
 
     @pytest.mark.parametrize(("entry"), list(MessageType))

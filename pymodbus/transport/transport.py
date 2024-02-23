@@ -366,10 +366,9 @@ class ModbusProtocol(asyncio.BaseProtocol):
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""
 
+    @abstractmethod
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
-        Log.debug("callback_data called: {} addr={}", data, ":hex", addr)
-        return 0
 
     # ----------------------------------- #
     # Helper methods for external classes #

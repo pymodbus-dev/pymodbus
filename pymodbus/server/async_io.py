@@ -311,6 +311,10 @@ class ModbusBaseServer(ModbusProtocol):
         """Call when connection is lost."""
         Log.debug("callback_disconnected called: {}", exc)
 
+    def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
+        """Handle received data."""
+        Log.debug("callback_data called: {} addr={}", data, ":hex", addr)
+        return 0
 
 class ModbusTcpServer(ModbusBaseServer):
     """A modbus threaded tcp socket server.

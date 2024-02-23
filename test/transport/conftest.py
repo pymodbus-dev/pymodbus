@@ -1,11 +1,13 @@
 """Configure pytest."""
-import asyncio
+from __future__ import annotations
+
 import os
 import sys
 from unittest import mock
 
 import pytest
 
+from pymodbus.logging import Log
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
 
 
@@ -15,28 +17,20 @@ sys.path.extend(["examples", "../examples", "../../examples"])
 class DummyProtocol(ModbusProtocol):
     """Use in connection_made calls."""
 
-    def __init__(self, is_server=False):
+    def __init__(self, params=CommParams(), is_server=False):
         """Initialize."""
-        self.transport = None
-        self.is_server = is_server
-        self.is_closing = False
-        self.data = b""
-        self.connection_made = mock.Mock()
-        self.connection_lost = mock.Mock()
-        self.reconnect_task: asyncio.Task = None
-        super().__init__(CommParams(), is_server)
+        #  self.connection_made = mock.Mock()
+        #  self.connection_lost = mock.Mock()
+        super().__init__(params, is_server)
 
     def callback_new_connection(self) -> ModbusProtocol:
         """Call when listener receive new connection request."""
         return DummyProtocol()
 
-    def close(self):  # pylint: disable=arguments-differ
-        """Simulate close."""
-        self.is_closing = True
-
-    def data_received(self, data):
-        """Call when some data is received."""
-        self.data += data
+    def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
+        """Handle received data."""
+        Log.debug("callback_data called: {} addr={}", data, ":hex", addr)
+        return 0
 
 
 @pytest.fixture(name="dummy_protocol")

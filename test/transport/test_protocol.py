@@ -235,28 +235,31 @@ class TestTransportProtocol2:
 
     async def test_close_connection(self, server, dummy_protocol):
         """Test close()."""
-        dummy_protocol.close = mock.MagicMock()
-        server.connection_made(dummy_protocol())
+        prot = dummy_protocol()
+        prot.close = mock.MagicMock()
+        server.connection_made(prot)
         server.recv_buffer = b"abc"
         server.reconnect_task = mock.MagicMock()
         server.close()
-        dummy_protocol.close.assert_called_once()
+        prot.close.assert_called_once()
         assert not server.recv_buffer
 
     async def test_close_listen(self, server, dummy_protocol):
         """Test close()."""
-        dummy_protocol.close = mock.MagicMock()
+        prot = dummy_protocol()
+        prot.close = mock.MagicMock()
         await server.listen()
-        server.active_connections = {"a": dummy_protocol()}
+        server.active_connections = {"a": prot}
         server.close()
         server.close()
         assert not server.active_connections
 
     async def test_close2(self, server, client, dummy_protocol):
         """Test close()."""
-        dummy_protocol.abort = mock.Mock()
-        dummy_protocol.close = mock.Mock()
-        client.connection_made(dummy_protocol())
+        prot = dummy_protocol()
+        prot.abort = mock.Mock()
+        prot.close = mock.Mock()
+        client.connection_made(prot)
         client.recv_buffer = b"abc"
         client.reconnect_task = mock.MagicMock()
         client.listener = server
@@ -312,7 +315,7 @@ class TestTransportProtocol2:
 
     async def test_str_magic(self, use_clc, client):
         """Test magic."""
-        assert str(client) == f"ModbusProtocol({use_clc.comm_name})"
+        assert str(client) == f"DummyProtocol({use_clc.comm_name})"
 
     def test_generate_ssl_cert(self, use_clc):
         """Test ssl generation."""

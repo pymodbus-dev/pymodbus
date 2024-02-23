@@ -25,7 +25,7 @@ class DummyProtocol(ModbusProtocol):
 
     def callback_new_connection(self) -> ModbusProtocol:
         """Call when listener receive new connection request."""
-        return DummyProtocol()
+        return DummyProtocol(params=self.comm_params, is_server=False)
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
@@ -47,7 +47,7 @@ async def prepare_protocol(use_clc):
         use_clc.sslctx = use_clc.generate_ssl(
             False, certfile=cwd + "crt", keyfile=cwd + "key"
         )
-    transport = ModbusProtocol(use_clc, False)
+    transport = DummyProtocol(params=use_clc, is_server=False)
     transport.callback_connected = mock.Mock()
     transport.callback_disconnected = mock.Mock()
     transport.callback_data = mock.Mock(return_value=0)
@@ -64,7 +64,7 @@ async def prepare_transport_server(use_cls):
         use_cls.sslctx = use_cls.generate_ssl(
             True, certfile=cwd + "crt", keyfile=cwd + "key"
         )
-    transport = ModbusProtocol(use_cls, True)
+    transport = DummyProtocol(params=use_cls, is_server=True)
     transport.callback_connected = mock.Mock()
     transport.callback_disconnected = mock.Mock()
     transport.callback_data = mock.Mock(return_value=0)

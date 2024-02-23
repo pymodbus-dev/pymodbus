@@ -1,15 +1,27 @@
 """Configure pytest."""
 from __future__ import annotations
 
+from unittest import mock
+
 import pytest
 
 from pymodbus.logging import Log
-from pymodbus.message import Message
-from pymodbus.transport import ModbusProtocol
+from pymodbus.message import Message, MessageType
+from pymodbus.transport import CommParams, ModbusProtocol
 
 
 class DummyMessage(Message):
     """Implement use of ModbusProtocol."""
+
+    def __init__(self,
+            message_type: MessageType,
+            params: CommParams,
+            is_server: bool,
+            device_ids: list[int] | None,
+        ):
+        """Initialize a message instance."""
+        super().__init__(message_type, params, is_server, device_ids)
+        ModbusProtocol.send = mock.Mock()
 
     def callback_new_connection(self) -> ModbusProtocol:
         """Call when listener receive new connection request."""

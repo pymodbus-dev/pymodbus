@@ -74,10 +74,6 @@ class Message(ModbusProtocol):
             MessageType.TLS: MessageTLS(device_ids, is_server),
         }[message_type]
 
-    def callback_disconnected(self, exc: Exception | None) -> None:
-        """Call when connection is lost."""
-        self.msg_handle.reset()
-
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
         used_len, tid, modbus = self.msg_handle.decode(data)
@@ -102,3 +98,7 @@ class Message(ModbusProtocol):
         """
         send_data = self.msg_handle.encode(data, device_id, tid)
         super().send(send_data, addr)
+
+    def reset(self) -> None:
+        """Reset handling."""
+        self.msg_handle.reset()

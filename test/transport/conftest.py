@@ -27,6 +27,13 @@ class DummyProtocol(ModbusProtocol):
         """Call when listener receive new connection request."""
         return DummyProtocol(params=self.comm_params, is_server=False)
 
+    def callback_connected(self) -> None:
+        """Call when connection is succcesfull."""
+
+    def callback_disconnected(self, exc: Exception | None) -> None:
+        """Call when connection is lost."""
+        Log.debug("callback_disconnected called: {}", exc)
+
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
         Log.debug("callback_data called: {} addr={}", data, ":hex", addr)

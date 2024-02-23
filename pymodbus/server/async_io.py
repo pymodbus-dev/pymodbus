@@ -304,6 +304,13 @@ class ModbusBaseServer(ModbusProtocol):
         await self.serving
         Log.info("Server graceful shutdown.")
 
+    def callback_connected(self) -> None:
+        """Call when connection is succcesfull."""
+
+    def callback_disconnected(self, exc: Exception | None) -> None:
+        """Call when connection is lost."""
+        Log.debug("callback_disconnected called: {}", exc)
+
 
 class ModbusTcpServer(ModbusBaseServer):
     """A modbus threaded tcp socket server.

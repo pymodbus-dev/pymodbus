@@ -32,6 +32,13 @@ class ModbusProtocolStub(ModbusProtocol):
         return await self.connect()
 
 
+    def callback_connected(self) -> None:
+        """Call when connection is succcesfull."""
+
+    def callback_disconnected(self, exc: Exception | None) -> None:
+        """Call when connection is lost."""
+        Log.debug("callback_disconnected called: {}", exc)
+
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
         if (response := self.stub_handle_data(data)):

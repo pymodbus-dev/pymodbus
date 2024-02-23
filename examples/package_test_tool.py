@@ -81,6 +81,13 @@ class TransportStub(ModbusProtocol):
         self.stub_handle_data(self, data)
         return len(data)
 
+    def callback_connected(self) -> None:
+        """Call when connection is succcesfull."""
+
+    def callback_disconnected(self, exc: Exception | None) -> None:
+        """Call when connection is lost."""
+        Log.debug("callback_disconnected called: {}", exc)
+
     def callback_new_connection(self) -> ModbusProtocol:
         """Call when listener receive new connection request."""
         new_stub = TransportStub(self.comm_params, False, self.stub_handle_data)

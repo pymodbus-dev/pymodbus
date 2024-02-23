@@ -185,7 +185,13 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
 
     def callback_new_connection(self):
         """Call when listener receive new connection request."""
-        return None
+
+    def callback_connected(self) -> None:
+        """Call when connection is succcesfull."""
+
+    def callback_disconnected(self, exc: Exception | None) -> None:
+        """Call when connection is lost."""
+        Log.debug("callback_disconnected called: {}", exc)
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data.

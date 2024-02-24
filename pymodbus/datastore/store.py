@@ -194,39 +194,40 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock[list]):
         self.values[start : start + len(values)] = values
 
 
-    """Create a sparse modbus datastore.
 class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
+    """A sparse modbus datastore.
 
     E.g Usage.
     sparse = ModbusSparseDataBlock({10: [3, 5, 6, 8], 30: 1, 40: [0]*20})
 
-    This would create a datablock with 3 blocks starting at
-    offset 10 with length 4 , 30 with length 1 and 40 with length 20
+    This would create a datablock with 3 blocks
+    One starts at offset 10 with length 4, one at 30 with length 1, and one at 40 with length 20
 
     sparse = ModbusSparseDataBlock([10]*100)
     Creates a sparse datablock of length 100 starting at offset 0 and default value of 10
 
-    sparse = ModbusSparseDataBlock() --> Create Empty datablock
+    sparse = ModbusSparseDataBlock() --> Create empty datablock
     sparse.setValues(0, [10]*10)  --> Add block 1 at offset 0 with length 10 (default value 10)
     sparse.setValues(30, [20]*5)  --> Add block 2 at offset 30 with length 5 (default value 20)
 
-    if mutable is set to True during initialization, the datablock can not be altered with
-    setValues (new datablocks can not be added)
+    Unless 'mutable' is set to True during initialization, the datablock cannot be altered with
+    setValues (new datablocks cannot be added)
     """
 
     def __init__(self, values=None, mutable=True):
         """Initialize a sparse datastore.
 
-        Will only answer to addresses
-        registered, either initially here, or later via setValues()
+        Will only answer to addresses registered,
+        either initially here, or later via setValues()
 
         :param values: Either a list or a dictionary of values
-        :param mutable: The data-block can be altered later with setValues(i.e add more blocks)
+        :param mutable: Whether the data-block can be altered later with setValues (i.e add more blocks)
 
-        If values are list , This is as good as sequential datablock.
-        Values as dictionary should be in {offset: <values>} format, if values
-        is a list, a sparse datablock is created starting at offset with the length of values.
-        If values is a integer, then the value is set for the corresponding offset.
+        If values is a list, a sequential datablock will be created.
+
+        If values is a dictionary, it should be in {offset: <int | list>} format
+        For each list, a sparse datablock is created, starting at 'offset' with the length of the list
+        For each integer, the value is set for the corresponding offset.
 
         """
         self.values = {}

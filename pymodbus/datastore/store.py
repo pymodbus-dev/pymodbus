@@ -45,8 +45,10 @@ I have both methods implemented, and leave it up to the user to change
 based on their preference.
 """
 # pylint: disable=missing-type-doc
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Iterable
+from typing import Any, Iterable
 
 from pymodbus.exceptions import ParameterException
 
@@ -66,25 +68,12 @@ class BaseModbusDataBlock(ABC):
             validate(self, address, count=1)
             getValues(self, address, count=1)
             setValues(self, address, values)
+            reset(self)
     """
 
-    def default(self, count, value=False):
-        """Use to initialize a store to one value.
-
-        :param count: The number of fields to set
-        :param value: The default value to set to the fields
-        """
-        self.default_value = value  # pylint: disable=attribute-defined-outside-init
-        self.values = [  # pylint: disable=attribute-defined-outside-init
-            self.default_value
-        ] * count
-        self.address = 0x00  # pylint: disable=attribute-defined-outside-init
-
-    def reset(self):
-        """Reset the datastore to the initialized default value."""
-        self.values = [  # pylint: disable=attribute-defined-outside-init
-            self.default_value
-        ] * len(self.values)
+    values: dict | list
+    address: int
+    default_value: Any
 
     @abstractmethod
     def validate(self, address:int, count=1) -> bool:
@@ -156,6 +145,20 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
         """
         return cls(0x00, [0x00] * 65536)
 
+    def default(self, count, value=False):
+        """Use to initialize a store to one value.
+
+        :param count: The number of fields to set
+        :param value: The default value to set to the fields
+        """
+        self.default_value = value
+        self.values = [self.default_value] * count
+        self.address = 0x00
+
+    def reset(self):
+        """Reset the datastore to the initialized default value."""
+        self.values = [self.default_value] * len(self.values)
+
     def validate(self, address, count=1):
         """Check to see if the request is in range.
 
@@ -224,11 +227,10 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         If values is a integer, then the value is set for the corresponding offset.
 
         """
-        self.values = {}
+        self.values: dict[int, Any] = {}
         self._process_values(values)
         self.mutable = mutable
         self.default_value = self.values.copy()
-        self.address = next(iter(self.values.keys()), None)
 
     @classmethod
     def create(cls, values=None):
@@ -310,8 +312,6 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
                 if address + idx not in self.values and not self.mutable:
                     raise ParameterException("Offset {address+idx} not in range")
                 self.values[address + idx] = val
-        if not self.address:
-            self.address = next(iter(self.values.keys()), None)
         if use_as_default:
             for idx, val in iter(self.values.items()):
                 self.default_value[idx] = val

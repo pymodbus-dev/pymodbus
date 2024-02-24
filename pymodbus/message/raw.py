@@ -9,8 +9,8 @@ class MessageRaw(MessageBase):
 
     HEADER:
         byte[0] = device_id
-        byte[1-2] = length of request/response, NOT converted
-        byte[3..] = request/response
+        byte[1] = transaction_id
+        byte[2..] = request/response
 
     This is mainly for test purposes.
     """
@@ -18,10 +18,12 @@ class MessageRaw(MessageBase):
     def reset(self) -> None:
         """Clear internal handling."""
 
-    def decode(self, _data: bytes) -> tuple[int, int, bytes]:
+    def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode message."""
-        return 0, 0, b''
+        if len(data) < 3:
+            return 0, 0, 0, b''
+        return len(data), int(data[0]), int(data[1]), data[2:]
 
     def encode(self, data: bytes, device_id: int, tid: int) -> bytes:
         """Decode message."""
-        return b''
+        return device_id.to_bytes(1, 'big') + tid.to_bytes(1, 'big') + data

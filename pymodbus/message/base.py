@@ -29,12 +29,13 @@ class MessageBase:
         """Clear internal handling."""
 
     @abstractmethod
-    def decode(self, _data: bytes) -> tuple[int, int, bytes]:
+    def decode(self, _data: bytes) -> tuple[int, int, int, bytes]:
         """Decode message.
 
         return:
-            used_len (int)
+            used_len (int) or 0 to read more
             transaction_id (int) or 0
+            device_id (int) or 0
             modbus request/response (bytes)
         """
 

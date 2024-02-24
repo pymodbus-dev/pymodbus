@@ -74,22 +74,18 @@ class Message(ModbusProtocol):
             MessageType.TLS: MessageTLS(device_ids, is_server),
         }[message_type]
 
-    def callback_disconnected(self, exc: Exception | None) -> None:
-        """Call when connection is lost."""
-        self.msg_handle.reset()
-
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
-        used_len, tid, modbus = self.msg_handle.decode(data)
-        if modbus:
-            self.callback_request_response(modbus, tid)
+        used_len, tid, device_id, data = self.msg_handle.decode(data)
+        if data:
+            self.callback_request_response(data, device_id, tid)
         return used_len
 
     # --------------------- #
     # callbacks and helpers #
     # --------------------- #
     @abstractmethod
-    def callback_request_response(self, data: bytes, tid: int) -> None:
+    def callback_request_response(self, data: bytes, device_id: int, tid: int) -> None:
         """Handle received modbus request/response."""
 
     def build_send(self, data: bytes, device_id: int, tid: int, addr: tuple | None = None) -> None:
@@ -101,4 +97,8 @@ class Message(ModbusProtocol):
         :param addr: optional addr, only used for UDP server.
         """
         send_data = self.msg_handle.encode(data, device_id, tid)
-        super().send(send_data, addr)
+        self.send(send_data, addr)
+
+    def reset(self) -> None:
+        """Reset handling."""
+        self.msg_handle.reset()

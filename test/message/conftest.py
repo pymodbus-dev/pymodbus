@@ -5,7 +5,6 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.logging import Log
 from pymodbus.message import Message, MessageType
 from pymodbus.transport import CommParams, ModbusProtocol
 
@@ -21,18 +20,17 @@ class DummyMessage(Message):
         ):
         """Initialize a message instance."""
         super().__init__(message_type, params, is_server, device_ids)
-        ModbusProtocol.send = mock.Mock()
+        self.send = mock.Mock()
 
     def callback_new_connection(self) -> ModbusProtocol:
         """Call when listener receive new connection request."""
-        return DummyMessage(self.message_type, self.comm_params, self.is_server, self.device_ids)
+        return DummyMessage(self.message_type, self.comm_params, self.is_server, self.device_ids)  # pragma: no cover
 
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
 
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""
-        Log.debug("callback_disconnected called: {}", exc)
 
     def callback_request_response(self, data: bytes, tid: int) -> None:
         """Handle received modbus request/response."""

@@ -97,7 +97,7 @@ class Message(ModbusProtocol):
         :param addr: optional addr, only used for UDP server.
         """
         send_data = self.msg_handle.encode(data, device_id, tid)
-        super().send(send_data, addr)
+        self.send(send_data, addr)
 
     def reset(self) -> None:
         """Reset handling."""

@@ -231,7 +231,6 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         self._process_values(values)
         self.mutable = mutable
         self.default_value = self.values.copy()
-        self.address = next(iter(self.values.keys()), None)
 
     @classmethod
     def create(cls, values=None):
@@ -313,8 +312,6 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
                 if address + idx not in self.values and not self.mutable:
                     raise ParameterException("Offset {address+idx} not in range")
                 self.values[address + idx] = val
-        if not self.address:
-            self.address = next(iter(self.values.keys()), None)
         if use_as_default:
             for idx, val in iter(self.values.items()):
                 self.default_value[idx] = val

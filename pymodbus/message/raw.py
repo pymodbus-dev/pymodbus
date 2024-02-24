@@ -26,4 +26,4 @@ class MessageRaw(MessageBase):
 
     def encode(self, data: bytes, device_id: int, tid: int) -> bytes:
         """Decode message."""
-        return device_id.to_bytes() + tid.to_bytes() + data
+        return device_id.to_bytes(length=1) + tid.to_bytes(length=1) + data

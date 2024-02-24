@@ -1,28 +1,32 @@
 """ModbusMessage layer."""
 from __future__ import annotations
 
+from pymodbus.logging import Log
 from pymodbus.message.base import MessageBase
 
 
 class MessageRaw(MessageBase):
-    """Raw header.
+    r"""Modbus RAW Frame Controller.
 
-    HEADER:
-        byte[0] = device_id
-        byte[1] = transaction_id
-        byte[2..] = request/response
+        [ Device id ][Transaction id ][ Data ]
+          1c          2c                Nc
 
-    This is mainly for test purposes.
+        * data can be 1 - X chars
+
+    This framer is used for non modbus communication and testing purposes.
     """
-
-    def reset(self) -> None:
-        """Clear internal handling."""
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode message."""
         if len(data) < 3:
-            return 0, 0, 0, b''
-        return len(data), int(data[0]), int(data[1]), data[2:]
+            Log.debug("Short frame: {} wait for more data", data, ":hex")
+            return 0, 0, 0, self.EMPTY
+        dev_id = int(data[0])
+        tid = int(data[1])
+        if not self.validate_device_id(dev_id):
+            Log.debug("Device id: {} in frame {} unknown, skipping.", dev_id, data, ":hex")
+
+        return len(data), dev_id, tid, data[2:]
 
     def encode(self, data: bytes, device_id: int, tid: int) -> bytes:
         """Decode message."""

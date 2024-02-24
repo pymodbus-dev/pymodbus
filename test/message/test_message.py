@@ -81,3 +81,18 @@ class TestMessage:
         assert res_id == t_id
         assert res_tid == t_tid
         assert res_data == t_data
+
+    @pytest.mark.parametrize(
+        ("msg_type", "data", "dev_id", "tid", "res_data"), [
+        (MessageType.RAW, b'\x01\x02', 5, 6, b'\x05\x06\x01\x02'),
+        (MessageType.RAW, b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09', 17, 25, b'\x11\x19\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09'),
+    ])
+    async def test_encode(self, dummy_message, msg_type, data, dev_id, tid, res_data):
+        """Test decode method in all types."""
+        msg = dummy_message(msg_type,
+            CommParams(),
+            False,
+            [1],
+        )
+        t_data = msg.msg_handle.encode(data, dev_id, tid)
+        assert res_data == t_data

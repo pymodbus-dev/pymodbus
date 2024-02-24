@@ -76,16 +76,16 @@ class Message(ModbusProtocol):
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
-        used_len, tid, modbus = self.msg_handle.decode(data)
-        if modbus:
-            self.callback_request_response(modbus, tid)
+        used_len, tid, device_id, data = self.msg_handle.decode(data)
+        if data:
+            self.callback_request_response(data, device_id, tid)
         return used_len
 
     # --------------------- #
     # callbacks and helpers #
     # --------------------- #
     @abstractmethod
-    def callback_request_response(self, data: bytes, tid: int) -> None:
+    def callback_request_response(self, data: bytes, device_id: int, tid: int) -> None:
         """Handle received modbus request/response."""
 
     def build_send(self, data: bytes, device_id: int, tid: int, addr: tuple | None = None) -> None:

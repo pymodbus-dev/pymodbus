@@ -32,7 +32,7 @@ class DummyMessage(Message):
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""
 
-    def callback_request_response(self, data: bytes, tid: int) -> None:
+    def callback_request_response(self, data: bytes, device_id: int, tid: int) -> None:
         """Handle received modbus request/response."""
 
 

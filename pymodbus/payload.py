@@ -54,7 +54,7 @@ class BinaryPayloadBuilder:
         self._wordorder = wordorder
         self._repack = repack
 
-    def _pack_words(self, fstring, value):
+    def _pack_words(self, fstring: str, value) -> bytes:
         """Pack words based on the word order and byte order.
 
         # ---------------------------------------------- #
@@ -69,18 +69,15 @@ class BinaryPayloadBuilder:
         :return:
         """
         value = pack(f"!{fstring}", value)
-        wordorder = WC.get(fstring.lower()) // 2
+        wordorder = WC.get(fstring.lower()) // 2  # type: ignore[operator]
         upperbyte = f"!{wordorder}H"
         payload = unpack(upperbyte, value)
 
         if self._wordorder == Endian.LITTLE:
-            payload = list(reversed(payload))
+            payload = payload[::-1]
 
         fstring = self._byteorder + "H"
-        payload = [pack(fstring, word) for word in payload]
-        payload = b"".join(payload)
-
-        return payload
+        return b"".join(pack(fstring, word) for word in payload)
 
     def encode(self) -> bytes:
         """Get the payload buffer encoded in bytes."""
@@ -327,7 +324,7 @@ class BinaryPayloadDecoder:
             return cls(payload, byteorder)
         raise ParameterException("Invalid collection of coils supplied")
 
-    def _unpack_words(self, fstring, handle):
+    def _unpack_words(self, fstring: str, handle) -> bytes:
         """Unpack words based on the word order and byte order.
 
         # ---------------------------------------------- #
@@ -339,7 +336,7 @@ class BinaryPayloadDecoder:
         :param handle: Value to be unpacked
         :return:
         """
-        wc_value = WC.get(fstring.lower()) // 2
+        wc_value = WC.get(fstring.lower()) // 2  # type: ignore[operator]
         handle = unpack(f"!{wc_value}H", handle)
         if self._wordorder == Endian.LITTLE:
             handle = list(reversed(handle))

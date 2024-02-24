@@ -48,7 +48,7 @@ based on their preference.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable
+from typing import Any, Generic, Iterable, TypeVar
 
 from pymodbus.exceptions import ParameterException
 
@@ -56,7 +56,9 @@ from pymodbus.exceptions import ParameterException
 # ---------------------------------------------------------------------------#
 #  Datablock Storage
 # ---------------------------------------------------------------------------#
-class BaseModbusDataBlock(ABC):
+
+V = TypeVar('V', list, dict[int, Any])
+class BaseModbusDataBlock(ABC, Generic[V]):
     """Base class for a modbus datastore.
 
     Derived classes must create the following fields:
@@ -71,7 +73,7 @@ class BaseModbusDataBlock(ABC):
             reset(self)
     """
 
-    values: dict | list
+    values: V
     address: int
     default_value: Any
 
@@ -119,7 +121,7 @@ class BaseModbusDataBlock(ABC):
         return enumerate(self.values, self.address)
 
 
-class ModbusSequentialDataBlock(BaseModbusDataBlock):
+class ModbusSequentialDataBlock(BaseModbusDataBlock[list]):
     """Creates a sequential modbus datastore."""
 
     def __init__(self, address, values):
@@ -192,8 +194,8 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
         self.values[start : start + len(values)] = values
 
 
-class ModbusSparseDataBlock(BaseModbusDataBlock):
     """Create a sparse modbus datastore.
+class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
 
     E.g Usage.
     sparse = ModbusSparseDataBlock({10: [3, 5, 6, 8], 30: 1, 40: [0]*20})
@@ -227,7 +229,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         If values is a integer, then the value is set for the corresponding offset.
 
         """
-        self.values: dict[int, Any] = {}
+        self.values = {}
         self._process_values(values)
         self.mutable = mutable
         self.default_value = self.values.copy()

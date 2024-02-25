@@ -57,13 +57,14 @@ class MessageAscii(MessageBase):
         """Decode message."""
         dev_id = device_id.to_bytes(1,'big')
         checksum = self.compute_LRC(dev_id + data)
-        packet = bytearray()
-        packet.extend(self.START)
-        packet.extend(f"{device_id:02x}".encode())
-        packet.extend(b2a_hex(data))
-        packet.extend(f"{checksum:02x}".encode())
-        packet.extend(self.END)
-        return bytes(packet).upper()
+        packet = (
+            self.START +
+            f"{device_id:02x}".encode() +
+            b2a_hex(data) +
+            f"{checksum:02x}".encode() +
+            self.END
+        ).upper()
+        return packet
 
     @classmethod
     def compute_LRC(cls, data: bytes) -> int:

@@ -76,10 +76,17 @@ class Message(ModbusProtocol):
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
-        used_len, tid, device_id, data = self.msg_handle.decode(data)
-        if data:
-            self.callback_request_response(data, device_id, tid)
-        return used_len
+        tot_len = len(data)
+        start = 0
+        while True:
+            used_len, tid, device_id, msg = self.msg_handle.decode(data[start:])
+            if msg:
+                self.callback_request_response(msg, device_id, tid)
+            if not used_len:
+                return start
+            start += used_len
+            if start == tot_len:
+                return tot_len
 
     # --------------------- #
     # callbacks and helpers #
@@ -98,7 +105,3 @@ class Message(ModbusProtocol):
         """
         send_data = self.msg_handle.encode(data, device_id, tid)
         self.send(send_data, addr)
-
-    def reset(self) -> None:
-        """Reset handling."""
-        self.msg_handle.reset()

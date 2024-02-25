@@ -12,6 +12,8 @@ from abc import abstractmethod
 class MessageBase:
     """Intern base."""
 
+    EMPTY = b''
+
     def __init__(
         self,
         device_ids: list[int] | None,
@@ -24,9 +26,9 @@ class MessageBase:
         self.device_ids = device_ids
         self.is_server = is_server
 
-    @abstractmethod
-    def reset(self) -> None:
-        """Clear internal handling."""
+    def validate_device_id(self, dev_id: int) -> bool:
+        """Check if device id is expected."""
+        return not (self.device_ids and dev_id not in self.device_ids)
 
     @abstractmethod
     def decode(self, _data: bytes) -> tuple[int, int, int, bytes]:

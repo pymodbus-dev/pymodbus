@@ -16,10 +16,10 @@ class MessageTLS(MessageBase):
       1b               Nb
     """
 
-    def decode(self, _data: bytes) -> tuple[int, int, int, bytes]:
+    def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode message."""
-        return 0, 0, 0, b''
+        return len(data), 0, 0, data
 
-    def encode(self, _data: bytes, _device_id: int, _tid: int) -> bytes:
+    def encode(self, data: bytes, _device_id: int, _tid: int) -> bytes:
         """Decode message."""
-        return b''
+        return data

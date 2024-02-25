@@ -21,25 +21,31 @@ class TestMessage:
         )
         assert msg.msg_handle
 
-    async def test_message_callback_data(self, dummy_message):
+    @pytest.mark.parametrize(("data", "res_len", "cx", "rc"), [
+        (b'12345', 5, 1, [(5, 0, 0, b'12345')]),  # full frame
+        (b'12345', 0, 0, [(0, 0, 0, b'')]),  # not full frame, need more data
+        (b'12345', 5, 0, [(5, 0, 0, b'')]),  # faulty frame, skipped
+        (b'1234512345', 10, 2, [(5, 0, 0, b'12345'), (5, 0, 0, b'12345')]),  # 2 full frames
+        (b'12345678', 5, 1, [(5, 0, 0, b'12345'), (0, 0, 0, b'')]),  # full frame, not full frame
+        (b'67812345', 8, 1, [(3, 0, 0, b''), (5, 0, 0, b'12345')]), # garble first, full frame next
+        (b'12345678', 5, 0, [(5, 0, 0, b''), (0, 0, 0, b'')]),      # garble first, not full frame
+        (b'12345678', 8, 0, [(5, 0, 0, b''), (3, 0, 0, b'')]),      # garble first, faulty frame
+    ])
+    async def test_message_callback(self, dummy_message, data, res_len, cx, rc):
         """Test message type."""
         msg = dummy_message(MessageType.RAW,
             CommParams(),
             False,
             [1],
         )
-        msg.msg_handle.decode = mock.MagicMock(return_value=(5,0,0,b''))
-        assert msg.callback_data(b'') == 5
-
-    async def test_message_callback_data_decode(self, dummy_message):
-        """Test message type."""
-        msg = dummy_message(MessageType.RAW,
-            CommParams(),
-            False,
-            [1],
-        )
-        msg.msg_handle.decode = mock.MagicMock(return_value=(17,0,1,b'decode'))
-        assert msg.callback_data(b'') == 17
+        msg.callback_request_response = mock.Mock()
+        msg.msg_handle.decode = mock.MagicMock(side_effect=iter(rc))
+        assert msg.callback_data(data) == res_len
+        assert msg.callback_request_response.call_count == cx
+        if cx:
+            msg.callback_request_response.assert_called_with(b'12345', 0, 0)
+        else:
+            msg.callback_request_response.assert_not_called()
 
     async def test_message_build_send(self, dummy_message):
         """Test message type."""
@@ -53,15 +59,20 @@ class TestMessage:
         msg.msg_handle.encode.assert_called_once()
         msg.send.assert_called_once()
 
-    async def test_message_reset(self, dummy_message):
+    @pytest.mark.parametrize(
+        ("dev_ids", "res"), [
+        (None, True),
+        ([1], True),
+        ([2,3,4], False),
+        ])
+    async def test_validate_id(self, dummy_message, dev_ids, res):
         """Test message type."""
         msg = dummy_message(MessageType.RAW,
             CommParams(),
             False,
-            [1],
+            dev_ids,
         )
-        msg.msg_handle.reset = mock.Mock()
-        msg.reset()
+        assert res == msg.msg_handle.validate_device_id(1)
 
     @pytest.mark.parametrize(
         ("msg_type", "data", "res_len", "res_id", "res_tid", "res_data"), [

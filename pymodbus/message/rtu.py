@@ -40,9 +40,6 @@ class MessageRTU(MessageBase):
     neither when receiving nor when sending.
     """
 
-    def reset(self) -> None:
-        """Clear internal handling."""
-
     def decode(self, _data: bytes) -> tuple[int, int, int, bytes]:
         """Decode message."""
         return 0, 0, 0, b''

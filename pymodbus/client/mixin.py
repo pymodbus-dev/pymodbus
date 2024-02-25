@@ -549,7 +549,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :raises ModbusException:
         """
         return self.execute(
-            pdu_mei.mei_custom_request(mei_type, data, slave, **kwargs)
+            pdu_mei.MeiGenericRequest(mei_type, data, slave, **kwargs)
         )
 
     # ------------------

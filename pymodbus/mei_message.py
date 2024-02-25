@@ -3,8 +3,8 @@
 __all__ = [
     "ReadDeviceInformationRequest",
     "ReadDeviceInformationResponse",
-    "mei_custom_request",
-    "mei_custom_response"
+    "MeiGenericRequest",
+    "MeiGenericResponse"
 ]
 
 # pylint: disable=missing-type-doc
@@ -228,15 +228,15 @@ class ReadDeviceInformationResponse(ModbusResponse):
 # ---------------------------------------------------------------------------#
 #  MEI CUSTOM REQUEST
 # ---------------------------------------------------------------------------#
-class mei_custom_request(ModbusRequest):
-    """mei_custom_request.
+class MeiGenericRequest(ModbusRequest):
+    """MeiGenericRequest.
 
     
     """
 
     function_code = 0x2B
     sub_function_code = None # 0x0E
-    function_code_name = "mei_custom_request"
+    function_code_name = "MeiGenericRequest"
     m_data = b''
     m_data_len = 0
     # _rtu_frame_size = 7
@@ -289,7 +289,7 @@ class mei_custom_request(ModbusRequest):
             return self.doException(merror.IllegalValue)
 
         information = DeviceInformationFactory.get(_MCB, self.read_code, self.object_id)
-        return mei_custom_request(self.read_code, information)
+        return MeiGenericRequest(self.read_code, information)
 
     def __str__(self):
         """Build a representation of the request.
@@ -298,14 +298,14 @@ class mei_custom_request(ModbusRequest):
         """
         params = (self.read_code, self.object_id)
         return (
-            "mei_custom_request(%d,%d)"  # pylint: disable=consider-using-f-string
+            "MeiGenericRequest(%d,%d)"  # pylint: disable=consider-using-f-string
             % params
         )
 
 
 
-class mei_custom_response(ModbusResponse):
-    """mei_custom_request response."""
+class MeiGenericResponse(ModbusResponse):
+    """MeiGenericRequest response."""
 
     function_code = 0x2B
     sub_function_code = 0x41
@@ -353,5 +353,5 @@ class mei_custom_response(ModbusResponse):
 
         :returns: The string representation of the response
         """
-        return f"mei_custom_response({self.m_mei_type}: {self.m_data})"
+        return f"MeiGenericResponse({self.m_mei_type}: {self.m_data})"
 

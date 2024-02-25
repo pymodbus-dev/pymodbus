@@ -10,6 +10,8 @@ kept as a result of a pre-computed lookup dictionary.
 """
 
 # pylint: disable=missing-type-doc
+from typing import Callable, Dict
+
 from pymodbus.bit_read_message import (
     ReadCoilsRequest,
     ReadCoilsResponse,
@@ -161,17 +163,17 @@ class ServerDecoder:
     ]
 
     @classmethod
-    def getFCdict(cls):
+    def getFCdict(cls) -> Dict[int, Callable]:
         """Build function code - class list."""
-        return {f.function_code: f for f in cls.__function_table}
+        return {f.function_code: f for f in cls.__function_table}  # type: ignore[attr-defined]
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the client lookup tables."""
-        functions = {f.function_code for f in self.__function_table}
+        functions = {f.function_code for f in self.__function_table}  # type: ignore[attr-defined]
         self.lookup = self.getFCdict()
-        self.__sub_lookup = {f: {} for f in functions}
+        self.__sub_lookup: Dict[int, Dict[int, Callable]] = {f: {} for f in functions}
         for f in self.__sub_function_table:
-            self.__sub_lookup[f.function_code][f.sub_function_code] = f
+            self.__sub_lookup[f.function_code][f.sub_function_code] = f  # type: ignore[attr-defined]
 
     def decode(self, message):
         """Decode a request packet.
@@ -193,7 +195,7 @@ class ServerDecoder:
         """
         return self.lookup.get(function_code, ExceptionResponse)
 
-    def _helper(self, data):
+    def _helper(self, data: str):
         """Generate the correct request object from a valid request packet.
 
         This decodes from a list of the currently implemented request types.
@@ -294,13 +296,13 @@ class ClientDecoder:
         ReadDeviceInformationResponse,
     ]
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the client lookup tables."""
-        functions = {f.function_code for f in self.function_table}
-        self.lookup = {f.function_code: f for f in self.function_table}
-        self.__sub_lookup = {f: {} for f in functions}
+        functions = {f.function_code for f in self.function_table}  # type: ignore[attr-defined]
+        self.lookup = {f.function_code: f for f in self.function_table}  # type: ignore[attr-defined]
+        self.__sub_lookup: Dict[int, Dict[int, Callable]] = {f: {} for f in functions}
         for f in self.__sub_function_table:
-            self.__sub_lookup[f.function_code][f.sub_function_code] = f
+            self.__sub_lookup[f.function_code][f.sub_function_code] = f  # type: ignore[attr-defined]
 
     def lookupPduClass(self, function_code):
         """Use `function_code` to determine the class of the PDU.
@@ -324,7 +326,7 @@ class ClientDecoder:
             Log.error("General exception: {}", exc)
         return None
 
-    def _helper(self, data):
+    def _helper(self, data: str):
         """Generate the correct response object from a valid response packet.
 
         This decodes from a list of the currently implemented request types.
@@ -333,8 +335,9 @@ class ClientDecoder:
         :returns: The decoded request or an exception response object
         :raises ModbusException:
         """
-        fc_string = function_code = int(data[0])
-        if function_code in self.lookup:
+        fc_string = data[0]
+        function_code = int(fc_string)
+        if function_code in self.lookup:  # pylint: disable=consider-using-assignment-expr
             fc_string = "{}: {}".format(  # pylint: disable=consider-using-f-string
                 str(self.lookup[function_code])  # pylint: disable=use-maxsplit-arg
                 .split(".")[-1]

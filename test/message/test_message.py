@@ -60,6 +60,7 @@ class TestMessage:
         msg.build_send(b'decode', 1, 0)
         msg.msg_handle.encode.assert_called_once()
         msg.send.assert_called_once()
+        msg.send.assert_called_with(b'decode', None)
 
     @pytest.mark.parametrize(
         ("dev_id", "res"), [

@@ -26,9 +26,9 @@ class MessageSocket(MessageBase):
           Log.debug("Very short frame (NO MBAP): {} wait for more data", data, ":hex")
           return 0, 0, 0, self.EMPTY
         msg_tid = int.from_bytes(data[0:2], 'big')
-        msg_len = int.from_bytes(data[4:6], 'big')
+        msg_len = int.from_bytes(data[4:6], 'big') + 6
         msg_dev = int(data[6])
-        if used_len < 6 + msg_len:
+        if used_len < msg_len:
           Log.debug("Short frame: {} wait for more data", data, ":hex")
           return 0, 0, 0, self.EMPTY
         return msg_len, msg_tid, msg_dev, data[7:msg_len]

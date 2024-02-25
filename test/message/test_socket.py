@@ -16,21 +16,21 @@ class TestMessageSocket:
 
 
     @pytest.mark.parametrize(
-        ("packet", "used_len", "res_id", "res"),
+        ("packet", "used_len", "res_id", "res_tid", "res"),
         [
-            (b':010100010001FC\r\n', 17, 1, b'\x01\x00\x01\x00\x01'),  # normal frame
-            (b':010100', 0, 0, b''), # very short frame
-            (b':010101', 0, 0, b''), # short frame
-            (b':010102', 0, 0, b''), # short frame -1 byte
-            (b':00010001000AF4', 0, 0, b''),  # invalid frame
+            (b"\x00\x09\x00\x00\x00\x05\x01\x03\x01\x14\xb5", 11, 1, 9, b'\x03\x01\x14\xb5'),
+            (b"\x00\x02\x00\x00\x00\x03\x07\x84\x02", 9, 7, 2, b'\x84\x02'),
+            (b"\x00\x02\x00", 0, 0, 0, b''),  # very short frame
+            (b"\x00\x09\x00\x00\x00\x05\x01\x03\x01", 0, 0, 0, b''),  # short frame
+            (b"\x00\x02\x00\x00\x00\x03\x07\x84", 0, 0, 0, b''),  # short frame -1 byte
         ],
     )
-    def xtest_decode(self, frame, packet, used_len, res_id, res):
+    def test_decode(self, frame, packet, used_len, res_id, res_tid, res):
         """Test decode."""
         res_len, tid, dev_id, data = frame.decode(packet)
         assert res_len == used_len
-        assert data == res
-        assert not tid
+        assert res == data
+        assert res_tid == tid
         assert dev_id == res_id
 
     @pytest.mark.parametrize(
@@ -50,9 +50,9 @@ class TestMessageSocket:
     @pytest.mark.parametrize(
         ("data", "dev_id", "res_msg"),
         [
-            (b'\x01\x05\x04\x00\x17', 1, b':010105040017DF\r\n'),
-            (b'\x03\x07\x06\x00\x73', 2, b':0203070600737D\r\n'),
-            (b'\x08\x00\x01', 3, b':03080001F7\r\n'),
+            # (b"\x00\x01\x00\x00\x00\x0b\x01\x03\x08\x00\xb5\x12\x2f\x37\x21\x00\x03", 1, b'\x08\x00\xb5\x12\x2f\x37\x21\x00\x03'),
+            # (b'\x03\x07\x06\x00\x73', 2, b':0203070600737D\r\n'),
+            # (b'\x08\x00\x01', 3, b':03080001F7\r\n'),
         ],
     )
     def xtest_roundtrip(self, frame, data, dev_id, res_msg):
@@ -62,59 +62,3 @@ class TestMessageSocket:
         assert data == res_data
         assert dev_id == res_id
         assert res_len == len(res_msg)
-
-    # def test_recv_split_packet():
-    #     """Test receive packet."""
-    #     response_ok = False
-    #
-    # def _handle_response(_reply):
-    #     """Handle response."""
-    #     nonlocal response_ok
-    #     response_ok = True
-    #
-    #     message = bytearray(b"\x00\x01\x00\x00\x00\x0b\x01\x03\x08\x00\xb5\x12\x2f\x37\x21\x00\x03")
-    #     for i in range(0, len(message)):
-    #         part1 = message[:i]
-    #         part2 = message[i:]
-    #         response_ok = False
-    #         framer = ModbusSocketFramer(ClientDecoder())
-    #         if i:
-    #             framer.processIncomingPacket(part1, _handle_response, slave=0)
-    #             assert not response_ok, "Response should not be accepted"
-    #         framer.processIncomingPacket(part2, _handle_response, slave=0)
-    #         assert response_ok, "Response is valid, but not accepted"
-    #
-    # def test_recv_socket_exception_packet():
-    #     """Test receive packet."""
-    #     response_ok = False
-    #
-    #     def _handle_response(_reply):
-    #         """Handle response."""
-    #         nonlocal response_ok
-    #         response_ok = True
-    #
-    #     message = bytearray(b"\x00\x02\x00\x00\x00\x03\x01\x84\x02")
-    #     response_ok = False
-    #     framer = ModbusSocketFramer(ClientDecoder())
-    #     framer.processIncomingPacket(message, _handle_response, slave=0)
-    #     assert response_ok, "Response is valid, but not accepted"
-    #
-    #     message = bytearray(b"\x00\x01\x00\x00\x00\x0b\x01\x03\x08\x00\xb5\x12\x2f\x37\x21\x00\x03")
-    #     response_ok = False
-    #     framer = ModbusSocketFramer(ClientDecoder())
-    #     framer.processIncomingPacket(message, _handle_response, slave=0)
-    #     assert response_ok, "Response is valid, but not accepted"
-
-    # (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x00\x01\x00\x01\x00\n',),
-    # request = ReadCoilsRequest(1, 10)
-    # assert test_framer.buildPacket(request) == message
-
-    # (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x01\x01\x00\x01\x00\n',),
-    # @pytest.mark.parametrize(("slave"), [0x01, 0x02])
-    # def test_processincomingpacket_ok(framer, message, slave):
-
-    # (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x01\x27\x00\x01\x00\n',),
-    # def test_processincomingpacket_not_ok(framer, message):
-
-    # (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x61\x62\x00\x01\x00\n',),
-    # def test_decode_data(framer, message, expected):

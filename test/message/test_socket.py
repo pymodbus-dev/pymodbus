@@ -50,17 +50,19 @@ class TestMessageSocket:
         assert tid == int.from_bytes(msg[0:2], 'big')
 
     @pytest.mark.parametrize(
-        ("data", "dev_id", "res_msg"),
+        ("data", "dev_id", "tid", "res_msg"),
         [
-            # (b"\x00\x01\x00\x00\x00\x0b\x01\x03\x08\x00\xb5\x12\x2f\x37\x21\x00\x03", 1, b'\x08\x00\xb5\x12\x2f\x37\x21\x00\x03'),
-            # (b'\x03\x07\x06\x00\x73', 2, b':0203070600737D\r\n'),
-            # (b'\x08\x00\x01', 3, b':03080001F7\r\n'),
+            (b'\x01\x05\x04\x00\x17', 7, 5, b'\x00\x05\x00\x00\x00\x06\x07\x01\x05\x04\x00\x17'),
+            (b'\x03\x07\x06\x00\x73', 2, 9, b'\x00\x09\x00\x00\x00\x06\x02\x03\x07\x06\x00\x73'),
+            (b'\x08\x00\x01', 3, 6, b'\x00\x06\x00\x00\x00\x04\x03\x08\x00\x01'),
+            (b'\x84\x01', 4, 8, b'\x00\x08\x00\x00\x00\x03\x04\x84\x01'),
         ],
     )
-    def xtest_roundtrip(self, frame, data, dev_id, res_msg):
+    def test_roundtrip(self, frame, data, dev_id, tid, res_msg):
         """Test encode."""
-        msg = frame.encode(data, dev_id, 0)
-        res_len, _, res_id, res_data = frame.decode(msg)
+        msg = frame.encode(data, dev_id, tid)
+        res_len, res_tid, res_id, res_data = frame.decode(msg)
         assert data == res_data
         assert dev_id == res_id
+        assert tid == res_tid
         assert res_len == len(res_msg)

@@ -2,6 +2,8 @@
 
 Currently none of these messages are implemented
 """
+from __future__ import annotations
+
 
 __all__ = [
     "FileRecord",
@@ -147,7 +149,7 @@ class ReadFileRecordRequest(ModbusRequest):
         # TODO do some new context operation here # pylint: disable=fixme
         # if file number, record number, or address + length
         # is too big, return an error.
-        files = []
+        files: list[FileRecord] = []
         return ReadFileRecordResponse(files)
 
 

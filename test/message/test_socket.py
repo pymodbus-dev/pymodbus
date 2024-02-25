@@ -18,16 +18,11 @@ class TestMessageSocket:
     @pytest.mark.parametrize(
         ("packet", "used_len", "res_id", "res"),
         [
-            (b':010100010001FC\r\n', 17, 1, b'\x01\x00\x01\x00\x01'),
-            (b':00010001000AF4\r\n', 17, 0, b'\x01\x00\x01\x00\x0a'),
-            (b':01010001000AF3\r\n', 17, 1, b'\x01\x00\x01\x00\x0a'),
-            (b':61620001000A32\r\n', 17, 97, b'\x62\x00\x01\x00\x0a'),
-            (b':01270001000ACD\r\n', 17, 1, b'\x27\x00\x01\x00\x0a'),
-            (b':010100', 0, 0, b''), # short frame
-            (b':00010001000AF4', 0, 0, b''),
-            (b'abc:00010001000AF4', 3, 0, b''), # garble before frame
-            (b'abc00010001000AF4', 17, 0, b''), # only garble
-            (b':01010001000A00\r\n', 17, 0, b''),
+            (b':010100010001FC\r\n', 17, 1, b'\x01\x00\x01\x00\x01'),  # normal frame
+            (b':010100', 0, 0, b''), # very short frame
+            (b':010101', 0, 0, b''), # short frame
+            (b':010102', 0, 0, b''), # short frame -1 byte
+            (b':00010001000AF4', 0, 0, b''),  # invalid frame
         ],
     )
     def xtest_decode(self, frame, packet, used_len, res_id, res):

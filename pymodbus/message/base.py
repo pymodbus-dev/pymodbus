@@ -28,7 +28,7 @@ class MessageBase:
 
     def validate_device_id(self, dev_id: int) -> bool:
         """Check if device id is expected."""
-        return not (self.device_ids and dev_id not in self.device_ids)
+        return not (self.device_ids and dev_id and dev_id not in self.device_ids)
 
     @abstractmethod
     def decode(self, _data: bytes) -> tuple[int, int, int, bytes]:

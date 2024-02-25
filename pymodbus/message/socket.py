@@ -39,7 +39,7 @@ class MessageSocket(MessageBase):
            tid.to_bytes(2, 'big') +
            b'\x00\x00' +
            (len(data) + 1).to_bytes(2, 'big') +
-           device_id.to_bytes(2, 'big') +
+           device_id.to_bytes(1, 'big') +
            data
         )
         return packet

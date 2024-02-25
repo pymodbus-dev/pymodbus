@@ -66,6 +66,7 @@ class TestMessageAscii:
             (b'\x01\x05\x04\x00\x17', 1, b':010105040017DE\r\n'),
             (b'\x03\x07\x06\x00\x73', 2, b':0203070600737B\r\n'),
             (b'\x08\x00\x01', 3, b':03080001F4\r\n'),
+            (b'\x84\x01', 2, b':02840179\r\n'),
         ],
     )
     def test_encode(self, frame, data, dev_id, res_msg):
@@ -80,6 +81,7 @@ class TestMessageAscii:
             (b'\x01\x05\x04\x00\x17', 1, b':010105040017DF\r\n'),
             (b'\x03\x07\x06\x00\x73', 2, b':0203070600737D\r\n'),
             (b'\x08\x00\x01', 3, b':03080001F7\r\n'),
+            (b'\x84\x01', 2, b':02840179\r\n'),
         ],
     )
     def test_roundtrip(self, frame, data, dev_id, res_msg):

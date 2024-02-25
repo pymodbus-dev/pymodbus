@@ -150,7 +150,7 @@ class ReadDeviceInformationResponse(ModbusResponse):
         self.conformity = 0x83  # I support everything right now
         self.next_object_id = 0x00
         self.more_follows = MoreData.NOTHING
-        self.space_left = None
+        self.space_left = 253 - 6
 
     def _encode_object(self, object_id, data):
         """Encode object."""
@@ -173,7 +173,6 @@ class ReadDeviceInformationResponse(ModbusResponse):
         packet = struct.pack(
             ">BBB", self.sub_function_code, self.read_code, self.conformity
         )
-        self.space_left = 253 - 6
         objects = b""
         try:
             for object_id, data in iter(self.information.items()):

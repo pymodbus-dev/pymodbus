@@ -71,7 +71,6 @@ def run_sync_server(args):
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
-            # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif args.comm == "udp":
         address = ("127.0.0.1", args.port) if args.port else None
@@ -84,7 +83,6 @@ def run_sync_server(args):
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
-            # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif args.comm == "serial":
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600
@@ -105,7 +103,7 @@ def run_sync_server(args):
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
-    elif args.comm == "tls":  # pragma no cover
+    elif args.comm == "tls":
         address = ("", args.port) if args.port else None
         server = StartTlsServer(
             context=args.context,  # Data storage
@@ -126,7 +124,6 @@ def run_sync_server(args):
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
-            # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     return server
 
@@ -139,4 +136,4 @@ def sync_helper():
 
 
 if __name__ == "__main__":
-    sync_helper()  # pragma: no cover
+    sync_helper()

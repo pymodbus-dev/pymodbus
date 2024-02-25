@@ -9,6 +9,7 @@ import pytest
 from pymodbus.datastore import ModbusSimulatorContext
 from pymodbus.datastore.simulator import Cell, CellType, Label
 from pymodbus.server import ModbusSimulatorServer
+from pymodbus.transport import NULLMODEM_HOST
 
 
 FX_READ_BIT = 1
@@ -101,7 +102,7 @@ class TestSimulator:
     default_server_config = {
         "server": {
             "comm": "tcp",
-            "host": "0.0.0.0",
+            "host": NULLMODEM_HOST,
             "port": 5020,
             "ignore_missing_slaves": False,
             "framer": "socket",
@@ -291,6 +292,14 @@ class TestSimulator:
         exc_setup[Label.repeat][0][Label.repeat_to] = [48, 500]
         with pytest.raises(RuntimeError):
             ModbusSimulatorContext(exc_setup, None)
+        exc_setup = copy.deepcopy(self.default_config)
+        exc_setup[Label.type_uint16].append(0)
+        ModbusSimulatorContext(exc_setup, None)
+        exc_setup = copy.deepcopy(self.default_config)
+        exc_setup[Label.type_uint16].append(250)
+        with pytest.raises(RuntimeError):
+            ModbusSimulatorContext(exc_setup, None)
+
 
     def test_simulator_validate_illegal(self):
         """Test validation without exceptions."""
@@ -577,5 +586,5 @@ class TestSimulator:
         """Test init simulator server."""
         task = ModbusSimulatorServer()
         await task.run_forever(only_start=True)
-        await asyncio.sleep(5)
+        await asyncio.sleep(0.5)
         await task.stop()

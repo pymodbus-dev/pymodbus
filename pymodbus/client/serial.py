@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import time
 from functools import partial
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
@@ -20,7 +20,9 @@ try:
     PYSERIAL_MISSING = False
 except ImportError:
     PYSERIAL_MISSING = True
-
+    if TYPE_CHECKING:  # always False at runtime
+        # type checkers do not understand the Raise RuntimeError in __init__()
+        import serial
 
 class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
     """**AsyncModbusSerialClient**.
@@ -97,9 +99,9 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         """Connect Async client."""
         self.reset_delay()
         Log.debug("Connecting to {}.", self.comm_params.host)
-        return await self.transport_connect()
+        return await self.base_connect()
 
-    def close(self, reconnect: bool = False) -> None:
+    def close(self, reconnect: bool = False) -> None:  # type: ignore[override]
         """Close connection."""
         super().close(reconnect=reconnect)
 
@@ -125,7 +127,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
-    :param close_comm_on_error: Close connection on error.
     :param strict: Strict timing, 1.5 character between requests.
     :param broadcast_enable: True to treat id 0 as broadcast address.
     :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
@@ -151,7 +152,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     """
 
     state = ModbusTransactionState.IDLE
-    inter_char_timeout: float = 0
+    inter_byte_timeout: float = 0
     silent_interval: float = 0
 
     def __init__(
@@ -162,6 +163,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         bytesize: int = 8,
         parity: str = "N",
         stopbits: int = 1,
+        strict: bool = True,
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus Serial Client."""
@@ -175,7 +177,8 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             stopbits=stopbits,
             **kwargs,
         )
-        self.socket = None
+        self.socket: serial.Serial | None = None
+        self.strict = bool(strict)
 
         self.last_frame_end = None
 
@@ -189,7 +192,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         if baudrate > 19200:
             self.silent_interval = 1.75 / 1000  # ms
         else:
-            self.inter_char_timeout = 1.5 * self._t0
+            self.inter_byte_timeout = 1.5 * self._t0
             self.silent_interval = 3.5 * self._t0
         self.silent_interval = round(self.silent_interval, 6)
 
@@ -198,7 +201,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Connect internal."""
         return self.connect()
 
-    def connect(self):  # pylint: disable=invalid-overridden-method
+    def connect(self):
         """Connect to the modbus serial server."""
         if self.socket:
             return True
@@ -210,30 +213,25 @@ class ModbusSerialClient(ModbusBaseSyncClient):
                 stopbits=self.comm_params.stopbits,
                 baudrate=self.comm_params.baudrate,
                 parity=self.comm_params.parity,
+                exclusive=True,
             )
-            if self.params.strict:
-                self.socket.interCharTimeout = self.inter_char_timeout
+            if self.strict:
+                self.socket.inter_byte_timeout = self.inter_byte_timeout
             self.last_frame_end = None
         except serial.SerialException as msg:
             Log.error("{}", msg)
             self.close()
         return self.socket is not None
 
-    def close(self):  # pylint: disable=arguments-differ
+    def close(self):
         """Close the underlying socket connection."""
         if self.socket:
             self.socket.close()
         self.socket = None
 
     def _in_waiting(self):
-        """Return _in_waiting."""
-        in_waiting = "in_waiting" if hasattr(self.socket, "in_waiting") else "inWaiting"
-
-        if in_waiting == "in_waiting":
-            waitingbytes = getattr(self.socket, in_waiting)
-        else:
-            waitingbytes = getattr(self.socket, in_waiting)()
-        return waitingbytes
+        """Return waiting bytes."""
+        return getattr(self.socket, "in_waiting") if hasattr(self.socket, "in_waiting") else getattr(self.socket, "inWaiting")()
 
     def send(self, request):
         """Send data on the underlying socket.
@@ -246,20 +244,9 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         if not self.socket:
             raise ConnectionException(str(self))
         if request:
-            try:
-                if waitingbytes := self._in_waiting():
-                    result = self.socket.read(waitingbytes)
-                    if self.state == ModbusTransactionState.RETRYING:
-                        Log.debug(
-                            "Sending available data in recv buffer {}", result, ":hex"
-                        )
-                        return result
-                    Log.warning("Cleanup recv buffer before send: {}", result, ":hex")
-            except NotImplementedError:
-                pass
-            if self.state != ModbusTransactionState.SENDING:
-                Log.debug('New Transaction state "SENDING"')
-                self.state = ModbusTransactionState.SENDING
+            if waitingbytes := self._in_waiting():
+                result = self.socket.read(waitingbytes)
+                Log.warning("Cleanup recv buffer before send: {}", result, ":hex")
             size = self.socket.write(request)
             return size
         return 0
@@ -268,16 +255,10 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Wait for data."""
         size = 0
         more_data = False
-        if (
-            self.comm_params.timeout_connect is not None
-            and self.comm_params.timeout_connect
-        ):
-            condition = partial(
-                lambda start, timeout: (time.time() - start) <= timeout,
-                timeout=self.comm_params.timeout_connect,
-            )
-        else:
-            condition = partial(lambda dummy1, dummy2: True, dummy2=None)
+        condition = partial(
+            lambda start, timeout: (time.time() - start) <= timeout,
+            timeout=self.comm_params.timeout_connect,
+        )
         start = time.time()
         while condition(start):
             available = self._in_waiting()
@@ -293,9 +274,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Read data from the underlying descriptor."""
         super().recv(size)
         if not self.socket:
-            raise ConnectionException(
-                self.__str__()  # pylint: disable=unnecessary-dunder-call
-            )
+            raise ConnectionException(str(self))
         if size is None:
             size = self._wait_for_data()
         if size > self._in_waiting():
@@ -306,14 +285,8 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     def is_socket_open(self):
         """Check if socket is open."""
         if self.socket:
-            if hasattr(self.socket, "is_open"):
-                return self.socket.is_open
-            return self.socket.isOpen()
+            return self.socket.is_open
         return False
-
-    def __str__(self):
-        """Build a string representation of the connection."""
-        return f"ModbusSerialClient({self.framer} baud[{self.comm_params.baudrate}])"
 
     def __repr__(self):
         """Return string representation."""

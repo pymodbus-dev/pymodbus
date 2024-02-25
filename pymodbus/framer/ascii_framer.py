@@ -6,7 +6,7 @@ from binascii import a2b_hex, b2a_hex
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer.base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
 from pymodbus.logging import Log
-from pymodbus.utilities import checkLRC, computeLRC
+from pymodbus.message.ascii import MessageAscii
 
 
 ASCII_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
@@ -45,6 +45,9 @@ class ModbusAsciiFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     # Private Helper Functions
     # ----------------------------------------------------------------------- #
+    def _process(self, callback, error=False):
+        """Process incoming packets irrespective error condition."""
+
     def decode_data(self, data):
         """Decode data."""
         if len(data) > 1:
@@ -70,7 +73,7 @@ class ModbusAsciiFramer(ModbusFramer):
             self._header["uid"] = int(self._buffer[1:3], 16)
             self._header["lrc"] = int(self._buffer[end - 2 : end], 16)
             data = a2b_hex(self._buffer[start + 1 : end - 2])
-            return checkLRC(data, self._header["lrc"])
+            return MessageAscii.check_LRC(data, self._header["lrc"])
         return False
 
     def advanceFrame(self):
@@ -138,7 +141,7 @@ class ModbusAsciiFramer(ModbusFramer):
         buffer = struct.pack(
             ASCII_FRAME_HEADER, message.slave_id, message.function_code
         )
-        checksum = computeLRC(encoded + buffer)
+        checksum = MessageAscii.compute_LRC(buffer + encoded)
 
         packet = bytearray()
         packet.extend(self._start)

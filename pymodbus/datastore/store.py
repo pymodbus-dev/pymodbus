@@ -45,13 +45,20 @@ I have both methods implemented, and leave it up to the user to change
 based on their preference.
 """
 # pylint: disable=missing-type-doc
-from pymodbus.exceptions import NotImplementedException, ParameterException
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
+from typing import Any, Dict, Generic, Iterable, TypeVar
+
+from pymodbus.exceptions import ParameterException
 
 
 # ---------------------------------------------------------------------------#
 #  Datablock Storage
 # ---------------------------------------------------------------------------#
-class BaseModbusDataBlock:
+
+V = TypeVar('V', list, Dict[int, Any])
+class BaseModbusDataBlock(ABC, Generic[V]):
     """Base class for a modbus datastore.
 
     Derived classes must create the following fields:
@@ -63,52 +70,39 @@ class BaseModbusDataBlock:
             validate(self, address, count=1)
             getValues(self, address, count=1)
             setValues(self, address, values)
+            reset(self)
     """
 
-    def default(self, count, value=False):
-        """Use to initialize a store to one value.
+    values: V
+    address: int
+    default_value: Any
 
-        :param count: The number of fields to set
-        :param value: The default value to set to the fields
-        """
-        self.default_value = value  # pylint: disable=attribute-defined-outside-init
-        self.values = [  # pylint: disable=attribute-defined-outside-init
-            self.default_value
-        ] * count
-        self.address = 0x00  # pylint: disable=attribute-defined-outside-init
-
-    def reset(self):
-        """Reset the datastore to the initialized default value."""
-        self.values = [  # pylint: disable=attribute-defined-outside-init
-            self.default_value
-        ] * len(self.values)
-
-    def validate(self, address, count=1):
+    @abstractmethod
+    def validate(self, address:int, count=1) -> bool:
         """Check to see if the request is in range.
 
         :param address: The starting address
         :param count: The number of values to test for
-        :raises NotImplementedException:
+        :raises TypeError:
         """
-        raise NotImplementedException("Datastore Address Check")
 
-    def getValues(self, address, count=1):
+    @abstractmethod
+    def getValues(self, address:int, count=1) -> Iterable:
         """Return the requested values from the datastore.
 
         :param address: The starting address
         :param count: The number of values to retrieve
-        :raises NotImplementedException:
+        :raises TypeError:
         """
-        raise NotImplementedException("Datastore Value Retrieve")
 
-    def setValues(self, address, values):
+    @abstractmethod
+    def setValues(self, address:int, values) -> None:
         """Return the requested values from the datastore.
 
         :param address: The starting address
         :param values: The values to store
-        :raises NotImplementedException:
+        :raises TypeError:
         """
-        raise NotImplementedException("Datastore Value Retrieve")
 
     def __str__(self):
         """Build a representation of the datastore.
@@ -127,7 +121,7 @@ class BaseModbusDataBlock:
         return enumerate(self.values, self.address)
 
 
-class ModbusSequentialDataBlock(BaseModbusDataBlock):
+class ModbusSequentialDataBlock(BaseModbusDataBlock[list]):
     """Creates a sequential modbus datastore."""
 
     def __init__(self, address, values):
@@ -152,6 +146,20 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
         :returns: An initialized datastore
         """
         return cls(0x00, [0x00] * 65536)
+
+    def default(self, count, value=False):
+        """Use to initialize a store to one value.
+
+        :param count: The number of fields to set
+        :param value: The default value to set to the fields
+        """
+        self.default_value = value
+        self.values = [self.default_value] * count
+        self.address = 0x00
+
+    def reset(self):
+        """Reset the datastore to the initialized default value."""
+        self.values = [self.default_value] * len(self.values)
 
     def validate(self, address, count=1):
         """Check to see if the request is in range.
@@ -186,46 +194,46 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
         self.values[start : start + len(values)] = values
 
 
-class ModbusSparseDataBlock(BaseModbusDataBlock):
-    """Create a sparse modbus datastore.
+class ModbusSparseDataBlock(BaseModbusDataBlock[Dict[int, Any]]):
+    """A sparse modbus datastore.
 
     E.g Usage.
     sparse = ModbusSparseDataBlock({10: [3, 5, 6, 8], 30: 1, 40: [0]*20})
 
-    This would create a datablock with 3 blocks starting at
-    offset 10 with length 4 , 30 with length 1 and 40 with length 20
+    This would create a datablock with 3 blocks
+    One starts at offset 10 with length 4, one at 30 with length 1, and one at 40 with length 20
 
     sparse = ModbusSparseDataBlock([10]*100)
     Creates a sparse datablock of length 100 starting at offset 0 and default value of 10
 
-    sparse = ModbusSparseDataBlock() --> Create Empty datablock
+    sparse = ModbusSparseDataBlock() --> Create empty datablock
     sparse.setValues(0, [10]*10)  --> Add block 1 at offset 0 with length 10 (default value 10)
     sparse.setValues(30, [20]*5)  --> Add block 2 at offset 30 with length 5 (default value 20)
 
-    if mutable is set to True during initialization, the datablock can not be altered with
-    setValues (new datablocks can not be added)
+    Unless 'mutable' is set to True during initialization, the datablock cannot be altered with
+    setValues (new datablocks cannot be added)
     """
 
     def __init__(self, values=None, mutable=True):
         """Initialize a sparse datastore.
 
-        Will only answer to addresses
-        registered, either initially here, or later via setValues()
+        Will only answer to addresses registered,
+        either initially here, or later via setValues()
 
         :param values: Either a list or a dictionary of values
-        :param mutable: The data-block can be altered later with setValues(i.e add more blocks)
+        :param mutable: Whether the data-block can be altered later with setValues (i.e add more blocks)
 
-        If values are list , This is as good as sequential datablock.
-        Values as dictionary should be in {offset: <values>} format, if values
-        is a list, a sparse datablock is created starting at offset with the length of values.
-        If values is a integer, then the value is set for the corresponding offset.
+        If values is a list, a sequential datablock will be created.
+
+        If values is a dictionary, it should be in {offset: <int | list>} format
+        For each list, a sparse datablock is created, starting at 'offset' with the length of the list
+        For each integer, the value is set for the corresponding offset.
 
         """
         self.values = {}
         self._process_values(values)
         self.mutable = mutable
         self.default_value = self.values.copy()
-        self.address = next(iter(self.values.keys()), None)
 
     @classmethod
     def create(cls, values=None):
@@ -307,8 +315,6 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
                 if address + idx not in self.values and not self.mutable:
                     raise ParameterException("Offset {address+idx} not in range")
                 self.values[address + idx] = val
-        if not self.address:
-            self.address = next(iter(self.values.keys()), None)
         if use_as_default:
             for idx, val in iter(self.values.items()):
                 self.default_value[idx] = val

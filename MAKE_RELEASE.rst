@@ -8,19 +8,23 @@ Making a release.
 ------------------------------------------------------------
 Prepare/make release on dev.
 ------------------------------------------------------------
-* Make pull request "prepare v3.5.x", with the following:
+* Make pull request "prepare v3.6.x", with the following:
    * Update pymodbus/__init__.py with version number (__version__ X.Y.Zpre)
    * Update README.rst "Supported versions"
    * Control / Update API_changes.rst
    * Update CHANGELOG.rst
       * Add commits from last release, but selectively !
-        git log --oneline v3.5.3..HEAD > commit.log
-        git log --pretty="%an" v3.0.0..HEAD | sort -uf > authors.log
+        git log --oneline v3.6.1..HEAD > commit.log
+        git log --pretty="%an" v3.6.1..HEAD | sort -uf > authors.log
         update AUTHORS
         cd doc; ./build_html
+   * rm -rf build/* dist/*
+   * python3 -m build
+   * twine check dist/*
    * Commit, push and merge.
+   * Wait for CI to complete
+   * git pull
 * Checkout master locally
-   * git pull dev
    * git merge dev
    * git push
    * git branch -D master
@@ -33,8 +37,8 @@ Prepare/make release on dev.
 * on local repo
    * git pull, check release tag is pulled
    * git checkout v3.0.0dev0
+   * rm -rf build/* dist/*
    * python3 -m build
-   * twine check dist/*
    * twine upload dist/*  (upload to pypi)
    * Double check Read me docs are updated
       * trigger build https://readthedocs.org/projects/pymodbus/builds/
@@ -47,3 +51,11 @@ Prepare release on dev for new commits.
 ------------------------------------------------------------
 * Make pull request "prepare dev", with the following:
    * Update pymodbus/__init__.py with version number (__version__ X.Y.Zpre)
+
+
+------------------------------------------------------------
+Architecture documentation.
+------------------------------------------------------------
+* install graphviz
+* pyreverse -k -o jpg pymodbus 
+

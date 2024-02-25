@@ -40,8 +40,6 @@ Homepage = "https://github.com/pymodbus-dev/pymodbus/"
 Discord = "https://discord.gg/vcP8qAz2"
 
 [project.scripts]
-"pymodbus.console" = "pymodbus.repl.client.main:main"
-"pymodbus.server" = "pymodbus.repl.server.main:app"
 "pymodbus.simulator" = "pymodbus.server.simulator.main:main"
 
 [project.optional-dependencies]
@@ -49,13 +47,9 @@ serial = [
     "pyserial>=3.5"
 ]
 repl = [
-    "aiohttp>=3.8.6;python_version<'3.12'",
-    "aiohttp>=3.9.0b0;python_version=='3.12'",
-    "typer[all]>=0.7.0",
-    "prompt-toolkit>=3.0.36",
-    "pygments>=2.15.0",
-    "click>=8.0.0"
+   "pymodbus-repl@git+https://github.com/pymodbus-dev/repl"
 ]
+
 simulator = [
     "aiohttp>=3.8.6;python_version<'3.12'",
     "aiohttp>=3.9.0b0;python_version=='3.12'"
@@ -68,15 +62,16 @@ documentation = [
 development = [
     "build>=1.0.3",
     "codespell>=2.2.2",
-    "coverage>=7.1.0",
+    "coverage>=7.4.0",
     "mypy>=1.6.0",
-    "pylint>=2.17.2",
+    "pylint>=3.0.0",
     "pytest>=7.3.1",
     "pytest-asyncio>=0.20.3",
     "pytest-cov>=4.1.0",
+    "pytest-profiling>=1.7.0",
     "pytest-timeout>=2.2.0",
     "pytest-xdist>=3.3.1",
-    "ruff>=0.1.3",
+    "ruff>=0.2.0",
     "twine>=4.0.2",
     "types-Pygments",
     "types-pyserial"
@@ -220,17 +215,31 @@ all_files = "1"
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
-addopts = "-p no:warnings --dist loadscope --numprocesses auto"
+addopts = "--cov-report html --durations=10 --dist loadscope --numprocesses auto"
 asyncio_mode = "auto"
-timeout = 40
+timeout = 120
 
 [tool.coverage.run]
-include = [
+source = [
     "examples/",
     "pymodbus/",
     "test/",
 ]
 omit = ["examples/contrib/"]
+branch = true
+
+[tool.coverage.report]
+exclude_also = [
+    "except ImportError:",
+    "_check_system_health",
+    "if __name__ == .__main__.:",
+    ]
+skip_covered = true
+fail_under = 90.0
+
+[tool.coverage.html]
+directory = "build/cov"
+
 
 [tool.codespell]
 skip = "./build,./doc/source/_static,venv,.venv,.git,htmlcov,CHANGELOG.rst,.mypy_cache"
@@ -287,10 +296,10 @@ select = [
 fixable = ["ALL"]
 unfixable = []
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "pep257"
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 lines-after-imports = 2
 known-local-folder = []
 

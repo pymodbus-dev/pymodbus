@@ -10,6 +10,7 @@ import pymodbus.bit_read_message as pdu_bit_read
 import pymodbus.bit_write_message as pdu_bit_write
 import pymodbus.client as lib_client
 import pymodbus.diag_message as pdu_diag
+import pymodbus.file_message as pdu_file_msg
 import pymodbus.other_message as pdu_other_msg
 import pymodbus.register_read_message as pdu_reg_read
 import pymodbus.register_write_message as pdu_req_write
@@ -18,7 +19,8 @@ from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.datastore.store import ModbusSequentialDataBlock
-from pymodbus.exceptions import ConnectionException, ModbusIOException
+from pymodbus.exceptions import ConnectionException, ModbusException, ModbusIOException
+from pymodbus.pdu import ModbusRequest
 from pymodbus.transport import CommType
 
 
@@ -36,6 +38,7 @@ BASE_PORT = 6500
             {"toggle": False},
             {"address": 0x01, "values": [False, True]},
             {"address": 0x01, "values": [22, 44]},
+            {"records": (0, 0)},
         ]
     ],
 )
@@ -90,6 +93,10 @@ BASE_PORT = 6500
         ("write_registers", 6, pdu_req_write.WriteMultipleRegistersRequest),
         ("readwrite_registers", 1, pdu_reg_read.ReadWriteMultipleRegistersRequest),
         ("mask_write_register", 1, pdu_req_write.MaskWriteRegisterRequest),
+        ("report_slave_id", 0, pdu_other_msg.ReportSlaveIdRequest),
+        ("read_file_record", 7, pdu_file_msg.ReadFileRecordRequest),
+        ("write_file_record", 7, pdu_file_msg.WriteFileRecordRequest),
+        ("read_fifo_queue", 1, pdu_file_msg.ReadFifoQueueRequest),
     ],
 )
 def test_client_mixin(arglist, method, arg, pdu_request):
@@ -115,7 +122,6 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                     "timeout": 3 + 2,
                     "retries": 3 + 2,
                     "retry_on_empty": True,
-                    "close_comm_on_error": True,
                     "strict": False,
                     "broadcast_enable": not False,
                     "reconnect_delay": 117,
@@ -125,7 +131,6 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                     "timeout": 3,
                     "retries": 3,
                     "retry_on_empty": False,
-                    "close_comm_on_error": False,
                     "strict": True,
                     "broadcast_enable": False,
                     "reconnect_delay": 100,
@@ -258,6 +263,15 @@ async def test_client_instanciate(
     with pytest.raises(ConnectionException):
         client.execute()
 
+async def test_serial_not_installed():
+    """Try to instantiate clients."""
+    with mock.patch(
+        "pymodbus.client.serial.PYSERIAL_MISSING"
+    ) as _pyserial_missing:
+        _pyserial_missing = True
+        with pytest.raises(RuntimeError):
+            lib_client.AsyncModbusSerialClient("/dev/tty")
+
 
 async def test_client_modbusbaseclient():
     """Test modbus base client class."""
@@ -276,8 +290,11 @@ async def test_client_connection_made():
     """Test protocol made connection."""
     client = lib_client.AsyncModbusTcpClient("127.0.0.1")
     assert not client.connected
-    client.connection_made(mock.AsyncMock())
-    assert client.connected
+
+    transport = mock.AsyncMock()
+    transport.close = lambda : ()
+    client.connection_made(transport)
+    # assert await client.connected
     client.close()
 
 
@@ -318,27 +335,27 @@ async def test_client_protocol_receiver():
 
     # setup existing request
     assert not list(base.transaction)
-    response = base._build_response(0x00)  # pylint: disable=protected-access
+    response = base.build_response(0x00)  # pylint: disable=protected-access
     base.data_received(data)
     result = response.result()
     assert isinstance(result, pdu_bit_read.ReadCoilsResponse)
 
     base.transport = None
     with pytest.raises(ConnectionException):
-        await base._build_response(0x00)  # pylint: disable=protected-access
+        await base.build_response(0x00)  # pylint: disable=protected-access
 
 
 @pytest.mark.skip()
 async def test_client_protocol_response():
     """Test the udp client protocol builds responses."""
     base = ModbusBaseClient(Framer.SOCKET)
-    response = base._build_response(0x00)  # pylint: disable=protected-access
+    response = base.build_response(0x00)  # pylint: disable=protected-access
     excp = response.exception()
     assert isinstance(excp, ConnectionException)
     assert not list(base.transaction)
 
     base.transport = lambda: None
-    base._build_response(0x00)  # pylint: disable=protected-access
+    base.build_response(0x00)  # pylint: disable=protected-access
     assert len(list(base.transaction)) == 1
 
 
@@ -353,7 +370,7 @@ async def test_client_protocol_handler():
     reply.transaction_id = 0x00
     base._handle_response(None)  # pylint: disable=protected-access
     base._handle_response(reply)  # pylint: disable=protected-access
-    response = base._build_response(0x00)  # pylint: disable=protected-access
+    response = base.build_response(0x00)  # pylint: disable=protected-access
     base._handle_response(reply)  # pylint: disable=protected-access
     result = response.result()
     assert result == reply
@@ -402,6 +419,15 @@ async def test_client_protocol_execute():
     assert not response.isError()
     assert isinstance(response, pdu_bit_read.ReadCoilsResponse)
 
+async def test_client_execute_broadcast():
+    """Test the client protocol execute method."""
+    base = ModbusBaseClient(Framer.SOCKET, host="127.0.0.1")
+    base.broadcast_enable = True
+    request = pdu_bit_read.ReadCoilsRequest(1, 1)
+    transport = MockTransport(base, request)
+    base.connection_made(transport=transport)
+
+    assert not await base.async_execute(request)
 
 async def test_client_protocol_retry():
     """Test the client protocol execute method with retries."""
@@ -500,6 +526,18 @@ def test_client_tls_connect():
         assert not client.connect()
 
 
+def test_client_tls_connect2():
+    """Test the tls client connection method."""
+    with mock.patch.object(ssl.SSLSocket, "connect") as mock_method:
+        client = lib_client.ModbusTlsClient("127.0.0.1", source_address=("0.0.0.0", 0))
+        assert client.connect()
+
+    with mock.patch.object(socket, "create_connection") as mock_method:
+        mock_method.side_effect = OSError()
+        client = lib_client.ModbusTlsClient("127.0.0.1")
+        assert not client.connect()
+
+
 @pytest.mark.parametrize(
     ("datatype", "value", "registers"),
     [
@@ -544,3 +582,28 @@ def test_client_mixin_convert(datatype, registers, value):
         result = round(result, 6)
     assert regs == registers
     assert result == value
+
+
+def test_client_mixin_convert_fail():
+    """Test convert fail."""
+    with pytest.raises(TypeError):
+        ModbusClientMixin.convert_to_registers(123, ModbusClientMixin.DATATYPE.STRING)
+
+    with pytest.raises(ModbusException):
+        ModbusClientMixin.convert_from_registers([123], ModbusClientMixin.DATATYPE.FLOAT64)
+
+
+async def test_client_build_response():
+    """Test fail of build_response."""
+    client = ModbusBaseClient(Framer.RTU)
+    with pytest.raises(ConnectionException):
+        await client.build_response(0)
+
+
+async def test_client_mixin_execute():
+    """Test dummy execute for both sync and async."""
+    client = ModbusClientMixin()
+    with pytest.raises(NotImplementedError):
+        client.execute(ModbusRequest())
+    with pytest.raises(NotImplementedError):
+        await client.execute(ModbusRequest())

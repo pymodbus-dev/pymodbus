@@ -85,6 +85,7 @@ def setup_async_client(description=None, cmdline=None):
             #    parity="N",
             #    stopbits=1,
             #    handle_local_echo=False,
+            #    strict=True,
         )
     elif args.comm == "tls":
         client = modbusClient.AsyncModbusTlsClient(
@@ -95,8 +96,6 @@ def setup_async_client(description=None, cmdline=None):
             timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,
-            #    close_comm_on_error=False,
-            #    strict=True,
             # TLS setup parameters
             #    sslctx=sslctx,
             certfile=helper.get_certificate("crt"),
@@ -137,4 +136,4 @@ async def main(cmdline=None):
 
 
 if __name__ == "__main__":
-    asyncio.run(main(), debug=True)  # pragma: no cover
+    asyncio.run(main(), debug=True)

@@ -12,7 +12,6 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import Framer
 from pymodbus.logging import Log
 from pymodbus.transport import CommType
-from pymodbus.utilities import ModbusTransactionState
 
 
 class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
@@ -54,6 +53,8 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
+    socket: socket.socket | None
+
     def __init__(
         self,
         host: str,
@@ -84,9 +85,9 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
             self.comm_params.host,
             self.comm_params.port,
         )
-        return await self.transport_connect()
+        return await self.base_connect()
 
-    def close(self, reconnect: bool = False) -> None:
+    def close(self, reconnect: bool = False) -> None:  # type: ignore[override]
         """Close connection."""
         super().close(reconnect=reconnect)
 
@@ -109,8 +110,6 @@ class ModbusTcpClient(ModbusBaseSyncClient):
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
-    :param close_comm_on_error: Close connection on error.
-    :param strict: Strict timing, 1.5 character between requests.
     :param broadcast_enable: True to treat id 0 as broadcast address.
     :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
@@ -133,6 +132,8 @@ class ModbusTcpClient(ModbusBaseSyncClient):
 
     Remark: There are no automatic reconnect as with AsyncModbusTcpClient
     """
+
+    socket: socket.socket | None
 
     def __init__(
         self,
@@ -159,7 +160,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         """Connect internal."""
         return self.socket is not None
 
-    def connect(self):  # pylint: disable=invalid-overridden-method
+    def connect(self):
         """Connect to the modbus tcp server."""
         if self.socket:
             return True
@@ -183,31 +184,17 @@ class ModbusTcpClient(ModbusBaseSyncClient):
             self.close()
         return self.socket is not None
 
-    def close(self):  # pylint: disable=arguments-differ
+    def close(self):
         """Close the underlying socket connection."""
         if self.socket:
             self.socket.close()
         self.socket = None
-
-    def _check_read_buffer(self):
-        """Check read buffer."""
-        time_ = time.time()
-        end = time_ + self.comm_params.timeout_connect
-        data = None
-        ready = select.select([self.socket], [], [], end - time_)
-        if ready[0]:
-            data = self.socket.recv(1024)
-        return data
 
     def send(self, request):
         """Send data on the underlying socket."""
         super().send(request)
         if not self.socket:
             raise ConnectionException(str(self))
-        if self.state == ModbusTransactionState.RETRYING:
-            if data := self._check_read_buffer():
-                return data
-
         if request:
             return self.socket.send(request)
         return 0
@@ -226,9 +213,9 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         # is received or timeout is expired.
         # If timeout expires returns the read data, also if its length is
         # less than the expected size.
-        self.socket.setblocking(0)
+        self.socket.setblocking(False)
 
-        timeout = self.comm_params.timeout_connect
+        timeout = self.comm_params.timeout_connect or 0
 
         # If size isn't specified read up to 4096 bytes at a time.
         if size is None:
@@ -236,7 +223,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         else:
             recv_size = size
 
-        data = []
+        data: list[bytes] = []
         data_length = 0
         time_ = time.time()
         end = time_ + timeout
@@ -287,7 +274,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         readsize = f"read of {size_txt} bytes"
         msg = (
             f"{self}: Connection unexpectedly closed "
-            f"{duration} seconds into {readsize}"
+            f"{duration:.3f} seconds into {readsize}"
         )
         if data:
             result = b"".join(data)
@@ -299,13 +286,6 @@ class ModbusTcpClient(ModbusBaseSyncClient):
     def is_socket_open(self):
         """Check if socket is open."""
         return self.socket is not None
-
-    def __str__(self):
-        """Build a string representation of the connection.
-
-        :returns: The string representation
-        """
-        return f"ModbusTcpClient({self.comm_params.host}:{self.comm_params.port})"
 
     def __repr__(self):
         """Return string representation."""

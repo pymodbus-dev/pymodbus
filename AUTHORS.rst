@@ -13,17 +13,23 @@ Thanks to
 - AKJ7
 - Alex
 - Alex Ruddick
+- Alexander Lanin
 - Alexandre CUER
 - Alois Hockenschlohe
+- Arjan
+- André Srinivasan
 - banana-sun
 - Blaise Thompson
 - cgernert
 - corollaries
+- Chandler Riehm
 - Chris Hung
 - Christian Krause
 - dhoomakethu
+- DominicDataP
 - Dries
 - duc996
+- Farzad Panahi
 - Fredo70
 - Gao Fang
 - Ghostkeeper
@@ -31,19 +37,27 @@ Thanks to
 - Hayden Roche
 - Iktek
 - Jakob Ruhe
+- Jakob Schlyter
 - James Braza
+- James Hilliard
 - jan iversen
+- Jerome Velociter
 - Joe Burmeister
+- julian
 - Kenny Johansson
 - Matthias Straka
 - Logan Gunthorpe
 - Marko Luther
+- Logan Gunthorpe
+- Marko Luther
 - Matthias Straka
+- Mickaël Schoentgen
 - Pavel Kostromitinov
 - peufeu2
 - Philip Couling
 - Sebastian Machuca
 - Sefa Keleş
+- Steffen Beyer
 - Thijs W
 - Totally a booplicate
 - WouterTuinstra

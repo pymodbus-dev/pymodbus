@@ -11,11 +11,11 @@ PyModbus - A Python Modbus Stack
 
 Pymodbus is a full Modbus protocol implementation offering client/server with synchronous/asynchronous API a well as simulators.
 
-Current release is `3.5.4 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.5.4>`_.
+Current release is `3.6.4 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.6.4>`_.
 
 Bleeding edge (not released) is `dev <https://github.com/pymodbus-dev/pymodbus/tree/dev>`_.
 
-All changes are described in `release notes <https://pymodbus.readthedocs.io/en/latest/source/channgelog.html>`_
+All changes are described in `release notes <https://pymodbus.readthedocs.io/en/latest/source/changelog.html>`_
 and all API changes are `documented <https://pymodbus.readthedocs.io/en/latest/source/api_changes.html>`_
 
 A big thanks to all the `volunteers <https://pymodbus.readthedocs.io/en/latest/source/authors.html>`_ that helps make pymodbus a great project.
@@ -34,7 +34,7 @@ Pymodbus consist of 5 parts:
 
 Common features
 ^^^^^^^^^^^^^^^
-* Full :download:`modbus standard protocol <_static/Modbus_Application_Protocol_V1_1b3.pdf>` implementation
+* Full modbus standard protocol implementation
 * Support for custom function codes
 * support serial (rs-485), tcp, tls and udp communication
 * support all standard frames: socket, rtu, rtu-over-tcp, tcp and ascii
@@ -44,6 +44,9 @@ Common features
 * thorough test suite, that test all corners of the library
 * automatically tested on Windows, Linux and MacOS combined with python 3.8 - 3.12
 * strongly typed API (py.typed present)
+
+The modbus protocol specification: Modbus_Application_Protocol_V1_1b3.pdf can be found on
+`modbus org <https://modbus.org>`_
 
 
 Client Features
@@ -77,7 +80,7 @@ REPL Features
 - simulation of broken requests/responses
 - simulation of error responses (hard to provoke in real devices)
 
-`REPL documentation <https://https://pymodbus.readthedocs.io/en/dev/source/REPL.html>`_
+`REPL documentation <https://github.com/pymodbus-dev/repl>`_
 
 
 Simulator Features
@@ -271,7 +274,7 @@ There are 2 bigger projects ongoing:
    * Add features to and simulator, and enhance the web design
 
 
-Development Instructions
+Development instructions
 ------------------------
 The current code base is compatible with python >= 3.8.
 
@@ -292,15 +295,18 @@ Make a pull request::
 
    on github open a pull request, check that CI turns green and then wait for review comments.
 
-
 Test your changes::
 
-   cd pytest
+   cd test
    pytest
 
+you can also do extended testing::
 
-Architecture
-^^^^^^^^^^^^
+   pytest --cov         <-- Coverage html report in build/html
+   pytest --profile     <-- Call profile report in prof
+
+Internals
+^^^^^^^^^
 
 There are no documentation of the architecture (help is welcome), but most classes and
 methods are documented:
@@ -321,6 +327,8 @@ to build do::
    ./build_html
 
 The documentation is available in <root>/build/html
+
+Remark: this generates a new zip/tgz file of examples which are uploaded.
 
 
 License Information

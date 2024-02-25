@@ -239,7 +239,7 @@ Example "setup" configuration:
 **"co size"**, **"di size"**, **"hr size"**, **"ir size"**:
 
     Define the size of each block.
-    If using shared block the register list size will be the size of the biggest block (25 reegisters)
+    If using shared block the register list size will be the size of the biggest block (25 registers)
     If not using shared block the register list size will be the sum of the 4 block sizes (70 registers).
 
 **"shared blocks"**

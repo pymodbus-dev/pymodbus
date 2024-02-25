@@ -70,15 +70,15 @@ def setup_server(description=None, context=None, cmdline=None):
         # This is because many devices exhibit this kind of behavior (but not all)
         if args.store == "sequential":
             # Continuing, use a sequential block without gaps.
-            datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
+            datablock = lambda : ModbusSequentialDataBlock(0x00, [17] * 100)  # pylint: disable=unnecessary-lambda-assignment
         elif args.store == "sparse":
             # Continuing, or use a sparse DataBlock which can have gaps
-            datablock = ModbusSparseDataBlock({0x00: 0, 0x05: 1})
+            datablock = lambda : ModbusSparseDataBlock({0x00: 0, 0x05: 1})  # pylint: disable=unnecessary-lambda-assignment
         elif args.store == "factory":
             # Alternately, use the factory methods to initialize the DataBlocks
             # or simply do not pass them to have them initialized to 0x00 on the
             # full address range::
-            datablock = ModbusSequentialDataBlock.create()
+            datablock = lambda : ModbusSequentialDataBlock.create()  # pylint: disable=unnecessary-lambda-assignment,unnecessary-lambda
 
         if args.slaves:
             # The server then makes use of a server context that allows the server
@@ -94,29 +94,29 @@ def setup_server(description=None, context=None, cmdline=None):
             # specification, so address(0-7) will map to (1-8)::
             context = {
                 0x01: ModbusSlaveContext(
-                    di=datablock,
-                    co=datablock,
-                    hr=datablock,
-                    ir=datablock,
+                    di=datablock(),
+                    co=datablock(),
+                    hr=datablock(),
+                    ir=datablock(),
                 ),
                 0x02: ModbusSlaveContext(
-                    di=datablock,
-                    co=datablock,
-                    hr=datablock,
-                    ir=datablock,
+                    di=datablock(),
+                    co=datablock(),
+                    hr=datablock(),
+                    ir=datablock(),
                 ),
                 0x03: ModbusSlaveContext(
-                    di=datablock,
-                    co=datablock,
-                    hr=datablock,
-                    ir=datablock,
+                    di=datablock(),
+                    co=datablock(),
+                    hr=datablock(),
+                    ir=datablock(),
                     zero_mode=True,
                 ),
             }
             single = False
         else:
             context = ModbusSlaveContext(
-                di=datablock, co=datablock, hr=datablock, ir=datablock
+                di=datablock(), co=datablock(), hr=datablock(), ir=datablock()
             )
             single = True
 
@@ -158,7 +158,6 @@ async def run_async_server(args):
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
-            # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif args.comm == "udp":
         address = (
@@ -174,7 +173,6 @@ async def run_async_server(args):
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
-            # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif args.comm == "serial":
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600
@@ -216,7 +214,6 @@ async def run_async_server(args):
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
-            # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     return server
 
@@ -229,4 +226,4 @@ async def async_helper():
 
 
 if __name__ == "__main__":
-    asyncio.run(async_helper(), debug=True)  # pragma: no cover
+    asyncio.run(async_helper(), debug=True)

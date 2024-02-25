@@ -10,3 +10,6 @@ Pymodbus internals
    library/framer.rst
    library/constants.rst
    library/pymodbus.rst
+
+   library/architecture/architecture.rst
+

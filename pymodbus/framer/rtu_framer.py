@@ -205,7 +205,7 @@ class ModbusRtuFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def frameProcessIncomingPacket(self, single, callback, slave, _tid=None, **kwargs):
+    def frameProcessIncomingPacket(self, _single, callback, slave, _tid=None, **kwargs):
         """Process new packet pattern."""
         broadcast = not slave[0]
         skip_cur_frame = False
@@ -218,12 +218,13 @@ class ModbusRtuFramer(ModbusFramer):
                 self.resetFrame()
                 skip_cur_frame = True
                 continue
-            if not self._validate_slave_id(slave, single):
-                header_txt = self._header["uid"]
-                Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
-                self.resetFrame()
-                skip_cur_frame = True
-                continue
+            # handled in getFrameStart
+            # if not self._validate_slave_id(slave, single):
+            #     header_txt = self._header["uid"]
+            #     Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
+            #     self.resetFrame()
+            #     skip_cur_frame = True
+            #     continue
             self._process(callback)
 
     def buildPacket(self, message):
@@ -238,7 +239,8 @@ class ModbusRtuFramer(ModbusFramer):
         )
         packet += struct.pack(">H", computeCRC(packet))
         # Ensure that transaction is actually the slave id for serial comms
-        message.transaction_id = message.slave_id
+        if message.slave_id:
+            message.transaction_id = message.slave_id
         return packet
 
     def sendPacket(self, message):
@@ -247,6 +249,7 @@ class ModbusRtuFramer(ModbusFramer):
         :param message: Message to be sent over the bus
         :return:
         """
+        super().resetFrame()
         start = time.time()
         timeout = start + self.client.comm_params.timeout_connect
         while self.client.state != ModbusTransactionState.IDLE:
@@ -303,7 +306,7 @@ class ModbusRtuFramer(ModbusFramer):
         if (result := self.decoder.decode(data)) is None:
             raise ModbusIOException("Unable to decode request")
         if error and result.function_code < 0x80:
-            raise InvalidMessageReceivedException(result)
+            raise InvalidMessageReceivedException(str(result))
         self.populateResult(result)
         self.advanceFrame()
         callback(result)  # defer or push to a thread?

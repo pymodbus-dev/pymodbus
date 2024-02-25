@@ -12,8 +12,6 @@ from pymodbus.exceptions import (
 from pymodbus.factory import ServerDecoder
 from pymodbus.pdu import ModbusRequest
 from pymodbus.transaction import (
-    DictTransactionManager,
-    FifoTransactionManager,
     ModbusAsciiFramer,
     ModbusBinaryFramer,
     ModbusRtuFramer,
@@ -37,7 +35,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     _ascii = None
     _binary = None
     _manager = None
-    _queue_manager = None
     _tm = None
 
     # ----------------------------------------------------------------------- #
@@ -52,25 +49,23 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._rtu = ModbusRtuFramer(decoder=self.decoder, client=None)
         self._ascii = ModbusAsciiFramer(decoder=self.decoder, client=None)
         self._binary = ModbusBinaryFramer(decoder=self.decoder, client=None)
-        self._manager = DictTransactionManager(self.client)
-        self._queue_manager = FifoTransactionManager(self.client)
-        self._tm = ModbusTransactionManager(self.client)
+        self._manager = ModbusTransactionManager(self.client)
 
     # ----------------------------------------------------------------------- #
-    # Base transaction manager
+    # Modbus transaction manager
     # ----------------------------------------------------------------------- #
 
     def test_calculate_expected_response_length(self):
         """Test calculate expected response length."""
-        self._tm.client = mock.MagicMock()
-        self._tm.client.framer = mock.MagicMock()
-        self._tm._set_adu_size()  # pylint: disable=protected-access
-        assert not self._tm._calculate_response_length(  # pylint: disable=protected-access
+        self._manager.client = mock.MagicMock()
+        self._manager.client.framer = mock.MagicMock()
+        self._manager._set_adu_size()  # pylint: disable=protected-access
+        assert not self._manager._calculate_response_length(  # pylint: disable=protected-access
             0
         )
-        self._tm.base_adu_size = 10
+        self._manager.base_adu_size = 10
         assert (
-            self._tm._calculate_response_length(5)  # pylint: disable=protected-access
+            self._manager._calculate_response_length(5)  # pylint: disable=protected-access
             == 15
         )
 
@@ -84,23 +79,23 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
             ("tls", 2),
             ("dummy", None),
         ):
-            self._tm.client = mock.MagicMock()
+            self._manager.client = mock.MagicMock()
             if framer == "ascii":
-                self._tm.client.framer = self._ascii
+                self._manager.client.framer = self._ascii
             elif framer == "binary":
-                self._tm.client.framer = self._binary
+                self._manager.client.framer = self._binary
             elif framer == "rtu":
-                self._tm.client.framer = self._rtu
+                self._manager.client.framer = self._rtu
             elif framer == "tcp":
-                self._tm.client.framer = self._tcp
+                self._manager.client.framer = self._tcp
             elif framer == "tls":
-                self._tm.client.framer = self._tls
+                self._manager.client.framer = self._tls
             else:
-                self._tm.client.framer = mock.MagicMock()
+                self._manager.client.framer = mock.MagicMock()
 
-            self._tm._set_adu_size()  # pylint: disable=protected-access
+            self._manager._set_adu_size()  # pylint: disable=protected-access
             assert (
-                self._tm._calculate_exception_length()  # pylint: disable=protected-access
+                self._manager._calculate_exception_length()  # pylint: disable=protected-access
                 == exception_length
             )
 
@@ -143,7 +138,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         trans._recv = mock.MagicMock(  # pylint: disable=protected-access
             return_value=b"abcdef"
         )
-        trans.transactions = []
+        trans.transactions = {}
         trans.getTransaction = mock.MagicMock()
         trans.getTransaction.return_value = None
         response = trans.execute(request)
@@ -201,19 +196,15 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         recv.assert_called_once_with(8, False)
         client.comm_params.handle_local_echo = False
 
-    # ----------------------------------------------------------------------- #
-    # Dictionary based transaction manager
-    # ----------------------------------------------------------------------- #
-
-    def test_dict_transaction_manager_tid(self):
-        """Test the dict transaction manager TID."""
+    def test_transaction_manager_tid(self):
+        """Test the transaction manager TID."""
         for tid in range(1, self._manager.getNextTID() + 10):
             assert tid + 1 == self._manager.getNextTID()
         self._manager.reset()
         assert self._manager.getNextTID() == 1
 
-    def test_get_dict_fifo_transaction_manager_transaction(self):
-        """Test the dict transaction manager."""
+    def test_get_transaction_manager_transaction(self):
+        """Test the getting a transaction from the transaction manager."""
 
         class Request:  # pylint: disable=too-few-public-methods
             """Request."""
@@ -228,8 +219,8 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         result = self._manager.getTransaction(handle.transaction_id)
         assert handle.message == result.message
 
-    def test_delete_dict_fifo_transaction_manager_transaction(self):
-        """Test the dict transaction manager."""
+    def test_delete_transaction_manager_transaction(self):
+        """Test deleting a transaction from the dict transaction manager."""
 
         class Request:  # pylint: disable=too-few-public-methods
             """Request."""
@@ -244,49 +235,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._manager.addTransaction(handle)
         self._manager.delTransaction(handle.transaction_id)
         assert not self._manager.getTransaction(handle.transaction_id)
-
-    # ----------------------------------------------------------------------- #
-    # Queue based transaction manager
-    # ----------------------------------------------------------------------- #
-    def test_fifo_transaction_manager_tid(self):
-        """Test the fifo transaction manager TID."""
-        for tid in range(1, self._queue_manager.getNextTID() + 10):
-            assert tid + 1 == self._queue_manager.getNextTID()
-        self._queue_manager.reset()
-        assert self._queue_manager.getNextTID() == 1
-
-    def test_get_fifo_transaction_manager_transaction(self):
-        """Test the fifo transaction manager."""
-
-        class Request:  # pylint: disable=too-few-public-methods
-            """Request."""
-
-        self._queue_manager.reset()
-        handle = Request()
-        handle.transaction_id = (  # pylint: disable=attribute-defined-outside-init
-            self._queue_manager.getNextTID()
-        )
-        handle.message = b"testing"  # pylint: disable=attribute-defined-outside-init
-        self._queue_manager.addTransaction(handle)
-        result = self._queue_manager.getTransaction(handle.transaction_id)
-        assert handle.message == result.message
-
-    def test_delete_fifo_transaction_manager_transaction(self):
-        """Test the fifo transaction manager."""
-
-        class Request:  # pylint: disable=too-few-public-methods
-            """Request."""
-
-        self._queue_manager.reset()
-        handle = Request()
-        handle.transaction_id = (  # pylint: disable=attribute-defined-outside-init
-            self._queue_manager.getNextTID()
-        )
-        handle.message = b"testing"  # pylint: disable=attribute-defined-outside-init
-
-        self._queue_manager.addTransaction(handle)
-        self._queue_manager.delTransaction(handle.transaction_id)
-        assert not self._queue_manager.getTransaction(handle.transaction_id)
 
     # ----------------------------------------------------------------------- #
     # TCP tests

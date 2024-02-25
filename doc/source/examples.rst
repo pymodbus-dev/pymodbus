@@ -168,11 +168,11 @@ Source: :github:`examples/simulator.py`
     :noindex:
 
 
-Simulator datastore example
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Source: :github:`examples/datastore_simulator.py`
+Simulator datastore (shared storage) example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Source: :github:`examples/datastore_simulator_share.py`
 
-.. automodule:: examples.datastore_simulator
+.. automodule:: examples.datastore_simulator_share
     :undoc-members:
     :noindex:
 

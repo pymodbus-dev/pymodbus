@@ -6,9 +6,20 @@ from collections import deque
 from threading import enumerate as thread_enumerate
 
 import pytest
+import pytest_asyncio
 
 from pymodbus.datastore import ModbusBaseSlaveContext
-from pymodbus.transport import NullModem
+from pymodbus.server import ServerAsyncStop
+from pymodbus.transport import NULLMODEM_HOST, CommParams, CommType
+from pymodbus.transport.transport import NullModem
+
+
+sys.path.extend(["examples", "../examples", "../../examples"])
+
+from examples.server_async import (  # pylint: disable=wrong-import-position
+    run_async_server,
+    setup_server,
+)
 
 
 def pytest_configure():
@@ -21,18 +32,22 @@ def pytest_configure():
 # Generic fixtures
 # -----------------------------------------------------------------------#
 BASE_PORTS = {
-    "TestBasicModbusProtocol": 7100,
-    "TestBasicSerial": 7200,
-    "TestCommModbusProtocol": 7300,
-    "TestCommNullModem": 7400,
-    "TestExamples": 7500,
-    "TestAsyncExamples": 7600,
-    "TestSyncExamples": 7700,
-    "TestModbusProtocol": 7800,
-    "TestNullModem": 7900,
-    "TestReconnectModbusProtocol": 8000,
-    "TestClientServerSyncExamples": 8100,
-    "TestClientServerAsyncExamples": 8200,
+    "TestTransportNullModem": 7100,
+    "TestTransportNullModemComm": 7150,
+    "TestTransportProtocol1": 7200,
+    "TestTransportProtocol2": 7300,
+    "TestTransportSerial": 7400,
+    "TestTransportReconnect": 7500,
+    "TestTransportComm": 7600,
+    "TestMessage": 7700,
+
+    "TestExamples": 7800,
+    "TestAsyncExamples": 7900,
+    "TestSyncExamples": 8000,
+    "TestModbusProtocol": 8100,
+    "TestClientServerSyncExamples": 8300,
+    "TestClientServerAsyncExamples": 8400,
+    "TestNetwork": 8500,
 }
 
 
@@ -42,20 +57,134 @@ def get_base_ports():
     return BASE_PORTS
 
 
+@pytest.fixture(name="use_comm_type")
+def prepare_dummy_use_comm_type():
+    """Return default comm_type."""
+    return CommType.TCP
+
+
+@pytest.fixture(name="use_host")
+def define_use_host():
+    """Set default host."""
+    return NULLMODEM_HOST
+
+
+@pytest.fixture(name="use_cls")
+def prepare_commparams_server(use_port, use_host, use_comm_type):
+    """Prepare CommParamsClass object."""
+    if use_host == NULLMODEM_HOST and use_comm_type == CommType.SERIAL:
+        use_host = f"{NULLMODEM_HOST}:{use_port}"
+    return CommParams(
+        comm_name="test comm",
+        comm_type=use_comm_type,
+        reconnect_delay=0,
+        reconnect_delay_max=0,
+        timeout_connect=0,
+        source_address=(use_host, use_port),
+        baudrate=9600,
+        bytesize=8,
+        parity="E",
+        stopbits=2,
+    )
+
+
+@pytest.fixture(name="use_clc")
+def prepare_commparams_client(use_port, use_host, use_comm_type):
+    """Prepare CommParamsClass object."""
+    if use_host == NULLMODEM_HOST and use_comm_type == CommType.SERIAL:
+        use_host = f"{NULLMODEM_HOST}:{use_port}"
+    timeout = 10 if not pytest.IS_WINDOWS else 2
+    return CommParams(
+        comm_name="test comm",
+        comm_type=use_comm_type,
+        reconnect_delay=0.1,
+        reconnect_delay_max=0.35,
+        timeout_connect=timeout,
+        host=use_host,
+        port=use_port,
+        baudrate=9600,
+        bytesize=8,
+        parity="E",
+        stopbits=2,
+    )
+
+
+@pytest.fixture(name="mock_clc")
+def define_commandline_client(
+    use_comm,
+    use_framer,
+    use_port,
+    use_host,
+):
+    """Define commandline."""
+    my_port = str(use_port)
+    cmdline = ["--comm", use_comm, "--framer", use_framer, "--timeout", "0.1"]
+    if use_comm == "serial":
+        if use_host == NULLMODEM_HOST:
+            use_host = f"{use_host}:{my_port}"
+        else:
+            use_host = f"socket://{use_host}:{my_port}"
+        cmdline.extend(["--baudrate", "9600", "--port", use_host])
+    else:
+        cmdline.extend(["--port", my_port, "--host", use_host])
+    return cmdline
+
+
+@pytest.fixture(name="mock_cls")
+def define_commandline_server(
+    use_comm,
+    use_framer,
+    use_port,
+    use_host,
+):
+    """Define commandline."""
+    my_port = str(use_port)
+    cmdline = [
+        "--comm",
+        use_comm,
+        "--framer",
+        use_framer,
+    ]
+    if use_comm == "serial":
+        if use_host == NULLMODEM_HOST:
+            use_host = f"{use_host}:{my_port}"
+        else:
+            use_host = f"socket://{use_host}:{my_port}"
+        cmdline.extend(["--baudrate", "9600", "--port", use_host])
+    else:
+        cmdline.extend(["--port", my_port, "--host", use_host])
+    return cmdline
+
+
+@pytest_asyncio.fixture(name="mock_server")
+async def _run_server(
+    mock_cls,
+):
+    """Run server."""
+    run_args = setup_server(cmdline=mock_cls)
+    task = asyncio.create_task(run_async_server(run_args))
+    task.set_name("mock_server")
+    await asyncio.sleep(0.1)
+    yield mock_cls
+    await ServerAsyncStop()
+    task.cancel()
+    await task
+
+
 @pytest.fixture(name="system_health_check", autouse=True)
 async def _check_system_health():
     """Check Thread, asyncio.task and NullModem for leftovers."""
     if task := asyncio.current_task():
         task.set_name("main loop")
-    start_threads = {thread.getName(): thread for thread in thread_enumerate()}
+    start_threads = {thread.name: thread for thread in thread_enumerate()}
     start_tasks = {task.get_name(): task for task in asyncio.all_tasks()}
     yield
     await asyncio.sleep(0.1)
-    all_clean = True
     for count in range(10):
+        all_clean = True
         error_text = f"ERROR tasks/threads hanging after {count} retries:\n"
         for thread in thread_enumerate():
-            name = thread.getName()
+            name = thread.name
             if not (
                 name in start_threads
                 or name.startswith("asyncio_")
@@ -72,7 +201,7 @@ async def _check_system_health():
                 all_clean = False
         if all_clean:
             break
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.3)
     assert all_clean, error_text
     assert not NullModem.is_dirty()
 
@@ -193,14 +322,3 @@ class mockSocket:  # pylint: disable=invalid-name
     def setblocking(self, _flag):
         """Set blocking."""
         return None
-
-
-_CURRENT_PORT = 5200
-
-
-@pytest.fixture(name="use_port")
-def get_port():
-    """Get next port."""
-    global _CURRENT_PORT  # pylint: disable=global-statement
-    _CURRENT_PORT += 1
-    return _CURRENT_PORT

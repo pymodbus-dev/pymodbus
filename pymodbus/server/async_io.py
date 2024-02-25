@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import os
-import time
 import traceback
 from contextlib import suppress
 
@@ -49,13 +48,18 @@ class ModbusServerRequestHandler(ModbusProtocol):
         self.running = False
         self.receive_queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
-        self.framer: ModbusFramer = None
+        self.framer: ModbusFramer
 
     def _log_exception(self):
         """Show log exception."""
         Log.debug(
             "Handler for stream [{}] has been canceled", self.comm_params.comm_name
         )
+
+    def callback_new_connection(self) -> ModbusProtocol:
+        """Call when listener receive new connection request."""
+        Log.debug("callback_new_connection called")
+        return ModbusServerRequestHandler(self)
 
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
@@ -69,7 +73,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
             # schedule the connection handler on the event loop
             self.handler_task = asyncio.create_task(self.handle())
             self.handler_task.set_name("server connection handler")
-        except Exception as exc:  # pragma: no cover pylint: disable=broad-except
+        except Exception as exc:  # pylint: disable=broad-except
             Log.error(
                 "Server callback_connected exception: {}; {}",
                 exc,
@@ -112,7 +116,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
         # if broadcast is enabled make sure to
         # process requests to address 0
-        if self.server.broadcast_enable:  # pragma: no cover
+        if self.server.broadcast_enable:
             if 0 not in slaves:
                 slaves.append(0)
 
@@ -161,7 +165,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
                         exc,
                         self.comm_params.comm_name,
                     )
-                    self.transport_close()
+                    self.close()
                     self.callback_disconnected(exc)
                 else:
                     Log.error("Unknown error occurred {}", exc)
@@ -210,19 +214,19 @@ class ModbusServerRequestHandler(ModbusProtocol):
             skip_encoding = False
             if self.server.response_manipulator:
                 response, skip_encoding = self.server.response_manipulator(response)
-            self.send(response, *addr, skip_encoding=skip_encoding)
+            self.server_send(response, *addr, skip_encoding=skip_encoding)
 
-    def send(self, message, addr, **kwargs):
+    def server_send(self, message, addr, **kwargs):
         """Send message."""
         if kwargs.get("skip_encoding", False):
-            self.transport_send(message, addr=addr)
+            self.send(message, addr=addr)
         elif message.should_respond:
             pdu = self.framer.buildPacket(message)
-            self.transport_send(pdu, addr=addr)
+            self.send(pdu, addr=addr)
         else:
             Log.debug("Skipping sending response!!")
 
-    async def _recv_(self):  # pragma: no cover
+    async def _recv_(self):
         """Receive data from the network."""
         try:
             result = await self.receive_queue.get()
@@ -284,14 +288,10 @@ class ModbusBaseServer(ModbusProtocol):
         return ModbusServerRequestHandler(self)
 
     async def shutdown(self):
-        """Shutdown server."""
-        await self.server_close()
-
-    async def server_close(self):
         """Close server."""
         if not self.serving.done():
             self.serving.set_result(True)
-        self.transport_close()
+        self.close()
 
     async def serve_forever(self):
         """Start endless loop."""
@@ -299,11 +299,22 @@ class ModbusBaseServer(ModbusProtocol):
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
             )
-        await self.transport_listen()
+        await self.listen()
         Log.info("Server listening.")
         await self.serving
         Log.info("Server graceful shutdown.")
 
+    def callback_connected(self) -> None:
+        """Call when connection is succcesfull."""
+
+    def callback_disconnected(self, exc: Exception | None) -> None:
+        """Call when connection is lost."""
+        Log.debug("callback_disconnected called: {}", exc)
+
+    def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
+        """Handle received data."""
+        Log.debug("callback_data called: {} addr={}", data, ":hex", addr)
+        return 0
 
 class ModbusTcpServer(ModbusBaseServer):
     """A modbus threaded tcp socket server.
@@ -497,7 +508,7 @@ class ModbusSerialServer(ModbusBaseServer):
 
     def __init__(
         self, context, framer=Framer.RTU, identity=None, **kwargs
-    ):  # pragma: no cover
+    ):
         """Initialize the socket server.
 
         If the identity structure is not passed in, the ModbusControlBlock
@@ -578,10 +589,6 @@ class _serverList:
         if not cls.active_server:
             raise RuntimeError("ServerAsyncStop called without server task active.")
         await cls.active_server.server.shutdown()
-        if os.name == "nt":
-            await asyncio.sleep(1)
-        else:
-            await asyncio.sleep(0.1)
         cls.active_server = None
 
     @classmethod
@@ -593,11 +600,8 @@ class _serverList:
         if not cls.active_server.loop.is_running():
             Log.info("ServerStop called with loop stopped.")
             return
-        asyncio.run_coroutine_threadsafe(cls.async_stop(), cls.active_server.loop)
-        if os.name == "nt":
-            time.sleep(10)
-        else:
-            time.sleep(0.5)
+        future = asyncio.run_coroutine_threadsafe(cls.async_stop(), cls.active_server.loop)
+        future.result(timeout=10 if os.name == 'nt' else 0.1)
 
 
 async def StartAsyncTcpServer(  # pylint: disable=invalid-name,dangerous-default-value
@@ -690,7 +694,7 @@ async def StartAsyncSerialServer(  # pylint: disable=invalid-name,dangerous-defa
     identity=None,
     custom_functions=[],
     **kwargs,
-):  # pragma: no cover
+):
     """Start and run a serial modbus server.
 
     :param context: The ModbusServerContext datastore

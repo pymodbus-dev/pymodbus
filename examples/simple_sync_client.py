@@ -36,8 +36,6 @@ def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
             # timeout=10,
             # retries=3,
             # retry_on_empty=False,y
-            # close_comm_on_error=False,
-            # strict=True,
             # source_address=("localhost", 0),
         )
     elif comm == "udp":
@@ -48,8 +46,6 @@ def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
             # timeout=10,
             # retries=3,
             # retry_on_empty=False,
-            # close_comm_on_error=False,
-            # strict=True,
             # source_address=None,
         )
     elif comm == "serial":
@@ -59,7 +55,6 @@ def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
             # timeout=10,
             # retries=3,
             # retry_on_empty=False,
-            # close_comm_on_error=False,.
             # strict=True,
             baudrate=9600,
             bytesize=8,
@@ -75,15 +70,13 @@ def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
             # timeout=10,
             # retries=3,
             # retry_on_empty=False,
-            # close_comm_on_error=False,
-            # strict=True,
             # sslctx=None,
             certfile="../examples/certificates/pymodbus.crt",
             keyfile="../examples/certificates/pymodbus.key",
             # password=None,
             server_hostname="localhost",
         )
-    else:  # pragma no cover
+    else:
         print(f"Unknown client {comm} selected")
         return
 
@@ -97,18 +90,18 @@ def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
         print(f"Received ModbusException({exc}) from library")
         client.close()
         return
-    if rr.isError():  # pragma no cover
+    if rr.isError():
         print(f"Received Modbus library error({rr})")
         client.close()
         return
-    if isinstance(rr, ExceptionResponse):  # pragma no cover
+    if isinstance(rr, ExceptionResponse):
         print(f"Received Modbus library exception ({rr})")
         # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
         client.close()
 
-    print("close connection")  # pragma no cover
-    client.close()  # pragma no cover
+    print("close connection")
+    client.close()
 
 
 if __name__ == "__main__":
-    run_sync_simple_client("tcp", "127.0.0.1", "5020")  # pragma: no cover
+    run_sync_simple_client("tcp", "127.0.0.1", "5020")

@@ -8,9 +8,12 @@ from pymodbus.bit_read_message import ReadCoilsRequest
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder
-from pymodbus.framer.ascii_framer import ModbusAsciiFramer
-from pymodbus.framer.binary_framer import ModbusBinaryFramer
-from pymodbus.framer.rtu_framer import ModbusRtuFramer
+from pymodbus.framer import (
+    ModbusAsciiFramer,
+    ModbusBinaryFramer,
+    ModbusRtuFramer,
+    ModbusSocketFramer,
+)
 from pymodbus.transport import CommType
 from pymodbus.utilities import ModbusTransactionState
 
@@ -26,17 +29,10 @@ def fixture_rtu_framer():
     """RTU framer."""
     return ModbusRtuFramer(ClientDecoder())
 
-
 @pytest.fixture(name="ascii_framer")
 def fixture_ascii_framer():
     """Ascii framer."""
     return ModbusAsciiFramer(ClientDecoder())
-
-
-# @pytest.fixture
-# def binary_framer():
-#     """Binary framer."""
-#     return ModbusBinaryFramer(ClientDecoder())
 
 
 @pytest.mark.parametrize(
@@ -94,14 +90,6 @@ def test_framer_initialization(framer):
             b"}"[0],
             b"{"[0],
         ]
-
-
-@pytest.mark.parametrize("data", [(b"", {}), (b"abcd", {"fcode": 98, "slave": 97})])
-def test_decode_data(rtu_framer, data):
-    """Test decode data."""
-    data, expected = data
-    decoded = rtu_framer.decode_data(data)
-    assert decoded == expected
 
 
 @pytest.mark.parametrize(
@@ -299,13 +287,7 @@ def test_rtu_incoming_packet(rtu_framer, data):
         assert mock_reset.call_count == (1 if reset_called else 0)
 
 
-def test_build_packet(rtu_framer):
-    """Test build packet."""
-    message = ReadCoilsRequest(1, 10)
-    assert rtu_framer.buildPacket(message) == TEST_MESSAGE
-
-
-def test_send_packet(rtu_framer):
+async def test_send_packet(rtu_framer):
     """Test send packet."""
     message = TEST_MESSAGE
     client = ModbusBaseClient(
@@ -334,7 +316,6 @@ def test_recv_packet(rtu_framer):
     rtu_framer.client = client
     assert rtu_framer.recvPacket(len(message)) == message
 
-
 def test_process(rtu_framer):
     """Test process."""
     rtu_framer._buffer = TEST_MESSAGE  # pylint: disable=protected-access
@@ -359,3 +340,118 @@ def test_decode_ascii_data(ascii_framer, data):
         assert data.get("fcode") == 1
     else:
         assert not data
+
+def test_recv_split_packet():
+    """Test receive packet."""
+    response_ok = False
+
+    def _handle_response(_reply):
+        """Handle response."""
+        nonlocal response_ok
+        response_ok = True
+
+    message = bytearray(b"\x00\x01\x00\x00\x00\x0b\x01\x03\x08\x00\xb5\x12\x2f\x37\x21\x00\x03")
+    for i in range(0, len(message)):
+        part1 = message[:i]
+        part2 = message[i:]
+        response_ok = False
+        framer = ModbusSocketFramer(ClientDecoder())
+        if i:
+            framer.processIncomingPacket(part1, _handle_response, slave=0)
+            assert not response_ok, "Response should not be accepted"
+        framer.processIncomingPacket(part2, _handle_response, slave=0)
+        assert response_ok, "Response is valid, but not accepted"
+
+
+def test_recv_socket_exception_packet():
+    """Test receive packet."""
+    response_ok = False
+
+    def _handle_response(_reply):
+        """Handle response."""
+        nonlocal response_ok
+        response_ok = True
+
+    message = bytearray(b"\x00\x02\x00\x00\x00\x03\x01\x84\x02")
+    response_ok = False
+    framer = ModbusSocketFramer(ClientDecoder())
+    framer.processIncomingPacket(message, _handle_response, slave=0)
+    assert response_ok, "Response is valid, but not accepted"
+
+    message = bytearray(b"\x00\x01\x00\x00\x00\x0b\x01\x03\x08\x00\xb5\x12\x2f\x37\x21\x00\x03")
+    response_ok = False
+    framer = ModbusSocketFramer(ClientDecoder())
+    framer.processIncomingPacket(message, _handle_response, slave=0)
+    assert response_ok, "Response is valid, but not accepted"
+
+# ---- 100% coverage
+@pytest.mark.parametrize(
+    ("framer", "message"),
+    [
+        (ModbusAsciiFramer, b':00010001000AF4\r\n',),
+        (ModbusBinaryFramer, b'{\x00\x01\x00\x01\x00\n\xec\x1c}',),
+        (ModbusRtuFramer, b"\x00\x01\x00\x01\x00\n\xec\x1c",),
+        (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x00\x01\x00\x01\x00\n',),
+    ]
+)
+def test_build_packet(framer, message):
+    """Test build packet."""
+    test_framer =  framer(ClientDecoder())
+    request = ReadCoilsRequest(1, 10)
+    assert test_framer.buildPacket(request) == message
+
+
+@pytest.mark.parametrize(
+    ("framer", "message"),
+    [
+        (ModbusAsciiFramer, b':01010001000AF3\r\n',),
+        (ModbusBinaryFramer, b'A{\x01\x01\x00\x01\x00\n\xed\xcd}',),
+        (ModbusRtuFramer, b"\x01\x01\x03\x01\x00\n\xed\x89",),
+        (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x01\x01\x00\x01\x00\n',),
+    ]
+)
+@pytest.mark.parametrize(("slave"), [0x01, 0x02])
+def test_processincomingpacket_ok(framer, message, slave):
+    """Test processIncomingPacket."""
+    test_framer =  framer(ClientDecoder())
+    test_framer.processIncomingPacket(message, mock.Mock(), slave)
+
+
+@pytest.mark.parametrize(
+    ("framer", "message"),
+    [
+        (ModbusAsciiFramer, b':01270001000ACD\r\n',),
+        (ModbusBinaryFramer, b'{\x01\x1a\x00\x01\x00\n\x89\xcf}',),
+        (ModbusRtuFramer, b"\x01\x03\x03\x01\x00\n\x94\x49",),
+        (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x01\x27\x00\x01\x00\n',),
+    ]
+)
+def test_processincomingpacket_not_ok(framer, message):
+    """Test processIncomingPacket."""
+    test_framer =  framer(ClientDecoder())
+    with pytest.raises(ModbusIOException):
+        test_framer.processIncomingPacket(message, mock.Mock(), 0x01)
+
+@pytest.mark.parametrize(
+    ("framer", "message"),
+    [
+        (ModbusAsciiFramer, b':61620001000AF4\r\n',),
+        (ModbusBinaryFramer, b'{\x61\x62\x00\x01\x00\n\xec\x1c}',),
+        (ModbusRtuFramer, b"\x61\x62\x00\x01\x00\n\xec\x1c",),
+        (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x61\x62\x00\x01\x00\n',),
+    ]
+)
+@pytest.mark.parametrize("expected", [{"fcode": 98, "slave": 97}])
+def test_decode_data(framer, message, expected):
+    """Test decode data."""
+    test_framer =  framer(ClientDecoder())
+    decoded = test_framer.decode_data(b'')
+    assert decoded == {}
+    decoded = test_framer.decode_data(message)
+    assert decoded["fcode"] == expected["fcode"]
+    assert decoded["slave"] == expected["slave"]
+
+def test_binary_framer_preflight():
+    """Test binary framer _preflight."""
+    test_framer =  ModbusBinaryFramer(ClientDecoder())
+    assert test_framer._preflight(b'A{B}C') == b'A{{B}}C'  # pylint: disable=protected-access

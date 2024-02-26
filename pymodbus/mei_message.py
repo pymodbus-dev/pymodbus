@@ -237,12 +237,11 @@ class MeiGenericRequest(ModbusRequest):
     sub_function_code = None # 0x0E
     function_code_name = "MeiGenericRequest"
     m_data = b''
-    m_data_len = 0
-    # _rtu_frame_size = 7
-    #_rtu_byte_count_pos = 6
-    #_pdu_length = 5  # func + adress1 + adress2 + outputQuant1 + outputQuant2
-
-    def __init__(self, mei_type, data, slave, **kwargs):
+    m_data_len = 0    
+    _rtu_byte_count_pos = 3    
+    m_slave = 0
+    
+    def __init__(self, mei_type = 0x41, data = None, slave = 0, **kwargs):
         """Initialize a new instance.
 
         :param read_code: The device information read code
@@ -251,6 +250,7 @@ class MeiGenericRequest(ModbusRequest):
         ModbusRequest.__init__(self, slave, **kwargs)
         self.sub_function_code = mei_type # or DeviceInformation.BASIC
         self.m_data = data
+        self.m_slave = slave 
         if self.m_data is not None:
           self.m_data_len = len(self.m_data)
 
@@ -262,11 +262,7 @@ class MeiGenericRequest(ModbusRequest):
         packet = struct.pack(">BB", self.sub_function_code, self.m_data_len)
         if self.m_data_len > 0:
           packet = packet + self.m_data
-
-        #packet = struct.pack(
-        #    ">BBB", self.sub_function_code, self.m_data_len, self.m_data
-        #)
-        
+                
         return packet
 
     def decode(self, data):
@@ -282,20 +278,15 @@ class MeiGenericRequest(ModbusRequest):
 
         :returns: The populated response
         """
-        if not 0x00 <= self.object_id <= 0xFF:
-            return self.doException(merror.IllegalValue)
-        if not 0x00 <= self.read_code <= 0x04:
-            return self.doException(merror.IllegalValue)
-
-        information = DeviceInformationFactory.get(_MCB, self.read_code, self.object_id)
-        return MeiGenericRequest(self.read_code, information)
+                
+        return MeiGenericRequest(self.sub_function_code, self.m_data, self.m_slave)
 
     def __str__(self):
         """Build a representation of the request.
 
         :returns: The string representation of the request
         """
-        params = (self.read_code, self.object_id)
+        params = (self.sub_function_code, self.m_slave)
         return (
             "MeiGenericRequest(%d,%d)"  # pylint: disable=consider-using-f-string
             % params

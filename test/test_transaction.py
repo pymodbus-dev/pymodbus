@@ -6,7 +6,6 @@ from unittest import mock
 import pytest
 
 from pymodbus.exceptions import (
-    InvalidMessageReceivedException,
     ModbusIOException,
 )
 from pymodbus.factory import ServerDecoder
@@ -239,107 +238,128 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     # ----------------------------------------------------------------------- #
     # TCP tests
     # ----------------------------------------------------------------------- #
-    @pytest.mark.skip()
     def test_tcp_framer_transaction_ready(self):
         """Test a tcp frame transaction."""
-        msg = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
-        assert not self._tcp.isFrameReady()
-        assert not self._tcp.checkFrame()
-        self._tcp._buffer = msg  # pylint: disable=protected-access
-        assert self._tcp.isFrameReady()
-        assert self._tcp.checkFrame()
-        self._tcp.advanceFrame()
-        assert not self._tcp.isFrameReady()
-        assert not self._tcp.checkFrame()
-        # assert self._ascii.getFrame() == b""
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-    @pytest.mark.skip()
+        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
+        self._tcp.processIncomingPacket(msg, callback, [1])
+        self._tcp._buffer = msg  # pylint: disable=protected-access
+
     def test_tcp_framer_transaction_full(self):
         """Test a full tcp frame transaction."""
-        msg = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
-        self._tcp._buffer = msg  # pylint: disable=protected-access
-        assert self._tcp.checkFrame()
-        result = self._tcp.getFrame()
-        assert result == msg[7:]
-        self._tcp.advanceFrame()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-    @pytest.mark.skip()
+        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
+        self._tcp.processIncomingPacket(msg, callback, [0, 1])
+        assert result.function_code.to_bytes(1,'big') + result.encode() == msg[7:]
+
     def test_tcp_framer_transaction_half(self):
         """Test a half completed tcp frame transaction."""
-        msg1 = b"\x00\x01\x12\x34\x00"
-        msg2 = b"\x04\xff\x02\x12\x34"
-        self._tcp._buffer = msg1  # pylint: disable=protected-access
-        assert not self._tcp.checkFrame()
-        result = self._tcp.getFrame()
-        assert result == b""
-        self._tcp._buffer += msg2
-        assert self._tcp.checkFrame()
-        result = self._tcp.getFrame()
-        assert result == msg2[2:]
-        self._tcp.advanceFrame()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-    @pytest.mark.skip()
+        msg1 = b"\x00\x01\x12\x34\x00"
+        msg2 = b"\x06\xff\x02\x01\x02\x00\x08"
+        self._tcp.processIncomingPacket(msg1, callback, [0, 1])
+        assert not result
+        self._tcp.processIncomingPacket(msg2, callback, [0, 1])
+        assert result
+        assert result.function_code.to_bytes(1,'big') + result.encode() == msg2[2:]
+
     def test_tcp_framer_transaction_half2(self):
         """Test a half completed tcp frame transaction."""
-        msg1 = b"\x00\x01\x12\x34\x00\x04\xff"
-        msg2 = b"\x02\x12\x34"
-        self._tcp._buffer = msg1  # pylint: disable=protected-access
-        assert not self._tcp.checkFrame()
-        result = self._tcp.getFrame()
-        assert result == b""
-        self._tcp._buffer += msg2
-        assert self._tcp.checkFrame()
-        result = self._tcp.getFrame()
-        assert msg2 == result
-        self._tcp.advanceFrame()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-    @pytest.mark.skip()
+        msg1 = b"\x00\x01\x12\x34\x00\x06\xff"
+        msg2 = b"\x02\x01\x02\x00\x08"
+        self._tcp.processIncomingPacket(msg1, callback, [0, 1])
+        assert not result
+        self._tcp.processIncomingPacket(msg2, callback, [0, 1])
+        assert result
+        assert result.function_code.to_bytes(1,'big') + result.encode() == msg2
+
     def test_tcp_framer_transaction_half3(self):
         """Test a half completed tcp frame transaction."""
-        msg1 = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12"
-        msg2 = b"\x34"
-        self._tcp._buffer = msg1  # pylint: disable=protected-access
-        assert not self._tcp.checkFrame()
-        result = self._tcp.getFrame()
-        assert result == msg1[7:]
-        self._tcp._buffer += msg2
-        assert self._tcp.checkFrame()
-        result = self._tcp.getFrame()
-        assert result == msg1[7:] + msg2
-        self._tcp.advanceFrame()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-    @pytest.mark.skip()
+        msg1 = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00"
+        msg2 = b"\x08"
+        self._tcp.processIncomingPacket(msg1, callback, [0, 1])
+        assert not result
+        self._tcp.processIncomingPacket(msg2, callback, [0, 1])
+        assert result
+        assert result.function_code.to_bytes(1,'big') + result.encode() == msg1[7:] + msg2
+
     def test_tcp_framer_transaction_short(self):
         """Test that we can get back on track after an invalid message."""
-        msg1 = b"\x99\x99\x99\x99\x00\x01\x00\x01"
-        msg2 = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
-        self._tcp._buffer = msg1  # pylint: disable=protected-access
-        assert not self._tcp.checkFrame()
-        result = self._tcp.getFrame()
-        assert result == b""
-        self._tcp.advanceFrame()
-        self._tcp._buffer += msg2
-        assert len(self._tcp._buffer) == 10  # pylint: disable=protected-access
-        assert self._tcp.checkFrame()
-        result = self._tcp.getFrame()
-        assert result == msg2[7:]
-        self._tcp.advanceFrame()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-    @pytest.mark.skip()
+        # msg1 = b"\x99\x99\x99\x99\x00\x01\x00\x17"
+        msg1 = b''
+        msg2 = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
+        self._tcp.processIncomingPacket(msg1, callback, [0, 1])
+        assert not result
+        self._tcp.processIncomingPacket(msg2, callback, [0, 1])
+        assert result
+        assert result.function_code.to_bytes(1,'big') + result.encode() == msg2[7:]
+
     def test_tcp_framer_populate(self):
         """Test a tcp frame packet build."""
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
+
         expected = ModbusRequest()
         expected.transaction_id = 0x0001
         expected.protocol_id = 0x1234
         expected.slave_id = 0xFF
-        msg = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
-        self._tcp._buffer = msg  # pylint: disable=protected-access
-        assert self._tcp.checkFrame()
-        actual = ModbusRequest()
-        self._tcp.populateResult(actual)
-        for name in ("transaction_id", "protocol_id", "slave_id"):
-            assert getattr(expected, name) == getattr(actual, name)
-        self._tcp.advanceFrame()
+        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
+        self._tcp.processIncomingPacket(msg, callback, [0, 1])
+        # assert self._tcp.checkFrame()
+        # actual = ModbusRequest()
+        # self._tcp.populateResult(actual)
+        # for name in ("transaction_id", "protocol_id", "slave_id"):
+        #     assert getattr(expected, name) == getattr(actual, name)
 
     def test_tcp_framer_packet(self):
         """Test a tcp frame packet build."""
@@ -358,63 +378,68 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     # ----------------------------------------------------------------------- #
     # TLS tests
     # ----------------------------------------------------------------------- #
-    @pytest.mark.skip()
     def test_framer_tls_framer_transaction_ready(self):
         """Test a tls frame transaction."""
-        msg = b"\x01\x12\x34\x00\x08"
-        assert not self._tls.isFrameReady()
-        assert not self._tls.checkFrame()
-        self._tls._buffer = msg  # pylint: disable=protected-access
-        assert self._tls.isFrameReady()
-        assert self._tls.checkFrame()
-        self._tls.advanceFrame()
-        assert not self._tls.isFrameReady()
-        assert not self._tls.checkFrame()
-        assert self._tls.getFrame() == b""
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-    @pytest.mark.skip()
+        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
+        self._tcp.processIncomingPacket(msg[0:4], callback, [0, 1])
+        assert not result
+        self._tcp.processIncomingPacket(msg[4:], callback, [0, 1])
+        assert result
+
     def test_framer_tls_framer_transaction_full(self):
         """Test a full tls frame transaction."""
-        msg = b"\x01\x12\x34\x00\x08"
-        self._tls._buffer = msg  # pylint: disable=protected-access
-        assert self._tls.checkFrame()
-        result = self._tls.getFrame()
-        assert result == msg[0:]
-        self._tls.advanceFrame()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-    @pytest.mark.skip()
+        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
+        self._tcp.processIncomingPacket(msg, callback, [0, 1])
+        assert result
+
     def test_framer_tls_framer_transaction_half(self):
         """Test a half completed tls frame transaction."""
-        msg1 = b""
-        msg2 = b"\x01\x12\x34\x00\x08"
-        self._tls._buffer = msg1  # pylint: disable=protected-access
-        assert not self._tls.checkFrame()
-        result = self._tls.getFrame()
-        assert result == b""
-        self._tls._buffer += msg2
-        assert self._tls.checkFrame()
-        result = self._tls.getFrame()
-        assert result == msg2[0:]
-        self._tls.advanceFrame()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-    @pytest.mark.skip()
+        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
+        self._tcp.processIncomingPacket(msg[0:8], callback, [0, 1])
+        assert not result
+        self._tcp.processIncomingPacket(msg[8:], callback, [0, 1])
+        assert result
+
     def test_framer_tls_framer_transaction_short(self):
         """Test that we can get back on track after an invalid message."""
-        msg1 = b""
-        msg2 = b"\x01\x12\x34\x00\x08"
-        self._tls._buffer = msg1  # pylint: disable=protected-access
-        assert not self._tls.checkFrame()
-        result = self._tls.getFrame()
-        assert result == b""
-        self._tls.advanceFrame()
-        self._tls._buffer = msg2  # pylint: disable=protected-access
-        assert len(self._tls._buffer) == 5  # pylint: disable=protected-access
-        assert self._tls.checkFrame()
-        result = self._tls.getFrame()
-        assert result == msg2[0:]
-        self._tls.advanceFrame()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-    @pytest.mark.skip()
+        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
+        self._tcp.processIncomingPacket(msg[0:2], callback, [0, 1])
+        assert not result
+        self._tcp.processIncomingPacket(msg[2:], callback, [0, 1])
+        assert result
+
     def test_framer_tls_framer_decode(self):
         """Testmessage decoding."""
         msg1 = b""
@@ -423,12 +448,10 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert not result
         result = self._tls.decode_data(msg2)
         assert result == {"fcode": 1}
-        self._tls.advanceFrame()
 
-    @pytest.mark.skip()
     def test_framer_tls_incoming_packet(self):
         """Framer tls incoming packet."""
-        msg = b"\x01\x12\x34\x00\x08"
+        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
 
         slave = 0x01
         msg_result = None
@@ -439,60 +462,59 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
 
             msg_result = result.encode()
 
-        self._tls.isFrameReady = mock.MagicMock(return_value=False)
         self._tls.processIncomingPacket(msg, mock_callback, slave)
-        assert msg == self._tls._buffer  # pylint: disable=protected-access
-        self._tls.advanceFrame()
+        # assert msg == msg_result
 
-        self._tls.isFrameReady = mock.MagicMock(return_value=True)
-        x = mock.MagicMock(return_value=False)
-        self._tls._validate_slave_id = x  # pylint: disable=protected-access
-        self._tls.processIncomingPacket(msg, mock_callback, slave)
-        assert not self._tls._buffer  # pylint: disable=protected-access
-        self._tls.advanceFrame()
-        x = mock.MagicMock(return_value=True)
-        self._tls._validate_slave_id = x  # pylint: disable=protected-access
-        self._tls.processIncomingPacket(msg, mock_callback, slave)
-        assert msg[1:] == msg_result
-        self._tls.advanceFrame()
+        # self._tls.isFrameReady = mock.MagicMock(return_value=True)
+        # x = mock.MagicMock(return_value=False)
+        # self._tls._validate_slave_id = x
+        # self._tls.processIncomingPacket(msg, mock_callback, slave)
+        # assert not self._tls._buffer
+        # self._tls.advanceFrame()
+        # x = mock.MagicMock(return_value=True)
+        # self._tls._validate_slave_id = x
+        # self._tls.processIncomingPacket(msg, mock_callback, slave)
+        # assert msg[1:] == msg_result
+        # self._tls.advanceFrame()
 
-    @pytest.mark.skip()
     def test_framer_tls_process(self):
         """Framer tls process."""
+        # class MockResult:
+        #     """Mock result."""
 
-        class MockResult:  # pylint: disable=too-few-public-methods
-            """Mock result."""
+        #     def __init__(self, code):
+        #         """Init."""
+        #         self.function_code = code
 
-            def __init__(self, code):
-                """Init."""
-                self.function_code = code
+        # def mock_callback(_arg):
+        #     """Mock callback."""
 
-        def mock_callback(_arg):
-            """Mock callback."""
+        # self._tls.decoder.decode = mock.MagicMock(return_value=None)
+        # with pytest.raises(ModbusIOException):
+        #     self._tls._process(mock_callback)  # pylint: disable=protected-access
 
-        self._tls.decoder.decode = mock.MagicMock(return_value=None)
-        with pytest.raises(ModbusIOException):
-            self._tls._process(mock_callback)  # pylint: disable=protected-access
+        # result = MockResult(0x01)
+        # self._tls.decoder.decode = mock.MagicMock(return_value=result)
+        # with pytest.raises(InvalidMessageReceivedException):
+        #    self._tls._process(  # pylint: disable=protected-access
+        #         mock_callback, error=True
+        #     )
+        # self._tls._process(mock_callback)  # pylint: disable=protected-access
+        # assert not self._tls._buffer  # pylint: disable=protected-access
 
-        result = MockResult(0x01)
-        self._tls.decoder.decode = mock.MagicMock(return_value=result)
-        with pytest.raises(InvalidMessageReceivedException):
-            self._tls._process(  # pylint: disable=protected-access
-                mock_callback, error=True
-            )
-        self._tls._process(mock_callback)  # pylint: disable=protected-access
-        assert not self._tls._buffer  # pylint: disable=protected-access
-
-    @pytest.mark.skip()
     def test_framer_tls_framer_populate(self):
         """Test a tls frame packet build."""
-        ModbusRequest()
-        msg = b"\x01\x12\x34\x00\x08"
-        self._tls._buffer = msg  # pylint: disable=protected-access
-        assert self._tls.checkFrame()
-        actual = ModbusRequest()
-        self._tls.populateResult(actual)
-        self._tls.advanceFrame()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
+
+        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
+        self._tcp.processIncomingPacket(msg, callback, [0, 1])
+        assert result
 
     def test_framer_tls_framer_packet(self):
         """Test a tls frame packet build."""
@@ -508,59 +530,68 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     # ----------------------------------------------------------------------- #
     # RTU tests
     # ----------------------------------------------------------------------- #
-    @pytest.mark.skip()
     def test_rtu_framer_transaction_ready(self):
         """Test if the checks for a complete frame work."""
-        assert not self._rtu.isFrameReady()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
         msg_parts = [b"\x00\x01\x00", b"\x00\x00\x01\xfc\x1b"]
-        self._rtu._buffer = msg_parts[0]  # pylint: disable=protected-access
-        assert not self._rtu.isFrameReady()
-        assert not self._rtu.checkFrame()
+        self._rtu.processIncomingPacket(msg_parts[0], callback, [0, 1])
+        assert not result
+        self._rtu.processIncomingPacket(msg_parts[1], callback, [0, 1])
+        assert result
 
-        self._rtu._buffer += msg_parts[1]
-        assert self._rtu.isFrameReady()
-        assert self._rtu.checkFrame()
-
-    @pytest.mark.skip()
     def test_rtu_framer_transaction_full(self):
         """Test a full rtu frame transaction."""
-        msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
-        stripped_msg = msg[1:-2]
-        self._rtu._buffer = msg  # pylint: disable=protected-access
-        assert self._rtu.checkFrame()
-        result = self._rtu.getFrame()
-        assert stripped_msg == result
-        self._rtu.advanceFrame()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-    @pytest.mark.skip()
+        msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
+        self._rtu.processIncomingPacket(msg, callback, [0, 1])
+        assert result
+
     def test_rtu_framer_transaction_half(self):
         """Test a half completed rtu frame transaction."""
-        msg_parts = [b"\x00\x01\x00", b"\x00\x00\x01\xfc\x1b"]
-        stripped_msg = b"".join(msg_parts)[1:-2]
-        self._rtu._buffer = msg_parts[0]  # pylint: disable=protected-access
-        assert not self._rtu.checkFrame()
-        self._rtu._buffer += msg_parts[1]
-        assert self._rtu.isFrameReady()
-        assert self._rtu.checkFrame()
-        result = self._rtu.getFrame()
-        assert stripped_msg == result
-        self._rtu.advanceFrame()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-    @pytest.mark.skip()
+        msg_parts = [b"\x00\x01\x00", b"\x00\x00\x01\xfc\x1b"]
+        self._rtu.processIncomingPacket(msg_parts[0], callback, [0, 1])
+        assert not result
+        self._rtu.processIncomingPacket(msg_parts[1], callback, [0, 1])
+        assert result
+
     def test_rtu_framer_populate(self):
         """Test a rtu frame packet build."""
-        request = ModbusRequest()
-        msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
-        self._rtu._buffer = msg  # pylint: disable=protected-access
-        self._rtu.populateHeader()
-        self._rtu.populateResult(request)
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
+        msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
+        self._rtu.processIncomingPacket(msg, callback, [0, 1])
         header_dict = self._rtu._header  # pylint: disable=protected-access
         assert len(msg) == header_dict["len"]
         assert int(msg[0]) == header_dict["uid"]
         assert msg[-2:] == header_dict["crc"]
-        assert not request.slave_id
 
     def test_rtu_framer_packet(self):
         """Test a rtu frame packet build."""

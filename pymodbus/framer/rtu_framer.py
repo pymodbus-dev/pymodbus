@@ -75,7 +75,7 @@ class ModbusRtuFramer(ModbusFramer):
     def frameProcessIncomingPacket(self, _single, callback, slave, _tid=None, **kwargs):  # noqa: C901
         """Process new packet pattern."""
 
-        def isFrameReady(self):
+        def is_frame_ready(self):
             """Check if we should continue decode logic."""
             size = self._header.get("len", 0)
             if not size and len(self._buffer) > self._hsize:
@@ -94,7 +94,7 @@ class ModbusRtuFramer(ModbusFramer):
                     return False
             return len(self._buffer) >= size if size > 0 else False
 
-        def getFrameStart(self, slaves, broadcast, skip_cur_frame):
+        def get_frame_start(self, slaves, broadcast, skip_cur_frame):
             """Scan buffer for a relevant frame start."""
             start = 1 if skip_cur_frame else 0
             if (buf_len := len(self._buffer)) < 4:
@@ -137,9 +137,9 @@ class ModbusRtuFramer(ModbusFramer):
 
         broadcast = not slave[0]
         skip_cur_frame = False
-        while getFrameStart(self, slave, broadcast, skip_cur_frame):
+        while get_frame_start(self, slave, broadcast, skip_cur_frame):
             self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
-            if not isFrameReady(self):
+            if not is_frame_ready(self):
                 Log.debug("Frame - not ready")
                 break
             if not check_frame(self):

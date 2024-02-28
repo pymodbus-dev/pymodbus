@@ -296,7 +296,19 @@ class ModbusRtuFramer(ModbusFramer):
         :param size: Number of bytes to read
         :return:
         """
-        result = self.client.recv(size)
+        result = bytes()  
+         
+        start = time.time() 
+        timeout = start + self.client.socket.timeout #3                                    
+        while True:
+          result = result + self.client.recv(size - len(result))
+          if len(result) == size:
+            break
+          time.sleep(0.0015)        
+          if time.time() > timeout: 
+            break        
+                                                                 
+        #result = self.client.recv(size)
         self.client.last_frame_end = round(time.time(), 6)
         return result
 

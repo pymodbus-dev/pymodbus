@@ -82,7 +82,6 @@ class ModbusBinaryFramer(ModbusFramer):
         while len(self._buffer) > 1:
             if not check_frame(self):
                 Log.debug("Frame check failed, ignoring!!")
-                self.resetFrame()
                 break
             if not self._validate_slave_id(slave, single):
                 header_txt = self._header["uid"]

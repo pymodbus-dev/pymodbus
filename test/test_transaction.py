@@ -1,9 +1,6 @@
 """Test transaction."""
-from binascii import a2b_hex
 from itertools import count
 from unittest import mock
-
-import pytest
 
 from pymodbus.exceptions import (
     ModbusIOException,
@@ -491,16 +488,16 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
 
         # self._tls.decoder.decode = mock.MagicMock(return_value=None)
         # with pytest.raises(ModbusIOException):
-        #     self._tls._process(mock_callback)  # pylint: disable=protected-access
+        #     self._tls._process(mock_callback)
 
         # result = MockResult(0x01)
         # self._tls.decoder.decode = mock.MagicMock(return_value=result)
         # with pytest.raises(InvalidMessageReceivedException):
-        #    self._tls._process(  # pylint: disable=protected-access
+        #    self._tls._process(
         #         mock_callback, error=True
         #     )
-        # self._tls._process(mock_callback)  # pylint: disable=protected-access
-        # assert not self._tls._buffer  # pylint: disable=protected-access
+        # self._tls._process(mock_callback)
+        # assert not self._tls._buffer
 
     def test_framer_tls_framer_populate(self):
         """Test a tls frame packet build."""
@@ -605,103 +602,96 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert expected == actual
         ModbusRequest.encode = old_encode
 
-    @pytest.mark.skip()
     def test_rtu_decode_exception(self):
         """Test that the RTU framer can decode errors."""
-        message = b"\x00\x90\x02\x9c\x01"
-        self._rtu._buffer = message  # pylint: disable=protected-access
-        result = self._rtu.checkFrame()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
+
+        msg = b"\x00\x90\x02\x9c\x01"
+        self._rtu.processIncomingPacket(msg, callback, [0, 1])
         assert result
 
-    @pytest.mark.skip()
     def test_process(self):
         """Test process."""
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-        class MockResult:  # pylint: disable=too-few-public-methods
-            """Mock result."""
+        msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
+        self._rtu.processIncomingPacket(msg, callback, [0, 1])
+        assert result
 
-            def __init__(self, code):
-                self.function_code = code
-
-        def mock_callback(_arg):
-            """Mock callback."""
-
-        mock_result = MockResult(code=0)
-        self._rtu.getFrame = mock.MagicMock()
-        self._rtu.decoder = mock.MagicMock()
-        self._rtu.decoder.decode = mock.MagicMock(return_value=mock_result)
-        self._rtu.populateResult = mock.MagicMock()
-        self._rtu.advanceFrame = mock.MagicMock()
-
-        self._rtu._process(mock_callback)  # pylint: disable=protected-access
-        self._rtu.populateResult.assert_called_with(mock_result)
-        self._rtu.advanceFrame.assert_called_with()
-        assert self._rtu.advanceFrame.called
-
-        # Check errors
-        self._rtu.decoder.decode = mock.MagicMock(return_value=None)
-        with pytest.raises(ModbusIOException):
-            self._rtu._process(mock_callback)  # pylint: disable=protected-access
-
-    @pytest.mark.skip()
     def test_rtu_process_incoming_packets(self):
         """Test rtu process incoming packets."""
-        mock_data = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
+
+        msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
         slave = 0x00
 
-        def mock_callback():
-            """Mock callback."""
-
-        self._rtu._buffer = mock.MagicMock()  # pylint: disable=protected-access
-        self._rtu._process = mock.MagicMock()  # pylint: disable=protected-access
-        self._rtu.isFrameReady = mock.MagicMock(return_value=False)
-        self._rtu._buffer = mock_data  # pylint: disable=protected-access
-
-        self._rtu.processIncomingPacket(mock_data, mock_callback, slave)
+        self._rtu.processIncomingPacket(msg, callback, slave)
+        assert result
 
     # ----------------------------------------------------------------------- #
     # ASCII tests
     # ----------------------------------------------------------------------- #
-    @pytest.mark.skip()
     def test_ascii_framer_transaction_ready(self):
         """Test a ascii frame transaction."""
-        msg = b":F7031389000A60\r\n"
-        assert not self._ascii.isFrameReady()
-        assert not self._ascii.checkFrame()
-        self._ascii._buffer = msg  # pylint: disable=protected-access
-        assert self._ascii.isFrameReady()
-        assert self._ascii.checkFrame()
-        self._ascii.advanceFrame()
-        assert not self._ascii.isFrameReady()
-        assert not self._ascii.checkFrame()
-        assert not self._ascii.getFrame()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-    @pytest.mark.skip()
+        msg = b":F7031389000A60\r\n"
+        self._ascii.processIncomingPacket(msg, callback, [0,1])
+        assert result
+
     def test_ascii_framer_transaction_full(self):
         """Test a full ascii frame transaction."""
-        msg = b"sss:F7031389000A60\r\n"
-        pack = a2b_hex(msg[6:-4])
-        self._ascii._buffer = msg  # pylint: disable=protected-access
-        assert self._ascii.checkFrame()
-        result = self._ascii.getFrame()
-        assert pack == result
-        self._ascii.advanceFrame()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-    @pytest.mark.skip()
+        msg = b"sss:F7031389000A60\r\n"
+        self._ascii.processIncomingPacket(msg, callback, [0,1])
+        assert result
+
     def test_ascii_framer_transaction_half(self):
         """Test a half completed ascii frame transaction."""
-        msg1 = b"sss:F7031389"
-        msg2 = b"000A60\r\n"
-        pack = a2b_hex(msg1[6:] + msg2[:-4])
-        self._ascii._buffer = msg1  # pylint: disable=protected-access
-        assert not self._ascii.checkFrame()
-        result = self._ascii.getFrame()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
+
+        msg_parts = (b"sss:F7031389", b"000A60\r\n")
+        self._ascii.processIncomingPacket(msg_parts[0], callback, [0,1])
         assert not result
-        self._ascii._buffer += msg2
-        assert self._ascii.checkFrame()
-        result = self._ascii.getFrame()
-        assert pack == result
-        self._ascii.advanceFrame()
+        self._ascii.processIncomingPacket(msg_parts[1], callback, [0,1])
+        assert result
 
     def test_ascii_framer_populate(self):
         """Test a ascii frame packet build."""
@@ -723,62 +713,64 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
 
     def test_ascii_process_incoming_packets(self):
         """Test ascii process incoming packet."""
-        mock_data = b":F7031389000A60\r\n"
-        slave = 0x00
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-        def mock_callback(_mock_data, *_args, **_kwargs):
-            """Mock callback."""
-
-        self._ascii.processIncomingPacket(mock_data, mock_callback, slave)
-
-        # Test failure:
-        self._ascii.checkFrame = mock.MagicMock(return_value=False)
-        self._ascii.processIncomingPacket(mock_data, mock_callback, slave)
+        msg = b":F7031389000A60\r\n"
+        self._ascii.processIncomingPacket(msg, callback, [0,1])
+        assert result
 
     # ----------------------------------------------------------------------- #
     # Binary tests
     # ----------------------------------------------------------------------- #
-    @pytest.mark.skip()
     def test_binary_framer_transaction_ready(self):
         """Test a binary frame transaction."""
-        msg = TEST_MESSAGE
-        assert not self._binary.isFrameReady()
-        assert not self._binary.checkFrame()
-        self._binary._buffer = msg  # pylint: disable=protected-access
-        assert self._binary.isFrameReady()
-        assert self._binary.checkFrame()
-        self._binary.advanceFrame()
-        assert not self._binary.isFrameReady()
-        assert not self._binary.checkFrame()
-        assert not self._binary.getFrame()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-    @pytest.mark.skip()
+        msg = TEST_MESSAGE
+        self._binary.processIncomingPacket(msg, callback, [0,1])
+        assert result
+
     def test_binary_framer_transaction_full(self):
         """Test a full binary frame transaction."""
-        msg = TEST_MESSAGE
-        pack = msg[2:-3]
-        self._binary._buffer = msg  # pylint: disable=protected-access
-        assert self._binary.checkFrame()
-        result = self._binary.getFrame()
-        assert pack == result
-        self._binary.advanceFrame()
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-    @pytest.mark.skip()
+        msg = TEST_MESSAGE
+        self._binary.processIncomingPacket(msg, callback, [0,1])
+        assert result
+
     def test_binary_framer_transaction_half(self):
         """Test a half completed binary frame transaction."""
-        msg1 = b"\x7b\x01\x03\x00"
-        msg2 = b"\x00\x00\x05\x85\xC9\x7d"
-        pack = msg1[2:] + msg2[:-3]
-        self._binary._buffer = msg1  # pylint: disable=protected-access
-        assert not self._binary.checkFrame()
-        result = self._binary.getFrame()
-        assert not result
-        self._binary._buffer += msg2
+        count = 0
+        result = None
+        def callback(data):
+            """Simulate callback."""
+            nonlocal count, result
+            count += 1
+            result = data
 
-        assert self._binary.checkFrame()
-        result = self._binary.getFrame()
-        assert pack == result
-        self._binary.advanceFrame()
+        msg_parts = (b"\x7b\x01\x03\x00", b"\x00\x00\x05\x85\xC9\x7d")
+        self._binary.processIncomingPacket(msg_parts[0], callback, [0,1])
+        assert not result
+        self._binary.processIncomingPacket(msg_parts[1], callback, [0,1])
+        assert result
 
     def test_binary_framer_populate(self):
         """Test a binary frame packet build."""

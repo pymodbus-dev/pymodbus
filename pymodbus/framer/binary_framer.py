@@ -53,12 +53,6 @@ class ModbusBinaryFramer(ModbusFramer):
         self._end = b"\x7d"  # }
         self._repeat = [b"}"[0], b"{"[0]]  # python3 hack
 
-    # ----------------------------------------------------------------------- #
-    # Private Helper Functions
-    # ----------------------------------------------------------------------- #
-    def _process(self, callback, error=False):
-        """Process incoming packets irrespective error condition."""
-
     def decode_data(self, data):
         """Decode data."""
         if len(data) > self._hsize:
@@ -67,76 +61,45 @@ class ModbusBinaryFramer(ModbusFramer):
             return {"slave": uid, "fcode": fcode}
         return {}
 
-    def checkFrame(self) -> bool:
-        """Check and decode the next frame.
-
-        :returns: True if we are successful, False otherwise
-        """
-        start = self._buffer.find(self._start)
-        if start == -1:
-            return False
-        if start > 0:  # go ahead and skip old bad data
-            self._buffer = self._buffer[start:]
-
-        if (end := self._buffer.find(self._end)) != -1:
-            self._header["len"] = end
-            self._header["uid"] = struct.unpack(">B", self._buffer[1:2])[0]
-            self._header["crc"] = struct.unpack(">H", self._buffer[end - 2 : end])[0]
-            data = self._buffer[1 : end - 2]
-            return checkCRC(data, self._header["crc"])
-        return False
-
-    def advanceFrame(self) -> None:
-        """Skip over the current framed message.
-
-        This allows us to skip over the current message after we have processed
-        it or determined that it contains an error. It also has to reset the
-        current frame header handle
-        """
-        self._buffer = self._buffer[self._header["len"] + 2 :]
-        self._header = {"crc": 0x0000, "len": 0, "uid": 0x00}
-
-    def isFrameReady(self) -> bool:
-        """Check if we should continue decode logic.
-
-        This is meant to be used in a while loop in the decoding phase to let
-        the decoder know that there is still data in the buffer.
-
-        :returns: True if ready, False otherwise
-        """
-        return len(self._buffer) > 1
-
-    def getFrame(self):
-        """Get the next frame from the buffer.
-
-        :returns: The frame data or ""
-        """
-        start = self._hsize + 1
-        end = self._header["len"] - 2
-        buffer = self._buffer[start:end]
-        if end > 0:
-            return buffer
-        return b""
-
-    # ----------------------------------------------------------------------- #
-    # Public Member Functions
-    # ----------------------------------------------------------------------- #
     def frameProcessIncomingPacket(self, single, callback, slave, _tid=None, **kwargs):
         """Process new packet pattern."""
-        while self.isFrameReady():
-            if not self.checkFrame():
+        def check_frame(self) -> bool:
+            """Check and decode the next frame."""
+            start = self._buffer.find(self._start)
+            if start == -1:
+                return False
+            if start > 0:  # go ahead and skip old bad data
+                self._buffer = self._buffer[start:]
+
+            if (end := self._buffer.find(self._end)) != -1:
+                self._header["len"] = end
+                self._header["uid"] = struct.unpack(">B", self._buffer[1:2])[0]
+                self._header["crc"] = struct.unpack(">H", self._buffer[end - 2 : end])[0]
+                data = self._buffer[1 : end - 2]
+                return checkCRC(data, self._header["crc"])
+            return False
+
+        while len(self._buffer) > 1:
+            if not check_frame(self):
                 Log.debug("Frame check failed, ignoring!!")
-                self.resetFrame()
                 break
             if not self._validate_slave_id(slave, single):
                 header_txt = self._header["uid"]
                 Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
                 self.resetFrame()
                 break
-            if (result := self.decoder.decode(self.getFrame())) is None:
+            start = self._hsize + 1
+            end = self._header["len"] - 2
+            buffer = self._buffer[start:end]
+            if end > 0:
+                frame = buffer
+            else:
+                frame = b""
+            if (result := self.decoder.decode(frame)) is None:
                 raise ModbusIOException("Unable to decode response")
             self.populateResult(result)
-            self.advanceFrame()
+            self._buffer = self._buffer[self._header["len"] + 2 :]
+            self._header = {"crc": 0x0000, "len": 0, "uid": 0x00}
             callback(result)  # defer or push to a thread?
 
     def buildPacket(self, message):

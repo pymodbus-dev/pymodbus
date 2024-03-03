@@ -42,12 +42,6 @@ class ModbusAsciiFramer(ModbusFramer):
         self._start = b":"
         self._end = b"\r\n"
 
-    # ----------------------------------------------------------------------- #
-    # Private Helper Functions
-    # ----------------------------------------------------------------------- #
-    def _process(self, callback, error=False):
-        """Process incoming packets irrespective error condition."""
-
     def decode_data(self, data):
         """Decode data."""
         if len(data) > 1:
@@ -56,65 +50,27 @@ class ModbusAsciiFramer(ModbusFramer):
             return {"slave": uid, "fcode": fcode}
         return {}
 
-    def checkFrame(self):
-        """Check and decode the next frame.
-
-        :returns: True if we successful, False otherwise
-        """
-        start = self._buffer.find(self._start)
-        if start == -1:
-            return False
-        if start > 0:  # go ahead and skip old bad data
-            self._buffer = self._buffer[start:]
-            start = 0
-
-        if (end := self._buffer.find(self._end)) != -1:
-            self._header["len"] = end
-            self._header["uid"] = int(self._buffer[1:3], 16)
-            self._header["lrc"] = int(self._buffer[end - 2 : end], 16)
-            data = a2b_hex(self._buffer[start + 1 : end - 2])
-            return MessageAscii.check_LRC(data, self._header["lrc"])
-        return False
-
-    def advanceFrame(self):
-        """Skip over the current framed message.
-
-        This allows us to skip over the current message after we have processed
-        it or determined that it contains an error. It also has to reset the
-        current frame header handle
-        """
-        self._buffer = self._buffer[self._header["len"] + 2 :]
-        self._header = {"lrc": "0000", "len": 0, "uid": 0x00}
-
-    def isFrameReady(self):
-        """Check if we should continue decode logic.
-
-        This is meant to be used in a while loop in the decoding phase to let
-        the decoder know that there is still data in the buffer.
-
-        :returns: True if ready, False otherwise
-        """
-        return len(self._buffer) > 1
-
-    def getFrame(self):
-        """Get the next frame from the buffer.
-
-        :returns: The frame data or ""
-        """
-        start = self._hsize + 1
-        end = self._header["len"] - 2
-        buffer = self._buffer[start:end]
-        if end > 0:
-            return a2b_hex(buffer)
-        return b""
-
-    # ----------------------------------------------------------------------- #
-    # Public Member Functions
-    # ----------------------------------------------------------------------- #
     def frameProcessIncomingPacket(self, single, callback, slave, _tid=None, **kwargs):
         """Process new packet pattern."""
-        while self.isFrameReady():
-            if not self.checkFrame():
+        def check_frame(self):
+            """Check and decode the next frame."""
+            start = self._buffer.find(self._start)
+            if start == -1:
+                return False
+            if start > 0:  # go ahead and skip old bad data
+                self._buffer = self._buffer[start:]
+                start = 0
+
+            if (end := self._buffer.find(self._end)) != -1:
+                self._header["len"] = end
+                self._header["uid"] = int(self._buffer[1:3], 16)
+                self._header["lrc"] = int(self._buffer[end - 2 : end], 16)
+                data = a2b_hex(self._buffer[start + 1 : end - 2])
+                return MessageAscii.check_LRC(data, self._header["lrc"])
+            return False
+
+        while len(self._buffer) > 1:
+            if not check_frame(self):
                 break
             if not self._validate_slave_id(slave, single):
                 header_txt = self._header["uid"]
@@ -122,11 +78,18 @@ class ModbusAsciiFramer(ModbusFramer):
                 self.resetFrame()
                 continue
 
-            frame = self.getFrame()
+            start = self._hsize + 1
+            end = self._header["len"] - 2
+            buffer = self._buffer[start:end]
+            if end > 0:
+                frame = a2b_hex(buffer)
+            else:
+                frame = b""
             if (result := self.decoder.decode(frame)) is None:
                 raise ModbusIOException("Unable to decode response")
             self.populateResult(result)
-            self.advanceFrame()
+            self._buffer = self._buffer[self._header["len"] + 2 :]
+            self._header = {"lrc": "0000", "len": 0, "uid": 0x00}
             callback(result)  # defer this
 
     def buildPacket(self, message):

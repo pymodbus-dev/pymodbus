@@ -26,6 +26,7 @@ Thanks to
 - Chris Hung
 - Christian Krause
 - dhoomakethu
+- doelki
 - DominicDataP
 - Dries
 - duc996
@@ -43,9 +44,11 @@ Thanks to
 - jan iversen
 - Jerome Velociter
 - Joe Burmeister
+- Jonathan Reichelt Gjertsen
 - julian
 - Kenny Johansson
 - Matthias Straka
+- laund
 - Logan Gunthorpe
 - Marko Luther
 - Logan Gunthorpe

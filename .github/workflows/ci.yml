@@ -73,7 +73,7 @@ jobs:
         run: |
           python -m venv ${{ env.VIRTUAL_ENV }}
           python -m pip install --upgrade pip
-          pip install -e ".[all]"
+          pip install ".[all]"
 
       - name: codespell
         if: matrix.run_doc == true
@@ -101,9 +101,16 @@ jobs:
           ruff .
 
       - name: pytest
+        if: ${{ (matrix.os != 'ubuntu-latest') || (matrix.python != '3.12') }}
         run: |
           env
-          pytest -v --cov --full-trace --timeout=1200
+          pytest
+
+      - name: pytest coverage
+        if: ${{ (matrix.os == 'ubuntu-latest') && (matrix.python == '3.12')  }}
+        run: |
+          env
+          pytest --cov
 
   analyze:
     name: Analyze Python

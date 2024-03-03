@@ -354,12 +354,12 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         # rtu connect/disconnect
         rtu_client = ModbusSerialClient("/dev/null", framer=Framer.RTU, strict=True)
         assert rtu_client.connect()
-        assert rtu_client.socket.interCharTimeout == rtu_client.inter_char_timeout
+        assert rtu_client.socket.inter_byte_timeout == rtu_client.inter_byte_timeout
         rtu_client.close()
         assert str(client) == "ModbusSerialClient /dev/null:0"
 
         # already closed socket
-        client.socket = False
+        client.socket = None
         client.close()
 
     def test_serial_client_connect(self):

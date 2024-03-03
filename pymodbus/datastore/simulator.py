@@ -37,6 +37,18 @@ class Cell:
     count_write: int = 0
 
 
+class TextCell:  # pylint: disable=too-few-public-methods
+    """A textual representation of a single cell."""
+
+    type: str
+    access: str
+    value: str
+    action: str
+    action_kwargs: str
+    count_read: str
+    count_write: str
+
+
 @dataclasses.dataclass
 class Label:  # pylint: disable=too-many-instance-attributes
     """Defines all dict values.
@@ -94,7 +106,7 @@ class Setup:
     def __init__(self, runtime):
         """Initialize."""
         self.runtime = runtime
-        self.config = None
+        self.config = {}
         self.config_types = {
             Label.type_bits: {
                 Label.type: CellType.BITS,
@@ -454,10 +466,10 @@ class ModbusSimulatorContext:
     start_time = int(datetime.now().timestamp())
 
     def __init__(
-        self, config: dict[str, Any], custom_actions: dict[str, Callable]
+        self, config: dict[str, Any], custom_actions: dict[str, Callable] | None
     ) -> None:
         """Initialize."""
-        self.registers: list[int] = []
+        self.registers: list[Cell] = []
         self.fc_offset: dict[int, int] = {}
         self.register_count = 0
         self.type_exception = False
@@ -474,7 +486,7 @@ class ModbusSimulatorContext:
     def get_text_register(self, register):
         """Get raw register."""
         reg = self.registers[register]
-        text_cell = Cell()
+        text_cell = TextCell()
         text_cell.type = self.registerType_id_to_name[reg.type]
         text_cell.access = str(reg.access)
         text_cell.count_read = str(reg.count_read)

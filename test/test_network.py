@@ -2,13 +2,61 @@
 from __future__ import annotations
 
 import asyncio
+from typing import Callable
 
 import pytest
 
 from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.logging import Log
-from pymodbus.transport import NULLMODEM_HOST, ModbusProtocolStub
+from pymodbus.transport import NULLMODEM_HOST, CommParams, ModbusProtocol
 
+
+class ModbusProtocolStub(ModbusProtocol):
+    """Protocol layer including transport."""
+
+    def __init__(
+        self,
+        params: CommParams,
+        is_server: bool,
+        handler: Callable[[bytes], bytes] | None = None,
+    ) -> None:
+        """Initialize a stub instance."""
+        self.stub_handle_data = handler if handler else self.dummy_handler
+        super().__init__(params, is_server)
+
+
+    async def start_run(self):
+        """Call need functions to start server/client."""
+        if  self.is_server:
+            return await self.listen()
+        return await self.connect()
+
+
+    def callback_connected(self) -> None:
+        """Call when connection is succcesfull."""
+
+    def callback_disconnected(self, exc: Exception | None) -> None:
+        """Call when connection is lost."""
+        Log.debug("callback_disconnected called: {}", exc)
+
+    def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
+        """Handle received data."""
+        if (response := self.stub_handle_data(data)):
+            self.send(response)
+        return len(data)
+
+    def callback_new_connection(self) -> ModbusProtocol:
+        """Call when listener receive new connection request."""
+        new_stub = ModbusProtocolStub(self.comm_params, False)
+        new_stub.stub_handle_data = self.stub_handle_data
+        return new_stub
+
+    # ---------------- #
+    # external methods #
+    # ---------------- #
+    def dummy_handler(self, data: bytes) -> bytes | None:
+        """Handle received data."""
+        return data
 
 class TestNetwork:
     """Test network problems."""
@@ -29,8 +77,8 @@ class TestNetwork:
         assert await client.connect()
         test_data = b"Data got echoed."
         client.transport.write(test_data)
-        client.transport_close()
-        stub.transport_close()
+        client.close()
+        stub.close()
 
     async def test_double_packet(self, use_port, use_cls):
         """Test double packet on network."""
@@ -81,5 +129,5 @@ class TestNetwork:
 
         assert await client.connect()
         await asyncio.gather(*[local_call(x) for x in range(1, 10)])
-        client.transport_close()
-        stub.transport_close()
+        client.close()
+        stub.close()

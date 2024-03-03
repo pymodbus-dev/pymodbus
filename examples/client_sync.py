@@ -59,7 +59,6 @@ def setup_sync_client(description=None, cmdline=None):
             timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,y
-            #    close_comm_on_error=False,
             #    strict=True,
             # TCP setup parameters
             #    source_address=("localhost", 0),
@@ -73,7 +72,6 @@ def setup_sync_client(description=None, cmdline=None):
             timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,
-            #    close_comm_on_error=False,
             #    strict=True,
             # UDP setup parameters
             #    source_address=None,
@@ -86,7 +84,6 @@ def setup_sync_client(description=None, cmdline=None):
             timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,
-            #    close_comm_on_error=False,.
             #    strict=True,
             # Serial setup parameters
             baudrate=args.baudrate,
@@ -94,6 +91,7 @@ def setup_sync_client(description=None, cmdline=None):
             #    parity="N",
             #    stopbits=1,
             #    handle_local_echo=False,
+            #    strict=True,
         )
     elif args.comm == "tls":
         client = modbusClient.ModbusTlsClient(
@@ -104,8 +102,6 @@ def setup_sync_client(description=None, cmdline=None):
             timeout=args.timeout,
             #    retries=3,
             #    retry_on_empty=False,
-            #    close_comm_on_error=False,
-            #    strict=True,
             # TLS setup parameters
             #    sslctx=None,
             certfile=helper.get_certificate("crt"),

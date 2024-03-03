@@ -53,6 +53,8 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
+    socket: socket.socket | None
+
     def __init__(
         self,
         host: str,
@@ -83,9 +85,9 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
             self.comm_params.host,
             self.comm_params.port,
         )
-        return await self.transport_connect()
+        return await self.base_connect()
 
-    def close(self, reconnect: bool = False) -> None:
+    def close(self, reconnect: bool = False) -> None:  # type: ignore[override]
         """Close connection."""
         super().close(reconnect=reconnect)
 
@@ -108,8 +110,6 @@ class ModbusTcpClient(ModbusBaseSyncClient):
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
-    :param close_comm_on_error: Close connection on error.
-    :param strict: Strict timing, 1.5 character between requests.
     :param broadcast_enable: True to treat id 0 as broadcast address.
     :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
@@ -132,6 +132,8 @@ class ModbusTcpClient(ModbusBaseSyncClient):
 
     Remark: There are no automatic reconnect as with AsyncModbusTcpClient
     """
+
+    socket: socket.socket | None
 
     def __init__(
         self,
@@ -211,9 +213,9 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         # is received or timeout is expired.
         # If timeout expires returns the read data, also if its length is
         # less than the expected size.
-        self.socket.setblocking(0)
+        self.socket.setblocking(False)
 
-        timeout = self.comm_params.timeout_connect
+        timeout = self.comm_params.timeout_connect or 0
 
         # If size isn't specified read up to 4096 bytes at a time.
         if size is None:
@@ -221,7 +223,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         else:
             recv_size = size
 
-        data = []
+        data: list[bytes] = []
         data_length = 0
         time_ = time.time()
         end = time_ + timeout

@@ -3,7 +3,6 @@
 import struct
 
 from pymodbus.exceptions import (
-    InvalidMessageReceivedException,
     ModbusIOException,
 )
 from pymodbus.framer.base import SOCKET_FRAME_HEADER, ModbusFramer
@@ -44,64 +43,6 @@ class ModbusSocketFramer(ModbusFramer):
         super().__init__(decoder, client)
         self._hsize = 0x07
 
-    # ----------------------------------------------------------------------- #
-    # Private Helper Functions
-    # ----------------------------------------------------------------------- #
-    def checkFrame(self):
-        """Check and decode the next frame.
-
-        Return true if we were successful.
-        """
-        if not self.isFrameReady():
-            return False
-        (
-            self._header["tid"],
-            self._header["pid"],
-            self._header["len"],
-            self._header["uid"],
-        ) = struct.unpack(">HHHB", self._buffer[0 : self._hsize])
-
-        # someone sent us an error? ignore it
-        if self._header["len"] < 2:
-            self.advanceFrame()
-        # we have at least a complete message, continue
-        elif len(self._buffer) - self._hsize + 1 >= self._header["len"]:
-            return True
-        # we don't have enough of a message yet, wait
-        return False
-
-    def advanceFrame(self):
-        """Skip over the current framed message.
-
-        This allows us to skip over the current message after we have processed
-        it or determined that it contains an error. It also has to reset the
-        current frame header handle
-        """
-        length = self._hsize + self._header["len"] -1
-        self._buffer = self._buffer[length:]
-        self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
-
-    def isFrameReady(self):
-        """Check if we should continue decode logic.
-
-        This is meant to be used in a while loop in the decoding phase to let
-        the decoder factory know that there is still data in the buffer.
-
-        :returns: True if ready, False otherwise
-        """
-        return len(self._buffer) > self._hsize
-
-    def getFrame(self):
-        """Return the next frame from the buffered data.
-
-        :returns: The next full frame buffer
-        """
-        length = self._hsize + self._header["len"]
-        return self._buffer[self._hsize : length]
-
-    # ----------------------------------------------------------------------- #
-    # Public Member Functions
-    # ----------------------------------------------------------------------- #
     def decode_data(self, data):
         """Decode data."""
         if len(data) > self._hsize:
@@ -129,31 +70,46 @@ class ModbusSocketFramer(ModbusFramer):
         The processed and decoded messages are pushed to the callback
         function to process and send.
         """
+        def check_frame(self):
+            """Check and decode the next frame."""
+            if not len(self._buffer) > self._hsize:
+                return False
+            (
+                self._header["tid"],
+                self._header["pid"],
+                self._header["len"],
+                self._header["uid"],
+            ) = struct.unpack(">HHHB", self._buffer[0 : self._hsize])
+            if self._header["len"] < 2:
+                length = self._hsize + self._header["len"] -1
+                self._buffer = self._buffer[length:]
+                self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
+            elif len(self._buffer) - self._hsize + 1 >= self._header["len"]:
+                return True
+            Log.debug("Frame check failed, missing part of message!!")
+            return False
+
         while True:
-            if not self.checkFrame():
-                Log.debug("Frame check failed, ignoring!!")
+            if not check_frame(self):
                 return
             if not self._validate_slave_id(slave, single):
                 header_txt = self._header["uid"]
                 Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
                 self.resetFrame()
                 return
-            self._process(callback, tid)
-
-    def _process(self, callback, tid, error=False):
-        """Process incoming packets irrespective error condition."""
-        data = self._buffer if error else self.getFrame()
-        if (result := self.decoder.decode(data)) is None:
-            self.resetFrame()
-            raise ModbusIOException("Unable to decode request")
-        if error and result.function_code < 0x80:
-            raise InvalidMessageReceivedException(result)
-        self.populateResult(result)
-        self.advanceFrame()
-        if tid and tid != result.transaction_id:
-            self.resetFrame()
-        else:
-            callback(result)  # defer or push to a thread?
+            length = self._hsize + self._header["len"] -1
+            data = self._buffer[self._hsize : length]
+            if (result := self.decoder.decode(data)) is None:
+                self.resetFrame()
+                raise ModbusIOException("Unable to decode request")
+            self.populateResult(result)
+            length = self._hsize + self._header["len"] -1
+            self._buffer = self._buffer[length:]
+            self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
+            if tid and tid != result.transaction_id:
+                self.resetFrame()
+            else:
+                callback(result)  # defer or push to a thread?
 
     def buildPacket(self, message):
         """Create a ready to send modbus packet.
@@ -171,6 +127,3 @@ class ModbusSocketFramer(ModbusFramer):
         )
         packet += data
         return packet
-
-
-# __END__

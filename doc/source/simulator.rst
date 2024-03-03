@@ -30,9 +30,6 @@ The REST API allow the test process to be automated
 - check the result with another simple REST API command,
 - test your client app in a true end-to-end fashion.
 
-The simulator replaces :ref:`REPL server classes`
-but not :ref:`REPL client classes`
-
 .. toctree::
    :maxdepth: 4
    :hidden:

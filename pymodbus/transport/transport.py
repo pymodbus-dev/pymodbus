@@ -51,8 +51,10 @@ from __future__ import annotations
 import asyncio
 import dataclasses
 import ssl
+from abc import abstractmethod
 from contextlib import suppress
 from enum import Enum
+from functools import partial
 from typing import Any, Callable, Coroutine
 
 from pymodbus.logging import Log
@@ -91,10 +93,10 @@ class CommParams:
     sslctx: ssl.SSLContext | None = None
 
     # serial
-    baudrate: int | None = None
-    bytesize: int | None = None
-    parity: str | None = None
-    stopbits: int | None = None
+    baudrate: int = -1
+    bytesize: int = -1
+    parity: str = ''
+    stopbits: int = -1
 
     @classmethod
     def generate_ssl(
@@ -116,10 +118,8 @@ class CommParams:
         )
         new_sslctx.check_hostname = False
         new_sslctx.verify_mode = ssl.CERT_NONE
-        new_sslctx.options |= ssl.OP_NO_TLSv1_1
-        new_sslctx.options |= ssl.OP_NO_TLSv1
-        new_sslctx.options |= ssl.OP_NO_SSLv3
-        new_sslctx.options |= ssl.OP_NO_SSLv2
+        new_sslctx.minimum_version = ssl.TLSVersion.TLSv1_2
+        new_sslctx.maximum_version = ssl.TLSVersion.TLSv1_3
         if certfile:
             new_sslctx.load_cert_chain(
                 certfile=certfile, keyfile=keyfile, password=password
@@ -149,9 +149,9 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.is_closing = False
 
         self.transport: asyncio.BaseTransport = None  # type: ignore[assignment]
-        self.loop: asyncio.AbstractEventLoop = None  # type: ignore[assignment]
+        self.loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
         self.recv_buffer: bytes = b""
-        self.call_create: Callable[[], Coroutine[Any, Any, Any]] = lambda: None  # type: ignore[assignment, return-value]
+        self.call_create: Callable[[], Coroutine[Any, Any, Any]] = None  # type: ignore[assignment]
         if self.is_server:
             self.active_connections: dict[str, ModbusProtocol] = {}
         else:
@@ -177,7 +177,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         if self.comm_params.comm_type == CommType.SERIAL and NULLMODEM_HOST in host:
             host, port = NULLMODEM_HOST, int(host[9:].split(":")[1])
         if host == NULLMODEM_HOST:
-            self.call_create = lambda: self.create_nullmodem(port)
+            self.call_create = partial(self.create_nullmodem, port)
             return
         if (
             self.comm_params.comm_type == CommType.SERIAL
@@ -193,7 +193,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
     def init_setup_connect_listen(self, host: str, port: int) -> None:
         """Handle connect/listen handler."""
         if self.comm_params.comm_type == CommType.SERIAL:
-            self.call_create = lambda: create_serial_connection(
+            self.call_create = partial(create_serial_connection,
                 self.loop,
                 self.handle_new_connection,
                 host,
@@ -207,19 +207,19 @@ class ModbusProtocol(asyncio.BaseProtocol):
             return
         if self.comm_params.comm_type == CommType.UDP:
             if self.is_server:
-                self.call_create = lambda: self.loop.create_datagram_endpoint(
+                self.call_create = partial(self.loop.create_datagram_endpoint,
                     self.handle_new_connection,
                     local_addr=(host, port),
                 )
             else:
-                self.call_create = lambda: self.loop.create_datagram_endpoint(
+                self.call_create = partial(self.loop.create_datagram_endpoint,
                     self.handle_new_connection,
                     remote_addr=(host, port),
                 )
             return
         # TLS and TCP
         if self.is_server:
-            self.call_create = lambda: self.loop.create_server(
+            self.call_create = partial(self.loop.create_server,
                 self.handle_new_connection,
                 host,
                 port,
@@ -228,7 +228,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 start_serving=True,
             )
         else:
-            self.call_create = lambda: self.loop.create_connection(
+            self.call_create = partial(self.loop.create_connection,
                 self.handle_new_connection,
                 host,
                 port,
@@ -236,11 +236,9 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 ssl=self.comm_params.sslctx,
             )
 
-    async def transport_connect(self) -> bool:
+    async def connect(self) -> bool:
         """Handle generic connect and call on to specific transport connect."""
         Log.debug("Connecting {}", self.comm_params.comm_name)
-        if not self.loop:
-            self.loop = asyncio.get_running_loop()
         self.is_closing = False
         try:
             self.transport, _protocol = await asyncio.wait_for(
@@ -252,11 +250,9 @@ class ModbusProtocol(asyncio.BaseProtocol):
             return False
         return bool(self.transport)
 
-    async def transport_listen(self) -> bool:
+    async def listen(self) -> bool:
         """Handle generic listen and call on to specific transport listen."""
         Log.debug("Awaiting connections {}", self.comm_params.comm_name)
-        if not self.loop:
-            self.loop = asyncio.get_running_loop()
         self.is_closing = False
         try:
             self.transport = await self.call_create()
@@ -264,13 +260,13 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 self.transport = self.transport[0]
         except OSError as exc:
             Log.warning("Failed to start server {}", exc)
-            # self.transport_close(intern=True)
+            # self.close(intern=True)
             return False
         return True
 
-    # ---------------------------------- #
+    # --------------------------------------- #
     # ModbusProtocol asyncio standard methods #
-    # ---------------------------------- #
+    # --------------------------------------- #
     def connection_made(self, transport: asyncio.BaseTransport) -> None:
         """Call from asyncio, when a connection is made.
 
@@ -289,7 +285,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         if not self.transport or self.is_closing:
             return
         Log.debug("Connection lost {} due to {}", self.comm_params.comm_name, reason)
-        self.transport_close(intern=True)
+        self.close(intern=True)
         if (
             not self.is_server
             and not self.listener
@@ -358,29 +354,27 @@ class ModbusProtocol(asyncio.BaseProtocol):
     # --------- #
     # callbacks #
     # --------- #
+    @abstractmethod
     def callback_new_connection(self) -> ModbusProtocol:
         """Call when listener receive new connection request."""
-        Log.debug("callback_new_connection called")
-        return ModbusProtocol(self.comm_params, False)
 
+    @abstractmethod
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
-        Log.debug("callback_connected called")
 
+    @abstractmethod
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""
-        Log.debug("callback_disconnected called: {}", exc)
 
+    @abstractmethod
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
-        Log.debug("callback_data called: {} addr={}", data, ":hex", addr)
-        return 0
 
     # ----------------------------------- #
     # Helper methods for external classes #
     # ----------------------------------- #
-    def transport_send(self, data: bytes, addr: tuple | None = None) -> None:
-        """Send request.
+    def send(self, data: bytes, addr: tuple | None = None) -> None:
+        """Send modbus message.
 
         :param data: non-empty bytes object with data to send.
         :param addr: optional addr, only used for UDP server.
@@ -396,7 +390,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         else:
             self.transport.write(data)  # type: ignore[attr-defined]
 
-    def transport_close(self, intern: bool = False, reconnect: bool = False) -> None:
+    def close(self, intern: bool = False, reconnect: bool = False) -> None:
         """Close connection.
 
         :param intern: (default false), True if called internally (temporary close)
@@ -414,7 +408,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
             for _key, value in self.active_connections.items():
                 value.listener = None
                 value.callback_disconnected(None)
-                value.transport_close()
+                value.close()
             self.active_connections = {}
             return
         if not reconnect and self.reconnect_task:
@@ -471,7 +465,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 await asyncio.sleep(self.reconnect_delay_current)
                 if self.comm_params.on_reconnect_callback:
                     self.comm_params.on_reconnect_callback()
-                if await self.transport_connect():
+                if await self.connect():
                     break
                 self.reconnect_delay_current = min(
                     2 * self.reconnect_delay_current,
@@ -490,7 +484,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
     async def __aexit__(self, _class, _value, _traceback) -> None:
         """Implement the client with async exit block."""
-        self.transport_close()
+        self.close()
 
     def __str__(self) -> str:
         """Build a string representation of the connection."""
@@ -599,7 +593,8 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
     def write(self, data: bytes) -> None:
         """Send data."""
         if not self.manipulator:
-            self.other_modem.protocol.data_received(data)
+            if self.other_modem:
+                self.other_modem.protocol.data_received(data)
             return
         data_manipulated = self.manipulator(data)
         for part in data_manipulated:

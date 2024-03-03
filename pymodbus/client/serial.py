@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import time
 from functools import partial
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
@@ -20,7 +20,9 @@ try:
     PYSERIAL_MISSING = False
 except ImportError:
     PYSERIAL_MISSING = True
-
+    if TYPE_CHECKING:  # always False at runtime
+        # type checkers do not understand the Raise RuntimeError in __init__()
+        import serial
 
 class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
     """**AsyncModbusSerialClient**.
@@ -97,9 +99,9 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         """Connect Async client."""
         self.reset_delay()
         Log.debug("Connecting to {}.", self.comm_params.host)
-        return await self.transport_connect()
+        return await self.base_connect()
 
-    def close(self, reconnect: bool = False) -> None:
+    def close(self, reconnect: bool = False) -> None:  # type: ignore[override]
         """Close connection."""
         super().close(reconnect=reconnect)
 
@@ -125,7 +127,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     :param timeout: Timeout for a request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
-    :param close_comm_on_error: Close connection on error.
     :param strict: Strict timing, 1.5 character between requests.
     :param broadcast_enable: True to treat id 0 as broadcast address.
     :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
@@ -151,7 +152,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     """
 
     state = ModbusTransactionState.IDLE
-    inter_char_timeout: float = 0
+    inter_byte_timeout: float = 0
     silent_interval: float = 0
 
     def __init__(
@@ -162,6 +163,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         bytesize: int = 8,
         parity: str = "N",
         stopbits: int = 1,
+        strict: bool = True,
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus Serial Client."""
@@ -175,7 +177,8 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             stopbits=stopbits,
             **kwargs,
         )
-        self.socket = None
+        self.socket: serial.Serial | None = None
+        self.strict = bool(strict)
 
         self.last_frame_end = None
 
@@ -189,7 +192,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         if baudrate > 19200:
             self.silent_interval = 1.75 / 1000  # ms
         else:
-            self.inter_char_timeout = 1.5 * self._t0
+            self.inter_byte_timeout = 1.5 * self._t0
             self.silent_interval = 3.5 * self._t0
         self.silent_interval = round(self.silent_interval, 6)
 
@@ -212,8 +215,8 @@ class ModbusSerialClient(ModbusBaseSyncClient):
                 parity=self.comm_params.parity,
                 exclusive=True,
             )
-            if self.params.strict:
-                self.socket.interCharTimeout = self.inter_char_timeout
+            if self.strict:
+                self.socket.inter_byte_timeout = self.inter_byte_timeout
             self.last_frame_end = None
         except serial.SerialException as msg:
             Log.error("{}", msg)
@@ -271,9 +274,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Read data from the underlying descriptor."""
         super().recv(size)
         if not self.socket:
-            raise ConnectionException(
-                self.__str__()  # pylint: disable=unnecessary-dunder-call
-            )
+            raise ConnectionException(str(self))
         if size is None:
             size = self._wait_for_data()
         if size > self._in_waiting():
@@ -284,7 +285,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     def is_socket_open(self):
         """Check if socket is open."""
         if self.socket:
-            return self.socket.is_open if hasattr(self.socket, "is_open") else self.socket.isOpen()
+            return self.socket.is_open
         return False
 
     def __repr__(self):

@@ -7,7 +7,8 @@ import dataclasses
 import importlib
 import json
 import os
-from time import time
+from time import sleep
+from typing import TYPE_CHECKING
 
 
 try:
@@ -16,6 +17,9 @@ try:
     AIOHTTP_MISSING = False
 except ImportError:
     AIOHTTP_MISSING = True
+    if TYPE_CHECKING:  # always False at runtime
+        # type checkers do not understand the Raise RuntimeError in __init__()
+        from aiohttp import web
 
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.datastore.simulator import Label
@@ -160,7 +164,7 @@ class ModbusSimulatorServer:
         self.modbus_server = comm(framer=framer, context=datastore, **server)
         self.serving: asyncio.Future = asyncio.Future()
         self.log_file = log_file
-        self.site = None
+        self.site: web.TCPSite | None = None
         self.runner: web.AppRunner
         self.http_host = http_host
         self.http_port = http_port
@@ -203,20 +207,21 @@ class ModbusSimulatorServer:
                 self.generator_html[entry][0] = handle.read()
         self.refresh_rate = 0
         self.register_filter: list[int] = []
-        self.call_list: list[tuple] = []
+        self.call_list: list[CallTracer] = []
         self.request_lookup = ServerDecoder.getFCdict()
         self.call_monitor = CallTypeMonitor()
         self.call_response = CallTypeResponse()
+        self.api_key: web.AppKey = web.AppKey("modbus_server")
 
     async def start_modbus_server(self, app):
         """Start Modbus server as asyncio task."""
         try:
             if getattr(self.modbus_server, "start", None):
                 await self.modbus_server.start()
-            app["modbus_server"] = asyncio.create_task(
+            app[self.api_key] = asyncio.create_task(
                 self.modbus_server.serve_forever()
             )
-            app["modbus_server"].set_name("simulator modbus server")
+            app[self.api_key].set_name("simulator modbus server")
         except Exception as exc:
             Log.error("Error starting modbus server, reason: {}", exc)
             raise exc
@@ -228,9 +233,9 @@ class ModbusSimulatorServer:
         """Stop modbus server."""
         Log.info("Stopping modbus server")
         await self.modbus_server.shutdown()
-        app["modbus_server"].cancel()
+        app[self.api_key].cancel()
         with contextlib.suppress(asyncio.exceptions.CancelledError):
-            await app["modbus_server"]
+            await app[self.api_key]
 
         Log.info("Modbus server Stopped")
 
@@ -255,7 +260,7 @@ class ModbusSimulatorServer:
         self.site = None
         if not self.serving.done():
             self.serving.set_result(True)
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0)
 
     async def handle_html_static(self, request):
         """Handle static html."""
@@ -530,7 +535,7 @@ class ModbusSimulatorServer:
         self.call_monitor.range_start = range_start
         self.call_monitor.range_stop = range_stop
         self.call_monitor.function = (
-            int(params["function"]) if params["function"] else ""
+            int(params["function"]) if params["function"] else -1
         )
         self.call_monitor.hex = "show_hex" in params
         self.call_monitor.decode = "show_decode" in params
@@ -598,7 +603,7 @@ class ModbusSimulatorServer:
                 fc=response.function_code,
                 address=response.address if hasattr(response, "address") else -1,
                 count=response.count if hasattr(response, "count") else -1,
-                data="-",
+                data=b"-",
             )
             self.call_list.append(tracer)
             self.call_monitor.trace_response = False
@@ -616,7 +621,7 @@ class ModbusSimulatorServer:
                     "Delaying response by {}s for all incoming requests",
                     self.call_response.delay,
                 )
-                time.sleep(self.call_response.delay)  # change to async
+                sleep(self.call_response.delay)  # change to async
             else:
                 pass
                 # self.call_response.change_rate
@@ -645,7 +650,7 @@ class ModbusSimulatorServer:
         """
         if self.call_monitor.function not in {-1, request.function_code}:
             return
-        address = (request.address if hasattr(request, "address") else -1,)
+        address = request.address if hasattr(request, "address") else -1
         if self.call_monitor.range_start != -1 and address != -1:
             if (
                 self.call_monitor.range_start > address
@@ -657,7 +662,7 @@ class ModbusSimulatorServer:
             fc=request.function_code,
             address=address,
             count=request.count if hasattr(request, "count") else -1,
-            data="-",
+            data=b"-",
         )
         self.call_list.append(tracer)
         self.call_monitor.trace_response = True

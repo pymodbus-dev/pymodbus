@@ -2,6 +2,7 @@
 
 __all__ = [
     "DictTransactionManager",
+    "ModbusTransactionManager",
     "ModbusSocketFramer",
     "ModbusTlsFramer",
     "ModbusRtuFramer",
@@ -19,7 +20,6 @@ from threading import RLock
 from pymodbus.exceptions import (
     InvalidMessageReceivedException,
     ModbusIOException,
-    NotImplementedException,
 )
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.binary_framer import ModbusBinaryFramer
@@ -47,6 +47,8 @@ class ModbusTransactionManager:
         while (count < 3)
 
     This module helps to abstract this away from the framer and protocol.
+
+    Results are keyed based on the supplied transaction id.
     """
 
     def __init__(self, client, **kwargs):
@@ -62,10 +64,18 @@ class ModbusTransactionManager:
         self.retry_on_empty = kwargs.get("retry_on_empty", False)
         self.retry_on_invalid = kwargs.get("retry_on_invalid", False)
         self.retries = kwargs.get("retries", 3)
+        self.transactions = {}
         self._transaction_lock = RLock()
         self._no_response_devices = []
         if client:
             self._set_adu_size()
+
+    def __iter__(self):
+        """Iterate over the current managed transactions.
+
+        :returns: An iterator of the managed transactions
+        """
+        return iter(self.transactions.keys())
 
     def _set_adu_size(self):
         """Set adu size."""
@@ -422,76 +432,6 @@ class ModbusTransactionManager:
 
         :param request: The request to hold on to
         :param tid: The overloaded transaction id to use
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException("addTransaction")
-
-    def getTransaction(self, tid):
-        """Return a transaction matching the referenced tid.
-
-        If the transaction does not exist, None is returned
-
-        :param tid: The transaction to retrieve
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException("getTransaction")
-
-    def delTransaction(self, tid):
-        """Remove a transaction matching the referenced tid.
-
-        :param tid: The transaction to remove
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException("delTransaction")
-
-    def getNextTID(self):
-        """Retrieve the next unique transaction identifier.
-
-        This handles incrementing the identifier after
-        retrieval
-
-        :returns: The next unique transaction identifier
-        """
-        self.tid = (self.tid + 1) & 0xFFFF
-        return self.tid
-
-    def reset(self):
-        """Reset the transaction identifier."""
-        self.tid = 0
-        self.transactions = type(  # pylint: disable=attribute-defined-outside-init
-            self.transactions
-        )()
-
-
-class DictTransactionManager(ModbusTransactionManager):
-    """Implements a transaction for a manager.
-
-    Where the results are keyed based on the supplied transaction id.
-    """
-
-    def __init__(self, client, **kwargs):
-        """Initialize an instance of the ModbusTransactionManager.
-
-        :param client: The client socket wrapper
-        """
-        self.transactions = {}
-        super().__init__(client, **kwargs)
-
-    def __iter__(self):
-        """Iterate over the current managed transactions.
-
-        :returns: An iterator of the managed transactions
-        """
-        return iter(self.transactions.keys())
-
-    def addTransaction(self, request, tid=None):
-        """Add a transaction to the handler.
-
-        This holds the requests in case it needs to be resent.
-        After being sent, the request is removed.
-
-        :param request: The request to hold on to
-        :param tid: The overloaded transaction id to use
         """
         tid = tid if tid is not None else request.transaction_id
         Log.debug("Adding transaction {}", tid)
@@ -519,3 +459,22 @@ class DictTransactionManager(ModbusTransactionManager):
         """
         Log.debug("deleting transaction {}", tid)
         self.transactions.pop(tid, None)
+
+    def getNextTID(self):
+        """Retrieve the next unique transaction identifier.
+
+        This handles incrementing the identifier after
+        retrieval
+
+        :returns: The next unique transaction identifier
+        """
+        self.tid = (self.tid + 1) & 0xFFFF
+        return self.tid
+
+    def reset(self):
+        """Reset the transaction identifier."""
+        self.tid = 0
+        self.transactions = {}
+
+class DictTransactionManager(ModbusTransactionManager):
+    """Old alias for ModbusTransactionManager."""

@@ -9,6 +9,7 @@ import pytest
 from pymodbus.datastore import ModbusSimulatorContext
 from pymodbus.datastore.simulator import Cell, CellType, Label
 from pymodbus.server import ModbusSimulatorServer
+from pymodbus.transport import NULLMODEM_HOST
 
 
 FX_READ_BIT = 1
@@ -101,7 +102,7 @@ class TestSimulator:
     default_server_config = {
         "server": {
             "comm": "tcp",
-            "host": "0.0.0.0",
+            "host": NULLMODEM_HOST,
             "port": 5020,
             "ignore_missing_slaves": False,
             "framer": "socket",
@@ -585,5 +586,5 @@ class TestSimulator:
         """Test init simulator server."""
         task = ModbusSimulatorServer()
         await task.run_forever(only_start=True)
-        await asyncio.sleep(5)
+        await asyncio.sleep(0.5)
         await task.stop()

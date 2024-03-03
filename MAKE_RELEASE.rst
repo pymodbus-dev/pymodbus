@@ -14,7 +14,7 @@ Prepare/make release on dev.
    * Control / Update API_changes.rst
    * Update CHANGELOG.rst
       * Add commits from last release, but selectively !
-        git log --oneline v3.6.1..HEAD > commit.log
+        git log --oneline v3.6.5..HEAD > commit.log
         git log --pretty="%an" v3.6.1..HEAD | sort -uf > authors.log
         update AUTHORS
         cd doc; ./build_html
@@ -51,3 +51,10 @@ Prepare release on dev for new commits.
 ------------------------------------------------------------
 * Make pull request "prepare dev", with the following:
    * Update pymodbus/__init__.py with version number (__version__ X.Y.Zpre)
+
+
+------------------------------------------------------------
+Architecture documentation.
+------------------------------------------------------------
+* install graphviz
+* pyreverse -k -o jpg pymodbus

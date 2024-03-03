@@ -12,8 +12,6 @@ __all__ = [
     "default",
     "computeCRC",
     "checkCRC",
-    "computeLRC",
-    "checkLRC",
     "rtuFrameSize",
 ]
 
@@ -203,32 +201,6 @@ def checkCRC(data, check):  # pylint: disable=invalid-name
     :returns: True if matched, False otherwise
     """
     return computeCRC(data) == check
-
-
-def computeLRC(data):  # pylint: disable=invalid-name
-    """Use to compute the longitudinal redundancy check against a string.
-
-    This is only used on the serial ASCII
-    modbus protocol. A full description of this implementation
-    can be found in appendix B of the serial line modbus description.
-
-    :param data: The data to apply a lrc to
-    :returns: The calculated LRC
-
-    """
-    lrc = sum(int(a) for a in data) & 0xFF
-    lrc = (lrc ^ 0xFF) + 1
-    return lrc & 0xFF
-
-
-def checkLRC(data, check):  # pylint: disable=invalid-name
-    """Check if the passed in data matches the LRC.
-
-    :param data: The data to calculate
-    :param check: The LRC to validate
-    :returns: True if matched, False otherwise
-    """
-    return computeLRC(data) == check
 
 
 def rtuFrameSize(data, byte_count_pos):  # pylint: disable=invalid-name

@@ -3,7 +3,6 @@ import struct
 
 from pymodbus.utilities import (
     checkCRC,
-    checkLRC,
     default,
     dict_property,
     pack_bitstring,
@@ -92,11 +91,6 @@ class TestUtility:
         """Test all string <=> bit packing functions."""
         assert unpack_bitstring(b"\x55") == self.bits
         assert pack_bitstring(self.bits) == b"\x55"
-
-    def test_longitudinal_redundancycheck(self):
-        """Test the longitudinal redundancy check code."""
-        assert checkLRC(self.data, 0x1C)
-        assert checkLRC(self.string, 0x0C)
 
     def test_cyclic_redundancy_check(self):
         """Test the cyclic redundancy check code."""

@@ -161,10 +161,10 @@ class TestBitMessage:
 
     def test_read_file_record_response_encode(self):
         """Test basic bit message encoding/decoding."""
-        records = [FileRecord(record_data=b"\x00\x01\x02\x03")]
+        records = [FileRecord(record_data=b"\x00\x01\x02\x03\x04\x05")]
         handle = ReadFileRecordResponse(records)
         result = handle.encode()
-        assert result == b"\x06\x06\x02\x00\x01\x02\x03"
+        assert result == b"\x08\x03\x06\x00\x01\x02\x03\x04\x05"
 
     def test_read_file_record_response_decode(self):
         """Test basic bit message encoding/decoding."""

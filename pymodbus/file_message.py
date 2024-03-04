@@ -181,7 +181,7 @@ class ReadFileRecordResponse(ModbusResponse):
         total = sum(record.response_length + 1 for record in self.records)
         packet = struct.pack("B", total)
         for record in self.records:
-            packet += struct.pack(">BB", 0x06, record.record_length)
+            packet += struct.pack(">BB", record.record_length, 0x06)
             packet += record.record_data
         return packet
 

@@ -47,7 +47,7 @@ serial = [
     "pyserial>=3.5"
 ]
 repl = [
-   "pymodbus-repl@git+https://github.com/pymodbus-dev/repl"
+   "pymodbus-repl>=2.0.3"
 ]
 
 simulator = [

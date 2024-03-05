@@ -178,6 +178,11 @@ class ModbusRtuFramer(ModbusFramer):
             + data
         )
         packet += struct.pack(">H", MessageRTU.compute_CRC(packet))
+
+        data_new = message.function_code.to_bytes(1, 'big') + data
+        packet_new = self.message_handler.encode(data_new, message.slave_id, message.transaction_id)
+        assert packet == packet_new, "RTU FRAMER BuildPacket failed!"
+
         # Ensure that transaction is actually the slave id for serial comms
         if message.slave_id:
             message.transaction_id = message.slave_id

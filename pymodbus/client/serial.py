@@ -101,9 +101,9 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         Log.debug("Connecting to {}.", self.comm_params.host)
         return await self.base_connect()
 
-    def close(self, reconnect: bool = False) -> None:  # type: ignore[override] # pylint: disable=arguments-differ
+    def close(self, reconnect: bool = False, intern: bool = False) -> None:  # type: ignore[override]
         """Close connection."""
-        super().close(reconnect=reconnect)
+        super().close(reconnect=reconnect, intern=intern)
 
 
 class ModbusSerialClient(ModbusBaseSyncClient):

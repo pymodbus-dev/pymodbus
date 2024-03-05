@@ -5,7 +5,7 @@ import dataclasses
 import random
 import struct
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any, Callable, TypedDict
 
 
 WORD_SIZE = 16
@@ -96,7 +96,14 @@ class Label:  # pylint: disable=too-many-instance-attributes
             raise RuntimeError(txt)
         return config_part[key]
 
-
+ConfigType = TypedDict('ConfigType' ,  # noqa: UP013
+    {
+        'type': int,
+        'next': int | None,
+        'value': int,
+        'action': str | None,
+        'method': Callable[..., None]
+    })
 class Setup:
     """Setup simulator.
 
@@ -107,41 +114,41 @@ class Setup:
         """Initialize."""
         self.runtime = runtime
         self.config = {}
-        self.config_types: dict[str, dict[str, Any]] = {
+        self.config_types: dict[str, ConfigType] = {
             Label.type_bits: {
-                Label.type: CellType.BITS,
-                Label.next: None,
-                Label.value: 0,
-                Label.action: None,
-                Label.method: self.handle_type_bits,
+                'type': CellType.BITS,
+                'next': None,
+                'value': 0,
+                'action': None,
+                'method': self.handle_type_bits,
             },
             Label.type_uint16: {
-                Label.type: CellType.UINT16,
-                Label.next: None,
-                Label.value: 0,
-                Label.action: None,
-                Label.method: self.handle_type_uint16,
+                'type': CellType.UINT16,
+                'next': None,
+                'value': 0,
+                'action': None,
+                'method': self.handle_type_uint16,
             },
             Label.type_uint32: {
-                Label.type: CellType.UINT32,
-                Label.next: CellType.NEXT,
-                Label.value: 0,
-                Label.action: None,
-                Label.method: self.handle_type_uint32,
+                'type': CellType.UINT32,
+                'next': CellType.NEXT,
+                'value': 0,
+                'action': None,
+                'method': self.handle_type_uint32,
             },
             Label.type_float32: {
-                Label.type: CellType.FLOAT32,
-                Label.next: CellType.NEXT,
-                Label.value: 0,
-                Label.action: None,
-                Label.method: self.handle_type_float32,
+                'type': CellType.FLOAT32,
+                'next': CellType.NEXT,
+                'value': 0,
+                'action': None,
+                'method': self.handle_type_float32,
             },
             Label.type_string: {
-                Label.type: CellType.STRING,
-                Label.next: CellType.NEXT,
-                Label.value: 0,
-                Label.action: None,
-                Label.method: self.handle_type_string,
+                'type': CellType.STRING,
+                'next': CellType.NEXT,
+                'value': 0,
+                'action': None,
+                'method': self.handle_type_string,
             },
         }
 
@@ -213,7 +220,7 @@ class Setup:
         self.runtime.registers[start].action = action
         self.runtime.registers[start].action_kwargs = action_kwargs
 
-    def handle_setup_section(self):
+    def handle_setup_section(self) -> None:
         """Load setup section."""
         layout = Label.try_get(Label.setup, self.config)
         self.runtime.fc_offset = {key: 0 for key in range(25)}
@@ -243,12 +250,12 @@ class Setup:
         defaults_value = Label.try_get(Label.value, defaults)
         defaults_action = Label.try_get(Label.action, defaults)
         for key, entry in self.config_types.items():
-            entry[Label.value] = Label.try_get(key, defaults_value)
+            entry['value'] = Label.try_get(key, defaults_value)
             if (
                 action := Label.try_get(key, defaults_action)
             ) not in self.runtime.action_name_to_id:
                 raise RuntimeError(f"ERROR illegal action {key} in {defaults_action}")
-            entry[Label.action] = action
+            entry['action'] = action
         del self.config[Label.setup]
 
     def handle_invalid_address(self):
@@ -282,25 +289,25 @@ class Setup:
                 reg.access = True
         del self.config[Label.write]
 
-    def handle_types(self):
+    def handle_types(self) -> None:
         """Handle the different types."""
         for section, type_entry in self.config_types.items():
             layout = Label.try_get(section, self.config)
             for entry in layout:
                 if not isinstance(entry, dict):
-                    entry = {Label.addr: entry}
-                regs = Label.try_get(Label.addr, entry)
+                    entry = {'addr': entry}
+                regs = Label.try_get('addr', entry)
                 if not isinstance(regs, list):
                     regs = [regs, regs]
                 start = regs[0]
                 if (stop := regs[1]) >= self.runtime.register_count:
                     raise RuntimeError(f'Error "{section}" {start}, {stop} illegal')
-                type_entry[Label.method](
+                type_entry['method'](
                     start,
                     stop + 1,
-                    entry.get(Label.value, type_entry[Label.value]),
+                    entry.get(Label.value, type_entry['value']),
                     self.runtime.action_name_to_id[
-                        entry.get(Label.action, type_entry[Label.action])
+                        entry.get('action', type_entry['action'])
                     ],
                     entry.get(Label.kwargs, None),
                 )

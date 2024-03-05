@@ -46,7 +46,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
         super().__init__(params, False)
         self.server = owner
         self.running = False
-        self.receive_queue = asyncio.Queue()
+        self.receive_queue: asyncio.Queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
         self.framer: ModbusFramer
 
@@ -130,7 +130,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
             single=single,
         )
 
-    async def handle(self):
+    async def handle(self) -> None:
         """Coroutine which represents a single master <=> slave conversation.
 
         Once the client connection is established, the data chunks will be

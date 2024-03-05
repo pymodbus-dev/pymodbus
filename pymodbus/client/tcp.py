@@ -87,7 +87,7 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
         )
         return await self.base_connect()
 
-    def close(self, reconnect: bool = False) -> None:  # type: ignore[override]
+    def close(self, reconnect: bool = False) -> None:  # type: ignore[override] # pylint: disable=arguments-differ
         """Close connection."""
         super().close(reconnect=reconnect)
 

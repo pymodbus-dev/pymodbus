@@ -7,6 +7,7 @@ from pymodbus.exceptions import (
 )
 from pymodbus.framer.base import TLS_FRAME_HEADER, ModbusFramer
 from pymodbus.logging import Log
+from pymodbus.message.tls import MessageTLS
 
 
 # --------------------------------------------------------------------------- #
@@ -34,6 +35,7 @@ class ModbusTlsFramer(ModbusFramer):
         """
         super().__init__(decoder, client)
         self._hsize = 0x0
+        self.message_encoder = MessageTLS([0], True)
 
     def decode_data(self, data):
         """Decode data."""

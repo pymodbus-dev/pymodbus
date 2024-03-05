@@ -7,6 +7,7 @@ from pymodbus.exceptions import (
 )
 from pymodbus.framer.base import SOCKET_FRAME_HEADER, ModbusFramer
 from pymodbus.logging import Log
+from pymodbus.message.socket import MessageSocket
 
 
 # --------------------------------------------------------------------------- #
@@ -42,6 +43,7 @@ class ModbusSocketFramer(ModbusFramer):
         """
         super().__init__(decoder, client)
         self._hsize = 0x07
+        self.message_handler = MessageSocket([0], True)
 
     def decode_data(self, data):
         """Decode data."""

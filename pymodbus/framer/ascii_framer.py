@@ -41,6 +41,7 @@ class ModbusAsciiFramer(ModbusFramer):
         self._hsize = 0x02
         self._start = b":"
         self._end = b"\r\n"
+        self.message_handler = MessageAscii([0], True)
 
     def decode_data(self, data):
         """Decode data."""

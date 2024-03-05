@@ -8,7 +8,8 @@ from pymodbus.exceptions import (
 )
 from pymodbus.framer.base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
 from pymodbus.logging import Log
-from pymodbus.utilities import ModbusTransactionState, checkCRC, computeCRC
+from pymodbus.message.rtu import MessageRTU
+from pymodbus.utilities import ModbusTransactionState
 
 
 RTU_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
@@ -62,6 +63,7 @@ class ModbusRtuFramer(ModbusFramer):
         self._end = b"\x0d\x0a"
         self._min_frame_size = 4
         self.function_codes = decoder.lookup.keys() if decoder else {}
+        self.message_handler = MessageRTU([0], True)
 
     def decode_data(self, data):
         """Decode data."""
@@ -131,7 +133,7 @@ class ModbusRtuFramer(ModbusFramer):
                 data = self._buffer[: frame_size - 2]
                 crc = self._header["crc"]
                 crc_val = (int(crc[0]) << 8) + int(crc[1])
-                return checkCRC(data, crc_val)
+                return MessageRTU.check_CRC(data, crc_val)
             except (IndexError, KeyError, struct.error):
                 return False
 
@@ -175,7 +177,7 @@ class ModbusRtuFramer(ModbusFramer):
             struct.pack(RTU_FRAME_HEADER, message.slave_id, message.function_code)
             + data
         )
-        packet += struct.pack(">H", computeCRC(packet))
+        packet += struct.pack(">H", MessageRTU.compute_CRC(packet))
         # Ensure that transaction is actually the slave id for serial comms
         if message.slave_id:
             message.transaction_id = message.slave_id

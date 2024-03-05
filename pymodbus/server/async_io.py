@@ -131,15 +131,14 @@ class ModbusServerRequestHandler(ModbusProtocol):
         )
 
     async def handle(self):
-        """Return Asyncio coroutine which represents a single conversation.
-
-        between the modbus slave and master
+        """Coroutine which represents a single master <=> slave conversation.
 
         Once the client connection is established, the data chunks will be
         fed to this coroutine via the asyncio.Queue object which is fed by
         the ModbusServerRequestHandler class's callback Future.
 
-        This callback future gets data from either
+        This callback future gets data from either asyncio.BaseProtocol.data_received
+        or asyncio.DatagramProtocol.datagram_received.
 
         This function will execute without blocking in the while-loop and
         yield to the asyncio event loop when the frame is exhausted.

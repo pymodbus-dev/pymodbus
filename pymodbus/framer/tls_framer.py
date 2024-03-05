@@ -82,6 +82,10 @@ class ModbusTlsFramer(ModbusFramer):
         data = message.encode()
         packet = struct.pack(TLS_FRAME_HEADER, message.function_code)
         packet += data
+
+        data_new = message.function_code.to_bytes(1,'big') + data
+        packet_new = self.message_encoder.encode(data_new, message.slave_id, message.transaction_id)
+        assert packet == packet_new, "TLS FRAMER BuildPacket failed!"
         return packet
 
 

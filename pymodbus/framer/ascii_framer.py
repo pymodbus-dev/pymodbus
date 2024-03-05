@@ -113,7 +113,12 @@ class ModbusAsciiFramer(ModbusFramer):
         packet.extend(b2a_hex(encoded))
         packet.extend(f"{checksum:02x}".encode())
         packet.extend(self._end)
-        return bytes(packet).upper()
+        packet = bytes(packet).upper()
+
+        data = message.function_code.to_bytes(1,'big') + encoded
+        packet_new = self.message_handler.encode(data, message.slave_id, message.transaction_id)
+        assert packet == packet_new, "ASCII FRAMER BuildPacket failed!"
+        return packet
 
 
 # __END__

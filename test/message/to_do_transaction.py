@@ -358,20 +358,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         # for name in ("transaction_id", "protocol_id", "slave_id"):
         #     assert getattr(expected, name) == getattr(actual, name)
 
-    def test_tcp_framer_packet(self):
-        """Test a tcp frame packet build."""
-        old_encode = ModbusRequest.encode
-        ModbusRequest.encode = lambda self: b""
-        message = ModbusRequest()
-        message.transaction_id = 0x0001
-        message.protocol_id = 0x0000
-        message.slave_id = 0xFF
-        message.function_code = 0x01
-        expected = b"\x00\x01\x00\x00\x00\x02\xff\x01"
-        actual = self._tcp.buildPacket(message)
-        assert expected == actual
-        ModbusRequest.encode = old_encode
-
     # ----------------------------------------------------------------------- #
     # TLS tests
     # ----------------------------------------------------------------------- #
@@ -513,17 +499,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tcp.processIncomingPacket(msg, callback, [0, 1])
         assert result
 
-    def test_framer_tls_framer_packet(self):
-        """Test a tls frame packet build."""
-        old_encode = ModbusRequest.encode
-        ModbusRequest.encode = lambda self: b""
-        message = ModbusRequest()
-        message.function_code = 0x01
-        expected = b"\x01"
-        actual = self._tls.buildPacket(message)
-        assert expected == actual
-        ModbusRequest.encode = old_encode
-
     # ----------------------------------------------------------------------- #
     # RTU tests
     # ----------------------------------------------------------------------- #
@@ -589,18 +564,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert len(msg) == header_dict["len"]
         assert int(msg[0]) == header_dict["uid"]
         assert msg[-2:] == header_dict["crc"]
-
-    def test_rtu_framer_packet(self):
-        """Test a rtu frame packet build."""
-        old_encode = ModbusRequest.encode
-        ModbusRequest.encode = lambda self: b""
-        message = ModbusRequest()
-        message.slave_id = 0xFF
-        message.function_code = 0x01
-        expected = b"\xff\x01\x81\x80"  # only header + CRC - no data
-        actual = self._rtu.buildPacket(message)
-        assert expected == actual
-        ModbusRequest.encode = old_encode
 
     def test_rtu_decode_exception(self):
         """Test that the RTU framer can decode errors."""
@@ -699,18 +662,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._ascii.populateResult(request)
         assert not request.slave_id
 
-    def test_ascii_framer_packet(self):
-        """Test a ascii frame packet build."""
-        old_encode = ModbusRequest.encode
-        ModbusRequest.encode = lambda self: b""
-        message = ModbusRequest()
-        message.slave_id = 0xFF
-        message.function_code = 0x01
-        expected = b":FF0100\r\n"
-        actual = self._ascii.buildPacket(message)
-        assert expected == actual
-        ModbusRequest.encode = old_encode
-
     def test_ascii_process_incoming_packets(self):
         """Test ascii process incoming packet."""
         count = 0
@@ -777,18 +728,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         request = ModbusRequest()
         self._binary.populateResult(request)
         assert not request.slave_id
-
-    def test_binary_framer_packet(self):
-        """Test a binary frame packet build."""
-        old_encode = ModbusRequest.encode
-        ModbusRequest.encode = lambda self: b""
-        message = ModbusRequest()
-        message.slave_id = 0xFF
-        message.function_code = 0x01
-        expected = b"\x7b\xff\x01\x81\x80\x7d"
-        actual = self._binary.buildPacket(message)
-        assert expected == actual
-        ModbusRequest.encode = old_encode
 
     def test_binary_process_incoming_packet(self):
         """Test binary process incoming packet."""

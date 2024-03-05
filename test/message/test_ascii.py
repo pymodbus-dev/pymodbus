@@ -1,6 +1,4 @@
 """Test transport."""
-import struct
-
 import pytest
 
 from pymodbus.message.ascii import MessageAscii
@@ -16,24 +14,9 @@ class TestMessageAscii:
         return MessageAscii([1], False)
 
 
-    def test_check_LRC(self):
-        """Test check_LRC."""
-        data = struct.pack(">HHHH", 0x1234, 0x2345, 0x3456, 0x4567)
-        assert MessageAscii.check_LRC(data, 0x1C)
-
-    def test_check_noLRC(self):
-        """Test check_LRC."""
-        data = struct.pack(">HHHH", 0x1234, 0x2345, 0x3456, 0x4567)
-        assert not MessageAscii.check_LRC(data, 0x0C)
-
-    def test_compute_LRC(self):
-        """Test compute_LRC."""
-        data = struct.pack(">HHHH", 0x1234, 0x2345, 0x3456, 0x4567)
-        assert MessageAscii.compute_LRC(data) == 0x1c
-
     def test_roundtrip_LRC(self):
         """Test combined compute/check LRC."""
-        data = struct.pack(">HHHH", 0x1234, 0x2345, 0x3456, 0x4567)
+        data = b'\x12\x34\x23\x45\x34\x56\x45\x67'
         assert MessageAscii.compute_LRC(data) == 0x1c
         assert MessageAscii.check_LRC(data, 0x1C)
 

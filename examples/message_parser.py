@@ -11,6 +11,7 @@ import collections
 import logging
 import textwrap
 
+from pymodbus import pymodbus_apply_logging_config
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.transaction import (
     ModbusAsciiFramer,
@@ -80,15 +81,10 @@ class Decoder:
             print(f"{decoder.decoder.__class__.__name__}")
             print("-" * 80)
             try:
-                decoder.addToFrame(message)
-                if decoder.checkFrame():
-                    slave = decoder._header.get(  # pylint: disable=protected-access
-                        "uid", 0x00
-                    )
-                    decoder.advanceFrame()
-                    decoder.processIncomingPacket(message, self.report, slave)
-                else:
-                    self.check_errors(decoder, message)
+                slave = decoder._header.get(  # pylint: disable=protected-access
+                    "uid", 0x00
+                )
+                decoder.processIncomingPacket(message, self.report, slave)
             except Exception:  # pylint: disable=broad-except
                 self.check_errors(decoder, message)
 
@@ -144,6 +140,7 @@ class Decoder:
 def parse_messages(cmdline=None):
     """Do a helper method to generate the messages to parse."""
     args = get_commandline(cmdline=cmdline)
+    pymodbus_apply_logging_config(args.log.upper())
     _logger.setLevel(args.log.upper())
     if not args.message:
         _logger.error("Missing --message.")

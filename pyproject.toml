@@ -47,7 +47,7 @@ serial = [
     "pyserial>=3.5"
 ]
 repl = [
-   "pymodbus-repl@git+https://github.com/pymodbus-dev/repl"
+   "pymodbus-repl>=2.0.3"
 ]
 
 simulator = [
@@ -225,7 +225,11 @@ source = [
     "pymodbus/",
     "test/",
 ]
-omit = ["examples/contrib/"]
+omit = [
+    "examples/contrib/",
+    "test/message/to_do*",
+    "test/message/generator.py",
+    ]
 branch = true
 
 [tool.coverage.report]

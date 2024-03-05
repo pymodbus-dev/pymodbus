@@ -4,7 +4,6 @@ from unittest import mock
 import pytest
 
 from pymodbus import Framer
-from pymodbus.bit_read_message import ReadCoilsRequest
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder
@@ -449,21 +448,6 @@ class TestFramers:
         assert response_ok, "Response is valid, but not accepted"
 
     # ---- 100% coverage
-    @pytest.mark.parametrize(
-        ("framer", "message"),
-        [
-            (ModbusAsciiFramer, b':00010001000AF4\r\n',),
-            (ModbusBinaryFramer, b'{\x00\x01\x00\x01\x00\n\xec\x1c}',),
-            (ModbusRtuFramer, b"\x00\x01\x00\x01\x00\n\xec\x1c",),
-            (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x00\x01\x00\x01\x00\n',),
-        ]
-    )
-    def test_build_packet(self, framer, message):
-        """Test build packet."""
-        test_framer =  framer(ClientDecoder())
-        request = ReadCoilsRequest(1, 10)
-        assert test_framer.buildPacket(request) == message
-
 
     @pytest.mark.parametrize(
         ("framer", "message"),

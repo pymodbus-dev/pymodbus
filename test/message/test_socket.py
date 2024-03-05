@@ -33,21 +33,6 @@ class TestMessageSocket:
         assert res_tid == tid
         assert dev_id == res_id
 
-    @pytest.mark.parametrize(
-        ("data", "dev_id", "tid", "res_msg"),
-        [
-            (b'\x01\x05\x04\x00\x17', 7, 5, b'\x00\x05\x00\x00\x00\x06\x07\x01\x05\x04\x00\x17'),
-            (b'\x03\x07\x06\x00\x73', 2, 9, b'\x00\x09\x00\x00\x00\x06\x02\x03\x07\x06\x00\x73'),
-            (b'\x08\x00\x01', 3, 6, b'\x00\x06\x00\x00\x00\x04\x03\x08\x00\x01'),
-            (b'\x84\x01', 4, 8, b'\x00\x08\x00\x00\x00\x03\x04\x84\x01'),
-        ],
-    )
-    def test_encode(self, frame, data, dev_id, tid, res_msg):
-        """Test encode."""
-        msg = frame.encode(data, dev_id, tid)
-        assert res_msg == msg
-        assert dev_id == int(msg[6])
-        assert tid == int.from_bytes(msg[0:2], 'big')
 
     @pytest.mark.parametrize(
         ("data", "dev_id", "tid", "res_msg"),

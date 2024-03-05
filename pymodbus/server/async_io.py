@@ -146,7 +146,6 @@ class ModbusServerRequestHandler(ModbusProtocol):
         As a result, multiple clients can be interleaved without any
         interference between them.
         """
-        reset_frame = False
         while self.running:
             try:
                 await self.inner_handle()
@@ -158,22 +157,13 @@ class ModbusServerRequestHandler(ModbusProtocol):
             except Exception as exc:  # pylint: disable=broad-except
                 # force TCP socket termination as processIncomingPacket
                 # should handle application layer errors
-                # for UDP sockets, simply reset the frame
-                if isinstance(self, ModbusServerRequestHandler):
-                    Log.error(
-                        'Unknown exception "{}" on stream {} forcing disconnect',
-                        exc,
-                        self.comm_params.comm_name,
-                    )
-                    self.close()
-                    self.callback_disconnected(exc)
-                else:
-                    Log.error("Unknown error occurred {}", exc)
-                    reset_frame = True  # graceful recovery
-            finally:
-                if reset_frame:
-                    self.framer.resetFrame()
-                    reset_frame = False
+                Log.error(
+                    'Unknown exception "{}" on stream {} forcing disconnect',
+                    exc,
+                    self.comm_params.comm_name,
+                )
+                self.close()
+                self.callback_disconnected(exc)
 
     def execute(self, request, *addr):
         """Call with the resulting message.

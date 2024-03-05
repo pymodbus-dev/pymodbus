@@ -107,13 +107,13 @@ class ModbusAsciiFramer(ModbusFramer):
         )
         checksum = MessageAscii.compute_LRC(buffer + encoded)
 
-        packet = bytearray()
-        packet.extend(self._start)
-        packet.extend(f"{message.slave_id:02x}{message.function_code:02x}".encode())
-        packet.extend(b2a_hex(encoded))
-        packet.extend(f"{checksum:02x}".encode())
-        packet.extend(self._end)
-        packet = bytes(packet).upper()
+        packet = (self._start
+            + f"{message.slave_id:02x}".encode()
+            + f"{message.function_code:02x}".encode()
+            + b2a_hex(encoded)
+            + f"{checksum:02x}".encode()
+            + self._end
+        ).upper()
 
         data = message.function_code.to_bytes(1,'big') + encoded
         packet_new = self.message_handler.encode(data, message.slave_id, message.transaction_id)

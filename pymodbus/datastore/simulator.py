@@ -753,6 +753,7 @@ class ModbusSimulatorContext:
 
         :meta private:
         """
+        check: tuple
         if func_code in self._bits_func_code:
             # Bit access
             check = (CellType.BITS, -1)
@@ -762,7 +763,7 @@ class ModbusSimulatorContext:
             check = (CellType.UINT16, CellType.STRING)
             reg_step = 1
         else:
-            check = (CellType.UINT32, CellType.FLOAT32, CellType.STRING)  # type: ignore[assignment]
+            check = (CellType.UINT32, CellType.FLOAT32, CellType.STRING)
             reg_step = 2
 
         for i in range(real_address, real_address + count, reg_step):

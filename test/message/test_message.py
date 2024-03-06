@@ -327,4 +327,4 @@ class TestMessages:
         frame_obj = frame(None, True)
         used_len, _, _, data = frame_obj.decode(data)
         assert used_len == exp_len
-        assert not len(data)
+        assert not data

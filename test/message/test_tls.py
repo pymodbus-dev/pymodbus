@@ -30,19 +30,6 @@ class TestMessageSocket:
         assert not tid
         assert not dev_id
 
-    @pytest.mark.parametrize(
-        ("data"),
-        [
-            (b'\x01\x05\x04\x00\x17'),
-            (b'\x03\x07\x06\x00\x73'),
-            (b'\x08\x00\x01'),
-            (b'\x84\x01'),
-        ],
-    )
-    def test_encode(self, frame, data):
-        """Test encode."""
-        msg = frame.encode(data, 0, 0)
-        assert data == msg
 
     @pytest.mark.parametrize(
         ("data"),

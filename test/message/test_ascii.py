@@ -14,12 +14,6 @@ class TestMessageAscii:
         return MessageAscii([1], False)
 
 
-    def test_roundtrip_LRC(self):
-        """Test combined compute/check LRC."""
-        data = b'\x12\x34\x23\x45\x34\x56\x45\x67'
-        assert MessageAscii.compute_LRC(data) == 0x1c
-        assert MessageAscii.check_LRC(data, 0x1C)
-
     @pytest.mark.parametrize(
         ("packet", "used_len", "res_id", "res"),
         [
@@ -42,21 +36,6 @@ class TestMessageAscii:
         assert data == res
         assert not tid
         assert dev_id == res_id
-
-    @pytest.mark.parametrize(
-        ("data", "dev_id", "res_msg"),
-        [
-            (b'\x01\x05\x04\x00\x17', 1, b':010105040017DE\r\n'),
-            (b'\x03\x07\x06\x00\x73', 2, b':0203070600737B\r\n'),
-            (b'\x08\x00\x01', 3, b':03080001F4\r\n'),
-            (b'\x84\x01', 2, b':02840179\r\n'),
-        ],
-    )
-    def test_encode(self, frame, data, dev_id, res_msg):
-        """Test encode."""
-        msg = frame.encode(data, dev_id, 0)
-        assert res_msg == msg
-        assert dev_id == int(msg[1:3], 16)
 
     @pytest.mark.parametrize(
         ("data", "dev_id", "res_msg"),

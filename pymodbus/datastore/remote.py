@@ -53,7 +53,7 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
         if fc_as_hex not in self._write_fc:
             raise ValueError(f"setValues() called with an non-write function code {fc_as_hex}")
         func_fc = self.__set_callbacks[f"{group_fx}{fc_as_hex}"]
-        if fc_as_hex in {0x0F, 0x10}:
+        if fc_as_hex in {0x0F, 0x10}:  # Write Multiple Coils, Write Multiple Registers
             self.result = func_fc(address, values)
         else:
             self.result = func_fc(address, values[0])

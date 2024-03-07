@@ -112,7 +112,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
             # addr is populated when talking over UDP
             data, *addr = data
         else:
-            addr = (None,)  # empty tuple
+            addr = [None]
 
         # if broadcast is enabled make sure to
         # process requests to address 0
@@ -564,21 +564,21 @@ class _serverList:
         self.loop = asyncio.get_event_loop()
 
     @classmethod
-    async def run(cls, server, custom_functions):
+    async def run(cls, server, custom_functions) -> None:
         """Help starting/stopping server."""
         for func in custom_functions:
             server.decoder.register(func)
-        cls.active_server = _serverList(server)
+        cls.active_server = _serverList(server)  # type: ignore[assignment]
         with suppress(asyncio.exceptions.CancelledError):
             await server.serve_forever()
 
     @classmethod
-    async def async_stop(cls):
+    async def async_stop(cls) -> None:
         """Wait for server stop."""
         if not cls.active_server:
             raise RuntimeError("ServerAsyncStop called without server task active.")
-        await cls.active_server.server.shutdown()
-        cls.active_server = None
+        await cls.active_server.server.shutdown()  # type: ignore[union-attr]
+        cls.active_server = None  # type: ignore[assignment]
 
     @classmethod
     def stop(cls):

@@ -386,7 +386,7 @@ class ModbusTransactionManager:
                             IndexError  # response length indeterminate with available bytes
                         ):
                             expected_response_length = (
-                                self.client.framer.get_expected_response_length(
+                                self._get_expected_response_length(
                                     read_min
                                 )
                             )
@@ -423,6 +423,17 @@ class ModbusTransactionManager:
             )
             self.client.state = ModbusTransactionState.PROCESSING_REPLY
         return result
+
+    def _get_expected_response_length(self, data):
+        """Get the expected response length.
+
+        :param data: Message data read so far
+        :raises IndexError: If not enough data to read byte count
+        :return: Total frame size
+        """
+        func_code = int(data[1])
+        pdu_class = self.client.framer.decoder.lookupPduClass(func_code)
+        return pdu_class.calculateRtuFrameSize(data)
 
     def addTransaction(self, request, tid=None):
         """Add a transaction to the handler.

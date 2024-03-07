@@ -260,7 +260,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 self.transport = self.transport[0]
         except OSError as exc:
             Log.warning("Failed to start server {}", exc)
-            # self.close(intern=True)
+            self.__close()
             return False
         return True
 
@@ -285,7 +285,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         if not self.transport or self.is_closing:
             return
         Log.debug("Connection lost {} due to {}", self.comm_params.comm_name, reason)
-        self.close(intern=True)
+        self.__close()
         if (
             not self.is_server
             and not self.listener
@@ -390,16 +390,11 @@ class ModbusProtocol(asyncio.BaseProtocol):
         else:
             self.transport.write(data)  # type: ignore[attr-defined]
 
-    def close(self, intern: bool = False, reconnect: bool = False) -> None:
-        """Close connection.
+    def __close(self, reconnect: bool = False) -> None:
+        """Close connection (internal).
 
-        :param intern: (default false), True if called internally (temporary close)
         :param reconnect: (default false), try to reconnect
         """
-        if self.is_closing:
-            return
-        if not intern:
-            self.is_closing = True
         if self.transport:
             self.transport.close()
             self.transport = None  # type: ignore[assignment]
@@ -417,6 +412,16 @@ class ModbusProtocol(asyncio.BaseProtocol):
             self.reconnect_delay_current = 0.0
         if self.listener:
             self.listener.active_connections.pop(self.unique_id)
+
+    def close(self, reconnect: bool = False) -> None:
+        """Close connection (external).
+
+        :param reconnect: (default false), try to reconnect
+        """
+        if self.is_closing:
+            return
+        self.is_closing = True
+        self.__close(reconnect=reconnect)
 
     def reset_delay(self) -> None:
         """Reset wait time before next reconnect to minimal period."""

@@ -260,7 +260,6 @@ class ModbusSimulatorServer:
         self.site = None
         if not self.serving.done():
             self.serving.set_result(True)
-        await asyncio.sleep(0)
 
     async def handle_html_static(self, request):
         """Handle static html."""

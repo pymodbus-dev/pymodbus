@@ -241,7 +241,7 @@ class ModbusTransactionManager:
                                 "/Unable to decode response"
                             )
                             response = ModbusIOException(
-                                last_exception, request.function_code
+                                last_exception, request.function_code  # type: ignore[assignment]
                             )
                         self.client.close()
                     if hasattr(self.client, "state"):

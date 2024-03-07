@@ -112,7 +112,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
             # addr is populated when talking over UDP
             data, *addr = data
         else:
-            addr = (None,)  # empty tuple
+            addr = [None]
 
         # if broadcast is enabled make sure to
         # process requests to address 0

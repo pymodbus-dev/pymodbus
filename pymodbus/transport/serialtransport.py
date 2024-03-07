@@ -120,19 +120,19 @@ class SerialTransport(asyncio.Transport):
 
     # ------------------------------------------------
 
-    def intern_read_ready(self):
+    def intern_read_ready(self) -> None:
         """Test if there are data waiting."""
         try:
             if data := self.sync_serial.read(1024):
-                self.intern_protocol.data_received(data)
+                self.intern_protocol.data_received(data)  # type: ignore[attr-defined]
         except serial.SerialException as exc:
             self.close(exc=exc)
 
-    def intern_write_ready(self):
+    def intern_write_ready(self) -> None:
         """Asynchronously write buffered data."""
         data = b"".join(self.intern_write_buffer)
         try:
-            if (nlen := self.sync_serial.write(data)) < len(data):
+            if (nlen := self.sync_serial.write(data)) and nlen < len(data):
                 self.intern_write_buffer = [data[nlen:]]
                 if not self.poll_task:
                     self.async_loop.add_writer(
@@ -154,8 +154,8 @@ class SerialTransport(asyncio.Transport):
                     self.intern_write_ready()
                 if self.sync_serial.in_waiting:
                     self.intern_read_ready()
-        except asyncio.CancelledError as exc:
-            self.close(exc)
+        except asyncio.CancelledError:
+            self.close(None)
 
 
 async def create_serial_connection(

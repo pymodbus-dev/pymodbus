@@ -132,6 +132,3 @@ class ModbusBinaryFramer(ModbusFramer):
                 array.append(item)
             array.append(item)
         return bytes(array)
-
-
-# __END__

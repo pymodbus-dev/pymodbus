@@ -198,6 +198,7 @@ strict_concatenate = false
 disallow_subclassing_any = true
 disallow_untyped_decorators = true
 warn_unreachable = true
+check_untyped_defs = true
 
 [tool.distutils]
 bdist_wheel = {}

@@ -26,9 +26,8 @@ class SerialTransport(asyncio.Transport):
         self._poll_wait_time = 0.0005
         self.sync_serial.timeout = 0
         self.sync_serial.write_timeout = 0
-        self.future: asyncio.Task | None = None
 
-    def setup(self):
+    def setup(self) -> None:
         """Prepare to read/write."""
         if os.name == "nt" or self.force_poll:
             self.poll_task = asyncio.create_task(self.polling_task())
@@ -44,7 +43,6 @@ class SerialTransport(asyncio.Transport):
         self.flush()
         if self.poll_task:
             self.poll_task.cancel()
-            self.future = asyncio.ensure_future(self.poll_task)
             self.poll_task = None
         else:
             self.async_loop.remove_reader(self.sync_serial.fileno())
@@ -147,16 +145,12 @@ class SerialTransport(asyncio.Transport):
 
     async def polling_task(self):
         """Poll and try to read/write."""
-        try:
-            while self.sync_serial:
-                await asyncio.sleep(self._poll_wait_time)
-                while self.intern_write_buffer:
-                    self.intern_write_ready()
-                if self.sync_serial.in_waiting:
-                    self.intern_read_ready()
-        except asyncio.CancelledError:
-            self.close(None)
-
+        while self.sync_serial:
+            await asyncio.sleep(self._poll_wait_time)
+            while self.intern_write_buffer:
+                self.intern_write_ready()
+            if self.sync_serial.in_waiting:
+                self.intern_read_ready()
 
 async def create_serial_connection(
     loop, protocol_factory, *args, **kwargs

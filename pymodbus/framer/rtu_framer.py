@@ -172,16 +172,8 @@ class ModbusRtuFramer(ModbusFramer):
 
         :param message: The populated request/response to send
         """
-        data = message.encode()
-        packet = (
-            struct.pack(RTU_FRAME_HEADER, message.slave_id, message.function_code)
-            + data
-        )
-        packet += struct.pack(">H", MessageRTU.compute_CRC(packet))
-
-        data_new = message.function_code.to_bytes(1, 'big') + data
-        packet_new = self.message_handler.encode(data_new, message.slave_id, message.transaction_id)
-        assert packet == packet_new, "RTU FRAMER BuildPacket failed!"
+        data = message.function_code.to_bytes(1, 'big') + message.encode()
+        packet = self.message_handler.encode(data, message.slave_id, message.transaction_id)
 
         # Ensure that transaction is actually the slave id for serial comms
         if message.slave_id:

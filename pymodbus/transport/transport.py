@@ -379,6 +379,9 @@ class ModbusProtocol(asyncio.BaseProtocol):
         :param data: non-empty bytes object with data to send.
         :param addr: optional addr, only used for UDP server.
         """
+        if not self.transport:
+            Log.error("Cancel send, because not connected!")
+            return
         Log.debug("send: {}", data, ":hex")
         if self.comm_params.handle_local_echo:
             self.sent_buffer += data

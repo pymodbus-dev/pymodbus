@@ -20,6 +20,7 @@ Thanks to
 - André Srinivasan
 - banana-sun
 - Blaise Thompson
+- CapraTheBest
 - cgernert
 - corollaries
 - Chandler Riehm
@@ -46,6 +47,7 @@ Thanks to
 - Joe Burmeister
 - Jonathan Reichelt Gjertsen
 - julian
+- Justin Standring
 - Kenny Johansson
 - Matthias Straka
 - laund

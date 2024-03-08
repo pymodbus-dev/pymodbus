@@ -176,10 +176,16 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
             except asyncio.exceptions.TimeoutError:
                 count += 1
         if count > self.retries:
-            self.close(reconnect=True)
-            raise ModbusIOException(
-                f"ERROR: No response received after {self.retries} retries"
-            )
+            if request.on_timeout is not None:
+                if asyncio.iscoroutinefunction(request.on_timeout):
+                    resp = await request.on_timeout(self, request)
+                else:
+                    resp = request.on_timeout(self, request)
+            else:
+                self.close(reconnect=True)
+                raise ModbusIOException(
+                    f"ERROR: No response received after {self.retries} retries"
+                )
 
         return resp  # type: ignore[return-value]
 

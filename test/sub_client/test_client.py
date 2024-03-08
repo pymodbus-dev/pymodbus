@@ -456,6 +456,43 @@ async def test_client_protocol_timeout():
     assert transport.retries == 1
 
 
+async def test_client_protocol_timeout_async_handler():
+    """Test the client protocol execute method with timeout."""
+    base = ModbusBaseClient(Framer.SOCKET, host="127.0.0.1", timeout=0.1, retries=2)
+    # Avoid creating do_reconnect() task
+    base.connection_lost = mock.MagicMock()
+    async def handler(cb_client: ModbusBaseClient, cb_request: ModbusRequest):
+        await asyncio.sleep(0.1)
+        return "dummy response", cb_client, cb_request
+    request = pdu_bit_read.ReadCoilsRequest(1, 1, on_timeout=handler)
+    transport = MockTransport(base, request, retries=4)
+    base.connection_made(transport=transport)
+
+    response, response_client, response_request = await base.async_execute(request)
+    assert response == "dummy response"
+    assert response_client == base
+    assert response_request == request
+    assert transport.retries == 1
+
+
+async def test_client_protocol_timeout_sync_handler():
+    """Test the client protocol execute method with timeout."""
+    base = ModbusBaseClient(Framer.SOCKET, host="127.0.0.1", timeout=0.1, retries=2)
+    # Avoid creating do_reconnect() task
+    base.connection_lost = mock.MagicMock()
+    def handler(cb_client: ModbusBaseClient, cb_request: ModbusRequest):
+        return "dummy response", cb_client, cb_request
+    request = pdu_bit_read.ReadCoilsRequest(1, 1, on_timeout=handler)
+    transport = MockTransport(base, request, retries=4)
+    base.connection_made(transport=transport)
+
+    response, response_client, response_request = await base.async_execute(request)
+    assert response == "dummy response"
+    assert response_client == base
+    assert response_request == request
+    assert transport.retries == 1
+
+
 def test_client_udp_connect():
     """Test the Udp client connection method."""
     with mock.patch.object(socket, "socket") as mock_method:

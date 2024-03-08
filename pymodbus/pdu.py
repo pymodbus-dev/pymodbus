@@ -108,6 +108,7 @@ class ModbusRequest(ModbusPDU):
         :param slave: Modbus slave slave ID
         """
         super().__init__(slave, **kwargs)
+        self.on_timeout = kwargs.get("on_timeout", None)
 
     def doException(self, exception):
         """Build an error response based on the function.

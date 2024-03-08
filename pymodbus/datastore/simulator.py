@@ -107,7 +107,7 @@ class Setup:
         """Initialize."""
         self.runtime = runtime
         self.config = {}
-        self.config_types = {
+        self.config_types: dict[str, dict[str, Any]] = {
             Label.type_bits: {
                 Label.type: CellType.BITS,
                 Label.next: None,
@@ -748,11 +748,12 @@ class ModbusSimulatorContext:
     # Internal helper methods
     # --------------------------------------------
 
-    def validate_type(self, func_code, real_address, count):
+    def validate_type(self, func_code, real_address, count) -> bool:
         """Check if request is done against correct type.
 
         :meta private:
         """
+        check: tuple
         if func_code in self._bits_func_code:
             # Bit access
             check = (CellType.BITS, -1)

@@ -40,10 +40,10 @@ jobs:
 
     steps:
       - name: Checkout repo from github
-        uses: actions/checkout@v4.1.0
+        uses: actions/checkout@v4.1.1
 
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v4.7.1
+        uses: actions/setup-python@v5.0.0
         with:
           python-version: ${{ matrix.python }}
 
@@ -61,7 +61,7 @@ jobs:
 
       - name: Restore base Python virtual environment
         id: cache-venv
-        uses: actions/cache@v3.3.2
+        uses: actions/cache@v4.0.1
         with:
           path: ${{ env.VIRTUAL_ENV }}
           key: >-
@@ -117,15 +117,15 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.1.1
 
-      - uses: github/codeql-action/init@v2
+      - uses: github/codeql-action/init@v3
         with:
           languages: python
 
-      - uses: github/codeql-action/autobuild@v2
+      - uses: github/codeql-action/autobuild@v3
 
-      - uses: github/codeql-action/analyze@v2
+      - uses: github/codeql-action/analyze@v3
 
   ci_complete:
     name: ci_complete

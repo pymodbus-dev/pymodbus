@@ -382,7 +382,7 @@ class ChangeAsciiInputDelimiterRequest(DiagnosticStatusSimpleRequest):
 
         :returns: The initialized response message
         """
-        char = (self.message & 0xFF00) >> 8
+        char = (self.message & 0xFF00) >> 8  # type: ignore[operator]
         _MCB._setDelimiter(char)  # pylint: disable=protected-access
         return ChangeAsciiInputDelimiterResponse(self.message)
 

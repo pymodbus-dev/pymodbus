@@ -5,7 +5,7 @@ import struct
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer.base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
 from pymodbus.logging import Log
-from pymodbus.utilities import checkCRC, computeCRC
+from pymodbus.message.rtu import MessageRTU
 
 
 BINARY_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
@@ -76,7 +76,7 @@ class ModbusBinaryFramer(ModbusFramer):
                 self._header["uid"] = struct.unpack(">B", self._buffer[1:2])[0]
                 self._header["crc"] = struct.unpack(">H", self._buffer[end - 2 : end])[0]
                 data = self._buffer[1 : end - 2]
-                return checkCRC(data, self._header["crc"])
+                return MessageRTU.check_CRC(data, self._header["crc"])
             return False
 
         while len(self._buffer) > 1:
@@ -113,7 +113,7 @@ class ModbusBinaryFramer(ModbusFramer):
             struct.pack(BINARY_FRAME_HEADER, message.slave_id, message.function_code)
             + data
         )
-        packet += struct.pack(">H", computeCRC(packet))
+        packet += struct.pack(">H", MessageRTU.compute_CRC(packet))
         packet = self._start + packet + self._end
         return packet
 
@@ -132,6 +132,3 @@ class ModbusBinaryFramer(ModbusFramer):
                 array.append(item)
             array.append(item)
         return bytes(array)
-
-
-# __END__

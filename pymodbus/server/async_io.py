@@ -46,7 +46,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
         super().__init__(params, False)
         self.server = owner
         self.running = False
-        self.receive_queue = asyncio.Queue()
+        self.receive_queue: asyncio.Queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
         self.framer: ModbusFramer
 
@@ -112,7 +112,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
             # addr is populated when talking over UDP
             data, *addr = data
         else:
-            addr = (None,)  # empty tuple
+            addr = [None]
 
         # if broadcast is enabled make sure to
         # process requests to address 0
@@ -130,23 +130,21 @@ class ModbusServerRequestHandler(ModbusProtocol):
             single=single,
         )
 
-    async def handle(self):
-        """Return Asyncio coroutine which represents a single conversation.
-
-        between the modbus slave and master
+    async def handle(self) -> None:
+        """Coroutine which represents a single master <=> slave conversation.
 
         Once the client connection is established, the data chunks will be
         fed to this coroutine via the asyncio.Queue object which is fed by
         the ModbusServerRequestHandler class's callback Future.
 
-        This callback future gets data from either
+        This callback future gets data from either asyncio.BaseProtocol.data_received
+        or asyncio.DatagramProtocol.datagram_received.
 
         This function will execute without blocking in the while-loop and
         yield to the asyncio event loop when the frame is exhausted.
         As a result, multiple clients can be interleaved without any
         interference between them.
         """
-        reset_frame = False
         while self.running:
             try:
                 await self.inner_handle()
@@ -158,22 +156,13 @@ class ModbusServerRequestHandler(ModbusProtocol):
             except Exception as exc:  # pylint: disable=broad-except
                 # force TCP socket termination as processIncomingPacket
                 # should handle application layer errors
-                # for UDP sockets, simply reset the frame
-                if isinstance(self, ModbusServerRequestHandler):
-                    Log.error(
-                        'Unknown exception "{}" on stream {} forcing disconnect',
-                        exc,
-                        self.comm_params.comm_name,
-                    )
-                    self.close()
-                    self.callback_disconnected(exc)
-                else:
-                    Log.error("Unknown error occurred {}", exc)
-                    reset_frame = True  # graceful recovery
-            finally:
-                if reset_frame:
-                    self.framer.resetFrame()
-                    reset_frame = False
+                Log.error(
+                    'Unknown exception "{}" on stream {} forcing disconnect',
+                    exc,
+                    self.comm_params.comm_name,
+                )
+                self.close()
+                self.callback_disconnected(exc)
 
     def execute(self, request, *addr):
         """Call with the resulting message.
@@ -575,21 +564,21 @@ class _serverList:
         self.loop = asyncio.get_event_loop()
 
     @classmethod
-    async def run(cls, server, custom_functions):
+    async def run(cls, server, custom_functions) -> None:
         """Help starting/stopping server."""
         for func in custom_functions:
             server.decoder.register(func)
-        cls.active_server = _serverList(server)
+        cls.active_server = _serverList(server)  # type: ignore[assignment]
         with suppress(asyncio.exceptions.CancelledError):
             await server.serve_forever()
 
     @classmethod
-    async def async_stop(cls):
+    async def async_stop(cls) -> None:
         """Wait for server stop."""
         if not cls.active_server:
             raise RuntimeError("ServerAsyncStop called without server task active.")
-        await cls.active_server.server.shutdown()
-        cls.active_server = None
+        await cls.active_server.server.shutdown()  # type: ignore[union-attr]
+        cls.active_server = None  # type: ignore[assignment]
 
     @classmethod
     def stop(cls):

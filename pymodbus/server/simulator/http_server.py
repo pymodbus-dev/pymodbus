@@ -180,13 +180,13 @@ class ModbusSimulatorServer:
         )
         self.web_app.on_startup.append(self.start_modbus_server)
         self.web_app.on_shutdown.append(self.stop_modbus_server)
-        self.generator_html = {
+        self.generator_html: dict[str, list] = {
             "log": ["", self.build_html_log],
             "registers": ["", self.build_html_registers],
             "calls": ["", self.build_html_calls],
             "server": ["", self.build_html_server],
         }
-        self.generator_json = {
+        self.generator_json: dict[str, list] = {
             "log_json": [None, self.build_json_log],
             "registers_json": [None, self.build_json_registers],
             "calls_json": [None, self.build_json_calls],
@@ -344,7 +344,7 @@ class ModbusSimulatorServer:
         )
         return new_html
 
-    def build_html_calls(self, params, html):
+    def build_html_calls(self, params: dict, html: str) -> str:
         """Build html calls page."""
         result_txt, foot = self.helper_build_html_submit(params)
         if not foot:
@@ -380,10 +380,10 @@ class ModbusSimulatorServer:
         for function in self.request_lookup.values():
             selected = (
                 "selected"
-                if function.function_code == self.call_monitor.function
+                if function.function_code == self.call_monitor.function  #type: ignore[attr-defined]
                 else ""
             )
-            function_codes += f"<option value={function.function_code} {selected}>{function.function_code_name}</option>"
+            function_codes += f"<option value={function.function_code} {selected}>{function.function_code_name}</option>"  #type: ignore[attr-defined]
         simulation_action = (
             "ACTIVE" if self.call_response.active != RESPONSE_INACTIVE else ""
         )
@@ -394,7 +394,7 @@ class ModbusSimulatorServer:
         call_rows = ""
         for entry in reversed(self.call_list):
             # req_obj = self.request_lookup[entry[1]]
-            call_rows += f"<tr><td>{entry.call} - {entry.fc}</td><td>{entry.address}</td><td>{entry.count}</td><td>{entry.data}</td></tr>"
+            call_rows += f"<tr><td>{entry.call} - {entry.fc}</td><td>{entry.address}</td><td>{entry.count}</td><td>{entry.data.decode()}</td></tr>"
             # line += req_obj.funcion_code_name
         new_html = (
             html.replace("<!--SIMULATION_ACTIVE-->", simulation_action)

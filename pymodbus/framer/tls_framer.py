@@ -7,6 +7,7 @@ from pymodbus.exceptions import (
 )
 from pymodbus.framer.base import TLS_FRAME_HEADER, ModbusFramer
 from pymodbus.logging import Log
+from pymodbus.message.tls import MessageTLS
 
 
 # --------------------------------------------------------------------------- #
@@ -34,6 +35,7 @@ class ModbusTlsFramer(ModbusFramer):
         """
         super().__init__(decoder, client)
         self._hsize = 0x0
+        self.message_encoder = MessageTLS([0], True)
 
     def decode_data(self, data):
         """Decode data."""
@@ -77,10 +79,6 @@ class ModbusTlsFramer(ModbusFramer):
 
         :param message: The populated request/response to send
         """
-        data = message.encode()
-        packet = struct.pack(TLS_FRAME_HEADER, message.function_code)
-        packet += data
+        data = message.function_code.to_bytes(1,'big') + message.encode()
+        packet = self.message_encoder.encode(data, message.slave_id, message.transaction_id)
         return packet
-
-
-# __END__

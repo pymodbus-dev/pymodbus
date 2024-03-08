@@ -1,5 +1,6 @@
 """Test transport."""
 import asyncio
+import contextlib
 import os
 from functools import partial
 from unittest import mock
@@ -114,7 +115,8 @@ class TestTransportSerial:
         comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy")
         comm.sync_serial = mock.MagicMock()
         comm.sync_serial.read.side_effect = asyncio.CancelledError("test")
-        await comm.polling_task()
+        with contextlib.suppress(asyncio.CancelledError):
+            await comm.polling_task()
 
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
     async def test_poll_task(self):

@@ -7,6 +7,29 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.6.6
+-------------
+* Solve transport close() as not inherited method. (#2098)
+* enable `mypy --check-untyped-defs` (#2096)
+* Add get_expected_response_length to transaction.
+* Remove control encode in framersRemove control encode in framers. (#2095)
+* Bump codeql in CI to v3. (#2093)
+* Improve server types (#2092)
+* Remove pointless try/except (#2091)
+* Improve transport types (#2090)
+* Use explicit ValueError when called with incorrect function code (#2089)
+* update message tests (incorporate all old tests). (#2088)
+* Improve simulator type hints (#2084)
+* Cleanup dead resetFrame code (#2082)
+* integrate message.encode() into framer.buildPacket. (#2062)
+* Repair client close() (intern= is needed for ModbusProtocol). (#2080)
+* Updated Message_Parser example (#2079)
+* Fix #2069 use released repl from pypi (#2077)
+* Fix field encoding of Read File Record Response (#2075)
+* Improve simulator types (#2076)
+* Bump actions. (#2071)
+
+
 Version 3.6.5
 -------------
 * Update framers to ease message integration (only decode/encode) (#2064)

@@ -124,7 +124,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         """
         self.framer.decoder.register(custom_response_class)
 
-    def close(self, reconnect: bool = False) -> None:  # type: ignore[override] # pylint: disable=arguments-differ
+    def close(self, reconnect: bool = False) -> None:
         """Close connection."""
         if reconnect:
             self.connection_lost(asyncio.TimeoutError("Server not responding"))

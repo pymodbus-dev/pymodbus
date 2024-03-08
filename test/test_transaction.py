@@ -364,10 +364,10 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         ModbusRequest.encode = lambda self: b""
         message = ModbusRequest()
         message.transaction_id = 0x0001
-        message.protocol_id = 0x1234
+        message.protocol_id = 0x0000
         message.slave_id = 0xFF
         message.function_code = 0x01
-        expected = b"\x00\x01\x12\x34\x00\x02\xff\x01"
+        expected = b"\x00\x01\x00\x00\x00\x02\xff\x01"
         actual = self._tcp.buildPacket(message)
         assert expected == actual
         ModbusRequest.encode = old_encode

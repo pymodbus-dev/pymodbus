@@ -1,7 +1,6 @@
 """Ascii_framer."""
 # pylint: disable=missing-type-doc
-import struct
-from binascii import a2b_hex, b2a_hex
+from binascii import a2b_hex
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer.base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
@@ -41,6 +40,7 @@ class ModbusAsciiFramer(ModbusFramer):
         self._hsize = 0x02
         self._start = b":"
         self._end = b"\r\n"
+        self.message_handler = MessageAscii([0], True)
 
     def decode_data(self, data):
         """Decode data."""
@@ -95,24 +95,9 @@ class ModbusAsciiFramer(ModbusFramer):
     def buildPacket(self, message):
         """Create a ready to send modbus packet.
 
-        Built off of a  modbus request/response
-
         :param message: The request/response to send
         :return: The encoded packet
         """
-        encoded = message.encode()
-        buffer = struct.pack(
-            ASCII_FRAME_HEADER, message.slave_id, message.function_code
-        )
-        checksum = MessageAscii.compute_LRC(buffer + encoded)
-
-        packet = bytearray()
-        packet.extend(self._start)
-        packet.extend(f"{message.slave_id:02x}{message.function_code:02x}".encode())
-        packet.extend(b2a_hex(encoded))
-        packet.extend(f"{checksum:02x}".encode())
-        packet.extend(self._end)
-        return bytes(packet).upper()
-
-
-# __END__
+        data = message.function_code.to_bytes(1,'big') + message.encode()
+        packet = self.message_handler.encode(data, message.slave_id, message.transaction_id)
+        return packet

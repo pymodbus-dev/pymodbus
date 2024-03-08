@@ -7,6 +7,7 @@ from pymodbus.exceptions import (
 )
 from pymodbus.framer.base import SOCKET_FRAME_HEADER, ModbusFramer
 from pymodbus.logging import Log
+from pymodbus.message.socket import MessageSocket
 
 
 # --------------------------------------------------------------------------- #
@@ -42,6 +43,7 @@ class ModbusSocketFramer(ModbusFramer):
         """
         super().__init__(decoder, client)
         self._hsize = 0x07
+        self.message_handler = MessageSocket([0], True)
 
     def decode_data(self, data):
         """Decode data."""
@@ -116,14 +118,6 @@ class ModbusSocketFramer(ModbusFramer):
 
         :param message: The populated request/response to send
         """
-        data = message.encode()
-        packet = struct.pack(
-            SOCKET_FRAME_HEADER,
-            message.transaction_id,
-            message.protocol_id,
-            len(data) + 2,
-            message.slave_id,
-            message.function_code,
-        )
-        packet += data
+        data = message.function_code.to_bytes(1, 'big') + message.encode()
+        packet = self.message_handler.encode(data, message.slave_id, message.transaction_id)
         return packet

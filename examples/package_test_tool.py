@@ -60,8 +60,6 @@ from pymodbus.logging import Log
 from pymodbus.transport import NULLMODEM_HOST, CommParams, CommType, ModbusProtocol
 
 
-port = 5004
-
 class TransportStub(ModbusProtocol):
     """Protocol layer including transport."""
 
@@ -101,14 +99,14 @@ class TransportStub(ModbusProtocol):
         return new_stub
 
 
-test_port = 5004
+test_port = 5004  # pylint: disable=invalid-name
 
 class ClientTester:  # pylint: disable=too-few-public-methods
     """Main program."""
 
     def __init__(self, comm: CommType):
         """Initialize runtime tester."""
-        global test_port
+        global test_port  # pylint: disable=global-statement
         self.comm = comm
         host = NULLMODEM_HOST
 
@@ -147,7 +145,7 @@ class ServerTester:  # pylint: disable=too-few-public-methods
 
     def __init__(self, comm: CommType):
         """Initialize runtime tester."""
-        global test_port
+        global test_port  # pylint: disable=global-statement
         self.comm = comm
         self.store = ModbusSlaveContext(
             di=ModbusSequentialDataBlock(0, [17] * 100),
@@ -240,7 +238,7 @@ async def server_calls(transport: ModbusProtocol, is_tcp: bool):
 
 def simulate_server(transport: ModbusProtocol, is_tcp: bool, request: bytes):
     """Respond to request at transport level."""
-    Log.debug("--> Server simulater called with request {}.", request, ":hex")
+    Log.debug("--> Server simulator called with request {}.", request, ":hex")
     if is_tcp:
         response = b'\x00\x01\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x04'
     else:
@@ -253,7 +251,7 @@ def simulate_server(transport: ModbusProtocol, is_tcp: bool, request: bytes):
     transport.send(response)
 
 
-def simulate_client(_transport: ModbusProtocol, is_tcp: bool, response: bytes):
+def simulate_client(_transport: ModbusProtocol, _is_tcp: bool, response: bytes):
     """Respond to request at transport level."""
     Log.debug("--> Client simulator called with response {}.", response, ":hex")
 

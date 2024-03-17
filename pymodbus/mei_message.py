@@ -120,7 +120,7 @@ class ReadDeviceInformationResponse(ModbusResponse):
 
     @classmethod
     def calculateRtuFrameSize(cls, buffer):
-        """Calculate the size of the message
+        """Calculate the size of the message.
 
         :param buffer: A buffer containing the data that have been received.
         :returns: The number of bytes in the response.
@@ -228,19 +228,16 @@ class ReadDeviceInformationResponse(ModbusResponse):
 #  MEI CUSTOM REQUEST
 # ---------------------------------------------------------------------------#
 class MeiGenericRequest(ModbusRequest):
-    """MeiGenericRequest.
-
-    
-    """
+    """MeiGenericRequest."""
 
     function_code = 0x2B
     sub_function_code = None # 0x0E
     function_code_name = "MeiGenericRequest"
     m_data = b''
-    m_data_len = 0    
-    _rtu_byte_count_pos = 3    
+    m_data_len = 0
+    _rtu_byte_count_pos = 3
     m_slave = 0
-    
+
     def __init__(self, mei_type = 0x41, data = None, slave = 0, **kwargs):
         """Initialize a new instance.
 
@@ -250,7 +247,9 @@ class MeiGenericRequest(ModbusRequest):
         ModbusRequest.__init__(self, slave, **kwargs)
         self.sub_function_code = mei_type # or DeviceInformation.BASIC
         self.m_data = data
-        self.m_slave = slave 
+        self.m_slave = slave
+        self.read_code = None
+        self.object_id = None
         if self.m_data is not None:
           self.m_data_len = len(self.m_data)
 
@@ -262,7 +261,7 @@ class MeiGenericRequest(ModbusRequest):
         packet = struct.pack(">BB", self.sub_function_code, self.m_data_len)
         if self.m_data_len > 0:
           packet = packet + self.m_data
-                
+
         return packet
 
     def decode(self, data):
@@ -278,7 +277,6 @@ class MeiGenericRequest(ModbusRequest):
 
         :returns: The populated response
         """
-                
         return MeiGenericRequest(self.sub_function_code, self.m_data, self.m_slave)
 
     def __str__(self):
@@ -302,7 +300,7 @@ class MeiGenericResponse(ModbusResponse):
 
     @classmethod
     def calculateRtuFrameSize(cls, buffer):
-        """Calculate the size of the message
+        """Calculate the size of the message.
 
         :param buffer: A buffer containing the data that have been received.
         :returns: The number of bytes in the response.
@@ -310,7 +308,7 @@ class MeiGenericResponse(ModbusResponse):
         size = 4  # skip the header information
         count = int(buffer[3])
         return size + count + 2
-        
+
     def __init__(self, **kwargs):
         """Initialize a new instance.
 
@@ -330,7 +328,7 @@ class MeiGenericResponse(ModbusResponse):
         self.m_mei_type = int(data[0])
         self.m_data_len = int(data[1])
         self.m_data = data[2:]
-        
+
         # self.m_data_len = len(self.m_data)
         if self.m_data_len != len(self.m_data):
           self.m_data_len = 0
@@ -344,4 +342,3 @@ class MeiGenericResponse(ModbusResponse):
         :returns: The string representation of the response
         """
         return f"MeiGenericResponse({self.m_mei_type}: {self.m_data})"
-

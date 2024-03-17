@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import struct
 from enum import Enum
-from typing import Any, Generic, TypeVar
+from typing import Any, Awaitable, Generic, TypeVar
 
 import pymodbus.bit_read_message as pdu_bit_read
 import pymodbus.bit_write_message as pdu_bit_write
@@ -14,7 +14,7 @@ import pymodbus.other_message as pdu_other_msg
 import pymodbus.register_read_message as pdu_reg_read
 import pymodbus.register_write_message as pdu_req_write
 from pymodbus.exceptions import ModbusException
-from pymodbus.pdu import ModbusRequest
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 
 
 T = TypeVar("T", covariant=False)
@@ -498,8 +498,9 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     ) -> ModbusResponse | Awaitable[ModbusResponse]:
         """Read FIFO queue (code 0x2B sub 0x0E).
 
-        :param read_code: The device information read code
-        :param object_id: The object to read from
+        :param data: payload
+        :param mei_type: mei message type
+        :param slave: (optional) Modbus slave ID
         :param kwargs:
         :raises ModbusException:
         """

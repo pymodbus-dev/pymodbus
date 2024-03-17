@@ -73,10 +73,10 @@ from pymodbus.file_message import (
 )
 from pymodbus.logging import Log
 from pymodbus.mei_message import (
-    ReadDeviceInformationRequest,
-    ReadDeviceInformationResponse,
     MeiGenericRequest,
     MeiGenericResponse,
+    ReadDeviceInformationRequest,
+    ReadDeviceInformationResponse,
 )
 from pymodbus.other_message import (
     GetCommEventCounterRequest,
@@ -180,7 +180,7 @@ class ServerDecoder:
             self.__sub_lookup[f.function_code][f.sub_function_code] = f  # type: ignore[attr-defined]
 
     def decode(self, message):
-        """Decode a request packet
+        """Decode a request packet.
 
         :param message: The raw modbus request packet
         :return: The decoded modbus message or None if error

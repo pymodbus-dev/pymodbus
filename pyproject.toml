@@ -60,19 +60,19 @@ documentation = [
     "sphinx-rtd-theme>=1.1.1"
 ]
 development = [
-    "build>=1.0.3",
-    "codespell>=2.2.2",
-    "coverage>=7.4.0",
-    "mypy>=1.6.0",
-    "pylint>=3.0.0",
-    "pytest>=7.3.1",
-    "pytest-asyncio>=0.20.3",
+    "build>=1.1.1",
+    "codespell>=2.2.6",
+    "coverage>=7.4.3",
+    "mypy>=1.9.0",
+    "pylint>=3.1.0",
+    "pytest>=8.1.0",
+    "pytest-asyncio>=0.23.5.post1",
     "pytest-cov>=4.1.0",
     "pytest-profiling>=1.7.0",
-    "pytest-timeout>=2.2.0",
-    "pytest-xdist>=3.3.1",
-    "ruff>=0.2.0",
-    "twine>=4.0.2",
+    "pytest-timeout>=2.3.1",
+    "pytest-xdist>=3.5.0",
+    "ruff>=0.3.3",
+    "twine>=5.0.0",
     "types-Pygments",
     "types-pyserial"
 ]

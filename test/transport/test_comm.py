@@ -1,5 +1,6 @@
 """Test transport."""
 import asyncio
+import platform
 import time
 from unittest import mock
 
@@ -13,7 +14,7 @@ from pymodbus.transport import (
 from pymodbus.transport.serialtransport import SerialTransport
 
 
-FACTOR = 1.2 if not pytest.IS_WINDOWS else 4.2
+FACTOR = 1.2 if platform.system().lower() != "windows" else 4.2
 
 
 class TestTransportComm:

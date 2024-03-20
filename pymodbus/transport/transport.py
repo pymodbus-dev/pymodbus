@@ -87,7 +87,6 @@ class CommParams:
     port: int = 0
     source_address: tuple[str, int] | None = None
     handle_local_echo: bool = False
-    on_reconnect_callback: Callable[[], None] | None = None
 
     # tls
     sslctx: ssl.SSLContext | None = None
@@ -471,8 +470,6 @@ class ModbusProtocol(asyncio.BaseProtocol):
                     self.reconnect_delay_current * 1000,
                 )
                 await asyncio.sleep(self.reconnect_delay_current)
-                if self.comm_params.on_reconnect_callback:
-                    self.comm_params.on_reconnect_callback()
                 if await self.connect():
                     break
                 self.reconnect_delay_current = min(

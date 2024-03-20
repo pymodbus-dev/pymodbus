@@ -188,6 +188,8 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
 
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
+        if self.on_reconnect_callback:
+            self.on_reconnect_callback()
 
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""
@@ -332,7 +334,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
             parity=kwargs.get("parity", None),
             stopbits=kwargs.get("stopbits", None),
             handle_local_echo=kwargs.get("handle_local_echo", False),
-            on_reconnect_callback=on_reconnect_callback,
         )
         self.params = self._params()
         self.params.retries = int(retries)

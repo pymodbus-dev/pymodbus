@@ -28,7 +28,6 @@ class TestTransportReconnect:
 
     async def test_reconnect_call(self, client):
         """Test connection_lost()."""
-        client.comm_params.on_reconnect_callback = mock.MagicMock()
         client.loop = asyncio.get_running_loop()
         client.call_create = mock.AsyncMock(return_value=(None, None))
         await client.connect()
@@ -39,7 +38,6 @@ class TestTransportReconnect:
         assert client.reconnect_task
         assert client.call_create.call_count == 2
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay * 2
-        assert client.comm_params.on_reconnect_callback.called
         client.close()
 
     async def test_multi_reconnect_call(self, client):

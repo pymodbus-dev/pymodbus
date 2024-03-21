@@ -313,7 +313,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         broadcast_enable: bool = False,
         reconnect_delay: float = 0.1,
         reconnect_delay_max: float = 300.0,
-        on_reconnect_callback: Callable[[], None] | None = None,
         no_resend_on_retry: bool = False,
         **kwargs: Any,
     ) -> None:

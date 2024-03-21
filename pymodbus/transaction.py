@@ -18,8 +18,9 @@ from functools import partial
 from threading import RLock
 
 from pymodbus.exceptions import (
+    ConnectionException,
     InvalidMessageReceivedException,
-    ModbusIOException, ConnectionException,
+    ModbusIOException,
 )
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.binary_framer import ModbusBinaryFramer

@@ -48,7 +48,8 @@ based on their preference.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Generic, Iterable, TypeVar
+from collections.abc import Iterable
+from typing import Any, Generic, TypeVar
 
 from pymodbus.exceptions import ParameterException
 
@@ -57,7 +58,7 @@ from pymodbus.exceptions import ParameterException
 #  Datablock Storage
 # ---------------------------------------------------------------------------#
 
-V = TypeVar('V', list, Dict[int, Any])
+V = TypeVar('V', list, dict[int, Any])
 class BaseModbusDataBlock(ABC, Generic[V]):
     """Base class for a modbus datastore.
 
@@ -194,7 +195,7 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock[list]):
         self.values[start : start + len(values)] = values
 
 
-class ModbusSparseDataBlock(BaseModbusDataBlock[Dict[int, Any]]):
+class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
     """A sparse modbus datastore.
 
     E.g Usage.

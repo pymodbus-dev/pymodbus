@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import asyncio
 import socket
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, Type, cast
+from typing import Any, cast
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.exceptions import ConnectionException, ModbusIOException
@@ -90,7 +91,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
 
         # Common variables.
         self.framer = FRAMER_NAME_TO_CLASS.get(
-            framer, cast(Type[ModbusFramer], framer)
+            framer, cast(type[ModbusFramer], framer)
         )(ClientDecoder(), self)
         self.transaction = ModbusTransactionManager(
             self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
@@ -344,7 +345,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
 
         # Common variables.
         self.framer = FRAMER_NAME_TO_CLASS.get(
-            framer, cast(Type[ModbusFramer], framer)
+            framer, cast(type[ModbusFramer], framer)
         )(ClientDecoder(), self)
         self.transaction = ModbusTransactionManager(
             self, retries=retries, retry_on_empty=retry_on_empty, **kwargs

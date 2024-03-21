@@ -1,7 +1,5 @@
 """
 How to explain pymodbus logs using https://rapidscada.net/modbus/ and requests.
-
-Created on 7/19/2023 to support Python 3.8 to 3.11 on macOS, Ubuntu, or Windows.
 """
 from __future__ import annotations
 

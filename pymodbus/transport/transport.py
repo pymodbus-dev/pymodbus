@@ -52,10 +52,11 @@ import asyncio
 import dataclasses
 import ssl
 from abc import abstractmethod
+from collections.abc import Callable, Coroutine
 from contextlib import suppress
 from enum import Enum
 from functools import partial
-from typing import Any, Callable, Coroutine
+from typing import Any
 
 from pymodbus.logging import Log
 from pymodbus.transport.serialtransport import create_serial_connection

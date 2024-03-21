@@ -301,7 +301,6 @@ class TestTransportProtocol2:
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay * 2
         assert not client.reconnect_task
         client.connect.side_effect = asyncio.CancelledError("stop loop")
-        client.comm_params.on_reconnect_callback = mock.Mock()
         await client.do_reconnect()
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay
         assert not client.reconnect_task

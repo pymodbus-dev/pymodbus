@@ -45,7 +45,7 @@ There are 4 functions which can be modified to test the client/server functional
 from __future__ import annotations
 
 import asyncio
-from typing import Callable
+from collections.abc import Callable
 
 import pymodbus.client as modbusClient
 import pymodbus.server as modbusServer

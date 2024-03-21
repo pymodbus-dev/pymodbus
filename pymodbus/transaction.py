@@ -19,7 +19,7 @@ from threading import RLock
 
 from pymodbus.exceptions import (
     InvalidMessageReceivedException,
-    ModbusIOException,
+    ModbusIOException, ConnectionException,
 )
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.binary_framer import ModbusBinaryFramer
@@ -325,7 +325,7 @@ class ModbusTransactionManager:
             result = self._recv(response_length, full)
             # result2 = self._recv(response_length, full)
             Log.debug("RECV: {}", result, ":hex")
-        except (OSError, ModbusIOException, InvalidMessageReceivedException) as msg:
+        except (OSError, ModbusIOException, InvalidMessageReceivedException, ConnectionException) as msg:
             self.client.close()
             Log.debug("Transaction failed. ({}) ", msg)
             last_exception = msg

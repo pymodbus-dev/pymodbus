@@ -16,7 +16,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/stale@v8
+    - uses: actions/stale@v9
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         stale-issue-message: 'This issue is stale because it has been open 30 days with no activity. Remove stale label or comment or this will be closed in 5 days.'
@@ -31,7 +31,7 @@ jobs:
         exempt-issue-labels: 'Bug,Enhancements,Investigating'
         stale-pr-label: 'no-pr-activity'
         remove-stale-when-updated: true
-    - uses: dessant/lock-threads@v4
+    - uses: dessant/lock-threads@v5
       with:
         github-token: ${{ github.token }}
         issue-inactive-days: '10'

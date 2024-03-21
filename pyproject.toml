@@ -22,7 +22,7 @@ classifiers = [
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: OS Independent",
     "Operating System :: Microsoft",
-    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -30,7 +30,7 @@ classifiers = [
     "Topic :: System :: Networking",
     "Topic :: Utilities",
 ]
-requires-python = ">=3.8.0"
+requires-python = ">=3.9.0"
 
 [project.urls]
 Homepage = "https://github.com/pymodbus-dev/pymodbus/"
@@ -129,7 +129,7 @@ load-plugins = [
     "pylint.extensions.typing"
 ]
 jobs = "0"
-py-version = "3.8"
+py-version = "3.9"
 
 [tool.pylint.messages_control]
 enable = "all"

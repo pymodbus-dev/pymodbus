@@ -4,8 +4,9 @@ from __future__ import annotations
 import dataclasses
 import random
 import struct
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any
 
 
 WORD_SIZE = 16

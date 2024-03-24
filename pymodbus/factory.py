@@ -10,7 +10,7 @@ kept as a result of a pre-computed lookup dictionary.
 """
 
 # pylint: disable=missing-type-doc
-from typing import Callable, Dict
+from collections.abc import Callable
 
 from pymodbus.bit_read_message import (
     ReadCoilsRequest,
@@ -167,7 +167,7 @@ class ServerDecoder:
     ]
 
     @classmethod
-    def getFCdict(cls) -> Dict[int, Callable]:
+    def getFCdict(cls) -> dict[int, Callable]:
         """Build function code - class list."""
         return {f.function_code: f for f in cls.__function_table}  # type: ignore[attr-defined]
 
@@ -175,7 +175,7 @@ class ServerDecoder:
         """Initialize the client lookup tables."""
         functions = {f.function_code for f in self.__function_table}  # type: ignore[attr-defined]
         self.lookup = self.getFCdict()
-        self.__sub_lookup: Dict[int, Dict[int, Callable]] = {f: {} for f in functions}
+        self.__sub_lookup: dict[int, dict[int, Callable]] = {f: {} for f in functions}
         for f in self.__sub_function_table:
             self.__sub_lookup[f.function_code][f.sub_function_code] = f  # type: ignore[attr-defined]
 
@@ -306,7 +306,7 @@ class ClientDecoder:
         """Initialize the client lookup tables."""
         functions = {f.function_code for f in self.function_table}  # type: ignore[attr-defined]
         self.lookup = {f.function_code: f for f in self.function_table}  # type: ignore[attr-defined]
-        self.__sub_lookup: Dict[int, Dict[int, Callable]] = {f: {} for f in functions}
+        self.__sub_lookup: dict[int, dict[int, Callable]] = {f: {} for f in functions}
         for f in self.__sub_function_table:
             self.__sub_lookup[f.function_code][f.sub_function_code] = f  # type: ignore[attr-defined]
 

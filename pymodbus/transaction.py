@@ -18,6 +18,7 @@ from functools import partial
 from threading import RLock
 
 from pymodbus.exceptions import (
+    ConnectionException,
     InvalidMessageReceivedException,
     ModbusIOException,
 )
@@ -325,7 +326,7 @@ class ModbusTransactionManager:
             result = self._recv(response_length, full)
             # result2 = self._recv(response_length, full)
             Log.debug("RECV: {}", result, ":hex")
-        except (OSError, ModbusIOException, InvalidMessageReceivedException) as msg:
+        except (OSError, ModbusIOException, InvalidMessageReceivedException, ConnectionException) as msg:
             self.client.close()
             Log.debug("Transaction failed. ({}) ", msg)
             last_exception = msg

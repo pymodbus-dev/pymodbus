@@ -8,6 +8,7 @@ on:
 permissions:
   issues: write
   pull-requests: write
+  discussions: write
 
 concurrency:
   group: lock
@@ -34,5 +35,5 @@ jobs:
     - uses: dessant/lock-threads@v5
       with:
         github-token: ${{ github.token }}
-        issue-inactive-days: '10'
-        pr-inactive-days: '10'
+        discussion-inactive-days: '10'
+        process-only: 'discussions'

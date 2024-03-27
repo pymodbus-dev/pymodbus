@@ -33,7 +33,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
     :param broadcast_enable: True to treat id 0 as broadcast address.
     :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
-    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param on_connect_callback: Will be called when connected/disconnected (bool parameter)
     :param no_resend_on_retry: Do not resend request when retrying due to missing response.
     :param kwargs: Experimental parameters.
 
@@ -56,7 +56,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         broadcast_enable: bool = False,
         reconnect_delay: float = 0.1,
         reconnect_delay_max: float = 300,
-        on_reconnect_callback: Callable[[], None] | None = None,
+        on_connect_callback: Callable[[bool], None] | None = None,
         no_resend_on_retry: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -82,7 +82,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
             ),
             False,
         )
-        self.on_reconnect_callback = on_reconnect_callback
+        self.on_connect_callback = on_connect_callback
         self.retry_on_empty: int = 0
         self.no_resend_on_retry = no_resend_on_retry
         self.slaves: list[int] = []
@@ -189,12 +189,14 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
 
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
-        if self.on_reconnect_callback:
-            self.on_reconnect_callback()
+        if self.on_connect_callback:
+            self.loop.call_soon(self.on_connect_callback, True)
 
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""
         Log.debug("callback_disconnected called: {}", exc)
+        if self.on_connect_callback:
+            self.loop.call_soon(self.on_connect_callback, False)
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data.
@@ -281,7 +283,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
     :param broadcast_enable: True to treat id 0 as broadcast address.
     :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
-    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
     :param no_resend_on_retry: Do not resend request when retrying due to missing response.
     :param kwargs: Experimental parameters.
 

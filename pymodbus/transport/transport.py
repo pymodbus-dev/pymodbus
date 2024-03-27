@@ -107,7 +107,7 @@ class CommParams:
         password: str | None = None,
         sslctx: ssl.SSLContext | None = None,
     ) -> ssl.SSLContext:
-        """Generate sslctx from cert/key/passwor.
+        """Generate sslctx from cert/key/password.
 
         MODBUS/TCP Security Protocol Specification demands TLSv2 at least
         """

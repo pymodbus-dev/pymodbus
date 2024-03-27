@@ -60,6 +60,21 @@ class ModbusFramer:
             return True
         return self._header["uid"] in slaves
 
+    async def asyncProcess(self, exec_request):
+        """Process the request."""
+        return await exec_request
+
+    async def drain(self, cancel_pending: bool = False):
+        """Finish processing any pending requests and prepare to shut down.
+
+        :param cancel_pending: If we should cancel any pending requests
+        """
+
+    @property
+    def drained(self):
+        """Check if the queue is drained."""
+        return True
+
     def sendPacket(self, message):
         """Send packets on the bus.
 

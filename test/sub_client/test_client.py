@@ -14,6 +14,7 @@ import pymodbus.file_message as pdu_file_msg
 import pymodbus.other_message as pdu_other_msg
 import pymodbus.register_read_message as pdu_reg_read
 import pymodbus.register_write_message as pdu_req_write
+from examples.helper import get_certificate
 from pymodbus import Framer
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.mixin import ModbusClientMixin
@@ -516,25 +517,40 @@ def test_client_tcp_reuse():
 
 def test_client_tls_connect():
     """Test the tls client connection method."""
+    sslctx=lib_client.ModbusTlsClient.generate_ssl(
+        certfile=get_certificate("crt"),
+        keyfile=get_certificate("key"),
+    )
     with mock.patch.object(ssl.SSLSocket, "connect") as mock_method:
-        client = lib_client.ModbusTlsClient("127.0.0.1")
+        client = lib_client.ModbusTlsClient(
+            "127.0.0.1",
+            sslctx=sslctx,
+        )
         assert client.connect()
 
     with mock.patch.object(socket, "create_connection") as mock_method:
         mock_method.side_effect = OSError()
-        client = lib_client.ModbusTlsClient("127.0.0.1")
+        client = lib_client.ModbusTlsClient("127.0.0.1", sslctx=sslctx)
         assert not client.connect()
 
 
 def test_client_tls_connect2():
     """Test the tls client connection method."""
+    sslctx=lib_client.ModbusTlsClient.generate_ssl(
+        certfile=get_certificate("crt"),
+        keyfile=get_certificate("key"),
+    )
     with mock.patch.object(ssl.SSLSocket, "connect") as mock_method:
-        client = lib_client.ModbusTlsClient("127.0.0.1", source_address=("0.0.0.0", 0))
+        client = lib_client.ModbusTlsClient(
+            "127.0.0.1",
+            sslctx=sslctx,
+            source_address=("0.0.0.0", 0)
+        )
         assert client.connect()
 
     with mock.patch.object(socket, "create_connection") as mock_method:
         mock_method.side_effect = OSError()
-        client = lib_client.ModbusTlsClient("127.0.0.1")
+        client = lib_client.ModbusTlsClient("127.0.0.1", sslctx=sslctx)
         assert not client.connect()
 
 

@@ -97,10 +97,11 @@ def setup_async_client(description=None, cmdline=None):
             #    retries=3,
             #    retry_on_empty=False,
             # TLS setup parameters
-            #    sslctx=sslctx,
-            certfile=helper.get_certificate("crt"),
-            keyfile=helper.get_certificate("key"),
+            sslctx=modbusClient.AsyncModbusTlsClient.generate_ssl(
+                certfile=helper.get_certificate("crt"),
+                keyfile=helper.get_certificate("key"),
             #    password="none",
+            ),
             server_hostname="localhost",
         )
     return client

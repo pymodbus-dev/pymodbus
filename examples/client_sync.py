@@ -103,10 +103,11 @@ def setup_sync_client(description=None, cmdline=None):
             #    retries=3,
             #    retry_on_empty=False,
             # TLS setup parameters
-            #    sslctx=None,
-            certfile=helper.get_certificate("crt"),
-            keyfile=helper.get_certificate("key"),
+            sslctx=modbusClient.ModbusTlsClient.generate_ssl(
+                certfile=helper.get_certificate("crt"),
+                keyfile=helper.get_certificate("key"),
             #    password=None,
+            ),
             server_hostname="localhost",
         )
     return client

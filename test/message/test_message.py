@@ -68,8 +68,7 @@ class TestMessage:
 
     @pytest.mark.parametrize(
         ("dev_id", "res"), [
-        (None, True),
-        (0, True),
+        (0, False),
         (1, True),
         (2, False),
         ])
@@ -220,7 +219,7 @@ class TestMessages:
             pytest.skip("Not supported")
         if frame == MessageTLS and (tid or dev_id):
             pytest.skip("Not supported")
-        frame_obj = frame(None, True)
+        frame_obj = frame([0], True)
         expected = frame_expected[inx1 + inx2 + inx3]
         encoded_data = frame_obj.encode(data, dev_id, tid)
         assert encoded_data == expected
@@ -324,7 +323,7 @@ class TestMessages:
         """Test encode method."""
         if frame == MessageRTU:
             pytest.skip("Waiting for implementation.")
-        frame_obj = frame(None, True)
+        frame_obj = frame([0], True)
         used_len, _, _, data = frame_obj.decode(data)
         assert used_len == exp_len
         assert not data

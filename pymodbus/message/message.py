@@ -54,14 +54,14 @@ class Message(ModbusProtocol):
             message_type: MessageType,
             params: CommParams,
             is_server: bool,
-            device_ids: list[int] | None,
+            device_ids: list[int],
         ):
         """Initialize a message instance.
 
         :param message_type: Modbus message type
         :param params: parameter dataclass
         :param is_server: true if object act as a server (listen/connect)
-        :param device_ids: list of device id to accept (server only), None for all.
+        :param device_ids: list of device id to accept, 0 in list means broadcast.
         """
         super().__init__(params, is_server)
         self.device_ids = device_ids

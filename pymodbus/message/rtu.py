@@ -168,12 +168,9 @@ class MessageRTU(MessageBase):
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode message."""
-        tot_len = len(data)
-        if tot_len < 4:
-            return 0, 0, 0, b''
-
-
         resp = None
+        if len(data) < 4:
+            return 0, 0, 0, b''
 
         def callback(result):
             """Set result."""

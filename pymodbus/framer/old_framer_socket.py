@@ -5,9 +5,9 @@ import struct
 from pymodbus.exceptions import (
     ModbusIOException,
 )
-from pymodbus.framer.base import SOCKET_FRAME_HEADER, ModbusFramer
+from pymodbus.framer.old_framer_base import SOCKET_FRAME_HEADER, ModbusFramer
+from pymodbus.framer.socket import MessageSocket
 from pymodbus.logging import Log
-from pymodbus.message.socket import MessageSocket
 
 
 # --------------------------------------------------------------------------- #

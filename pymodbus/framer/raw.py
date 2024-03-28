@@ -1,8 +1,8 @@
 """ModbusMessage layer."""
 from __future__ import annotations
 
+from pymodbus.framer.base import MessageBase
 from pymodbus.logging import Log
-from pymodbus.message.base import MessageBase
 
 
 class MessageRaw(MessageBase):

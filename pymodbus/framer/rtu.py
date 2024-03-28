@@ -10,8 +10,8 @@ import struct
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder
+from pymodbus.framer.base import MessageBase
 from pymodbus.logging import Log
-from pymodbus.message.base import MessageBase
 
 
 class MessageRTU(MessageBase):
@@ -165,13 +165,21 @@ class MessageRTU(MessageBase):
             Log.debug("Frame advanced, resetting header!!")
             callback(result)  # defer or push to a thread?
 
+    def assemble_frame(self, _data_len: int, _data: bytes) -> int:
+        """Collect frame, until CRC matches."""
+        return 0
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode message."""
-        resp = None
-        if len(data) < 4:
+        if (data_len := len(data)) < 6:  # <dev_id><fc><data*2><crc*2>
             return 0, 0, 0, b''
 
+        if not (_frame_len := self.assemble_frame(data_len, data)):
+            return 0, 0, 0, b''
+
+
+
+        resp = None
         def callback(result):
             """Set result."""
             nonlocal resp
@@ -179,7 +187,6 @@ class MessageRTU(MessageBase):
 
         self._legacy_decode(callback, [0])
         return 0, 0, 0, b''
-
 
     def encode(self, data: bytes, device_id: int, _tid: int) -> bytes:
         """Decode message."""
@@ -199,9 +206,6 @@ class MessageRTU(MessageBase):
     @classmethod
     def compute_CRC(cls, data: bytes) -> int:
         """Compute a crc16 on the passed in bytes.
-
-        For modbus, this is only used on the binary serial protocols (in this
-        case RTU).
 
         The difference between modbus's crc16 and a normal crc16
         is that modbus starts the crc value out at 0xffff.

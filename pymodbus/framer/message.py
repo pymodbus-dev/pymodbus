@@ -9,12 +9,12 @@ from __future__ import annotations
 from abc import abstractmethod
 from enum import Enum
 
-from pymodbus.message.ascii import MessageAscii
-from pymodbus.message.base import MessageBase
-from pymodbus.message.raw import MessageRaw
-from pymodbus.message.rtu import MessageRTU
-from pymodbus.message.socket import MessageSocket
-from pymodbus.message.tls import MessageTLS
+from pymodbus.framer.ascii import MessageAscii
+from pymodbus.framer.base import MessageBase
+from pymodbus.framer.raw import MessageRaw
+from pymodbus.framer.rtu import MessageRTU
+from pymodbus.framer.socket import MessageSocket
+from pymodbus.framer.tls import MessageTLS
 from pymodbus.transport.transport import CommParams, ModbusProtocol
 
 

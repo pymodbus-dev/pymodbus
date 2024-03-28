@@ -1,7 +1,7 @@
 """Test transport."""
 import pytest
 
-from pymodbus.message.ascii import MessageAscii
+from pymodbus.framer.ascii import MessageAscii
 
 
 class TestMessageAscii:

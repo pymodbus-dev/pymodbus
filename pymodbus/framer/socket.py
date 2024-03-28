@@ -6,8 +6,8 @@ ModbusMessage provides a unified interface to send/receive Modbus requests/respo
 """
 from __future__ import annotations
 
+from pymodbus.framer.base import MessageBase
 from pymodbus.logging import Log
-from pymodbus.message.base import MessageBase
 
 
 class MessageSocket(MessageBase):

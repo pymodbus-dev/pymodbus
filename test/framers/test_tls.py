@@ -2,7 +2,7 @@
 
 import pytest
 
-from pymodbus.message.tls import MessageTLS
+from pymodbus.framer.tls import MessageTLS
 
 
 class TestMessageSocket:

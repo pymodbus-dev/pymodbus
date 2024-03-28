@@ -6,7 +6,7 @@ ModbusMessage provides a unified interface to send/receive Modbus requests/respo
 """
 from __future__ import annotations
 
-from pymodbus.message.base import MessageBase
+from pymodbus.framer.base import MessageBase
 
 
 class MessageTLS(MessageBase):

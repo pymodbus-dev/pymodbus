@@ -2,7 +2,7 @@
 
 import pytest
 
-from pymodbus.message.socket import MessageSocket
+from pymodbus.framer.socket import MessageSocket
 
 
 class TestMessageSocket:

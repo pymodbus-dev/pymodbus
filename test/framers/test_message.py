@@ -4,11 +4,11 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.message import MessageType
-from pymodbus.message.ascii import MessageAscii
-from pymodbus.message.rtu import MessageRTU
-from pymodbus.message.socket import MessageSocket
-from pymodbus.message.tls import MessageTLS
+from pymodbus.framer import MessageType
+from pymodbus.framer.ascii import MessageAscii
+from pymodbus.framer.rtu import MessageRTU
+from pymodbus.framer.socket import MessageSocket
+from pymodbus.framer.tls import MessageTLS
 from pymodbus.transport import CommParams
 
 

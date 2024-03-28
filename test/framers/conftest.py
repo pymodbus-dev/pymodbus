@@ -5,7 +5,7 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.message import Message, MessageType
+from pymodbus.framer import Message, MessageType
 from pymodbus.transport import CommParams, ModbusProtocol
 
 

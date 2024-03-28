@@ -5,8 +5,8 @@ import struct
 from pymodbus.exceptions import (
     ModbusIOException,
 )
-from pymodbus.framer.base import TLS_FRAME_HEADER, ModbusFramer
-from pymodbus.message.tls import MessageTLS
+from pymodbus.framer.old_framer_base import TLS_FRAME_HEADER, ModbusFramer
+from pymodbus.framer.tls import MessageTLS
 
 
 # --------------------------------------------------------------------------- #

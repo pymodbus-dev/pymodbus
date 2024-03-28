@@ -4,9 +4,9 @@ import struct
 import time
 
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.framer.base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
+from pymodbus.framer.old_framer_base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
+from pymodbus.framer.rtu import MessageRTU
 from pymodbus.logging import Log
-from pymodbus.message.rtu import MessageRTU
 from pymodbus.utilities import ModbusTransactionState
 
 

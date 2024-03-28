@@ -1,7 +1,7 @@
 """Test transport."""
 import pytest
 
-from pymodbus.message.rtu import MessageRTU
+from pymodbus.framer.rtu import MessageRTU
 
 
 class TestMessageRTU:

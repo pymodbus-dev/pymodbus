@@ -11,7 +11,7 @@ class TestMessageRTU:
     @pytest.fixture(name="frame")
     def prepare_frame():
         """Return message object."""
-        return MessageRTU([1], False)
+        return MessageRTU()
 
 
     @pytest.mark.parametrize(

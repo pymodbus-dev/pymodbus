@@ -11,7 +11,7 @@ class TestMessageAscii:
     @pytest.fixture(name="frame")
     def prepare_frame():
         """Return message object."""
-        return MessageAscii([1], False)
+        return MessageAscii()
 
 
     @pytest.mark.parametrize(

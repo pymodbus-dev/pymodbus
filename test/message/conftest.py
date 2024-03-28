@@ -21,6 +21,7 @@ class DummyMessage(Message):
         """Initialize a message instance."""
         super().__init__(message_type, params, is_server, device_ids)
         self.send = mock.Mock()
+        self.message_type = message_type
 
     def callback_new_connection(self) -> ModbusProtocol:
         """Call when listener receive new connection request."""

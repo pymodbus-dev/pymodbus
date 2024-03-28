@@ -6,7 +6,6 @@ from pymodbus.exceptions import (
     ModbusIOException,
 )
 from pymodbus.framer.base import TLS_FRAME_HEADER, ModbusFramer
-from pymodbus.logging import Log
 from pymodbus.message.tls import MessageTLS
 
 
@@ -44,25 +43,18 @@ class ModbusTlsFramer(ModbusFramer):
             return {"fcode": fcode}
         return {}
 
-    def frameProcessIncomingPacket(self, single, callback, slave, _tid=None, **kwargs):
+    def frameProcessIncomingPacket(self, _single, callback, _slave, _tid=None, **kwargs):
         """Process new packet pattern."""
         # no slave id for Modbus Security Application Protocol
 
         while True:
             used_len, use_tid, dev_id, data = self.message_handler.decode(self._buffer)
             if not data:
-                if not used_len:
-                    return
-                self._buffer = self._buffer[used_len :]
-                continue
+                return
             self._header["uid"] = dev_id
             self._header["tid"] = use_tid
             self._header["pid"] = 0
 
-            if not self._validate_slave_id(slave, single):
-                Log.debug("Not in valid slave id - {}, ignoring!!", slave)
-                self.resetFrame()
-                return
             if (result := self.decoder.decode(data)) is None:
                 raise ModbusIOException("Unable to decode request")
             self.populateResult(result)

@@ -249,6 +249,9 @@ class IllegalFunctionRequest(ModbusRequest):
     def decode(self, _data):
         """Decode so this failure will run correctly."""
 
+    def encode(self):
+        """Decode so this failure will run correctly."""
+
     def execute(self, _context):
         """Build an illegal function request error response.
 

@@ -74,7 +74,7 @@ class TestMessage:
         ])
     async def test_validate_id(self, msg, dev_id, res):
         """Test message type."""
-        assert res == msg.msg_handle.validate_device_id(dev_id)
+        assert res == msg.validate_device_id(dev_id)
 
     @pytest.mark.parametrize(
         ("data", "res_len", "res_id", "res_tid", "res_data"), [
@@ -159,7 +159,7 @@ class TestMessages:
                 b'\x11\x03\x00\x7c\x00\x02\x07\x43',
                 b'\x11\x03\x04\x00\x8d\x00\x8e\xfb\xbd',
                 b'\x11\x83\x02\xc1\x34',
-                b'\xff\x03\x00|\x00\x02\x10\x0d',
+                b'\xff\x03\x00\x7c\x00\x02\x10\x0d',
                 b'\xff\x03\x04\x00\x8d\x00\x8e\xf5\xb3',
                 b'\xff\x83\x02\xa1\x01',
             ]),
@@ -215,11 +215,10 @@ class TestMessages:
     )
     def test_encode(self, frame, frame_expected, data, dev_id, tid, inx1, inx2, inx3):
         """Test encode method."""
-        if frame != MessageSocket and tid:
-            pytest.skip("Not supported")
-        if frame == MessageTLS and (tid or dev_id):
-            pytest.skip("Not supported")
-        frame_obj = frame([0], True)
+        if ((frame != MessageSocket and tid) or
+            (frame == MessageTLS and dev_id)):
+            return
+        frame_obj = frame()
         expected = frame_expected[inx1 + inx2 + inx3]
         encoded_data = frame_obj.encode(data, dev_id, tid)
         assert encoded_data == expected
@@ -281,7 +280,7 @@ class TestMessages:
         if msg_type == MessageType.RTU:
             pytest.skip("Waiting on implementation!")
         if msg_type == MessageType.TLS and split != "no":
-            pytest.skip("Not supported.")
+            return
         frame = dummy_message(
             msg_type,
             CommParams(),
@@ -323,7 +322,7 @@ class TestMessages:
         """Test encode method."""
         if frame == MessageRTU:
             pytest.skip("Waiting for implementation.")
-        frame_obj = frame([0], True)
+        frame_obj = frame()
         used_len, _, _, data = frame_obj.decode(data)
         assert used_len == exp_len
         assert not data

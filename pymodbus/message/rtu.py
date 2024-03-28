@@ -177,7 +177,7 @@ class MessageRTU(MessageBase):
             nonlocal resp
             resp = result
 
-        self._legacy_decode(callback, self.device_ids)
+        self._legacy_decode(callback, [0])
         return 0, 0, 0, b''
 
 

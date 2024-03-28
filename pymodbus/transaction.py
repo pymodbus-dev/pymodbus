@@ -7,7 +7,6 @@ __all__ = [
     "ModbusTlsFramer",
     "ModbusRtuFramer",
     "ModbusAsciiFramer",
-    "ModbusBinaryFramer",
 ]
 
 # pylint: disable=missing-type-doc
@@ -23,7 +22,6 @@ from pymodbus.exceptions import (
     ModbusIOException,
 )
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
-from pymodbus.framer.binary_framer import ModbusBinaryFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
@@ -87,8 +85,6 @@ class ModbusTransactionManager:
             self.base_adu_size = 3  # address(1), CRC(2)
         elif isinstance(self.client.framer, ModbusAsciiFramer):
             self.base_adu_size = 7  # start(1)+ Address(2), LRC(2) + end(2)
-        elif isinstance(self.client.framer, ModbusBinaryFramer):
-            self.base_adu_size = 5  # start(1) + Address(1), CRC(2) + end(1)
         elif isinstance(self.client.framer, ModbusTlsFramer):
             self.base_adu_size = 0  # no header and footer
         else:
@@ -106,7 +102,7 @@ class ModbusTransactionManager:
             return self.base_adu_size + 2  # Fcode(1), ExceptionCode(1)
         if isinstance(self.client.framer, ModbusAsciiFramer):
             return self.base_adu_size + 4  # Fcode(2), ExceptionCode(2)
-        if isinstance(self.client.framer, (ModbusRtuFramer, ModbusBinaryFramer)):
+        if isinstance(self.client.framer, ModbusRtuFramer):
             return self.base_adu_size + 2  # Fcode(1), ExceptionCode(1)
         return None
 
@@ -348,8 +344,6 @@ class ModbusTransactionManager:
                 min_size = 4
             elif isinstance(self.client.framer, ModbusAsciiFramer):
                 min_size = 5
-            elif isinstance(self.client.framer, ModbusBinaryFramer):
-                min_size = 3
             else:
                 min_size = expected_response_length
 
@@ -367,8 +361,6 @@ class ModbusTransactionManager:
                     func_code = int(read_min[1])
                 elif isinstance(self.client.framer, ModbusAsciiFramer):
                     func_code = int(read_min[3:5], 16)
-                elif isinstance(self.client.framer, ModbusBinaryFramer):
-                    func_code = int(read_min[-1])
                 else:
                     func_code = -1
 

@@ -4,7 +4,7 @@
 usage::
 
     client_async.py [-h] [-c {tcp,udp,serial,tls}]
-                    [-f {ascii,binary,rtu,socket,tls}]
+                    [-f {ascii,rtu,socket,tls}]
                     [-l {critical,error,warning,info,debug}] [-p PORT]
                     [--baudrate BAUDRATE] [--host HOST]
 
@@ -12,7 +12,7 @@ usage::
         show this help message and exit
     -c, -comm {tcp,udp,serial,tls}
         set communication, default is tcp
-    -f, --framer {ascii,binary,rtu,socket,tls}
+    -f, --framer {ascii,rtu,socket,tls}
         set framer, default depends on --comm
     -l, --log {critical,error,warning,info,debug}
         set log level, default is info

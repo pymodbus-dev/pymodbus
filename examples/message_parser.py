@@ -15,7 +15,6 @@ from pymodbus import pymodbus_apply_logging_config
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.transaction import (
     ModbusAsciiFramer,
-    ModbusBinaryFramer,
     ModbusRtuFramer,
     ModbusSocketFramer,
 )
@@ -30,7 +29,7 @@ def get_commandline(cmdline):
 
     parser.add_argument(
         "--framer",
-        choices=["ascii", "binary", "rtu", "socket"],
+        choices=["ascii", "rtu", "socket"],
         help="set framer, default is rtu",
         type=str,
         default="rtu",
@@ -148,7 +147,6 @@ def parse_messages(cmdline=None):
 
     framer = {
         "ascii": ModbusAsciiFramer,
-        "binary": ModbusBinaryFramer,
         "rtu": ModbusRtuFramer,
         "socket": ModbusSocketFramer,
     }[args.framer]

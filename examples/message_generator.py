@@ -14,7 +14,6 @@ import pymodbus.register_read_message as modbus_register
 import pymodbus.register_write_message as modbus_register_write
 from pymodbus.transaction import (
     ModbusAsciiFramer,
-    ModbusBinaryFramer,
     ModbusRtuFramer,
     ModbusSocketFramer,
 )
@@ -121,7 +120,7 @@ def get_commandline(cmdline=None):
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--framer",
-        choices=["ascii", "binary", "rtu", "socket"],
+        choices=["ascii", "rtu", "socket"],
         help="set framer, default is rtu",
         dest="framer",
         default="rtu",
@@ -200,7 +199,6 @@ def generate_messages(cmdline=None):
     }
     framer = {
         "ascii": ModbusAsciiFramer,
-        "binary": ModbusBinaryFramer,
         "rtu": ModbusRtuFramer,
         "socket": ModbusSocketFramer,
     }[args.framer](None)

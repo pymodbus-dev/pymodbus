@@ -9,14 +9,6 @@ pymodbus\.framer\.ascii_framer module
     :undoc-members:
     :show-inheritance:
 
-pymodbus\.framer\.binary_framer module
---------------------------------------
-
-.. automodule:: pymodbus.framer.binary_framer
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 pymodbus\.framer\.rtu_framer module
 -----------------------------------
 

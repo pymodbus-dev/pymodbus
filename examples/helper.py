@@ -29,7 +29,7 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
     parser.add_argument(
         "-f",
         "--framer",
-        choices=["ascii", "binary", "rtu", "socket", "tls"],
+        choices=["ascii", "rtu", "socket", "tls"],
         help="set framer, default depends on --comm",
         dest="framer",
         type=str,

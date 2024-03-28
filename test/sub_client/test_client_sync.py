@@ -17,7 +17,6 @@ from pymodbus.client import (
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import (
     ModbusAsciiFramer,
-    ModbusBinaryFramer,
     ModbusRtuFramer,
     ModbusSocketFramer,
     ModbusTlsFramer,
@@ -313,10 +312,6 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         assert isinstance(
             ModbusSerialClient("/dev/null", framer=Framer.RTU).framer,
             ModbusRtuFramer,
-        )
-        assert isinstance(
-            ModbusSerialClient("/dev/null", framer=Framer.BINARY).framer,
-            ModbusBinaryFramer,
         )
         assert isinstance(
             ModbusSerialClient("/dev/null", framer=Framer.SOCKET).framer,

@@ -1,6 +1,5 @@
 """Ascii_framer."""
 # pylint: disable=missing-type-doc
-from binascii import a2b_hex
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer.base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
@@ -52,44 +51,24 @@ class ModbusAsciiFramer(ModbusFramer):
 
     def frameProcessIncomingPacket(self, single, callback, slave, _tid=None, **kwargs):
         """Process new packet pattern."""
-        def check_frame(self):
-            """Check and decode the next frame."""
-            start = self._buffer.find(self._start)
-            if start == -1:
-                return False
-            if start > 0:  # go ahead and skip old bad data
-                self._buffer = self._buffer[start:]
-                start = 0
-
-            if (end := self._buffer.find(self._end)) != -1:
-                self._header["len"] = end
-                self._header["uid"] = int(self._buffer[1:3], 16)
-                self._header["lrc"] = int(self._buffer[end - 2 : end], 16)
-                data = a2b_hex(self._buffer[start + 1 : end - 2])
-                return MessageAscii.check_LRC(data, self._header["lrc"])
-            return False
-
-        while len(self._buffer) > 1:
-            if not check_frame(self):
-                break
-            if not self._validate_slave_id(slave, single):
-                header_txt = self._header["uid"]
-                Log.error("Not a valid slave id - {}, ignoring!!", header_txt)
-                self.resetFrame()
+        while len(self._buffer):
+            used_len, _tid, dev_id, data = self.message_handler.decode(self._buffer)
+            if not data:
+                if not used_len:
+                    return
+                self._buffer = self._buffer[used_len :]
                 continue
+            self._header["uid"] = dev_id
+            if not self._validate_slave_id(slave, single):
+                Log.error("Not a valid slave id - {}, ignoring!!", dev_id)
+                self.resetFrame()
+                return
 
-            start = self._hsize + 1
-            end = self._header["len"] - 2
-            buffer = self._buffer[start:end]
-            if end > 0:
-                frame = a2b_hex(buffer)
-            else:
-                frame = b""
-            if (result := self.decoder.decode(frame)) is None:
+            if (result := self.decoder.decode(data)) is None:
                 raise ModbusIOException("Unable to decode response")
             self.populateResult(result)
-            self._buffer = self._buffer[self._header["len"] + 2 :]
-            self._header = {"lrc": "0000", "len": 0, "uid": 0x00}
+            self._buffer = self._buffer[used_len :]
+            self._header = {"uid": 0x00}
             callback(result)  # defer this
 
     def buildPacket(self, message):

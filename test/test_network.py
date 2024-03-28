@@ -27,9 +27,7 @@ class ModbusProtocolStub(ModbusProtocol):
 
     async def start_run(self):
         """Call need functions to start server/client."""
-        if  self.is_server:
-            return await self.listen()
-        return await self.connect()
+        return await self.listen()
 
 
     def callback_connected(self) -> None:

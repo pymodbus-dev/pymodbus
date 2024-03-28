@@ -9,6 +9,7 @@ API changes 3.7.0
 - removed certfile, keyfile, password from TLS client, please use generate_ssl()
 - on_reconnect_callback() removed from clients (sync/async).
 - on_connect_callback(true/false) added to async clients.
+- binary framer no longer supported
 
 
 API changes 3.6.0

@@ -9,7 +9,6 @@ from pymodbus.factory import ServerDecoder
 from pymodbus.pdu import ModbusRequest
 from pymodbus.transaction import (
     ModbusAsciiFramer,
-    ModbusBinaryFramer,
     ModbusRtuFramer,
     ModbusSocketFramer,
     ModbusTlsFramer,
@@ -29,7 +28,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     _tls = None
     _rtu = None
     _ascii = None
-    _binary = None
     _manager = None
     _tm = None
 
@@ -44,7 +42,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tls = ModbusTlsFramer(decoder=self.decoder, client=None)
         self._rtu = ModbusRtuFramer(decoder=self.decoder, client=None)
         self._ascii = ModbusAsciiFramer(decoder=self.decoder, client=None)
-        self._binary = ModbusBinaryFramer(decoder=self.decoder, client=None)
         self._manager = ModbusTransactionManager(self.client)
 
     # ----------------------------------------------------------------------- #
@@ -69,7 +66,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test calculate exception length."""
         for framer, exception_length in (
             ("ascii", 11),
-            ("binary", 7),
             ("rtu", 5),
             ("tcp", 9),
             ("tls", 2),
@@ -78,8 +74,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
             self._manager.client = mock.MagicMock()
             if framer == "ascii":
                 self._manager.client.framer = self._ascii
-            elif framer == "binary":
-                self._manager.client.framer = self._binary
             elif framer == "rtu":
                 self._manager.client.framer = self._rtu
             elif framer == "tcp":
@@ -724,82 +718,3 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         msg = b":F7031389000A60\r\n"
         self._ascii.processIncomingPacket(msg, callback, [0,1])
         assert result
-
-    # ----------------------------------------------------------------------- #
-    # Binary tests
-    # ----------------------------------------------------------------------- #
-    def test_binary_framer_transaction_ready(self):
-        """Test a binary frame transaction."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
-        msg = TEST_MESSAGE
-        self._binary.processIncomingPacket(msg, callback, [0,1])
-        assert result
-
-    def test_binary_framer_transaction_full(self):
-        """Test a full binary frame transaction."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
-        msg = TEST_MESSAGE
-        self._binary.processIncomingPacket(msg, callback, [0,1])
-        assert result
-
-    def test_binary_framer_transaction_half(self):
-        """Test a half completed binary frame transaction."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
-        msg_parts = (b"\x7b\x01\x03\x00", b"\x00\x00\x05\x85\xC9\x7d")
-        self._binary.processIncomingPacket(msg_parts[0], callback, [0,1])
-        assert not result
-        self._binary.processIncomingPacket(msg_parts[1], callback, [0,1])
-        assert result
-
-    def test_binary_framer_populate(self):
-        """Test a binary frame packet build."""
-        request = ModbusRequest()
-        self._binary.populateResult(request)
-        assert not request.slave_id
-
-    def test_binary_framer_packet(self):
-        """Test a binary frame packet build."""
-        old_encode = ModbusRequest.encode
-        ModbusRequest.encode = lambda self: b""
-        message = ModbusRequest()
-        message.slave_id = 0xFF
-        message.function_code = 0x01
-        expected = b"\x7b\xff\x01\x81\x80\x7d"
-        actual = self._binary.buildPacket(message)
-        assert expected == actual
-        ModbusRequest.encode = old_encode
-
-    def test_binary_process_incoming_packet(self):
-        """Test binary process incoming packet."""
-        mock_data = TEST_MESSAGE
-        slave = 0x00
-
-        def mock_callback(_mock_data):
-            pass
-
-        self._binary.processIncomingPacket(mock_data, mock_callback, slave)
-
-        # Test failure:
-        self._binary.checkFrame = mock.MagicMock(return_value=False)
-        self._binary.processIncomingPacket(mock_data, mock_callback, slave)

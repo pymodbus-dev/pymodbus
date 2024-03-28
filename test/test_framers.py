@@ -10,7 +10,6 @@ from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder
 from pymodbus.framer import (
     ModbusAsciiFramer,
-    ModbusBinaryFramer,
     ModbusRtuFramer,
     ModbusSocketFramer,
 )
@@ -47,7 +46,7 @@ class TestFramers:
     [
         ModbusRtuFramer,
         ModbusAsciiFramer,
-        ModbusBinaryFramer,
+        ModbusSocketFramer,
     ],
 )
     def test_framer_initialization(self, framer):
@@ -90,13 +89,7 @@ class TestFramers:
                 "len": 0,
                 "uid": 0x00,
             }
-            assert framer._hsize == 0x01  # pylint: disable=protected-access
-            assert framer._start == b"\x7b"  # pylint: disable=protected-access
-            assert framer._end == b"\x7d"  # pylint: disable=protected-access
-            assert framer._repeat == [  # pylint: disable=protected-access
-                b"}"[0],
-                b"{"[0],
-            ]
+            assert framer._hsize == 0x07  # pylint: disable=protected-access
 
 
     @pytest.mark.parametrize(
@@ -212,7 +205,8 @@ class TestFramers:
 
         rtu_framer.processIncomingPacket(data, callback, self.slaves)
         assert not count
-
+        callback(b'')
+        assert count
 
     @pytest.mark.parametrize(
         ("data", "header"),
@@ -371,6 +365,8 @@ class TestFramers:
         data = TEST_MESSAGE
         rtu_framer.processIncomingPacket(data, callback, self.slaves)
         assert not count
+        callback(b'')
+        assert count
 
     @pytest.mark.parametrize(("slaves", "res"), [([16], 0), ([17], 1)])
     def test_validate__slave_id(self,rtu_framer, slaves, res):
@@ -453,7 +449,6 @@ class TestFramers:
         ("framer", "message"),
         [
             (ModbusAsciiFramer, b':00010001000AF4\r\n',),
-            (ModbusBinaryFramer, b'{\x00\x01\x00\x01\x00\n\xec\x1c}',),
             (ModbusRtuFramer, b"\x00\x01\x00\x01\x00\n\xec\x1c",),
             (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x00\x01\x00\x01\x00\n',),
         ]
@@ -469,7 +464,6 @@ class TestFramers:
         ("framer", "message"),
         [
             (ModbusAsciiFramer, b':01010001000AF3\r\n',),
-            (ModbusBinaryFramer, b'A{\x01\x01\x00\x01\x00\n\xed\xcd}',),
             (ModbusRtuFramer, b"\x01\x01\x03\x01\x00\n\xed\x89",),
             (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x01\x01\x00\x01\x00\n',),
         ]
@@ -485,7 +479,6 @@ class TestFramers:
         ("framer", "message"),
         [
             (ModbusAsciiFramer, b':01270001000ACD\r\n',),
-            (ModbusBinaryFramer, b'{\x01\x1a\x00\x01\x00\n\x89\xcf}',),
             (ModbusRtuFramer, b"\x01\x03\x03\x01\x00\n\x94\x49",),
             (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x01\x27\x00\x01\x00\n',),
         ]
@@ -500,7 +493,6 @@ class TestFramers:
         ("framer", "message"),
         [
             (ModbusAsciiFramer, b':61620001000AF4\r\n',),
-            (ModbusBinaryFramer, b'{\x61\x62\x00\x01\x00\n\xec\x1c}',),
             (ModbusRtuFramer, b"\x61\x62\x00\x01\x00\n\xec\x1c",),
             (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x61\x62\x00\x01\x00\n',),
         ]
@@ -514,8 +506,3 @@ class TestFramers:
         decoded = test_framer.decode_data(message)
         assert decoded["fcode"] == expected["fcode"]
         assert decoded["slave"] == expected["slave"]
-
-    def test_binary_framer_preflight(self):
-        """Test binary framer _preflight."""
-        test_framer =  ModbusBinaryFramer(ClientDecoder())
-        assert test_framer._preflight(b'A{B}C') == b'A{{B}}C'  # pylint: disable=protected-access

@@ -43,12 +43,12 @@ class TestExamples:
         base_ports[__class__.__name__] += 1
         return base_ports[__class__.__name__]
 
-    @pytest.mark.parametrize("framer", ["socket", "rtu", "ascii", "binary"])
+    @pytest.mark.parametrize("framer", ["socket", "rtu", "ascii"])
     def test_message_generator(self, framer):
         """Test all message generator."""
         generate_messages(cmdline=["--framer", framer])
 
-    @pytest.mark.parametrize("framer", ["socket", "rtu", "ascii", "binary"])
+    @pytest.mark.parametrize("framer", ["socket", "rtu", "ascii"])
     def test_message_parser(self, framer):
         """Test message parser."""
         main_parse_messages(["--framer", framer, "-m", "000100000006010100200001"])

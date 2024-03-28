@@ -75,10 +75,7 @@ class ModbusSocketFramer(ModbusFramer):
         while True:
             used_len, use_tid, dev_id, data = self.message_handler.decode(self._buffer)
             if not data:
-                if not used_len:
-                    return
-                self._buffer = self._buffer[used_len :]
-                continue
+                return
             self._header["uid"] = dev_id
             self._header["tid"] = use_tid
             self._header["pid"] = 0

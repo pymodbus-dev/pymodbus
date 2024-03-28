@@ -12,6 +12,7 @@ from pymodbus.framer import (
     ModbusAsciiFramer,
     ModbusRtuFramer,
     ModbusSocketFramer,
+    ModbusTlsFramer,
 )
 from pymodbus.transport import CommType
 from pymodbus.utilities import ModbusTransactionState
@@ -481,6 +482,7 @@ class TestFramers:
             (ModbusAsciiFramer, b':01270001000ACD\r\n',),
             (ModbusRtuFramer, b"\x01\x03\x03\x01\x00\n\x94\x49",),
             (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x01\x27\x00\x01\x00\n',),
+            (ModbusTlsFramer, b'\x54\x00\x7c\x00\x02',),
         ]
     )
     def test_processincomingpacket_not_ok(self, framer, message):

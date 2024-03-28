@@ -218,7 +218,9 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             if self.strict:
                 self.socket.inter_byte_timeout = self.inter_byte_timeout
             self.last_frame_end = None
-        except serial.SerialException as msg:
+        # except serial.SerialException as msg:
+        # pyserial raises undocumented exceptions like termios
+        except Exception as msg:  # pylint: disable=broad-exception-caught
             Log.error("{}", msg)
             self.close()
         return self.socket is not None

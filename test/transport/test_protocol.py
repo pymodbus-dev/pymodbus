@@ -196,6 +196,12 @@ class TestTransportProtocol1:
         assert client.recv_buffer == b"response"
         assert not client.sent_buffer
 
+    async def test_handle_no_transport(self, client):
+        """Test send()."""
+        client.transport = None
+        client.send(b"partial")
+        assert not client.sent_buffer
+
 
 class TestTransportProtocol2:
     """Test transport module."""

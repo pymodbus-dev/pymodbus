@@ -43,7 +43,7 @@ class ModbusSocketFramer(ModbusFramer):
         """
         super().__init__(decoder, client)
         self._hsize = 0x07
-        self.message_handler = MessageSocket([0], True)
+        self.message_handler = MessageSocket()
 
     def decode_data(self, data):
         """Decode data."""

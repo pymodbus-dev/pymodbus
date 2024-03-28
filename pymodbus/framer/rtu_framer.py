@@ -61,7 +61,7 @@ class ModbusRtuFramer(ModbusFramer):
         self._end = b"\x0d\x0a"
         self._min_frame_size = 4
         self.function_codes = decoder.lookup.keys() if decoder else {}
-        self.message_handler = MessageRTU([0], True)
+        self.message_handler = MessageRTU()
 
     def decode_data(self, data):
         """Decode data."""

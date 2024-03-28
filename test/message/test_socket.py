@@ -12,7 +12,7 @@ class TestMessageSocket:
     @pytest.fixture(name="frame")
     def prepare_frame():
         """Return message object."""
-        return MessageSocket([1], False)
+        return MessageSocket()
 
 
     @pytest.mark.parametrize(

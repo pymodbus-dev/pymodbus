@@ -35,7 +35,7 @@ class ModbusTlsFramer(ModbusFramer):
         """
         super().__init__(decoder, client)
         self._hsize = 0x0
-        self.message_handler = MessageTLS([0], True)
+        self.message_handler = MessageTLS()
 
     def decode_data(self, data):
         """Decode data."""

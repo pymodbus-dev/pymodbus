@@ -65,14 +65,20 @@ class Message(ModbusProtocol):
         """
         super().__init__(params, is_server)
         self.device_ids = device_ids
-        self.message_type = message_type
+        self.broadcast: bool = (0 in device_ids)
         self.msg_handle: MessageBase = {
-            MessageType.RAW: MessageRaw(device_ids, is_server),
-            MessageType.ASCII: MessageAscii(device_ids, is_server),
-            MessageType.RTU: MessageRTU(device_ids, is_server),
-            MessageType.SOCKET: MessageSocket(device_ids, is_server),
-            MessageType.TLS: MessageTLS(device_ids, is_server),
+            MessageType.RAW: MessageRaw(),
+            MessageType.ASCII: MessageAscii(),
+            MessageType.RTU: MessageRTU(),
+            MessageType.SOCKET: MessageSocket(),
+            MessageType.TLS: MessageTLS(),
         }[message_type]
+
+
+    def validate_device_id(self, dev_id: int) -> bool:
+        """Check if device id is expected."""
+        return self.broadcast or (dev_id in self.device_ids)
+
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""

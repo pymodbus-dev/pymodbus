@@ -23,9 +23,6 @@ class MessageRaw(MessageBase):
             return 0, 0, 0, self.EMPTY
         dev_id = int(data[0])
         tid = int(data[1])
-        if not self.validate_device_id(dev_id):
-            Log.debug("Device id: {} in frame {} unknown, skipping.", dev_id, data, ":hex")
-
         return len(data), dev_id, tid, data[2:]
 
     def encode(self, data: bytes, device_id: int, tid: int) -> bytes:

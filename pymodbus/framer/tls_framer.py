@@ -35,7 +35,7 @@ class ModbusTlsFramer(ModbusFramer):
         """
         super().__init__(decoder, client)
         self._hsize = 0x0
-        self.message_encoder = MessageTLS([0], True)
+        self.message_handler = MessageTLS([0], True)
 
     def decode_data(self, data):
         """Decode data."""
@@ -47,32 +47,28 @@ class ModbusTlsFramer(ModbusFramer):
     def frameProcessIncomingPacket(self, single, callback, slave, _tid=None, **kwargs):
         """Process new packet pattern."""
         # no slave id for Modbus Security Application Protocol
-        def check_frame(self):
-            """Check and decode the next frame."""
-            if len(self._buffer) > self._hsize:
-                # we have at least a complete message, continue
-                if len(self._buffer) - self._hsize >= 1:
-                    return True
-            # we don't have enough of a message yet, wait
-            return False
 
-        if not len(self._buffer) > self._hsize:
-            return
-        if not check_frame(self):
-            Log.debug("Frame check failed, ignoring!!")
-            self.resetFrame()
-            return
-        if not self._validate_slave_id(slave, single):
-            Log.debug("Not in valid slave id - {}, ignoring!!", slave)
-            self.resetFrame()
-            return
-        data = self._buffer[self._hsize :]
-        if (result := self.decoder.decode(data)) is None:
-            raise ModbusIOException("Unable to decode request")
-        self.populateResult(result)
-        self._buffer = b""
-        self._header = {}
-        callback(result)  # defer or push to a thread?
+        while True:
+            used_len, use_tid, dev_id, data = self.message_handler.decode(self._buffer)
+            if not data:
+                if not used_len:
+                    return
+                self._buffer = self._buffer[used_len :]
+                continue
+            self._header["uid"] = dev_id
+            self._header["tid"] = use_tid
+            self._header["pid"] = 0
+
+            if not self._validate_slave_id(slave, single):
+                Log.debug("Not in valid slave id - {}, ignoring!!", slave)
+                self.resetFrame()
+                return
+            if (result := self.decoder.decode(data)) is None:
+                raise ModbusIOException("Unable to decode request")
+            self.populateResult(result)
+            self._buffer = b""
+            self._header = {}
+            callback(result)  # defer or push to a thread?
 
     def buildPacket(self, message):
         """Create a ready to send modbus packet.
@@ -80,5 +76,5 @@ class ModbusTlsFramer(ModbusFramer):
         :param message: The populated request/response to send
         """
         data = message.function_code.to_bytes(1,'big') + message.encode()
-        packet = self.message_encoder.encode(data, message.slave_id, message.transaction_id)
+        packet = self.message_handler.encode(data, message.slave_id, message.transaction_id)
         return packet

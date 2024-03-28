@@ -72,41 +72,25 @@ class ModbusSocketFramer(ModbusFramer):
         The processed and decoded messages are pushed to the callback
         function to process and send.
         """
-        def check_frame(self):
-            """Check and decode the next frame."""
-            if not len(self._buffer) > self._hsize:
-                return False
-            (
-                self._header["tid"],
-                self._header["pid"],
-                self._header["len"],
-                self._header["uid"],
-            ) = struct.unpack(">HHHB", self._buffer[0 : self._hsize])
-            if self._header["len"] < 2:
-                length = self._hsize + self._header["len"] -1
-                self._buffer = self._buffer[length:]
-                self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
-            elif len(self._buffer) - self._hsize + 1 >= self._header["len"]:
-                return True
-            Log.debug("Frame check failed, missing part of message!!")
-            return False
-
         while True:
-            if not check_frame(self):
-                return
+            used_len, use_tid, dev_id, data = self.message_handler.decode(self._buffer)
+            if not data:
+                if not used_len:
+                    return
+                self._buffer = self._buffer[used_len :]
+                continue
+            self._header["uid"] = dev_id
+            self._header["tid"] = use_tid
+            self._header["pid"] = 0
             if not self._validate_slave_id(slave, single):
-                header_txt = self._header["uid"]
-                Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
+                Log.debug("Not a valid slave id - {}, ignoring!!", dev_id)
                 self.resetFrame()
                 return
-            length = self._hsize + self._header["len"] -1
-            data = self._buffer[self._hsize : length]
             if (result := self.decoder.decode(data)) is None:
                 self.resetFrame()
                 raise ModbusIOException("Unable to decode request")
             self.populateResult(result)
-            length = self._hsize + self._header["len"] -1
-            self._buffer = self._buffer[length:]
+            self._buffer = self._buffer[used_len:]
             self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
             if tid and tid != result.transaction_id:
                 self.resetFrame()

@@ -1,4 +1,5 @@
 """Test datastore."""
+
 import asyncio
 import copy
 import json
@@ -582,9 +583,9 @@ class TestSimulator:
             )
         ),
     )
-    async def test_simulator_server_tcp(self):
+    async def test_simulator_server_tcp(self, unused_tcp_port):
         """Test init simulator server."""
-        task = ModbusSimulatorServer()
+        task = ModbusSimulatorServer(http_port=unused_tcp_port)
         await task.run_forever(only_start=True)
         await asyncio.sleep(0.5)
         await task.stop()

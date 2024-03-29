@@ -9,5 +9,5 @@ codespell
 ruff check --fix --exit-non-zero-on-fix .
 pylint --recursive=y examples pymodbus test
 mypy pymodbus
-pytest --cov --numprocesses auto
+pytest -x --cov --numprocesses auto
 echo "Ready to push"

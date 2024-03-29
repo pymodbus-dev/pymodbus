@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
-from pymodbus.framer import Framer
+from pymodbus.framer import FramerType
 from pymodbus.logging import Log
 from pymodbus.transport import CommType
 from pymodbus.utilities import ModbusTransactionState
@@ -69,7 +69,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
     def __init__(
         self,
         port: str,
-        framer: Framer = Framer.RTU,
+        framer: FramerType = FramerType.RTU,
         baudrate: int = 19200,
         bytesize: int = 8,
         parity: str = "N",
@@ -158,7 +158,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     def __init__(
         self,
         port: str,
-        framer: Framer = Framer.RTU,
+        framer: FramerType = FramerType.RTU,
         baudrate: int = 19200,
         bytesize: int = 8,
         parity: str = "N",

@@ -6,7 +6,7 @@ import ssl
 from typing import Any
 
 from pymodbus.client.tcp import AsyncModbusTcpClient, ModbusTcpClient
-from pymodbus.framer import Framer
+from pymodbus.framer import FramerType
 from pymodbus.logging import Log
 from pymodbus.transport import CommParams, CommType
 
@@ -56,7 +56,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         self,
         host: str,
         port: int = 802,
-        framer: Framer = Framer.TLS,
+        framer: FramerType = FramerType.TLS,
         sslctx: ssl.SSLContext = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT),
         server_hostname: str | None = None,
         **kwargs: Any,
@@ -153,7 +153,7 @@ class ModbusTlsClient(ModbusTcpClient):
         self,
         host: str,
         port: int = 802,
-        framer: Framer = Framer.TLS,
+        framer: FramerType = FramerType.TLS,
         sslctx: ssl.SSLContext = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT),
         server_hostname: str | None = None,
         **kwargs: Any,

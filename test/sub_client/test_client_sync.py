@@ -7,7 +7,7 @@ from unittest import mock
 import pytest
 import serial
 
-from pymodbus import Framer
+from pymodbus import FramerType
 from pymodbus.client import (
     ModbusSerialClient,
     ModbusTcpClient,
@@ -306,23 +306,23 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client = ModbusSerialClient("/dev/null")
         assert client
         assert isinstance(
-            ModbusSerialClient("/dev/null", framer=Framer.ASCII).framer,
+            ModbusSerialClient("/dev/null", framer=FramerType.ASCII).framer,
             ModbusAsciiFramer,
         )
         assert isinstance(
-            ModbusSerialClient("/dev/null", framer=Framer.RTU).framer,
+            ModbusSerialClient("/dev/null", framer=FramerType.RTU).framer,
             ModbusRtuFramer,
         )
         assert isinstance(
-            ModbusSerialClient("/dev/null", framer=Framer.SOCKET).framer,
+            ModbusSerialClient("/dev/null", framer=FramerType.SOCKET).framer,
             ModbusSocketFramer,
         )
 
     def test_sync_serial_rtu_client_timeouts(self):
         """Test sync serial rtu."""
-        client = ModbusSerialClient("/dev/null", framer=Framer.RTU, baudrate=9600)
+        client = ModbusSerialClient("/dev/null", framer=FramerType.RTU, baudrate=9600)
         assert client.silent_interval == round((3.5 * 10 / 9600), 6)
-        client = ModbusSerialClient("/dev/null", framer=Framer.RTU, baudrate=38400)
+        client = ModbusSerialClient("/dev/null", framer=FramerType.RTU, baudrate=38400)
         assert client.silent_interval == round((1.75 / 1000), 6)
 
     @mock.patch("serial.Serial")
@@ -347,7 +347,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client.close()
 
         # rtu connect/disconnect
-        rtu_client = ModbusSerialClient("/dev/null", framer=Framer.RTU, strict=True)
+        rtu_client = ModbusSerialClient("/dev/null", framer=FramerType.RTU, strict=True)
         assert rtu_client.connect()
         assert rtu_client.socket.inter_byte_timeout == rtu_client.inter_byte_timeout
         rtu_client.close()

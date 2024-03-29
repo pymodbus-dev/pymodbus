@@ -31,7 +31,7 @@ class FramerType(str, Enum):
     TLS = "tls"
 
 
-class Framing(ModbusProtocol):
+class Framer(ModbusProtocol):
     """Framing layer extending transport layer.
 
     extends the ModbusProtocol to handle receiving and sending of complete modbus PDU.

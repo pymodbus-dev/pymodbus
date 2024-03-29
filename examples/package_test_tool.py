@@ -49,7 +49,7 @@ from collections.abc import Callable
 
 import pymodbus.client as modbusClient
 import pymodbus.server as modbusServer
-from pymodbus import Framer, ModbusException, pymodbus_apply_logging_config
+from pymodbus import FramerType, ModbusException, pymodbus_apply_logging_config
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
@@ -160,14 +160,14 @@ class ServerTester:  # pylint: disable=too-few-public-methods
         if comm == CommType.TCP:
             self.server = modbusServer.ModbusTcpServer(
                 self.context,
-                framer=Framer.SOCKET,
+                framer=FramerType.SOCKET,
                 identity=self.identity,
                 address=(NULLMODEM_HOST, test_port),
             )
         elif comm == CommType.SERIAL:
             self.server = modbusServer.ModbusSerialServer(
                 self.context,
-                framer=Framer.SOCKET,
+                framer=FramerType.SOCKET,
                 identity=self.identity,
                 port=f"{NULLMODEM_HOST}:{test_port}",
             )

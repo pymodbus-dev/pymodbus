@@ -12,12 +12,12 @@ from __future__ import annotations
 from abc import abstractmethod
 from enum import Enum
 
-from pymodbus.framer.ascii import MessageAscii
-from pymodbus.framer.base import MessageBase
-from pymodbus.framer.raw import MessageRaw
-from pymodbus.framer.rtu import MessageRTU
-from pymodbus.framer.socket import MessageSocket
-from pymodbus.framer.tls import MessageTLS
+from pymodbus.framer.ascii import FramerAscii
+from pymodbus.framer.base import FramerBase
+from pymodbus.framer.raw import FramerRaw
+from pymodbus.framer.rtu import FramerRTU
+from pymodbus.framer.socket import FramerSocket
+from pymodbus.framer.tls import FramerTLS
 from pymodbus.transport.transport import CommParams, ModbusProtocol
 
 
@@ -67,12 +67,12 @@ class Framer(ModbusProtocol):
         super().__init__(params, is_server)
         self.device_ids = device_ids
         self.broadcast: bool = (0 in device_ids)
-        self.msg_handle: MessageBase = {
-            FramerType.RAW: MessageRaw(),
-            FramerType.ASCII: MessageAscii(),
-            FramerType.RTU: MessageRTU(),
-            FramerType.SOCKET: MessageSocket(),
-            FramerType.TLS: MessageTLS(),
+        self.msg_handle: FramerBase = {
+            FramerType.RAW: FramerRaw(),
+            FramerType.ASCII: FramerAscii(),
+            FramerType.RTU: FramerRTU(),
+            FramerType.SOCKET: FramerSocket(),
+            FramerType.TLS: FramerTLS(),
         }[framer_type]
 
 

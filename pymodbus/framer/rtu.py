@@ -1,20 +1,15 @@
-"""ModbusMessage layer.
-
-is extending ModbusProtocol to handle receiving and sending of messsagees.
-
-ModbusMessage provides a unified interface to send/receive Modbus requests/responses.
-"""
+"""Modbus RTU frame implementation."""
 from __future__ import annotations
 
 import struct
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder
-from pymodbus.framer.base import MessageBase
+from pymodbus.framer.base import FramerBase
 from pymodbus.logging import Log
 
 
-class MessageRTU(MessageBase):
+class FramerRTU(FramerBase):
     """Modbus RTU frame type.
 
     [ Start Wait ] [Address ][ Function Code] [ Data ][ CRC ][  End Wait  ]
@@ -130,7 +125,7 @@ class MessageRTU(MessageBase):
                 data = self._buffer[: frame_size - 2]
                 crc = self._header["crc"]
                 crc_val = (int(crc[0]) << 8) + int(crc[1])
-                return MessageRTU.check_CRC(data, crc_val)
+                return FramerRTU.check_CRC(data, crc_val)
             except (IndexError, KeyError, struct.error):
                 return False
 
@@ -188,10 +183,10 @@ class MessageRTU(MessageBase):
         self._legacy_decode(callback, [0])
         return 0, 0, 0, b''
 
-    def encode(self, data: bytes, device_id: int, _tid: int) -> bytes:
+    def encode(self, pdu: bytes, device_id: int, _tid: int) -> bytes:
         """Decode message."""
-        packet = device_id.to_bytes(1,'big') + data
-        return packet + MessageRTU.compute_CRC(packet).to_bytes(2,'big')
+        packet = device_id.to_bytes(1,'big') + pdu
+        return packet + FramerRTU.compute_CRC(packet).to_bytes(2,'big')
 
     @classmethod
     def check_CRC(cls, data: bytes, check: int) -> bool:
@@ -220,4 +215,4 @@ class MessageRTU(MessageBase):
         swapped = ((crc << 8) & 0xFF00) | ((crc >> 8) & 0x00FF)
         return swapped
 
-MessageRTU.crc16_table = MessageRTU.generate_crc16_table()
+FramerRTU.crc16_table = FramerRTU.generate_crc16_table()

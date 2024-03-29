@@ -1,19 +1,19 @@
-"""Test transport."""
+"""Test framer."""
 
 from unittest import mock
 
 import pytest
 
 from pymodbus.framer import FramerType
-from pymodbus.framer.ascii import MessageAscii
-from pymodbus.framer.rtu import MessageRTU
-from pymodbus.framer.socket import MessageSocket
-from pymodbus.framer.tls import MessageTLS
+from pymodbus.framer.ascii import FramerAscii
+from pymodbus.framer.rtu import FramerRTU
+from pymodbus.framer.socket import FramerSocket
+from pymodbus.framer.tls import FramerTLS
 from pymodbus.transport import CommParams
 
 
-class TestMessage:
-    """Test message module."""
+class TestFramer:
+    """Test module."""
 
     @staticmethod
     @pytest.fixture(name="msg")
@@ -102,12 +102,12 @@ class TestMessage:
 
     @pytest.mark.parametrize(
         ("func", "lrc", "expect"),
-        [(MessageAscii.check_LRC, 0x1c, True),
-         (MessageAscii.check_LRC, 0x0c, False),
-         (MessageAscii.compute_LRC, None, 0x1c),
-         (MessageRTU.check_CRC, 0xE2DB, True),
-         (MessageRTU.check_CRC, 0xDBE2, False),
-         (MessageRTU.compute_CRC, None, 0xE2DB),
+        [(FramerAscii.check_LRC, 0x1c, True),
+         (FramerAscii.check_LRC, 0x0c, False),
+         (FramerAscii.compute_LRC, None, 0x1c),
+         (FramerRTU.check_CRC, 0xE2DB, True),
+         (FramerRTU.check_CRC, 0xDBE2, False),
+         (FramerRTU.compute_CRC, None, 0xE2DB),
         ]
     )
     def test_LRC_CRC(self, func, lrc, expect):
@@ -118,30 +118,30 @@ class TestMessage:
     def test_roundtrip_LRC(self):
         """Test combined compute/check LRC."""
         data = b'\x12\x34\x23\x45\x34\x56\x45\x67'
-        assert MessageAscii.compute_LRC(data) == 0x1c
-        assert MessageAscii.check_LRC(data, 0x1C)
+        assert FramerAscii.compute_LRC(data) == 0x1c
+        assert FramerAscii.check_LRC(data, 0x1C)
 
     def test_crc16_table(self):
         """Test the crc16 table is prefilled."""
-        assert len(MessageRTU.crc16_table) == 256
-        assert isinstance(MessageRTU.crc16_table[0], int)
-        assert isinstance(MessageRTU.crc16_table[255], int)
+        assert len(FramerRTU.crc16_table) == 256
+        assert isinstance(FramerRTU.crc16_table[0], int)
+        assert isinstance(FramerRTU.crc16_table[255], int)
 
     def test_roundtrip_CRC(self):
         """Test combined compute/check CRC."""
         data = b'\x12\x34\x23\x45\x34\x56\x45\x67'
-        assert MessageRTU.compute_CRC(data) == 0xE2DB
-        assert MessageRTU.check_CRC(data, 0xE2DB)
+        assert FramerRTU.compute_CRC(data) == 0xE2DB
+        assert FramerRTU.check_CRC(data, 0xE2DB)
 
 
 
-class TestMessages:
-    """Test message classes."""
+class TestFramer2:
+    """Test classes."""
 
     @pytest.mark.parametrize(
         ("frame", "frame_expected"),
         [
-            (MessageAscii, [
+            (FramerAscii, [
                 b':0003007C00027F\r\n',
                 b':000304008D008EDE\r\n',
                 b':0083027B\r\n',
@@ -152,7 +152,7 @@ class TestMessages:
                 b':FF0304008D008EDF\r\n',
                 b':FF83027C\r\n',
             ]),
-            (MessageRTU, [
+            (FramerRTU, [
                 b'\x00\x03\x00\x7c\x00\x02\x04\x02',
                 b'\x00\x03\x04\x00\x8d\x00\x8e\xfa\xbc',
                 b'\x00\x83\x02\x91\x31',
@@ -163,7 +163,7 @@ class TestMessages:
                 b'\xff\x03\x04\x00\x8d\x00\x8e\xf5\xb3',
                 b'\xff\x83\x02\xa1\x01',
             ]),
-            (MessageSocket, [
+            (FramerSocket, [
                 b'\x00\x00\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02',
                 b'\x00\x00\x00\x00\x00\x07\x00\x03\x04\x00\x8d\x00\x8e',
                 b'\x00\x00\x00\x00\x00\x03\x00\x83\x02',
@@ -183,7 +183,7 @@ class TestMessages:
                 b'\x0c\x05\x00\x00\x00\x07\xff\x03\x04\x00\x8d\x00\x8e',
                 b'\x0c\x05\x00\x00\x00\x03\xff\x83\x02',
             ]),
-            (MessageTLS, [
+            (FramerTLS, [
                 b'\x03\x00\x7c\x00\x02',
                 b'\x03\x04\x00\x8d\x00\x8e',
                 b'\x83\x02',
@@ -215,8 +215,8 @@ class TestMessages:
     )
     def test_encode(self, frame, frame_expected, data, dev_id, tid, inx1, inx2, inx3):
         """Test encode method."""
-        if ((frame != MessageSocket and tid) or
-            (frame == MessageTLS and dev_id)):
+        if ((frame != FramerSocket and tid) or
+            (frame == FramerTLS and dev_id)):
             return
         frame_obj = frame()
         expected = frame_expected[inx1 + inx2 + inx3]
@@ -308,11 +308,11 @@ class TestMessages:
     @pytest.mark.parametrize(
         ("frame", "data", "exp_len"),
         [
-            (MessageAscii, b':0003007C00017F\r\n', 17),  # bad crc
+            (FramerAscii, b':0003007C00017F\r\n', 17),  # bad crc
             # (MessageAscii, b'abc:0003007C00027F\r\n', 3),  # garble in front
             # (MessageAscii, b':0003007C00017F\r\nabc', 17),  # bad crc, garble after
             # (MessageAscii, b':0003007C00017F\r\n:0003', 17),  # part second message
-            (MessageRTU, b'\x00\x83\x02\x91\x31', 0),  # bad crc
+            (FramerRTU, b'\x00\x83\x02\x91\x31', 0),  # bad crc
             # (MessageRTU, b'\x00\x83\x02\x91\x31', 0),  # garble in front
             # (MessageRTU, b'\x00\x83\x02\x91\x31', 0),  # garble after
             # (MessageRTU, b'\x00\x83\x02\x91\x31', 0),  # part second message
@@ -320,7 +320,7 @@ class TestMessages:
     )
     async def test_decode_bad_crc(self, frame, data, exp_len):
         """Test encode method."""
-        if frame == MessageRTU:
+        if frame == FramerRTU:
             pytest.skip("Waiting for implementation.")
         frame_obj = frame()
         used_len, _, _, data = frame_obj.decode(data)

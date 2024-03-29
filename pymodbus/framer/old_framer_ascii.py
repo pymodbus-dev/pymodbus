@@ -5,14 +5,14 @@ from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer.old_framer_base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
 from pymodbus.logging import Log
 
-from .ascii import MessageAscii
+from .ascii import FramerAscii
 
 
 ASCII_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
 
 
 # --------------------------------------------------------------------------- #
-# Modbus ASCII Message
+# Modbus ASCII olf framer
 # --------------------------------------------------------------------------- #
 class ModbusAsciiFramer(ModbusFramer):
     r"""Modbus ASCII Frame Controller.
@@ -40,7 +40,7 @@ class ModbusAsciiFramer(ModbusFramer):
         self._hsize = 0x02
         self._start = b":"
         self._end = b"\r\n"
-        self.message_handler = MessageAscii()
+        self.message_handler = FramerAscii()
 
     def decode_data(self, data):
         """Decode data."""

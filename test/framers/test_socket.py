@@ -1,18 +1,18 @@
-"""Test transport."""
+"""Test framer."""
 
 import pytest
 
-from pymodbus.framer.socket import MessageSocket
+from pymodbus.framer.socket import FramerSocket
 
 
-class TestMessageSocket:
-    """Test message module."""
+class TestFramerSocket:
+    """Test module."""
 
     @staticmethod
     @pytest.fixture(name="frame")
     def prepare_frame():
         """Return message object."""
-        return MessageSocket()
+        return FramerSocket()
 
 
     @pytest.mark.parametrize(

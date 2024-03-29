@@ -1,15 +1,10 @@
-"""ModbusMessage layer.
-
-is extending ModbusProtocol to handle receiving and sending of messsagees.
-
-ModbusMessage provides a unified interface to send/receive Modbus requests/responses.
-"""
+"""Modbus TLS frame implementation."""
 from __future__ import annotations
 
-from pymodbus.framer.base import MessageBase
+from pymodbus.framer.base import FramerBase
 
 
-class MessageTLS(MessageBase):
+class FramerTLS(FramerBase):
     """Modbus TLS frame type.
 
     [ Function Code] [ Data ]
@@ -20,6 +15,6 @@ class MessageTLS(MessageBase):
         """Decode message."""
         return len(data), 0, 0, data
 
-    def encode(self, data: bytes, _device_id: int, _tid: int) -> bytes:
+    def encode(self, pdu: bytes, _device_id: int, _tid: int) -> bytes:
         """Decode message."""
-        return data
+        return pdu

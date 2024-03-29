@@ -1,16 +1,11 @@
-"""ModbusMessage layer.
-
-is extending ModbusProtocol to handle receiving and sending of messsagees.
-
-ModbusMessage provides a unified interface to send/receive Modbus requests/responses.
-"""
+"""Modbus Socket frame implementation."""
 from __future__ import annotations
 
-from pymodbus.framer.base import MessageBase
+from pymodbus.framer.base import FramerBase
 from pymodbus.logging import Log
 
 
-class MessageSocket(MessageBase):
+class FramerSocket(FramerBase):
     """Modbus Socket frame type.
 
     [         MBAP Header         ] [ Function Code] [ Data ]
@@ -33,13 +28,13 @@ class MessageSocket(MessageBase):
           return 0, 0, 0, self.EMPTY
         return msg_len, msg_tid, msg_dev, data[7:msg_len]
 
-    def encode(self, data: bytes, device_id: int, tid: int) -> bytes:
+    def encode(self, pdu: bytes, device_id: int, tid: int) -> bytes:
         """Decode message."""
         packet = (
            tid.to_bytes(2, 'big') +
            b'\x00\x00' +
-           (len(data) + 1).to_bytes(2, 'big') +
+           (len(pdu) + 1).to_bytes(2, 'big') +
            device_id.to_bytes(1, 'big') +
-           data
+           pdu
         )
         return packet

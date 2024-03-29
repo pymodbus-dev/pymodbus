@@ -1,17 +1,17 @@
-"""Test transport."""
+"""Test framer."""
 import pytest
 
-from pymodbus.framer.ascii import MessageAscii
+from pymodbus.framer.ascii import FramerAscii
 
 
-class TestMessageAscii:
-    """Test message module."""
+class TestFramerAscii:
+    """Test module."""
 
     @staticmethod
     @pytest.fixture(name="frame")
     def prepare_frame():
         """Return message object."""
-        return MessageAscii()
+        return FramerAscii()
 
 
     @pytest.mark.parametrize(

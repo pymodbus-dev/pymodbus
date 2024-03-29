@@ -1,6 +1,6 @@
-"""ModbusMessage layer.
+"""Framer implementations.
 
-The message layer is responsible for encoding/decoding requests/responses.
+The implementation is responsible for encoding/decoding requests/responses.
 
 According to the selected type of modbus frame a prefix/suffix is added/removed
 """
@@ -9,7 +9,7 @@ from __future__ import annotations
 from abc import abstractmethod
 
 
-class MessageBase:
+class FramerBase:
     """Intern base."""
 
     EMPTY = b''
@@ -19,7 +19,7 @@ class MessageBase:
 
 
     @abstractmethod
-    def decode(self, _data: bytes) -> tuple[int, int, int, bytes]:
+    def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode message.
 
         return:
@@ -30,7 +30,7 @@ class MessageBase:
         """
 
     @abstractmethod
-    def encode(self, data: bytes, device_id: int, tid: int) -> bytes:
+    def encode(self, pdu: bytes, device_id: int, tid: int) -> bytes:
         """Decode message.
 
         return:

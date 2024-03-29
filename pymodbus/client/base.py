@@ -209,11 +209,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
     async def connect(self) -> bool:  # type: ignore[empty-body]
         """Connect to the modbus remote host."""
 
-    def raise_future(self, my_future, exc):
-        """Set exception of a future if not done."""
-        if not my_future.done():
-            my_future.set_exception(exc)
-
     def _handle_response(self, reply, **_kwargs):
         """Handle the processed response and link to correct deferred."""
         if reply is not None:
@@ -228,7 +223,8 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         """Return a deferred response for the current request."""
         my_future: asyncio.Future = asyncio.Future()
         if not self.transport:
-            self.raise_future(my_future, ConnectionException("Client is not connected"))
+            if not my_future.done():
+                my_future.set_exception(ConnectionException("Client is not connected"))
         else:
             self.transaction.addTransaction(my_future, tid)
         return my_future

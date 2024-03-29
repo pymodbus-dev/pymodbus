@@ -1,6 +1,6 @@
 """Framing layer.
 
-The framing layer is responsible for isolating/generating the request/request from
+The framer layer is responsible for isolating/generating the request/request from
 the frame (prefix - postfix)
 
 According to the selected type of modbus frame a prefix/suffix is added/removed
@@ -32,11 +32,9 @@ class FramerType(str, Enum):
 
 
 class Framer(ModbusProtocol):
-    """Framing layer extending transport layer.
+    """Framer layer extending transport layer.
 
     extends the ModbusProtocol to handle receiving and sending of complete modbus PDU.
-
-    Framing is the prefix / suffix around the response/request
 
     When receiving:
     - Secures full valid Modbus PDU is received (across multiple callbacks)
@@ -54,14 +52,14 @@ class Framer(ModbusProtocol):
     """
 
     def __init__(self,
-            message_type: FramerType,
+            framer_type: FramerType,
             params: CommParams,
             is_server: bool,
             device_ids: list[int],
         ):
-        """Initialize a message instance.
+        """Initialize a framer instance.
 
-        :param message_type: Modbus message type
+        :param framer_type: Modbus message type
         :param params: parameter dataclass
         :param is_server: true if object act as a server (listen/connect)
         :param device_ids: list of device id to accept, 0 in list means broadcast.
@@ -75,7 +73,7 @@ class Framer(ModbusProtocol):
             FramerType.RTU: MessageRTU(),
             FramerType.SOCKET: MessageSocket(),
             FramerType.TLS: MessageTLS(),
-        }[message_type]
+        }[framer_type]
 
 
     def validate_device_id(self, dev_id: int) -> bool:

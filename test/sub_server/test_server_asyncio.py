@@ -8,7 +8,7 @@ from unittest import mock
 
 import pytest
 
-from pymodbus import Framer
+from pymodbus import FramerType
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
@@ -154,15 +154,15 @@ class TestAsyncioServer:
             args["identity"] = self.identity
         if do_tls:
             self.server = ModbusTlsServer(
-                self.context, Framer.TLS, self.identity, SERV_ADDR
+                self.context, FramerType.TLS, self.identity, SERV_ADDR
             )
         elif do_udp:
             self.server = ModbusUdpServer(
-                self.context, Framer.SOCKET, self.identity, SERV_ADDR
+                self.context, FramerType.SOCKET, self.identity, SERV_ADDR
             )
         else:
             self.server = ModbusTcpServer(
-                self.context, Framer.SOCKET, self.identity, SERV_ADDR
+                self.context, FramerType.SOCKET, self.identity, SERV_ADDR
             )
         assert self.server
         if do_forever:

@@ -1,18 +1,18 @@
-"""Test transport."""
+"""Test framer."""
 
 import pytest
 
-from pymodbus.message.tls import MessageTLS
+from pymodbus.framer.tls import FramerTLS
 
 
-class TestMessageSocket:
-    """Test message module."""
+class TestMFramerTLS:
+    """Test module."""
 
     @staticmethod
     @pytest.fixture(name="frame")
     def prepare_frame():
         """Return message object."""
-        return MessageTLS()
+        return FramerTLS()
 
 
     @pytest.mark.parametrize(

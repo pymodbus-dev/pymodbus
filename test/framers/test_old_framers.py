@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from pymodbus import Framer
+from pymodbus import FramerType
 from pymodbus.bit_read_message import ReadCoilsRequest
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.exceptions import ModbusIOException
@@ -328,7 +328,7 @@ class TestFramers:
         """Test send packet."""
         message = TEST_MESSAGE
         client = ModbusBaseClient(
-            Framer.ASCII,
+            FramerType.ASCII,
             host="localhost",
             port=BASE_PORT + 1,
             CommType=CommType.TCP,

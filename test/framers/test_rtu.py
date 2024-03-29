@@ -1,17 +1,17 @@
-"""Test transport."""
+"""Test framer."""
 import pytest
 
-from pymodbus.message.rtu import MessageRTU
+from pymodbus.framer.rtu import FramerRTU
 
 
-class TestMessageRTU:
-    """Test message module."""
+class TestFramerRTU:
+    """Test module."""
 
     @staticmethod
     @pytest.fixture(name="frame")
     def prepare_frame():
         """Return message object."""
-        return MessageRTU()
+        return FramerRTU()
 
 
     @pytest.mark.parametrize(

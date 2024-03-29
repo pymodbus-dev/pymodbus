@@ -5,13 +5,13 @@ import struct
 from pymodbus.exceptions import (
     ModbusIOException,
 )
-from pymodbus.framer.base import SOCKET_FRAME_HEADER, ModbusFramer
+from pymodbus.framer.old_framer_base import SOCKET_FRAME_HEADER, ModbusFramer
+from pymodbus.framer.socket import FramerSocket
 from pymodbus.logging import Log
-from pymodbus.message.socket import MessageSocket
 
 
 # --------------------------------------------------------------------------- #
-# Modbus TCP Message
+# Modbus TCP old framer
 # --------------------------------------------------------------------------- #
 
 
@@ -43,7 +43,7 @@ class ModbusSocketFramer(ModbusFramer):
         """
         super().__init__(decoder, client)
         self._hsize = 0x07
-        self.message_handler = MessageSocket()
+        self.message_handler = FramerSocket()
 
     def decode_data(self, data):
         """Decode data."""

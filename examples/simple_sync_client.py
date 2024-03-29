@@ -16,13 +16,13 @@ The corresponding server must be started before e.g. as:
 import pymodbus.client as ModbusClient
 from pymodbus import (
     ExceptionResponse,
-    Framer,
+    FramerType,
     ModbusException,
     pymodbus_apply_logging_config,
 )
 
 
-def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
+def run_sync_simple_client(comm, host, port, framer=FramerType.SOCKET):
     """Run sync client."""
     # activate debugging
     pymodbus_apply_logging_config("DEBUG")
@@ -66,7 +66,7 @@ def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
         client = ModbusClient.ModbusTlsClient(
             host,
             port=port,
-            framer=Framer.TLS,
+            framer=FramerType.TLS,
             # timeout=10,
             # retries=3,
             # retry_on_empty=False,

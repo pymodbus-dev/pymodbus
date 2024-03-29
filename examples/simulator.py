@@ -10,7 +10,7 @@ for usage see documentation of simulator
 import asyncio
 import logging
 
-from pymodbus import Framer
+from pymodbus import FramerType
 from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.datastore import ModbusSimulatorContext
 from pymodbus.server import ModbusSimulatorServer, get_simulator_commandline
@@ -74,7 +74,7 @@ async def run_simulator():
     client = AsyncModbusTcpClient(
         "127.0.0.1",
         port=5020,
-        framer=Framer.SOCKET,
+        framer=FramerType.SOCKET,
     )
     await client.connect()
     assert client.connected

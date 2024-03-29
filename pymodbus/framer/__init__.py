@@ -7,30 +7,21 @@ __all__ = [
     "ModbusRtuFramer",
     "ModbusSocketFramer",
     "ModbusTlsFramer",
+    "Framer",
+    "FramerType",
 ]
 
-
-import enum
-
-from pymodbus.framer.ascii_framer import ModbusAsciiFramer
-from pymodbus.framer.base import ModbusFramer
-from pymodbus.framer.rtu_framer import ModbusRtuFramer
-from pymodbus.framer.socket_framer import ModbusSocketFramer
-from pymodbus.framer.tls_framer import ModbusTlsFramer
-
-
-class Framer(str, enum.Enum):
-    """These represent the different framers."""
-
-    ASCII = "ascii"
-    RTU = "rtu"
-    SOCKET = "socket"
-    TLS = "tls"
+from pymodbus.framer.framer import Framer, FramerType
+from pymodbus.framer.old_framer_ascii import ModbusAsciiFramer
+from pymodbus.framer.old_framer_base import ModbusFramer
+from pymodbus.framer.old_framer_rtu import ModbusRtuFramer
+from pymodbus.framer.old_framer_socket import ModbusSocketFramer
+from pymodbus.framer.old_framer_tls import ModbusTlsFramer
 
 
 FRAMER_NAME_TO_CLASS = {
-    Framer.ASCII: ModbusAsciiFramer,
-    Framer.RTU: ModbusRtuFramer,
-    Framer.SOCKET: ModbusSocketFramer,
-    Framer.TLS: ModbusTlsFramer,
+    FramerType.ASCII: ModbusAsciiFramer,
+    FramerType.RTU: ModbusRtuFramer,
+    FramerType.SOCKET: ModbusSocketFramer,
+    FramerType.TLS: ModbusTlsFramer,
 }

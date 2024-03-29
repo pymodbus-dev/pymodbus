@@ -1,33 +1,33 @@
-"""Test transport."""
+"""Test framer."""
 
 from unittest import mock
 
 import pytest
 
-from pymodbus.message import MessageType
-from pymodbus.message.ascii import MessageAscii
-from pymodbus.message.rtu import MessageRTU
-from pymodbus.message.socket import MessageSocket
-from pymodbus.message.tls import MessageTLS
+from pymodbus.framer import FramerType
+from pymodbus.framer.ascii import FramerAscii
+from pymodbus.framer.rtu import FramerRTU
+from pymodbus.framer.socket import FramerSocket
+from pymodbus.framer.tls import FramerTLS
 from pymodbus.transport import CommParams
 
 
-class TestMessage:
-    """Test message module."""
+class TestFramer:
+    """Test module."""
 
     @staticmethod
     @pytest.fixture(name="msg")
     async def prepare_message(dummy_message):
         """Return message object."""
         return dummy_message(
-            MessageType.RAW,
+            FramerType.RAW,
             CommParams(),
             False,
             [1],
         )
 
 
-    @pytest.mark.parametrize(("entry"), list(MessageType))
+    @pytest.mark.parametrize(("entry"), list(FramerType))
     async def test_message_init(self, entry, dummy_message):
         """Test message type."""
         msg = dummy_message(entry.value,
@@ -102,12 +102,12 @@ class TestMessage:
 
     @pytest.mark.parametrize(
         ("func", "lrc", "expect"),
-        [(MessageAscii.check_LRC, 0x1c, True),
-         (MessageAscii.check_LRC, 0x0c, False),
-         (MessageAscii.compute_LRC, None, 0x1c),
-         (MessageRTU.check_CRC, 0xE2DB, True),
-         (MessageRTU.check_CRC, 0xDBE2, False),
-         (MessageRTU.compute_CRC, None, 0xE2DB),
+        [(FramerAscii.check_LRC, 0x1c, True),
+         (FramerAscii.check_LRC, 0x0c, False),
+         (FramerAscii.compute_LRC, None, 0x1c),
+         (FramerRTU.check_CRC, 0xE2DB, True),
+         (FramerRTU.check_CRC, 0xDBE2, False),
+         (FramerRTU.compute_CRC, None, 0xE2DB),
         ]
     )
     def test_LRC_CRC(self, func, lrc, expect):
@@ -118,30 +118,30 @@ class TestMessage:
     def test_roundtrip_LRC(self):
         """Test combined compute/check LRC."""
         data = b'\x12\x34\x23\x45\x34\x56\x45\x67'
-        assert MessageAscii.compute_LRC(data) == 0x1c
-        assert MessageAscii.check_LRC(data, 0x1C)
+        assert FramerAscii.compute_LRC(data) == 0x1c
+        assert FramerAscii.check_LRC(data, 0x1C)
 
     def test_crc16_table(self):
         """Test the crc16 table is prefilled."""
-        assert len(MessageRTU.crc16_table) == 256
-        assert isinstance(MessageRTU.crc16_table[0], int)
-        assert isinstance(MessageRTU.crc16_table[255], int)
+        assert len(FramerRTU.crc16_table) == 256
+        assert isinstance(FramerRTU.crc16_table[0], int)
+        assert isinstance(FramerRTU.crc16_table[255], int)
 
     def test_roundtrip_CRC(self):
         """Test combined compute/check CRC."""
         data = b'\x12\x34\x23\x45\x34\x56\x45\x67'
-        assert MessageRTU.compute_CRC(data) == 0xE2DB
-        assert MessageRTU.check_CRC(data, 0xE2DB)
+        assert FramerRTU.compute_CRC(data) == 0xE2DB
+        assert FramerRTU.check_CRC(data, 0xE2DB)
 
 
 
-class TestMessages:
-    """Test message classes."""
+class TestFramer2:
+    """Test classes."""
 
     @pytest.mark.parametrize(
         ("frame", "frame_expected"),
         [
-            (MessageAscii, [
+            (FramerAscii, [
                 b':0003007C00027F\r\n',
                 b':000304008D008EDE\r\n',
                 b':0083027B\r\n',
@@ -152,7 +152,7 @@ class TestMessages:
                 b':FF0304008D008EDF\r\n',
                 b':FF83027C\r\n',
             ]),
-            (MessageRTU, [
+            (FramerRTU, [
                 b'\x00\x03\x00\x7c\x00\x02\x04\x02',
                 b'\x00\x03\x04\x00\x8d\x00\x8e\xfa\xbc',
                 b'\x00\x83\x02\x91\x31',
@@ -163,7 +163,7 @@ class TestMessages:
                 b'\xff\x03\x04\x00\x8d\x00\x8e\xf5\xb3',
                 b'\xff\x83\x02\xa1\x01',
             ]),
-            (MessageSocket, [
+            (FramerSocket, [
                 b'\x00\x00\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02',
                 b'\x00\x00\x00\x00\x00\x07\x00\x03\x04\x00\x8d\x00\x8e',
                 b'\x00\x00\x00\x00\x00\x03\x00\x83\x02',
@@ -183,7 +183,7 @@ class TestMessages:
                 b'\x0c\x05\x00\x00\x00\x07\xff\x03\x04\x00\x8d\x00\x8e',
                 b'\x0c\x05\x00\x00\x00\x03\xff\x83\x02',
             ]),
-            (MessageTLS, [
+            (FramerTLS, [
                 b'\x03\x00\x7c\x00\x02',
                 b'\x03\x04\x00\x8d\x00\x8e',
                 b'\x83\x02',
@@ -215,8 +215,8 @@ class TestMessages:
     )
     def test_encode(self, frame, frame_expected, data, dev_id, tid, inx1, inx2, inx3):
         """Test encode method."""
-        if ((frame != MessageSocket and tid) or
-            (frame == MessageTLS and dev_id)):
+        if ((frame != FramerSocket and tid) or
+            (frame == FramerTLS and dev_id)):
             return
         frame_obj = frame()
         expected = frame_expected[inx1 + inx2 + inx3]
@@ -226,45 +226,45 @@ class TestMessages:
     @pytest.mark.parametrize(
         ("msg_type", "data", "dev_id", "tid", "expected"),
         [
-            (MessageType.ASCII, b':0003007C00027F\r\n', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (MessageType.ASCII, b':000304008D008EDE\r\n', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (MessageType.ASCII, b':0083027B\r\n', 0, 0, b'\x83\x02',),  # Exception
-            (MessageType.ASCII, b':1103007C00026E\r\n', 17, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (MessageType.ASCII, b':110304008D008ECD\r\n', 17, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (MessageType.ASCII, b':1183026A\r\n', 17, 0, b'\x83\x02',),  # Exception
-            (MessageType.ASCII, b':FF03007C000280\r\n', 255, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (MessageType.ASCII, b':FF0304008D008EDF\r\n', 255, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (MessageType.ASCII, b':FF83027C\r\n', 255, 0, b'\x83\x02',),  # Exception
-            (MessageType.RTU, b'\x00\x03\x00\x7c\x00\x02\x04\x02', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (MessageType.RTU, b'\x00\x03\x04\x00\x8d\x00\x8e\xfa\xbc', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (MessageType.RTU, b'\x00\x83\x02\x91\x31', 0, 0, b'\x83\x02',),  # Exception
-            (MessageType.RTU, b'\x11\x03\x00\x7c\x00\x02\x07\x43', 17, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (MessageType.RTU, b'\x11\x03\x04\x00\x8d\x00\x8e\xfb\xbd', 17, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (MessageType.RTU, b'\x11\x83\x02\xc1\x34', 17, 0, b'\x83\x02',),  # Exception
-            (MessageType.RTU, b'\xff\x03\x00|\x00\x02\x10\x0d', 255, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (MessageType.RTU, b'\xff\x03\x04\x00\x8d\x00\x8e\xf5\xb3', 255, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (MessageType.RTU, b'\xff\x83\x02\xa1\x01', 255, 0, b'\x83\x02',),  # Exception
-            (MessageType.SOCKET, b'\x00\x00\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (MessageType.SOCKET, b'\x00\x00\x00\x00\x00\x07\x00\x03\x04\x00\x8d\x00\x8e', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (MessageType.SOCKET, b'\x00\x00\x00\x00\x00\x03\x00\x83\x02', 0, 0, b'\x83\x02',),  # Exception
-            (MessageType.SOCKET, b'\x00\x00\x00\x00\x00\x06\x11\x03\x00\x7c\x00\x02', 17, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (MessageType.SOCKET, b'\x00\x00\x00\x00\x00\x07\x11\x03\x04\x00\x8d\x00\x8e', 17, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (MessageType.SOCKET, b'\x00\x00\x00\x00\x00\x03\x11\x83\x02', 17, 0, b'\x83\x02',),  # Exception
-            (MessageType.SOCKET, b'\x00\x00\x00\x00\x00\x06\xff\x03\x00\x7c\x00\x02', 255, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (MessageType.SOCKET, b'\x00\x00\x00\x00\x00\x07\xff\x03\x04\x00\x8d\x00\x8e', 255, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (MessageType.SOCKET, b'\x00\x00\x00\x00\x00\x03\xff\x83\x02', 255, 0, b'\x83\x02',),  # Exception
-            (MessageType.SOCKET, b'\x0c\x05\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02', 0, 3077, b"\x03\x00\x7c\x00\x02",),  # Request
-            (MessageType.SOCKET, b'\x0c\x05\x00\x00\x00\x07\x00\x03\x04\x00\x8d\x00\x8e', 0, 3077, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (MessageType.SOCKET, b'\x0c\x05\x00\x00\x00\x03\x00\x83\x02', 0, 3077, b'\x83\x02',),  # Exception
-            (MessageType.SOCKET, b'\x0c\x05\x00\x00\x00\x06\x11\x03\x00\x7c\x00\x02', 17, 3077, b"\x03\x00\x7c\x00\x02",),  # Request
-            (MessageType.SOCKET, b'\x0c\x05\x00\x00\x00\x07\x11\x03\x04\x00\x8d\x00\x8e', 17, 3077, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (MessageType.SOCKET, b'\x0c\x05\x00\x00\x00\x03\x11\x83\x02', 17, 3077, b'\x83\x02',),  # Exception
-            (MessageType.SOCKET, b'\x0c\x05\x00\x00\x00\x06\xff\x03\x00\x7c\x00\x02', 255, 3077, b"\x03\x00\x7c\x00\x02",),  # Request
-            (MessageType.SOCKET, b'\x0c\x05\x00\x00\x00\x07\xff\x03\x04\x00\x8d\x00\x8e', 255, 3077, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (MessageType.SOCKET, b'\x0c\x05\x00\x00\x00\x03\xff\x83\x02', 255, 3077, b'\x83\x02',),  # Exception
-            (MessageType.TLS, b'\x03\x00\x7c\x00\x02', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (MessageType.TLS, b'\x03\x04\x00\x8d\x00\x8e', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (MessageType.TLS, b'\x83\x02', 0, 0, b'\x83\x02',),  # Exception
+            (FramerType.ASCII, b':0003007C00027F\r\n', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.ASCII, b':000304008D008EDE\r\n', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.ASCII, b':0083027B\r\n', 0, 0, b'\x83\x02',),  # Exception
+            (FramerType.ASCII, b':1103007C00026E\r\n', 17, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.ASCII, b':110304008D008ECD\r\n', 17, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.ASCII, b':1183026A\r\n', 17, 0, b'\x83\x02',),  # Exception
+            (FramerType.ASCII, b':FF03007C000280\r\n', 255, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.ASCII, b':FF0304008D008EDF\r\n', 255, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.ASCII, b':FF83027C\r\n', 255, 0, b'\x83\x02',),  # Exception
+            (FramerType.RTU, b'\x00\x03\x00\x7c\x00\x02\x04\x02', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.RTU, b'\x00\x03\x04\x00\x8d\x00\x8e\xfa\xbc', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.RTU, b'\x00\x83\x02\x91\x31', 0, 0, b'\x83\x02',),  # Exception
+            (FramerType.RTU, b'\x11\x03\x00\x7c\x00\x02\x07\x43', 17, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.RTU, b'\x11\x03\x04\x00\x8d\x00\x8e\xfb\xbd', 17, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.RTU, b'\x11\x83\x02\xc1\x34', 17, 0, b'\x83\x02',),  # Exception
+            (FramerType.RTU, b'\xff\x03\x00|\x00\x02\x10\x0d', 255, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.RTU, b'\xff\x03\x04\x00\x8d\x00\x8e\xf5\xb3', 255, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.RTU, b'\xff\x83\x02\xa1\x01', 255, 0, b'\x83\x02',),  # Exception
+            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x07\x00\x03\x04\x00\x8d\x00\x8e', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x03\x00\x83\x02', 0, 0, b'\x83\x02',),  # Exception
+            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x06\x11\x03\x00\x7c\x00\x02', 17, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x07\x11\x03\x04\x00\x8d\x00\x8e', 17, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x03\x11\x83\x02', 17, 0, b'\x83\x02',),  # Exception
+            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x06\xff\x03\x00\x7c\x00\x02', 255, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x07\xff\x03\x04\x00\x8d\x00\x8e', 255, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x03\xff\x83\x02', 255, 0, b'\x83\x02',),  # Exception
+            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02', 0, 3077, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x07\x00\x03\x04\x00\x8d\x00\x8e', 0, 3077, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x03\x00\x83\x02', 0, 3077, b'\x83\x02',),  # Exception
+            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x06\x11\x03\x00\x7c\x00\x02', 17, 3077, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x07\x11\x03\x04\x00\x8d\x00\x8e', 17, 3077, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x03\x11\x83\x02', 17, 3077, b'\x83\x02',),  # Exception
+            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x06\xff\x03\x00\x7c\x00\x02', 255, 3077, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x07\xff\x03\x04\x00\x8d\x00\x8e', 255, 3077, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x03\xff\x83\x02', 255, 3077, b'\x83\x02',),  # Exception
+            (FramerType.TLS, b'\x03\x00\x7c\x00\x02', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.TLS, b'\x03\x04\x00\x8d\x00\x8e', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.TLS, b'\x83\x02', 0, 0, b'\x83\x02',),  # Exception
         ]
     )
     @pytest.mark.parametrize(
@@ -277,9 +277,9 @@ class TestMessages:
     )
     async def test_decode(self, dummy_message, msg_type, data, dev_id, tid, expected, split):
         """Test encode method."""
-        if msg_type == MessageType.RTU:
+        if msg_type == FramerType.RTU:
             pytest.skip("Waiting on implementation!")
-        if msg_type == MessageType.TLS and split != "no":
+        if msg_type == FramerType.TLS and split != "no":
             return
         frame = dummy_message(
             msg_type,
@@ -308,11 +308,11 @@ class TestMessages:
     @pytest.mark.parametrize(
         ("frame", "data", "exp_len"),
         [
-            (MessageAscii, b':0003007C00017F\r\n', 17),  # bad crc
+            (FramerAscii, b':0003007C00017F\r\n', 17),  # bad crc
             # (MessageAscii, b'abc:0003007C00027F\r\n', 3),  # garble in front
             # (MessageAscii, b':0003007C00017F\r\nabc', 17),  # bad crc, garble after
             # (MessageAscii, b':0003007C00017F\r\n:0003', 17),  # part second message
-            (MessageRTU, b'\x00\x83\x02\x91\x31', 0),  # bad crc
+            (FramerRTU, b'\x00\x83\x02\x91\x31', 0),  # bad crc
             # (MessageRTU, b'\x00\x83\x02\x91\x31', 0),  # garble in front
             # (MessageRTU, b'\x00\x83\x02\x91\x31', 0),  # garble after
             # (MessageRTU, b'\x00\x83\x02\x91\x31', 0),  # part second message
@@ -320,7 +320,7 @@ class TestMessages:
     )
     async def test_decode_bad_crc(self, frame, data, exp_len):
         """Test encode method."""
-        if frame == MessageRTU:
+        if frame == FramerRTU:
             pytest.skip("Waiting for implementation.")
         frame_obj = frame()
         used_len, _, _, data = frame_obj.decode(data)

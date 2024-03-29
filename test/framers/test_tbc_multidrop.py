@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.framer.rtu_framer import ModbusRtuFramer
+from pymodbus.framer import ModbusRtuFramer
 from pymodbus.server.async_io import ServerDecoder
 
 

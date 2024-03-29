@@ -1,11 +1,11 @@
-"""ModbusMessage layer."""
+"""Modbus Raw (passthrough) implementation."""
 from __future__ import annotations
 
+from pymodbus.framer.base import FramerBase
 from pymodbus.logging import Log
-from pymodbus.message.base import MessageBase
 
 
-class MessageRaw(MessageBase):
+class FramerRaw(FramerBase):
     r"""Modbus RAW Frame Controller.
 
         [ Device id ][Transaction id ][ Data ]
@@ -25,6 +25,6 @@ class MessageRaw(MessageBase):
         tid = int(data[1])
         return len(data), dev_id, tid, data[2:]
 
-    def encode(self, data: bytes, device_id: int, tid: int) -> bytes:
+    def encode(self, pdu: bytes, device_id: int, tid: int) -> bytes:
         """Decode message."""
-        return device_id.to_bytes(1, 'big') + tid.to_bytes(1, 'big') + data
+        return device_id.to_bytes(1, 'big') + tid.to_bytes(1, 'big') + pdu

@@ -1,24 +1,27 @@
-"""ModbusMessage layer.
+"""Framing layer.
 
-The message layer is responsible for encoding/decoding requests/responses.
+The framer layer is responsible for isolating/generating the request/request from
+the frame (prefix - postfix)
 
 According to the selected type of modbus frame a prefix/suffix is added/removed
+
+This layer is also responsible for discarding invalid frames and frames for other slaves.
 """
 from __future__ import annotations
 
 from abc import abstractmethod
 from enum import Enum
 
-from pymodbus.message.ascii import MessageAscii
-from pymodbus.message.base import MessageBase
-from pymodbus.message.raw import MessageRaw
-from pymodbus.message.rtu import MessageRTU
-from pymodbus.message.socket import MessageSocket
-from pymodbus.message.tls import MessageTLS
+from pymodbus.framer.ascii import FramerAscii
+from pymodbus.framer.base import FramerBase
+from pymodbus.framer.raw import FramerRaw
+from pymodbus.framer.rtu import FramerRTU
+from pymodbus.framer.socket import FramerSocket
+from pymodbus.framer.tls import FramerTLS
 from pymodbus.transport.transport import CommParams, ModbusProtocol
 
 
-class MessageType(str, Enum):
+class FramerType(str, Enum):
     """Type of Modbus frame."""
 
     RAW = "raw"  # only used for testing
@@ -28,15 +31,13 @@ class MessageType(str, Enum):
     TLS = "tls"
 
 
-class Message(ModbusProtocol):
-    """Message layer extending transport layer.
+class Framer(ModbusProtocol):
+    """Framer layer extending transport layer.
 
-    extends the ModbusProtocol to handle receiving and sending of complete modbus messsagees.
-
-    Message is the prefix / suffix around the response/request
+    extends the ModbusProtocol to handle receiving and sending of complete modbus PDU.
 
     When receiving:
-    - Secures full valid Modbus message is received (across multiple callbacks)
+    - Secures full valid Modbus PDU is received (across multiple callbacks)
     - Validates and removes Modbus prefix/suffix (CRC for serial, MBAP for others)
     - Callback with pure request/response
     - Skips invalid messagees
@@ -51,14 +52,14 @@ class Message(ModbusProtocol):
     """
 
     def __init__(self,
-            message_type: MessageType,
+            framer_type: FramerType,
             params: CommParams,
             is_server: bool,
             device_ids: list[int],
         ):
-        """Initialize a message instance.
+        """Initialize a framer instance.
 
-        :param message_type: Modbus message type
+        :param framer_type: Modbus message type
         :param params: parameter dataclass
         :param is_server: true if object act as a server (listen/connect)
         :param device_ids: list of device id to accept, 0 in list means broadcast.
@@ -66,13 +67,13 @@ class Message(ModbusProtocol):
         super().__init__(params, is_server)
         self.device_ids = device_ids
         self.broadcast: bool = (0 in device_ids)
-        self.msg_handle: MessageBase = {
-            MessageType.RAW: MessageRaw(),
-            MessageType.ASCII: MessageAscii(),
-            MessageType.RTU: MessageRTU(),
-            MessageType.SOCKET: MessageSocket(),
-            MessageType.TLS: MessageTLS(),
-        }[message_type]
+        self.msg_handle: FramerBase = {
+            FramerType.RAW: FramerRaw(),
+            FramerType.ASCII: FramerAscii(),
+            FramerType.RTU: FramerRTU(),
+            FramerType.SOCKET: FramerSocket(),
+            FramerType.TLS: FramerTLS(),
+        }[framer_type]
 
 
     def validate_device_id(self, dev_id: int) -> bool:

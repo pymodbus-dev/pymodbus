@@ -14,13 +14,13 @@ import asyncio
 import pymodbus.client as ModbusClient
 from pymodbus import (
     ExceptionResponse,
-    Framer,
+    FramerType,
     ModbusException,
     pymodbus_apply_logging_config,
 )
 
 
-async def run_async_simple_client(comm, host, port, framer=Framer.SOCKET):
+async def run_async_simple_client(comm, host, port, framer=FramerType.SOCKET):
     """Run async client."""
     # activate debugging
     pymodbus_apply_logging_config("DEBUG")
@@ -64,7 +64,7 @@ async def run_async_simple_client(comm, host, port, framer=Framer.SOCKET):
         client = ModbusClient.AsyncModbusTlsClient(
             host,
             port=port,
-            framer=Framer.TLS,
+            framer=FramerType.TLS,
             # timeout=10,
             # retries=3,
             # retry_on_empty=False,

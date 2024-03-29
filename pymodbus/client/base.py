@@ -10,7 +10,7 @@ from typing import Any, cast
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.factory import ClientDecoder
-from pymodbus.framer import FRAMER_NAME_TO_CLASS, Framer, ModbusFramer
+from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType, ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.transaction import ModbusTransactionManager
@@ -49,7 +49,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
 
     def __init__(
         self,
-        framer: Framer,
+        framer: FramerType,
         timeout: float = 3,
         retries: int = 3,
         retry_on_empty: bool = False,
@@ -308,7 +308,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
 
     def __init__(
         self,
-        framer: Framer,
+        framer: FramerType,
         timeout: float = 3,
         retries: int = 3,
         retry_on_empty: bool = False,

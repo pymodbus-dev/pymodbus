@@ -9,7 +9,7 @@ from typing import Any
 
 from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
-from pymodbus.framer import Framer
+from pymodbus.framer import FramerType
 from pymodbus.logging import Log
 from pymodbus.transport import CommType
 
@@ -59,7 +59,7 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
         self,
         host: str,
         port: int = 502,
-        framer: Framer = Framer.SOCKET,
+        framer: FramerType = FramerType.SOCKET,
         source_address: tuple[str, int] | None = None,
         **kwargs: Any,
     ) -> None:
@@ -139,7 +139,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         self,
         host: str,
         port: int = 502,
-        framer: Framer = Framer.SOCKET,
+        framer: FramerType = FramerType.SOCKET,
         source_address: tuple[str, int] | None = None,
         **kwargs: Any,
     ) -> None:

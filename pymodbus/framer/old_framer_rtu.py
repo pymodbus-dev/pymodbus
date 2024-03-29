@@ -4,9 +4,9 @@ import struct
 import time
 
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.framer.base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
+from pymodbus.framer.old_framer_base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
+from pymodbus.framer.rtu import FramerRTU
 from pymodbus.logging import Log
-from pymodbus.message.rtu import MessageRTU
 from pymodbus.utilities import ModbusTransactionState
 
 
@@ -14,7 +14,7 @@ RTU_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
 
 
 # --------------------------------------------------------------------------- #
-# Modbus RTU Message
+# Modbus RTU old Framer
 # --------------------------------------------------------------------------- #
 class ModbusRtuFramer(ModbusFramer):
     """Modbus RTU Frame controller.
@@ -61,7 +61,7 @@ class ModbusRtuFramer(ModbusFramer):
         self._end = b"\x0d\x0a"
         self._min_frame_size = 4
         self.function_codes = decoder.lookup.keys() if decoder else {}
-        self.message_handler = MessageRTU()
+        self.message_handler = FramerRTU()
 
     def decode_data(self, data):
         """Decode data."""
@@ -131,7 +131,7 @@ class ModbusRtuFramer(ModbusFramer):
                 data = self._buffer[: frame_size - 2]
                 crc = self._header["crc"]
                 crc_val = (int(crc[0]) << 8) + int(crc[1])
-                return MessageRTU.check_CRC(data, crc_val)
+                return FramerRTU.check_CRC(data, crc_val)
             except (IndexError, KeyError, struct.error):
                 return False
 

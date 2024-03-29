@@ -1,20 +1,15 @@
-"""ModbusMessage layer.
-
-is extending ModbusProtocol to handle receiving and sending of messsagees.
-
-ModbusMessage provides a unified interface to send/receive Modbus requests/responses.
-"""
+"""Modbus RTU frame implementation."""
 from __future__ import annotations
 
 import struct
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder
+from pymodbus.framer.base import FramerBase
 from pymodbus.logging import Log
-from pymodbus.message.base import MessageBase
 
 
-class MessageRTU(MessageBase):
+class FramerRTU(FramerBase):
     """Modbus RTU frame type.
 
     [ Start Wait ] [Address ][ Function Code] [ Data ][ CRC ][  End Wait  ]
@@ -130,7 +125,7 @@ class MessageRTU(MessageBase):
                 data = self._buffer[: frame_size - 2]
                 crc = self._header["crc"]
                 crc_val = (int(crc[0]) << 8) + int(crc[1])
-                return MessageRTU.check_CRC(data, crc_val)
+                return FramerRTU.check_CRC(data, crc_val)
             except (IndexError, KeyError, struct.error):
                 return False
 
@@ -165,13 +160,21 @@ class MessageRTU(MessageBase):
             Log.debug("Frame advanced, resetting header!!")
             callback(result)  # defer or push to a thread?
 
+    def assemble_frame(self, _data_len: int, _data: bytes) -> int:
+        """Collect frame, until CRC matches."""
+        return 0
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode message."""
-        resp = None
-        if len(data) < 4:
+        if (data_len := len(data)) < 6:  # <dev_id><fc><data*2><crc*2>
             return 0, 0, 0, b''
 
+        if not (_frame_len := self.assemble_frame(data_len, data)):
+            return 0, 0, 0, b''
+
+
+
+        resp = None
         def callback(result):
             """Set result."""
             nonlocal resp
@@ -180,11 +183,10 @@ class MessageRTU(MessageBase):
         self._legacy_decode(callback, [0])
         return 0, 0, 0, b''
 
-
-    def encode(self, data: bytes, device_id: int, _tid: int) -> bytes:
+    def encode(self, pdu: bytes, device_id: int, _tid: int) -> bytes:
         """Decode message."""
-        packet = device_id.to_bytes(1,'big') + data
-        return packet + MessageRTU.compute_CRC(packet).to_bytes(2,'big')
+        packet = device_id.to_bytes(1,'big') + pdu
+        return packet + FramerRTU.compute_CRC(packet).to_bytes(2,'big')
 
     @classmethod
     def check_CRC(cls, data: bytes, check: int) -> bool:
@@ -200,9 +202,6 @@ class MessageRTU(MessageBase):
     def compute_CRC(cls, data: bytes) -> int:
         """Compute a crc16 on the passed in bytes.
 
-        For modbus, this is only used on the binary serial protocols (in this
-        case RTU).
-
         The difference between modbus's crc16 and a normal crc16
         is that modbus starts the crc value out at 0xffff.
 
@@ -216,4 +215,4 @@ class MessageRTU(MessageBase):
         swapped = ((crc << 8) & 0xFF00) | ((crc >> 8) & 0x00FF)
         return swapped
 
-MessageRTU.crc16_table = MessageRTU.generate_crc16_table()
+FramerRTU.crc16_table = FramerRTU.generate_crc16_table()

@@ -8,11 +8,11 @@ from __future__ import annotations
 
 from binascii import a2b_hex, b2a_hex
 
+from pymodbus.framer.base import FramerBase
 from pymodbus.logging import Log
-from pymodbus.message.base import MessageBase
 
 
-class MessageAscii(MessageBase):
+class FramerAscii(FramerBase):
     r"""Modbus ASCII Frame Controller.
 
         [ Start ][Address ][ Function ][ Data ][ LRC ][ End ]

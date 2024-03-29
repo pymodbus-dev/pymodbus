@@ -20,7 +20,7 @@ and all API changes are `documented <https://pymodbus.readthedocs.io/en/latest/s
 
 A big thanks to all the `volunteers <https://pymodbus.readthedocs.io/en/latest/source/authors.html>`_ that helps make pymodbus a great project.
 
-Source code on `github <https://pymodbus.readthedocs.io/en/latest/source/authors.html>`_
+Source code on `github <https://github.com/pymodbus-dev/pymodbus>`_
 
 Pymodbus in a nutshell
 ----------------------

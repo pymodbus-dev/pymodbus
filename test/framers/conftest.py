@@ -5,15 +5,15 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.framer import Message, MessageType
+from pymodbus.framer import FramerType, Framing
 from pymodbus.transport import CommParams, ModbusProtocol
 
 
-class DummyMessage(Message):
+class DummyMessage(Framing):
     """Implement use of ModbusProtocol."""
 
     def __init__(self,
-            message_type: MessageType,
+            message_type: FramerType,
             params: CommParams,
             is_server: bool,
             device_ids: list[int] | None,

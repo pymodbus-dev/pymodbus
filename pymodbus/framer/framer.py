@@ -1,8 +1,11 @@
-"""ModbusMessage layer.
+"""Framing layer.
 
-The message layer is responsible for encoding/decoding requests/responses.
+The framing layer is responsible for isolating/generating the request/request from
+the frame (prefix - postfix)
 
 According to the selected type of modbus frame a prefix/suffix is added/removed
+
+This layer is also responsible for discarding invalid frames and frames for other slaves.
 """
 from __future__ import annotations
 
@@ -18,7 +21,7 @@ from pymodbus.framer.tls import MessageTLS
 from pymodbus.transport.transport import CommParams, ModbusProtocol
 
 
-class MessageType(str, Enum):
+class FramerType(str, Enum):
     """Type of Modbus frame."""
 
     RAW = "raw"  # only used for testing
@@ -28,15 +31,15 @@ class MessageType(str, Enum):
     TLS = "tls"
 
 
-class Message(ModbusProtocol):
-    """Message layer extending transport layer.
+class Framing(ModbusProtocol):
+    """Framing layer extending transport layer.
 
-    extends the ModbusProtocol to handle receiving and sending of complete modbus messsagees.
+    extends the ModbusProtocol to handle receiving and sending of complete modbus PDU.
 
-    Message is the prefix / suffix around the response/request
+    Framing is the prefix / suffix around the response/request
 
     When receiving:
-    - Secures full valid Modbus message is received (across multiple callbacks)
+    - Secures full valid Modbus PDU is received (across multiple callbacks)
     - Validates and removes Modbus prefix/suffix (CRC for serial, MBAP for others)
     - Callback with pure request/response
     - Skips invalid messagees
@@ -51,7 +54,7 @@ class Message(ModbusProtocol):
     """
 
     def __init__(self,
-            message_type: MessageType,
+            message_type: FramerType,
             params: CommParams,
             is_server: bool,
             device_ids: list[int],
@@ -67,11 +70,11 @@ class Message(ModbusProtocol):
         self.device_ids = device_ids
         self.broadcast: bool = (0 in device_ids)
         self.msg_handle: MessageBase = {
-            MessageType.RAW: MessageRaw(),
-            MessageType.ASCII: MessageAscii(),
-            MessageType.RTU: MessageRTU(),
-            MessageType.SOCKET: MessageSocket(),
-            MessageType.TLS: MessageTLS(),
+            FramerType.RAW: MessageRaw(),
+            FramerType.ASCII: MessageAscii(),
+            FramerType.RTU: MessageRTU(),
+            FramerType.SOCKET: MessageSocket(),
+            FramerType.TLS: MessageTLS(),
         }[message_type]
 
 

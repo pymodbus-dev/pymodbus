@@ -2,9 +2,11 @@
 # pylint: disable=missing-type-doc
 from __future__ import annotations
 
+import time
 from typing import Any
 
 from pymodbus.factory import ClientDecoder, ServerDecoder
+from pymodbus.framer.base import FramerBase
 from pymodbus.logging import Log
 
 
@@ -44,6 +46,7 @@ class ModbusFramer:
             "crc": b"\x00\x00",
         }
         self._buffer = b""
+        self.message_handler: FramerBase
 
     def _validate_slave_id(self, slaves: list, single: bool) -> bool:
         """Validate if the received data is valid for the client.
@@ -76,7 +79,9 @@ class ModbusFramer:
         :param size: Number of bytes to read
         :return:
         """
-        return self.client.recv(size)
+        packet = self.client.recv(size)
+        self.client.last_frame_end = round(time.time(), 6)
+        return packet
 
     def resetFrame(self):
         """Reset the entire message frame.
@@ -143,8 +148,11 @@ class ModbusFramer:
     ) -> None:
         """Process new packet pattern."""
 
-    def buildPacket(self, message) -> bytes:  # type:ignore[empty-body]
+    def buildPacket(self, message) -> bytes:
         """Create a ready to send modbus packet.
 
         :param message: The populated request/response to send
         """
+        data = message.function_code.to_bytes(1,'big') + message.encode()
+        packet = self.message_handler.encode(data, message.slave_id, message.transaction_id)
+        return packet

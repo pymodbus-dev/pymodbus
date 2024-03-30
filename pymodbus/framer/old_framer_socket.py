@@ -1,5 +1,4 @@
 """Socket framer."""
-# pylint: disable=missing-type-doc
 import struct
 
 from pymodbus.exceptions import (
@@ -93,12 +92,3 @@ class ModbusSocketFramer(ModbusFramer):
                 self.resetFrame()
             else:
                 callback(result)  # defer or push to a thread?
-
-    def buildPacket(self, message):
-        """Create a ready to send modbus packet.
-
-        :param message: The populated request/response to send
-        """
-        data = message.function_code.to_bytes(1, 'big') + message.encode()
-        packet = self.message_handler.encode(data, message.slave_id, message.transaction_id)
-        return packet

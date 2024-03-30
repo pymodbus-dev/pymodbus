@@ -1,7 +1,6 @@
 """Collection of transaction based abstractions."""
 
 __all__ = [
-    "DictTransactionManager",
     "ModbusTransactionManager",
     "ModbusSocketFramer",
     "ModbusTlsFramer",
@@ -481,6 +480,3 @@ class ModbusTransactionManager:
         """Reset the transaction identifier."""
         self.tid = 0
         self.transactions = {}
-
-class DictTransactionManager(ModbusTransactionManager):
-    """Old alias for ModbusTransactionManager."""

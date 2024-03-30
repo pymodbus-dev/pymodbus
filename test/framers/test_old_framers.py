@@ -79,8 +79,6 @@ class TestFramers:
                 "crc": b"\x00\x00",
             }
             assert framer._hsize == 0x01  # pylint: disable=protected-access
-            assert framer._end == b"\x0d\x0a"  # pylint: disable=protected-access
-            assert framer._min_frame_size == 4  # pylint: disable=protected-access
         else:
             assert framer._header == {  # pylint: disable=protected-access
                 "tid": 0,

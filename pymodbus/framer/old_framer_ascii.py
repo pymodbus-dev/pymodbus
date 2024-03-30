@@ -1,6 +1,4 @@
 """Ascii_framer."""
-# pylint: disable=missing-type-doc
-
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer.old_framer_base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
 from pymodbus.logging import Log
@@ -71,13 +69,3 @@ class ModbusAsciiFramer(ModbusFramer):
             self._buffer = self._buffer[used_len :]
             self._header = {"uid": 0x00}
             callback(result)  # defer this
-
-    def buildPacket(self, message):
-        """Create a ready to send modbus packet.
-
-        :param message: The request/response to send
-        :return: The encoded packet
-        """
-        data = message.function_code.to_bytes(1,'big') + message.encode()
-        packet = self.message_handler.encode(data, message.slave_id, message.transaction_id)
-        return packet

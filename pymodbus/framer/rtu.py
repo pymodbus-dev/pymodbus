@@ -12,40 +12,32 @@ from pymodbus.logging import Log
 class FramerRTU(FramerBase):
     """Modbus RTU frame type.
 
-    [ Start Wait ] [Address ][ Function Code] [ Data ][ CRC ][  End Wait  ]
-        3.5 chars     1b         1b               Nb      2b      3.5 chars
-
-    Wait refers to the amount of time required to transmit at least x many
-    characters.  In this case it is 3.5 characters.  Also, if we receive a
-    wait of 1.5 characters at any point, we must trigger an error message.
-    Also, it appears as though this message is little endian. The logic is
-    simplified as the following::
-
-    The following table is a listing of the baud wait times for the specified
-    baud rates::
-
-        ------------------------------------------------------------------
-           Baud  1.5c (18 bits)   3.5c (38 bits)
-        ------------------------------------------------------------------
-           1200  15,000 ms        31,667 ms
-           4800   3,750 ms         7,917 ms
-           9600   1,875 ms         3,958 ms
-          19200   0,938 ms         1,979 ms
-          38400   0,469 ms         0,989 ms
-         115200   0,156 ms         0,329 ms
-        ------------------------------------------------------------------
-        1 Byte = 8 bits + 1 bit parity + 2 stop bit = 11 bits
+    [ Start Wait ] [Address ][ Function Code] [ Data ][ CRC ]
+      3.5 chars     1b         1b               Nb      2b
 
     * Note: due to the USB converter and the OS drivers, timing cannot be quaranteed
     neither when receiving nor when sending.
     """
 
-    function_codes: list[int] = []
+    MIN_SIZE = 5
 
-    @classmethod
-    def set_legal_function_codes(cls, function_codes: list[int]):
-        """Set legal function codes."""
-        cls.function_codes = function_codes
+    def __init__(self) -> None:
+        """Initialize a ADU instance."""
+        super().__init__()
+        self.broadcast: bool = False
+        self.dev_ids: list[int]
+        self.fc_calc: dict[int, int]
+
+    def set_dev_ids(self, dev_ids: list[int]):
+        """Set/update allowed device ids."""
+        if 0 in dev_ids:
+            self.broadcast = True
+        self.dev_ids = dev_ids
+
+    def set_fc_calc(self, fc: int, msg_size: int, count_pos: int):
+        """Set/Update function code information."""
+        self.fc_calc[fc] = msg_size if not count_pos else -count_pos
+
 
     @classmethod
     def generate_crc16_table(cls) -> list[int]:
@@ -160,31 +152,30 @@ class FramerRTU(FramerBase):
             Log.debug("Frame advanced, resetting header!!")
             callback(result)  # defer or push to a thread?
 
-    def assemble_frame(self, _data_len: int, _data: bytes) -> int:
-        """Collect frame, until CRC matches."""
-        return 0
+
+    def hunt_frame_start(self, skip_cur_frame: bool, data: bytes) -> int:
+        """Scan buffer for a relevant frame start."""
+        buf_len = len(data)
+        for i in range(1 if skip_cur_frame else 0, buf_len - self.MIN_SIZE):
+            if not (self.broadcast or data[i] in self.dev_ids):
+                continue
+            if (_fc := data[i + 1]) not in self.fc_calc:
+                continue
+            return i
+        return -i
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
-        """Decode message."""
-        if (data_len := len(data)) < 6:  # <dev_id><fc><data*2><crc*2>
+        """Decode ADU."""
+        if len(data) < self.MIN_SIZE:
             return 0, 0, 0, b''
 
-        if not (_frame_len := self.assemble_frame(data_len, data)):
-            return 0, 0, 0, b''
+        while (i := self.hunt_frame_start(False, data)) > 0:
+            pass
+        return -i, 0, 0, b''
 
-
-
-        resp = None
-        def callback(result):
-            """Set result."""
-            nonlocal resp
-            resp = result
-
-        self._legacy_decode(callback, [0])
-        return 0, 0, 0, b''
 
     def encode(self, pdu: bytes, device_id: int, _tid: int) -> bytes:
-        """Decode message."""
+        """Encode ADU."""
         packet = device_id.to_bytes(1,'big') + pdu
         return packet + FramerRTU.compute_CRC(packet).to_bytes(2,'big')
 

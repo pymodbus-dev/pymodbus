@@ -15,10 +15,10 @@ from pymodbus.logging import Log
 class FramerAscii(FramerBase):
     r"""Modbus ASCII Frame Controller.
 
-        [ Start ][Address ][ Function ][ Data ][ LRC ][ End ]
-          1c        2c         2c         Nc     1c      2c
+        [ Start ][ Dev id ][ Function ][ Data ][ LRC ][ End ]
+          1c       2c        2c          N*2c    1c     2c
 
-        * data can be 0 - 2x252 chars
+        * data can be 1 - 2x252 chars
         * end is "\\r\\n" (Carriage return line feed), however the line feed
           character can be changed via a special command
         * start is ":"
@@ -29,11 +29,12 @@ class FramerAscii(FramerBase):
 
     START = b':'
     END = b'\r\n'
+    MIN_SIZE = 10
 
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
-        """Decode message."""
-        if (used_len := len(data)) < 10:
+        """Decode ADU."""
+        if (used_len := len(data)) < self.MIN_SIZE:
             Log.debug("Short frame: {} wait for more data", data, ":hex")
             return 0, 0, 0, self.EMPTY
         if data[0:1] != self.START:
@@ -54,7 +55,7 @@ class FramerAscii(FramerBase):
         return used_len+2, 0, dev_id, msg[1:]
 
     def encode(self, data: bytes, device_id: int, _tid: int) -> bytes:
-        """Decode message."""
+        """Encode ADU."""
         dev_id = device_id.to_bytes(1,'big')
         checksum = self.compute_LRC(dev_id + data)
         packet = (

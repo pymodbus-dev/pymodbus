@@ -186,7 +186,10 @@ class ModbusRtuFramer(ModbusFramer):
         """
         super().resetFrame()
         start = time.time()
-        timeout = start + self.client.comm_params.timeout_connect
+        if hasattr(self.client,"ctx"):
+            timeout = start + self.client.ctx.comm_params.timeout_connect
+        else:
+            timeout = start + self.client.comm_params.timeout_connect
         while self.client.state != ModbusTransactionState.IDLE:
             if self.client.state == ModbusTransactionState.TRANSACTION_COMPLETE:
                 timestamp = round(time.time(), 6)

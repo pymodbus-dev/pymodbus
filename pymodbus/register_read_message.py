@@ -149,7 +149,9 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
-        values = context.getValues(self.function_code, self.address, self.count)
+        values = await context.async_getValues(
+            self.function_code, self.address, self.count
+        )
         if isinstance(values, ExceptionResponse):
             return values
 
@@ -210,7 +212,9 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
-        values = context.getValues(self.function_code, self.address, self.count)
+        values = await context.async_getValues(
+            self.function_code, self.address, self.count
+        )
         if isinstance(values, ExceptionResponse):
             return values
         return ReadInputRegistersResponse(values)
@@ -328,12 +332,12 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
             return self.doException(merror.IllegalAddress)
         if not context.validate(self.function_code, self.read_address, self.read_count):
             return self.doException(merror.IllegalAddress)
-        result = context.setValues(
+        result = await context.async_setValues(
             self.function_code, self.write_address, self.write_registers
         )
         if isinstance(result, ExceptionResponse):
             return result
-        registers = context.getValues(
+        registers = await context.async_getValues(
             self.function_code, self.read_address, self.read_count
         )
         return ReadWriteMultipleRegistersResponse(registers)

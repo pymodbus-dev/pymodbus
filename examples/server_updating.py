@@ -61,9 +61,9 @@ async def updating_task(context):
     count = 6
 
     # set values to zero
-    values = context[slave_id].getValues(fc_as_hex, address, count=count)
+    values = await context[slave_id].async_getValues(fc_as_hex, address, count=count)
     values = [0 for v in values]
-    context[slave_id].setValues(fc_as_hex, address, values)
+    await context[slave_id].async_setValues(fc_as_hex, address, values)
 
     txt = (
         f"updating_task: started: initialised values: {values!s} at address {address!s}"
@@ -75,9 +75,11 @@ async def updating_task(context):
     while True:
         await asyncio.sleep(2)
 
-        values = context[slave_id].getValues(fc_as_hex, address, count=count)
+        values = await context[slave_id].async_getValues(
+            fc_as_hex, address, count=count
+        )
         values = [v + 1 for v in values]
-        context[slave_id].setValues(fc_as_hex, address, values)
+        await context[slave_id].async_setValues(fc_as_hex, address, values)
 
         txt = f"updating_task: incremented values: {values!s} at address {address!s}"
         print(txt)

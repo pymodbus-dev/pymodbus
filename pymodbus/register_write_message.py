@@ -68,10 +68,12 @@ class WriteSingleRegisterRequest(ModbusRequest):
         if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.IllegalAddress)
 
-        result = context.setValues(self.function_code, self.address, [self.value])
+        result = await context.async_setValues(
+            self.function_code, self.address, [self.value]
+        )
         if isinstance(result, ExceptionResponse):
             return result
-        values = context.getValues(self.function_code, self.address, 1)
+        values = await context.async_getValues(self.function_code, self.address, 1)
         return WriteSingleRegisterResponse(self.address, values[0])
 
     def get_response_pdu_size(self):
@@ -213,7 +215,9 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
 
-        result = context.setValues(self.function_code, self.address, self.values)
+        result = await context.async_setValues(
+            self.function_code, self.address, self.values
+        )
         if isinstance(result, ExceptionResponse):
             return result
         return WriteMultipleRegistersResponse(self.address, self.count)
@@ -333,11 +337,13 @@ class MaskWriteRegisterRequest(ModbusRequest):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.IllegalAddress)
-        values = context.getValues(self.function_code, self.address, 1)[0]
+        values = (await context.async_getValues(self.function_code, self.address, 1))[0]
         if isinstance(values, ExceptionResponse):
             return values
         values = (values & self.and_mask) | (self.or_mask & ~self.and_mask)
-        result = context.setValues(self.function_code, self.address, [values])
+        result = await context.async_setValues(
+            self.function_code, self.address, [values]
+        )
         if isinstance(result, ExceptionResponse):
             return result
         return MaskWriteRegisterResponse(self.address, self.and_mask, self.or_mask)

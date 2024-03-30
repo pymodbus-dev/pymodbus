@@ -31,15 +31,15 @@ class CallbackDataBlock(ModbusSequentialDataBlock):
         self.queue = queue
         super().__init__(addr, values)
 
-    def setValues(self, address, value):
+    async def async_setValues(self, address, value):
         """Set the requested values of the datastore."""
-        super().setValues(address, value)
+        await super().async_setValues(address, value)
         txt = f"Callback from setValues with address {address}, value {value}"
         _logger.debug(txt)
 
-    def getValues(self, address, count=1):
+    async def async_getValues(self, address, count=1):
         """Return the requested values from the datastore."""
-        result = super().getValues(address, count=count)
+        result = await super().async_getValues(address, count=count)
         txt = f"Callback from getValues with address {address}, count {count}, data {result}"
         _logger.debug(txt)
         return result
@@ -56,7 +56,7 @@ async def run_callback_server(cmdline=None):
     """Define datastore callback for server and do setup."""
     queue = asyncio.Queue()
     block = CallbackDataBlock(queue, 0x00, [17] * 100)
-    block.setValues(1, 15)
+    await block.async_setValues(1, 15)
     store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
     context = ModbusServerContext(slaves=store, single=True)
     run_args = server_async.setup_server(

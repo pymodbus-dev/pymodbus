@@ -294,7 +294,7 @@ async def test_client_connection_made():
 
     transport = mock.AsyncMock()
     transport.close = lambda : ()
-    client.connection_made(transport)
+    client.ctx.connection_made(transport)
     # assert await client.connected
     client.close()
 
@@ -329,7 +329,7 @@ async def test_client_protocol_receiver():
     """Test the client protocol data received."""
     base = ModbusBaseClient(FramerType.SOCKET)
     transport = mock.MagicMock()
-    base.connection_made(transport)
+    base.ctx.connection_made(transport)
     assert base.transport == transport
     assert base.transport
     data = b"\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04"
@@ -366,7 +366,7 @@ async def test_client_protocol_handler():
         FramerType.ASCII, host="localhost", port=+3, CommType=CommType.TCP
     )
     transport = mock.MagicMock()
-    base.connection_made(transport=transport)
+    base.ctx.connection_made(transport=transport)
     reply = pdu_bit_read.ReadCoilsRequest(1, 1)
     reply.transaction_id = 0x00
     base._handle_response(None)  # pylint: disable=protected-access
@@ -414,7 +414,7 @@ async def test_client_protocol_execute():
     base = ModbusBaseClient(FramerType.SOCKET, host="127.0.0.1")
     request = pdu_bit_read.ReadCoilsRequest(1, 1)
     transport = MockTransport(base, request)
-    base.connection_made(transport=transport)
+    base.ctx.connection_made(transport=transport)
 
     response = await base.async_execute(request)
     assert not response.isError()
@@ -426,7 +426,7 @@ async def test_client_execute_broadcast():
     base.broadcast_enable = True
     request = pdu_bit_read.ReadCoilsRequest(1, 1)
     transport = MockTransport(base, request)
-    base.connection_made(transport=transport)
+    base.ctx.connection_made(transport=transport)
 
     assert not await base.async_execute(request)
 
@@ -435,7 +435,7 @@ async def test_client_protocol_retry():
     base = ModbusBaseClient(FramerType.SOCKET, host="127.0.0.1", timeout=0.1)
     request = pdu_bit_read.ReadCoilsRequest(1, 1)
     transport = MockTransport(base, request, retries=2)
-    base.connection_made(transport=transport)
+    base.ctx.connection_made(transport=transport)
 
     response = await base.async_execute(request)
     assert transport.retries == 0
@@ -447,10 +447,10 @@ async def test_client_protocol_timeout():
     """Test the client protocol execute method with timeout."""
     base = ModbusBaseClient(FramerType.SOCKET, host="127.0.0.1", timeout=0.1, retries=2)
     # Avoid creating do_reconnect() task
-    base.connection_lost = mock.MagicMock()
+    base.ctx.connection_lost = mock.MagicMock()
     request = pdu_bit_read.ReadCoilsRequest(1, 1)
     transport = MockTransport(base, request, retries=4)
-    base.connection_made(transport=transport)
+    base.ctx.connection_made(transport=transport)
 
     with pytest.raises(ModbusIOException):
         await base.async_execute(request)

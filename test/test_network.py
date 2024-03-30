@@ -74,7 +74,7 @@ class TestNetwork:
         assert await stub.start_run()
         assert await client.connect()
         test_data = b"Data got echoed."
-        client.transport.write(test_data)
+        client.ctx.transport.write(test_data)
         client.close()
         stub.close()
 

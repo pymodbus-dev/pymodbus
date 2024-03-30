@@ -72,6 +72,10 @@ class BaseModbusDataBlock(ABC, Generic[V]):
             getValues(self, address, count=1)
             setValues(self, address, values)
             reset(self)
+
+    Derived classes can implemented the following async methods:
+            async_getValues(self, address, count=1)
+            async_setValues(self, address, values)
     """
 
     values: V
@@ -87,6 +91,15 @@ class BaseModbusDataBlock(ABC, Generic[V]):
         :raises TypeError:
         """
 
+    async def async_getValues(self, address: int, count=1) -> Iterable:
+        """Return the requested values from the datastore.
+
+        :param address: The starting address
+        :param count: The number of values to retrieve
+        :raises TypeError:
+        """
+        return self.getValues(address, count)
+
     @abstractmethod
     def getValues(self, address:int, count=1) -> Iterable:
         """Return the requested values from the datastore.
@@ -95,6 +108,15 @@ class BaseModbusDataBlock(ABC, Generic[V]):
         :param count: The number of values to retrieve
         :raises TypeError:
         """
+
+    async def async_setValues(self, address: int, values):
+        """Return the requested values from the datastore.
+
+        :param address: The starting address
+        :param values: The values to store
+        :raises TypeError:
+        """
+        return self.setValues(address, values)
 
     @abstractmethod
     def setValues(self, address:int, values) -> None:

@@ -73,16 +73,6 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         )
         self.server_hostname = server_hostname
 
-    async def connect(self) -> bool:
-        """Initiate connection to start client."""
-        self.ctx.reset_delay()
-        Log.debug(
-            "Connecting to {}:{}.",
-            self.ctx.comm_params.host,
-            self.ctx.comm_params.port,
-        )
-        return await self.base_connect()
-
     @classmethod
     def generate_ssl(
         cls,

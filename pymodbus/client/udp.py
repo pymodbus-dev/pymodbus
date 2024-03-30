@@ -77,19 +77,6 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         """Return true if connected."""
         return self.ctx.is_active()
 
-    async def connect(self) -> bool:
-        """Start reconnecting asynchronous udp client.
-
-        :meta private:
-        """
-        self.ctx.reset_delay()
-        Log.debug(
-            "Connecting to {}:{}.",
-            self.ctx.comm_params.host,
-            self.ctx.comm_params.port,
-        )
-        return await self.base_connect()
-
 
 class ModbusUdpClient(ModbusBaseSyncClient):
     """**ModbusUdpClient**.

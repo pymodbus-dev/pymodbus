@@ -93,12 +93,6 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             **kwargs,
         )
 
-    async def connect(self) -> bool:
-        """Connect Async client."""
-        self.ctx.reset_delay()
-        Log.debug("Connecting to {}.", self.ctx.comm_params.host)
-        return await self.base_connect()
-
     def close(self, reconnect: bool = False) -> None:
         """Close connection."""
         super().close(reconnect=reconnect)

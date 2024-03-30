@@ -103,8 +103,14 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         """Return state of connection."""
         return self.ctx.is_active()
 
-    async def base_connect(self) -> bool:
+    async def connect(self) -> bool:
         """Call transport connect."""
+        self.ctx.reset_delay()
+        Log.debug(
+            "Connecting to {}:{}.",
+            self.ctx.comm_params.host,
+            self.ctx.comm_params.port,
+        )
         return await self.ctx.connect()
 
 
@@ -177,9 +183,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
             )
 
         return resp  # type: ignore[return-value]
-
-    async def connect(self) -> bool:  # type: ignore[empty-body]
-        """Connect to the modbus remote host."""
 
     def build_response(self, tid):
         """Return a deferred response for the current request."""

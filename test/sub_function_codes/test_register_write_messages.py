@@ -84,43 +84,43 @@ class TestWriteRegisterMessages:
         for request in iter(self.write.keys()):
             assert str(request)
 
-    def test_write_single_register_request(self):
+    async def test_write_single_register_request(self):
         """Test write single register request."""
         context = MockContext()
         request = WriteSingleRegisterRequest(0x00, 0xF0000)
-        result = request.execute(context)
+        result = await request.execute(context)
         assert result.exception_code == ModbusExceptions.IllegalValue
 
         request.value = 0x00FF
-        result = request.execute(context)
+        result = await request.execute(context)
         assert result.exception_code == ModbusExceptions.IllegalAddress
 
         context.valid = True
-        result = request.execute(context)
+        result = await request.execute(context)
         assert result.function_code == request.function_code
 
-    def test_write_multiple_register_request(self):
+    async def test_write_multiple_register_request(self):
         """Test write multiple register request."""
         context = MockContext()
         request = WriteMultipleRegistersRequest(0x00, [0x00] * 10)
-        result = request.execute(context)
+        result = await request.execute(context)
         assert result.exception_code == ModbusExceptions.IllegalAddress
 
         request.count = 0x05  # bytecode != code * 2
-        result = request.execute(context)
+        result = await request.execute(context)
         assert result.exception_code == ModbusExceptions.IllegalValue
 
         request.count = 0x800  # outside of range
-        result = request.execute(context)
+        result = await request.execute(context)
         assert result.exception_code == ModbusExceptions.IllegalValue
 
         context.valid = True
         request = WriteMultipleRegistersRequest(0x00, [0x00] * 10)
-        result = request.execute(context)
+        result = await request.execute(context)
         assert result.function_code == request.function_code
 
         request = WriteMultipleRegistersRequest(0x00, 0x00)
-        result = request.execute(context)
+        result = await request.execute(context)
         assert result.function_code == request.function_code
 
         # -----------------------------------------------------------------------#
@@ -142,7 +142,7 @@ class TestWriteRegisterMessages:
         assert handle.and_mask == 0x00F2
         assert handle.or_mask == 0x0025
 
-    def test_mask_write_register_request_execute(self):
+    async def test_mask_write_register_request_execute(self):
         """Test write register request valid execution."""
         # The test uses the 4 nibbles of the 16-bit values to test
         # the combinations:
@@ -152,23 +152,23 @@ class TestWriteRegisterMessages:
         #     and_mask=F, or_mask=F
         context = MockLastValuesContext(valid=True, default=0xAA55)
         handle = MaskWriteRegisterRequest(0x0000, 0x0F0F, 0x00FF)
-        result = handle.execute(context)
+        result = await handle.execute(context)
         assert isinstance(result, MaskWriteRegisterResponse)
         assert context.last_values == [0x0AF5]
 
-    def test_mask_write_register_request_invalid_execute(self):
+    async def test_mask_write_register_request_invalid_execute(self):
         """Test write register request execute with invalid data."""
         context = MockContext(valid=False, default=0x0000)
         handle = MaskWriteRegisterRequest(0x0000, -1, 0x1010)
-        result = handle.execute(context)
+        result = await handle.execute(context)
         assert ModbusExceptions.IllegalValue == result.exception_code
 
         handle = MaskWriteRegisterRequest(0x0000, 0x0101, -1)
-        result = handle.execute(context)
+        result = await handle.execute(context)
         assert ModbusExceptions.IllegalValue == result.exception_code
 
         handle = MaskWriteRegisterRequest(0x0000, 0x0101, 0x1010)
-        result = handle.execute(context)
+        result = await handle.execute(context)
         assert ModbusExceptions.IllegalAddress == result.exception_code
 
         # -----------------------------------------------------------------------#

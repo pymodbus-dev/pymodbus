@@ -49,6 +49,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
         self.receive_queue: asyncio.Queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
         self.framer: ModbusFramer
+        self.request_tasks: set[asyncio.Task] = set()
 
     def _log_exception(self):
         """Show log exception."""
@@ -173,7 +174,14 @@ class ModbusServerRequestHandler(ModbusProtocol):
         if self.server.request_tracer:
             self.server.request_tracer(request, *addr)
 
+        event_loop = asyncio.get_running_loop()
+        task = event_loop.create_task(self._async_execute(request, *addr))
+        self.request_tasks.add(task)
+        task.add_done_callback(self.request_tasks.discard)
+
+    async def _async_execute(self, request, *addr):
         broadcast = False
+        response = None
         try:
             if self.server.broadcast_enable and not request.slave_id:
                 broadcast = True
@@ -181,9 +189,14 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 # note response will be ignored
                 for slave_id in self.server.context.slaves():
                     response = request.execute(self.server.context[slave_id])
+                    if asyncio.iscoroutine(response):
+                        response = await response
             else:
                 context = self.server.context[request.slave_id]
                 response = request.execute(context)
+                if asyncio.iscoroutine(response):
+                    response = await response
+
         except NoSuchSlaveException:
             Log.error("requested slave does not exist: {}", request.slave_id)
             if self.server.ignore_missing_slaves:
@@ -196,8 +209,9 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 traceback.format_exc(),
             )
             response = request.doException(merror.SlaveFailure)
+
         # no response when broadcasting
-        if not broadcast:
+        if not broadcast and response is not None:
             response.transaction_id = request.transaction_id
             response.slave_id = request.slave_id
             skip_encoding = False
@@ -304,6 +318,7 @@ class ModbusBaseServer(ModbusProtocol):
         """Handle received data."""
         Log.debug("callback_data called: {} addr={}", data, ":hex", addr)
         return 0
+
 
 class ModbusTcpServer(ModbusBaseServer):
     """A modbus threaded tcp socket server.

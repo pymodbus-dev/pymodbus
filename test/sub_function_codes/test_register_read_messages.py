@@ -100,7 +100,7 @@ class TestReadRegisterMessages:
             request.decode(response)
             assert request.registers == register
 
-    def test_register_read_requests_count_errors(self):
+    async def test_register_read_requests_count_errors(self):
         """This tests that the register request messages.
 
         will break on counts that are out of range
@@ -117,10 +117,10 @@ class TestReadRegisterMessages:
             ),
         ]
         for request in requests:
-            result = request.execute(None)
+            result = await request.execute(None)
             assert ModbusExceptions.IllegalValue == result.exception_code
 
-    def test_register_read_requests_validate_errors(self):
+    async def test_register_read_requests_validate_errors(self):
         """This tests that the register request messages.
 
         will break on counts that are out of range
@@ -133,10 +133,10 @@ class TestReadRegisterMessages:
             # ReadWriteMultipleRegistersRequest(1,5,-1,5),
         ]
         for request in requests:
-            result = request.execute(context)
+            result = await request.execute(context)
             assert ModbusExceptions.IllegalAddress == result.exception_code
 
-    def test_register_read_requests_execute(self):
+    async def test_register_read_requests_execute(self):
         """This tests that the register request messages.
 
         will break on counts that are out of range
@@ -147,34 +147,34 @@ class TestReadRegisterMessages:
             ReadInputRegistersRequest(-1, 5),
         ]
         for request in requests:
-            response = request.execute(context)
+            response = await request.execute(context)
             assert request.function_code == response.function_code
 
-    def test_read_write_multiple_registers_request(self):
+    async def test_read_write_multiple_registers_request(self):
         """Test read/write multiple registers."""
         context = MockContext(True)
         request = ReadWriteMultipleRegistersRequest(
             read_address=1, read_count=10, write_address=1, write_registers=[0x00]
         )
-        response = request.execute(context)
+        response = await request.execute(context)
         assert request.function_code == response.function_code
 
-    def test_read_write_multiple_registers_validate(self):
+    async def test_read_write_multiple_registers_validate(self):
         """Test read/write multiple registers."""
         context = MockContext()
         context.validate = lambda f, a, c: a == 1
         request = ReadWriteMultipleRegistersRequest(
             read_address=1, read_count=10, write_address=2, write_registers=[0x00]
         )
-        response = request.execute(context)
+        response = await request.execute(context)
         assert response.exception_code == ModbusExceptions.IllegalAddress
 
         context.validate = lambda f, a, c: a == 2
-        response = request.execute(context)
+        response = await request.execute(context)
         assert response.exception_code == ModbusExceptions.IllegalAddress
 
         request.write_byte_count = 0x100
-        response = request.execute(context)
+        response = await request.execute(context)
         assert response.exception_code == ModbusExceptions.IllegalValue
 
     def test_read_write_multiple_registers_request_decode(self):

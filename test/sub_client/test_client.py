@@ -337,7 +337,7 @@ async def test_client_protocol_receiver():
     # setup existing request
     assert not list(base.transaction)
     response = base.build_response(0x00)  # pylint: disable=protected-access
-    base.data_received(data)
+    base.ctx.data_received(data)
     result = response.result()
     assert isinstance(result, pdu_bit_read.ReadCoilsResponse)
 
@@ -369,10 +369,10 @@ async def test_client_protocol_handler():
     base.ctx.connection_made(transport=transport)
     reply = pdu_bit_read.ReadCoilsRequest(1, 1)
     reply.transaction_id = 0x00
-    base._handle_response(None)  # pylint: disable=protected-access
-    base._handle_response(reply)  # pylint: disable=protected-access
+    base.ctx._handle_response(None)  # pylint: disable=protected-access
+    base.ctx._handle_response(reply)  # pylint: disable=protected-access
     response = base.build_response(0x00)  # pylint: disable=protected-access
-    base._handle_response(reply)  # pylint: disable=protected-access
+    base.ctx._handle_response(reply)  # pylint: disable=protected-access
     result = response.result()
     assert result == reply
 
@@ -393,8 +393,8 @@ class MockTransport:
         """Send a response to a received packet."""
         await asyncio.sleep(0.05)
         resp = self.req.execute(self.ctx)
-        pkt = self.base.framer.buildPacket(resp)
-        self.base.data_received(pkt)
+        pkt = self.base.ctx.framer.buildPacket(resp)
+        self.base.ctx.data_received(pkt)
 
     def write(self, data, addr=None):
         """Write data to the transport, start a task to send the response."""

@@ -122,7 +122,7 @@ class ClientTester:  # pylint: disable=too-few-public-methods
             )
         else:
             raise RuntimeError("ERROR: CommType not implemented")
-        server_params = self.client.comm_params.copy()
+        server_params = self.client.ctx.comm_params.copy()
         server_params.source_address = (host, test_port)
         self.stub = TransportStub(server_params, True, simulate_server)
         test_port += 1

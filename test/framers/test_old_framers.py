@@ -336,7 +336,7 @@ class TestFramers:
         client.state = ModbusTransactionState.TRANSACTION_COMPLETE
         client.silent_interval = 1
         client.last_frame_end = 1
-        client.comm_params.timeout_connect = 0.25
+        client.ctx.comm_params.timeout_connect = 0.25
         client.idle_time = mock.Mock(return_value=1)
         client.send = mock.Mock(return_value=len(message))
         rtu_framer.client = client

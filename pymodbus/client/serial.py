@@ -1,7 +1,6 @@
 """Modbus client async serial communication."""
 from __future__ import annotations
 
-import asyncio
 import time
 from functools import partial
 from typing import TYPE_CHECKING, Any
@@ -24,7 +23,7 @@ except ImportError:
         # type checkers do not understand the Raise RuntimeError in __init__()
         import serial
 
-class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
+class AsyncModbusSerialClient(ModbusBaseClient):
     """**AsyncModbusSerialClient**.
 
     Fixed parameters:
@@ -82,7 +81,6 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
                 "Serial client requires pyserial "
                 'Please install with "pip install pyserial" and try again.'
             )
-        asyncio.Protocol.__init__(self)
         ModbusBaseClient.__init__(
             self,
             framer,
@@ -94,12 +92,6 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
             stopbits=stopbits,
             **kwargs,
         )
-
-    async def connect(self) -> bool:
-        """Connect Async client."""
-        self.reset_delay()
-        Log.debug("Connecting to {}.", self.comm_params.host)
-        return await self.base_connect()
 
     def close(self, reconnect: bool = False) -> None:
         """Close connection."""

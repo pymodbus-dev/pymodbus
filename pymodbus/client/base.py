@@ -8,17 +8,18 @@ from dataclasses import dataclass
 from typing import Any, cast
 
 from pymodbus.client.mixin import ModbusClientMixin
+from pymodbus.client.modbusclientprotocol import ModbusClientProtocol
 from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.factory import ClientDecoder
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType, ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.transaction import ModbusTransactionManager
-from pymodbus.transport import CommParams, ModbusProtocol
+from pymodbus.transport import CommParams
 from pymodbus.utilities import ModbusTransactionState
 
 
-class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProtocol):
+class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
     """**ModbusBaseClient**.
 
     Fixed parameters:
@@ -62,8 +63,8 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
     ) -> None:
         """Initialize a client instance."""
         ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
-        ModbusProtocol.__init__(
-            self,
+        self.ctx = ModbusClientProtocol(
+            framer,
             CommParams(
                 comm_type=kwargs.get("CommType"),
                 comm_name="comm",
@@ -80,22 +81,15 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
                 stopbits=kwargs.get("stopbits", None),
                 handle_local_echo=kwargs.get("handle_local_echo", False),
             ),
-            False,
+            retries,
+            retry_on_empty,
+            on_connect_callback,
         )
-        self.on_connect_callback = on_connect_callback
-        self.retry_on_empty: int = 0
         self.no_resend_on_retry = no_resend_on_retry
-        self.slaves: list[int] = []
-        self.retries: int = retries
         self.broadcast_enable = broadcast_enable
+        self.retries = retries
 
         # Common variables.
-        self.framer = FRAMER_NAME_TO_CLASS.get(
-            framer, cast(type[ModbusFramer], framer)
-        )(ClientDecoder(), self)
-        self.transaction = ModbusTransactionManager(
-            self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
-        )
         self.use_udp = False
         self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float | None = 0
@@ -107,11 +101,17 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
     @property
     def connected(self) -> bool:
         """Return state of connection."""
-        return self.is_active()
+        return self.ctx.is_active()
 
-    async def base_connect(self) -> bool:
+    async def connect(self) -> bool:
         """Call transport connect."""
-        return await super().connect()
+        self.ctx.reset_delay()
+        Log.debug(
+            "Connecting to {}:{}.",
+            self.ctx.comm_params.host,
+            self.ctx.comm_params.port,
+        )
+        return await self.ctx.connect()
 
 
     def register(self, custom_response_class: ModbusResponse) -> None:
@@ -123,14 +123,14 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         Use register() to add non-standard responses (like e.g. a login prompt) and
         have them interpreted automatically.
         """
-        self.framer.decoder.register(custom_response_class)
+        self.ctx.framer.decoder.register(custom_response_class)
 
     def close(self, reconnect: bool = False) -> None:
         """Close connection."""
         if reconnect:
-            self.connection_lost(asyncio.TimeoutError("Server not responding"))
+            self.ctx.connection_lost(asyncio.TimeoutError("Server not responding"))
         else:
-            super().close()
+            self.ctx.close()
 
     def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).
@@ -149,7 +149,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         :returns: The result of the request execution
         :raises ConnectionException: Check exception text.
         """
-        if not self.transport:
+        if not self.ctx.transport:
             raise ConnectionException(f"Not connected[{self!s}]")
         return self.async_execute(request)
 
@@ -158,20 +158,20 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
     # ----------------------------------------------------------------------- #
     async def async_execute(self, request) -> ModbusResponse:
         """Execute requests asynchronously."""
-        request.transaction_id = self.transaction.getNextTID()
-        packet = self.framer.buildPacket(request)
+        request.transaction_id = self.ctx.transaction.getNextTID()
+        packet = self.ctx.framer.buildPacket(request)
 
         count = 0
         while count <= self.retries:
             req = self.build_response(request.transaction_id)
             if not count or not self.no_resend_on_retry:
-                self.send(packet)
+                self.ctx.send(packet)
             if self.broadcast_enable and not request.slave_id:
                 resp = None
                 break
             try:
                 resp = await asyncio.wait_for(
-                    req, timeout=self.comm_params.timeout_connect
+                    req, timeout=self.ctx.comm_params.timeout_connect
                 )
                 break
             except asyncio.exceptions.TimeoutError:
@@ -184,53 +184,14 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
 
         return resp  # type: ignore[return-value]
 
-    def callback_new_connection(self):
-        """Call when listener receive new connection request."""
-
-    def callback_connected(self) -> None:
-        """Call when connection is succcesfull."""
-        if self.on_connect_callback:
-            self.loop.call_soon(self.on_connect_callback, True)
-
-    def callback_disconnected(self, exc: Exception | None) -> None:
-        """Call when connection is lost."""
-        Log.debug("callback_disconnected called: {}", exc)
-        if self.on_connect_callback:
-            self.loop.call_soon(self.on_connect_callback, False)
-
-    def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
-        """Handle received data.
-
-        returns number of bytes consumed
-        """
-        self.framer.processIncomingPacket(data, self._handle_response, slave=0)
-        return len(data)
-
-    async def connect(self) -> bool:  # type: ignore[empty-body]
-        """Connect to the modbus remote host."""
-
-    def raise_future(self, my_future, exc):
-        """Set exception of a future if not done."""
-        if not my_future.done():
-            my_future.set_exception(exc)
-
-    def _handle_response(self, reply, **_kwargs):
-        """Handle the processed response and link to correct deferred."""
-        if reply is not None:
-            tid = reply.transaction_id
-            if handler := self.transaction.getTransaction(tid):
-                if not handler.done():
-                    handler.set_result(reply)
-            else:
-                Log.debug("Unrequested message: {}", reply, ":str")
-
     def build_response(self, tid):
         """Return a deferred response for the current request."""
         my_future: asyncio.Future = asyncio.Future()
-        if not self.transport:
-            self.raise_future(my_future, ConnectionException("Client is not connected"))
+        if not self.ctx.transport:
+            if not my_future.done():
+                my_future.set_exception(ConnectionException("Client is not connected"))
         else:
-            self.transaction.addTransaction(my_future, tid)
+            self.ctx.transaction.addTransaction(my_future, tid)
         return my_future
 
     # ----------------------------------------------------------------------- #
@@ -264,7 +225,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         :returns: The string representation
         """
         return (
-            f"{self.__class__.__name__} {self.comm_params.host}:{self.comm_params.port}"
+            f"{self.__class__.__name__} {self.ctx.comm_params.host}:{self.ctx.comm_params.port}"
         )
 
 

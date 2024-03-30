@@ -1,7 +1,6 @@
 """Modbus client async TCP communication."""
 from __future__ import annotations
 
-import asyncio
 import select
 import socket
 import time
@@ -14,7 +13,7 @@ from pymodbus.logging import Log
 from pymodbus.transport import CommType
 
 
-class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
+class AsyncModbusTcpClient(ModbusBaseClient):
     """**AsyncModbusTcpClient**.
 
     Fixed parameters:
@@ -64,7 +63,6 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
-        asyncio.Protocol.__init__(self)
         if "CommType" not in kwargs:
             kwargs["CommType"] = CommType.TCP
         if source_address:
@@ -76,16 +74,6 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
             port=port,
             **kwargs,
         )
-
-    async def connect(self) -> bool:
-        """Initiate connection to start client."""
-        self.reset_delay()
-        Log.debug(
-            "Connecting to {}:{}.",
-            self.comm_params.host,
-            self.comm_params.port,
-        )
-        return await self.base_connect()
 
     def close(self, reconnect: bool = False) -> None:
         """Close connection."""

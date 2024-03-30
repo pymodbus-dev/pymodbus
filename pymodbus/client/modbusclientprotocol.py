@@ -2,14 +2,13 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, cast
+from typing import cast
 
 from pymodbus.factory import ClientDecoder
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType, ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.transaction import ModbusTransactionManager
 from pymodbus.transport import CommParams, ModbusProtocol
-from pymodbus.utilities import ModbusTransactionState
 
 
 class ModbusClientProtocol(ModbusProtocol):
@@ -18,81 +17,37 @@ class ModbusClientProtocol(ModbusProtocol):
     Fixed parameters:
 
     :param framer: Framer enum name
-
-    Optional parameters:
-
-    :param timeout: Timeout for a request, in seconds.
+    :param params: Comm parameters for transport
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
-    :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
-    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param on_connect_callback: Will be called when connected/disconnected (bool parameter)
-    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
-    :param kwargs: Experimental parameters.
-
-    .. tip::
-        **reconnect_delay** doubles automatically with each unsuccessful connect, from
-        **reconnect_delay** to **reconnect_delay_max**.
-        Set `reconnect_delay=0` to avoid automatic reconnection.
 
     :mod:`ModbusClientProtocol` is normally not referenced outside :mod:`pymodbus`.
-
-    **Application methods, common to all clients**:
     """
 
     def __init__(
         self,
         framer: FramerType,
-        timeout: float = 3,
-        retries: int = 3,
-        retry_on_empty: bool = False,
-        broadcast_enable: bool = False,
-        reconnect_delay: float = 0.1,
-        reconnect_delay_max: float = 300,
+        params: CommParams,
+        retries: int,
+        retry_on_empty: bool,
         on_connect_callback: Callable[[bool], None] | None = None,
-        no_resend_on_retry: bool = False,
-        **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
         ModbusProtocol.__init__(
             self,
-            CommParams(
-                comm_type=kwargs.get("CommType"),
-                comm_name="comm",
-                source_address=kwargs.get("source_address", None),
-                reconnect_delay=reconnect_delay,
-                reconnect_delay_max=reconnect_delay_max,
-                timeout_connect=timeout,
-                host=kwargs.get("host", None),
-                port=kwargs.get("port", 0),
-                sslctx=kwargs.get("sslctx", None),
-                baudrate=kwargs.get("baudrate", None),
-                bytesize=kwargs.get("bytesize", None),
-                parity=kwargs.get("parity", None),
-                stopbits=kwargs.get("stopbits", None),
-                handle_local_echo=kwargs.get("handle_local_echo", False),
-            ),
+            params,
             False,
         )
         self.on_connect_callback = on_connect_callback
-        self.retry_on_empty: int = 0
-        self.no_resend_on_retry = no_resend_on_retry
-        self.slaves: list[int] = []
-        self.retries: int = retries
-        self.broadcast_enable = broadcast_enable
 
         # Common variables.
         self.framer = FRAMER_NAME_TO_CLASS.get(
             framer, cast(type[ModbusFramer], framer)
         )(ClientDecoder(), self)
         self.transaction = ModbusTransactionManager(
-            self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
+            self, retries=retries, retry_on_empty=retry_on_empty
         )
-        self.use_udp = False
-        self.state = ModbusTransactionState.IDLE
-        self.last_frame_end: float | None = 0
-        self.silent_interval: float = 0
 
     def _handle_response(self, reply, **_kwargs):
         """Handle the processed response and link to correct deferred."""

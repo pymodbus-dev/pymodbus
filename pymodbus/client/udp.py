@@ -1,7 +1,6 @@
 """Modbus client async UDP communication."""
 from __future__ import annotations
 
-import asyncio
 import socket
 from typing import Any
 
@@ -15,9 +14,7 @@ from pymodbus.transport import CommType
 DGRAM_TYPE = socket.SOCK_DGRAM
 
 
-class AsyncModbusUdpClient(
-    ModbusBaseClient, asyncio.Protocol, asyncio.DatagramProtocol
-):
+class AsyncModbusUdpClient(ModbusBaseClient):
     """**AsyncModbusUdpClient**.
 
     Fixed parameters:
@@ -65,8 +62,6 @@ class AsyncModbusUdpClient(
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus UDP Client."""
-        asyncio.DatagramProtocol.__init__(self)
-        asyncio.Protocol.__init__(self)
         ModbusBaseClient.__init__(
             self,
             framer,

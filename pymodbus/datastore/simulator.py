@@ -577,6 +577,13 @@ class ModbusSimulatorContext:
         fx_write = func_code in self._write_func_code
         return self.loop_validate(real_address, real_address + count, fx_write)
 
+    async def async_getValues(self, func_code, address, count=1):
+        """Return the requested values of the datastore.
+
+        :meta private:
+        """
+        return self.getValues(func_code, address, count)
+
     def getValues(self, func_code, address, count=1):
         """Return the requested values of the datastore.
 
@@ -610,6 +617,13 @@ class ModbusSimulatorContext:
                     bit_index += 1
                 bit_index = 0
         return result
+
+    async def async_setValues(self, func_code, address, values):
+        """Set the requested values of the datastore.
+
+        :meta private:
+        """
+        return self.setValues(func_code, address, values)
 
     def setValues(self, func_code, address, values):
         """Set the requested values of the datastore.

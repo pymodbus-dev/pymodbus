@@ -1,10 +1,12 @@
 """Test framers."""
 
+import pytest
 
 from pymodbus.datastore import ModbusSparseDataBlock
 
 
-def test_check_sparsedatastore():
+@pytest.mark.asyncio()
+async def test_check_sparsedatastore():
     """Test check frame."""
     data_in_block = {
         1: 6720,
@@ -22,4 +24,5 @@ def test_check_sparsedatastore():
         for value in entry:
             assert datablock.validate(key, 1)
             assert datablock.getValues(key, 1) == [value]
+            assert await datablock.async_getValues(key, 1) == [value]
             key += 1

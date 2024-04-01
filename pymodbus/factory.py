@@ -12,103 +12,17 @@ kept as a result of a pre-computed lookup dictionary.
 # pylint: disable=missing-type-doc
 from typing import Callable, Dict
 
-from pymodbus.bit_read_message import (
-    ReadCoilsRequest,
-    ReadCoilsResponse,
-    ReadDiscreteInputsRequest,
-    ReadDiscreteInputsResponse,
-)
-from pymodbus.bit_write_message import (
-    WriteMultipleCoilsRequest,
-    WriteMultipleCoilsResponse,
-    WriteSingleCoilRequest,
-    WriteSingleCoilResponse,
-)
-from pymodbus.diag_message import (
-    ChangeAsciiInputDelimiterRequest,
-    ChangeAsciiInputDelimiterResponse,
-    ClearCountersRequest,
-    ClearCountersResponse,
-    ClearOverrunCountRequest,
-    ClearOverrunCountResponse,
-    DiagnosticStatusRequest,
-    DiagnosticStatusResponse,
-    ForceListenOnlyModeRequest,
-    ForceListenOnlyModeResponse,
-    GetClearModbusPlusRequest,
-    GetClearModbusPlusResponse,
-    RestartCommunicationsOptionRequest,
-    RestartCommunicationsOptionResponse,
-    ReturnBusCommunicationErrorCountRequest,
-    ReturnBusCommunicationErrorCountResponse,
-    ReturnBusExceptionErrorCountRequest,
-    ReturnBusExceptionErrorCountResponse,
-    ReturnBusMessageCountRequest,
-    ReturnBusMessageCountResponse,
-    ReturnDiagnosticRegisterRequest,
-    ReturnDiagnosticRegisterResponse,
-    ReturnIopOverrunCountRequest,
-    ReturnIopOverrunCountResponse,
-    ReturnQueryDataRequest,
-    ReturnQueryDataResponse,
-    ReturnSlaveBusCharacterOverrunCountRequest,
-    ReturnSlaveBusCharacterOverrunCountResponse,
-    ReturnSlaveBusyCountRequest,
-    ReturnSlaveBusyCountResponse,
-    ReturnSlaveMessageCountRequest,
-    ReturnSlaveMessageCountResponse,
-    ReturnSlaveNAKCountRequest,
-    ReturnSlaveNAKCountResponse,
-    ReturnSlaveNoResponseCountRequest,
-    ReturnSlaveNoResponseCountResponse,
-)
+from pymodbus import bit_read_message as bit_r_msg
+from pymodbus import bit_write_message as bit_w_msg
+from pymodbus import diag_message as diag_msg
+from pymodbus import file_message as file_msg
+from pymodbus import mei_message as mei_msg
+from pymodbus import other_message as o_msg
+from pymodbus import pdu
+from pymodbus import register_read_message as reg_r_msg
+from pymodbus import register_write_message as reg_w_msg
 from pymodbus.exceptions import MessageRegisterException, ModbusException
-from pymodbus.file_message import (
-    ReadFifoQueueRequest,
-    ReadFifoQueueResponse,
-    ReadFileRecordRequest,
-    ReadFileRecordResponse,
-    WriteFileRecordRequest,
-    WriteFileRecordResponse,
-)
 from pymodbus.logging import Log
-from pymodbus.mei_message import (
-    ReadDeviceInformationRequest,
-    ReadDeviceInformationResponse,
-)
-from pymodbus.other_message import (
-    GetCommEventCounterRequest,
-    GetCommEventCounterResponse,
-    GetCommEventLogRequest,
-    GetCommEventLogResponse,
-    ReadExceptionStatusRequest,
-    ReadExceptionStatusResponse,
-    ReportSlaveIdRequest,
-    ReportSlaveIdResponse,
-)
-from pymodbus.pdu import (
-    ExceptionResponse,
-    IllegalFunctionRequest,
-    ModbusRequest,
-    ModbusResponse,
-)
-from pymodbus.pdu import ModbusExceptions as ecode
-from pymodbus.register_read_message import (
-    ReadHoldingRegistersRequest,
-    ReadHoldingRegistersResponse,
-    ReadInputRegistersRequest,
-    ReadInputRegistersResponse,
-    ReadWriteMultipleRegistersRequest,
-    ReadWriteMultipleRegistersResponse,
-)
-from pymodbus.register_write_message import (
-    MaskWriteRegisterRequest,
-    MaskWriteRegisterResponse,
-    WriteMultipleRegistersRequest,
-    WriteMultipleRegistersResponse,
-    WriteSingleRegisterRequest,
-    WriteSingleRegisterResponse,
-)
 
 
 # --------------------------------------------------------------------------- #
@@ -121,45 +35,45 @@ class ServerDecoder:
     """
 
     __function_table = [
-        ReadHoldingRegistersRequest,
-        ReadDiscreteInputsRequest,
-        ReadInputRegistersRequest,
-        ReadCoilsRequest,
-        WriteMultipleCoilsRequest,
-        WriteMultipleRegistersRequest,
-        WriteSingleRegisterRequest,
-        WriteSingleCoilRequest,
-        ReadWriteMultipleRegistersRequest,
-        DiagnosticStatusRequest,
-        ReadExceptionStatusRequest,
-        GetCommEventCounterRequest,
-        GetCommEventLogRequest,
-        ReportSlaveIdRequest,
-        ReadFileRecordRequest,
-        WriteFileRecordRequest,
-        MaskWriteRegisterRequest,
-        ReadFifoQueueRequest,
-        ReadDeviceInformationRequest,
+        reg_r_msg.ReadHoldingRegistersRequest,
+        bit_r_msg.ReadDiscreteInputsRequest,
+        reg_r_msg.ReadInputRegistersRequest,
+        bit_r_msg.ReadCoilsRequest,
+        bit_w_msg.WriteMultipleCoilsRequest,
+        reg_w_msg.WriteMultipleRegistersRequest,
+        reg_w_msg.WriteSingleRegisterRequest,
+        bit_w_msg.WriteSingleCoilRequest,
+        reg_r_msg.ReadWriteMultipleRegistersRequest,
+        diag_msg.DiagnosticStatusRequest,
+        o_msg.ReadExceptionStatusRequest,
+        o_msg.GetCommEventCounterRequest,
+        o_msg.GetCommEventLogRequest,
+        o_msg.ReportSlaveIdRequest,
+        file_msg.ReadFileRecordRequest,
+        file_msg.WriteFileRecordRequest,
+        reg_w_msg.MaskWriteRegisterRequest,
+        file_msg.ReadFifoQueueRequest,
+        mei_msg.ReadDeviceInformationRequest,
     ]
     __sub_function_table = [
-        ReturnQueryDataRequest,
-        RestartCommunicationsOptionRequest,
-        ReturnDiagnosticRegisterRequest,
-        ChangeAsciiInputDelimiterRequest,
-        ForceListenOnlyModeRequest,
-        ClearCountersRequest,
-        ReturnBusMessageCountRequest,
-        ReturnBusCommunicationErrorCountRequest,
-        ReturnBusExceptionErrorCountRequest,
-        ReturnSlaveMessageCountRequest,
-        ReturnSlaveNoResponseCountRequest,
-        ReturnSlaveNAKCountRequest,
-        ReturnSlaveBusyCountRequest,
-        ReturnSlaveBusCharacterOverrunCountRequest,
-        ReturnIopOverrunCountRequest,
-        ClearOverrunCountRequest,
-        GetClearModbusPlusRequest,
-        ReadDeviceInformationRequest,
+        diag_msg.ReturnQueryDataRequest,
+        diag_msg.RestartCommunicationsOptionRequest,
+        diag_msg.ReturnDiagnosticRegisterRequest,
+        diag_msg.ChangeAsciiInputDelimiterRequest,
+        diag_msg.ForceListenOnlyModeRequest,
+        diag_msg.ClearCountersRequest,
+        diag_msg.ReturnBusMessageCountRequest,
+        diag_msg.ReturnBusCommunicationErrorCountRequest,
+        diag_msg.ReturnBusExceptionErrorCountRequest,
+        diag_msg.ReturnSlaveMessageCountRequest,
+        diag_msg.ReturnSlaveNoResponseCountRequest,
+        diag_msg.ReturnSlaveNAKCountRequest,
+        diag_msg.ReturnSlaveBusyCountRequest,
+        diag_msg.ReturnSlaveBusCharacterOverrunCountRequest,
+        diag_msg.ReturnIopOverrunCountRequest,
+        diag_msg.ClearOverrunCountRequest,
+        diag_msg.GetClearModbusPlusRequest,
+        mei_msg.ReadDeviceInformationRequest,
     ]
 
     @classmethod
@@ -193,7 +107,7 @@ class ServerDecoder:
         :param function_code: The function code specified in a frame.
         :returns: The class of the PDU that has a matching `function_code`.
         """
-        return self.lookup.get(function_code, ExceptionResponse)
+        return self.lookup.get(function_code, pdu.ExceptionResponse)
 
     def _helper(self, data: str):
         """Generate the correct request object from a valid request packet.
@@ -206,7 +120,7 @@ class ServerDecoder:
         function_code = int(data[0])
         if not (request := self.lookup.get(function_code, lambda: None)()):
             Log.debug("Factory Request[{}]", function_code)
-            request = IllegalFunctionRequest(function_code)
+            request = pdu.IllegalFunctionRequest(function_code)
         else:
             fc_string = "{}: {}".format(  # pylint: disable=consider-using-f-string
                 str(self.lookup[function_code])  # pylint: disable=use-maxsplit-arg
@@ -230,7 +144,7 @@ class ServerDecoder:
         :param function: Custom function class to register
         :raises MessageRegisterException:
         """
-        if not issubclass(function, ModbusRequest):
+        if not issubclass(function, pdu.ModbusRequest):
             raise MessageRegisterException(
                 f'"{function.__class__.__name__}" is Not a valid Modbus Message'
                 ". Class needs to be derived from "
@@ -255,45 +169,45 @@ class ClientDecoder:
     """
 
     function_table = [
-        ReadHoldingRegistersResponse,
-        ReadDiscreteInputsResponse,
-        ReadInputRegistersResponse,
-        ReadCoilsResponse,
-        WriteMultipleCoilsResponse,
-        WriteMultipleRegistersResponse,
-        WriteSingleRegisterResponse,
-        WriteSingleCoilResponse,
-        ReadWriteMultipleRegistersResponse,
-        DiagnosticStatusResponse,
-        ReadExceptionStatusResponse,
-        GetCommEventCounterResponse,
-        GetCommEventLogResponse,
-        ReportSlaveIdResponse,
-        ReadFileRecordResponse,
-        WriteFileRecordResponse,
-        MaskWriteRegisterResponse,
-        ReadFifoQueueResponse,
-        ReadDeviceInformationResponse,
+        reg_r_msg.ReadHoldingRegistersResponse,
+        bit_r_msg.ReadDiscreteInputsResponse,
+        reg_r_msg.ReadInputRegistersResponse,
+        bit_r_msg.ReadCoilsResponse,
+        bit_w_msg.WriteMultipleCoilsResponse,
+        reg_w_msg.WriteMultipleRegistersResponse,
+        reg_w_msg.WriteSingleRegisterResponse,
+        bit_w_msg.WriteSingleCoilResponse,
+        reg_r_msg.ReadWriteMultipleRegistersResponse,
+        diag_msg.DiagnosticStatusResponse,
+        o_msg.ReadExceptionStatusResponse,
+        o_msg.GetCommEventCounterResponse,
+        o_msg.GetCommEventLogResponse,
+        o_msg.ReportSlaveIdResponse,
+        file_msg.ReadFileRecordResponse,
+        file_msg.WriteFileRecordResponse,
+        reg_w_msg.MaskWriteRegisterResponse,
+        file_msg.ReadFifoQueueResponse,
+        mei_msg.ReadDeviceInformationResponse,
     ]
     __sub_function_table = [
-        ReturnQueryDataResponse,
-        RestartCommunicationsOptionResponse,
-        ReturnDiagnosticRegisterResponse,
-        ChangeAsciiInputDelimiterResponse,
-        ForceListenOnlyModeResponse,
-        ClearCountersResponse,
-        ReturnBusMessageCountResponse,
-        ReturnBusCommunicationErrorCountResponse,
-        ReturnBusExceptionErrorCountResponse,
-        ReturnSlaveMessageCountResponse,
-        ReturnSlaveNoResponseCountResponse,
-        ReturnSlaveNAKCountResponse,
-        ReturnSlaveBusyCountResponse,
-        ReturnSlaveBusCharacterOverrunCountResponse,
-        ReturnIopOverrunCountResponse,
-        ClearOverrunCountResponse,
-        GetClearModbusPlusResponse,
-        ReadDeviceInformationResponse,
+        diag_msg.ReturnQueryDataResponse,
+        diag_msg.RestartCommunicationsOptionResponse,
+        diag_msg.ReturnDiagnosticRegisterResponse,
+        diag_msg.ChangeAsciiInputDelimiterResponse,
+        diag_msg.ForceListenOnlyModeResponse,
+        diag_msg.ClearCountersResponse,
+        diag_msg.ReturnBusMessageCountResponse,
+        diag_msg.ReturnBusCommunicationErrorCountResponse,
+        diag_msg.ReturnBusExceptionErrorCountResponse,
+        diag_msg.ReturnSlaveMessageCountResponse,
+        diag_msg.ReturnSlaveNoResponseCountResponse,
+        diag_msg.ReturnSlaveNAKCountResponse,
+        diag_msg.ReturnSlaveBusyCountResponse,
+        diag_msg.ReturnSlaveBusCharacterOverrunCountResponse,
+        diag_msg.ReturnIopOverrunCountResponse,
+        diag_msg.ClearOverrunCountResponse,
+        diag_msg.GetClearModbusPlusResponse,
+        mei_msg.ReadDeviceInformationResponse,
     ]
 
     def __init__(self) -> None:
@@ -310,7 +224,7 @@ class ClientDecoder:
         :param function_code: The function code specified in a frame.
         :returns: The class of the PDU that has a matching `function_code`.
         """
-        return self.lookup.get(function_code, ExceptionResponse)
+        return self.lookup.get(function_code, pdu.ExceptionResponse)
 
     def decode(self, message):
         """Decode a response packet.
@@ -348,7 +262,7 @@ class ClientDecoder:
         response = self.lookup.get(function_code, lambda: None)()
         if function_code > 0x80:
             code = function_code & 0x7F  # strip error portion
-            response = ExceptionResponse(code, ecode.IllegalFunction)
+            response = pdu.ExceptionResponse(code, pdu.ModbusExceptions.IllegalFunction)
         if not response:
             raise ModbusException(f"Unknown response {function_code}")
         response.decode(data[1:])
@@ -362,7 +276,7 @@ class ClientDecoder:
 
     def register(self, function):
         """Register a function and sub function class with the decoder."""
-        if function and not issubclass(function, ModbusResponse):
+        if function and not issubclass(function, pdu.ModbusResponse):
             raise MessageRegisterException(
                 f'"{function.__class__.__name__}" is Not a valid Modbus Message'
                 ". Class needs to be derived from "

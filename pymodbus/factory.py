@@ -12,15 +12,15 @@ kept as a result of a pre-computed lookup dictionary.
 # pylint: disable=missing-type-doc
 from collections.abc import Callable
 
-import pymodbus.bit_write_message as bit_w_msg
-import pymodbus.diag_message as diag_msg
-import pymodbus.file_message as file_msg
-import pymodbus.mei_message as mei_msg
-import pymodbus.other_message as o_msg
-import pymodbus.register_read_message as reg_r_msg
-import pymodbus.register_write_message as reg_w_msg
 from pymodbus import bit_read_message as bit_r_msg
+from pymodbus import bit_write_message as bit_w_msg
+from pymodbus import diag_message as diag_msg
+from pymodbus import file_message as file_msg
+from pymodbus import mei_message as mei_msg
+from pymodbus import other_message as o_msg
 from pymodbus import pdu
+from pymodbus import register_read_message as reg_r_msg
+from pymodbus import register_write_message as reg_w_msg
 from pymodbus.exceptions import MessageRegisterException, ModbusException
 from pymodbus.logging import Log
 

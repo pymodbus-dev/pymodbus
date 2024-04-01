@@ -199,7 +199,7 @@ class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
         DiagnosticStatusRequest.__init__(self, **kwargs)
         self.message = data
 
-    def execute(self, *args):
+    async def execute(self, *args):
         """Raise if not implemented."""
         raise NotImplementedException("Diagnostic Message Has No Execute Method")
 
@@ -245,7 +245,7 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
             raise ModbusException(f"message({type(message)}) must be bytes")
         self.message = message
 
-    def execute(self, *_args):
+    async def execute(self, *_args):
         """Execute the loopback request (builds the response).
 
         :returns: The populated loopback response message
@@ -301,7 +301,7 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
         else:
             self.message = [ModbusStatus.OFF]
 
-    def execute(self, *_args):
+    async def execute(self, *_args):
         """Clear event log and restart.
 
         :returns: The initialized response message
@@ -343,7 +343,7 @@ class ReturnDiagnosticRegisterRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0002
 
-    def execute(self, *args):
+    async def execute(self, *args):
         """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
@@ -377,7 +377,7 @@ class ChangeAsciiInputDelimiterRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0003
 
-    def execute(self, *args):
+    async def execute(self, *args):
         """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
@@ -412,7 +412,7 @@ class ForceListenOnlyModeRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0004
 
-    def execute(self, *args):
+    async def execute(self, *args):
         """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
@@ -451,7 +451,7 @@ class ClearCountersRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x000A
 
-    def execute(self, *args):
+    async def execute(self, *args):
         """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
@@ -482,7 +482,7 @@ class ReturnBusMessageCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x000B
 
-    def execute(self, *args):
+    async def execute(self, *args):
         """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
@@ -515,7 +515,7 @@ class ReturnBusCommunicationErrorCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x000C
 
-    def execute(self, *args):
+    async def execute(self, *args):
         """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
@@ -548,7 +548,7 @@ class ReturnBusExceptionErrorCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x000D
 
-    def execute(self, *args):
+    async def execute(self, *args):
         """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
@@ -581,7 +581,7 @@ class ReturnSlaveMessageCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x000E
 
-    def execute(self, *args):
+    async def execute(self, *args):
         """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
@@ -614,7 +614,7 @@ class ReturnSlaveNoResponseCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x000F
 
-    def execute(self, *args):
+    async def execute(self, *args):
         """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
@@ -648,7 +648,7 @@ class ReturnSlaveNAKCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0010
 
-    def execute(self, *args):
+    async def execute(self, *args):
         """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
@@ -682,7 +682,7 @@ class ReturnSlaveBusyCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0011
 
-    def execute(self, *args):
+    async def execute(self, *args):
         """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
@@ -717,7 +717,7 @@ class ReturnSlaveBusCharacterOverrunCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0012
 
-    def execute(self, *args):
+    async def execute(self, *args):
         """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
@@ -750,7 +750,7 @@ class ReturnIopOverrunCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0013
 
-    def execute(self, *args):
+    async def execute(self, *args):
         """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
@@ -783,7 +783,7 @@ class ClearOverrunCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0014
 
-    def execute(self, *args):
+    async def execute(self, *args):
         """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
@@ -834,7 +834,7 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
             data = 0
         return 1 + 2 + 2 + 2 + data
 
-    def execute(self, *args):
+    async def execute(self, *args):
         """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message

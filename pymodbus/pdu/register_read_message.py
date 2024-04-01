@@ -139,7 +139,7 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
         """
         super().__init__(address, count, slave, **kwargs)
 
-    def execute(self, context):
+    async def execute(self, context):
         """Run a read holding request against a datastore.
 
         :param context: The datastore to request from
@@ -200,7 +200,7 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
         """
         super().__init__(address, count, slave, **kwargs)
 
-    def execute(self, context):
+    async def execute(self, context):
         """Run a read input request against a datastore.
 
         :param context: The datastore to request from
@@ -310,7 +310,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
             register = struct.unpack(">H", data[i : i + 2])[0]
             self.write_registers.append(register)
 
-    def execute(self, context):
+    async def execute(self, context):
         """Run a write single register request against a datastore.
 
         :param context: The datastore to request from

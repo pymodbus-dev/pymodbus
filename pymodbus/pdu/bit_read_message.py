@@ -155,7 +155,7 @@ class ReadCoilsRequest(ReadBitsRequestBase):
         """
         ReadBitsRequestBase.__init__(self, address, count, slave, **kwargs)
 
-    def execute(self, context):
+    async def execute(self, context):
         """Run a read coils request against a datastore.
 
         Before running the request, we make sure that the request is in
@@ -223,7 +223,7 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
         """
         ReadBitsRequestBase.__init__(self, address, count, slave, **kwargs)
 
-    def execute(self, context):
+    async def execute(self, context):
         """Run a read discrete input request against a datastore.
 
         Before running the request, we make sure that the request is in

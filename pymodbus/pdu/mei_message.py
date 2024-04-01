@@ -84,7 +84,7 @@ class ReadDeviceInformationRequest(ModbusRequest):
         params = struct.unpack(">BBB", data)
         self.sub_function_code, self.read_code, self.object_id = params
 
-    def execute(self, _context):
+    async def execute(self, _context):
         """Run a read exception status request against the store.
 
         :returns: The populated response

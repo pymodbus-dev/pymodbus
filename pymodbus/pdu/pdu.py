@@ -252,7 +252,7 @@ class IllegalFunctionRequest(ModbusRequest):
     def encode(self):
         """Decode so this failure will run correctly."""
 
-    def execute(self, _context):
+    async def execute(self, _context):
         """Build an illegal function request error response.
 
         :returns: The error response packet

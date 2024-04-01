@@ -81,45 +81,45 @@ class TestModbusBitMessage:
         request = WriteSingleCoilRequest(1, False)
         assert request.encode() == b"\x00\x01\x00\x00"
 
-    def test_write_single_coil_execute(self):
+    async def test_write_single_coil_execute(self):
         """Test write single coil."""
         context = MockContext(False, default=True)
         request = WriteSingleCoilRequest(2, True)
-        result = request.execute(context)
+        result = await request.execute(context)
         assert result.exception_code == ModbusExceptions.IllegalAddress
 
         context.valid = True
-        result = request.execute(context)
+        result = await request.execute(context)
         assert result.encode() == b"\x00\x02\xff\x00"
 
         context = MockContext(True, default=False)
         request = WriteSingleCoilRequest(2, False)
-        result = request.execute(context)
+        result = await request.execute(context)
         assert result.encode() == b"\x00\x02\x00\x00"
 
-    def test_write_multiple_coils_execute(self):
+    async def test_write_multiple_coils_execute(self):
         """Test write multiple coils."""
         context = MockContext(False)
         # too many values
         request = WriteMultipleCoilsRequest(2, FakeList(0x123456))
-        result = request.execute(context)
+        result = await request.execute(context)
         assert result.exception_code == ModbusExceptions.IllegalValue
 
         # bad byte count
         request = WriteMultipleCoilsRequest(2, [0x00] * 4)
         request.byte_count = 0x00
-        result = request.execute(context)
+        result = await request.execute(context)
         assert result.exception_code == ModbusExceptions.IllegalValue
 
         # does not validate
         context.valid = False
         request = WriteMultipleCoilsRequest(2, [0x00] * 4)
-        result = request.execute(context)
+        result = await request.execute(context)
         assert result.exception_code == ModbusExceptions.IllegalAddress
 
         # validated request
         context.valid = True
-        result = request.execute(context)
+        result = await request.execute(context)
         assert result.encode() == b"\x00\x02\x00\x04"
 
     def test_write_multiple_coils_response(self):

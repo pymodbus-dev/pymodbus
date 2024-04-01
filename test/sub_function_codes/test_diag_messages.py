@@ -137,12 +137,12 @@ class TestDataStore:
             encoded = handle.encode()
             assert enc == encoded
 
-    def test_diagnostic_simple_requests(self):
+    async def test_diagnostic_simple_requests(self):
         """Testing diagnostic request messages encoding."""
         request = DiagnosticStatusSimpleRequest(b"\x12\x34")
         request.sub_function_code = 0x1234
         with pytest.raises(NotImplementedException):
-            request.execute()
+            await request.execute()
         assert request.encode() == b"\x12\x34\x12\x34"
         DiagnosticStatusSimpleResponse()
 
@@ -158,10 +158,10 @@ class TestDataStore:
         for msg, enc, _ in self.requests:
             assert msg().encode() == enc
 
-    def test_diagnostic_execute(self):
+    async def test_diagnostic_execute(self):
         """Testing diagnostic message execution."""
         for message, encoded, executed in self.requests:
-            encoded = message().execute().encode()
+            encoded = (await message().execute()).encode()
             assert encoded == executed
 
     def test_return_query_data_request(self):
@@ -190,13 +190,13 @@ class TestDataStore:
         response = RestartCommunicationsOptionResponse(False)
         assert response.encode() == b"\x00\x01\x00\x00"
 
-    def test_get_clear_modbus_plus_request_execute(self):
+    async def test_get_clear_modbus_plus_request_execute(self):
         """Testing diagnostic message execution."""
         request = GetClearModbusPlusRequest(data=ModbusPlusOperation.CLEAR_STATISTICS)
-        response = request.execute()
+        response = await request.execute()
         assert response.message == ModbusPlusOperation.CLEAR_STATISTICS
 
         request = GetClearModbusPlusRequest(data=ModbusPlusOperation.GET_STATISTICS)
-        response = request.execute()
+        response = await request.execute()
         resp = [ModbusPlusOperation.GET_STATISTICS]
         assert response.message == resp + [0x00] * 55

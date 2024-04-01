@@ -57,7 +57,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
         """
         self.address, self.value = struct.unpack(">HH", data)
 
-    def execute(self, context):
+    async def execute(self, context):
         """Run a write single register request against a datastore.
 
         :param context: The datastore to request from
@@ -200,7 +200,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         for idx in range(5, (self.count * 2) + 5, 2):
             self.values.append(struct.unpack(">H", data[idx : idx + 2])[0])
 
-    def execute(self, context):
+    async def execute(self, context):
         """Run a write single register request against a datastore.
 
         :param context: The datastore to request from
@@ -321,7 +321,7 @@ class MaskWriteRegisterRequest(ModbusRequest):
         """
         self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data)
 
-    def execute(self, context):
+    async def execute(self, context):
         """Run a mask write register request against the store.
 
         :param context: The datastore to request from

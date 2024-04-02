@@ -169,7 +169,9 @@ class ReadCoilsRequest(ReadBitsRequestBase):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
-        values = context.getValues(self.function_code, self.address, self.count)
+        values = await context.async_getValues(
+            self.function_code, self.address, self.count
+        )
         if isinstance(values, ExceptionResponse):
             return values
         return ReadCoilsResponse(values)
@@ -237,7 +239,9 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
-        values = context.getValues(self.function_code, self.address, self.count)
+        values = await context.async_getValues(
+            self.function_code, self.address, self.count
+        )
         if isinstance(values, ExceptionResponse):
             return values
         return ReadDiscreteInputsResponse(values)

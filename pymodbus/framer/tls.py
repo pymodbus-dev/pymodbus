@@ -12,9 +12,9 @@ class FramerTLS(FramerBase):
     """
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
-        """Decode message."""
+        """Decode ADU."""
         return len(data), 0, 0, data
 
     def encode(self, pdu: bytes, _device_id: int, _tid: int) -> bytes:
-        """Decode message."""
+        """Encode ADU."""
         return pdu

@@ -6,8 +6,6 @@ According to the selected type of modbus frame a prefix/suffix is added/removed
 """
 from __future__ import annotations
 
-from abc import abstractmethod
-
 
 class FramerBase:
     """Intern base."""
@@ -15,24 +13,23 @@ class FramerBase:
     EMPTY = b''
 
     def __init__(self) -> None:
-        """Initialize a message instance."""
+        """Initialize a ADU instance."""
 
-
-    @abstractmethod
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
-        """Decode message.
+        """Decode ADU.
 
-        return:
+        returns:
             used_len (int) or 0 to read more
             transaction_id (int) or 0
             device_id (int) or 0
             modbus request/response (bytes)
         """
+        raise RuntimeError("NOT IMPLEMENTED!")
 
-    @abstractmethod
-    def encode(self, pdu: bytes, device_id: int, tid: int) -> bytes:
-        """Decode message.
+    def encode(self, pdu: bytes, dev_id: int, tid: int) -> bytes:
+        """Encode ADU.
 
-        return:
-            modbus message (bytes)
+        returns:
+            modbus ADU (bytes)
         """
+        raise RuntimeError("NOT IMPLEMENTED!")

@@ -35,7 +35,7 @@ class TestFramer:
             False,
             [1],
         )
-        assert msg.msg_handle
+        assert msg.handle
 
     @pytest.mark.parametrize(("data", "res_len", "cx", "rc"), [
         (b'12345', 5, 1, [(5, 0, 0, b'12345')]),  # full frame
@@ -50,7 +50,7 @@ class TestFramer:
     async def test_message_callback(self, msg, data, res_len, cx, rc):
         """Test message type."""
         msg.callback_request_response = mock.Mock()
-        msg.msg_handle.decode = mock.MagicMock(side_effect=iter(rc))
+        msg.handle.decode = mock.MagicMock(side_effect=iter(rc))
         assert msg.callback_data(data) == res_len
         assert msg.callback_request_response.call_count == cx
         if cx:
@@ -60,9 +60,9 @@ class TestFramer:
 
     async def test_message_build_send(self, msg):
         """Test message type."""
-        msg.msg_handle.encode = mock.MagicMock(return_value=(b'decode'))
+        msg.handle.encode = mock.MagicMock(return_value=(b'decode'))
         msg.build_send(b'decode', 1, 0)
-        msg.msg_handle.encode.assert_called_once()
+        msg.handle.encode.assert_called_once()
         msg.send.assert_called_once()
         msg.send.assert_called_with(b'decode', None)
 
@@ -84,7 +84,7 @@ class TestFramer:
     ])
     async def test_decode(self, msg,  data, res_id, res_tid, res_len, res_data):
         """Test decode method in all types."""
-        t_len, t_id, t_tid, t_data = msg.msg_handle.decode(data)
+        t_len, t_id, t_tid, t_data = msg.handle.decode(data)
         assert res_len == t_len
         assert res_id == t_id
         assert res_tid == t_tid
@@ -97,7 +97,7 @@ class TestFramer:
     ])
     async def test_encode(self, msg, data, dev_id, tid, res_data):
         """Test decode method in all types."""
-        t_data = msg.msg_handle.encode(data, dev_id, tid)
+        t_data = msg.handle.encode(data, dev_id, tid)
         assert res_data == t_data
 
     @pytest.mark.parametrize(
@@ -275,7 +275,7 @@ class TestFramer2:
             "single",
         ]
     )
-    async def test_decode(self, dummy_message, msg_type, data, dev_id, tid, expected, split):
+    async def test_decode2(self, dummy_message, msg_type, data, dev_id, tid, expected, split):
         """Test encode method."""
         if msg_type == FramerType.RTU:
             pytest.skip("Waiting on implementation!")

@@ -1,5 +1,4 @@
 """TLS framer."""
-# pylint: disable=missing-type-doc
 import struct
 
 from pymodbus.exceptions import (
@@ -56,17 +55,9 @@ class ModbusTlsFramer(ModbusFramer):
             self._header["pid"] = 0
 
             if (result := self.decoder.decode(data)) is None:
+                self.resetFrame()
                 raise ModbusIOException("Unable to decode request")
             self.populateResult(result)
-            self._buffer = b""
-            self._header = {}
+            self._buffer = self._buffer[used_len:]
+            self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
             callback(result)  # defer or push to a thread?
-
-    def buildPacket(self, message):
-        """Create a ready to send modbus packet.
-
-        :param message: The populated request/response to send
-        """
-        data = message.function_code.to_bytes(1,'big') + message.encode()
-        packet = self.message_handler.encode(data, message.slave_id, message.transaction_id)
-        return packet

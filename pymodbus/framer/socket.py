@@ -15,9 +15,11 @@ class FramerSocket(FramerBase):
     * length = uid + function code + data
     """
 
+    MIN_SIZE = 9
+
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
-        """Decode message."""
-        if (used_len := len(data)) < 9:
+        """Decode ADU."""
+        if (used_len := len(data)) < self.MIN_SIZE:
           Log.debug("Very short frame (NO MBAP): {} wait for more data", data, ":hex")
           return 0, 0, 0, self.EMPTY
         msg_tid = int.from_bytes(data[0:2], 'big')
@@ -29,7 +31,7 @@ class FramerSocket(FramerBase):
         return msg_len, msg_tid, msg_dev, data[7:msg_len]
 
     def encode(self, pdu: bytes, device_id: int, tid: int) -> bytes:
-        """Decode message."""
+        """Encode ADU."""
         packet = (
            tid.to_bytes(2, 'big') +
            b'\x00\x00' +

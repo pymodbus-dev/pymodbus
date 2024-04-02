@@ -13,7 +13,6 @@ from abc import abstractmethod
 from enum import Enum
 
 from pymodbus.framer.ascii import FramerAscii
-from pymodbus.framer.base import FramerBase
 from pymodbus.framer.raw import FramerRaw
 from pymodbus.framer.rtu import FramerRTU
 from pymodbus.framer.socket import FramerSocket
@@ -67,13 +66,13 @@ class Framer(ModbusProtocol):
         super().__init__(params, is_server)
         self.device_ids = device_ids
         self.broadcast: bool = (0 in device_ids)
-        self.msg_handle: FramerBase = {
-            FramerType.RAW: FramerRaw(),
-            FramerType.ASCII: FramerAscii(),
-            FramerType.RTU: FramerRTU(),
-            FramerType.SOCKET: FramerSocket(),
-            FramerType.TLS: FramerTLS(),
-        }[framer_type]
+        self.handle = {
+            FramerType.RAW: FramerRaw,
+            FramerType.ASCII: FramerAscii,
+            FramerType.RTU: FramerRTU,
+            FramerType.SOCKET: FramerSocket,
+            FramerType.TLS: FramerTLS,
+        }[framer_type]()
 
 
     def validate_device_id(self, dev_id: int) -> bool:
@@ -86,7 +85,7 @@ class Framer(ModbusProtocol):
         tot_len = len(data)
         start = 0
         while True:
-            used_len, tid, device_id, msg = self.msg_handle.decode(data[start:])
+            used_len, tid, device_id, msg = self.handle.decode(data[start:])
             if msg:
                 self.callback_request_response(msg, device_id, tid)
             if not used_len:
@@ -110,5 +109,5 @@ class Framer(ModbusProtocol):
         :param tid: transaction id (0 if not used).
         :param addr: optional addr, only used for UDP server.
         """
-        send_data = self.msg_handle.encode(data, device_id, tid)
+        send_data = self.handle.encode(data, device_id, tid)
         self.send(send_data, addr)

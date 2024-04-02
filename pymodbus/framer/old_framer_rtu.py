@@ -58,8 +58,6 @@ class ModbusRtuFramer(ModbusFramer):
         """
         super().__init__(decoder, client)
         self._hsize = 0x01
-        self._end = b"\x0d\x0a"
-        self._min_frame_size = 4
         self.function_codes = decoder.lookup.keys() if decoder else {}
         self.message_handler = FramerRTU()
 
@@ -170,12 +168,11 @@ class ModbusRtuFramer(ModbusFramer):
 
         :param message: The populated request/response to send
         """
-        data = message.function_code.to_bytes(1, 'big') + message.encode()
-        packet = self.message_handler.encode(data, message.slave_id, message.transaction_id)
+        packet = super().buildPacket(message)
 
         # Ensure that transaction is actually the slave id for serial comms
         if message.slave_id:
-            message.transaction_id = message.slave_id
+           message.transaction_id = message.slave_id
         return packet
 
     def sendPacket(self, message):
@@ -227,13 +224,3 @@ class ModbusRtuFramer(ModbusFramer):
         size = self.client.send(message)
         self.client.last_frame_end = round(time.time(), 6)
         return size
-
-    def recvPacket(self, size):
-        """Receive packet from the bus with specified len.
-
-        :param size: Number of bytes to read
-        :return:
-        """
-        result = self.client.recv(size)
-        self.client.last_frame_end = round(time.time(), 6)
-        return result

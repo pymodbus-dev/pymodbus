@@ -49,6 +49,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
         self.receive_queue: asyncio.Queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
         self.framer: ModbusFramer
+        self.loop = asyncio.get_running_loop()
 
     def _log_exception(self):
         """Show log exception."""
@@ -173,6 +174,9 @@ class ModbusServerRequestHandler(ModbusProtocol):
         if self.server.request_tracer:
             self.server.request_tracer(request, *addr)
 
+        asyncio.run_coroutine_threadsafe(self._async_execute(request, *addr), self.loop)
+
+    async def _async_execute(self, request, *addr):
         broadcast = False
         try:
             if self.server.broadcast_enable and not request.slave_id:
@@ -181,9 +185,17 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 # note response will be ignored
                 for slave_id in self.server.context.slaves():
                     response = request.execute(self.server.context[slave_id])
+                    # Temporary check while we move execute to async method
+                    if asyncio.iscoroutine(response):
+                        response = await response
             else:
                 context = self.server.context[request.slave_id]
                 response = request.execute(context)
+
+                # Temporary check while we move execute to async method
+                if asyncio.iscoroutine(response):
+                    response = await response
+
         except NoSuchSlaveException:
             Log.error("requested slave does not exist: {}", request.slave_id)
             if self.server.ignore_missing_slaves:

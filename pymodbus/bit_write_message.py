@@ -90,12 +90,13 @@ class WriteSingleCoilRequest(ModbusRequest):
         if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.IllegalAddress)
 
-        result = context.setValues(self.function_code, self.address, [self.value])
-        if isinstance(result, ExceptionResponse):
-            return result
+        context.setValues(self.function_code, self.address, [self.value])
+        # result = context.setValues(self.function_code, self.address, [self.value])
+        # if isinstance(result, ExceptionResponse):
+        #    return result
         values = context.getValues(self.function_code, self.address, 1)
-        if isinstance(values, ExceptionResponse):
-            return values
+        # if isinstance(values, ExceptionResponse):
+        #    return values
         return WriteSingleCoilResponse(self.address, values[0])
 
     def get_response_pdu_size(self):

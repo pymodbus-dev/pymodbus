@@ -109,7 +109,7 @@ class BaseModbusDataBlock(ABC, Generic[V]):
         :raises TypeError:
         """
 
-    async def async_setValues(self, address: int, values):
+    async def async_setValues(self, address: int, values: list[int|bool]) -> None:
         """Return the requested values from the datastore.
 
         :param address: The starting address

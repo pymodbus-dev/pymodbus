@@ -8,6 +8,8 @@ from collections.abc import Callable
 from datetime import datetime
 from typing import Any
 
+from pymodbus.datastore.context import ModbusBaseSlaveContext
+
 
 WORD_SIZE = 16
 
@@ -371,7 +373,7 @@ class Setup:
             raise RuntimeError(f"INVALID key in setup: {self.config}")
 
 
-class ModbusSimulatorContext:
+class ModbusSimulatorContext(ModbusBaseSlaveContext):
     """Modbus simulator.
 
     :param config: A dict with structure as shown below.

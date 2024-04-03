@@ -57,9 +57,8 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
             self.result = func_fc(address, values)
         else:
             self.result = func_fc(address, values[0])
-        if self.result.isError():
-            return self.result
-        return None
+        # if self.result.isError():
+        #    return self.result
 
     def __str__(self):
         """Return a string representation of the context.

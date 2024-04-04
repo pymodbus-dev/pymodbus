@@ -189,7 +189,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
                     if asyncio.iscoroutine(response):
                         response = await response
             else:
-                context = self.server.context[request.slave_id]
+                context = self.server.context[request.slave_id][request.slave_id]
                 response = request.execute(context)
 
                 # Temporary check while we move execute to async method

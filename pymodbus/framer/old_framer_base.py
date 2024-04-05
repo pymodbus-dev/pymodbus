@@ -138,6 +138,8 @@ class ModbusFramer:
         """
         Log.debug("Processing: {}", data, ":hex")
         self._buffer += data
+        if self._buffer == b'':
+            return
         if not isinstance(slave, (list, tuple)):
             slave = [slave]
         single = kwargs.pop("single", False)

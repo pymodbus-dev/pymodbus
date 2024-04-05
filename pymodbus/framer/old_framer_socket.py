@@ -72,6 +72,8 @@ class ModbusSocketFramer(ModbusFramer):
         function to process and send.
         """
         while True:
+            if self._buffer == b'':
+                return
             used_len, use_tid, dev_id, data = self.message_handler.decode(self._buffer)
             if not data:
                 return

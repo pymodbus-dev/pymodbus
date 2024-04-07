@@ -94,6 +94,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float | None = 0
         self.silent_interval: float = 0
+        self._lock = asyncio.Lock()
 
     # ----------------------------------------------------------------------- #
     # Client external interface
@@ -165,6 +166,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         while count <= self.retries:
             req = self.build_response(request.transaction_id)
             if not count or not self.no_resend_on_retry:
+                self.ctx.framer.resetFrame()
                 self.ctx.send(packet)
             if self.broadcast_enable and not request.slave_id:
                 resp = None

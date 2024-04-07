@@ -66,6 +66,7 @@ class ModbusClientProtocol(ModbusProtocol):
         """Call when connection is succcesfull."""
         if self.on_connect_callback:
             self.loop.call_soon(self.on_connect_callback, True)
+        self.framer.resetFrame()
 
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""

@@ -131,8 +131,8 @@ class ModbusFramer:
         :param kwargs:
         :raises ModbusIOException:
         """
-        Log.debug("Processing: {}", data, ":hex")
         self._buffer += data
+        Log.debug("Processing: {}", self._buffer, ":hex")
         if not isinstance(slave, (list, tuple)):
             slave = [slave]
         single = kwargs.pop("single", False)

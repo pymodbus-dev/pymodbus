@@ -60,7 +60,7 @@ class ModbusSocketFramer(ModbusFramer):
             }
         return {}
 
-    def frameProcessIncomingPacket(self, single, callback, slave, tid=None, **kwargs):
+    def frameProcessIncomingPacket(self, single, callback, slave, tid=None, **kwargs):  # noqa: C901
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -74,7 +74,11 @@ class ModbusSocketFramer(ModbusFramer):
         """
         def check_frame(self):
             """Check and decode the next frame."""
-            if not len(self._buffer) > self._hsize:
+            if not self._buffer:
+                Log.debug("Frame check, no more data!")
+                return False
+            if not len(self._buffer) >= self._hsize +1:
+                Log.debug("Frame check failed, short frame {} >= {} !!", len(self._buffer), self._hsize+2)
                 return False
             (
                 self._header["tid"],
@@ -88,7 +92,7 @@ class ModbusSocketFramer(ModbusFramer):
                 self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
             elif len(self._buffer) - self._hsize + 1 >= self._header["len"]:
                 return True
-            Log.debug("Frame check failed, missing part of message!!")
+            Log.debug("Frame check failed, missing part of message len {}, MBAP len {} !!", len(self._buffer), self._header["len"])
             return False
 
         while True:

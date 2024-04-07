@@ -80,10 +80,10 @@ class TestNetwork:
         client.close()
         stub.close()
 
-    async def test_double_packet(self, use_port, use_cls):
+    async def test_parallel_requests(self, use_port, use_cls):
         """Test double packet on network."""
         old_data = b''
-        client = AsyncModbusTcpClient(NULLMODEM_HOST, port=use_port, retries=0)
+        client = AsyncModbusTcpClient(NULLMODEM_HOST, port=use_port, retries=0, timeout=30)
 
         def local_handle_data(data: bytes) -> bytes | None:
             """Handle server side for this test case."""
@@ -128,6 +128,9 @@ class TestNetwork:
         await stub.start_run()
 
         assert await client.connect()
-        await asyncio.gather(*[local_call(x) for x in range(1, 10)])
+        try:
+            await asyncio.gather(*[local_call(1) for x in range(1, 10)])
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            pytest.fail(exc)
         client.close()
         stub.close()

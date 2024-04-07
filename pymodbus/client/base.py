@@ -99,6 +99,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float | None = 0
         self.silent_interval: float = 0
+        self._lock = asyncio.Lock()
 
     # ----------------------------------------------------------------------- #
     # Client external interface
@@ -162,19 +163,21 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
 
         count = 0
         while count <= self.retries:
-            req = self.build_response(request.transaction_id)
-            if not count or not self.no_resend_on_retry:
-                self.send(packet)
-            if self.broadcast_enable and not request.slave_id:
-                resp = None
-                break
-            try:
-                resp = await asyncio.wait_for(
-                    req, timeout=self.comm_params.timeout_connect
-                )
-                break
-            except asyncio.exceptions.TimeoutError:
-                count += 1
+            async with self._lock:
+                req = self.build_response(request.transaction_id)
+                if not count or not self.no_resend_on_retry:
+                    self.framer.resetFrame()
+                    self.send(packet)
+                if self.broadcast_enable and not request.slave_id:
+                    resp = None
+                    break
+                try:
+                    resp = await asyncio.wait_for(
+                        req, timeout=self.comm_params.timeout_connect
+                    )
+                    break
+                except asyncio.exceptions.TimeoutError:
+                    count += 1
         if count > self.retries:
             self.close(reconnect=True)
             raise ModbusIOException(
@@ -190,6 +193,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]], ModbusProto
         """Call when connection is succcesfull."""
         if self.on_reconnect_callback:
             self.on_reconnect_callback()
+        self.framer.resetFrame()
 
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""

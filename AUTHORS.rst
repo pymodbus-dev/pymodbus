@@ -29,6 +29,7 @@ Thanks to
 - dhoomakethu
 - doelki
 - DominicDataP
+- Dominique Martinet
 - Dries
 - duc996
 - Farzad Panahi
@@ -38,6 +39,7 @@ Thanks to
 - Hangyu Fan
 - Hayden Roche
 - Iktek
+- Ilkka Ollakka
 - Jakob Ruhe
 - Jakob Schlyter
 - James Braza
@@ -45,6 +47,7 @@ Thanks to
 - jan iversen
 - Jerome Velociter
 - Joe Burmeister
+- John Miko
 - Jonathan Reichelt Gjertsen
 - julian
 - Justin Standring

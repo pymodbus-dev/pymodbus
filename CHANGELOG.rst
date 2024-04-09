@@ -22,7 +22,6 @@ Version 3.6.7
 * update package_test_tool (add 4 test scenarios) (#2107)
 * Bump dependencies. (#2108)
 * Cancel send if no connection. (#2103)
->>>>>>> new367
 
 
 Version 3.6.6

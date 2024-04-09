@@ -19,7 +19,6 @@ Prepare/make release on dev.
         update AUTHORS.rst and CHANGELOG.rst
         cd doc; ./build_html
    * rm -rf build/* dist/*
-   * git checkout build
    * python3 -m build
    * twine check dist/*
    * Commit, push and merge.

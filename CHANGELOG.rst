@@ -7,6 +7,23 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.6.7
+-------------
+Add lock to async requests, correct logging and length calc. (FIX, not on dev)
+test_simulator: use unused_tcp_port fixture (#2141)
+streamline imports in Factory.py (#2140)
+Secure testing is done with pymodbus in PR. (#2136)
+Fix link to github in README (#2134)
+Wildcard exception catch from pyserial. (#2125)
+Problem with stale CI. (#2117)
+Add connection exception to list of exceptions catpured in retries (#2113)
+Move on_reconnect to client level (#2111)
+Bump github stale. (#2110)
+update package_test_tool (add 4 test scenarios) (#2107)
+Bump dependencies. (#2108)
+Cancel send if no connection. (#2103)
+
+
 Version 3.6.6
 -------------
 * Solve transport close() as not inherited method. (#2098)

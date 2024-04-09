@@ -63,10 +63,11 @@ The entry “comm” allows the following values:
 
 The entry “framer” allows the following values:
 
-- “ascii” to use :class:`pymodbus.framer.ModbusAsciiFramer`,
-- “rtu” to use :class:`pymodbus.framer.ModbusRtuFramer`,
-- “tls” to use :class:`pymodbus.framer.ModbusTlsFramer`,
-- “socket” to use :class:`pymodbus.framer.ModbusSocketFramer`.
+- “ascii” to use :class:`pymodbus.framer.ascii_framer.ModbusAsciiFramer`,
+- "binary to use :class:`pymodbus.framer.ascii_framer.ModbusBinaryFramer`,
+- “rtu” to use :class:`pymodbus.framer.ascii_framer.ModbusRtuFramer`,
+- “tls” to use :class:`pymodbus.framer.ascii_framer.ModbusTlsFramer`,
+- “socket” to use :class:`pymodbus.framer.ascii_framer.ModbusSocketFramer`.
 
 .. warning::
 

@@ -11,6 +11,7 @@ API changes 3.7.0
 - on_connect_callback(true/false) added to async clients.
 - binary framer no longer supported
 - Framer.<type> renamed to FramerType.<type>
+- PDU classes moved to pymodbus/pdu
 
 
 API changes 3.6.0

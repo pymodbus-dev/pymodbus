@@ -4,14 +4,14 @@ import argparse
 import codecs as c
 import logging
 
-import pymodbus.bit_read_message as modbus_bit
-import pymodbus.bit_write_message as modbus_bit_write
-import pymodbus.diag_message as modbus_diag
-import pymodbus.file_message as modbus_file
-import pymodbus.mei_message as modbus_mei
-import pymodbus.other_message as modbus_other
-import pymodbus.register_read_message as modbus_register
-import pymodbus.register_write_message as modbus_register_write
+import pymodbus.pdu.bit_read_message as modbus_bit
+import pymodbus.pdu.bit_write_message as modbus_bit_write
+import pymodbus.pdu.diag_message as modbus_diag
+import pymodbus.pdu.file_message as modbus_file
+import pymodbus.pdu.mei_message as modbus_mei
+import pymodbus.pdu.other_message as modbus_other
+import pymodbus.pdu.register_read_message as modbus_register
+import pymodbus.pdu.register_write_message as modbus_register_write
 from pymodbus.transaction import (
     ModbusAsciiFramer,
     ModbusRtuFramer,

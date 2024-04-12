@@ -6,14 +6,14 @@ from unittest import mock
 
 import pytest
 
-import pymodbus.bit_read_message as pdu_bit_read
-import pymodbus.bit_write_message as pdu_bit_write
 import pymodbus.client as lib_client
-import pymodbus.diag_message as pdu_diag
-import pymodbus.file_message as pdu_file_msg
-import pymodbus.other_message as pdu_other_msg
-import pymodbus.register_read_message as pdu_reg_read
-import pymodbus.register_write_message as pdu_req_write
+import pymodbus.pdu.bit_read_message as pdu_bit_read
+import pymodbus.pdu.bit_write_message as pdu_bit_write
+import pymodbus.pdu.diag_message as pdu_diag
+import pymodbus.pdu.file_message as pdu_file_msg
+import pymodbus.pdu.other_message as pdu_other_msg
+import pymodbus.pdu.register_read_message as pdu_reg_read
+import pymodbus.pdu.register_write_message as pdu_req_write
 from examples.helper import get_certificate
 from pymodbus import FramerType
 from pymodbus.client.base import ModbusBaseClient

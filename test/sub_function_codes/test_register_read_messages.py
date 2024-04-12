@@ -2,7 +2,7 @@
 from test.conftest import FakeList, MockContext
 
 from pymodbus.pdu import ModbusExceptions
-from pymodbus.register_read_message import (
+from pymodbus.pdu.register_read_message import (
     ReadHoldingRegistersRequest,
     ReadHoldingRegistersResponse,
     ReadInputRegistersRequest,

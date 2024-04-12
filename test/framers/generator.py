@@ -9,7 +9,7 @@ from pymodbus.framer import (
     ModbusTlsFramer,
 )
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.register_read_message import (
+from pymodbus.pdu.register_read_message import (
     ReadHoldingRegistersRequest,
     ReadHoldingRegistersResponse,
 )

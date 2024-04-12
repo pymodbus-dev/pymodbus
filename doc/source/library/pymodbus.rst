@@ -6,23 +6,7 @@ Extra functions
     :undoc-members:
     :show-inheritance:
 
-
-.. automodule:: pymodbus.bit_read_message
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-.. automodule:: pymodbus.bit_write_message
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 .. automodule:: pymodbus.device
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-.. automodule:: pymodbus.diag_message
     :members:
     :undoc-members:
     :show-inheritance:
@@ -42,38 +26,7 @@ Extra functions
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: pymodbus.file_message
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-.. automodule:: pymodbus.mei_message
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-.. automodule:: pymodbus.other_message
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 .. automodule:: pymodbus.payload
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-.. automodule:: pymodbus.pdu
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :noindex:
-
-.. automodule:: pymodbus.register_read_message
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-.. automodule:: pymodbus.register_write_message
     :members:
     :undoc-members:
     :show-inheritance:
@@ -84,6 +37,56 @@ Extra functions
     :show-inheritance:
 
 .. automodule:: pymodbus.utilities
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+PDU classes
+===========
+
+.. automodule:: pymodbus.pdu.bit_read_message
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: pymodbus.pdu.bit_write_message
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: pymodbus.pdu.diag_message
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: pymodbus.pdu.file_message
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: pymodbus.pdu.mei_message
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: pymodbus.pdu.other_message
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: pymodbus.pdu.pdu
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :noindex:
+
+.. automodule:: pymodbus.pdu.register_read_message
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: pymodbus.pdu.register_write_message
     :members:
     :undoc-members:
     :show-inheritance:

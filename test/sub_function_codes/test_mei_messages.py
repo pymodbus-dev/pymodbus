@@ -7,7 +7,7 @@ import pytest
 
 from pymodbus.constants import DeviceInformation
 from pymodbus.device import ModbusControlBlock
-from pymodbus.mei_message import (
+from pymodbus.pdu.mei_message import (
     ReadDeviceInformationRequest,
     ReadDeviceInformationResponse,
 )

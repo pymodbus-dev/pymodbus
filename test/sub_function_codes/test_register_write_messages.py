@@ -3,7 +3,7 @@ from test.conftest import MockContext, MockLastValuesContext
 
 from pymodbus.payload import BinaryPayloadBuilder, Endian
 from pymodbus.pdu import ModbusExceptions
-from pymodbus.register_write_message import (
+from pymodbus.pdu.register_write_message import (
     MaskWriteRegisterRequest,
     MaskWriteRegisterResponse,
     WriteMultipleRegistersRequest,

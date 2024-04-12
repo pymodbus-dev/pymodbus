@@ -4,7 +4,6 @@ from unittest import mock
 import pytest
 
 from pymodbus import FramerType
-from pymodbus.bit_read_message import ReadCoilsRequest
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder
@@ -14,6 +13,7 @@ from pymodbus.framer import (
     ModbusSocketFramer,
     ModbusTlsFramer,
 )
+from pymodbus.pdu.bit_read_message import ReadCoilsRequest
 from pymodbus.transport import CommType
 from pymodbus.utilities import ModbusTransactionState
 

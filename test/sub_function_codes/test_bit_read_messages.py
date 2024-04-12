@@ -9,13 +9,13 @@ bit based request/response messages:
 import struct
 from test.conftest import MockContext
 
-from pymodbus.bit_read_message import (
+from pymodbus.pdu import ModbusExceptions
+from pymodbus.pdu.bit_read_message import (
     ReadBitsRequestBase,
     ReadBitsResponseBase,
     ReadCoilsRequest,
     ReadDiscreteInputsRequest,
 )
-from pymodbus.pdu import ModbusExceptions
 
 
 res = [True] * 21

@@ -1,7 +1,7 @@
 """Test other messages."""
 from unittest import mock
 
-import pymodbus.other_message as pymodbus_message
+import pymodbus.pdu.other_message as pymodbus_message
 
 
 class TestOtherMessage:
@@ -86,7 +86,7 @@ class TestOtherMessage:
 
     def test_report_slave_id_request(self):
         """Test report slave id request."""
-        with mock.patch("pymodbus.other_message.DeviceInformationFactory") as dif:
+        with mock.patch("pymodbus.pdu.other_message.DeviceInformationFactory") as dif:
             # First test regular identity strings
             identity = {
                 0x00: "VN",  # VendorName
@@ -126,7 +126,7 @@ class TestOtherMessage:
 
     def test_report_slave_id(self):
         """Test report slave id."""
-        with mock.patch("pymodbus.other_message.DeviceInformationFactory") as dif:
+        with mock.patch("pymodbus.pdu.other_message.DeviceInformationFactory") as dif:
             dif.get.return_value = {}
             request = pymodbus_message.ReportSlaveIdRequest()
             request.decode(b"\x12")

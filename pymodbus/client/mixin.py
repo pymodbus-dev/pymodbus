@@ -5,14 +5,14 @@ import struct
 from enum import Enum
 from typing import Any, Generic, TypeVar
 
-import pymodbus.bit_read_message as pdu_bit_read
-import pymodbus.bit_write_message as pdu_bit_write
-import pymodbus.diag_message as pdu_diag
-import pymodbus.file_message as pdu_file_msg
-import pymodbus.mei_message as pdu_mei
-import pymodbus.other_message as pdu_other_msg
-import pymodbus.register_read_message as pdu_reg_read
-import pymodbus.register_write_message as pdu_req_write
+import pymodbus.pdu.bit_read_message as pdu_bit_read
+import pymodbus.pdu.bit_write_message as pdu_bit_write
+import pymodbus.pdu.diag_message as pdu_diag
+import pymodbus.pdu.file_message as pdu_file_msg
+import pymodbus.pdu.mei_message as pdu_mei
+import pymodbus.pdu.other_message as pdu_other_msg
+import pymodbus.pdu.register_read_message as pdu_reg_read
+import pymodbus.pdu.register_write_message as pdu_req_write
 from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ModbusRequest
 

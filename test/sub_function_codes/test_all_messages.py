@@ -1,17 +1,17 @@
 """Test all messages."""
-from pymodbus.bit_read_message import (
+from pymodbus.pdu.bit_read_message import (
     ReadCoilsRequest,
     ReadCoilsResponse,
     ReadDiscreteInputsRequest,
     ReadDiscreteInputsResponse,
 )
-from pymodbus.bit_write_message import (
+from pymodbus.pdu.bit_write_message import (
     WriteMultipleCoilsRequest,
     WriteMultipleCoilsResponse,
     WriteSingleCoilRequest,
     WriteSingleCoilResponse,
 )
-from pymodbus.register_read_message import (
+from pymodbus.pdu.register_read_message import (
     ReadHoldingRegistersRequest,
     ReadHoldingRegistersResponse,
     ReadInputRegistersRequest,
@@ -19,7 +19,7 @@ from pymodbus.register_read_message import (
     ReadWriteMultipleRegistersRequest,
     ReadWriteMultipleRegistersResponse,
 )
-from pymodbus.register_write_message import (
+from pymodbus.pdu.register_write_message import (
     WriteMultipleRegistersRequest,
     WriteMultipleRegistersResponse,
     WriteSingleRegisterRequest,

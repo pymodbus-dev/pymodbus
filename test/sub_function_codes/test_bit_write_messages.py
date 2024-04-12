@@ -8,13 +8,13 @@ bit based request/response messages:
 """
 from test.conftest import FakeList, MockContext
 
-from pymodbus.bit_write_message import (
+from pymodbus.pdu import ModbusExceptions
+from pymodbus.pdu.bit_write_message import (
     WriteMultipleCoilsRequest,
     WriteMultipleCoilsResponse,
     WriteSingleCoilRequest,
     WriteSingleCoilResponse,
 )
-from pymodbus.pdu import ModbusExceptions
 
 
 # ---------------------------------------------------------------------------#

@@ -528,7 +528,12 @@ class TestSimulator:
         exc_simulator.registers[30].value = regs[0]
         exc_simulator.registers[31].value = regs[1]
         for expect_value in expected:
-            regs = exc_simulator.getValues(FX_READ_REG, 30, reg_count)
+            if celltype != CellType.BITS:
+                regs = exc_simulator.getValues(FX_READ_REG, 30, reg_count)
+            else:
+                reg_bits = exc_simulator.getValues(FX_READ_BIT, 30 * 16, 16)
+                reg_value = sum([ bit * 2 ** i for i, bit in enumerate(reg_bits)])
+                regs = [reg_value]
             if reg_count == 1:
                 assert expect_value == regs[0], f"type({celltype})"
             else:
@@ -563,7 +568,12 @@ class TestSimulator:
         is_int = celltype != CellType.FLOAT32
         reg_count = 1 if celltype in (CellType.BITS, CellType.UINT16) else 2
         for _i in range(100):
-            regs = exc_simulator.getValues(FX_READ_REG, 30, reg_count)
+            if celltype != CellType.BITS:
+                regs = exc_simulator.getValues(FX_READ_REG, 30, reg_count)
+            else:
+                reg_bits = exc_simulator.getValues(FX_READ_BIT, 30 * 16, 16)
+                reg_value = sum([ bit * 2 ** i for i, bit in enumerate(reg_bits)])
+                regs = [reg_value]
             if reg_count == 1:
                 new_value = regs[0]
             else:

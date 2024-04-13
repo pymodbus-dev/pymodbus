@@ -435,7 +435,7 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
             "write": [   --> allow write, efault is ReadOnly
                 [5, 5]  --> start, end bytes, repeated as needed
             ],
-            "bits": [  --> Define bits (1 register == 1 byte)
+            "bits": [  --> Define bits (1 register == 2 bytes)
                 [30, 31],  --> start, end registers, repeated as needed
                 {"addr": [32, 34], "value": 0xF1},  --> with value
                 {"addr": [35, 36], "action": "increment"},  --> with action
@@ -602,8 +602,9 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
             for i in range(real_address, real_address + reg_count):
                 reg = self.registers[i]
                 if reg.action:
+                    kwargs = reg.action_kwargs or {}
                     self.action_methods[reg.action](
-                        self.registers, i, reg, reg.action_kwargs
+                        self.registers, i, reg, **kwargs
                     )
                 self.registers[i].count_read += 1
                 while count and bit_index < 16:

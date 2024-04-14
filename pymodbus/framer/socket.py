@@ -28,6 +28,8 @@ class FramerSocket(FramerBase):
         if used_len < msg_len:
           Log.debug("Short frame: {} wait for more data", data, ":hex")
           return 0, 0, 0, self.EMPTY
+        if msg_len == 2 and used_len >= self.MIN_SIZE:
+            msg_len = 3
         return msg_len, msg_tid, msg_dev, data[7:msg_len]
 
     def encode(self, pdu: bytes, device_id: int, tid: int) -> bytes:

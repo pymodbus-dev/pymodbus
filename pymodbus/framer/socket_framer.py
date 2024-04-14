@@ -86,6 +86,8 @@ class ModbusSocketFramer(ModbusFramer):
                 self._header["len"],
                 self._header["uid"],
             ) = struct.unpack(">HHHB", self._buffer[0 : self._hsize])
+            if self._header["len"] == 2 and len(self._buffer) >= self._hsize + 2:
+                self._header["len"] = 3
             if self._header["len"] < 2:
                 length = self._hsize + self._header["len"] -1
                 self._buffer = self._buffer[length:]

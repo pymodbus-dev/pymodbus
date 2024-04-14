@@ -448,6 +448,21 @@ class TestFramers:
         framer.processIncomingPacket(message, _handle_response, slave=0)
         assert response_ok, "Response is valid, but not accepted"
 
+    def test_recv_socket_exception_faulty(self):
+        """Test receive packet."""
+        response_ok = False
+
+        def _handle_response(_reply):
+            """Handle response."""
+            nonlocal response_ok
+            response_ok = True
+
+        message = bytearray(b"\x00\x02\x00\x00\x00\x02\x01\x84\x02")
+        response_ok = False
+        framer = ModbusSocketFramer(ClientDecoder())
+        framer.processIncomingPacket(message, _handle_response, slave=0)
+        assert response_ok, "Response is valid, but not accepted"
+
     # ---- 100% coverage
     @pytest.mark.parametrize(
         ("framer", "message"),

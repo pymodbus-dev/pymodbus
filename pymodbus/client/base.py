@@ -167,14 +167,14 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
             async with self._lock:
                 req = self.build_response(request.transaction_id)
                 if not count or not self.no_resend_on_retry:
-                    self.framer.resetFrame()
-                    self.send(packet)
+                    self.ctx.framer.resetFrame()
+                    self.ctx.send(packet)
                 if self.broadcast_enable and not request.slave_id:
                     resp = None
                     break
                 try:
                     resp = await asyncio.wait_for(
-                        req, timeout=self.comm_params.timeout_connect
+                        req, timeout=self.ctx.comm_params.timeout_connect
                     )
                     break
                 except asyncio.exceptions.TimeoutError:

@@ -7,6 +7,11 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.6.8
+-------------
+* Allow socket exception response with wrong length
+
+
 Version 3.6.7
 -------------
 * Add lock to async requests, correct logging and length calc. (FIX, not on dev)

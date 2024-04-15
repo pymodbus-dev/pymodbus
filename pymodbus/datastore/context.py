@@ -1,18 +1,21 @@
 """Context for datastore."""
+
+from __future__ import annotations
+
 # pylint: disable=missing-type-doc
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.logging import Log
 
 
-class ModbusBaseSlaveContext:  # pylint: disable=too-few-public-methods
+class ModbusBaseSlaveContext:
     """Interface for a modbus slave data context.
 
     Derived classes must implemented the following methods:
             reset(self)
             validate(self, fx, address, count=1)
-            getValues(self, fx, address, count=1)
-            setValues(self, fx, address, values)
+            getValues/async_getValues(self, fc_as_hex, address, count=1)
+            setValues/async_setValues(self, fc_as_hex, address, values)
     """
 
     _fx_mapper = {2: "d", 4: "i"}
@@ -26,6 +29,44 @@ class ModbusBaseSlaveContext:  # pylint: disable=too-few-public-methods
         :returns: one of [d(iscretes),i(nputs),h(olding),c(oils)
         """
         return self._fx_mapper[fx]
+
+    async def async_getValues(self, fc_as_hex: int, address: int, count: int = 1) -> list[int | bool | None]:
+        """Get `count` values from datastore.
+
+        :param fc_as_hex: The function we are working with
+        :param address: The starting address
+        :param count: The number of values to retrieve
+        :returns: The requested values from a:a+c
+        """
+        return self.getValues(fc_as_hex, address, count)
+
+    async def async_setValues(self, fc_as_hex: int, address: int, values: list[int | bool]) -> None:
+        """Set the datastore with the supplied values.
+
+        :param fc_as_hex: The function we are working with
+        :param address: The starting address
+        :param values: The new values to be set
+        """
+        self.setValues(fc_as_hex, address, values)
+
+    def getValues(self, fc_as_hex: int, address: int, count: int = 1) -> list[int | bool | None]:
+        """Get `count` values from datastore.
+
+        :param fc_as_hex: The function we are working with
+        :param address: The starting address
+        :param count: The number of values to retrieve
+        :returns: The requested values from a:a+c
+        """
+        Log.error("getValues({},{},{}) not implemented!", fc_as_hex, address, count)
+        return []
+
+    def setValues(self, fc_as_hex: int, address: int, values: list[int | bool]) -> None:
+        """Set the datastore with the supplied values.
+
+        :param fc_as_hex: The function we are working with
+        :param address: The starting address
+        :param values: The new values to be set
+        """
 
 
 # ---------------------------------------------------------------------------#

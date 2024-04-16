@@ -204,11 +204,11 @@ class TestFactory:
     #  since the high bit is set, it will simply echo the resulting message
     # ---------------------------------------------------------------------------#
 
-    def test_request_errors(self):
+    async def test_request_errors(self):
         """Test a request factory decoder exceptions."""
         for func, msg in self.bad:
             result = self.server.decode(msg)
             assert result.ErrorCode == 1, "Failed to decode invalid requests"
             assert (
-                result.execute(None).function_code == func
-            ), "Failed to create correct response message"
+                await result.execute(None)
+            ).function_code == func, "Failed to create correct response message"

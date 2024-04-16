@@ -85,7 +85,7 @@ class TestModbusBitMessage:
         for request, expected in iter(messages.items()):
             assert request.encode() == expected
 
-    def test_bit_read_message_execute_value_errors(self):
+    async def test_bit_read_message_execute_value_errors(self):
         """Test bit read request encoding."""
         context = MockContext()
         requests = [
@@ -93,10 +93,10 @@ class TestModbusBitMessage:
             ReadDiscreteInputsRequest(1, 0x800),
         ]
         for request in requests:
-            result = request.execute(context)
+            result = await request.execute(context)
             assert ModbusExceptions.IllegalValue == result.exception_code
 
-    def test_bit_read_message_execute_address_errors(self):
+    async def test_bit_read_message_execute_address_errors(self):
         """Test bit read request encoding."""
         context = MockContext()
         requests = [
@@ -104,10 +104,10 @@ class TestModbusBitMessage:
             ReadDiscreteInputsRequest(1, 5),
         ]
         for request in requests:
-            result = request.execute(context)
+            result = await request.execute(context)
             assert ModbusExceptions.IllegalAddress == result.exception_code
 
-    def test_bit_read_message_execute_success(self):
+    async def test_bit_read_message_execute_success(self):
         """Test bit read request encoding."""
         context = MockContext()
         context.validate = lambda a, b, c: True
@@ -116,7 +116,7 @@ class TestModbusBitMessage:
             ReadDiscreteInputsRequest(1, 5),
         ]
         for request in requests:
-            result = request.execute(context)
+            result = await request.execute(context)
             assert result.bits == [True] * 5
 
     def test_bit_read_message_get_response_pdu(self):

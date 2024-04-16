@@ -43,7 +43,7 @@ jobs:
         uses: actions/checkout@v4.1.1
 
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v5.0.0
+        uses: actions/setup-python@v5.1.0
         with:
           python-version: ${{ matrix.python }}
 
@@ -61,7 +61,7 @@ jobs:
 
       - name: Restore base Python virtual environment
         id: cache-venv
-        uses: actions/cache@v4.0.1
+        uses: actions/cache@v4.0.2
         with:
           path: ${{ env.VIRTUAL_ENV }}
           key: >-

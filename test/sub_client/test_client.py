@@ -391,7 +391,7 @@ class MockTransport:
     async def delayed_resp(self):
         """Send a response to a received packet."""
         await asyncio.sleep(0.05)
-        resp = self.req.execute(self.ctx)
+        resp = await self.req.execute(self.ctx)
         pkt = self.base.framer.buildPacket(resp)
         self.base.data_received(pkt)
 

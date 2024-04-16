@@ -31,10 +31,10 @@ class TestPdu:
             with pytest.raises(NotImplementedException):
                 request.decode(None)
 
-    def test_error_methods(self):
+    async def test_error_methods(self):
         """Test all error methods."""
         self.illegal.decode("12345")
-        self.illegal.execute(None)
+        await self.illegal.execute(None)
 
         result = self.exception.encode()
         self.exception.decode(result)

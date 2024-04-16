@@ -54,7 +54,7 @@ class ReadExceptionStatusRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    def execute(self, _context=None):
+    async def execute(self, _context=None):
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -159,7 +159,7 @@ class GetCommEventCounterRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    def execute(self, _context=None):
+    async def execute(self, _context=None):
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -270,7 +270,7 @@ class GetCommEventLogRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    def execute(self, _context=None):
+    async def execute(self, _context=None):
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -395,7 +395,7 @@ class ReportSlaveIdRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    def execute(self, context=None):
+    async def execute(self, context=None):
         """Run a report slave id request against the store.
 
         :returns: The populated response

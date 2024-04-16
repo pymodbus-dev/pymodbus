@@ -28,24 +28,24 @@ class TestOtherMessage:
         for message in self.responses:
             assert str(message)
 
-    def test_read_exception_status(self):
+    async def test_read_exception_status(self):
         """Test read exception status."""
         request = pymodbus_message.ReadExceptionStatusRequest()
         request.decode(b"\x12")
         assert not request.encode()
-        assert request.execute().function_code == 0x07
+        assert (await request.execute()).function_code == 0x07
 
         response = pymodbus_message.ReadExceptionStatusResponse(0x12)
         assert response.encode() == b"\x12"
         response.decode(b"\x12")
         assert response.status == 0x12
 
-    def test_get_comm_event_counter(self):
+    async def test_get_comm_event_counter(self):
         """Test get comm event counter."""
         request = pymodbus_message.GetCommEventCounterRequest()
         request.decode(b"\x12")
         assert not request.encode()
-        assert request.execute().function_code == 0x0B
+        assert (await request.execute()).function_code == 0x0B
 
         response = pymodbus_message.GetCommEventCounterResponse(0x12)
         assert response.encode() == b"\x00\x00\x00\x12"
@@ -56,12 +56,12 @@ class TestOtherMessage:
         response.status = False
         assert response.encode() == b"\xFF\xFF\x00\x12"
 
-    def test_get_comm_event_log(self):
+    async def test_get_comm_event_log(self):
         """Test get comm event log."""
         request = pymodbus_message.GetCommEventLogRequest()
         request.decode(b"\x12")
         assert not request.encode()
-        assert request.execute().function_code == 0x0C
+        assert (await request.execute()).function_code == 0x0C
 
         response = pymodbus_message.GetCommEventLogResponse()
         assert response.encode() == b"\x06\x00\x00\x00\x00\x00\x00"
@@ -84,7 +84,7 @@ class TestOtherMessage:
         assert response.event_count == 0x12
         assert response.events == [0x12, 0x34, 0x56]
 
-    def test_report_slave_id_request(self):
+    async def test_report_slave_id_request(self):
         """Test report slave id request."""
         with mock.patch("pymodbus.other_message.DeviceInformationFactory") as dif:
             # First test regular identity strings
@@ -103,7 +103,7 @@ class TestOtherMessage:
             expected_identity = "-".join(identity.values()).encode()
 
             request = pymodbus_message.ReportSlaveIdRequest()
-            response = request.execute()
+            response = await request.execute()
             assert response.identifier == expected_identity
 
             # Change to byte strings and test again (final result should be the same)
@@ -121,20 +121,20 @@ class TestOtherMessage:
             dif.get.return_value = identity
 
             request = pymodbus_message.ReportSlaveIdRequest()
-            response = request.execute()
+            response = await request.execute()
             assert response.identifier == expected_identity
 
-    def test_report_slave_id(self):
+    async def test_report_slave_id(self):
         """Test report slave id."""
         with mock.patch("pymodbus.other_message.DeviceInformationFactory") as dif:
             dif.get.return_value = {}
             request = pymodbus_message.ReportSlaveIdRequest()
             request.decode(b"\x12")
             assert not request.encode()
-            assert request.execute().function_code == 0x11
+            assert (await request.execute()).function_code == 0x11
 
             response = pymodbus_message.ReportSlaveIdResponse(
-                request.execute().identifier, True
+                (await request.execute()).identifier, True
             )
 
             assert response.encode() == b"\tPymodbus\xff"

@@ -5,4 +5,4 @@ zip -9 doc/source/_static/examples.zip examples/*
 tar -czf doc/source/_static/examples.tgz examples
 popd
 
-sphinx-build -M html "." "../build/html" -W --keep-going
+sphinx-build -M html "." "../build/html" 

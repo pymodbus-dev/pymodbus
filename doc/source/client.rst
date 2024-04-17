@@ -132,16 +132,16 @@ is done in a few simple steps, like the following synchronous example::
 
 and a asynchronous example::
 
-    from pymodbus.client import AsyncModbusTcpClient
+    from pymodbus.client import ModbusAsyncTcpClient
 
-    client = AsyncModbusTcpClient('MyDevice.lan')    # Create client object
+    client = ModbusAsyncTcpClient('MyDevice.lan')    # Create client object
     await client.connect()                           # connect to device, reconnect automatically
     await client.write_coil(1, True, slave=1)        # set information in device
     result = await client.read_coils(2, 3, slave=1)  # get information from device
     print(result.bits[0])                            # use information
     client.close()                                   # Disconnect device
 
-The line :mod:`client = AsyncModbusTcpClient('MyDevice.lan')` only creates the object it does not activate
+The line :mod:`client = ModbusAsyncTcpClient('MyDevice.lan')` only creates the object it does not activate
 anything.
 
 The line :mod:`await client.connect()` connects to the device (or comm port), if this cannot connect successfully within

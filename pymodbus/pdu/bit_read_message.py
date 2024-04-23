@@ -11,8 +11,8 @@ __all__ = [
 # pylint: disable=missing-type-doc
 import struct
 
-from pymodbus.pdu import ExceptionResponse, ModbusRequest, ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
@@ -172,8 +172,6 @@ class ReadCoilsRequest(ReadBitsRequestBase):
         values = await context.async_getValues(
             self.function_code, self.address, self.count
         )
-        if isinstance(values, ExceptionResponse):
-            return values
         return ReadCoilsResponse(values)
 
 
@@ -242,8 +240,6 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
         values = await context.async_getValues(
             self.function_code, self.address, self.count
         )
-        if isinstance(values, ExceptionResponse):
-            return values
         return ReadDiscreteInputsResponse(values)
 
 

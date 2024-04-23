@@ -14,8 +14,8 @@ __all__ = [
 import struct
 
 from pymodbus.constants import ModbusStatus
-from pymodbus.pdu import ExceptionResponse, ModbusRequest, ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
@@ -90,11 +90,8 @@ class WriteSingleCoilRequest(ModbusRequest):
         if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.IllegalAddress)
 
-        context.setValues(self.function_code, self.address, [self.value])
-        # result = context.setValues(self.function_code, self.address, [self.value])
-        # if isinstance(result, ExceptionResponse):
-        #    return result
-        values = context.getValues(self.function_code, self.address, 1)
+        await context.async_setValues(self.function_code, self.address, [self.value])
+        values = await context.async_getValues(self.function_code, self.address, 1)
         # if isinstance(values, ExceptionResponse):
         #    return values
         return WriteSingleCoilResponse(self.address, values[0])
@@ -227,9 +224,9 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         if not context.validate(self.function_code, self.address, count):
             return self.doException(merror.IllegalAddress)
 
-        result = context.setValues(self.function_code, self.address, self.values)
-        if isinstance(result, ExceptionResponse):
-            return result
+        await context.async_setValues(
+            self.function_code, self.address, self.values
+        )
         return WriteMultipleCoilsResponse(self.address, count)
 
     def __str__(self):

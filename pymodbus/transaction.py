@@ -480,7 +480,10 @@ class ModbusTransactionManager:
 
         :returns: The next unique transaction identifier
         """
-        self.tid = (self.tid + 1) & 0xFFFF
+        if self.tid < 65000:
+            self.tid += 1
+        else:
+            self.tid = 1
         return self.tid
 
     def reset(self):

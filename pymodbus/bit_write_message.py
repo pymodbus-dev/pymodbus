@@ -92,8 +92,6 @@ class WriteSingleCoilRequest(ModbusRequest):
 
         await context.async_setValues(self.function_code, self.address, [self.value])
         values = await context.async_getValues(self.function_code, self.address, 1)
-        # if isinstance(values, ExceptionResponse):
-        #    return values
         return WriteSingleCoilResponse(self.address, values[0])
 
     def get_response_pdu_size(self):

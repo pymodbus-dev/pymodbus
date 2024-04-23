@@ -149,7 +149,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.is_closing = False
 
         self.transport: asyncio.BaseTransport = None  # type: ignore[assignment]
-        self.loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
+        self._loop: asyncio.AbstractEventLoop | None = None
         self.recv_buffer: bytes = b""
         self.call_create: Callable[[], Coroutine[Any, Any, Any]] = None  # type: ignore[assignment]
         if self.is_server:
@@ -189,6 +189,18 @@ class ModbusProtocol(asyncio.BaseProtocol):
             parts = host.split(":")
             host, port = parts[1][2:], int(parts[2])
         self.init_setup_connect_listen(host, port)
+
+    @property
+    def loop(self) -> asyncio.AbstractEventLoop:
+        """Get the event loop as needed."""
+        if self._loop is None:
+            self._loop = asyncio.get_running_loop()
+        return self._loop
+
+    @loop.setter
+    def loop(self, loop: asyncio.AbstractEventLoop):
+        """Set the event loop."""
+        self._loop = loop
 
     def init_setup_connect_listen(self, host: str, port: int) -> None:
         """Handle connect/listen handler."""

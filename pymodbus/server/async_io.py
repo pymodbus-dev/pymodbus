@@ -49,7 +49,6 @@ class ModbusServerRequestHandler(ModbusProtocol):
         self.receive_queue: asyncio.Queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
         self.framer: ModbusFramer
-        self.loop = asyncio.get_running_loop()
 
     def _log_exception(self):
         """Show log exception."""
@@ -262,7 +261,6 @@ class ModbusBaseServer(ModbusProtocol):
             params,
             True,
         )
-        self.loop = asyncio.get_running_loop()
         self.decoder = ServerDecoder()
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()

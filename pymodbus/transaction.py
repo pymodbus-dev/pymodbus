@@ -451,7 +451,7 @@ class ModbusTransactionManager:
 
         """
         Log.debug("Getting transaction {}", tid)
-        if not tid:
+        if tid is None:
             if self.transactions:
                 return self.transactions.popitem()[1]
             return None

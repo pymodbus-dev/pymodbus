@@ -451,7 +451,7 @@ class ModbusTransactionManager:
 
         """
         Log.debug("Getting transaction {}", tid)
-        if tid is None:
+        if not tid:
             if self.transactions:
                 return self.transactions.popitem()[1]
             return None
@@ -473,7 +473,10 @@ class ModbusTransactionManager:
 
         :returns: The next unique transaction identifier
         """
-        self.tid = (self.tid + 1) & 0xFFFF
+        if self.tid < 65000:
+            self.tid += 1
+        else:
+            self.tid = 1
         return self.tid
 
     def reset(self):

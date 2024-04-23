@@ -12,8 +12,8 @@ __all__ = [
 # pylint: disable=missing-type-doc
 import struct
 
-from pymodbus.pdu import ExceptionResponse, ModbusRequest, ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 
 
 class WriteSingleRegisterRequest(ModbusRequest):
@@ -334,8 +334,6 @@ class MaskWriteRegisterRequest(ModbusRequest):
         if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.IllegalAddress)
         values = (await context.async_getValues(self.function_code, self.address, 1))[0]
-        if isinstance(values, ExceptionResponse):
-            return values
         values = (values & self.and_mask) | (self.or_mask & ~self.and_mask)
         await context.async_setValues(
             self.function_code, self.address, [values]

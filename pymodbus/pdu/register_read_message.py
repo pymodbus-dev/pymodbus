@@ -13,8 +13,8 @@ __all__ = [
 # pylint: disable=missing-type-doc
 import struct
 
-from pymodbus.pdu import ExceptionResponse, ModbusRequest, ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 
 
 class ReadRegistersRequestBase(ModbusRequest):
@@ -143,7 +143,7 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
         """Run a read holding request against a datastore.
 
         :param context: The datastore to request from
-        :returns: An initialized :py:class:`~pymodbus.register_read_message.ReadHoldingRegistersResponse`, or an :py:class:`~pymodbus.pdu.ExceptionResponse` if an error occurred
+        :returns: An initialized :py:class:`~pymodbus.register_read_message.ReadHoldingRegistersResponse`
         """
         if not (1 <= self.count <= 0x7D):
             return self.doException(merror.IllegalValue)
@@ -152,9 +152,6 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
         values = await context.async_getValues(
             self.function_code, self.address, self.count
         )
-        if isinstance(values, ExceptionResponse):
-            return values
-
         return ReadHoldingRegistersResponse(values)
 
 
@@ -206,7 +203,7 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
         """Run a read input request against a datastore.
 
         :param context: The datastore to request from
-        :returns: An initialized :py:class:`~pymodbus.register_read_message.ReadInputRegistersResponse`, or an :py:class:`~pymodbus.pdu.ExceptionResponse` if an error occurred
+        :returns: An initialized :py:class:`~pymodbus.register_read_message.ReadInputRegistersResponse`
         """
         if not (1 <= self.count <= 0x7D):
             return self.doException(merror.IllegalValue)
@@ -215,8 +212,6 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
         values = await context.async_getValues(
             self.function_code, self.address, self.count
         )
-        if isinstance(values, ExceptionResponse):
-            return values
         return ReadInputRegistersResponse(values)
 
 
@@ -318,7 +313,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
         """Run a write single register request against a datastore.
 
         :param context: The datastore to request from
-        :returns: An initialized :py:class:`~pymodbus.register_read_message.ReadWriteMultipleRegistersResponse`, or an :py:class:`~pymodbus.pdu.ExceptionResponse` if an error occurred
+        :returns: An initialized :py:class:`~pymodbus.register_read_message.ReadWriteMultipleRegistersResponse`
         """
         if not (1 <= self.read_count <= 0x07D):
             return self.doException(merror.IllegalValue)

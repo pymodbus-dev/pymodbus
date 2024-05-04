@@ -44,12 +44,7 @@ class ModbusTlsFramer(ModbusFramer):
         return {}
 
     def recvPacket(self, size):
-        """Receive packet from the bus.
-
-        With specified len
-        :param size: Number of bytes to read
-        :return:
-        """
+        """Receive packet from the bus."""
         sleep(0.5)
         return super().recvPacket(size)
 

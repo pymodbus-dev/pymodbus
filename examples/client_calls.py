@@ -30,8 +30,17 @@ The corresponding server must be started before e.g. as:
     ./server_async.py
 """
 import logging
+import sys
 
-import client_sync
+
+try:
+    import client_sync
+except ImportError:
+    print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
+          https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
+          for more information.")
+    sys.exit(-1)
+
 
 
 _logger = logging.getLogger(__file__)

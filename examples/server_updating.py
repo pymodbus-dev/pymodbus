@@ -33,8 +33,16 @@ The corresponding client can be started as:
 """
 import asyncio
 import logging
+import sys
 
-import server_async
+
+try:
+    import server_async
+except ImportError:
+    print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
+          https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
+          for more information.")
+    sys.exit(-1)
 
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,

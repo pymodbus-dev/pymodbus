@@ -28,8 +28,16 @@ The corresponding server must be started before e.g. as:
 """
 import asyncio
 import logging
+import sys
 
-import helper
+
+try:
+    import helper
+except ImportError:
+    print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
+          https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
+          for more information.")
+    sys.exit(-1)
 
 import pymodbus.client as modbusClient
 from pymodbus import ModbusException

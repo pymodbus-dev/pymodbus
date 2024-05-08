@@ -73,17 +73,29 @@ class ModbusBaseSlaveContext:
 #  Slave Contexts
 # ---------------------------------------------------------------------------#
 class ModbusSlaveContext(ModbusBaseSlaveContext):
-    """This creates a modbus data model with each data access stored in a block."""
+    """
+    Create a modbus data model with each data access stored in a
+    block.
+
+    :param di: discrete inputs initializer ModbusDataBlock
+    :param co: coils initializer ModbusDataBlock
+    :param hr: holding register initializer ModbusDataBlock
+    :param ir: input registers initializer ModbusDataBlock
+    :param zero_mode: Not add one to address
+
+        When True, a request for address zero to n will map to
+        datastore address zero to n.
+
+        When False, a request for address zero to n will map to
+        datastore address one to n+1, based on section 4.4 of
+        specification.
+
+        Default is False.
+    """
 
     def __init__(self, *_args, **kwargs):
         """Initialize the datastores.
 
-        :param kwargs: Each element is a ModbusDataBlock
-
-            "di" - Discrete Inputs initializer
-            "co" - Coils initializer
-            "hr" - Holding Register initializer
-            "ir" - Input Registers iniatializer
         """
         self.store = {}
         self.store["d"] = kwargs.get("di", ModbusSequentialDataBlock.create())

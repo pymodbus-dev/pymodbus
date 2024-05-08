@@ -73,9 +73,7 @@ class ModbusBaseSlaveContext:
 #  Slave Contexts
 # ---------------------------------------------------------------------------#
 class ModbusSlaveContext(ModbusBaseSlaveContext):
-    """
-    Create a modbus data model with each data access stored in a
-    block.
+    """Create a modbus data model with data stored in a block.
 
     :param di: discrete inputs initializer ModbusDataBlock
     :param co: coils initializer ModbusDataBlock
@@ -91,12 +89,11 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
         specification.
 
         Default is False.
+
     """
 
     def __init__(self, *_args, **kwargs):
-        """Initialize the datastores.
-
-        """
+        """Initialize the datastores."""
         self.store = {}
         self.store["d"] = kwargs.get("di", ModbusSequentialDataBlock.create())
         self.store["c"] = kwargs.get("co", ModbusSequentialDataBlock.create())

@@ -31,9 +31,16 @@ The corresponding server must be started before e.g. as:
 """
 import asyncio
 import logging
+import sys
 
-import client_async
 
+try:
+    import client_async
+except ImportError:
+    print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
+          https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
+          for more information.")
+    sys.exit(-1)
 
 _logger = logging.getLogger(__file__)
 _logger.setLevel("DEBUG")

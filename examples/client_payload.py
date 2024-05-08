@@ -7,9 +7,17 @@ complicated memory layout using builder.
 Works out of the box together with payload_server.py
 """
 import asyncio
+import sys
 from collections import OrderedDict
 
-import client_async
+
+try:
+    import client_async
+except ImportError:
+    print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
+          https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
+          for more information.")
+    sys.exit(-1)
 
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder

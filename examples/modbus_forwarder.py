@@ -18,8 +18,16 @@ Both server and client are tcp based, but it can be easily modified to any serve
 """
 import asyncio
 import logging
+import sys
 
-import helper
+
+try:
+    import helper
+except ImportError:
+    print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
+          https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
+          for more information.")
+    sys.exit(-1)
 
 from pymodbus.client import ModbusTcpClient
 from pymodbus.datastore import ModbusServerContext

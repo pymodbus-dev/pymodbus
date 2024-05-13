@@ -3,7 +3,7 @@
 
 An example of a single threaded synchronous client.
 
-usage: simple_client_async.py
+usage: simple_sync_client.py
 
 All options must be adapted in the code
 The corresponding server must be started before e.g. as:

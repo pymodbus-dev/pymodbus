@@ -28,7 +28,7 @@ async def read_registers(
     if count == 1:
         value = rr.registers[0]
     else:
-        value = ModbusSimulatorContext.build_value_from_registers(rr.registers, is_int)
+        value = ModbusSimulatorContext.build_value_from_registers(rr.registers, is_int,4,False)
         if not is_int:
             value = round(value, 1)
     if curval:

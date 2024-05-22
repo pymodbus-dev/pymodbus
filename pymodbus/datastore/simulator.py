@@ -19,12 +19,19 @@ class CellType:
     """Define single cell types."""
 
     INVALID: int = 0
-    BITS: int = 1
-    UINT16: int = 2
-    UINT32: int = 3
-    FLOAT32: int = 4
-    STRING: int = 5
-    NEXT: int = 6
+    BITFIELD16: int = 1
+    BITFIELD32: int = 2
+    BITFIELD64: int = 3
+    INT16: int = 4
+    INT32: int = 5
+    INT64: int = 6
+    UINT16: int = 7
+    UINT32: int = 8
+    UINT64: int = 9
+    FLOAT32: int = 10
+    FLOAT64: int = 11
+    STRING: int = 12
+    NEXT: int = 13
 
 
 @dataclasses.dataclass(repr=False, eq=False)
@@ -81,11 +88,18 @@ class Label:  # pylint: disable=too-many-instance-attributes
     timestamp: str = "timestamp"
     repeat_to: str = "to"
     type: str = "type"
-    type_bits = "bits"
+    type_bitfield16 = "bitfield16"
+    type_bitfield32 = "bitfield32"
+    type_bitfield64 = "bitfield64"
     type_exception: str = "type exception"
+    type_int16: str = "int16"
+    type_int32: str = "int32"
+    type_int64: str = "int64"
     type_uint16: str = "uint16"
     type_uint32: str = "uint32"
+    type_uint64: str = "uint64"
     type_float32: str = "float32"
+    type_float64: str = "float64"
     type_string: str = "string"
     uptime: str = "uptime"
     value: str = "value"
@@ -111,12 +125,47 @@ class Setup:
         self.runtime = runtime
         self.config = {}
         self.config_types: dict[str, dict[str, Any]] = {
-            Label.type_bits: {
-                Label.type: CellType.BITS,
+            Label.type_bitfield16: {
+                Label.type: CellType.BITFIELD16,
                 Label.next: None,
                 Label.value: 0,
                 Label.action: None,
-                Label.method: self.handle_type_bits,
+                Label.method: self.handle_type_bitfield16,
+            },
+            Label.type_bitfield32: {
+                Label.type: CellType.BITFIELD32,
+                Label.next: CellType.NEXT,
+                Label.value: 0,
+                Label.action: None,
+                Label.method: self.handle_type_bitfield32,
+            },
+            Label.type_bitfield64: {
+                Label.type: CellType.BITFIELD64,
+                Label.next: CellType.NEXT,
+                Label.value: 0,
+                Label.action: None,
+                Label.method: self.handle_type_bitfield64,
+            },
+             Label.type_int16: {
+                Label.type: CellType.INT16,
+                Label.next: None,
+                Label.value: 0,
+                Label.action: None,
+                Label.method: self.handle_type_int16,
+            },
+            Label.type_int32: {
+                Label.type: CellType.INT32,
+                Label.next: CellType.NEXT,
+                Label.value: 0,
+                Label.action: None,
+                Label.method: self.handle_type_int32,
+            },
+            Label.type_int64: {
+                Label.type: CellType.INT64,
+                Label.next: CellType.NEXT,
+                Label.value: 0,
+                Label.action: None,
+                Label.method: self.handle_type_int64,
             },
             Label.type_uint16: {
                 Label.type: CellType.UINT16,
@@ -132,12 +181,26 @@ class Setup:
                 Label.action: None,
                 Label.method: self.handle_type_uint32,
             },
+            Label.type_uint64: {
+                Label.type: CellType.UINT64,
+                Label.next: CellType.NEXT,
+                Label.value: 0,
+                Label.action: None,
+                Label.method: self.handle_type_uint64,
+            },
             Label.type_float32: {
                 Label.type: CellType.FLOAT32,
                 Label.next: CellType.NEXT,
                 Label.value: 0,
                 Label.action: None,
                 Label.method: self.handle_type_float32,
+            },
+            Label.type_float64: {
+                Label.type: CellType.FLOAT64,
+                Label.next: CellType.NEXT,
+                Label.value: 0,
+                Label.action: None,
+                Label.method: self.handle_type_float64,
             },
             Label.type_string: {
                 Label.type: CellType.STRING,
@@ -148,53 +211,99 @@ class Setup:
             },
         }
 
-    def handle_type_bits(self, start, stop, value, action, action_kwargs):
-        """Handle type bits."""
-        for reg in self.runtime.registers[start:stop]:
-            if reg.type != CellType.INVALID:
-                raise RuntimeError(f'ERROR "{Label.type_bits}" {reg} used')
-            reg.value = value
-            reg.type = CellType.BITS
-            reg.action = action
-            reg.action_kwargs = action_kwargs
+    def handle_type_2Bytes(self, start, stop, regs_value, action, action_kwargs,cell_type):
+        """Handle datatypes that require 2 bytes in order to be represented, e.g., 1 register."""
+        for i in range(start, stop, 1):
+            regs = self.runtime.registers[i : i+1]
+            assert len(regs)==1,"Failed assertion"
+            if regs[0].type != CellType.INVALID :
+                raise RuntimeError(f'ERROR "{cell_type}" {i}  is already being used')
+
+            regs[0].action = action
+            regs[0].action_kwargs = action_kwargs
+            for ix in range (0,1):
+                regs[ix].value = regs_value[ix]
+                regs[ix].type = CellType.NEXT   #Reg0 will be rewritten next
+            regs[0].type = cell_type
+
+    def handle_type_4Bytes(self, start, stop, regs_value, action, action_kwargs,cell_type):
+         """Handle datatypes that require 4 bytes in order to be represented, e.g., 2 registers."""
+         for i in range(start, stop, 2):
+            regs = self.runtime.registers[i : i + 2]
+            if regs[0].type != CellType.INVALID or regs[1].type != CellType.INVALID:
+                raise RuntimeError(f'ERROR "{cell_type}" {i},{i + 1} is already being used')
+
+            regs[0].action = action
+            regs[0].action_kwargs = action_kwargs
+            for ix in range (0,2):
+                regs[ix].value = regs_value[ix]
+                regs[ix].type = CellType.NEXT   #Reg0 will be rewritten next
+            regs[0].type = cell_type
+
+    def handle_type_8Bytes(self, start, stop, regs_value, action, action_kwargs,cell_type):
+        """Handle datatypes that require 8 bytes in order to be represented, e.g., 4 registers."""
+        for i in range(start, stop, 4):
+            regs = self.runtime.registers[i : i + 4]
+            if regs[0].type != CellType.INVALID or regs[1].type != CellType.INVALID or regs[2].type != CellType.INVALID or regs[3].type != CellType.INVALID:
+                raise RuntimeError(f'ERROR "{cell_type}" {i},{i + 1},{i + 2},{i + 3} is already being used')
+            regs[0].action = action
+            regs[0].action_kwargs = action_kwargs
+            for ix in range (0,4):
+                regs[ix].value = regs_value[ix]
+                regs[ix].type = CellType.NEXT   #Reg0 will be rewritten next
+            regs[0].type = cell_type
+    def handle_type_bitfield16(self, start, stop, value, action, action_kwargs):
+        """Handle type bits16."""
+        regs_value = ModbusSimulatorContext.build_registers_from_value(value, True,2,False)
+        self.handle_type_2Bytes( start, stop, regs_value, action, action_kwargs,CellType.BITFIELD16)
+    def handle_type_bitfield32(self, start, stop, value, action, action_kwargs):
+        """Handle type bits32."""
+        regs_value = ModbusSimulatorContext.build_registers_from_value(value, True,4,False)
+        self.handle_type_4Bytes( start, stop, regs_value, action, action_kwargs,CellType.BITFIELD32)
+    def handle_type_bitfield64(self, start, stop, value, action, action_kwargs):
+        """Handle type bits64."""
+        regs_value = ModbusSimulatorContext.build_registers_from_value(value, True,8,False)
+        self.handle_type_8Bytes( start, stop, regs_value, action, action_kwargs,CellType.BITFIELD64)
+
+    def handle_type_int16(self, start, stop, value, action, action_kwargs):
+        """Handle type int16."""
+        regs_value = ModbusSimulatorContext.build_registers_from_value(value, True,2,True)
+        self.handle_type_2Bytes( start, stop, regs_value, action, action_kwargs,CellType.INT16)
+
+    def handle_type_int32(self, start, stop, value, action, action_kwargs):
+        """Handle type int32."""
+        regs_value = ModbusSimulatorContext.build_registers_from_value(value, True,4,True)
+        self.handle_type_4Bytes( start, stop, regs_value, action, action_kwargs,CellType.INT32)
+
+    def handle_type_int64(self, start, stop, value, action, action_kwargs):
+        """Handle type int64."""
+        regs_value = ModbusSimulatorContext.build_registers_from_value(value, True,8,True)
+        self.handle_type_8Bytes( start, stop, regs_value, action, action_kwargs,CellType.INT64)
 
     def handle_type_uint16(self, start, stop, value, action, action_kwargs):
         """Handle type uint16."""
-        for reg in self.runtime.registers[start:stop]:
-            if reg.type != CellType.INVALID:
-                raise RuntimeError(f'ERROR "{Label.type_uint16}" {reg} used')
-            reg.value = value
-            reg.type = CellType.UINT16
-            reg.action = action
-            reg.action_kwargs = action_kwargs
+        regs_value = ModbusSimulatorContext.build_registers_from_value(value, True,2,False)
+        self.handle_type_2Bytes( start, stop, regs_value, action, action_kwargs,CellType.UINT16)
 
     def handle_type_uint32(self, start, stop, value, action, action_kwargs):
         """Handle type uint32."""
-        regs_value = ModbusSimulatorContext.build_registers_from_value(value, True)
-        for i in range(start, stop, 2):
-            regs = self.runtime.registers[i : i + 2]
-            if regs[0].type != CellType.INVALID or regs[1].type != CellType.INVALID:
-                raise RuntimeError(f'ERROR "{Label.type_uint32}" {i},{i + 1} used')
-            regs[0].value = regs_value[0]
-            regs[0].type = CellType.UINT32
-            regs[0].action = action
-            regs[0].action_kwargs = action_kwargs
-            regs[1].value = regs_value[1]
-            regs[1].type = CellType.NEXT
+        regs_value = ModbusSimulatorContext.build_registers_from_value(value, True,4,False)
+        self.handle_type_4Bytes( start, stop, regs_value, action, action_kwargs,CellType.UINT32)
+
+    def handle_type_uint64(self, start, stop, value, action, action_kwargs):
+        """Handle type uint64."""
+        regs_value = ModbusSimulatorContext.build_registers_from_value(value, True,8,False)
+        self.handle_type_8Bytes( start, stop, regs_value, action, action_kwargs,CellType.UINT64)
 
     def handle_type_float32(self, start, stop, value, action, action_kwargs):
         """Handle type uint32."""
-        regs_value = ModbusSimulatorContext.build_registers_from_value(value, False)
-        for i in range(start, stop, 2):
-            regs = self.runtime.registers[i : i + 2]
-            if regs[0].type != CellType.INVALID or regs[1].type != CellType.INVALID:
-                raise RuntimeError(f'ERROR "{Label.type_float32}" {i},{i + 1} used')
-            regs[0].value = regs_value[0]
-            regs[0].type = CellType.FLOAT32
-            regs[0].action = action
-            regs[0].action_kwargs = action_kwargs
-            regs[1].value = regs_value[1]
-            regs[1].type = CellType.NEXT
+        regs_value = ModbusSimulatorContext.build_registers_from_value(value, False,4,None)
+        self.handle_type_4Bytes( start, stop, regs_value, action, action_kwargs,CellType.FLOAT32)
+
+    def handle_type_float64(self, start, stop, value, action, action_kwargs):
+        """Handle type float64."""
+        regs_value = ModbusSimulatorContext.build_registers_from_value(value, False,8,None)
+        self.handle_type_8Bytes( start, stop, regs_value, action, action_kwargs,CellType.FLOAT64)
 
     def handle_type_string(self, start, stop, value, action, action_kwargs):
         """Handle type string."""
@@ -208,7 +317,7 @@ class Setup:
         for i in range(stop - start):
             reg = self.runtime.registers[start + i]
             if reg.type != CellType.INVALID:
-                raise RuntimeError(f'ERROR "{Label.type_string}" {start + i} used')
+                raise RuntimeError(f'ERROR "{Label.type_string}" at location {start + i} is already being used')
             j = i * 2
             reg.value = int.from_bytes(bytes(value[j : j + 2], "UTF-8"), "big")
             reg.type = CellType.NEXT
@@ -349,10 +458,17 @@ class Setup:
             self.runtime.action_methods.append(method)
             i += 1
         self.runtime.registerType_name_to_id = {
-            Label.type_bits: CellType.BITS,
+            Label.type_bitfield16: CellType.BITFIELD16,
+            Label.type_bitfield32: CellType.BITFIELD32,
+            Label.type_bitfield64: CellType.BITFIELD64,
+            Label.type_int16: CellType.INT16,
+            Label.type_int32: CellType.INT32,
+            Label.type_int64: CellType.INT64,
             Label.type_uint16: CellType.UINT16,
             Label.type_uint32: CellType.UINT32,
+            Label.type_uint64: CellType.UINT64,
             Label.type_float32: CellType.FLOAT32,
+            Label.type_float64: CellType.FLOAT64,
             Label.type_string: CellType.STRING,
             Label.next: CellType.NEXT,
             Label.invalid: CellType.INVALID,
@@ -412,16 +528,29 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
                 "shared blocks": True,  --> share memory for all blocks (largest size wins)
                 "defaults": {
                     "value": {  --> Initial values (can be overwritten)
-                        "bits": 0x01,
+                        "bitfield16": 0x0001,  -> e.g., a 16-bitmask
+                        "bitfield32": 0x00010000,-> e.g., a 32-bitmask
+                        "bitfield64": 0x0000000100000000,-> e.g., a 64-bitmask
+                        "int16": -16,
+                        "int32": -32,
+                        "int64": -64,
                         "uint16": 122,
                         "uint32": 67000,
+                        "uint64": 67000,
                         "float32": 127.4,
+                        "float64": 127.4,
                         "string": " ",
                     },
                     "action": {  --> default action (can be overwritten)
-                        "bits": None,
+                        "bitfield16": None,
+                        "bitfield32": None,
+                        "bitfield64": None,
+                        "int16": None,
+                        "int32": None,
+                        "int64": None,
                         "uint16": None,
                         "uint32": None,
+                        "uint64": None,
                         "float32": None,
                         "string": None,
                     },
@@ -435,21 +564,38 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
             "write": [   --> allow write, efault is ReadOnly
                 [5, 5]  --> start, end bytes, repeated as needed
             ],
-            "bits": [  --> Define bits (1 register == 2 bytes)
-                [30, 31],  --> start, end registers, repeated as needed
-                {"addr": [32, 34], "value": 0xF1},  --> with value
-                {"addr": [35, 36], "action": "increment"},  --> with action
-                {"addr": [37, 38], "action": "increment", "value": 0xF1}  --> with action and value
-                {"addr": [37, 38], "action": "increment", "kwargs": {"min": 0, "max": 100}}  --> with action with arguments
+            "bitfield16": [  --> Define bits (1 register == 2 bytes)
+                [30, 30],  --> start, end registers,
+                {"addr": [32, 32], "value": 0xF1},  --> with value
+                {"addr": [35, 35], "action": "increment"},  --> with action
+                {"addr": [37, 37], "action": "increment", "value": 0xF1}  --> with action and value
+                {"addr": [37, 37], "action": "increment", "kwargs": {"min": 0, "max": 100}}  --> with action with arguments
+            ],
+            "int16": [  --> Define int16,signed (1 register == 2 bytes)
+                --> similar to bitfield16, but intended to represent a  16bit SIGNED number (-32768 <-> 32767)
+            ],
+            "int32": [  --> Define 32 bit signed integers (2 registers == 4 bytes)
+                --> similar to int16, but intended to represent a  32bit SIGNED number, occupies 2 registers
+                {'addr': [88, 89], 'value': 32}
+            ],
+            "int64": [  --> Define 64 bit signed integers (4 registers == 8 bytes)
+                --> similar to int32,  uses 4 registers
+                {'addr': [88, 91], 'value': 64}
             ],
             "uint16": [  --> Define uint16 (1 register == 2 bytes)
-                --> same as type_bits
+                --> similar to int16, unsigned
             ],
-            "uint32": [  --> Define 32 bit integers (2 registers == 4 bytes)
-                --> same as type_bits
+            "uint32": [  --> Define 32 bit unsigned integers (2 registers == 4 bytes)
+                --> similar to int32, unsigned
+            ],
+            "uint64": [  --> Define 32 bit unsigned integers (4 registers == 8 bytes)
+                --> similar to int64, unsigned
             ],
             "float32": [  --> Define 32 bit floats (2 registers == 4 bytes)
-                --> same as type_bits
+                --> similar to int32, but encoding a floating number
+            ],
+            "float64": [  --> Define 64 bit floats (4 registers == 4 bytes)
+                -->  similar to int32, but encoding a floating number
             ],
             "string": [  --> Define strings (variable number of registers (each 2 bytes))
                 [21, 22],  --> start, end registers, define 1 string
@@ -486,7 +632,7 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
     # --------------------------------------------
     # Simulator server interface
     # --------------------------------------------
-    def get_text_register(self, register):
+    def get_text_register(self, register): # noqa: C901
         """Get raw register."""
         reg = self.registers[register]
         text_cell = TextCell()
@@ -497,21 +643,48 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
         text_cell.action = self.action_id_to_name[reg.action]
         if reg.action_kwargs:
             text_cell.action = f"{text_cell.action}({reg.action_kwargs})"
-        if reg.type in (CellType.INVALID, CellType.UINT16, CellType.NEXT):
+        if reg.type in (CellType.INVALID, CellType.NEXT):
             text_cell.value = str(reg.value)
             build_len = 0
-        elif reg.type == CellType.BITS:
-            text_cell.value = hex(reg.value)
+        elif reg.type == CellType.BITFIELD16:
+            tmp_regs = [reg.value]
+            value=self.build_value_from_registers(tmp_regs, True,2,False)
+            text_cell.value ='0x' + hex(value)[2:].zfill(4)
             build_len = 0
-        elif reg.type == CellType.UINT32:
+        elif reg.type == CellType.BITFIELD32:
             tmp_regs = [reg.value, self.registers[register + 1].value]
-            text_cell.value = str(self.build_value_from_registers(tmp_regs, True))
+            value=self.build_value_from_registers(tmp_regs, True,4,False)
+            text_cell.value ='0x' + hex(value)[2:].zfill(8)
+            build_len = 2
+        elif reg.type == CellType.BITFIELD64:
+            tmp_regs = [reg.value, self.registers[register + 1].value, self.registers[register + 2].value, self.registers[register + 3].value]
+            value=self.build_value_from_registers(tmp_regs, True,8,False)
+            text_cell.value ='0x' + hex(value)[2:].zfill(16)
+            build_len = 3
+        elif reg.type in (CellType.UINT16,CellType.INT16):
+            tmp_regs = [reg.value, self.registers[register + 1].value]
+            is_signed= bool( reg.type ==CellType.INT16 )
+            text_cell.value = str(self.build_value_from_registers(tmp_regs, True,2,is_signed))
+            build_len = 1
+        elif reg.type in (CellType.UINT32,CellType.INT32):
+            tmp_regs = [reg.value, self.registers[register + 1].value]
+            is_signed=bool( reg.type ==CellType.INT32 )
+            text_cell.value = str(self.build_value_from_registers(tmp_regs, True,4,is_signed))
+            build_len = 1
+        elif reg.type in (CellType.UINT64,CellType.INT64):
+            tmp_regs = [reg.value, self.registers[register + 1].value,self.registers[register + 2].value, self.registers[register + 3].value]
+            is_signed=bool( reg.type ==CellType.INT64 )
+            text_cell.value = str(self.build_value_from_registers(tmp_regs, True,8,is_signed))
             build_len = 1
         elif reg.type == CellType.FLOAT32:
             tmp_regs = [reg.value, self.registers[register + 1].value]
-            text_cell.value = str(self.build_value_from_registers(tmp_regs, False))
+            text_cell.value = str(self.build_value_from_registers(tmp_regs, False,4,None))
             build_len = 1
-        else:  # reg.type == CellType.STRING:
+        elif reg.type == CellType.FLOAT64:
+            tmp_regs = [reg.value, self.registers[register + 1].value, self.registers[register + 2].value, self.registers[register + 3].value]
+            text_cell.value = str(self.build_value_from_registers(tmp_regs, False,8,None))
+            build_len = 3
+        elif reg.type == CellType.STRING:
             j = register
             text_cell.value = ""
             while True:
@@ -524,6 +697,10 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
                 if self.registers[j].type != CellType.NEXT:
                     break
             build_len = j - register - 1
+        else:
+            #Make sure all data types have a custom text generator, otherwise raise an error
+            raise RuntimeError('There is no text representation for the input type')
+
         reg_txt = f"{register}-{register + build_len}" if build_len else f"{register}"
         return reg_txt, text_cell
 
@@ -534,7 +711,7 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
     _write_func_code = (5, 6, 15, 16, 22, 23)
     _bits_func_code = (1, 2, 5, 15)
 
-    def loop_validate(self, address, end_address, fx_write):
+    def loop_validate(self, address, end_address, fx_write): # noqa: C901
         """Validate entry in loop.
 
         :meta private:
@@ -549,17 +726,26 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
                 continue
             if reg.type == CellType.NEXT:
                 return False
-            if reg.type in (CellType.BITS, CellType.UINT16):
+            if reg.type in (CellType.BITFIELD16, CellType.UINT16,CellType.INT16):
                 i += 1
-            elif reg.type in (CellType.UINT32, CellType.FLOAT32):
+            elif reg.type in (CellType.BITFIELD32,CellType.UINT32,CellType.INT32, CellType.FLOAT32):
                 if i + 1 >= end_address:
                     return False
                 i += 2
-            else:
+            elif reg.type in (CellType.BITFIELD64,CellType.UINT64,CellType.INT64, CellType.FLOAT64):
+                if i + 3 >= end_address:
+                    return False
+                i += 4
+            elif reg.type == CellType.STRING:
                 i += 1
                 while i < end_address:
                     if self.registers[i].type == CellType.NEXT:
                         i += 1
+                    else:
+                        break
+            else:
+                raise RuntimeError('A cell without validation handler has been found')
+
         return True
 
     def validate(self, func_code, address, count=1):
@@ -653,58 +839,113 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
 
         :meta private:
         """
-        if cell.type in (CellType.BITS, CellType.UINT16):
+        if cell.type in (CellType.BITFIELD16, CellType.INT16, CellType.UINT16):
+            is_signed=bool( CellType.INT16)
             registers[inx].value = random.randint(int(minval), int(maxval))
+        elif cell.type in (CellType.BITFIELD32, CellType.INT32, CellType.UINT32):
+            is_signed=bool( CellType.INT32)
+            regs = cls.build_registers_from_value(
+                random.randint(int(minval), int(maxval)),True,4,is_signed
+            )
+            registers[inx].value = regs[0]
+            registers[inx + 1].value = regs[1]
+        elif cell.type in (CellType.BITFIELD64, CellType.INT64, CellType.UINT64):
+            is_signed=bool( CellType.INT64)
+            regs = cls.build_registers_from_value(
+                random.randint(int(minval), int(maxval)),True,8,is_signed
+            )
+            registers[inx].value = regs[0]
+            registers[inx + 1].value = regs[1]
+            registers[inx + 2].value = regs[2]
+            registers[inx + 3].value = regs[3]
         elif cell.type == CellType.FLOAT32:
             regs = cls.build_registers_from_value(
-                random.uniform(float(minval), float(maxval)), False
+                random.uniform(float(minval), float(maxval)),False,4 ,None
             )
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]
-        elif cell.type == CellType.UINT32:
+        elif cell.type == CellType.FLOAT64:
             regs = cls.build_registers_from_value(
-                random.randint(int(minval), int(maxval)), True
+                random.uniform(float(minval), float(maxval)),False,8, None
             )
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]
+            registers[inx + 2].value = regs[2]
+            registers[inx + 3].value = regs[3]
+
 
     @classmethod
-    def action_increment(cls, registers, inx, cell, minval=None, maxval=None):
+    def action_increment(cls, registers, inx, cell, minval=None, maxval=None):  # noqa: C901
         """Increment value reset with overflow.
 
         :meta private:
         """
         reg = registers[inx]
         reg2 = registers[inx + 1]
-        if cell.type in (CellType.BITS, CellType.UINT16):
-            value = reg.value + 1
-            if maxval and value > maxval:
-                value = minval
-            if minval and value < minval:
-                value = minval
-            reg.value = value
-        elif cell.type == CellType.FLOAT32:
-            tmp_reg = [reg.value, reg2.value]
-            value = cls.build_value_from_registers(tmp_reg, False)
-            value += 1.0
-            if maxval and value > maxval:
-                value = minval
-            if minval and value < minval:
-                value = minval
-            new_regs = cls.build_registers_from_value(value, False)
-            reg.value = new_regs[0]
-            reg2.value = new_regs[1]
-        elif cell.type == CellType.UINT32:
-            tmp_reg = [reg.value, reg2.value]
-            value = cls.build_value_from_registers(tmp_reg, True)
+        reg3 = registers[inx + 2]
+        reg4 = registers[inx + 3]
+
+        if cell.type in (CellType.BITFIELD16,CellType.INT16, CellType.UINT16):
+            is_signed=bool( CellType.INT16)
+            tmp_reg = [reg.value]
+            value = cls.build_value_from_registers(tmp_reg, True,2,is_signed)
             value += 1
             if maxval and value > maxval:
                 value = minval
             if minval and value < minval:
                 value = minval
-            new_regs = cls.build_registers_from_value(value, True)
+            new_regs = cls.build_registers_from_value(value, True,2,is_signed)
+            reg.value = new_regs[0]
+        elif cell.type in (CellType.BITFIELD32,CellType.INT32, CellType.UINT32):
+            is_signed=bool( CellType.INT32)
+            tmp_reg = [reg.value, reg2.value]
+            value = cls.build_value_from_registers(tmp_reg, True,4,is_signed)
+            value += 1
+            if maxval and value > maxval:
+                value = minval
+            if minval and value < minval:
+                value = minval
+            new_regs = cls.build_registers_from_value(value, True,4,is_signed)
             reg.value = new_regs[0]
             reg2.value = new_regs[1]
+        elif cell.type in (CellType.BITFIELD64,CellType.INT64, CellType.UINT64):
+            is_signed=bool( CellType.INT64)
+            tmp_reg = [reg.value, reg2.value, reg3.value, reg4.value]
+            value = cls.build_value_from_registers(tmp_reg, True,8,is_signed)
+            value += 1
+            if maxval and value > maxval:
+                value = minval
+            if minval and value < minval:
+                value = minval
+            new_regs = cls.build_registers_from_value(value, True,8,is_signed)
+            reg.value = new_regs[0]
+            reg2.value = new_regs[1]
+            reg3.value = new_regs[2]
+            reg4.value = new_regs[3]
+        elif cell.type == CellType.FLOAT32:
+            tmp_reg = [reg.value, reg2.value]
+            value = cls.build_value_from_registers(tmp_reg, False,4,None)
+            value += 1.0
+            if maxval and value > maxval:
+                value = minval
+            if minval and value < minval:
+                value = minval
+            new_regs = cls.build_registers_from_value(value, False,4,None)
+            reg.value = new_regs[0]
+            reg2.value = new_regs[1]
+        elif cell.type == CellType.FLOAT64:
+            tmp_reg = [reg.value, reg2.value, reg3.value, reg4.value]
+            value = cls.build_value_from_registers(tmp_reg, False,8,None)
+            value += 1.0
+            if maxval and value > maxval:
+                value = minval
+            if minval and value < minval:
+                value = minval
+            new_regs = cls.build_registers_from_value(value, False,8,None)
+            reg.value = new_regs[0]
+            reg2.value = new_regs[1]
+            reg3.value = new_regs[2]
+            reg4.value = new_regs[3]
 
     @classmethod
     def action_timestamp(cls, registers, inx, _cell, **_kwargs):
@@ -737,17 +978,24 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
         """
         value = int(datetime.now().timestamp()) - cls.start_time + 1
 
-        if cell.type in (CellType.BITS, CellType.UINT16):
+        if cell.type in (CellType.BITFIELD16, CellType.UINT16):
             registers[inx].value = value
         elif cell.type == CellType.FLOAT32:
-            regs = cls.build_registers_from_value(value, False)
+            regs = cls.build_registers_from_value(value, False,4,None)
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]
         elif cell.type == CellType.UINT32:
-            regs = cls.build_registers_from_value(value, True)
+            regs = cls.build_registers_from_value(value, True,4,False)
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]
-
+        elif cell.type == CellType.FLOAT64:
+            regs = cls.build_registers_from_value(value, False,8,None)
+            registers[inx].value = regs[0]
+            registers[inx + 1].value = regs[1]
+        elif cell.type == CellType.UINT64:
+            regs = cls.build_registers_from_value(value, True,8,False)
+            registers[inx].value = regs[0]
+            registers[inx + 1].value = regs[1]
     # --------------------------------------------
     # Internal helper methods
     # --------------------------------------------
@@ -760,16 +1008,18 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
         check: tuple
         if func_code in self._bits_func_code:
             # Bit access
-            check = (CellType.BITS, -1)
+            check = (CellType.BITFIELD16, -1)
             reg_step = 1
         elif count % 2:
             # 16 bit access
-            check = (CellType.UINT16, CellType.STRING)
+            check = (CellType.BITFIELD16,CellType.INT16,CellType.UINT16, CellType.STRING)
             reg_step = 1
-        else:
-            check = (CellType.UINT32, CellType.FLOAT32, CellType.STRING)
+        elif count % 4:
+            check = (CellType.BITFIELD32,CellType.INT32,CellType.UINT32, CellType.FLOAT32, CellType.STRING)
             reg_step = 2
-
+        elif count % 8:
+            check = (CellType.BITFIELD64,CellType.INT64,CellType.UINT64, CellType.FLOAT64)
+            reg_step = 4
         for i in range(real_address, real_address + count, reg_step):
             if self.registers[i].type in check:
                 continue
@@ -779,25 +1029,69 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
         return True
 
     @classmethod
-    def build_registers_from_value(cls, value, is_int):
+    def build_registers_from_value(cls, value, is_int,n_bytes,is_signed): # noqa: C901
         """Build registers from int32 or float32."""
-        regs = [0, 0]
         if is_int:
-            value_bytes = int.to_bytes(value, 4, "big")
+            if n_bytes==2 and is_signed is False:
+                value_bytes = struct.pack(">H", value)#int.to_bytes(value, 4, "big")
+            if n_bytes==2 and is_signed is True:
+                value_bytes = struct.pack(">h", value)#int.to_bytes(value, 4, "big")
+            if n_bytes==4 and is_signed is False:
+                value_bytes = struct.pack(">I", value)#int.to_bytes(value, 4, "big")
+            if n_bytes==4 and is_signed is True:
+                value_bytes = struct.pack(">i", value)#int.to_bytes(value, 4, "big")
+            if n_bytes==8 and is_signed is False:
+                value_bytes = struct.pack(">Q", value)#int.to_bytes(value, 4, "big")
+            if n_bytes==8 and is_signed is True:
+                value_bytes = struct.pack(">q", value)#int.to_bytes(value, 4, "big")
         else:
-            value_bytes = struct.pack(">f", value)
-        regs[0] = int.from_bytes(value_bytes[:2], "big")
-        regs[1] = int.from_bytes(value_bytes[-2:], "big")
+            if n_bytes==4:
+                value_bytes = struct.pack(">f", value)
+            if n_bytes==8:
+                value_bytes = struct.pack(">d", value)#int.to_bytes(value, 4, "big")
+
+        if n_bytes==2:
+            regs = [0]
+            regs[0] = int.from_bytes(value_bytes[:2], "big")
+        if n_bytes==4:
+            regs = [0, 0]
+            regs[0] = int.from_bytes(value_bytes[:2], "big")
+            regs[1] = int.from_bytes(value_bytes[-2:], "big")
+        if n_bytes==8:
+            regs = [0, 0,0,0]
+            regs[0] = int.from_bytes(value_bytes[:2], "big")
+            regs[1] = int.from_bytes(value_bytes[2:4], "big")
+            regs[2] = int.from_bytes(value_bytes[4:6], "big")
+            regs[3] = int.from_bytes(value_bytes[6:8], "big")
+
         return regs
 
     @classmethod
-    def build_value_from_registers(cls, registers, is_int):
-        """Build int32 or float32 value from registers."""
-        value_bytes = int.to_bytes(registers[0], 2, "big") + int.to_bytes(
-            registers[1], 2, "big"
-        )
+    def build_value_from_registers(cls, registers, is_int,n_bytes,is_signed): # noqa: C901
+        """Build int16,int32,int64 or float32 value from registers."""
+        if n_bytes==2:
+            value_bytes = int.to_bytes(registers[0], 2, "big")
+        if n_bytes==4:
+            value_bytes = int.to_bytes(registers[0], 2, "big") + int.to_bytes(registers[1], 2, "big")
+        if n_bytes==8:
+            value_bytes = int.to_bytes(registers[0], 2, "big") + int.to_bytes(registers[1], 2, "big") + int.to_bytes( registers[2], 2, "big" )+ int.to_bytes(registers[3], 2, "big" )
+
         if is_int:
-            value = int.from_bytes(value_bytes, "big")
+            if n_bytes==2 and is_signed is False:
+                value = struct.unpack(">H", value_bytes)
+            if n_bytes==2 and is_signed is True:
+                value = struct.unpack(">h", value_bytes)
+            if n_bytes==4 and is_signed is False:
+                value = struct.unpack(">I", value_bytes)
+            if n_bytes==4 and is_signed is True:
+                value = struct.unpack(">i", value_bytes)
+            if n_bytes==8 and is_signed is False:
+                value = struct.unpack(">Q", value_bytes)
+            if n_bytes==8 and is_signed is True:
+                value = struct.unpack(">q", value_bytes)
         else:
-            value = struct.unpack(">f", value_bytes)[0]
-        return value
+            if n_bytes==4:
+                value = struct.unpack(">f", value_bytes)
+            if n_bytes==8:
+                value = struct.unpack(">d", value_bytes)
+        return value[0]

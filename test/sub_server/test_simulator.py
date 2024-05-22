@@ -28,22 +28,36 @@ class TestSimulator:
             "co size": 100,
             "di size": 150,
             "hr size": 200,
-            "ir size": 250,
+            "ir size": 300,
             "shared blocks": True,
             "type exception": False,
             "defaults": {
                 "value": {
-                    "bits": 0x0708,
+                    "bitfield16": 0x0708,
+                    "bitfield32": 0x10010708,
+                    "bitfield64": 0x8001000000003708,
+                    "int16": -1,
+                    "int32": -45000,
+                    "int64": -450000000,
                     "uint16": 1,
                     "uint32": 45000,
+                    "uint64": 450000000,
                     "float32": 127.4,
+                    "float64": 10127.4,
                     "string": "X",
                 },
                 "action": {
-                    "bits": None,
+                    "bitfield16": None,
+                    "bitfield32": None,
+                    "bitfield64": None,
+                    "int16": None,
+                    "int32": None,
+                    "int64": None,
                     "uint16": None,
                     "uint32": None,
+                    "uint64": None,
                     "float32": None,
+                    "float64": None,
                     "string": None,
                 },
             },
@@ -59,13 +73,39 @@ class TestSimulator:
             [21, 26],
             [33, 38],
         ],
-        "bits": [
+        "bitfield16": [
             5,
-            [7, 8],
+            [7, 7],
+            [8, 8],
             {"addr": 10, "value": 0x81},
-            {"addr": [11, 12], "value": 0x04342},
+            {"addr": [11, 11], "value": 0x04342},
+            {"addr": [12, 12], "value": 0x04342},
             {"addr": 13, "action": "random"},
             {"addr": 14, "value": 15, "action": "reset"},
+        ],
+        "bitfield32": [
+            [50, 51],
+            {"addr": [52,53], "value": 0x04342},
+        ],
+        "bitfield64": [
+            [54, 57],
+            {"addr": [58,61], "value": 0x04342},
+        ],
+        "int16": [
+            70,
+            [71, 71],
+            {"addr": 72, "value": 0x81},
+            {"addr": [73, 73], "value": 0x04342},
+            {"addr": 74, "action": "random"},
+            {"addr": 75, "value": 15, "action": "reset"},
+        ],
+        "int32": [
+            [76, 77],
+            {"addr": [78,79], "value": 0x04342},
+        ],
+        "int64": [
+            [80, 83],
+            {"addr": [84,87], "value": 0x04342},
         ],
         "uint16": [
             {"addr": 16, "value": 3124},
@@ -88,16 +128,23 @@ class TestSimulator:
                 "kwargs": {"minval": 10, "maxval": 80},
             },
         ],
+        "uint64": [
+            {"addr": [62, 65], "value": 3124}
+        ],
         "float32": [
             {"addr": [33, 34], "value": 3124.5},
             {"addr": [35, 38], "value": 5678.19},
             {"addr": [39, 42], "value": 345000.18, "action": "increment"},
         ],
+        "float64": [
+            {"addr": [66, 69], "value": 3124.5},
+        ],
         "string": [
             {"addr": [43, 44], "value": "Str"},
             {"addr": [45, 48], "value": "Strxyz12"},
         ],
-        "repeat": [{"addr": [0, 48], "to": [49, 147]}],
+        "repeat": [{"addr": [0, 95], "to": [96, 191]},
+                   {"addr": [0, 95], "to": [192, 287]}],
     }
 
     default_server_config = {
@@ -124,16 +171,16 @@ class TestSimulator:
         Cell(),
         Cell(),
         Cell(),
-        Cell(type=CellType.BITS, access=True, value=0x0708),
+        Cell(type=CellType.BITFIELD16, access=True, value=0x0708),
         Cell(type=CellType.INVALID),
-        Cell(type=CellType.BITS, access=True, value=0x0708),
-        Cell(type=CellType.BITS, access=True, value=0x0708),
+        Cell(type=CellType.BITFIELD16, access=True, value=0x0708),
+        Cell(type=CellType.BITFIELD16, access=True, value=0x0708),
         Cell(type=CellType.INVALID),
-        Cell(type=CellType.BITS, value=0x81),  # 10
-        Cell(type=CellType.BITS, value=0x4342),
-        Cell(type=CellType.BITS, value=0x4342),
-        Cell(type=CellType.BITS, value=1800, action=2),
-        Cell(type=CellType.BITS, value=15, action=3),
+        Cell(type=CellType.BITFIELD16, value=0x81),  # 10
+        Cell(type=CellType.BITFIELD16, value=0x4342),
+        Cell(type=CellType.BITFIELD16, value=0x4342),
+        Cell(type=CellType.BITFIELD16, value=1800, action=2),
+        Cell(type=CellType.BITFIELD16, value=15, action=3),
         Cell(type=CellType.INVALID),
         Cell(type=CellType.UINT16, access=True, value=3124),
         Cell(type=CellType.UINT16, access=True, value=5678),
@@ -194,20 +241,20 @@ class TestSimulator:
     def test_pack_unpack_values(self):
         """Test the pack unpack methods."""
         value = 32145678
-        regs = ModbusSimulatorContext.build_registers_from_value(value, True)
-        test_value = ModbusSimulatorContext.build_value_from_registers(regs, True)
+        regs = ModbusSimulatorContext.build_registers_from_value(value, True,4,False)
+        test_value = ModbusSimulatorContext.build_value_from_registers(regs, True,4,False)
         assert value == test_value
 
         value = 3.14159265358979
-        regs = ModbusSimulatorContext.build_registers_from_value(value, False)
-        test_value = ModbusSimulatorContext.build_value_from_registers(regs, False)
+        regs = ModbusSimulatorContext.build_registers_from_value(value, False,4,None)
+        test_value = ModbusSimulatorContext.build_value_from_registers(regs, False,4,None)
         assert round(value, 6) == round(test_value, 6)
 
     def test_simulator_config_verify(self):
         """Test basic configuration."""
         # Manually build expected memory image and then compare.
-        assert self.simulator.register_count == 250
-        for offset in (0, 49, 98):
+        assert self.simulator.register_count == 300
+        for offset in (0, 96, 192):
             for i, test_cell in enumerate(self.test_registers):
                 reg = self.simulator.registers[i + offset]
                 assert reg.type == test_cell.type, f"at index {i} - {offset}"
@@ -229,14 +276,14 @@ class TestSimulator:
         # Manually build expected memory image and then compare.
         exc_setup = copy.deepcopy(self.default_config)
         exc_setup[Label.setup][Label.shared_blocks] = False
-        exc_setup[Label.setup][Label.co_size] = 15
-        exc_setup[Label.setup][Label.di_size] = 15
-        exc_setup[Label.setup][Label.hr_size] = 15
-        exc_setup[Label.setup][Label.ir_size] = 15
+        exc_setup[Label.setup][Label.co_size] = 150
+        exc_setup[Label.setup][Label.di_size] = 150
+        exc_setup[Label.setup][Label.hr_size] = 150
+        exc_setup[Label.setup][Label.ir_size] = 150
         del exc_setup[Label.repeat]
         exc_setup[Label.repeat] = []
         simulator = ModbusSimulatorContext(exc_setup, None)
-        assert simulator.register_count == 60
+        assert simulator.register_count == 600
         for i, test_cell in enumerate(self.test_registers):
             reg = simulator.registers[i]
             assert reg.type == test_cell.type, f"at index {i}"
@@ -249,7 +296,7 @@ class TestSimulator:
         with pytest.raises(RuntimeError):
             ModbusSimulatorContext(exc_setup, None)
         for entry in (
-            (Label.type_bits, 5),
+            (Label.type_bitfield16, 5),
             (Label.type_uint16, 16),
             (Label.type_uint32, [31, 32]),
             (Label.type_float32, [33, 34]),
@@ -260,7 +307,7 @@ class TestSimulator:
             with pytest.raises(RuntimeError):
                 ModbusSimulatorContext(exc_setup, None)
         exc_setup = copy.deepcopy(self.default_config)
-        del exc_setup[Label.type_bits]
+        del exc_setup[Label.type_bitfield16]
         with pytest.raises(RuntimeError):
             ModbusSimulatorContext(exc_setup, None)
         exc_setup = copy.deepcopy(self.default_config)
@@ -269,7 +316,7 @@ class TestSimulator:
             ModbusSimulatorContext(exc_setup, None)
         exc_setup = copy.deepcopy(self.default_config)
         exc_setup[Label.setup][Label.defaults][Label.action][
-            Label.type_bits
+            Label.type_bitfield16
         ] = "bad action"
         with pytest.raises(RuntimeError):
             ModbusSimulatorContext(exc_setup, None)
@@ -286,7 +333,7 @@ class TestSimulator:
         with pytest.raises(RuntimeError):
             ModbusSimulatorContext(exc_setup, None)
         exc_setup = copy.deepcopy(self.default_config)
-        exc_setup[Label.type_bits].append(700)
+        exc_setup[Label.type_bitfield16].append(700)
         with pytest.raises(RuntimeError):
             ModbusSimulatorContext(exc_setup, None)
         exc_setup = copy.deepcopy(self.default_config)
@@ -297,7 +344,7 @@ class TestSimulator:
         exc_setup[Label.type_uint16].append(0)
         ModbusSimulatorContext(exc_setup, None)
         exc_setup = copy.deepcopy(self.default_config)
-        exc_setup[Label.type_uint16].append(250)
+        exc_setup[Label.type_uint16].append(350)
         with pytest.raises(RuntimeError):
             ModbusSimulatorContext(exc_setup, None)
 
@@ -414,7 +461,7 @@ class TestSimulator:
         """Test get_text_register()."""
         for test_reg, test_entry, test_cell in (
             (1, "1", Cell(type=Label.invalid, action="none", value="0")),
-            (5, "5", Cell(type=Label.type_bits, action="none", value="0x708")),
+            (5, "5", Cell(type=Label.type_bitfield16, action="none", value="0x0708")),
             (
                 31,
                 "31-32",
@@ -492,8 +539,8 @@ class TestSimulator:
     @pytest.mark.parametrize(
         ("celltype", "minval", "maxval", "value", "expected"),
         [
-            (CellType.BITS, 50, 75, 73, (74, 75, 50)),
-            (CellType.BITS, 50, 75, 45, (50, 51, 52)),
+            (CellType.BITFIELD16, 50, 75, 73, (74, 75, 50)),
+            (CellType.BITFIELD16, 50, 75, 45, (50, 51, 52)),
             (CellType.UINT16, 50, 15075, 15073, (15074, 15075, 50)),
             (CellType.UINT16, 50, 75, 45, (50, 51, 52)),
             (CellType.UINT32, 50, 63075, 63073, (63074, 63075, 50)),
@@ -518,17 +565,22 @@ class TestSimulator:
         exc_simulator.registers[30].action_kwargs = kwargs
         exc_simulator.registers[31].type = CellType.NEXT
 
-        is_int = celltype != CellType.FLOAT32
-        reg_count = 1 if celltype in (CellType.BITS, CellType.UINT16) else 2
+        is_int = False if celltype in (CellType.FLOAT32,CellType.FLOAT64) else True
+        reg_count = 1 if celltype in (CellType.BITFIELD16, CellType.UINT16) else 2
+        n_bytes=2
+        if celltype in (CellType.BITFIELD32, CellType.INT32, CellType.UINT32, CellType.FLOAT32):
+            n_bytes=4 
+        if celltype in (CellType.BITFIELD64, CellType.INT64, CellType.UINT64, CellType.FLOAT64):
+            n_bytes=8
         regs = (
             [value, 0]
             if reg_count == 1
-            else ModbusSimulatorContext.build_registers_from_value(value, is_int)
+            else ModbusSimulatorContext.build_registers_from_value(value, is_int,n_bytes,False)
         )
         exc_simulator.registers[30].value = regs[0]
         exc_simulator.registers[31].value = regs[1]
         for expect_value in expected:
-            if celltype != CellType.BITS:
+            if celltype != CellType.BITFIELD16:
                 regs = exc_simulator.getValues(FX_READ_REG, 30, reg_count)
             else:
                 reg_bits = exc_simulator.getValues(FX_READ_BIT, 30 * 16, 16)
@@ -538,14 +590,14 @@ class TestSimulator:
                 assert expect_value == regs[0], f"type({celltype})"
             else:
                 new_value = ModbusSimulatorContext.build_value_from_registers(
-                    regs, is_int
+                    regs, is_int,n_bytes,False
                 )
                 assert expect_value == new_value, f"type({celltype})"
 
     @pytest.mark.parametrize(
         ("celltype", "minval", "maxval"),
         [
-            (CellType.BITS, 50, 75),
+            (CellType.BITFIELD16, 50, 75),
             (CellType.UINT16, 50, 15075),
             (CellType.UINT32, 50, 63075),
             (CellType.FLOAT32, 27.0, 16100.5),
@@ -565,10 +617,15 @@ class TestSimulator:
         exc_simulator.registers[30].action = action
         exc_simulator.registers[30].action_kwargs = kwargs
         exc_simulator.registers[31].type = CellType.NEXT
-        is_int = celltype != CellType.FLOAT32
-        reg_count = 1 if celltype in (CellType.BITS, CellType.UINT16) else 2
+        is_int = False if celltype in (CellType.FLOAT32,CellType.FLOAT64) else True
+        n_bytes=2
+        if celltype in (CellType.BITFIELD32, CellType.INT32, CellType.UINT32, CellType.FLOAT32):
+            n_bytes=4 
+        if celltype in (CellType.BITFIELD64, CellType.INT64, CellType.UINT64, CellType.FLOAT64):
+            n_bytes=8 
+        reg_count = 1 if celltype in (CellType.BITFIELD16, CellType.UINT16) else 2
         for _i in range(100):
-            if celltype != CellType.BITS:
+            if celltype != CellType.BITFIELD16:
                 regs = exc_simulator.getValues(FX_READ_REG, 30, reg_count)
             else:
                 reg_bits = exc_simulator.getValues(FX_READ_BIT, 30 * 16, 16)
@@ -578,7 +635,7 @@ class TestSimulator:
                 new_value = regs[0]
             else:
                 new_value = ModbusSimulatorContext.build_value_from_registers(
-                    regs, is_int
+                    regs, is_int,n_bytes,False
                 )
             assert minval <= new_value <= maxval
 
@@ -599,3 +656,4 @@ class TestSimulator:
         await task.run_forever(only_start=True)
         await asyncio.sleep(0.5)
         await task.stop()
+

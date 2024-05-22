@@ -41,74 +41,131 @@ from pymodbus.server import StartAsyncTcpServer
 _logger = logging.getLogger(__file__)
 
 demo_config = {
-    "setup": {
-        "co size": 100,
-        "di size": 150,
-        "hr size": 200,
-        "ir size": 250,
-        "shared blocks": True,
-        "type exception": False,
-        "defaults": {
-            "value": {
-                "bits": 0x0708,
-                "uint16": 1,
-                "uint32": 45000,
-                "float32": 127.4,
-                "string": "X",
-            },
-            "action": {
-                "bits": None,
-                "uint16": None,
-                "uint32": None,
-                "float32": None,
-                "string": None,
+        "setup": {
+            "co size": 100,
+            "di size": 150,
+            "hr size": 200,
+            "ir size": 300,
+            "shared blocks": True,
+            "type exception": False,
+            "defaults": {
+                "value": {
+                    "bitfield16": 0x0708,
+                    "bitfield32": 0x10010708,
+                    "bitfield64": 0x8001000000003708,
+                    "int16": -1,
+                    "int32": -45000,
+                    "int64": -450000000,
+                    "uint16": 1,
+                    "uint32": 45000,
+                    "uint64": 450000000,
+                    "float32": 127.4,
+                    "float64": 10127.4,
+                    "string": "X",
+                },
+                "action": {
+                    "bitfield16": None,
+                    "bitfield32": None,
+                    "bitfield64": None,
+                    "int16": None,
+                    "int32": None,
+                    "int64": None,
+                    "uint16": None,
+                    "uint32": None,
+                    "uint64": None,
+                    "float32": None,
+                    "float64": None,
+                    "string": None,
+                },
             },
         },
-    },
-    "invalid": [
-        1,
-        [6, 6],
-    ],
-    "write": [
-        3,
-        [7, 8],
-        [16, 18],
-        [21, 26],
-        [31, 36],
-    ],
-    "bits": [
-        [7, 9],
-        {"addr": 2, "value": 0x81},
-        {"addr": 3, "value": 17},
-        {"addr": 4, "value": 17},
-        {"addr": 5, "value": 17},
-        {"addr": 10, "value": 0x81},
-        {"addr": [11, 12], "value": 0x04342},
-        {"addr": 13, "action": "reset"},
-        {"addr": 14, "value": 15, "action": "reset"},
-    ],
-    "uint16": [
-        {"addr": 16, "value": 3124},
-        {"addr": [17, 18], "value": 5678},
-        {"addr": [19, 20], "value": 14661, "action": "increment"},
-    ],
-    "uint32": [
-        {"addr": [21, 22], "value": 3124},
-        {"addr": [23, 26], "value": 5678},
-        {"addr": [27, 30], "value": 345000, "action": "increment"},
-    ],
-    "float32": [
-        {"addr": [31, 32], "value": 3124.17},
-        {"addr": [33, 36], "value": 5678.19},
-        {"addr": [37, 40], "value": 345000.18, "action": "increment"},
-    ],
-    "string": [
-        {"addr": [41, 42], "value": "Str"},
-        {"addr": [43, 44], "value": "Strx"},
-    ],
-    "repeat": [{"addr": [0, 45], "to": [46, 138]}],
-}
-
+        "invalid": [
+            1,
+            [3, 4],
+        ],
+        "write": [
+            5,
+            [7, 8],
+            [16, 18],
+            [21, 26],
+            [33, 38],
+        ],
+        "bitfield16": [
+            [7, 7],
+            [8, 8],
+            {"addr": 2, "value": 0x81},
+            {"addr": 3, "value": 17},
+            {"addr": 4, "value": 17},
+            {"addr": 5, "value": 17},
+            {"addr": 10, "value": 0x81},
+            {"addr": [11, 11], "value": 0x04342},
+            {"addr": [12, 12], "value": 0x04342},
+            {"addr": 13, "action": "random"},
+            {"addr": 14, "value": 15, "action": "reset"},
+        ],
+        "bitfield32": [
+            [50, 51],
+            {"addr": [52,53], "value": 0x04342},
+        ],
+        "bitfield64": [
+            [54, 57],
+            {"addr": [58,61], "value": 0x04342},
+        ],
+        "int16": [
+            70,
+            [71, 71],
+            {"addr": 72, "value": 0x81},
+            {"addr": [73, 73], "value": 0x04342},
+            {"addr": 74, "action": "random"},
+            {"addr": 75, "value": 15, "action": "reset"},
+        ],
+        "int32": [
+            [76, 77],
+            {"addr": [78,79], "value": 0x04342},
+        ],
+        "int64": [
+            [80, 83],
+            {"addr": [84,87], "value": 0x04342},
+        ],
+        "uint16": [
+            {"addr": 16, "value": 3124},
+            {"addr": [17, 18], "value": 5678},
+            {
+                "addr": [19, 20],
+                "value": 14661,
+                "action": "increment",
+                "args": {"minval": 1, "maxval": 100},
+            },
+        ],
+        "uint32": [
+            {"addr": [21, 22], "value": 3124},
+            {"addr": [23, 26], "value": 5678},
+            {"addr": [27, 30], "value": 345000, "action": "increment"},
+            {
+                "addr": [31, 32],
+                "value": 50,
+                "action": "random",
+                "kwargs": {"minval": 10, "maxval": 80},
+            },
+        ],
+        "uint64": [
+            {"addr": [62, 65], "value": 3124}
+        ],
+        "float32": [
+            {"addr": [33, 34], "value": 3124.5},
+            {"addr": [35, 38], "value": 5678.19},
+            {"addr": [39, 42], "value": 345000.18, "action": "increment"},
+        ],
+        "float64": [
+            {"addr": [66, 69], "value": 3124.5},
+        ],
+        "string": [
+            {"addr": [43, 44], "value": "Str"},
+            {"addr": [45, 48], "value": "Strxyz12"},
+        ],
+        "repeat": [{"addr": [0, 95], "to": [96, 191]},
+                   {"addr": [0, 95], "to": [192, 287]}],
+    }
 
 def custom_action1(_inx, _cell):
     """Test action."""

@@ -78,17 +78,31 @@
                 "type exception": true,
                 "defaults": {
                     "value": {
-                        "bits": 0,
+                        "bitfield16": 0,
+                        "bitfield32": 0,
+                        "bitfield64": 0,
+                        "int16": 0,
+                        "int32": 0,
+                        "int64": 0,
                         "uint16": 0,
                         "uint32": 0,
+                        "uint64": 0,
                         "float32": 0.0,
+                        "float64": 0.0,
                         "string": " "
                     },
                     "action": {
-                        "bits": null,
+                        "bitfield16": null,
+                        "bitfield32": null,
+                        "bitfield64": null,
+                        "int16": "increment",
+                        "int32": "increment",
+                        "int64": "increment",
                         "uint16": "increment",
                         "uint32": "increment",
+                        "uint64": "increment",
                         "float32": "increment",
+                        "float64": "increment",
                         "string": null
                     }
                 }
@@ -99,21 +113,38 @@
             "write": [
                 3
             ],
-            "bits": [
+            "bitfield16": [
                 {"addr": 2, "value": 7}
             ],
+            "bitfield32": [ 
+                {"addr": [28, 29], "value": 31, "action": null}
+            ],
+            "bitfield64": [ 
+                {"addr": [30, 33], "value": 63, "action": null}
+            ],
+            "int16": [ 
+                {"addr": [27, 27], "value": -17001, "action": "increment"}
+            ],
+            "int32": [ 
+                {"addr": [25, 26], "value": -617001, "action": "increment"}
+            ],
+            "int64": [ 
+                {"addr": [21, 24], "value": -64000000, "action": "increment"}
+            ],
             "uint16": [
-                {"addr": 3, "value": 17001, "action": null},
+                {"addr": 3, "value": 17001, "action": "random"},
                 2100
             ],
             "uint32": [
-                {"addr": [4, 5], "value": 617001, "action": null},
+                {"addr": [4, 5], "value": 617001, "action": "random"},
                 [3037, 3038]
             ],
+            "uint64":[{"addr": [12, 15], "value": 64000000, "action": "random"}],
             "float32": [
                 {"addr": [6, 7], "value": 404.17},
                 [4100, 4101]
             ],
+            "float64":[{"addr": [8, 11], "value": 64.64}],
             "string": [
                 5047,
                 {"addr": [16, 20], "value": "A_B_C_D_E_"}
@@ -131,17 +162,31 @@
                 "type exception": true,
                 "defaults": {
                     "value": {
-                        "bits": 0,
+                        "bitfield16": 0,
+                        "bitfield32": 0,
+                        "bitfield64": 0,
+                        "int16": 0,
+                        "int32": 0,
+                        "int64": 0,
                         "uint16": 0,
                         "uint32": 0,
+                        "uint64": 0,
                         "float32": 0.0,
+                        "float64": 0.0,
                         "string": " "
                     },
                     "action": {
-                        "bits": null,
+                        "bitfield16": null,
+                        "bitfield32": null,
+                        "bitfield64": null,
+                        "int16": null,
+                        "int32": null,
+                        "int64": null,
                         "uint16": null,
                         "uint32": null,
+                        "uint64": null,
                         "float32": null,
+                        "float64": null,
                         "string": null
                     }
                 }
@@ -153,13 +198,23 @@
             "write": [
                 10
             ],
-            "bits": [
+            "bitfield16": [
                 10,
                 1009,
                 [1116, 1119],
                 {"addr": 1144, "value": 1},
                 {"addr": [1148,1149], "value": 32117},
                 {"addr": [1208, 1306], "action": "random"}
+            ],
+            "bitfield32": [ 
+            ],
+            "bitfield64": [ 
+            ],
+            "int16": [ 
+            ],
+            "int32": [ 
+            ],
+            "int64": [ 
             ],
             "uint16": [
                 11,
@@ -198,6 +253,7 @@
                     "kwargs": {"minval": 45000, "maxval": 55000}
                 }
             ],
+            "uint64":[],
             "float32": [
                 [14, 15],
                 [4047, 4048],
@@ -217,6 +273,7 @@
                     "kwargs": {"minval": 45000.0, "maxval": 55000.0}
                 }
             ],
+            "float64":[],
             "string": [
                 {"addr": [16, 20], "value": "A_B_C_D_E_"},
                 {"addr": [529, 544], "value": "Brand name, 32 bytes...........X"}

@@ -8,6 +8,7 @@ import os
 
 with contextlib.suppress(ImportError):
     import serial
+    import serial.rs485
 
 
 class SerialTransport(asyncio.Transport):
@@ -20,7 +21,7 @@ class SerialTransport(asyncio.Transport):
         super().__init__()
         self.async_loop = loop
         self.intern_protocol: asyncio.BaseProtocol = protocol
-        self.sync_serial = serial.serial_for_url(*args, **kwargs)
+        self.sync_serial = serial.rs485.RS485(*args, **kwargs)
         self.intern_write_buffer: list[bytes] = []
         self.poll_task: asyncio.Task | None = None
         self._poll_wait_time = 0.0005

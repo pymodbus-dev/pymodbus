@@ -55,10 +55,10 @@ class TestTransportSerial:
         comm.sync_serial.read = mock.MagicMock(return_value="abcd")
         comm.sync_serial.write = mock.MagicMock(return_value=4)
         comm.sync_serial.fileno = mock.MagicMock(return_value=2)
-        comm.sync_serial.async_loop.add_writer = mock.MagicMock()
-        comm.sync_serial.async_loop.add_reader = mock.MagicMock()
-        comm.sync_serial.async_loop.remove_writer = mock.MagicMock()
-        comm.sync_serial.async_loop.remove_reader = mock.MagicMock()
+        comm.async_loop.add_writer = mock.MagicMock()
+        comm.async_loop.add_reader = mock.MagicMock()
+        comm.async_loop.remove_writer = mock.MagicMock()
+        comm.async_loop.remove_reader = mock.MagicMock()
         comm.sync_serial.in_waiting = False
 
         methods = [

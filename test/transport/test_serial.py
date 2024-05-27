@@ -15,7 +15,7 @@ from pymodbus.transport.serialtransport import (
 
 
 @mock.patch(
-    "pymodbus.transport.serialtransport.serial.rs485.RS485.__init__", None
+    "pymodbus.transport.serialtransport.serial.rs485.RS485.__init__", mock.MagicMock(return_value=None)
 )
 class TestTransportSerial:
     """Test transport serial module."""

@@ -21,12 +21,15 @@ class SerialTransport(asyncio.Transport):
         super().__init__()
         self.async_loop = loop
         self.intern_protocol: asyncio.BaseProtocol = protocol
-        self.sync_serial = serial.rs485.RS485(*args, **kwargs)
+        self.sync_serial = self._serial_for_args(*args, **kwargs)
         self.intern_write_buffer: list[bytes] = []
         self.poll_task: asyncio.Task | None = None
         self._poll_wait_time = 0.0005
         self.sync_serial.timeout = 0
         self.sync_serial.write_timeout = 0
+
+    def _serial_for_args(self, *args, **kwargs) -> serial.rs485.RS85:
+        return serial.rs485.RS485(*args, **kwargs)
 
     def setup(self) -> None:
         """Prepare to read/write."""

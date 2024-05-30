@@ -158,7 +158,7 @@ class ModbusRtuFramer(ModbusFramer):
             if (result := self.decoder.decode(data)) is None:
                 raise ModbusIOException("Unable to decode request")
             result.slave_id = self._header["uid"]
-            result.transaction_id = self._header["tid"]
+            result.transaction_id = 0
             self._buffer = self._buffer[self._header["len"] :]
             Log.debug("Frame advanced, resetting header!!")
             callback(result)  # defer or push to a thread?
@@ -171,8 +171,7 @@ class ModbusRtuFramer(ModbusFramer):
         packet = super().buildPacket(message)
 
         # Ensure that transaction is actually the slave id for serial comms
-        if message.slave_id:
-           message.transaction_id = message.slave_id
+        message.transaction_id = 0
         return packet
 
     def sendPacket(self, message):

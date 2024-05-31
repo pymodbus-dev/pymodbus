@@ -9,6 +9,7 @@ Please select a topic in the left hand column.
    :hidden:
 
    source/readme
+   source/api_changes
    source/client
    source/server
    source/repl

@@ -13,7 +13,7 @@ with contextlib.suppress(ImportError):
 class SerialTransport(asyncio.Transport):
     """An asyncio serial transport."""
 
-    force_poll: bool = False
+    force_poll: bool = os.name == "nt"
 
     def __init__(self, loop, protocol, *args, **kwargs) -> None:
         """Initialize."""
@@ -29,7 +29,7 @@ class SerialTransport(asyncio.Transport):
 
     def setup(self) -> None:
         """Prepare to read/write."""
-        if os.name == "nt" or self.force_poll:
+        if self.force_poll:
             self.poll_task = asyncio.create_task(self.polling_task())
             self.poll_task.set_name("SerialTransport poll")
         else:
@@ -56,17 +56,8 @@ class SerialTransport(asyncio.Transport):
     def write(self, data) -> None:
         """Write some data to the transport."""
         self.intern_write_buffer.append(data)
-        if not self.poll_task and os.name != "nt":
+        if not self.force_poll:
             self.async_loop.add_writer(self.sync_serial.fileno(), self.intern_write_ready)
-        elif not self.poll_task and os.name == "nt":
-            self.poll_task = self.async_loop.create_task(self.write_task())
-
-    async def write_task(self):
-        """Write data to the serial port."""
-        while self.intern_write_buffer:
-            data = self.intern_write_buffer.pop(0)
-            self.sync_serial.write(data)
-            await asyncio.sleep(0)  # Yield control to the event loop
 
     def flush(self) -> None:
         """Clear output buffer and stops any more data being written."""

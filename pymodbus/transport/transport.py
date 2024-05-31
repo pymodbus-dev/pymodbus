@@ -473,11 +473,10 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 await asyncio.sleep(self.reconnect_delay_current)
                 if await self.connect():
                     break
-                self.reconnect_delay_current = 2 * self.reconnect_delay_current
-                if self.reconnect_delay_current > self.comm_params.reconnect_delay_max:
-                    self.callback_disconnected(Exception("Retry connect timeout."))
-                    self.reconnect_delay_current = self.comm_params.reconnect_delay_max
-                    break
+                self.reconnect_delay_current = min(
+                    2 * self.reconnect_delay_current,
+                    self.comm_params.reconnect_delay_max,
+                )
         except asyncio.CancelledError:
             pass
         self.reconnect_task = None

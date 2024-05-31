@@ -73,7 +73,7 @@ class TestTransportSerial:
     async def test_create_serial(self):
         """Test external methods."""
         transport, protocol = await create_serial_connection(
-            asyncio.get_running_loop(), mock.Mock, url="dummy"
+            asyncio.get_running_loop(), mock.Mock, None, url="dummy"
         )
         assert transport
         assert protocol
@@ -83,7 +83,7 @@ class TestTransportSerial:
         """Test external methods."""
         SerialTransport.force_poll = True
         transport, protocol = await create_serial_connection(
-            asyncio.get_running_loop(), mock.Mock, url="dummy"
+            asyncio.get_running_loop(), mock.Mock, None, url="dummy"
         )
         await asyncio.sleep(0)
         assert transport
@@ -96,7 +96,7 @@ class TestTransportSerial:
         """Test write with poll."""
         SerialTransport.force_poll = True
         transport, protocol = await create_serial_connection(
-            asyncio.get_running_loop(), mock.Mock, url="dummy"
+            asyncio.get_running_loop(), mock.Mock, None, url="dummy"
         )
         await asyncio.sleep(0)
         transport.write(b"abcd")

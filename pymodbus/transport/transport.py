@@ -57,6 +57,7 @@ from contextlib import suppress
 from enum import Enum
 from functools import partial
 from typing import Any
+
 from serial.rs485 import RS485Settings
 
 from pymodbus.logging import Log

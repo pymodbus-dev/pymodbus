@@ -57,11 +57,10 @@ from contextlib import suppress
 from enum import Enum
 from functools import partial
 from typing import Any
+from serial.rs485 import RS485Settings
 
 from pymodbus.logging import Log
 from pymodbus.transport.serialtransport import create_serial_connection
-
-from serial.rs485 import RS485Settings
 
 
 NULLMODEM_HOST = "__pymodbus_nullmodem"

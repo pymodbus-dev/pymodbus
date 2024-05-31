@@ -12,6 +12,7 @@ API changes 3.7.0
 - binary framer no longer supported
 - Framer.<type> renamed to FramerType.<type>
 - PDU classes moved to pymodbus/pdu
+- Drop support for Python 3.8 (its no longer tested, but will probably work)
 
 
 API changes 3.6.0

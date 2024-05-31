@@ -8,6 +8,24 @@ helps make pymodbus a better product.
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
 
+Version 3.7.0
+-------------
+* Transaction_id for serial == 0. (#2208)
+* Solve pylint error.
+* Sync TLS needs time before reading frame (#2186)
+* Update transaction.py (#2174)
+* PDU classes --> pymodbus/pdu. (#2160)
+* Speed up no data detection. (#2150)
+* RTU decode hunt part. (#2138)
+* Dislodge client classes from modbusProtocol. (#2137)
+* Merge new message layer and old framer directory. (#2135)
+* Coverage == 91%. (#2132)
+* Remove binary_framer. (#2130)
+* on_reconnect_callback --> on_connect_callback. (#2122)
+* Remove certfile,keyfile,password from TLS client. (#2121)
+* Drop support for python 3.8 (#2112)
+
+
 Version 3.6.9
 -------------
 * Remove python 3.8 from CI

@@ -179,7 +179,6 @@ class TestTransportComm:
         SerialTransport.force_poll = True
         assert await client.connect()
         await asyncio.sleep(0.5)
-        SerialTransport.force_poll = False
         assert len(server.active_connections) == 1
         server_connected = list(server.active_connections.values())[0]
         test_data = b"abcd" * 1000

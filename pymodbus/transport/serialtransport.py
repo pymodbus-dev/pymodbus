@@ -29,7 +29,7 @@ class SerialTransport(asyncio.Transport):
         self.sync_serial.write_timeout = 0
 
     def _serial_for_args(self, rs485_settings, *args, **kwargs) -> serial.Serial:
-        if rs485_settings != None:
+        if rs485_settings is not None:
             sync_serial = serial.rs485.RS485(*args, **kwargs)
             sync_serial.rs485_mode = rs485_settings
         else:

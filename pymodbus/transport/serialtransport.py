@@ -57,6 +57,7 @@ class SerialTransport(asyncio.Transport):
             self.poll_task = None
         else:
             self.async_loop.remove_reader(self.sync_serial.fileno())
+            self.async_loop.remove_writer(self.sync_serial.fileno())
         self.sync_serial.close()
         self.sync_serial = None  # type: ignore[assignment]
         if exc:

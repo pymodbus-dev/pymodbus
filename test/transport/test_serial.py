@@ -100,6 +100,7 @@ class TestTransportSerial:
         )
         await asyncio.sleep(0)
         transport.write(b"abcd")
+        await asyncio.sleep(0.5)
         transport.close()
         SerialTransport.force_poll = False
 

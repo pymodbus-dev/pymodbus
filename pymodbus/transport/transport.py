@@ -52,10 +52,11 @@ import asyncio
 import dataclasses
 import ssl
 from abc import abstractmethod
+from collections.abc import Callable, Coroutine
 from contextlib import suppress
 from enum import Enum
 from functools import partial
-from typing import Any, Callable, Coroutine
+from typing import Any
 
 from pymodbus.logging import Log
 from pymodbus.transport.serialtransport import create_serial_connection
@@ -111,7 +112,7 @@ class CommParams:
         password: str | None = None,
         sslctx: ssl.SSLContext | None = None,
     ) -> ssl.SSLContext:
-        """Generate sslctx from cert/key/passwor.
+        """Generate sslctx from cert/key/password.
 
         MODBUS/TCP Security Protocol Specification demands TLSv2 at least
         """

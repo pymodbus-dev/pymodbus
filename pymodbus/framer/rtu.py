@@ -1,10 +1,8 @@
 """Modbus RTU frame implementation."""
 from __future__ import annotations
 
-import struct
+from collections import namedtuple
 
-from pymodbus.exceptions import ModbusIOException
-from pymodbus.factory import ClientDecoder
 from pymodbus.framer.base import FramerBase
 from pymodbus.logging import Log
 
@@ -17,26 +15,53 @@ class FramerRTU(FramerBase):
 
     * Note: due to the USB converter and the OS drivers, timing cannot be quaranteed
     neither when receiving nor when sending.
+
+    Decoding is a complicated process because the RTU frame does not have a fixed prefix
+    only suffix, therefore it is necessary to decode the content (PDU) to get length etc.
+
+    There are some protocol restrictions that help with the detection.
+
+    For client:
+       - a request causes 1 response !
+       - Multiple requests are NOT allowed (master-slave protocol)
+       - the server will not retransmit responses
+    this means decoding is always exactly 1 frame (response)
+
+    For server (Single device)
+       - only 1 request allowed (master-slave) protocol
+       - the client (master) may retransmit but in larger time intervals
+    this means decoding is always exactly 1 frame (request)
+
+    For server (Multidrop line --> devices in parallel)
+       - only 1 request allowed (master-slave) protocol
+       - other devices will send responses
+       - the client (master) may retransmit but in larger time intervals
+    this means decoding is always exactly 1 frame request, however some requests
+    will be for unknown slaves, which must be ignored together with the
+    response from the unknown slave.
+
+    Recovery from bad cabling and unstable USB etc is important,
+    the following scenarios is possible:
+       - garble data before frame
+       - garble data in frame
+       - garble data after frame
+       - data in frame garbled (wrong CRC)
+    decoding assumes the frame is sound, and if not enters a hunting mode.
+
+    The 3.5 byte transmission time at the slowest speed 1.200Bps is 31ms.
+    Device drivers will typically flush buffer after 10ms of silence.
+    If no data is received for 50ms the transmission / frame can be considered
+    complete.
     """
 
     MIN_SIZE = 5
 
+    FC_LEN = namedtuple("FC_LEN", "req_len req_bytepos resp_len resp_bytepos")
+
     def __init__(self) -> None:
         """Initialize a ADU instance."""
         super().__init__()
-        self.broadcast: bool = False
-        self.dev_ids: list[int]
-        self.fc_calc: dict[int, int]
-
-    def set_dev_ids(self, dev_ids: list[int]):
-        """Set/update allowed device ids."""
-        if 0 in dev_ids:
-            self.broadcast = True
-        self.dev_ids = dev_ids
-
-    def set_fc_calc(self, fc: int, msg_size: int, count_pos: int):
-        """Set/Update function code information."""
-        self.fc_calc[fc] = msg_size if not count_pos else -count_pos
+        self.fc_len: dict[int, FramerRTU.FC_LEN] = {}
 
 
     @classmethod
@@ -58,120 +83,39 @@ class FramerRTU(FramerBase):
         return result
     crc16_table: list[int] = [0]
 
-    def _legacy_decode(self, callback, slave):  # noqa: C901
-        """Process new packet pattern."""
 
-        def is_frame_ready(self):
-            """Check if we should continue decode logic."""
-            size = self._header.get("len", 0)
-            if not size and len(self._buffer) > self._hsize:
-                try:
-                    self._header["uid"] = int(self._buffer[0])
-                    self._header["tid"] = int(self._buffer[0])
-                    func_code = int(self._buffer[1])
-                    pdu_class = self.decoder.lookupPduClass(func_code)
-                    size = pdu_class.calculateRtuFrameSize(self._buffer)
-                    self._header["len"] = size
-
-                    if len(self._buffer) < size:
-                        raise IndexError
-                    self._header["crc"] = self._buffer[size - 2 : size]
-                except IndexError:
-                    return False
-            return len(self._buffer) >= size if size > 0 else False
-
-        def get_frame_start(self, slaves, broadcast, skip_cur_frame):
-            """Scan buffer for a relevant frame start."""
-            start = 1 if skip_cur_frame else 0
-            if (buf_len := len(self._buffer)) < 4:
-                return False
-            for i in range(start, buf_len - 3):  # <slave id><function code><crc 2 bytes>
-                if not broadcast and self._buffer[i] not in slaves:
-                    continue
-                if (
-                    self._buffer[i + 1] not in self.function_codes
-                    and (self._buffer[i + 1] - 0x80) not in self.function_codes
-                ):
-                    continue
-                if i:
-                    self._buffer = self._buffer[i:]  # remove preceding trash.
-                return True
-            if buf_len > 3:
-                self._buffer = self._buffer[-3:]
-            return False
-
-        def check_frame(self):
-            """Check if the next frame is available."""
-            try:
-                self._header["uid"] = int(self._buffer[0])
-                self._header["tid"] = int(self._buffer[0])
-                func_code = int(self._buffer[1])
-                pdu_class = self.decoder.lookupPduClass(func_code)
-                size = pdu_class.calculateRtuFrameSize(self._buffer)
-                self._header["len"] = size
-
-                if len(self._buffer) < size:
-                    raise IndexError
-                self._header["crc"] = self._buffer[size - 2 : size]
-                frame_size = self._header["len"]
-                data = self._buffer[: frame_size - 2]
-                crc = self._header["crc"]
-                crc_val = (int(crc[0]) << 8) + int(crc[1])
-                return FramerRTU.check_CRC(data, crc_val)
-            except (IndexError, KeyError, struct.error):
-                return False
-
-        self._buffer = b''  # pylint: disable=attribute-defined-outside-init
-        broadcast = not slave[0]
-        skip_cur_frame = False
-        while get_frame_start(self, slave, broadcast, skip_cur_frame):
-            self._header: dict = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}  # pylint: disable=attribute-defined-outside-init
-            if not is_frame_ready(self):
-                Log.debug("Frame - not ready")
-                break
-            if not check_frame(self):
-                Log.debug("Frame check failed, ignoring!!")
-                # x = self._buffer
-                # self.resetFrame()
-                # self._buffer = x
-                skip_cur_frame = True
-                continue
-            start = 0x01  # self._hsize
-            end = self._header["len"] - 2
-            buffer = self._buffer[start:end]
-            if end > 0:
-                Log.debug("Getting Frame - {}", buffer, ":hex")
-                data = buffer
-            else:
-                data = b""
-            if (result := ClientDecoder().decode(data)) is None:
-                raise ModbusIOException("Unable to decode request")
-            result.slave_id = self._header["uid"]
-            result.transaction_id = self._header["tid"]
-            self._buffer = self._buffer[self._header["len"] :]  # pylint: disable=attribute-defined-outside-init
-            Log.debug("Frame advanced, resetting header!!")
-            callback(result)  # defer or push to a thread?
-
-
-    def hunt_frame_start(self, skip_cur_frame: bool, data: bytes) -> int:
-        """Scan buffer for a relevant frame start."""
-        buf_len = len(data)
-        for i in range(1 if skip_cur_frame else 0, buf_len - self.MIN_SIZE):
-            if not (self.broadcast or data[i] in self.dev_ids):
-                continue
-            if (_fc := data[i + 1]) not in self.fc_calc:
-                continue
-            return i
-        return -i
+    def setup_fc_len(self, _fc: int,
+        _req_len: int, _req_byte_pos: int,
+        _resp_len: int, _resp_byte_pos: int
+    ):
+        """Define request/response lengths pr function code."""
+        return
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU."""
-        if len(data) < self.MIN_SIZE:
+        if (buf_len := len(data)) < self.MIN_SIZE:
+            Log.debug("Short frame: {} wait for more data", data, ":hex")
             return 0, 0, 0, b''
 
-        while (i := self.hunt_frame_start(False, data)) > 0:
-            pass
-        return -i, 0, 0, b''
+        i = -1
+        try:
+            while True:
+                i += 1
+                if i > buf_len - self.MIN_SIZE + 1:
+                    break
+                dev_id = int(data[i])
+                fc_len = 5
+                msg_len = fc_len -2 if fc_len > 0 else int(data[i-fc_len])-fc_len+1
+                if msg_len + i + 2 > buf_len:
+                    break
+                crc_val = (int(data[i+msg_len]) << 8) + int(data[i+msg_len+1])
+                if not self.check_CRC(data[i:i+msg_len], crc_val):
+                    Log.debug("Skipping frame CRC with len {} at index {}!", msg_len, i)
+                    raise KeyError
+                return i+msg_len+2, dev_id, dev_id, data[i+1:i+msg_len]
+        except KeyError:
+            i = buf_len
+        return i, 0, 0, b''
 
 
     def encode(self, pdu: bytes, device_id: int, _tid: int) -> bytes:

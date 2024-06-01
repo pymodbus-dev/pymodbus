@@ -66,37 +66,31 @@ class Framer(ModbusProtocol):
         super().__init__(params, is_server)
         self.device_ids = device_ids
         self.broadcast: bool = (0 in device_ids)
+
         self.handle = {
-            FramerType.RAW: FramerRaw,
-            FramerType.ASCII: FramerAscii,
-            FramerType.RTU: FramerRTU,
-            FramerType.SOCKET: FramerSocket,
-            FramerType.TLS: FramerTLS,
-        }[framer_type]()
-
-
-    def validate_device_id(self, dev_id: int) -> bool:
-        """Check if device id is expected."""
-        return self.broadcast or (dev_id in self.device_ids)
+            FramerType.RAW: FramerRaw(),
+            FramerType.ASCII: FramerAscii(),
+            FramerType.RTU: FramerRTU(),
+            FramerType.SOCKET: FramerSocket(),
+            FramerType.TLS: FramerTLS(),
+        }[framer_type]
 
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
-        tot_len = len(data)
-        start = 0
+        tot_len = 0
+        buf_len = len(data)
         while True:
-            used_len, tid, device_id, msg = self.handle.decode(data[start:])
+            used_len, tid, device_id, msg = self.handle.decode(data[tot_len:])
+            tot_len += used_len
             if msg:
-                self.callback_request_response(msg, device_id, tid)
-            if not used_len:
-                return start
-            start += used_len
-            if start == tot_len:
+                if self.broadcast or device_id in self.device_ids:
+                    self.callback_request_response(msg, device_id, tid)
+                if tot_len == buf_len:
+                    return tot_len
+            else:
                 return tot_len
 
-    # --------------------- #
-    # callbacks and helpers #
-    # --------------------- #
     @abstractmethod
     def callback_request_response(self, data: bytes, device_id: int, tid: int) -> None:
         """Handle received modbus request/response."""

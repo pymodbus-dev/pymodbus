@@ -193,8 +193,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
             parts = host.split(":")
             host, port = parts[1][2:], int(parts[2])
 
-        rs485_settings = self.comm_params.rs485_settings
-        self.init_setup_connect_listen(host, port, rs485_settings)
+        self.init_setup_connect_listen(host, port, self.comm_params.rs485_settings)
 
     def init_setup_connect_listen(self, host: str, port: int, rs485_settings: RS485Settings | None) -> None:
         """Handle connect/listen handler."""

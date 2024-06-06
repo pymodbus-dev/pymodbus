@@ -15,7 +15,7 @@ from pymodbus.transport.serialtransport import (
 
 
 @mock.patch(
-    "pymodbus.transport.serialtransport.SerialTransport._serial_for_args", mock.MagicMock()
+    "pymodbus.transport.serialtransport.serial.serial_for_url", mock.MagicMock()
 )
 class TestTransportSerial:
     """Test transport serial module."""

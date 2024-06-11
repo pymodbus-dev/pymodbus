@@ -53,6 +53,7 @@ def setup_async_client(description=None, cmdline=None):
         server=False, description=description, cmdline=cmdline
     )
     _logger.info("### Create client object")
+    client = None
     if args.comm == "tcp":
         client = modbusClient.AsyncModbusTcpClient(
             args.host,

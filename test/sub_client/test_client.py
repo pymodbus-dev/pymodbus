@@ -625,7 +625,7 @@ def test_client_mixin_convert(datatype, registers, value):
 def test_client_mixin_convert_1234(datatype, registers, value):
     """Test converter methods."""
     for i in range(0, len(registers)):
-        registers[i] = int.from_bytes(registers[i])
+        registers[i] = int.from_bytes(registers[i], "big")
     regs = ModbusClientMixin.convert_to_registers(value, datatype)
     result = ModbusClientMixin.convert_from_registers(regs, datatype)
     if datatype == ModbusClientMixin.DATATYPE.FLOAT32 or datatype == ModbusClientMixin.DATATYPE.FLOAT64:

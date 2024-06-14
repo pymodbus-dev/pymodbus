@@ -220,6 +220,7 @@ class ModbusTransactionManager:
                         else:
                             break
                         # full = False
+                        Log.debug("Retry getting response: - {}", _buffer)
                     addTransaction = partial(  # pylint: disable=invalid-name
                         self.addTransaction,
                         tid=request.transaction_id,

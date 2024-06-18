@@ -31,6 +31,8 @@ class MessageSocket(MessageBase):
         if used_len < msg_len:
           Log.debug("Short frame: {} wait for more data", data, ":hex")
           return 0, 0, 0, self.EMPTY
+        if msg_len == 8 and used_len == 9:
+            msg_len = 9
         return msg_len, msg_tid, msg_dev, data[7:msg_len]
 
     def encode(self, data: bytes, device_id: int, tid: int) -> bytes:

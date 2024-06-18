@@ -7,6 +7,39 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+
+Version 3.6.9
+-------------
+* Log comm retries. (#2220)
+* Solve serial unrequested frame. (#2219)
+* test convert registers with 1234.... (#2217)
+* Fix writing to serial (rs485) on windows os. (#2191)
+* Remember to remove serial writer. (#2209)
+* Update client.rst (#2199)
+* Fix usage file names (#2194)
+* Show error if example is run without support files. (#2189)
+* Solve pylint error.
+* Describe zero_mode in ModbusSlaveContext.__init__ (#2187)
+* Datastore will not return ExceptionResponse. (#2175)
+* call async datastore from modbus server (#2144)
+* Transaction id overrun.
+* Add minimal devcontainer. (#2172)
+* Sphinx: do not turn warnings into errors.
+* Fix usage of AsyncModbusTcpClient in client docs page (#2169)
+* Bump actions CI. (#2166)
+* Request/Response: change execute to be async method (#2142)
+* datastore: add async_setValues/getValues methods (#2165)
+* fixed kwargs not being expanded for actions on bit registers, adjusted tests to catch this issue (#2161)
+* Clean datastore setValues. (#2145)
+* modbus_server: call execute in a way that those can be either coroutines or normal methods (#2139)
+* Streamline message class. (#2133)
+* Fix decode for wrong mdap len.
+* SOCKET/TLS framer using message decode(). (#2129)
+* ASCII framer using message decode() (#2128)
+* Add generate_ssl() to TLS client as helper. (#2120)
+* add _legacy_decoder to message rtu (#2119)
+
+
 Version 3.6.8
 -------------
 * Allow socket exception response with wrong length

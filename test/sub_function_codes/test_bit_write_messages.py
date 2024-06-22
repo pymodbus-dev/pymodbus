@@ -6,8 +6,6 @@ bit based request/response messages:
 * Read/Write Discretes
 * Read Coils
 """
-from test.conftest import FakeList, MockContext
-
 from pymodbus.bit_write_message import (
     WriteMultipleCoilsRequest,
     WriteMultipleCoilsResponse,
@@ -15,6 +13,7 @@ from pymodbus.bit_write_message import (
     WriteSingleCoilResponse,
 )
 from pymodbus.pdu import ModbusExceptions
+from test.conftest import FakeList, MockContext
 
 
 # ---------------------------------------------------------------------------#

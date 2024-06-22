@@ -58,6 +58,7 @@ def setup_sync_client(description=None, cmdline=None):
         cmdline=cmdline,
     )
     _logger.info("### Create client object")
+    client = None
     if args.comm == "tcp":
         client = modbusClient.ModbusTcpClient(
             args.host,

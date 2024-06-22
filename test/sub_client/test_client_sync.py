@@ -1,7 +1,6 @@
 """Test client sync."""
 import socket
 from itertools import count
-from test.conftest import mockSocket
 from unittest import mock
 
 import pytest
@@ -22,6 +21,7 @@ from pymodbus.transaction import (
     ModbusSocketFramer,
     ModbusTlsFramer,
 )
+from test.conftest import mockSocket
 
 
 # ---------------------------------------------------------------------------#

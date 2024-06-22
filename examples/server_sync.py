@@ -66,6 +66,7 @@ def run_sync_server(args):
     """Run server."""
     txt = f"### start SYNC server, listening on {args.port} - {args.comm}"
     _logger.info(txt)
+    server = None
     if args.comm == "tcp":
         address = ("", args.port) if args.port else None
         server = StartTcpServer(

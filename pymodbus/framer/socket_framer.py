@@ -60,7 +60,7 @@ class ModbusSocketFramer(ModbusFramer):
             }
         return {}
 
-    def frameProcessIncomingPacket(self, single, callback, slave, tid=None, **kwargs):  # noqa: C901
+    def frameProcessIncomingPacket(self, single, callback, slave, tid=None, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current

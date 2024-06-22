@@ -7,7 +7,6 @@ bit based request/response messages:
 * Read Coils
 """
 import struct
-from test.conftest import MockContext
 
 from pymodbus.bit_read_message import (
     ReadBitsRequestBase,
@@ -16,6 +15,7 @@ from pymodbus.bit_read_message import (
     ReadDiscreteInputsRequest,
 )
 from pymodbus.pdu import ModbusExceptions
+from test.conftest import MockContext
 
 
 res = [True] * 21

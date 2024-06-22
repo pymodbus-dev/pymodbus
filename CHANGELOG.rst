@@ -10,6 +10,7 @@ helps make pymodbus a better product.
 
 Version 3.6.9
 -------------
+* Remove python 3.8 from CI
 * Log comm retries. (#2220)
 * Solve serial unrequested frame. (#2219)
 * test convert registers with 1234.... (#2217)

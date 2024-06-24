@@ -33,6 +33,10 @@ The corresponding server must be started before e.g. as:
 import logging
 import sys
 
+from pymodbus.framer import ModbusSocketFramer
+from pymodbus.pdu.register_write_message import WriteSingleRegisterRequest
+from pymodbus.utilities import ModbusTransactionState
+
 
 try:
     import helper
@@ -131,10 +135,20 @@ def run_sync_client(client, modbus_calls=None):
     client.close()
     _logger.info("### End of Program")
 
+class WriteSingleRegisterRequestOneshot(WriteSingleRegisterRequest):
+    """WriteSingleRegisterRequest without a response expected."""
+
+    function_code = 55
+    should_respond = False
 
 def run_a_few_calls(client):
     """Test connection works."""
     try:
+        if not isinstance(client.framer, ModbusSocketFramer):
+            request = WriteSingleRegisterRequestOneshot(3, 42, slave=1)
+            rr = client.execute(request)
+            assert rr == b'Request write sent - no response expected'
+            assert client.state == ModbusTransactionState.TRANSACTION_COMPLETE
         rr = client.read_coils(32, 1, slave=1)
         assert len(rr.bits) == 8
         rr = client.read_holding_registers(4, 2, slave=1)

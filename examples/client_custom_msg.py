@@ -17,6 +17,7 @@ from pymodbus import FramerType
 from pymodbus.client import AsyncModbusTcpClient as ModbusClient
 from pymodbus.pdu import ModbusExceptions, ModbusRequest, ModbusResponse
 from pymodbus.pdu.bit_read_message import ReadCoilsRequest
+from pymodbus.pdu.register_write_message import WriteSingleRegisterRequest
 
 
 # --------------------------------------------------------------------------- #
@@ -108,6 +109,18 @@ class Read16CoilsRequest(ReadCoilsRequest):
         ReadCoilsRequest.__init__(self, address, 16, **kwargs)
 
 
+
+# --------------------------------------------------------------------------- #
+# Write registers to a buggy device that doesn't send a response
+# --------------------------------------------------------------------------- #
+
+
+class WriteSingleRegisterRequestOneshot(WriteSingleRegisterRequest):
+    """WriteSingleRegisterRequest without a response expected."""
+
+    should_respond = False
+
+
 # --------------------------------------------------------------------------- #
 # execute the request with your client
 # --------------------------------------------------------------------------- #
@@ -120,6 +133,11 @@ async def main(host="localhost", port=5020):
     """Run versions of read coil."""
     async with ModbusClient(host=host, port=port, framer_name=FramerType.SOCKET) as client:
         await client.connect()
+
+        # no response request
+        request = WriteSingleRegisterRequestOneshot(32, 42, slave=1)
+        result = await client.execute(request)
+        print(result)
 
         # new modbus function code.
         client.register(CustomModbusResponse)

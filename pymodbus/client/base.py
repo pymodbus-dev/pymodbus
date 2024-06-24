@@ -167,7 +167,10 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
                 if not count or not self.no_resend_on_retry:
                     self.ctx.framer.resetFrame()
                     self.ctx.send(packet)
-                if self.broadcast_enable and not request.slave_id:
+                if (
+                    not request.should_respond
+                    or (self.broadcast_enable and not request.slave_id)
+                ):
                     resp = None
                     break
                 try:

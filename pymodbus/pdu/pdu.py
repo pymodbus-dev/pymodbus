@@ -98,8 +98,15 @@ class ModbusPDU:
 
 
 class ModbusRequest(ModbusPDU):
-    """Base class for a modbus request PDU."""
+    """Base class for a modbus request PDU.
 
+    .. attribute:: should_respond
+
+        A flag that indicates if this request returns a result back
+        to the client issuing the request
+    """
+
+    should_respond = True
     function_code = -1
 
     def __init__(self, slave=0, **kwargs):

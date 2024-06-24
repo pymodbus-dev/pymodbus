@@ -229,6 +229,9 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 ):
                     self._transact(request, None, broadcast=True)
                     response = b"Broadcast write sent - no response expected"
+                elif not request.should_respond:
+                    self._transact(request, None, broadcast=True)
+                    response = b"Request write sent - no response expected"
                 else:
                     expected_response_length = None
                     if not isinstance(self.client.framer, ModbusSocketFramer):

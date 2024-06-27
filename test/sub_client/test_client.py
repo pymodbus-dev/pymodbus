@@ -592,12 +592,46 @@ def test_client_tls_connect2():
 )
 def test_client_mixin_convert(datatype, registers, value):
     """Test converter methods."""
-    regs = ModbusClientMixin.convert_to_registers(value, datatype)
-    result = ModbusClientMixin.convert_from_registers(regs, datatype)
+    result = ModbusClientMixin.convert_from_registers(registers, datatype)
     if datatype == ModbusClientMixin.DATATYPE.FLOAT32:
         result = round(result, 6)
-    assert regs == registers
     assert result == value
+    regs = ModbusClientMixin.convert_to_registers(value, datatype)
+    assert regs == registers
+
+
+@pytest.mark.parametrize(
+    ("datatype", "value", "registers"),
+    [
+        (ModbusClientMixin.DATATYPE.STRING, "0123", [b'\x30\x31', b'\x32\x33']),
+        (ModbusClientMixin.DATATYPE.UINT16, 258, [b'\x01\x02']),
+        (ModbusClientMixin.DATATYPE.INT16, -32510, [b'\x81\x02']),
+        (ModbusClientMixin.DATATYPE.UINT32, 16909060, [b'\x01\x02', b'\x03\x04']),
+        (ModbusClientMixin.DATATYPE.INT32, -2130574588, [b'\x81\x02', b'\x03\x04']),
+        (
+            ModbusClientMixin.DATATYPE.UINT64,
+            72623859790382856,
+            [b'\x01\x02', b'\x03\x04', b'\x05\x06', b'\x07\x08'],
+        ),
+        (
+            ModbusClientMixin.DATATYPE.INT64,
+            -9150748177064392952,
+            [b'\x81\x02', b'\x03\x04', b'\x05\x06', b'\x07\x08'],
+        ),
+        (ModbusClientMixin.DATATYPE.FLOAT32, 8.125736, [b'\x41\x02', b'\x03\x04']),
+        (ModbusClientMixin.DATATYPE.FLOAT64, 147552.502453, [b'\x41\x02', b'\x03\x04', b'\x05\x06', b'\x14\x16']),
+    ],
+)
+def test_client_mixin_convert_1234(datatype, registers, value):
+    """Test converter methods."""
+    for i in range(0, len(registers)):
+        registers[i] = int.from_bytes(registers[i], "big")
+    regs = ModbusClientMixin.convert_to_registers(value, datatype)
+    result = ModbusClientMixin.convert_from_registers(regs, datatype)
+    if datatype == ModbusClientMixin.DATATYPE.FLOAT32 or datatype == ModbusClientMixin.DATATYPE.FLOAT64:
+        result = round(result, 6)
+    assert result == value
+    assert regs == registers
 
 
 def test_client_mixin_convert_fail():

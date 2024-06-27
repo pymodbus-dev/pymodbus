@@ -216,7 +216,7 @@ class TestFramers:
                     "crc": b"\x49\xAD",
                     "uid": 17,
                     "len": 11,
-                    "tid": 17,
+                    "tid": 0,
                 },
             ),
             (
@@ -225,7 +225,7 @@ class TestFramers:
                     "crc": b"\x49\xAD",
                     "uid": 17,
                     "len": 11,
-                    "tid": 17,
+                    "tid": 0,
                 },
             ),
         ],

@@ -70,6 +70,7 @@ def setup_server(description=None, context=None, cmdline=None):
     args = helper.get_commandline(server=True, description=description, cmdline=cmdline)
     if context:
         args.context = context
+    datablock = None
     if not args.context:
         _logger.info("### Create datastore")
         # The datastores only respond to the addresses that are initialized
@@ -153,6 +154,7 @@ async def run_async_server(args):
     """Run server."""
     txt = f"### start ASYNC server, listening on {args.port} - {args.comm}"
     _logger.info(txt)
+    server = None
     if args.comm == "tcp":
         address = (args.host if args.host else "", args.port if args.port else None)
         server = await StartAsyncTcpServer(

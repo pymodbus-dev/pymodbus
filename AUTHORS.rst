@@ -18,6 +18,7 @@ Thanks to
 - Alois Hockenschlohe
 - Arjan
 - André Srinivasan
+- andrew-harness
 - banana-sun
 - Blaise Thompson
 - CapraTheBest
@@ -43,6 +44,7 @@ Thanks to
 - Jakob Ruhe
 - Jakob Schlyter
 - James Braza
+- James Cameron
 - James Hilliard
 - jan iversen
 - Jerome Velociter
@@ -63,13 +65,16 @@ Thanks to
 - Pavel Kostromitinov
 - peufeu2
 - Philip Couling
+- Qi Li
 - Sebastian Machuca
 - Sefa Keleş
 - Steffen Beyer
+- sumguytho
 - Thijs W
 - Totally a booplicate
 - WouterTuinstra
 - wriswith
+- Yohrog
 - yyokusa
 
 

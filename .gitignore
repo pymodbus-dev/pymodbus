@@ -9,6 +9,7 @@ __pycache__/
 .idea/
 .noseids
 .pymodhis
+.pypirc
 .venv
 .vscode
 .vscode/

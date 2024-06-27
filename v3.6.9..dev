@@ -1,0 +1,20 @@
+
+V3.7.0 (NOT INCLUDED in 3.6.7-8-9)
+14ec87e3 Solve serial unrequested frame. (#2219)
+5bddf9e8 Update third party versions. (#2216)
+45c5116e Transaction_id for serial == 0. (#2208)
+c91b2182 Sync TLS needs time before reading frame (#2186)
+a48aeeb4 Update transaction.py (#2174)
+e9c187e9 Merge 3.6.8 effects.
+681fd2c8 Merge master v3.6.8 into dev
+8a836b20 PDU classes --> pymodbus/pdu. (#2160)
+e8063fa5 Merge 3.6.7 back into dev. (#2156)
+a6b43dd7 Speed up no data detection. (#2150)
+c4c14cab RTU decode hunt part. (#2138)
+9e9e50e2 Dislodge client classes from modbusProtocol. (#2137)
+9f736dfe Merge new message layer and old framer directory. (#2135)
+331dc636 Coverage == 91%. (#2132)
+86d5afe2 Remove binary_framer. (#2130)
+0803ff70 on_reconnect_callback --> on_connect_callback. (#2122)
+2c36fd3f Remove certfile,keyfile,password from TLS client. (#2121)
+58a1c37d Drop support for python 3.8 (#2112)

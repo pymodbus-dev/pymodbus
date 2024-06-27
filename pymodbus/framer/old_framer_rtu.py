@@ -80,6 +80,7 @@ class ModbusRtuFramer(ModbusFramer):
                 try:
                     self._header["uid"] = int(self._buffer[0])
                     self._header["tid"] = int(self._buffer[0])
+                    self._header["tid"] = 0  # fix for now
                     func_code = int(self._buffer[1])
                     pdu_class = self.decoder.lookupPduClass(func_code)
                     size = pdu_class.calculateRtuFrameSize(self._buffer)
@@ -117,6 +118,7 @@ class ModbusRtuFramer(ModbusFramer):
             try:
                 self._header["uid"] = int(self._buffer[0])
                 self._header["tid"] = int(self._buffer[0])
+                self._header["tid"] = 0  # fix for now
                 func_code = int(self._buffer[1])
                 pdu_class = self.decoder.lookupPduClass(func_code)
                 size = pdu_class.calculateRtuFrameSize(self._buffer)

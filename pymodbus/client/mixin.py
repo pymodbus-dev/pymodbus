@@ -522,7 +522,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :raises ModbusException: when size of registers is not 1, 2 or 4
         """
         byte_list = bytearray()
-        for x in registers:
+        for x in reversed(registers):
             byte_list.extend(int.to_bytes(x, 2, "big"))
         if data_type == cls.DATATYPE.STRING:
             if byte_list[-1:] == b"\00":

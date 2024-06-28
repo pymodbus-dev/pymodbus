@@ -27,6 +27,6 @@ class FramerRaw(FramerBase):
         tid = int(data[1])
         return len(data), dev_id, tid, data[2:]
 
-    def encode(self, pdu: bytes, device_id: int, tid: int) -> bytes:
+    def encode(self, pdu: bytes, dev_id: int, tid: int) -> bytes:
         """Encode ADU."""
-        return device_id.to_bytes(1, 'big') + tid.to_bytes(1, 'big') + pdu
+        return dev_id.to_bytes(1, 'big') + tid.to_bytes(1, 'big') + pdu

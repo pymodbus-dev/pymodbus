@@ -34,25 +34,29 @@ class FramerAscii(FramerBase):
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU."""
-        if (used_len := len(data)) < self.MIN_SIZE:
-            Log.debug("Short frame: {} wait for more data", data, ":hex")
-            return 0, 0, 0, self.EMPTY
-        if data[0:1] != self.START:
-            if (start := data.find(self.START)) != -1:
-                used_len = start
-            Log.debug("Garble data before frame: {}, skip until start of frame", data, ":hex")
-            return used_len, 0, 0, self.EMPTY
-        if (used_len := data.find(self.END)) == -1:
-            Log.debug("Incomplete frame: {} wait for more data", data, ":hex")
-            return 0, 0, 0, self.EMPTY
-
-        dev_id = int(data[1:3], 16)
-        lrc = int(data[used_len - 2: used_len], 16)
-        msg = a2b_hex(data[1 : used_len - 2])
-        if not self.check_LRC(msg, lrc):
-            Log.debug("LRC wrong in frame: {} skipping", data, ":hex")
-            return used_len+2, 0, 0, self.EMPTY
-        return used_len+2, 0, dev_id, msg[1:]
+        buf_len = len(data)
+        used_len = 0
+        while True:
+            if buf_len - used_len < self.MIN_SIZE:
+                return used_len, 0, 0, self.EMPTY
+            buffer = data[used_len:]
+            if buffer[0:1] != self.START:
+                if (i := buffer.find(self.START)) == -1:
+                    Log.debug("No frame start in data: {}, wait for data", data, ":hex")
+                    return buf_len, 0, 0, self.EMPTY
+                used_len += i
+                continue
+            if (end := buffer.find(self.END)) == -1:
+                Log.debug("Incomplete frame: {} wait for more data", data, ":hex")
+                return used_len, 0, 0, self.EMPTY
+            dev_id = int(buffer[1:3], 16)
+            lrc = int(buffer[end - 2: end], 16)
+            msg = a2b_hex(buffer[1 : end - 2])
+            used_len += end + 2
+            if not self.check_LRC(msg, lrc):
+                Log.debug("LRC wrong in frame: {} skipping", data, ":hex")
+                continue
+            return used_len, dev_id, dev_id, msg[1:]
 
     def encode(self, data: bytes, device_id: int, _tid: int) -> bytes:
         """Encode ADU."""

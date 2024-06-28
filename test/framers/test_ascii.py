@@ -34,7 +34,7 @@ class TestFramerAscii:
         res_len, tid, dev_id, data = frame.decode(packet)
         assert res_len == used_len
         assert data == res
-        assert not tid
+        assert tid == res_id
         assert dev_id == res_id
 
     @pytest.mark.parametrize(

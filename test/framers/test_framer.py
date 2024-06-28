@@ -9,33 +9,15 @@ from pymodbus.framer.ascii import FramerAscii
 from pymodbus.framer.rtu import FramerRTU
 from pymodbus.framer.socket import FramerSocket
 from pymodbus.framer.tls import FramerTLS
-from pymodbus.transport import CommParams
 
 
 class TestFramer:
     """Test module."""
 
-    @staticmethod
-    @pytest.fixture(name="msg")
-    async def prepare_message(dummy_message):
-        """Return message object."""
-        return dummy_message(
-            FramerType.RAW,
-            CommParams(),
-            False,
-            [1],
-        )
-
-
     @pytest.mark.parametrize(("entry"), list(FramerType))
-    async def test_message_init(self, entry, dummy_message):
-        """Test message type."""
-        msg = dummy_message(entry.value,
-            CommParams(),
-            False,
-            [1],
-        )
-        assert msg.handle
+    async def test_framer_init(self, dummy_framer):
+        """Test framer type."""
+        assert dummy_framer.handle
 
     @pytest.mark.parametrize(("data", "res_len", "cx", "rc"), [
         (b'12345', 5, 1, [(5, 0, 0, b'12345')]),  # full frame
@@ -43,38 +25,39 @@ class TestFramer:
         (b'12345', 5, 0, [(5, 0, 0, b'')]),  # faulty frame, skipped
         (b'1234512345', 10, 2, [(5, 0, 0, b'12345'), (5, 0, 0, b'12345')]),  # 2 full frames
         (b'12345678', 5, 1, [(5, 0, 0, b'12345'), (0, 0, 0, b'')]),  # full frame, not full frame
-        (b'67812345', 8, 1, [(3, 0, 0, b''), (5, 0, 0, b'12345')]), # garble first, full frame next
-        (b'12345678', 5, 0, [(5, 0, 0, b''), (0, 0, 0, b'')]),      # garble first, not full frame
-        (b'12345678', 8, 0, [(5, 0, 0, b''), (3, 0, 0, b'')]),      # garble first, faulty frame
+        (b'67812345', 8, 1, [(8, 0, 0, b'12345')]), # garble first, full frame next
+        (b'12345678', 5, 0, [(5, 0, 0, b'')]),      # garble first, not full frame
+        (b'12345678', 8, 0, [(8, 0, 0, b'')]),      # garble first, faulty frame
     ])
-    async def test_message_callback(self, msg, data, res_len, cx, rc):
-        """Test message type."""
-        msg.callback_request_response = mock.Mock()
-        msg.handle.decode = mock.MagicMock(side_effect=iter(rc))
-        assert msg.callback_data(data) == res_len
-        assert msg.callback_request_response.call_count == cx
+    async def test_framer_callback(self, dummy_framer, data, res_len, cx, rc):
+        """Test framer type."""
+        dummy_framer.callback_request_response = mock.Mock()
+        dummy_framer.handle.decode = mock.MagicMock(side_effect=iter(rc))
+        assert dummy_framer.callback_data(data) == res_len
+        assert dummy_framer.callback_request_response.call_count == cx
         if cx:
-            msg.callback_request_response.assert_called_with(b'12345', 0, 0)
+            dummy_framer.callback_request_response.assert_called_with(b'12345', 0, 0)
         else:
-            msg.callback_request_response.assert_not_called()
+            dummy_framer.callback_request_response.assert_not_called()
 
-    async def test_message_build_send(self, msg):
-        """Test message type."""
-        msg.handle.encode = mock.MagicMock(return_value=(b'decode'))
-        msg.build_send(b'decode', 1, 0)
-        msg.handle.encode.assert_called_once()
-        msg.send.assert_called_once()
-        msg.send.assert_called_with(b'decode', None)
+    @pytest.mark.parametrize(("data", "res_len", "rc"), [
+        (b'12345', 5, [(5, 0, 17, b'12345'), (0, 0, 0, b'')]),  # full frame, wrong dev_id
+    ])
+    async def test_framer_callback_wrong_id(self, dummy_framer, data, res_len, rc):
+        """Test framer type."""
+        dummy_framer.callback_request_response = mock.Mock()
+        dummy_framer.handle.decode = mock.MagicMock(side_effect=iter(rc))
+        dummy_framer.broadcast = False
+        assert dummy_framer.callback_data(data) == res_len
+        dummy_framer.callback_request_response.assert_not_called()
 
-    @pytest.mark.parametrize(
-        ("dev_id", "res"), [
-        (0, False),
-        (1, True),
-        (2, False),
-        ])
-    async def test_validate_id(self, msg, dev_id, res):
-        """Test message type."""
-        assert res == msg.validate_device_id(dev_id)
+    async def test_framer_build_send(self, dummy_framer):
+        """Test framer type."""
+        dummy_framer.handle.encode = mock.MagicMock(return_value=(b'decode'))
+        dummy_framer.build_send(b'decode', 1, 0)
+        dummy_framer.handle.encode.assert_called_once()
+        dummy_framer.send.assert_called_once()
+        dummy_framer.send.assert_called_with(b'decode', None)
 
     @pytest.mark.parametrize(
         ("data", "res_len", "res_id", "res_tid", "res_data"), [
@@ -82,9 +65,9 @@ class TestFramer:
         (b'\x01\x02\x03', 3, 1, 2, b'\x03'),
         (b'\x04\x05\x06\x07\x08\x09\x00\x01\x02\x03', 10, 4, 5, b'\x06\x07\x08\x09\x00\x01\x02\x03'),
     ])
-    async def test_decode(self, msg,  data, res_id, res_tid, res_len, res_data):
+    async def test_framer_decode(self, dummy_framer,  data, res_id, res_tid, res_len, res_data):
         """Test decode method in all types."""
-        t_len, t_id, t_tid, t_data = msg.handle.decode(data)
+        t_len, t_id, t_tid, t_data = dummy_framer.handle.decode(data)
         assert res_len == t_len
         assert res_id == t_id
         assert res_tid == t_tid
@@ -95,9 +78,9 @@ class TestFramer:
         (b'\x01\x02', 5, 6, b'\x05\x06\x01\x02'),
         (b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09', 17, 25, b'\x11\x19\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09'),
     ])
-    async def test_encode(self, msg, data, dev_id, tid, res_data):
+    async def test_framer_encode(self, dummy_framer, data, dev_id, tid, res_data):
         """Test decode method in all types."""
-        t_data = msg.handle.encode(data, dev_id, tid)
+        t_data = dummy_framer.handle.encode(data, dev_id, tid)
         assert res_data == t_data
 
     @pytest.mark.parametrize(
@@ -135,7 +118,7 @@ class TestFramer:
 
 
 
-class TestFramer2:
+class TestFramerType:
     """Test classes."""
 
     @pytest.mark.parametrize(
@@ -151,8 +134,44 @@ class TestFramer2:
                 b':FF03007C000280\r\n',
                 b':FF0304008D008EDF\r\n',
                 b':FF83027C\r\n',
+                b':0003007C00027F\r\n',
+                b':000304008D008EDE\r\n',
+                b':0083027B\r\n',
+                b':1103007C00026E\r\n',
+                b':110304008D008ECD\r\n',
+                b':1183026A\r\n',
+                b':FF03007C000280\r\n',
+                b':FF0304008D008EDF\r\n',
+                b':FF83027C\r\n',
+                b':0003007C00027F\r\n',
+                b':000304008D008EDE\r\n',
+                b':0083027B\r\n',
+                b':1103007C00026E\r\n',
+                b':110304008D008ECD\r\n',
+                b':1183026A\r\n',
+                b':FF03007C000280\r\n',
+                b':FF0304008D008EDF\r\n',
+                b':FF83027C\r\n',
             ]),
             (FramerRTU, [
+                b'\x00\x03\x00\x7c\x00\x02\x04\x02',
+                b'\x00\x03\x04\x00\x8d\x00\x8e\xfa\xbc',
+                b'\x00\x83\x02\x91\x31',
+                b'\x11\x03\x00\x7c\x00\x02\x07\x43',
+                b'\x11\x03\x04\x00\x8d\x00\x8e\xfb\xbd',
+                b'\x11\x83\x02\xc1\x34',
+                b'\xff\x03\x00\x7c\x00\x02\x10\x0d',
+                b'\xff\x03\x04\x00\x8d\x00\x8e\xf5\xb3',
+                b'\xff\x83\x02\xa1\x01',
+                b'\x00\x03\x00\x7c\x00\x02\x04\x02',
+                b'\x00\x03\x04\x00\x8d\x00\x8e\xfa\xbc',
+                b'\x00\x83\x02\x91\x31',
+                b'\x11\x03\x00\x7c\x00\x02\x07\x43',
+                b'\x11\x03\x04\x00\x8d\x00\x8e\xfb\xbd',
+                b'\x11\x83\x02\xc1\x34',
+                b'\xff\x03\x00\x7c\x00\x02\x10\x0d',
+                b'\xff\x03\x04\x00\x8d\x00\x8e\xf5\xb3',
+                b'\xff\x83\x02\xa1\x01',
                 b'\x00\x03\x00\x7c\x00\x02\x04\x02',
                 b'\x00\x03\x04\x00\x8d\x00\x8e\xfa\xbc',
                 b'\x00\x83\x02\x91\x31',
@@ -213,10 +232,9 @@ class TestFramer2:
             (9, 3077),
         ]
     )
-    def test_encode(self, frame, frame_expected, data, dev_id, tid, inx1, inx2, inx3):
+    def test_encode_type(self, frame, frame_expected, data, dev_id, tid, inx1, inx2, inx3):
         """Test encode method."""
-        if ((frame != FramerSocket and tid) or
-            (frame == FramerTLS and dev_id)):
+        if frame == FramerTLS and dev_id + tid:
             return
         frame_obj = frame()
         expected = frame_expected[inx1 + inx2 + inx3]
@@ -224,47 +242,47 @@ class TestFramer2:
         assert encoded_data == expected
 
     @pytest.mark.parametrize(
-        ("msg_type", "data", "dev_id", "tid", "expected"),
+        ("entry", "is_server", "data", "dev_id", "tid", "expected"),
         [
-            (FramerType.ASCII, b':0003007C00027F\r\n', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.ASCII, b':000304008D008EDE\r\n', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.ASCII, b':0083027B\r\n', 0, 0, b'\x83\x02',),  # Exception
-            (FramerType.ASCII, b':1103007C00026E\r\n', 17, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.ASCII, b':110304008D008ECD\r\n', 17, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.ASCII, b':1183026A\r\n', 17, 0, b'\x83\x02',),  # Exception
-            (FramerType.ASCII, b':FF03007C000280\r\n', 255, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.ASCII, b':FF0304008D008EDF\r\n', 255, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.ASCII, b':FF83027C\r\n', 255, 0, b'\x83\x02',),  # Exception
-            (FramerType.RTU, b'\x00\x03\x00\x7c\x00\x02\x04\x02', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.RTU, b'\x00\x03\x04\x00\x8d\x00\x8e\xfa\xbc', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.RTU, b'\x00\x83\x02\x91\x31', 0, 0, b'\x83\x02',),  # Exception
-            (FramerType.RTU, b'\x11\x03\x00\x7c\x00\x02\x07\x43', 17, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.RTU, b'\x11\x03\x04\x00\x8d\x00\x8e\xfb\xbd', 17, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.RTU, b'\x11\x83\x02\xc1\x34', 17, 0, b'\x83\x02',),  # Exception
-            (FramerType.RTU, b'\xff\x03\x00|\x00\x02\x10\x0d', 255, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.RTU, b'\xff\x03\x04\x00\x8d\x00\x8e\xf5\xb3', 255, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.RTU, b'\xff\x83\x02\xa1\x01', 255, 0, b'\x83\x02',),  # Exception
-            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x07\x00\x03\x04\x00\x8d\x00\x8e', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x03\x00\x83\x02', 0, 0, b'\x83\x02',),  # Exception
-            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x06\x11\x03\x00\x7c\x00\x02', 17, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x07\x11\x03\x04\x00\x8d\x00\x8e', 17, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x03\x11\x83\x02', 17, 0, b'\x83\x02',),  # Exception
-            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x06\xff\x03\x00\x7c\x00\x02', 255, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x07\xff\x03\x04\x00\x8d\x00\x8e', 255, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x03\xff\x83\x02', 255, 0, b'\x83\x02',),  # Exception
-            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02', 0, 3077, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x07\x00\x03\x04\x00\x8d\x00\x8e', 0, 3077, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x03\x00\x83\x02', 0, 3077, b'\x83\x02',),  # Exception
-            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x06\x11\x03\x00\x7c\x00\x02', 17, 3077, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x07\x11\x03\x04\x00\x8d\x00\x8e', 17, 3077, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x03\x11\x83\x02', 17, 3077, b'\x83\x02',),  # Exception
-            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x06\xff\x03\x00\x7c\x00\x02', 255, 3077, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x07\xff\x03\x04\x00\x8d\x00\x8e', 255, 3077, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x03\xff\x83\x02', 255, 3077, b'\x83\x02',),  # Exception
-            (FramerType.TLS, b'\x03\x00\x7c\x00\x02', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.TLS, b'\x03\x04\x00\x8d\x00\x8e', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.TLS, b'\x83\x02', 0, 0, b'\x83\x02',),  # Exception
+            (FramerType.ASCII, True, b':0003007C00027F\r\n', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.ASCII, False, b':000304008D008EDE\r\n', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.ASCII, False, b':0083027B\r\n', 0, 0, b'\x83\x02',),  # Exception
+            (FramerType.ASCII, True, b':1103007C00026E\r\n', 17, 17, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.ASCII, False, b':110304008D008ECD\r\n', 17, 17, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.ASCII, False, b':1183026A\r\n', 17, 17, b'\x83\x02',),  # Exception
+            (FramerType.ASCII, True, b':FF03007C000280\r\n', 255, 255, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.ASCII, False, b':FF0304008D008EDF\r\n', 255, 255, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.ASCII, False, b':FF83027C\r\n', 255, 255, b'\x83\x02',),  # Exception
+            (FramerType.RTU, True, b'\x00\x03\x00\x7c\x00\x02\x04\x02', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.RTU, False, b'\x00\x03\x04\x00\x8d\x00\x8e\xfa\xbc', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.RTU, False, b'\x00\x83\x02\x91\x31', 0, 0, b'\x83\x02',),  # Exception
+            (FramerType.RTU, True, b'\x11\x03\x00\x7c\x00\x02\x07\x43', 17, 17, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.RTU, False, b'\x11\x03\x04\x00\x8d\x00\x8e\xfb\xbd', 17, 17, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.RTU, False, b'\x11\x83\x02\xc1\x34', 17, 17, b'\x83\x02',),  # Exception
+            (FramerType.RTU, True, b'\xff\x03\x00|\x00\x02\x10\x0d', 255, 255, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.RTU, False, b'\xff\x03\x04\x00\x8d\x00\x8e\xf5\xb3', 255, 255, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.RTU, False, b'\xff\x83\x02\xa1\x01', 255, 255, b'\x83\x02',),  # Exception
+            (FramerType.SOCKET, True, b'\x00\x00\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.SOCKET, False, b'\x00\x00\x00\x00\x00\x07\x00\x03\x04\x00\x8d\x00\x8e', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.SOCKET, False, b'\x00\x00\x00\x00\x00\x03\x00\x83\x02', 0, 0, b'\x83\x02',),  # Exception
+            (FramerType.SOCKET, True, b'\x00\x00\x00\x00\x00\x06\x11\x03\x00\x7c\x00\x02', 17, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.SOCKET, False, b'\x00\x00\x00\x00\x00\x07\x11\x03\x04\x00\x8d\x00\x8e', 17, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.SOCKET, False, b'\x00\x00\x00\x00\x00\x03\x11\x83\x02', 17, 0, b'\x83\x02',),  # Exception
+            (FramerType.SOCKET, True, b'\x00\x00\x00\x00\x00\x06\xff\x03\x00\x7c\x00\x02', 255, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.SOCKET, False, b'\x00\x00\x00\x00\x00\x07\xff\x03\x04\x00\x8d\x00\x8e', 255, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.SOCKET, False, b'\x00\x00\x00\x00\x00\x03\xff\x83\x02', 255, 0, b'\x83\x02',),  # Exception
+            (FramerType.SOCKET, True, b'\x0c\x05\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02', 0, 3077, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.SOCKET, False, b'\x0c\x05\x00\x00\x00\x07\x00\x03\x04\x00\x8d\x00\x8e', 0, 3077, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.SOCKET, False, b'\x0c\x05\x00\x00\x00\x03\x00\x83\x02', 0, 3077, b'\x83\x02',),  # Exception
+            (FramerType.SOCKET, True, b'\x0c\x05\x00\x00\x00\x06\x11\x03\x00\x7c\x00\x02', 17, 3077, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.SOCKET, False, b'\x0c\x05\x00\x00\x00\x07\x11\x03\x04\x00\x8d\x00\x8e', 17, 3077, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.SOCKET, False, b'\x0c\x05\x00\x00\x00\x03\x11\x83\x02', 17, 3077, b'\x83\x02',),  # Exception
+            (FramerType.SOCKET, True, b'\x0c\x05\x00\x00\x00\x06\xff\x03\x00\x7c\x00\x02', 255, 3077, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.SOCKET, False, b'\x0c\x05\x00\x00\x00\x07\xff\x03\x04\x00\x8d\x00\x8e', 255, 3077, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.SOCKET, False, b'\x0c\x05\x00\x00\x00\x03\xff\x83\x02', 255, 3077, b'\x83\x02',),  # Exception
+            (FramerType.TLS, True, b'\x03\x00\x7c\x00\x02', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.TLS, False, b'\x03\x04\x00\x8d\x00\x8e', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.TLS, False, b'\x83\x02', 0, 0, b'\x83\x02',),  # Exception
         ]
     )
     @pytest.mark.parametrize(
@@ -275,54 +293,98 @@ class TestFramer2:
             "single",
         ]
     )
-    async def test_decode2(self, dummy_message, msg_type, data, dev_id, tid, expected, split):
+    async def test_decode_type(self, entry, dummy_framer, data, dev_id, tid, expected, split):
         """Test encode method."""
-        if msg_type == FramerType.RTU:
-            pytest.skip("Waiting on implementation!")
-        if msg_type == FramerType.TLS and split != "no":
+        if entry == FramerType.TLS and split != "no":
             return
-        frame = dummy_message(
-            msg_type,
-            CommParams(),
-            False,
-            [1],
-        )
-        frame.callback_request_response = mock.Mock()
+        if entry == FramerType.RTU:
+            return
+        dummy_framer.callback_request_response = mock.MagicMock()
         if split == "no":
-            used_len = frame.callback_data(data)
-
+            used_len = dummy_framer.callback_data(data)
         elif split == "half":
             split_len = int(len(data) / 2)
-            assert not frame.callback_data(data[0:split_len])
-            frame.callback_request_response.assert_not_called()
-            used_len = frame.callback_data(data)
+            assert not dummy_framer.callback_data(data[0:split_len])
+            dummy_framer.callback_request_response.assert_not_called()
+            used_len = dummy_framer.callback_data(data)
         else:
             last = len(data)
             for i in range(0, last -1):
-                assert not frame.callback_data(data[0:i+1])
-                frame.callback_request_response.assert_not_called()
-            used_len = frame.callback_data(data)
+                assert not dummy_framer.callback_data(data[0:i+1])
+                dummy_framer.callback_request_response.assert_not_called()
+            used_len = dummy_framer.callback_data(data)
         assert used_len == len(data)
-        frame.callback_request_response.assert_called_with(expected, dev_id, tid)
+        dummy_framer.callback_request_response.assert_called_with(expected, dev_id, tid)
 
     @pytest.mark.parametrize(
-        ("frame", "data", "exp_len"),
+        ("entry", "data", "exp"),
         [
-            (FramerAscii, b':0003007C00017F\r\n', 17),  # bad crc
-            # (MessageAscii, b'abc:0003007C00027F\r\n', 3),  # garble in front
-            # (MessageAscii, b':0003007C00017F\r\nabc', 17),  # bad crc, garble after
-            # (MessageAscii, b':0003007C00017F\r\n:0003', 17),  # part second message
-            (FramerRTU, b'\x00\x83\x02\x91\x31', 0),  # bad crc
-            # (MessageRTU, b'\x00\x83\x02\x91\x31', 0),  # garble in front
-            # (MessageRTU, b'\x00\x83\x02\x91\x31', 0),  # garble after
-            # (MessageRTU, b'\x00\x83\x02\x91\x31', 0),  # part second message
+            (FramerType.ASCII, b':0003007C00017F\r\n', [  # bad crc
+                (17, b''),
+            ]),
+            (FramerType.ASCII, b':0003007C00027F\r\n:0003007C00027F\r\n', [  # double good crc
+                (17, b'\x03\x00\x7c\x00\x02'),
+                (17, b'\x03\x00\x7c\x00\x02'),
+            ]),
+            (FramerType.ASCII, b':0003007C00017F\r\n:0003007C00027F\r\n', [  # bad crc + good CRC
+                (34, b'\x03\x00\x7c\x00\x02'),
+            ]),
+            (FramerType.ASCII, b'abc:0003007C00027F\r\n', [  # garble in front
+                (20, b'\x03\x00\x7c\x00\x02'),
+            ]),
+            (FramerType.ASCII, b':0003007C00017F\r\nabc', [  # bad crc, garble after
+                (17, b''),
+            ]),
+            (FramerType.ASCII, b':0003007C00017F\r\nabcdefghijkl', [  # bad crc, garble after
+                (29, b''),
+            ]),
+            (FramerType.ASCII, b':0003007C00027F\r\nabc', [  # good crc, garble after
+                (17, b'\x03\x00\x7c\x00\x02'),
+            ]),
+            (FramerType.ASCII, b':0003007C00017F\r\n:0003', [ # bad crc, part second framer
+                (17, b''),
+            ]),
+            (FramerType.SOCKET, b'\x00\x00\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02\x00\x00\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02',  [ # double good crc
+                 (12, b"\x03\x00\x7c\x00\x02"),
+                 (12, b"\x03\x00\x7c\x00\x02"),
+            ]),
+            (FramerType.RTU, b'\x00\x83\x02\x91\x21', [ # bad crc
+                 (5, b''),
+            ]),
+            #(FramerType.RTU, b'\x00\x83\x02\xf0\x91\x31', [ # dummy char in stream, bad crc
+            #     (5, b''),
+            #]),
+            # (FramerType.RTU, b'\x00\x83\x02\x91\x21\x00\x83\x02\x91\x31', [ # bad crc + good CRC
+            #    (10, b'\x83\x02'),
+            #]),
+            #(FramerType.RTU, b'\x00\x83\x02\xf0\x91\x31\x00\x83\x02\x91\x31', [ # dummy char in stream, bad crc  + good CRC
+            #     (11, b''),
+            #]),
+
+            # (FramerType.RTU, b'\x00\x83\x02\x91\x31', 0),  # garble in front
+            # (FramerType.ASCII, b'abc:0003007C00027F\r\n', [  # garble in front
+            #     (20, b'\x03\x00\x7c\x00\x02'),
+            # ]),
+
+            # (FramerType.RTU, b'\x00\x83\x02\x91\x31', 0),  # garble after
+            # (FramerType.ASCII, b':0003007C00017F\r\nabc', [  # bad crc, garble after
+            #     (17, b''),
+            # ]),
+            # (FramerType.ASCII, b':0003007C00017F\r\nabcdefghijkl', [  # bad crc, garble after
+            #     (29, b''),
+            # ]),
+            # (FramerType.ASCII, b':0003007C00027F\r\nabc', [  # good crc, garble after
+            #     (17, b'\x03\x00\x7c\x00\x02'),
+            # ]),
+            # (FramerType.RTU, b'\x00\x83\x02\x91\x31', 0),  # part second framer
+            # (FramerType.ASCII, b':0003007C00017F\r\n:0003', [ # bad crc, part second framer
+            #     (17, b''),
+            # ]),
         ]
     )
-    async def test_decode_bad_crc(self, frame, data, exp_len):
+    async def test_decode_complicated(self, dummy_framer, data, exp):
         """Test encode method."""
-        if frame == FramerRTU:
-            pytest.skip("Waiting for implementation.")
-        frame_obj = frame()
-        used_len, _, _, data = frame_obj.decode(data)
-        assert used_len == exp_len
-        assert not data
+        for ent in exp:
+            used_len, _, _, res_data = dummy_framer.handle.decode(data)
+            assert used_len == ent[0]
+            assert res_data == ent[1]

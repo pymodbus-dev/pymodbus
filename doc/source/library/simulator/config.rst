@@ -331,23 +331,76 @@ Registers can be singulars (first entry) or arrays (second entry)
 Bits section
 ^^^^^^^^^^^^
 
-Example "bits" configuration:
+Breaking change, bits have now been renamed into bitfield16, bitfield32 and bitfield64 to promote consistency
+
+
+
+
+BitField16 section
+^^^^^^^^^^^^^^
+Replaces "bits"
+
+Example "bitfield16" configuration:
 
 .. code-block::
 
-    "bits": [
-        5,
-        [6, 7],
+    "bitfield16": [
+        6
+        [6],
         {"addr": 8, "value": 7},
-        {"addr": 9, "value": 7, "action": "random"},
-        {"addr": [11, 12], "value": 7, "action": "random"}
+        {"addr": 9, "value": 3, "action": "increment"},
+        {"addr": [11], "value": 1, "action": "random"}
     ],
 
-defines registers which contain bits (discrete input and coils),
+Defines registers which contain a 16 bit field, they are effectively sintactic sugar for Uint16
 
 Registers can be singulars (first entry) or arrays (second entry),
 furthermore a value and/or a action can be defined,
 the value and/or action is inserted into each register defined in "addr".
+
+
+
+BitField32 section
+^^^^^^^^^^^^^^
+
+Example "bitfield32" configuration:
+
+.. code-block::
+
+    "bitfield32": [
+        [6, 7],
+        {"addr": [8, 9], "value": 31},
+        {"addr": [10, 13], "value": 255, "action": "increment"},
+        {"addr": [14, 15], "value": 65535, "action": "random"}
+    ],
+
+Defines registers which contain a 32 bit field, they are effectively sintactic sugar for Uint32
+
+Registers can only be arrays in multiples of 2,
+furthermore a value and/or a action can be defined,
+the value and/or action is converted (high/low value) and inserted into each register set defined in "addr".
+
+
+Uint64 section
+^^^^^^^^^^^^^^
+
+Example "uint64" configuration:
+
+.. code-block::
+
+    "uint64": [
+        [6, 9],
+        {"addr": [8, 11], "value": 18446744073709551615},
+        {"addr": [12, 15], "value": 255, "action": "increment"},
+        {"addr": [16, 119], "value": 7, "action": "random"}
+    ],
+
+Defines registers which contain a 64 bit field, they are effectively sintactic sugar for Uint64
+
+Registers can only be arrays in multiples of 4,
+furthermore a value and/or a action can be defined,
+the value and/or action is converted (high/low value) and inserted into each register set defined in "addr".
+
 
 
 
@@ -395,6 +448,26 @@ furthermore a value and/or a action can be defined,
 the value and/or action is converted (high/low value) and inserted into each register set defined in "addr".
 
 
+Uint64 section
+^^^^^^^^^^^^^^
+
+Example "uint64" configuration:
+
+.. code-block::
+
+    "uint64": [
+        [6, 9],
+        {"addr": [8, 11], "value": 30012300},
+        {"addr": [12, 15], "value": 40071200, "action": "increment"},
+        {"addr": [16, 119], "value": 50051700, "action": "random"}
+    ],
+
+defines sets of registers (4) which contain a 64 bit unsigned integer,
+
+Registers can only be arrays in multiples of 4,
+furthermore a value and/or a action can be defined,
+the value and/or action is converted (high/low value) and inserted into each register set defined in "addr".
+
 
 Float32 section
 ^^^^^^^^^^^^^^^
@@ -413,6 +486,29 @@ Example "float32" configuration:
 defines sets of registers (2) which contain a 32 bit float,
 
 Registers can only be arrays in multiples of 2,
+furthermore a value and/or a action can be defined,
+the value and/or action is converted (high/low value) and inserted into each register set defined in "addr".
+
+Remark remember to set ``"value": <float value>`` like 512.0 (float) not 512 (integer).
+
+
+Float64 section
+^^^^^^^^^^^^^^^
+
+Example "float64" configuration:
+
+.. code-block::
+
+    "float64": [
+        [6, 9],
+        {"addr": [8, 11], "value": 3123.17},
+        {"addr": [12, 15], "value": 712.5, "action": "increment"},
+        {"addr": [16, 20], "value": 517.0, "action": "random"}
+    ],
+
+defines sets of registers (4) which contain a 64 bit float,
+
+Registers can only be arrays in multiples of 4,
 furthermore a value and/or a action can be defined,
 the value and/or action is converted (high/low value) and inserted into each register set defined in "addr".
 

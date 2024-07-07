@@ -4,6 +4,8 @@ from __future__ import annotations
 import dataclasses
 import random
 import struct
+import enum
+import inspect
 from collections.abc import Callable
 from datetime import datetime
 from typing import Any
@@ -81,7 +83,7 @@ class Label:  # pylint: disable=too-many-instance-attributes
     timestamp: str = "timestamp"
     repeat_to: str = "to"
     type: str = "type"
-    type_bits = "bits"
+    type_bits: str = "bits"
     type_exception: str = "type exception"
     type_uint16: str = "uint16"
     type_uint32: str = "uint32"
@@ -98,6 +100,12 @@ class Label:  # pylint: disable=too-many-instance-attributes
             txt = f"ERROR Configuration invalid, missing {key} in {config_part}"
             raise RuntimeError(txt)
         return config_part[key]
+
+
+class AccessType(enum.Enum):
+    """Simulator register value access type"""
+    GET = 1
+    SET = 2
 
 
 class Setup:
@@ -801,3 +809,10 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
         else:
             value = struct.unpack(">f", value_bytes)[0]
         return value
+
+    @classmethod
+    def get_method_parameters(cls, method):
+        """Returns True if method uses 'access_type' parameter"""
+        signature = inspect.signature(method)
+        params = {signature.parameters[key].name for key in signature.parameters.keys()}
+        return params

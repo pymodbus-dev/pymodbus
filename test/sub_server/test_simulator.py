@@ -3,6 +3,7 @@
 import asyncio
 import copy
 import json
+import sys
 from unittest.mock import mock_open, patch
 
 import pytest
@@ -19,8 +20,23 @@ FX_WRITE_BIT = 5
 FX_WRITE_REG = 6
 
 
+def custom_actions_test_module():
+    module_contents = (
+         "from test_simulator import TestSimulator\n"
+         "\n"
+         "def custom_action(registers, inx, _cell, func_code, access_type):\n"
+         "    return TestSimulator.custom_action3(registers, inx, _cell, func_code, access_type)\n"
+         "\n"
+         "custom_actions_dict = {\n"
+         "    \"custom3\": custom_action\n"
+         "}"
+         "\n"
+    )
+    return module_contents
+
+
 class TestSimulator:
-    """Unittest for the pymodbus.Simutor module."""
+    """Unittest for the pymodbus.Simulator module."""
 
     simulator = None
     default_config = {
@@ -58,6 +74,7 @@ class TestSimulator:
             [16, 18],
             [21, 26],
             [33, 38],
+            49,
         ],
         "bits": [
             5,
@@ -76,6 +93,7 @@ class TestSimulator:
                 "action": "increment",
                 "args": {"minval": 1, "maxval": 100},
             },
+            {"addr": 49, "value": 0xAAAA, "action": "custom3"},
         ],
         "uint32": [
             {"addr": [21, 22], "value": 3124},
@@ -97,7 +115,7 @@ class TestSimulator:
             {"addr": [43, 44], "value": "Str"},
             {"addr": [45, 48], "value": "Strxyz12"},
         ],
-        "repeat": [{"addr": [0, 48], "to": [49, 147]}],
+        "repeat": [{"addr": [0, 49], "to": [50, 149]}],
     }
 
     default_server_config = {
@@ -170,7 +188,8 @@ class TestSimulator:
         Cell(type=CellType.NEXT, value=int.from_bytes(bytes("rx", "utf-8"), "big")),
         Cell(type=CellType.NEXT, value=int.from_bytes(bytes("yz", "utf-8"), "big")),
         Cell(type=CellType.NEXT, value=int.from_bytes(bytes("12", "utf-8"), "big")),
-        # 48 MAX before repeat
+        Cell(type=CellType.UINT16, access=True, value=0xAAAA, action=8),
+        # 49 MAX before repeat
     ]
 
     @classmethod
@@ -180,10 +199,16 @@ class TestSimulator:
     @classmethod
     def custom_action2(cls, _inx, _cell):
         """Test action."""
+    @classmethod
+    def custom_action3(cls, registers, inx, _cell, func_code, access_type):
+        """Test action which includes function code and access type as parameters."""
+        if func_code == 6 and access_type == "set":
+            registers[inx] = 0xA5A5
 
     custom_actions = {
         "custom1": custom_action1,
         "custom2": custom_action2,
+        "custom3": custom_action3,
     }
 
     def setup_method(self):
@@ -207,7 +232,7 @@ class TestSimulator:
         """Test basic configuration."""
         # Manually build expected memory image and then compare.
         assert self.simulator.register_count == 250
-        for offset in (0, 49, 98):
+        for offset in (0, 50, 100):
             for i, test_cell in enumerate(self.test_registers):
                 reg = self.simulator.registers[i + offset]
                 assert reg.type == test_cell.type, f"at index {i} - {offset}"
@@ -231,12 +256,12 @@ class TestSimulator:
         exc_setup[Label.setup][Label.shared_blocks] = False
         exc_setup[Label.setup][Label.co_size] = 15
         exc_setup[Label.setup][Label.di_size] = 15
-        exc_setup[Label.setup][Label.hr_size] = 15
+        exc_setup[Label.setup][Label.hr_size] = 16
         exc_setup[Label.setup][Label.ir_size] = 15
         del exc_setup[Label.repeat]
         exc_setup[Label.repeat] = []
-        simulator = ModbusSimulatorContext(exc_setup, None)
-        assert simulator.register_count == 60
+        simulator = ModbusSimulatorContext(exc_setup, self.custom_actions)
+        assert simulator.register_count == 61
         for i, test_cell in enumerate(self.test_registers):
             reg = simulator.registers[i]
             assert reg.type == test_cell.type, f"at index {i}"
@@ -247,7 +272,7 @@ class TestSimulator:
         exc_setup = copy.deepcopy(self.default_config)
         exc_setup["bad section"] = True
         with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
+            ModbusSimulatorContext(exc_setup, self.custom_actions)
         for entry in (
             (Label.type_bits, 5),
             (Label.type_uint16, 16),
@@ -258,48 +283,48 @@ class TestSimulator:
             exc_setup = copy.deepcopy(self.default_config)
             exc_setup[entry[0]].append(entry[1])
             with pytest.raises(RuntimeError):
-                ModbusSimulatorContext(exc_setup, None)
+                ModbusSimulatorContext(exc_setup, self.custom_actions)
         exc_setup = copy.deepcopy(self.default_config)
         del exc_setup[Label.type_bits]
         with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
+            ModbusSimulatorContext(exc_setup, self.custom_actions)
         exc_setup = copy.deepcopy(self.default_config)
         exc_setup[Label.type_string][1][Label.value] = "very long string again"
         with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
+            ModbusSimulatorContext(exc_setup, self.custom_actions)
         exc_setup = copy.deepcopy(self.default_config)
         exc_setup[Label.setup][Label.defaults][Label.action][
             Label.type_bits
         ] = "bad action"
         with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
+            ModbusSimulatorContext(exc_setup, self.custom_actions)
         exc_setup = copy.deepcopy(self.default_config)
         exc_setup[Label.invalid].append(700)
         with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
+            ModbusSimulatorContext(exc_setup, self.custom_actions)
         exc_setup = copy.deepcopy(self.default_config)
         exc_setup[Label.write].append(700)
         with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
+            ModbusSimulatorContext(exc_setup, self.custom_actions)
         exc_setup = copy.deepcopy(self.default_config)
         exc_setup[Label.write].append(1)
         with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
+            ModbusSimulatorContext(exc_setup, self.custom_actions)
         exc_setup = copy.deepcopy(self.default_config)
         exc_setup[Label.type_bits].append(700)
         with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
+            ModbusSimulatorContext(exc_setup, self.custom_actions)
         exc_setup = copy.deepcopy(self.default_config)
         exc_setup[Label.repeat][0][Label.repeat_to] = [48, 500]
         with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
+            ModbusSimulatorContext(exc_setup, self.custom_actions)
         exc_setup = copy.deepcopy(self.default_config)
         exc_setup[Label.type_uint16].append(0)
-        ModbusSimulatorContext(exc_setup, None)
+        ModbusSimulatorContext(exc_setup, self.custom_actions)
         exc_setup = copy.deepcopy(self.default_config)
         exc_setup[Label.type_uint16].append(250)
         with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
+            ModbusSimulatorContext(exc_setup, self.custom_actions)
 
 
     def test_simulator_validate_illegal(self):
@@ -354,7 +379,7 @@ class TestSimulator:
         """Test validate call."""
         exc_setup = copy.deepcopy(self.default_config)
         exc_setup["setup"]["type exception"] = True
-        exc_simulator = ModbusSimulatorContext(exc_setup, None)
+        exc_simulator = ModbusSimulatorContext(exc_setup, self.custom_actions)
 
         for entry in (
             (FX_READ_BIT, 80, 1, True),
@@ -381,6 +406,7 @@ class TestSimulator:
             (FX_READ_BIT, 198, 4, [True, False, True, True]),
             (FX_READ_REG, 19, 1, [14662]),
             (FX_READ_REG, 16, 2, [3124, 5678]),
+            (FX_READ_REG, 16, 2, [3124, 5678]),
         ):
             values = self.simulator.getValues(entry[0], entry[1], entry[2])
             assert entry[3] == values, f"at entry {entry}"
@@ -388,7 +414,7 @@ class TestSimulator:
     def test_simulator_set_values(self):
         """Test simulator set values."""
         exc_setup = copy.deepcopy(self.default_config)
-        exc_simulator = ModbusSimulatorContext(exc_setup, None)
+        exc_simulator = ModbusSimulatorContext(exc_setup, self.custom_actions)
         value = [31234]
         exc_simulator.setValues(FX_WRITE_REG, 16, value)
         result = exc_simulator.getValues(FX_READ_REG, 16, 1)
@@ -457,7 +483,7 @@ class TestSimulator:
     def test_simulator_actions(self, func, addr, action):
         """Test actions."""
         exc_setup = copy.deepcopy(self.default_config)
-        exc_simulator = ModbusSimulatorContext(exc_setup, None)
+        exc_simulator = ModbusSimulatorContext(exc_setup, self.custom_actions)
         reg1 = exc_simulator.registers[addr]
         reg2 = exc_simulator.registers[addr + 1]
         reg1.action = exc_simulator.action_name_to_id[action]
@@ -471,7 +497,7 @@ class TestSimulator:
     def test_simulator_action_timestamp(self):
         """Test action timestamp."""
         exc_setup = copy.deepcopy(self.default_config)
-        exc_simulator = ModbusSimulatorContext(exc_setup, None)
+        exc_simulator = ModbusSimulatorContext(exc_setup, self.custom_actions)
         addr = 12
         exc_simulator.registers[addr].action = exc_simulator.action_name_to_id[
             Label.timestamp
@@ -481,7 +507,7 @@ class TestSimulator:
     def test_simulator_action_reset(self):
         """Test action reset."""
         exc_setup = copy.deepcopy(self.default_config)
-        exc_simulator = ModbusSimulatorContext(exc_setup, None)
+        exc_simulator = ModbusSimulatorContext(exc_setup, self.custom_actions)
         addr = 12
         exc_simulator.registers[addr].action = exc_simulator.action_name_to_id[
             Label.reset
@@ -507,7 +533,7 @@ class TestSimulator:
     ):
         """Test action increment."""
         exc_setup = copy.deepcopy(self.default_config)
-        exc_simulator = ModbusSimulatorContext(exc_setup, None)
+        exc_simulator = ModbusSimulatorContext(exc_setup, self.custom_actions)
         action = exc_simulator.action_name_to_id[Label.increment]
         kwargs = {
             "minval": minval,
@@ -555,7 +581,7 @@ class TestSimulator:
     def test_simulator_action_random(self, celltype, minval, maxval):
         """Test action random."""
         exc_setup = copy.deepcopy(self.default_config)
-        exc_simulator = ModbusSimulatorContext(exc_setup, None)
+        exc_simulator = ModbusSimulatorContext(exc_setup, self.custom_actions)
         action = exc_simulator.action_name_to_id[Label.random]
         kwargs = {
             "minval": minval,
@@ -582,6 +608,12 @@ class TestSimulator:
                 )
             assert minval <= new_value <= maxval
 
+    def test_simulator_get_method_parameters(self):
+        params = self.simulator.get_method_parameters(self.custom_action1)
+        assert params == {"_inx", "_cell"}
+        params = self.simulator.get_method_parameters(self.custom_action3)
+        assert params == {"registers", "inx", "_cell", "func_code", "access_type"}
+
     @patch(
         "builtins.open",
         mock_open(
@@ -593,9 +625,19 @@ class TestSimulator:
             )
         ),
     )
-    async def test_simulator_server_tcp(self, unused_tcp_port):
+    async def test_simulator_server_tcp(self, unused_tcp_port, tmp_path):
         """Test init simulator server."""
-        task = ModbusSimulatorServer(http_port=unused_tcp_port)
+        test_tmp_path = tmp_path / "test_simulator_server_tcp"
+        test_tmp_path.mkdir()
+        custom_actions_module_path = test_tmp_path / "custom_actions.py"
+        sys.path.append(str(test_tmp_path))
+        custom_actions_module_path.write_text(custom_actions_test_module(), encoding="utf-8")
+
+        task = ModbusSimulatorServer(
+            http_port=unused_tcp_port,
+            custom_actions_module=str(custom_actions_module_path.stem)
+        )
         await task.run_forever(only_start=True)
         await asyncio.sleep(0.5)
         await task.stop()
+        sys.path.remove(str(test_tmp_path))

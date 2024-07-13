@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import socket
+from abc import abstractmethod
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import Any, cast
@@ -14,7 +15,7 @@ from pymodbus.factory import ClientDecoder
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType, ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
-from pymodbus.transaction import ModbusTransactionManager
+from pymodbus.transaction import SyncModbusTransactionManager
 from pymodbus.transport import CommParams
 from pymodbus.utilities import ModbusTransactionState
 
@@ -53,7 +54,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         framer: FramerType,
         timeout: float = 3,
         retries: int = 3,
-        retry_on_empty: bool = False,
         broadcast_enable: bool = False,
         reconnect_delay: float = 0.1,
         reconnect_delay_max: float = 300,
@@ -81,8 +81,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
                 stopbits=kwargs.get("stopbits", None),
                 handle_local_echo=kwargs.get("handle_local_echo", False),
             ),
-            retries,
-            retry_on_empty,
             on_connect_callback,
         )
         self.no_resend_on_retry = no_resend_on_retry
@@ -143,7 +141,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
             return 0
         return self.last_frame_end + self.silent_interval
 
-    def execute(self, request: ModbusRequest | None = None):
+    def execute(self, request: ModbusRequest):
         """Execute request and get response (call **sync/async**).
 
         :param request: The request to process
@@ -165,7 +163,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         count = 0
         while count <= self.retries:
             async with self._lock:
-                req = self.build_response(request.transaction_id)
+                req = self.build_response(request)
                 if not count or not self.no_resend_on_retry:
                     self.ctx.framer.resetFrame()
                     self.ctx.send(packet)
@@ -187,24 +185,16 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
 
         return resp  # type: ignore[return-value]
 
-    def build_response(self, tid):
+    def build_response(self, request: ModbusRequest):
         """Return a deferred response for the current request."""
         my_future: asyncio.Future = asyncio.Future()
+        request.fut = my_future
         if not self.ctx.transport:
             if not my_future.done():
                 my_future.set_exception(ConnectionException("Client is not connected"))
         else:
-            self.ctx.transaction.addTransaction(my_future, tid)
+            self.ctx.transaction.addTransaction(request)
         return my_future
-
-    # ----------------------------------------------------------------------- #
-    # Internal methods
-    # ----------------------------------------------------------------------- #
-    def recv(self, size):
-        """Receive data.
-
-        :meta private:
-        """
 
     # ----------------------------------------------------------------------- #
     # The magic methods
@@ -309,10 +299,10 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         self.slaves: list[int] = []
 
         # Common variables.
-        self.framer = FRAMER_NAME_TO_CLASS.get(
+        self.framer: ModbusFramer = FRAMER_NAME_TO_CLASS.get(
             framer, cast(type[ModbusFramer], framer)
         )(ClientDecoder(), self)
-        self.transaction = ModbusTransactionManager(
+        self.transaction = SyncModbusTransactionManager(
             self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
         )
         self.reconnect_delay_current = self.params.reconnect_delay or 0
@@ -346,7 +336,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
             return 0
         return self.last_frame_end + self.silent_interval
 
-    def execute(self, request: ModbusRequest | None = None) -> ModbusResponse:
+    def execute(self, request: ModbusRequest) -> ModbusResponse:
         """Execute request and get response (call **sync/async**).
 
         :param request: The request to process
@@ -360,7 +350,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
     # ----------------------------------------------------------------------- #
     # Internal methods
     # ----------------------------------------------------------------------- #
-    def send(self, request):
+    def _start_send(self):
         """Send request.
 
         :meta private:
@@ -368,14 +358,20 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         if self.state != ModbusTransactionState.RETRYING:
             Log.debug('New Transaction state "SENDING"')
             self.state = ModbusTransactionState.SENDING
-        return request
 
-    def recv(self, size):
+    @abstractmethod
+    def send(self, request: bytes) -> int:
+        """Send request.
+
+        :meta private:
+        """
+
+    @abstractmethod
+    def recv(self, size: int | None) -> bytes:
         """Receive data.
 
         :meta private:
         """
-        return size
 
     @classmethod
     def get_address_family(cls, address):

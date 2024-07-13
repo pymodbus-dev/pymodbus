@@ -88,8 +88,8 @@ class ModbusSocketFramer(ModbusFramer):
                 self.resetFrame()
                 raise ModbusIOException("Unable to decode request")
             self.populateResult(result)
-            self._buffer = self._buffer[used_len:]
-            self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
+            self._buffer: bytes = self._buffer[used_len:]
+            self._reset_header()
             if tid and tid != result.transaction_id:
                 self.resetFrame()
             else:

@@ -180,16 +180,15 @@ class ModbusTcpClient(ModbusBaseSyncClient):
 
     def send(self, request):
         """Send data on the underlying socket."""
-        super().send(request)
+        super()._start_send()
         if not self.socket:
             raise ConnectionException(str(self))
         if request:
             return self.socket.send(request)
         return 0
 
-    def recv(self, size):
+    def recv(self, size: int | None) -> bytes:
         """Read data from the underlying descriptor."""
-        super().recv(size)
         if not self.socket:
             raise ConnectionException(str(self))
 
@@ -241,7 +240,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
 
         return b"".join(data)
 
-    def _handle_abrupt_socket_close(self, size, data, duration):
+    def _handle_abrupt_socket_close(self, size: int | None, data: list[bytes], duration: float) -> bytes:
         """Handle unexpected socket close by remote end.
 
         Intended to be invoked after determining that the remote end
@@ -271,7 +270,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         msg += " without response from slave before it closed connection"
         raise ConnectionException(msg)
 
-    def is_socket_open(self):
+    def is_socket_open(self) -> bool:
         """Check if socket is open."""
         return self.socket is not None
 

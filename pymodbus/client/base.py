@@ -174,7 +174,12 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
                     resp = await asyncio.wait_for(
                         req, timeout=self.ctx.comm_params.timeout_connect
                     )
-                    break
+                    if not request.truncated_responses and resp.truncated:
+                        count += 1
+                    elif not request.error_responses and resp.isError():
+                        count += 1
+                    else:
+                        break
                 except asyncio.exceptions.TimeoutError:
                     count += 1
         if count > self.retries:

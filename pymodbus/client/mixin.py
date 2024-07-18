@@ -64,48 +64,42 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         )
 
     def read_coils(
-        self, address: int, count: int = 1, slave: int = 0, **kwargs: Any
-    ) -> T:
+        self, address: int, count: int = 1, slave: int = 0) -> T:
         """Read coils (code 0x01).
 
         :param address: Start address to read from
         :param count: (optional) Number of coils to read
         :param slave: (optional) Modbus slave ID
-        :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
         return self.execute(
-            pdu_bit_read.ReadCoilsRequest(address, count, slave, **kwargs)
+            pdu_bit_read.ReadCoilsRequest(address, count, slave)
         )
 
     def read_discrete_inputs(
-        self, address: int, count: int = 1, slave: int = 0, **kwargs: Any
-    ) -> T:
+        self, address: int, count: int = 1, slave: int = 0) -> T:
         """Read discrete inputs (code 0x02).
 
         :param address: Start address to read from
         :param count: (optional) Number of coils to read
         :param slave: (optional) Modbus slave ID
-        :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
         return self.execute(
-            pdu_bit_read.ReadDiscreteInputsRequest(address, count, slave, **kwargs)
+            pdu_bit_read.ReadDiscreteInputsRequest(address, count, slave)
         )
 
     def read_holding_registers(
-        self, address: int, count: int = 1, slave: int = 0, **kwargs: Any
-    ) -> T:
+        self, address: int, count: int = 1, slave: int = 0) -> T:
         """Read holding registers (code 0x03).
 
         :param address: Start address to read from
         :param count: (optional) Number of coils to read
         :param slave: (optional) Modbus slave ID
-        :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
         return self.execute(
-            pdu_reg_read.ReadHoldingRegistersRequest(address, count, slave, **kwargs)
+            pdu_reg_read.ReadHoldingRegistersRequest(address, count, slave)
         )
 
     def read_input_registers(
@@ -457,6 +451,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param kwargs:
         :raises ModbusException:
         """
+        read_address = kwargs.pop("address", read_address)
         return self.execute(
             pdu_reg_read.ReadWriteMultipleRegistersRequest(
                 read_address=read_address,
@@ -464,7 +459,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
                 write_address=write_address,
                 write_registers=values,
                 slave=slave,
-                **kwargs,
+                **kwargs
             )
         )
 

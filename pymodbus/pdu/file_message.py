@@ -28,7 +28,7 @@ from pymodbus.pdu import ModbusRequest, ModbusResponse
 class FileRecord:  # pylint: disable=eq-without-hash
     """Represents a file record and its relevant data."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, reference_type=0x06, file_number=0x00, record_number=0x00, record_data="", record_length=None, response_length=None):
         """Initialize a new instance.
 
         :params reference_type: must be 0x06
@@ -38,13 +38,13 @@ class FileRecord:  # pylint: disable=eq-without-hash
         :params record_length: The length in registers of the record
         :params response_length: The length in bytes of the record
         """
-        self.reference_type = kwargs.get("reference_type", 0x06)
-        self.file_number = kwargs.get("file_number", 0x00)
-        self.record_number = kwargs.get("record_number", 0x00)
-        self.record_data = kwargs.get("record_data", "")
+        self.reference_type = reference_type
+        self.file_number = file_number
+        self.record_number = record_number
+        self.record_data = record_data
 
-        self.record_length = kwargs.get("record_length", len(self.record_data) // 2)
-        self.response_length = kwargs.get("response_length", len(self.record_data) + 1)
+        self.record_length = record_length if record_length else len(self.record_data) // 2
+        self.response_length = response_length if response_length else len(self.record_data) + 1
 
     def __eq__(self, relf):
         """Compare the left object to the right."""
@@ -100,7 +100,7 @@ class ReadFileRecordRequest(ModbusRequest):
     function_code_name = "read_file_record"
     _rtu_byte_count_pos = 2
 
-    def __init__(self, records=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
+    def __init__(self, records=None, slave=0, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param records: The file record requests to be read
@@ -165,7 +165,7 @@ class ReadFileRecordResponse(ModbusResponse):
     function_code = 0x14
     _rtu_byte_count_pos = 2
 
-    def __init__(self, records=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
+    def __init__(self, records=None, slave=0, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param records: The requested file records
@@ -218,7 +218,7 @@ class WriteFileRecordRequest(ModbusRequest):
     function_code_name = "write_file_record"
     _rtu_byte_count_pos = 2
 
-    def __init__(self, records=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
+    def __init__(self, records=None, slave=0, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param records: The file record requests to be read
@@ -282,7 +282,7 @@ class WriteFileRecordResponse(ModbusResponse):
     function_code = 0x15
     _rtu_byte_count_pos = 2
 
-    def __init__(self, records=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
+    def __init__(self, records=None, slave=0, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param records: The file record requests to be read
@@ -347,7 +347,7 @@ class ReadFifoQueueRequest(ModbusRequest):
     function_code_name = "read_fifo_queue"
     _rtu_frame_size = 6
 
-    def __init__(self, address=0x0000, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
+    def __init__(self, address=0x0000, slave=0, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param address: The fifo pointer address (0x0000 to 0xffff)
@@ -408,7 +408,7 @@ class ReadFifoQueueResponse(ModbusResponse):
         lo_byte = int(buffer[3])
         return (hi_byte << 16) + lo_byte + 6
 
-    def __init__(self, values=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
+    def __init__(self, values=None, slave=0, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param values: The list of values of the fifo to return

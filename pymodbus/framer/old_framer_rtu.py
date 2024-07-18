@@ -70,7 +70,7 @@ class ModbusRtuFramer(ModbusFramer):
         return {}
 
 
-    def frameProcessIncomingPacket(self, _single, callback, slave, _tid=None, **kwargs):  # noqa: C901
+    def frameProcessIncomingPacket(self, _single, callback, slave, tid=None):  # noqa: C901
         """Process new packet pattern."""
 
         def is_frame_ready(self):

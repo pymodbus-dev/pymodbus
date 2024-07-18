@@ -48,7 +48,7 @@ class ModbusTlsFramer(ModbusFramer):
         sleep(0.5)
         return super().recvPacket(size)
 
-    def frameProcessIncomingPacket(self, _single, callback, _slave, _tid=None, **kwargs):
+    def frameProcessIncomingPacket(self, _single, callback, _slave, tid=None):
         """Process new packet pattern."""
         # no slave id for Modbus Security Application Protocol
 

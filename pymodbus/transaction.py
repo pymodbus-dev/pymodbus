@@ -134,19 +134,20 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
     Results are keyed based on the supplied transaction id.
     """
 
-    def __init__(self, client: ModbusBaseSyncClient, **kwargs):
+    def __init__(self, client: ModbusBaseSyncClient, backoff=0.3, retry_on_empty=False, retry_on_invalid=False, retries=3, **_kwargs):
         """Initialize an instance of the ModbusTransactionManager.
 
         :param client: The client socket wrapper
+        :param backoff: 0.3
         :param retry_on_empty: Should the client retry on empty
         :param retries: The number of retries to allow
         """
         super().__init__()
         self.client: ModbusBaseSyncClient = client
-        self.backoff = kwargs.get("backoff", 0.3)
-        self.retry_on_empty = kwargs.get("retry_on_empty", False)
-        self.retry_on_invalid = kwargs.get("retry_on_invalid", False)
-        self.retries = kwargs.get("retries", 3)
+        self.backoff = backoff
+        self.retry_on_empty = retry_on_empty
+        self.retry_on_invalid = retry_on_invalid
+        self.retries = retries
         self._transaction_lock = RLock()
         self._no_response_devices: list[int] = []
         if client:

@@ -15,12 +15,14 @@ class SerialTransport(asyncio.Transport):
 
     force_poll: bool = os.name == "nt"
 
-    def __init__(self, loop, protocol, *args, **kwargs) -> None:
+    def __init__(self, loop, protocol, url, baudrate, bytesize, parity, stopbits, timeout) -> None:
         """Initialize."""
         super().__init__()
         self.async_loop = loop
         self.intern_protocol: asyncio.BaseProtocol = protocol
-        self.sync_serial = serial.serial_for_url(*args, **kwargs)
+        self.sync_serial = serial.serial_for_url(url, exclusive=True,
+            baudrate=baudrate, bytesize=bytesize, parity=parity, stopbits=stopbits, timeout=timeout
+)
         self.intern_write_buffer: list[bytes] = []
         self.poll_task: asyncio.Task | None = None
         self._poll_wait_time = 0.0005
@@ -154,10 +156,20 @@ class SerialTransport(asyncio.Transport):
                 self.intern_read_ready()
 
 async def create_serial_connection(
-    loop, protocol_factory, *args, **kwargs
+    loop, protocol_factory, url,
+    baudrate=None,
+    bytesize=None,
+    parity=None,
+    stopbits=None,
+    timeout=None,
 ) -> tuple[asyncio.Transport, asyncio.BaseProtocol]:
     """Create a connection to a new serial port instance."""
     protocol = protocol_factory()
-    transport = SerialTransport(loop, protocol, *args, **kwargs)
+    transport = SerialTransport(loop, protocol, url,
+                    baudrate,
+                    bytesize,
+                    parity,
+                    stopbits,
+                    timeout)
     loop.call_soon(transport.setup)
     return transport, protocol

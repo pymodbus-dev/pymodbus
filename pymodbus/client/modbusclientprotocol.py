@@ -29,8 +29,6 @@ class ModbusClientProtocol(ModbusProtocol):
         self,
         framer: FramerType,
         params: CommParams,
-        retries: int,
-        retry_on_empty: bool,
         on_connect_callback: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize a client instance."""
@@ -45,17 +43,16 @@ class ModbusClientProtocol(ModbusProtocol):
         self.framer = FRAMER_NAME_TO_CLASS.get(
             framer, cast(type[ModbusFramer], framer)
         )(ClientDecoder(), self)
-        self.transaction = ModbusTransactionManager(
-            self, retries=retries, retry_on_empty=retry_on_empty
-        )
+        self.transaction = ModbusTransactionManager()
 
     def _handle_response(self, reply, **_kwargs):
         """Handle the processed response and link to correct deferred."""
         if reply is not None:
             tid = reply.transaction_id
             if handler := self.transaction.getTransaction(tid):
-                if not handler.done():
-                    handler.set_result(reply)
+                reply.request = handler
+                if not handler.fut.done():
+                    handler.fut.set_result(reply)
             else:
                 Log.debug("Unrequested message: {}", reply, ":str")
 

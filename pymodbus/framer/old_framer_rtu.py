@@ -146,7 +146,7 @@ class ModbusRtuFramer(ModbusFramer):
                 Log.debug("Frame check failed, ignoring!!")
                 x = self._buffer
                 self.resetFrame()
-                self._buffer = x
+                self._buffer: bytes = x
                 skip_cur_frame = True
                 continue
             start = self._hsize
@@ -176,7 +176,7 @@ class ModbusRtuFramer(ModbusFramer):
         message.transaction_id = 0
         return packet
 
-    def sendPacket(self, message):
+    def sendPacket(self, message: bytes) -> int:
         """Send packets on the bus with 3.5char delay between frames.
 
         :param message: Message to be sent over the bus

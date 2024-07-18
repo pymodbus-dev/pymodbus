@@ -262,7 +262,7 @@ async def test_client_instanciate(
     client.connect = lambda: False
     client.transport = None
     with pytest.raises(ConnectionException):
-        client.execute()
+        client.execute(ModbusRequest())
 
 async def test_serial_not_installed():
     """Try to instantiate clients."""
@@ -371,7 +371,7 @@ async def test_client_protocol_handler():
     reply.transaction_id = 0x00
     base.ctx._handle_response(None)  # pylint: disable=protected-access
     base.ctx._handle_response(reply)  # pylint: disable=protected-access
-    response = base.build_response(0x00)  # pylint: disable=protected-access
+    response = base.build_response(reply)  # pylint: disable=protected-access
     base.ctx._handle_response(reply)  # pylint: disable=protected-access
     result = response.result()
     assert result == reply
@@ -647,7 +647,7 @@ async def test_client_build_response():
     """Test fail of build_response."""
     client = ModbusBaseClient(FramerType.RTU)
     with pytest.raises(ConnectionException):
-        await client.build_response(0)
+        await client.build_response(ModbusRequest(transaction=0))
 
 
 async def test_client_mixin_execute():

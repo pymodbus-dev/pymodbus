@@ -1,4 +1,6 @@
 """Collection of transaction based abstractions."""
+from __future__ import annotations
+
 
 __all__ = [
     "ModbusTransactionManager",
@@ -6,14 +8,14 @@ __all__ = [
     "ModbusTlsFramer",
     "ModbusRtuFramer",
     "ModbusAsciiFramer",
+    "SyncModbusTransactionManager",
 ]
 
-# pylint: disable=missing-type-doc
 import struct
 import time
 from contextlib import suppress
-from functools import partial
 from threading import RLock
+from typing import TYPE_CHECKING
 
 from pymodbus.exceptions import (
     ConnectionException,
@@ -27,13 +29,94 @@ from pymodbus.framer import (
     ModbusTlsFramer,
 )
 from pymodbus.logging import Log
+from pymodbus.pdu import ModbusRequest
+from pymodbus.transport import CommType
 from pymodbus.utilities import ModbusTransactionState, hexlify_packets
+
+
+if TYPE_CHECKING:
+    from pymodbus.client.base import ModbusBaseSyncClient
 
 
 # --------------------------------------------------------------------------- #
 # The Global Transaction Manager
 # --------------------------------------------------------------------------- #
 class ModbusTransactionManager:
+    """Implement a transaction for a manager.
+
+    Results are keyed based on the supplied transaction id.
+    """
+
+    def __init__(self):
+        """Initialize an instance of the ModbusTransactionManager."""
+        self.tid = 0
+        self.transactions: dict[int, ModbusRequest] = {}
+
+    def __iter__(self):
+        """Iterate over the current managed transactions.
+
+        :returns: An iterator of the managed transactions
+        """
+        return iter(self.transactions.keys())
+
+    def addTransaction(self, request: ModbusRequest):
+        """Add a transaction to the handler.
+
+        This holds the request in case it needs to be resent.
+        After being sent, the request is removed.
+
+        :param request: The request to hold on to
+        """
+        tid = request.transaction_id
+        Log.debug("Adding transaction {}", tid)
+        self.transactions[tid] = request
+
+    def getTransaction(self, tid: int):
+        """Return a transaction matching the referenced tid.
+
+        If the transaction does not exist, None is returned
+
+        :param tid: The transaction to retrieve
+
+        """
+        Log.debug("Getting transaction {}", tid)
+        if not tid:
+            if self.transactions:
+                ret = self.transactions.popitem()[1]
+                self.transactions.clear()
+                return ret
+            return None
+        return self.transactions.pop(tid, None)
+
+    def delTransaction(self, tid: int):
+        """Remove a transaction matching the referenced tid.
+
+        :param tid: The transaction to remove
+        """
+        Log.debug("deleting transaction {}", tid)
+        self.transactions.pop(tid, None)
+
+    def getNextTID(self) -> int:
+        """Retrieve the next unique transaction identifier.
+
+        This handles incrementing the identifier after
+        retrieval
+
+        :returns: The next unique transaction identifier
+        """
+        if self.tid < 65000:
+            self.tid += 1
+        else:
+            self.tid = 1
+        return self.tid
+
+    def reset(self):
+        """Reset the transaction identifier."""
+        self.tid = 0
+        self.transactions = {}
+
+
+class SyncModbusTransactionManager(ModbusTransactionManager):
     """Implement a transaction for a manager.
 
     The transaction protocol can be represented by the following pseudo code::
@@ -51,31 +134,23 @@ class ModbusTransactionManager:
     Results are keyed based on the supplied transaction id.
     """
 
-    def __init__(self, client, **kwargs):
+    def __init__(self, client: ModbusBaseSyncClient, **kwargs):
         """Initialize an instance of the ModbusTransactionManager.
 
         :param client: The client socket wrapper
         :param retry_on_empty: Should the client retry on empty
         :param retries: The number of retries to allow
         """
-        self.tid = 0
-        self.client = client
+        super().__init__()
+        self.client: ModbusBaseSyncClient = client
         self.backoff = kwargs.get("backoff", 0.3)
         self.retry_on_empty = kwargs.get("retry_on_empty", False)
         self.retry_on_invalid = kwargs.get("retry_on_invalid", False)
         self.retries = kwargs.get("retries", 3)
-        self.transactions = {}
         self._transaction_lock = RLock()
-        self._no_response_devices = []
+        self._no_response_devices: list[int] = []
         if client:
             self._set_adu_size()
-
-    def __iter__(self):
-        """Iterate over the current managed transactions.
-
-        :returns: An iterator of the managed transactions
-        """
-        return iter(self.transactions.keys())
 
     def _set_adu_size(self):
         """Set adu size."""
@@ -107,7 +182,7 @@ class ModbusTransactionManager:
             return self.base_adu_size + 2  # Fcode(1), ExceptionCode(1)
         return None
 
-    def _validate_response(self, request, response, exp_resp_len, is_udp=False):
+    def _validate_response(self, request: ModbusRequest, response, exp_resp_len, is_udp=False):
         """Validate Incoming response against request.
 
         :param request: Request sent
@@ -118,7 +193,10 @@ class ModbusTransactionManager:
         if not response:
             return False
 
-        mbap = self.client.framer.decode_data(response)
+        if hasattr(self.client.framer, "decode_data"):
+            mbap = self.client.framer.decode_data(response)
+        else:
+            mbap = {}
         if (
             mbap.get("slave") != request.slave_id
             or mbap.get("fcode") & 0x7F != request.function_code
@@ -129,7 +207,7 @@ class ModbusTransactionManager:
             return mbap.get("length") == exp_resp_len
         return True
 
-    def execute(self, request):  # noqa: C901
+    def execute(self, request: ModbusRequest):  # noqa: C901
         """Start the producer to send the next request to consumer.write(Frame(request))."""
         with self._transaction_lock:
             try:
@@ -167,9 +245,8 @@ class ModbusTransactionManager:
                         full = True
                     else:
                         full = False
-                    c_str = str(self.client)
                     is_udp = False
-                    if "modbusudpclient" in c_str.lower().strip():
+                    if self.client.comm_params.comm_type == CommType.UDP:
                         is_udp = True
                         full = True
                         if not expected_response_length:
@@ -221,13 +298,9 @@ class ModbusTransactionManager:
                             break
                         # full = False
                         Log.debug("Retry getting response: - {}", _buffer)
-                    addTransaction = partial(  # pylint: disable=invalid-name
-                        self.addTransaction,
-                        tid=request.transaction_id,
-                    )
                     self.client.framer.processIncomingPacket(
                         response,
-                        addTransaction,
+                        self.addTransaction,
                         request.slave_id,
                         tid=request.transaction_id,
                     )
@@ -278,7 +351,7 @@ class ModbusTransactionManager:
                     return result, None
         return self._transact(packet, response_length, full=full)
 
-    def _transact(self, packet, response_length, full=False, broadcast=False):
+    def _transact(self, request: ModbusRequest, response_length, full=False, broadcast=False):
         """Do a Write and Read transaction.
 
         :param packet: packet to be sent
@@ -291,7 +364,7 @@ class ModbusTransactionManager:
         last_exception = None
         try:
             self.client.connect()
-            packet = self.client.framer.buildPacket(packet)
+            packet = self.client.framer.buildPacket(request)
             Log.debug("SEND: {}", packet, ":hex")
             size = self._send(packet)
             if (
@@ -331,11 +404,11 @@ class ModbusTransactionManager:
             result = b""
         return result, last_exception
 
-    def _send(self, packet, _retrying=False):
+    def _send(self, packet: bytes, _retrying=False):
         """Send."""
         return self.client.framer.sendPacket(packet)
 
-    def _recv(self, expected_response_length, full):  # noqa: C901
+    def _recv(self, expected_response_length, full) -> bytes:  # noqa: C901
         """Receive."""
         total = None
         if not full:
@@ -419,7 +492,7 @@ class ModbusTransactionManager:
             self.client.state = ModbusTransactionState.PROCESSING_REPLY
         return result
 
-    def _get_expected_response_length(self, data):
+    def _get_expected_response_length(self, data) -> int:
         """Get the expected response length.
 
         :param data: Message data read so far
@@ -429,60 +502,3 @@ class ModbusTransactionManager:
         func_code = int(data[1])
         pdu_class = self.client.framer.decoder.lookupPduClass(func_code)
         return pdu_class.calculateRtuFrameSize(data)
-
-    def addTransaction(self, request, tid=None):
-        """Add a transaction to the handler.
-
-        This holds the request in case it needs to be resent.
-        After being sent, the request is removed.
-
-        :param request: The request to hold on to
-        :param tid: The overloaded transaction id to use
-        """
-        tid = tid if tid is not None else request.transaction_id
-        Log.debug("Adding transaction {}", tid)
-        self.transactions[tid] = request
-
-    def getTransaction(self, tid):
-        """Return a transaction matching the referenced tid.
-
-        If the transaction does not exist, None is returned
-
-        :param tid: The transaction to retrieve
-
-        """
-        Log.debug("Getting transaction {}", tid)
-        if not tid:
-            if self.transactions:
-                ret = self.transactions.popitem()[1]
-                self.transactions.clear()
-                return ret
-            return None
-        return self.transactions.pop(tid, None)
-
-    def delTransaction(self, tid):
-        """Remove a transaction matching the referenced tid.
-
-        :param tid: The transaction to remove
-        """
-        Log.debug("deleting transaction {}", tid)
-        self.transactions.pop(tid, None)
-
-    def getNextTID(self):
-        """Retrieve the next unique transaction identifier.
-
-        This handles incrementing the identifier after
-        retrieval
-
-        :returns: The next unique transaction identifier
-        """
-        if self.tid < 65000:
-            self.tid += 1
-        else:
-            self.tid = 1
-        return self.tid
-
-    def reset(self):
-        """Reset the transaction identifier."""
-        self.tid = 0
-        self.transactions = {}

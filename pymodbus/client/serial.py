@@ -193,7 +193,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Connect internal."""
         return self.connect()
 
-    def connect(self):
+    def connect(self) -> bool:
         """Connect to the modbus serial server."""
         if self.socket:
             return True
@@ -227,25 +227,26 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Return waiting bytes."""
         return getattr(self.socket, "in_waiting") if hasattr(self.socket, "in_waiting") else getattr(self.socket, "inWaiting")()
 
-    def send(self, request):
+    def send(self, request: bytes) -> int:
         """Send data on the underlying socket.
 
         If receive buffer still holds some data then flush it.
 
         Sleep if last send finished less than 3.5 character times ago.
         """
-        super().send(request)
+        super()._start_send()
         if not self.socket:
             raise ConnectionException(str(self))
         if request:
             if waitingbytes := self._in_waiting():
                 result = self.socket.read(waitingbytes)
                 Log.warning("Cleanup recv buffer before send: {}", result, ":hex")
-            size = self.socket.write(request)
+            if (size := self.socket.write(request)) is None:
+                size = 0
             return size
         return 0
 
-    def _wait_for_data(self):
+    def _wait_for_data(self) -> int:
         """Wait for data."""
         size = 0
         more_data = False
@@ -264,9 +265,8 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             time.sleep(self._recv_interval)
         return size
 
-    def recv(self, size):
+    def recv(self, size: int | None) -> bytes:
         """Read data from the underlying descriptor."""
-        super().recv(size)
         if not self.socket:
             raise ConnectionException(str(self))
         if size is None:
@@ -276,7 +276,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         result = self.socket.read(size)
         return result
 
-    def is_socket_open(self):
+    def is_socket_open(self) -> bool:
         """Check if socket is open."""
         if self.socket:
             return self.socket.is_open

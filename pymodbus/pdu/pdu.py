@@ -102,12 +102,13 @@ class ModbusRequest(ModbusPDU):
 
     function_code = -1
 
-    def __init__(self, slave=0, **kwargs):  # pylint: disable=useless-parent-delegation
+    def __init__(self, slave=0, **kwargs):
         """Proxy to the lower level initializer.
 
         :param slave: Modbus slave slave ID
         """
         super().__init__(slave, **kwargs)
+        self.fut = None
 
     def doException(self, exception):
         """Build an error response based on the function.
@@ -146,6 +147,7 @@ class ModbusResponse(ModbusPDU):
         super().__init__(slave, **kwargs)
         self.bits = []
         self.registers = []
+        self.request = None
 
     def isError(self) -> bool:
         """Check if the error is a success or failure."""

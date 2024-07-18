@@ -83,7 +83,7 @@ class CommParams:
     comm_type: CommType | None = None
     reconnect_delay: float | None = None
     reconnect_delay_max: float = 0.0
-    timeout_connect: float | None = None
+    timeout_connect: float = 0.0
     host: str = "localhost" # On some machines this will now be ::1
     port: int = 0
     source_address: tuple[str, int] | None = None

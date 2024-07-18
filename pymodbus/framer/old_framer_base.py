@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.framer.base import FramerBase
 from pymodbus.logging import Log
+from pymodbus.pdu import ModbusRequest
 
+
+if TYPE_CHECKING:
+    from pymodbus.client.base import ModbusBaseSyncClient
 
 # Unit ID, Function Code
 BYTE_ORDER = ">"
@@ -29,7 +33,7 @@ class ModbusFramer:
     def __init__(
         self,
         decoder: ClientDecoder | ServerDecoder,
-        client,
+        client: ModbusBaseSyncClient,
     ) -> None:
         """Initialize a new instance of the framer.
 
@@ -37,7 +41,13 @@ class ModbusFramer:
         """
         self.decoder = decoder
         self.client = client
-        self._header: dict[str, Any] = {
+        self._header: dict[str, Any]
+        self._reset_header()
+        self._buffer = b""
+        self.message_handler: FramerBase
+
+    def _reset_header(self) -> None:
+        self._header = {
             "lrc": "0000",
             "len": 0,
             "uid": 0x00,
@@ -45,8 +55,6 @@ class ModbusFramer:
             "pid": 0,
             "crc": b"\x00\x00",
         }
-        self._buffer = b""
-        self.message_handler: FramerBase
 
     def _validate_slave_id(self, slaves: list, single: bool) -> bool:
         """Validate if the received data is valid for the client.
@@ -63,7 +71,7 @@ class ModbusFramer:
             return True
         return self._header["uid"] in slaves
 
-    def sendPacket(self, message):
+    def sendPacket(self, message: bytes):
         """Send packets on the bus.
 
         With 3.5char delay between frames
@@ -72,7 +80,7 @@ class ModbusFramer:
         """
         return self.client.send(message)
 
-    def recvPacket(self, size):
+    def recvPacket(self, size: int) -> bytes:
         """Receive packet from the bus.
 
         With specified len
@@ -117,7 +125,7 @@ class ModbusFramer:
         result.transaction_id = self._header.get("tid", 0)
         result.protocol_id = self._header.get("pid", 0)
 
-    def processIncomingPacket(self, data, callback, slave, **kwargs):
+    def processIncomingPacket(self, data: bytes, callback, slave, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -150,7 +158,7 @@ class ModbusFramer:
     ) -> None:
         """Process new packet pattern."""
 
-    def buildPacket(self, message) -> bytes:
+    def buildPacket(self, message: ModbusRequest) -> bytes:
         """Create a ready to send modbus packet.
 
         :param message: The populated request/response to send

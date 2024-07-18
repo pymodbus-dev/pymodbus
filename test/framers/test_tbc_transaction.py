@@ -12,7 +12,7 @@ from pymodbus.transaction import (
     ModbusRtuFramer,
     ModbusSocketFramer,
     ModbusTlsFramer,
-    ModbusTransactionManager,
+    SyncModbusTransactionManager,
 )
 
 
@@ -42,7 +42,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tls = ModbusTlsFramer(decoder=self.decoder, client=None)
         self._rtu = ModbusRtuFramer(decoder=self.decoder, client=None)
         self._ascii = ModbusAsciiFramer(decoder=self.decoder, client=None)
-        self._manager = ModbusTransactionManager(self.client)
+        self._manager = SyncModbusTransactionManager(self.client)
 
     # ----------------------------------------------------------------------- #
     # Modbus transaction manager
@@ -113,7 +113,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         request.get_response_pdu_size.return_value = 10
         request.slave_id = 1
         request.function_code = 222
-        trans = ModbusTransactionManager(client)
+        trans = SyncModbusTransactionManager(client)
         trans._recv = mock.MagicMock(  # pylint: disable=protected-access
             return_value=b"abcdef"
         )

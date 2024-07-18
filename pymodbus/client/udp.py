@@ -169,12 +169,12 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         """
         self.socket = None
 
-    def send(self, request):
+    def send(self, request: bytes) -> int:
         """Send data on the underlying socket.
 
         :meta private:
         """
-        super().send(request)
+        super()._start_send()
         if not self.socket:
             raise ConnectionException(str(self))
         if request:
@@ -183,14 +183,15 @@ class ModbusUdpClient(ModbusBaseSyncClient):
             )
         return 0
 
-    def recv(self, size):
+    def recv(self, size: int | None) -> bytes:
         """Read data from the underlying descriptor.
 
         :meta private:
         """
-        super().recv(size)
         if not self.socket:
             raise ConnectionException(str(self))
+        if size is None:
+            size = 0
         return self.socket.recvfrom(size)[0]
 
     def is_socket_open(self):

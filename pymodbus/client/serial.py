@@ -15,6 +15,7 @@ from pymodbus.utilities import ModbusTransactionState
 
 try:
     import serial
+    from serial.rs485 import RS485Settings
 
     PYSERIAL_MISSING = False
 except ImportError:
@@ -37,6 +38,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
     :param parity: 'E'ven, 'O'dd or 'N'one
     :param stopbits: Number of stop bits 1, 1.5, 2.
     :param handle_local_echo: Discard local echo from dongle.
+    :param rs485_settings: Allow configuring the underlying serial port for RS485 mode.
 
     Common optional parameters:
 
@@ -73,6 +75,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         bytesize: int = 8,
         parity: str = "N",
         stopbits: int = 1,
+        rs485_settings: RS485Settings |  None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
@@ -90,6 +93,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             bytesize=bytesize,
             parity=parity,
             stopbits=stopbits,
+            rs485_settings=rs485_settings,
             **kwargs,
         )
 
@@ -155,6 +159,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         bytesize: int = 8,
         parity: str = "N",
         stopbits: int = 1,
+        rs485_settings: RS485Settings |  None = None,
         strict: bool = True,
         **kwargs: Any,
     ) -> None:
@@ -167,6 +172,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             bytesize=bytesize,
             parity=parity,
             stopbits=stopbits,
+            rs485_settings=rs485_settings,
             **kwargs,
         )
         self.socket: serial.Serial | None = None

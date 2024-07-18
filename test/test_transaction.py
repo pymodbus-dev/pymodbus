@@ -42,7 +42,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tls = ModbusTlsFramer(decoder=self.decoder, client=None)
         self._rtu = ModbusRtuFramer(decoder=self.decoder, client=None)
         self._ascii = ModbusAsciiFramer(decoder=self.decoder, client=None)
-        self._manager = SyncModbusTransactionManager(self.client)
+        self._manager = SyncModbusTransactionManager(self.client, 0.3, False, False, 3)
 
     # ----------------------------------------------------------------------- #
     # Modbus transaction manager
@@ -113,7 +113,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         request.get_response_pdu_size.return_value = 10
         request.slave_id = 1
         request.function_code = 222
-        trans = SyncModbusTransactionManager(client)
+        trans = SyncModbusTransactionManager(client, 0.3, False, False, 3)
         trans._recv = mock.MagicMock(  # pylint: disable=protected-access
             return_value=b"abcdef"
         )
@@ -341,7 +341,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
             count += 1
             result = data
 
-        expected = ModbusRequest()
+        expected = ModbusRequest(0, 0, 0, False)
         expected.transaction_id = 0x0001
         expected.protocol_id = 0x1234
         expected.slave_id = 0xFF
@@ -357,7 +357,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test a tcp frame packet build."""
         old_encode = ModbusRequest.encode
         ModbusRequest.encode = lambda self: b""
-        message = ModbusRequest()
+        message = ModbusRequest(0, 0, 0, False)
         message.transaction_id = 0x0001
         message.protocol_id = 0x0000
         message.slave_id = 0xFF
@@ -512,7 +512,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test a tls frame packet build."""
         old_encode = ModbusRequest.encode
         ModbusRequest.encode = lambda self: b""
-        message = ModbusRequest()
+        message = ModbusRequest(0, 0, 0, False)
         message.function_code = 0x01
         expected = b"\x01"
         actual = self._tls.buildPacket(message)
@@ -589,7 +589,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test a rtu frame packet build."""
         old_encode = ModbusRequest.encode
         ModbusRequest.encode = lambda self: b""
-        message = ModbusRequest()
+        message = ModbusRequest(0, 0, 0, False)
         message.slave_id = 0xFF
         message.function_code = 0x01
         expected = b"\xff\x01\x81\x80"  # only header + CRC - no data
@@ -690,7 +690,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
 
     def test_ascii_framer_populate(self):
         """Test a ascii frame packet build."""
-        request = ModbusRequest()
+        request = ModbusRequest(0, 0, 0, False)
         self._ascii.populateResult(request)
         assert not request.slave_id
 
@@ -698,7 +698,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test a ascii frame packet build."""
         old_encode = ModbusRequest.encode
         ModbusRequest.encode = lambda self: b""
-        message = ModbusRequest()
+        message = ModbusRequest(0, 0, 0, False)
         message.slave_id = 0xFF
         message.function_code = 0x01
         expected = b":FF0100\r\n"

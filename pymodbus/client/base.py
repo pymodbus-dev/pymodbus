@@ -303,7 +303,11 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
             framer, cast(type[ModbusFramer], framer)
         )(ClientDecoder(), self)
         self.transaction = SyncModbusTransactionManager(
-            self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
+            self,
+            kwargs.get("backoff", 0.3),
+            retry_on_empty,
+            kwargs.get("retry_on_invalid", False),
+            retries,
         )
         self.reconnect_delay_current = self.params.reconnect_delay or 0
         self.use_udp = False

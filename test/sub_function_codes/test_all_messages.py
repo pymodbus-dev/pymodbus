@@ -82,8 +82,8 @@ class TestAllMessages:
             response = factory(slave_id)
             assert response.slave_id == slave_id
 
-    def test_forwarding_kwargs_to_pdu(self):
-        """Test that the kwargs are forwarded to the pdu correctly."""
+    def test_forwarding_to_pdu(self):
+        """Test that parameters are forwarded to the pdu correctly."""
         request = ReadCoilsRequest(1, 5, slave=0x12, transaction=0x12, protocol=0x12)
         assert request.slave_id == 0x12
         assert request.transaction_id == 0x12

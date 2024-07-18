@@ -69,9 +69,9 @@ class DiagnosticStatusRequest(ModbusRequest):
     function_code_name = "diagnostic_status"
     _rtu_frame_size = 8
 
-    def __init__(self, **kwargs):
+    def __init__(self, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a diagnostic request."""
-        ModbusRequest.__init__(self, **kwargs)
+        ModbusRequest.__init__(self, slave, transaction, protocol, skip_encode)
         self.message = None
 
     def encode(self):
@@ -131,9 +131,9 @@ class DiagnosticStatusResponse(ModbusResponse):
     function_code = 0x08
     _rtu_frame_size = 8
 
-    def __init__(self, **kwargs):
+    def __init__(self, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a diagnostic response."""
-        ModbusResponse.__init__(self, **kwargs)
+        ModbusResponse.__init__(self, slave, transaction, protocol, skip_encode)
         self.message = None
 
     def encode(self):

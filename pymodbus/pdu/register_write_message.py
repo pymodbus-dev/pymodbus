@@ -28,13 +28,13 @@ class WriteSingleRegisterRequest(ModbusRequest):
     function_code_name = "write_register"
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, slave=None, **kwargs):
+    def __init__(self, address=None, value=None, slave=None, transaction=0, protocol=0, skip_encode=0, **_kwargs):
         """Initialize a new instance.
 
         :param address: The address to start writing add
         :param value: The values to write
         """
-        super().__init__(slave=slave, **kwargs)
+        super().__init__(slave, transaction, protocol, skip_encode)
         self.address = address
         self.value = value
 
@@ -99,13 +99,13 @@ class WriteSingleRegisterResponse(ModbusResponse):
     function_code = 6
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, **kwargs):
+    def __init__(self, address=None, value=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a new instance.
 
         :param address: The address to start writing add
         :param value: The values to write
         """
-        super().__init__(**kwargs)
+        super().__init__(slave, transaction, protocol, skip_encode)
         self.address = address
         self.value = value
 
@@ -160,13 +160,13 @@ class WriteMultipleRegistersRequest(ModbusRequest):
     _rtu_byte_count_pos = 6
     _pdu_length = 5  # func + adress1 + adress2 + outputQuant1 + outputQuant2
 
-    def __init__(self, address=None, values=None, slave=None, **kwargs):
+    def __init__(self, address=None, values=None, slave=None, transaction=0, protocol=0, skip_encode=0, **_kwargs):
         """Initialize a new instance.
 
         :param address: The address to start writing to
         :param values: The values to write
         """
-        super().__init__(slave=slave, **kwargs)
+        super().__init__(slave, transaction, protocol, skip_encode)
         self.address = address
         if values is None:
             values = []
@@ -247,13 +247,13 @@ class WriteMultipleRegistersResponse(ModbusResponse):
     function_code = 16
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, count=None, **kwargs):
+    def __init__(self, address=None, count=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a new instance.
 
         :param address: The address to start writing to
         :param count: The number of registers to write to
         """
-        super().__init__(**kwargs)
+        super().__init__(slave, transaction, protocol, skip_encode)
         self.address = address
         self.count = count
 
@@ -295,14 +295,14 @@ class MaskWriteRegisterRequest(ModbusRequest):
     function_code_name = "mask_write_register"
     _rtu_frame_size = 10
 
-    def __init__(self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, **kwargs):
+    def __init__(self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a new instance.
 
         :param address: The mask pointer address (0x0000 to 0xffff)
         :param and_mask: The and bitmask to apply to the register address
         :param or_mask: The or bitmask to apply to the register address
         """
-        super().__init__(**kwargs)
+        super().__init__(slave, transaction, protocol, skip_encode)
         self.address = address
         self.and_mask = and_mask
         self.or_mask = or_mask
@@ -350,14 +350,14 @@ class MaskWriteRegisterResponse(ModbusResponse):
     function_code = 0x16
     _rtu_frame_size = 10
 
-    def __init__(self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, **kwargs):
+    def __init__(self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize new instance.
 
         :param address: The mask pointer address (0x0000 to 0xffff)
         :param and_mask: The and bitmask applied to the register address
         :param or_mask: The or bitmask applied to the register address
         """
-        super().__init__(**kwargs)
+        super().__init__(slave, transaction, protocol, skip_encode)
         self.address = address
         self.and_mask = and_mask
         self.or_mask = or_mask

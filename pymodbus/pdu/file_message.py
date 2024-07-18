@@ -100,12 +100,12 @@ class ReadFileRecordRequest(ModbusRequest):
     function_code_name = "read_file_record"
     _rtu_byte_count_pos = 2
 
-    def __init__(self, records=None, **kwargs):
+    def __init__(self, records=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a new instance.
 
         :param records: The file record requests to be read
         """
-        ModbusRequest.__init__(self, **kwargs)
+        ModbusRequest.__init__(self, slave, transaction, protocol, skip_encode)
         self.records = records or []
 
     def encode(self):
@@ -165,12 +165,12 @@ class ReadFileRecordResponse(ModbusResponse):
     function_code = 0x14
     _rtu_byte_count_pos = 2
 
-    def __init__(self, records=None, **kwargs):
+    def __init__(self, records=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a new instance.
 
         :param records: The requested file records
         """
-        ModbusResponse.__init__(self, **kwargs)
+        ModbusResponse.__init__(self, slave, transaction, protocol, skip_encode)
         self.records = records or []
 
     def encode(self):
@@ -218,12 +218,12 @@ class WriteFileRecordRequest(ModbusRequest):
     function_code_name = "write_file_record"
     _rtu_byte_count_pos = 2
 
-    def __init__(self, records=None, **kwargs):
+    def __init__(self, records=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a new instance.
 
         :param records: The file record requests to be read
         """
-        ModbusRequest.__init__(self, **kwargs)
+        ModbusRequest.__init__(self, slave, transaction, protocol, skip_encode)
         self.records = records or []
 
     def encode(self):
@@ -282,12 +282,12 @@ class WriteFileRecordResponse(ModbusResponse):
     function_code = 0x15
     _rtu_byte_count_pos = 2
 
-    def __init__(self, records=None, **kwargs):
+    def __init__(self, records=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a new instance.
 
         :param records: The file record requests to be read
         """
-        ModbusResponse.__init__(self, **kwargs)
+        ModbusResponse.__init__(self, slave, transaction, protocol, skip_encode)
         self.records = records or []
 
     def encode(self):
@@ -347,12 +347,12 @@ class ReadFifoQueueRequest(ModbusRequest):
     function_code_name = "read_fifo_queue"
     _rtu_frame_size = 6
 
-    def __init__(self, address=0x0000, **kwargs):
+    def __init__(self, address=0x0000, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a new instance.
 
         :param address: The fifo pointer address (0x0000 to 0xffff)
         """
-        ModbusRequest.__init__(self, **kwargs)
+        ModbusRequest.__init__(self, slave, transaction, protocol, skip_encode)
         self.address = address
         self.values = []  # this should be added to the context
 
@@ -408,12 +408,12 @@ class ReadFifoQueueResponse(ModbusResponse):
         lo_byte = int(buffer[3])
         return (hi_byte << 16) + lo_byte + 6
 
-    def __init__(self, values=None, **kwargs):
+    def __init__(self, values=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a new instance.
 
         :param values: The list of values of the fifo to return
         """
-        ModbusResponse.__init__(self, **kwargs)
+        ModbusResponse.__init__(self, slave, transaction, protocol, skip_encode)
         self.values = values or []
 
     def encode(self):

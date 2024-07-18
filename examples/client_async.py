@@ -113,6 +113,8 @@ def setup_async_client(description=None, cmdline=None):
             ),
             server_hostname="localhost",
         )
+    else:
+        raise RuntimeError(f"Unknown commtype {args.comm}")
     return client
 
 

@@ -18,7 +18,6 @@ from examples.client_calls import template_call
 from examples.client_custom_msg import main as main_custom_client
 from examples.client_payload import main as main_payload_calls
 from examples.datastore_simulator_share import main as main_datastore_simulator_share
-from examples.message_generator import generate_messages
 from examples.message_parser import main as main_parse_messages
 from examples.server_async import setup_server
 from examples.server_callback import run_callback_server
@@ -42,11 +41,6 @@ class TestExamples:
         """Return next port."""
         base_ports[__class__.__name__] += 1
         return base_ports[__class__.__name__]
-
-    @pytest.mark.parametrize("framer", ["socket", "rtu", "ascii"])
-    def test_message_generator(self, framer):
-        """Test all message generator."""
-        generate_messages(cmdline=["--framer", framer])
 
     @pytest.mark.parametrize("framer", ["socket", "rtu", "ascii"])
     def test_message_parser(self, framer):

@@ -121,6 +121,9 @@ async def main(host="localhost", port=5020):
     async with ModbusClient(host=host, port=port, framer_name=FramerType.SOCKET) as client:
         await client.connect()
 
+        # create a response object to control it works
+        CustomModbusResponse()
+
         # new modbus function code.
         client.register(CustomModbusResponse)
         request = CustomModbusRequest(32, slave=1)

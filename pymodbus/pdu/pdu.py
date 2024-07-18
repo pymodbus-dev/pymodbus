@@ -102,13 +102,17 @@ class ModbusRequest(ModbusPDU):
 
     function_code = -1
 
-    def __init__(self, slave=0, **kwargs):
+    def __init__(self, slave=0, error_responses=True, truncated_responses=True, **kwargs):
         """Proxy to the lower level initializer.
 
         :param slave: Modbus slave slave ID
+        :param error_responses: If we should accept an error response.
+        :param truncated_responses: If we should accept a truncated response.
         """
         super().__init__(slave, **kwargs)
         self.fut = None
+        self.error_responses = error_responses
+        self.truncated_responses = truncated_responses
 
     def doException(self, exception):
         """Build an error response based on the function.
@@ -148,6 +152,11 @@ class ModbusResponse(ModbusPDU):
         self.bits = []
         self.registers = []
         self.request = None
+
+    @property
+    def truncated(self) -> bool:
+        """Check if the response has been truncated."""
+        return False
 
     def isError(self) -> bool:
         """Check if the error is a success or failure."""

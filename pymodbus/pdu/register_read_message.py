@@ -109,6 +109,14 @@ class ReadRegistersResponseBase(ModbusResponse):
         """
         return self.registers[index]
 
+    @property
+    def truncated(self) -> bool:
+        """Check if the response has been truncated."""
+        if isinstance(self.request, ReadRegistersRequestBase):
+            if len(self.registers) < self.request.count:
+                return True
+        return False
+
     def __str__(self):
         """Return a string representation of the instance.
 

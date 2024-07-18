@@ -12,6 +12,7 @@ API changes 3.7.0
 - binary framer no longer supported
 - Framer.<type> renamed to FramerType.<type>
 - PDU classes moved to pymodbus/pdu
+- Simulator config custom actions kwargs -> parameters
 
 
 API changes 3.6.0

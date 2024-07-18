@@ -171,12 +171,12 @@
                 {"addr": 2305,
                     "value": 50,
                     "action": "increment",
-                    "kwargs": {"minval": 45, "maxval": 155}
+                    "parameters": {"minval": 45, "maxval": 155}
                 },
                 {"addr": 2306,
                     "value": 50,
                     "action": "random",
-                    "kwargs": {"minval": 45, "maxval": 55}
+                    "parameters": {"minval": 45, "maxval": 55}
                 }
             ],
             "uint32": [
@@ -190,12 +190,12 @@
                 {"addr": [3876, 3877],
                     "value": 50000,
                     "action": "increment",
-                    "kwargs": {"minval": 45000, "maxval": 55000}
+                    "parameters": {"minval": 45000, "maxval": 55000}
                 },
                 {"addr": [3878, 3879],
                     "value": 50000,
                     "action": "random",
-                    "kwargs": {"minval": 45000, "maxval": 55000}
+                    "parameters": {"minval": 45000, "maxval": 55000}
                 }
             ],
             "float32": [
@@ -209,12 +209,12 @@
                 {"addr": [4876, 4877],
                     "value": 50000.0,
                     "action": "increment",
-                    "kwargs": {"minval": 45000.0, "maxval": 55000.0}
+                    "parameters": {"minval": 45000.0, "maxval": 55000.0}
                 },
                 {"addr": [4878, 48779],
                     "value": 50000.0,
                     "action": "random",
-                    "kwargs": {"minval": 45000.0, "maxval": 55000.0}
+                    "parameters": {"minval": 45000.0, "maxval": 55000.0}
                 }
             ],
             "string": [

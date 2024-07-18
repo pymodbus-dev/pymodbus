@@ -92,14 +92,19 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
 
     """
 
-    def __init__(self, *_args, **kwargs):
+    def __init__(self, *_args,
+                    di=ModbusSequentialDataBlock.create(),
+                    co=ModbusSequentialDataBlock.create(),
+                    ir=ModbusSequentialDataBlock.create(),
+                    hr=ModbusSequentialDataBlock.create(),
+                    zero_mode=False):
         """Initialize the datastores."""
         self.store = {}
-        self.store["d"] = kwargs.get("di", ModbusSequentialDataBlock.create())
-        self.store["c"] = kwargs.get("co", ModbusSequentialDataBlock.create())
-        self.store["i"] = kwargs.get("ir", ModbusSequentialDataBlock.create())
-        self.store["h"] = kwargs.get("hr", ModbusSequentialDataBlock.create())
-        self.zero_mode = kwargs.get("zero_mode", False)
+        self.store["d"] = di
+        self.store["c"] = co
+        self.store["i"] = ir
+        self.store["h"] = hr
+        self.zero_mode = zero_mode
 
     def __str__(self):
         """Return a string representation of the context.

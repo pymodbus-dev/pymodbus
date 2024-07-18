@@ -48,10 +48,10 @@ class ModbusAsciiFramer(ModbusFramer):
             return {"slave": uid, "fcode": fcode}
         return {}
 
-    def frameProcessIncomingPacket(self, single, callback, slave, _tid=None, **kwargs):
+    def frameProcessIncomingPacket(self, single, callback, slave, tid=None):
         """Process new packet pattern."""
         while len(self._buffer):
-            used_len, _tid, dev_id, data = self.message_handler.decode(self._buffer)
+            used_len, tid, dev_id, data = self.message_handler.decode(self._buffer)
             if not data:
                 if not used_len:
                     return

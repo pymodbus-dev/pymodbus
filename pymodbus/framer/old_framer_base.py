@@ -125,7 +125,7 @@ class ModbusFramer:
         result.transaction_id = self._header.get("tid", 0)
         result.protocol_id = self._header.get("pid", 0)
 
-    def processIncomingPacket(self, data: bytes, callback, slave, **kwargs):
+    def processIncomingPacket(self, data: bytes, callback, slave, single=False, tid=None):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -141,7 +141,8 @@ class ModbusFramer:
         :param callback: The function to send results to
         :param slave: Process if slave id matches, ignore otherwise (could be a
                list of slave ids (server) or single slave id(client/server))
-        :param kwargs:
+        :param single: multiple slave ?
+        :param tid: transaction id
         :raises ModbusIOException:
         """
         Log.debug("Processing: {}", data, ":hex")
@@ -150,11 +151,10 @@ class ModbusFramer:
             return
         if not isinstance(slave, (list, tuple)):
             slave = [slave]
-        single = kwargs.pop("single", False)
-        self.frameProcessIncomingPacket(single, callback, slave, **kwargs)
+        self.frameProcessIncomingPacket(single, callback, slave, tid=tid)
 
     def frameProcessIncomingPacket(
-        self, _single, _callback, _slave, _tid=None, **kwargs
+        self, _single, _callback, _slave, tid=None
     ) -> None:
         """Process new packet pattern."""
 

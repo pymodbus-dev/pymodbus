@@ -20,17 +20,18 @@ from pymodbus.logging import Log
 class SqlSlaveContext(ModbusBaseSlaveContext):
     """This creates a modbus data model with each data access in its a block."""
 
-    def __init__(self, *_args, **kwargs):
+    def __init__(self, *_args, table="pymodbus", database=None):
         """Initialize the datastores.
 
-        :param kwargs: Each element is a ModbusDataBlock
+        :param table: table name
+        :param database: database
         """
         self._engine = None
         self._metadata = None
         self._table = None
         self._connection = None
-        self.table = kwargs.get("table", "pymodbus")
-        self.database = kwargs.get("database", "sqlite:///:memory:")
+        self.table = table
+        self.database = database if database else "sqlite:///:memory:"
         self._db_create(self.table, self.database)
 
     def __str__(self):

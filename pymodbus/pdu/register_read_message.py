@@ -22,14 +22,14 @@ class ReadRegistersRequestBase(ModbusRequest):
 
     _rtu_frame_size = 8
 
-    def __init__(self, address, count, slave=0, **kwargs):
+    def __init__(self, address, count, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a new instance.
 
         :param address: The address to start the read from
         :param count: The number of registers to read
         :param slave: Modbus slave slave ID
         """
-        super().__init__(slave, **kwargs)
+        super().__init__(slave, transaction, protocol, skip_encode)
         self.address = address
         self.count = count
 
@@ -70,13 +70,13 @@ class ReadRegistersResponseBase(ModbusResponse):
 
     _rtu_byte_count_pos = 2
 
-    def __init__(self, values, slave=0, **kwargs):
+    def __init__(self, values, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a new instance.
 
         :param values: The values to write to
         :param slave: Modbus slave slave ID
         """
-        super().__init__(slave, **kwargs)
+        super().__init__(slave, transaction, protocol, skip_encode)
 
         #: A list of register values
         self.registers = values or []
@@ -257,7 +257,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
     function_code_name = "read_write_multiple_registers"
     _rtu_byte_count_pos = 10
 
-    def __init__(self, **kwargs):
+    def __init__(self, slave=0, transaction=0, protocol=0, skip_encode=False, **kwargs):
         """Initialize a new request message.
 
         :param read_address: The address to start reading from
@@ -265,7 +265,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
         :param write_address: The address to start writing to
         :param write_registers: The registers to write to the specified address
         """
-        super().__init__(**kwargs)
+        super().__init__(slave, transaction, protocol, skip_encode)
         self.read_address = kwargs.get("read_address", 0x00)
         self.read_count = kwargs.get("read_count", 0)
         self.write_address = kwargs.get("write_address", 0x00)
@@ -373,12 +373,12 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
     function_code = 23
     _rtu_byte_count_pos = 2
 
-    def __init__(self, values=None, **kwargs):
+    def __init__(self, values=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a new instance.
 
         :param values: The register values to write
         """
-        super().__init__(**kwargs)
+        super().__init__(slave, transaction, protocol, skip_encode)
         self.registers = values or []
 
     def encode(self):

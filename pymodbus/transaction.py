@@ -134,7 +134,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
     Results are keyed based on the supplied transaction id.
     """
 
-    def __init__(self, client: ModbusBaseSyncClient, backoff=0.3, retry_on_empty=False, retry_on_invalid=False, retries=3, **_kwargs):
+    def __init__(self, client: ModbusBaseSyncClient, backoff, retry_on_empty, retry_on_invalid, retries):
         """Initialize an instance of the ModbusTransactionManager.
 
         :param client: The client socket wrapper

@@ -262,7 +262,7 @@ async def test_client_instanciate(
     client.connect = lambda: False
     client.transport = None
     with pytest.raises(ConnectionException):
-        client.execute(ModbusRequest())
+        client.execute(ModbusRequest(0, 0, 0, False))
 
 async def test_serial_not_installed():
     """Try to instantiate clients."""
@@ -647,13 +647,13 @@ async def test_client_build_response():
     """Test fail of build_response."""
     client = ModbusBaseClient(FramerType.RTU)
     with pytest.raises(ConnectionException):
-        await client.build_response(ModbusRequest(transaction=0))
+        await client.build_response(ModbusRequest(0, 0, 0, False))
 
 
 async def test_client_mixin_execute():
     """Test dummy execute for both sync and async."""
     client = ModbusClientMixin()
     with pytest.raises(NotImplementedError):
-        client.execute(ModbusRequest())
+        client.execute(ModbusRequest(0, 0, 0, False))
     with pytest.raises(NotImplementedError):
-        await client.execute(ModbusRequest())
+        await client.execute(ModbusRequest(0, 0, 0, False))

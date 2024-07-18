@@ -21,14 +21,14 @@ class ReadBitsRequestBase(ModbusRequest):
 
     _rtu_frame_size = 8
 
-    def __init__(self, address, count, slave=0, **kwargs):
+    def __init__(self, address, count, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize the read request data.
 
         :param address: The start address to read from
         :param count: The number of bits after "address" to read
         :param slave: Modbus slave slave ID
         """
-        ModbusRequest.__init__(self, slave, **kwargs)
+        ModbusRequest.__init__(self, slave, transaction, protocol, skip_encode)
         self.address = address
         self.count = count
 
@@ -75,13 +75,13 @@ class ReadBitsResponseBase(ModbusResponse):
 
     _rtu_byte_count_pos = 2
 
-    def __init__(self, values, slave=0, **kwargs):
+    def __init__(self, values, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a new instance.
 
         :param values: The requested values to be returned
         :param slave: Modbus slave slave ID
         """
-        ModbusResponse.__init__(self, slave, **kwargs)
+        ModbusResponse.__init__(self, slave, transaction, protocol, skip_encode)
 
         #: A list of booleans representing bit values
         self.bits = values or []
@@ -146,14 +146,14 @@ class ReadCoilsRequest(ReadBitsRequestBase):
     function_code = 1
     function_code_name = "read_coils"
 
-    def __init__(self, address=None, count=None, slave=0, **kwargs):
+    def __init__(self, address=None, count=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a new instance.
 
         :param address: The address to start reading from
         :param count: The number of bits to read
         :param slave: Modbus slave slave ID
         """
-        ReadBitsRequestBase.__init__(self, address, count, slave, **kwargs)
+        ReadBitsRequestBase.__init__(self, address, count, slave, transaction, protocol, skip_encode)
 
     async def execute(self, context):
         """Run a read coils request against a datastore.
@@ -193,13 +193,13 @@ class ReadCoilsResponse(ReadBitsResponseBase):
 
     function_code = 1
 
-    def __init__(self, values=None, slave=0, **kwargs):
+    def __init__(self, values=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a new instance.
 
         :param values: The request values to respond with
         :param slave: Modbus slave slave ID
         """
-        ReadBitsResponseBase.__init__(self, values, slave, **kwargs)
+        ReadBitsResponseBase.__init__(self, values, slave, transaction, protocol, skip_encode)
 
 
 class ReadDiscreteInputsRequest(ReadBitsRequestBase):
@@ -214,14 +214,14 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
     function_code = 2
     function_code_name = "read_discrete_input"
 
-    def __init__(self, address=None, count=None, slave=0, **kwargs):
+    def __init__(self, address=None, count=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a new instance.
 
         :param address: The address to start reading from
         :param count: The number of bits to read
         :param slave: Modbus slave slave ID
         """
-        ReadBitsRequestBase.__init__(self, address, count, slave, **kwargs)
+        ReadBitsRequestBase.__init__(self, address, count, slave, transaction, protocol, skip_encode)
 
     async def execute(self, context):
         """Run a read discrete input request against a datastore.
@@ -261,10 +261,10 @@ class ReadDiscreteInputsResponse(ReadBitsResponseBase):
 
     function_code = 2
 
-    def __init__(self, values=None, slave=0, **kwargs):
+    def __init__(self, values=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize a new instance.
 
         :param values: The request values to respond with
         :param slave: Modbus slave slave ID
         """
-        ReadBitsResponseBase.__init__(self, values, slave, **kwargs)
+        ReadBitsResponseBase.__init__(self, values, slave, transaction, protocol, skip_encode)

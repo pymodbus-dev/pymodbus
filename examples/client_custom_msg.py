@@ -36,9 +36,9 @@ class CustomModbusResponse(ModbusResponse):
     function_code = 55
     _rtu_byte_count_pos = 2
 
-    def __init__(self, values=None, **kwargs):
+    def __init__(self, values=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize."""
-        ModbusResponse.__init__(self, **kwargs)
+        ModbusResponse.__init__(self, slave, transaction, protocol, skip_encode)
         self.values = values or []
 
     def encode(self):
@@ -68,9 +68,9 @@ class CustomModbusRequest(ModbusRequest):
     function_code = 55
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, **kwargs):
+    def __init__(self, address=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
         """Initialize."""
-        ModbusRequest.__init__(self, **kwargs)
+        ModbusRequest.__init__(self, slave, transaction, protocol, skip_encode)
         self.address = address
         self.count = 16
 

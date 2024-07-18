@@ -13,6 +13,7 @@ API changes 3.7.0
 - Framer.<type> renamed to FramerType.<type>
 - PDU classes moved to pymodbus/pdu
 - Simulator config custom actions kwargs -> parameters
+- Non defined parameters (kwargs) no longer valid
 
 
 API changes 3.6.0

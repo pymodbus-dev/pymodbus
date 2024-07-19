@@ -63,8 +63,8 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
-        if "CommType" not in kwargs:
-            kwargs["CommType"] = CommType.TCP
+        if "comm_type" not in kwargs:
+            kwargs["comm_type"] = CommType.TCP
         if source_address:
             kwargs["source_address"] = source_address
         ModbusBaseClient.__init__(
@@ -132,8 +132,8 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus TCP Client."""
-        if "CommType" not in kwargs:
-            kwargs["CommType"] = CommType.TCP
+        if "comm_type" not in kwargs:
+            kwargs["comm_type"] = CommType.TCP
         super().__init__(
             framer,
             host=host,

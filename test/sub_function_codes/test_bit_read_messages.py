@@ -40,17 +40,17 @@ class TestModbusBitMessage:
 
     def test_read_bit_base_class_methods(self):
         """Test basic bit message encoding/decoding."""
-        handle = ReadBitsRequestBase(1, 1)
+        handle = ReadBitsRequestBase(1, 1, 0, 0, 0, False)
         msg = "ReadBitRequest(1,1)"
         assert msg == str(handle)
-        handle = ReadBitsResponseBase([1, 1])
+        handle = ReadBitsResponseBase([1, 1], 0, 0, 0, False)
         msg = "ReadBitsResponseBase(2)"
         assert msg == str(handle)
 
     def test_bit_read_base_request_encoding(self):
         """Test basic bit message encoding/decoding."""
         for i in range(20):
-            handle = ReadBitsRequestBase(i, i)
+            handle = ReadBitsRequestBase(i, i, 0, 0, 0, False)
             result = struct.pack(">HH", i, i)
             assert handle.encode() == result
             handle.decode(result)
@@ -60,7 +60,7 @@ class TestModbusBitMessage:
         """Test basic bit message encoding/decoding."""
         for i in range(20):
             data = [True] * i
-            handle = ReadBitsResponseBase(data)
+            handle = ReadBitsResponseBase(data, 0, 0, 0, False)
             result = handle.encode()
             handle.decode(result)
             assert handle.bits[:i] == data
@@ -68,7 +68,7 @@ class TestModbusBitMessage:
     def test_bit_read_base_response_helper_methods(self):
         """Test the extra methods on a ReadBitsResponseBase."""
         data = [False] * 8
-        handle = ReadBitsResponseBase(data)
+        handle = ReadBitsResponseBase(data, 0, 0, 0, False)
         for i in (1, 3, 5):
             handle.setBit(i, True)
         for i in (1, 3, 5):
@@ -79,8 +79,8 @@ class TestModbusBitMessage:
     def test_bit_read_base_requests(self):
         """Test bit read request encoding."""
         messages = {
-            ReadBitsRequestBase(12, 14): b"\x00\x0c\x00\x0e",
-            ReadBitsResponseBase([1, 0, 1, 1, 0]): b"\x01\x0d",
+            ReadBitsRequestBase(12, 14, 0, 0, 0, False): b"\x00\x0c\x00\x0e",
+            ReadBitsResponseBase([1, 0, 1, 1, 0], 0, 0, 0, False): b"\x01\x0d",
         }
         for request, expected in iter(messages.items()):
             assert request.encode() == expected
@@ -89,8 +89,8 @@ class TestModbusBitMessage:
         """Test bit read request encoding."""
         context = MockContext()
         requests = [
-            ReadCoilsRequest(1, 0x800),
-            ReadDiscreteInputsRequest(1, 0x800),
+            ReadCoilsRequest(1, 0x800, 0, 0, 0, False),
+            ReadDiscreteInputsRequest(1, 0x800, 0, 0, 0, False),
         ]
         for request in requests:
             result = await request.execute(context)
@@ -100,8 +100,8 @@ class TestModbusBitMessage:
         """Test bit read request encoding."""
         context = MockContext()
         requests = [
-            ReadCoilsRequest(1, 5),
-            ReadDiscreteInputsRequest(1, 5),
+            ReadCoilsRequest(1, 5, 0, 0, 0, False),
+            ReadDiscreteInputsRequest(1, 5, 0, 0, 0, False),
         ]
         for request in requests:
             result = await request.execute(context)
@@ -112,8 +112,8 @@ class TestModbusBitMessage:
         context = MockContext()
         context.validate = lambda a, b, c: True
         requests = [
-            ReadCoilsRequest(1, 5),
-            ReadDiscreteInputsRequest(1, 5),
+            ReadCoilsRequest(1, 5, 0, 0, 0, False),
+            ReadDiscreteInputsRequest(1, 5, 0, 0, 0, False),
         ]
         for request in requests:
             result = await request.execute(context)
@@ -122,12 +122,12 @@ class TestModbusBitMessage:
     def test_bit_read_message_get_response_pdu(self):
         """Test bit read message get response pdu."""
         requests = {
-            ReadCoilsRequest(1, 5): 3,
-            ReadCoilsRequest(1, 8): 3,
-            ReadCoilsRequest(0, 16): 4,
-            ReadDiscreteInputsRequest(1, 21): 5,
-            ReadDiscreteInputsRequest(1, 24): 5,
-            ReadDiscreteInputsRequest(1, 1900): 240,
+            ReadCoilsRequest(1, 5, 0, 0, 0, False): 3,
+            ReadCoilsRequest(1, 8, 0, 0, 0, False): 3,
+            ReadCoilsRequest(0, 16, 0, 0, 0, False): 4,
+            ReadDiscreteInputsRequest(1, 21, 0, 0, 0, False): 5,
+            ReadDiscreteInputsRequest(1, 24, 0, 0, 0, False): 5,
+            ReadDiscreteInputsRequest(1, 1900, 0, 0, 0, False): 240,
         }
         for request, expected in iter(requests.items()):
             pdu_len = request.get_response_pdu_size()

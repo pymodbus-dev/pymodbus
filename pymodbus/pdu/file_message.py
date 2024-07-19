@@ -4,17 +4,6 @@ Currently none of these messages are implemented
 """
 from __future__ import annotations
 
-
-__all__ = [
-    "FileRecord",
-    "ReadFileRecordRequest",
-    "ReadFileRecordResponse",
-    "WriteFileRecordRequest",
-    "WriteFileRecordResponse",
-    "ReadFifoQueueRequest",
-    "ReadFifoQueueResponse",
-]
-
 # pylint: disable=missing-type-doc
 import struct
 

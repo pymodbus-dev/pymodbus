@@ -3,12 +3,6 @@
 TODO write mask request/response
 """
 
-__all__ = [
-    "WriteSingleCoilRequest",
-    "WriteSingleCoilResponse",
-    "WriteMultipleCoilsRequest",
-    "WriteMultipleCoilsResponse",
-]
 
 # pylint: disable=missing-type-doc
 import struct

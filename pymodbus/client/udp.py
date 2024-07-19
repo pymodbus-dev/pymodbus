@@ -65,7 +65,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         ModbusBaseClient.__init__(
             self,
             framer,
-            CommType=CommType.UDP,
+            comm_type=CommType.UDP,
             host=host,
             port=port,
             **kwargs,
@@ -134,7 +134,7 @@ class ModbusUdpClient(ModbusBaseSyncClient):
             framer,
             port=port,
             host=host,
-            CommType=CommType.UDP,
+            comm_type=CommType.UDP,
             **kwargs,
         )
         self.params.source_address = source_address

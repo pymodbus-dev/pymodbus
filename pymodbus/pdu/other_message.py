@@ -3,16 +3,6 @@
 Currently not all implemented
 """
 
-__all__ = [
-    "ReadExceptionStatusRequest",
-    "ReadExceptionStatusResponse",
-    "GetCommEventCounterRequest",
-    "GetCommEventCounterResponse",
-    "GetCommEventLogRequest",
-    "GetCommEventLogResponse",
-    "ReportSlaveIdRequest",
-    "ReportSlaveIdResponse",
-]
 
 # pylint: disable=missing-type-doc
 import struct

@@ -84,7 +84,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         ModbusBaseClient.__init__(
             self,
             framer,
-            CommType=CommType.SERIAL,
+            comm_type=CommType.SERIAL,
             host=port,
             baudrate=baudrate,
             bytesize=bytesize,
@@ -161,7 +161,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Initialize Modbus Serial Client."""
         super().__init__(
             framer,
-            CommType=CommType.SERIAL,
+            comm_type=CommType.SERIAL,
             host=port,
             baudrate=baudrate,
             bytesize=bytesize,

@@ -1,13 +1,5 @@
 """Bit Reading Request/Response messages."""
 
-__all__ = [
-    "ReadBitsResponseBase",
-    "ReadCoilsRequest",
-    "ReadCoilsResponse",
-    "ReadDiscreteInputsRequest",
-    "ReadDiscreteInputsResponse",
-]
-
 # pylint: disable=missing-type-doc
 import struct
 
@@ -21,7 +13,7 @@ class ReadBitsRequestBase(ModbusRequest):
 
     _rtu_frame_size = 8
 
-    def __init__(self, address, count, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, address, count, slave, transaction, protocol, skip_encode):
         """Initialize the read request data.
 
         :param address: The start address to read from
@@ -75,7 +67,7 @@ class ReadBitsResponseBase(ModbusResponse):
 
     _rtu_byte_count_pos = 2
 
-    def __init__(self, values, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, values, slave, transaction, protocol, skip_encode):
         """Initialize a new instance.
 
         :param values: The requested values to be returned

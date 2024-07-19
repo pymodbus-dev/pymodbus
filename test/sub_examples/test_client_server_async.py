@@ -56,6 +56,12 @@ class TestClientServerAsyncExamples:
         )
         await run_async_client(test_client, modbus_calls=run_a_few_calls)
 
+    async def test_client_no_calls(self, mock_server, mock_clc):
+        """Run async client and server."""
+        assert mock_server
+        test_client = setup_async_client(cmdline=mock_clc)
+        await run_async_client(test_client, modbus_calls=None)
+
     async def test_server_no_client(self, mock_server):
         """Run async server without client."""
         assert mock_server
@@ -76,3 +82,9 @@ class TestClientServerAsyncExamples:
         test_client = setup_async_client(cmdline=mock_clc)
         with pytest.raises((AssertionError, asyncio.TimeoutError)):
             await run_async_client(test_client, modbus_calls=run_a_few_calls)
+
+async def test_illegal_commtype():
+        """Run async client and server."""
+        with pytest.raises(RuntimeError):
+            setup_async_client(cmdline=["--comm", "unknown", "--framer", "rtu", "--port", "5912"]
+)

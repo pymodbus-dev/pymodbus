@@ -20,7 +20,7 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
     parser.add_argument(
         "-c",
         "--comm",
-        choices=["tcp", "udp", "serial", "tls"],
+        choices=["tcp", "udp", "serial", "tls", "unknown"],
         help="set communication, default is tcp",
         dest="comm",
         default="tcp",

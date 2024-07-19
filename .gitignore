@@ -19,3 +19,4 @@ prof/
 /pymodbus.egg-info/
 venv
 downloaded_files/
+pymodbus.log

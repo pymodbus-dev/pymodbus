@@ -218,7 +218,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client = ModbusTlsClient("127.0.0.1")
         assert client
         assert isinstance(client.framer, ModbusTlsFramer)
-        assert client.sslctx
+        assert client.comm_params.sslctx
 
     @mock.patch("pymodbus.client.tcp.select")
     def test_basic_syn_tls_client(self, mock_select):
@@ -280,7 +280,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client = ModbusTlsClient("127.0.0.1")
         rep = (
             f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
-            f"ipaddr={client.comm_params.host}, port={client.comm_params.port}, sslctx={client.sslctx}, "
+            f"ipaddr={client.comm_params.host}, port={client.comm_params.port}, sslctx={client.comm_params.sslctx}, "
             f"timeout={client.comm_params.timeout_connect}>"
         )
         assert repr(client) == rep
@@ -347,7 +347,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client.close()
 
         # rtu connect/disconnect
-        rtu_client = ModbusSerialClient("/dev/null", framer=FramerType.RTU, strict=True)
+        rtu_client = ModbusSerialClient("/dev/null", framer=FramerType.RTU)
         assert rtu_client.connect()
         assert rtu_client.socket.inter_byte_timeout == rtu_client.inter_byte_timeout
         rtu_client.close()

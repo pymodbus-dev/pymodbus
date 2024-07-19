@@ -94,7 +94,6 @@ def setup_async_client(description=None, cmdline=None):
             #    parity="N",
             #    stopbits=1,
             #    handle_local_echo=False,
-            #    strict=True,
         )
     elif args.comm == "tls":
         client = modbusClient.AsyncModbusTlsClient(
@@ -111,7 +110,6 @@ def setup_async_client(description=None, cmdline=None):
                 keyfile=helper.get_certificate("key"),
             #    password="none",
             ),
-            server_hostname="localhost",
         )
     else:
         raise RuntimeError(f"Unknown commtype {args.comm}")

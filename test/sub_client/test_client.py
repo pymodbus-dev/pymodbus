@@ -22,7 +22,7 @@ from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.exceptions import ConnectionException, ModbusException, ModbusIOException
 from pymodbus.pdu import ModbusRequest
-from pymodbus.transport import CommType
+from pymodbus.transport import CommParams, CommType
 
 
 BASE_PORT = 6500
@@ -123,7 +123,6 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                     "timeout": 3 + 2,
                     "retries": 3 + 2,
                     "retry_on_empty": True,
-                    "strict": False,
                     "broadcast_enable": not False,
                     "reconnect_delay": 117,
                     "reconnect_delay_max": 250,
@@ -132,7 +131,6 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                     "timeout": 3,
                     "retries": 3,
                     "retry_on_empty": False,
-                    "strict": True,
                     "broadcast_enable": False,
                     "reconnect_delay": 100,
                     "reconnect_delay_max": 1000 * 60 * 5,
@@ -149,7 +147,6 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                     "handle_local_echo": True,
                 },
                 "defaults": {
-                    "host": None,
                     "port": "/dev/tty",
                     "framer": FramerType.RTU,
                     "baudrate": 19200,
@@ -167,7 +164,6 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                     "source_address": ("195.6.7.8", 1025),
                 },
                 "defaults": {
-                    "host": "192.168.1.2",
                     "port": 502,
                     "framer": FramerType.SOCKET,
                     "source_address": None,
@@ -180,19 +176,12 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                     "framer": FramerType.ASCII,
                     "source_address": ("195.6.7.8", 1025),
                     "sslctx": None,
-                    "certfile": None,
-                    "keyfile": None,
-                    "password": None,
                 },
                 "defaults": {
-                    "host": "192.168.1.2",
                     "port": 802,
                     "framer": FramerType.TLS,
                     "source_address": None,
                     "sslctx": None,
-                    "certfile": None,
-                    "keyfile": None,
-                    "password": None,
                 },
             },
             "udp": {
@@ -203,7 +192,6 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                     "source_address": ("195.6.7.8", 1025),
                 },
                 "defaults": {
-                    "host": "192.168.1.2",
                     "port": 502,
                     "framer": FramerType.SOCKET,
                     "source_address": None,
@@ -236,15 +224,12 @@ async def test_client_instanciate(
     cur_args = arg_list[type_args]
     if test_default:
         client = clientclass(cur_args["pos_arg"])
-        to_test = dict(arg_list["fix"]["defaults"], **cur_args["defaults"])
     else:
         client = clientclass(
             cur_args["pos_arg"],
             **arg_list["fix"]["opt_args"],
             **cur_args["opt_args"],
         )
-        to_test = dict(arg_list["fix"]["opt_args"], **cur_args["opt_args"])
-        to_test["host"] = cur_args["defaults"]["host"]
 
     # Test information methods
     client.last_frame_end = 2
@@ -278,9 +263,11 @@ async def test_client_modbusbaseclient():
     """Test modbus base client class."""
     client = ModbusBaseClient(
         FramerType.ASCII,
-        host="localhost",
-        port=BASE_PORT + 1,
-        CommType=CommType.TCP,
+        comm_params=CommParams(
+            host="localhost",
+            port=BASE_PORT + 1,
+            comm_type=CommType.TCP,
+        ),
     )
     client.register(pdu_bit_read.ReadCoilsResponse)
     assert str(client)
@@ -313,9 +300,11 @@ async def test_client_base_async():
         p_close.return_value.set_result(True)
         async with ModbusBaseClient(
             FramerType.ASCII,
-            host="localhost",
-            port=BASE_PORT + 2,
-            CommType=CommType.TCP,
+            comm_params=CommParams(
+                host="localhost",
+                port=BASE_PORT + 2,
+                comm_type=CommType.TCP,
+            ),
         ) as client:
             str(client)
         p_connect.return_value = asyncio.Future()
@@ -327,7 +316,8 @@ async def test_client_base_async():
 @pytest.mark.skip()
 async def test_client_protocol_receiver():
     """Test the client protocol data received."""
-    base = ModbusBaseClient(FramerType.SOCKET)
+    base = ModbusBaseClient(FramerType.SOCKET, comm_params=CommParams(),
+)
     transport = mock.MagicMock()
     base.ctx.connection_made(transport)
     assert base.transport == transport
@@ -349,7 +339,8 @@ async def test_client_protocol_receiver():
 @pytest.mark.skip()
 async def test_client_protocol_response():
     """Test the udp client protocol builds responses."""
-    base = ModbusBaseClient(FramerType.SOCKET)
+    base = ModbusBaseClient(FramerType.SOCKET, comm_params=CommParams(),
+)
     response = base.build_response(0x00)  # pylint: disable=protected-access
     excp = response.exception()
     assert isinstance(excp, ConnectionException)
@@ -363,7 +354,12 @@ async def test_client_protocol_response():
 async def test_client_protocol_handler():
     """Test the client protocol handles responses."""
     base = ModbusBaseClient(
-        FramerType.ASCII, host="localhost", port=+3, CommType=CommType.TCP
+        FramerType.ASCII,
+        comm_params=CommParams(
+            host="localhost",
+            port=BASE_PORT + 3,
+            comm_type=CommType.TCP,
+        ),
     )
     transport = mock.MagicMock()
     base.ctx.connection_made(transport=transport)
@@ -411,7 +407,13 @@ class MockTransport:
 
 async def test_client_protocol_execute():
     """Test the client protocol execute method."""
-    base = ModbusBaseClient(FramerType.SOCKET, host="127.0.0.1")
+    base = ModbusBaseClient(
+        FramerType.SOCKET,
+        comm_params=CommParams(
+            host="127.0.0.1",
+            timeout_connect=3,
+        ),
+    )
     request = pdu_bit_read.ReadCoilsRequest(1, 1)
     transport = MockTransport(base, request)
     base.ctx.connection_made(transport=transport)
@@ -422,7 +424,12 @@ async def test_client_protocol_execute():
 
 async def test_client_execute_broadcast():
     """Test the client protocol execute method."""
-    base = ModbusBaseClient(FramerType.SOCKET, host="127.0.0.1")
+    base = ModbusBaseClient(
+        FramerType.SOCKET,
+        comm_params=CommParams(
+            host="127.0.0.1",
+        ),
+    )
     base.broadcast_enable = True
     request = pdu_bit_read.ReadCoilsRequest(1, 1)
     transport = MockTransport(base, request)
@@ -432,7 +439,13 @@ async def test_client_execute_broadcast():
 
 async def test_client_protocol_retry():
     """Test the client protocol execute method with retries."""
-    base = ModbusBaseClient(FramerType.SOCKET, host="127.0.0.1", timeout=0.1)
+    base = ModbusBaseClient(
+        FramerType.SOCKET,
+        comm_params=CommParams(
+            host="127.0.0.1",
+            timeout_connect=0.1,
+        ),
+    )
     request = pdu_bit_read.ReadCoilsRequest(1, 1)
     transport = MockTransport(base, request, retries=2)
     base.ctx.connection_made(transport=transport)
@@ -445,7 +458,14 @@ async def test_client_protocol_retry():
 
 async def test_client_protocol_timeout():
     """Test the client protocol execute method with timeout."""
-    base = ModbusBaseClient(FramerType.SOCKET, host="127.0.0.1", timeout=0.1, retries=2)
+    base = ModbusBaseClient(
+        FramerType.SOCKET,
+        retries=2,
+        comm_params=CommParams(
+            host="127.0.0.1",
+            timeout_connect=0.1,
+        ),
+    )
     # Avoid creating do_reconnect() task
     base.ctx.connection_lost = mock.MagicMock()
     request = pdu_bit_read.ReadCoilsRequest(1, 1)
@@ -645,7 +665,8 @@ def test_client_mixin_convert_fail():
 
 async def test_client_build_response():
     """Test fail of build_response."""
-    client = ModbusBaseClient(FramerType.RTU)
+    client = ModbusBaseClient(FramerType.RTU, comm_params=CommParams(),
+)
     with pytest.raises(ConnectionException):
         await client.build_response(ModbusRequest(0, 0, 0, False))
 

@@ -5,8 +5,7 @@ import asyncio
 import socket
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable
-from dataclasses import dataclass
-from typing import Any, cast
+from typing import cast
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.client.modbusclientprotocol import ModbusClientProtocol
@@ -16,79 +15,39 @@ from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType, ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.transaction import SyncModbusTransactionManager
-from pymodbus.transport import CommParams, CommType
+from pymodbus.transport import CommParams
 from pymodbus.utilities import ModbusTransactionState
 
 
 class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
     """**ModbusBaseClient**.
 
-    Fixed parameters:
-
-    :param framer: Framer enum name
-
-    Optional parameters:
-
-    :param timeout: Timeout for a request, in seconds.
-    :param retries: Max number of retries per request.
-    :param retry_on_empty: Retry on empty response.
-    :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
-    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
-    :param on_connect_callback: Will be called when connected/disconnected (bool parameter)
-    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
-    :param comm_type: Type of communication (set by interface class)
-    :param kwargs: Experimental parameters.
-
-    .. tip::
-        **reconnect_delay** doubles automatically with each unsuccessful connect, from
-        **reconnect_delay** to **reconnect_delay_max**.
-        Set `reconnect_delay=0` to avoid automatic reconnection.
-
     :mod:`ModbusBaseClient` is normally not referenced outside :mod:`pymodbus`.
-
-    **Application methods, common to all clients**:
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         framer: FramerType,
-        timeout: float = 3,
         retries: int = 3,
+        comm_params: CommParams | None = None,
+        retry_on_empty: bool = False,
         broadcast_enable: bool = False,
-        reconnect_delay: float = 0.1,
-        reconnect_delay_max: float = 300,
-        on_connect_callback: Callable[[bool], None] | None = None,
         no_resend_on_retry: bool = False,
-        comm_type: CommType | None = None,
-        source_address: tuple[str, int] | None = None,
-        **kwargs: Any,
+        on_connect_callback: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize a client instance."""
         ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
+        if comm_params:
+            self.comm_params = comm_params
+        self.retries = retries
+        self.retry_on_empty = retry_on_empty
         self.ctx = ModbusClientProtocol(
             framer,
-            CommParams(
-                comm_type=comm_type,
-                comm_name="comm",
-                source_address=source_address,
-                reconnect_delay=reconnect_delay,
-                reconnect_delay_max=reconnect_delay_max,
-                timeout_connect=timeout,
-                host=kwargs.get("host", None),
-                port=kwargs.get("port", 0),
-                sslctx=kwargs.get("sslctx", None),
-                baudrate=kwargs.get("baudrate", None),
-                bytesize=kwargs.get("bytesize", None),
-                parity=kwargs.get("parity", None),
-                stopbits=kwargs.get("stopbits", None),
-                handle_local_echo=kwargs.get("handle_local_echo", False),
-            ),
+            self.comm_params,
             on_connect_callback,
         )
         self.no_resend_on_retry = no_resend_on_retry
         self.broadcast_enable = broadcast_enable
-        self.retries = retries
 
         # Common variables.
         self.use_udp = False
@@ -97,9 +56,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         self.silent_interval: float = 0
         self._lock = asyncio.Lock()
 
-    # ----------------------------------------------------------------------- #
-    # Client external interface
-    # ----------------------------------------------------------------------- #
     @property
     def connected(self) -> bool:
         """Return state of connection."""
@@ -114,7 +70,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
             self.ctx.comm_params.port,
         )
         return await self.ctx.connect()
-
 
     def register(self, custom_response_class: ModbusResponse) -> None:
         """Register a custom response class with the decoder (call **sync**).
@@ -155,9 +110,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
             raise ConnectionException(f"Not connected[{self!s}]")
         return self.async_execute(request)
 
-    # ----------------------------------------------------------------------- #
-    # Merged client methods
-    # ----------------------------------------------------------------------- #
     async def async_execute(self, request) -> ModbusResponse:
         """Execute requests asynchronously."""
         request.transaction_id = self.ctx.transaction.getNextTID()
@@ -199,9 +151,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
             self.ctx.transaction.addTransaction(request)
         return my_future
 
-    # ----------------------------------------------------------------------- #
-    # The magic methods
-    # ----------------------------------------------------------------------- #
     async def __aenter__(self):
         """Implement the client with enter block.
 
@@ -228,79 +177,25 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
 class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
     """**ModbusBaseClient**.
 
-    Fixed parameters:
-
-    :param framer: Framer enum name
-
-    Optional parameters:
-
-    :param timeout: Timeout for a request, in seconds.
-    :param retries: Max number of retries per request.
-    :param retry_on_empty: Retry on empty response.
-    :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
-    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
-    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
-    :param source_address: source address of client
-    :param kwargs: Experimental parameters.
-
-    .. tip::
-        **reconnect_delay** doubles automatically with each unsuccessful connect, from
-        **reconnect_delay** to **reconnect_delay_max**.
-        Set `reconnect_delay=0` to avoid automatic reconnection.
-
     :mod:`ModbusBaseClient` is normally not referenced outside :mod:`pymodbus`.
-
-    **Application methods, common to all clients**:
     """
 
-    @dataclass
-    class _params:
-        """Parameter class."""
-
-        retries: int | None = None
-        retry_on_empty: bool | None = None
-        broadcast_enable: bool | None = None
-        reconnect_delay: int | None = None
-        source_address: tuple[str, int] | None = None
-
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         framer: FramerType,
-        timeout: float = 3,
         retries: int = 3,
+        comm_params: CommParams | None = None,
         retry_on_empty: bool = False,
         broadcast_enable: bool = False,
-        reconnect_delay: float = 0.1,
-        reconnect_delay_max: float = 300.0,
         no_resend_on_retry: bool = False,
-        comm_type: CommType | None = None,
-        source_address: tuple[str, int] | None = None,
-        **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
         ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
-        self.comm_params = CommParams(
-            comm_type=comm_type,
-            comm_name="comm",
-            source_address=source_address,
-            reconnect_delay=reconnect_delay,
-            reconnect_delay_max=reconnect_delay_max,
-            timeout_connect=timeout,
-            host=kwargs.get("host", None),
-            port=kwargs.get("port", 0),
-            sslctx=kwargs.get("sslctx", None),
-            baudrate=kwargs.get("baudrate", None),
-            bytesize=kwargs.get("bytesize", None),
-            parity=kwargs.get("parity", None),
-            stopbits=kwargs.get("stopbits", None),
-            handle_local_echo=kwargs.get("handle_local_echo", False),
-        )
-        self.params = self._params()
-        self.params.retries = int(retries)
-        self.params.retry_on_empty = bool(retry_on_empty)
-        self.params.broadcast_enable = bool(broadcast_enable)
-        self.retry_on_empty: int = 0
+        if comm_params:
+            self.comm_params = comm_params
+        self.retries = retries
+        self.broadcast_enable = bool(broadcast_enable)
+        self.retry_on_empty = retry_on_empty
         self.no_resend_on_retry = no_resend_on_retry
         self.slaves: list[int] = []
 
@@ -310,12 +205,10 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         )(ClientDecoder(), self)
         self.transaction = SyncModbusTransactionManager(
             self,
-            kwargs.get("backoff", 0.3),
             retry_on_empty,
-            kwargs.get("retry_on_invalid", False),
-            retries,
+            self.retries,
         )
-        self.reconnect_delay_current = self.params.reconnect_delay or 0
+        self.reconnect_delay_current = self.comm_params.reconnect_delay or 0
         self.use_udp = False
         self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float | None = 0

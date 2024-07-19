@@ -201,7 +201,6 @@ async def run_async_server(args):
             # handle_local_echo=False,  # Handle local echo of the USB-to-RS485 adaptor
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
-            # strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif args.comm == "tls":
         address = (args.host if args.host else "", args.port if args.port else None)

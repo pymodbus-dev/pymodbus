@@ -98,7 +98,7 @@ jobs:
       - name: ruff
         if: matrix.run_lint == true
         run: |
-          ruff .
+          ruff check .
 
       - name: pytest
         if: ${{ (matrix.os != 'ubuntu-latest') || (matrix.python != '3.12') }}

@@ -28,7 +28,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
     function_code_name = "write_register"
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, slave=None, transaction=0, protocol=0, skip_encode=0, **_kwargs):
+    def __init__(self, address=None, value=None, slave=None, transaction=0, protocol=0, skip_encode=0):
         """Initialize a new instance.
 
         :param address: The address to start writing add
@@ -99,7 +99,7 @@ class WriteSingleRegisterResponse(ModbusResponse):
     function_code = 6
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
+    def __init__(self, address=None, value=None, slave=0, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param address: The address to start writing add
@@ -160,7 +160,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
     _rtu_byte_count_pos = 6
     _pdu_length = 5  # func + adress1 + adress2 + outputQuant1 + outputQuant2
 
-    def __init__(self, address=None, values=None, slave=None, transaction=0, protocol=0, skip_encode=0, **_kwargs):
+    def __init__(self, address=None, values=None, slave=None, transaction=0, protocol=0, skip_encode=0):
         """Initialize a new instance.
 
         :param address: The address to start writing to
@@ -247,7 +247,7 @@ class WriteMultipleRegistersResponse(ModbusResponse):
     function_code = 16
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, count=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
+    def __init__(self, address=None, count=None, slave=0, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param address: The address to start writing to
@@ -295,7 +295,7 @@ class MaskWriteRegisterRequest(ModbusRequest):
     function_code_name = "mask_write_register"
     _rtu_frame_size = 10
 
-    def __init__(self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
+    def __init__(self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, slave=0, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param address: The mask pointer address (0x0000 to 0xffff)
@@ -350,7 +350,7 @@ class MaskWriteRegisterResponse(ModbusResponse):
     function_code = 0x16
     _rtu_frame_size = 10
 
-    def __init__(self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
+    def __init__(self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, slave=0, transaction=0, protocol=0, skip_encode=False):
         """Initialize new instance.
 
         :param address: The mask pointer address (0x0000 to 0xffff)

@@ -56,7 +56,7 @@ class ReadDeviceInformationRequest(ModbusRequest):
     function_code_name = "read_device_information"
     _rtu_frame_size = 7
 
-    def __init__(self, read_code=None, object_id=0x00, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
+    def __init__(self, read_code=None, object_id=0x00, slave=0, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param read_code: The device information read code
@@ -134,7 +134,7 @@ class ReadDeviceInformationResponse(ModbusResponse):
         except struct.error as exc:
             raise IndexError from exc
 
-    def __init__(self, read_code=None, information=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
+    def __init__(self, read_code=None, information=None, slave=0, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param read_code: The device information read code

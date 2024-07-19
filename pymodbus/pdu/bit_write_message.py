@@ -49,7 +49,7 @@ class WriteSingleCoilRequest(ModbusRequest):
 
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, slave=None, transaction=0, protocol=0, skip_encode=0, **_kwargs):
+    def __init__(self, address=None, value=None, slave=None, transaction=0, protocol=0, skip_encode=0):
         """Initialize a new instance.
 
         :param address: The variable address to write
@@ -119,7 +119,7 @@ class WriteSingleCoilResponse(ModbusResponse):
     function_code = 5
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
+    def __init__(self, address=None, value=None, slave=0, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param address: The variable address written to
@@ -173,7 +173,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
     function_code_name = "write_coils"
     _rtu_byte_count_pos = 6
 
-    def __init__(self, address=None, values=None, slave=None, transaction=0, protocol=0, skip_encode=0, **_kwargs):
+    def __init__(self, address=None, values=None, slave=None, transaction=0, protocol=0, skip_encode=0):
         """Initialize a new instance.
 
         :param address: The starting request address
@@ -256,7 +256,7 @@ class WriteMultipleCoilsResponse(ModbusResponse):
     function_code = 15
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, count=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
+    def __init__(self, address=None, count=None, slave=0, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param address: The starting variable address written to

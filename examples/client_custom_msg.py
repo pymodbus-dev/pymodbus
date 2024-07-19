@@ -36,7 +36,7 @@ class CustomModbusResponse(ModbusResponse):
     function_code = 55
     _rtu_byte_count_pos = 2
 
-    def __init__(self, values=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
+    def __init__(self, values=None, slave=0, transaction=0, protocol=0, skip_encode=False):
         """Initialize."""
         ModbusResponse.__init__(self, slave, transaction, protocol, skip_encode)
         self.values = values or []
@@ -68,7 +68,7 @@ class CustomModbusRequest(ModbusRequest):
     function_code = 55
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, slave=0, transaction=0, protocol=0, skip_encode=False, **_kwargs):
+    def __init__(self, address=None, slave=0, transaction=0, protocol=0, skip_encode=False):
         """Initialize."""
         ModbusRequest.__init__(self, slave, transaction, protocol, skip_encode)
         self.address = address
@@ -100,12 +100,12 @@ class CustomModbusRequest(ModbusRequest):
 class Read16CoilsRequest(ReadCoilsRequest):
     """Read 16 coils in one request."""
 
-    def __init__(self, address, **kwargs):
+    def __init__(self, address, count=None, slave=0, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param address: The address to start reading from
         """
-        ReadCoilsRequest.__init__(self, address, 16, **kwargs)
+        ReadCoilsRequest.__init__(self, address, count=16, slave=slave, transaction=transaction, protocol=protocol, skip_encode=skip_encode)
 
 
 # --------------------------------------------------------------------------- #
@@ -126,12 +126,13 @@ async def main(host="localhost", port=5020):
 
         # new modbus function code.
         client.register(CustomModbusResponse)
-        request = CustomModbusRequest(32, slave=1)
+        slave=1
+        request = CustomModbusRequest(32, slave=slave)
         result = await client.execute(request)
         print(result)
 
         # inherited request
-        request = Read16CoilsRequest(32, slave=1)
+        request = Read16CoilsRequest(32, slave)
         result = await client.execute(request)
         print(result)
 

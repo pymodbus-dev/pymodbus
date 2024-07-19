@@ -1,12 +1,5 @@
 """Contains base classes for modbus request/response/error packets."""
 
-__all__ = [
-    "ModbusRequest",
-    "ModbusResponse",
-    "ModbusExceptions",
-    "ExceptionResponse",
-    "IllegalFunctionRequest",
-]
 
 # pylint: disable=missing-type-doc
 import struct

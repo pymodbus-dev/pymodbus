@@ -1,9 +1,5 @@
 """Encapsulated Interface (MEI) Transport Messages."""
 
-__all__ = [
-    "ReadDeviceInformationRequest",
-    "ReadDeviceInformationResponse",
-]
 
 # pylint: disable=missing-type-doc
 import struct

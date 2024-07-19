@@ -67,7 +67,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
             host,
             port=port,
             framer=framer,
-            CommType=CommType.TLS,
+            comm_type=CommType.TLS,
             sslctx=sslctx,
             **kwargs,
         )
@@ -150,7 +150,7 @@ class ModbusTlsClient(ModbusTcpClient):
     ):
         """Initialize Modbus TLS Client."""
         super().__init__(
-            host, CommType=CommType.TLS, port=port, framer=framer, **kwargs
+            host, comm_type=CommType.TLS, port=port, framer=framer, **kwargs
         )
         self.sslctx = sslctx
         self.server_hostname = server_hostname

@@ -45,7 +45,7 @@ class ModbusClientProtocol(ModbusProtocol):
         )(ClientDecoder(), self)
         self.transaction = ModbusTransactionManager()
 
-    def _handle_response(self, reply, **_kwargs):
+    def _handle_response(self, reply):
         """Handle the processed response and link to correct deferred."""
         if reply is not None:
             tid = reply.transaction_id

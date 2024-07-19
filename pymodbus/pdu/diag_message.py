@@ -4,44 +4,6 @@ These need to be tied into a the current server context
 or linked to the appropriate data
 """
 
-__all__ = [
-    "DiagnosticStatusRequest",
-    "DiagnosticStatusResponse",
-    "ReturnQueryDataRequest",
-    "ReturnQueryDataResponse",
-    "RestartCommunicationsOptionRequest",
-    "RestartCommunicationsOptionResponse",
-    "ReturnDiagnosticRegisterRequest",
-    "ReturnDiagnosticRegisterResponse",
-    "ChangeAsciiInputDelimiterRequest",
-    "ChangeAsciiInputDelimiterResponse",
-    "ForceListenOnlyModeRequest",
-    "ForceListenOnlyModeResponse",
-    "ClearCountersRequest",
-    "ClearCountersResponse",
-    "ReturnBusMessageCountRequest",
-    "ReturnBusMessageCountResponse",
-    "ReturnBusCommunicationErrorCountRequest",
-    "ReturnBusCommunicationErrorCountResponse",
-    "ReturnBusExceptionErrorCountRequest",
-    "ReturnBusExceptionErrorCountResponse",
-    "ReturnSlaveMessageCountRequest",
-    "ReturnSlaveMessageCountResponse",
-    "ReturnSlaveNoResponseCountRequest",
-    "ReturnSlaveNoResponseCountResponse",
-    "ReturnSlaveNAKCountRequest",
-    "ReturnSlaveNAKCountResponse",
-    "ReturnSlaveBusyCountRequest",
-    "ReturnSlaveBusyCountResponse",
-    "ReturnSlaveBusCharacterOverrunCountRequest",
-    "ReturnSlaveBusCharacterOverrunCountResponse",
-    "ReturnIopOverrunCountRequest",
-    "ReturnIopOverrunCountResponse",
-    "ClearOverrunCountRequest",
-    "ClearOverrunCountResponse",
-    "GetClearModbusPlusRequest",
-    "GetClearModbusPlusResponse",
-]
 
 # pylint: disable=missing-type-doc
 import struct

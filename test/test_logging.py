@@ -4,7 +4,7 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.logging import Log
+from pymodbus.logging import Log, pymodbus_apply_logging_config
 
 
 class TestLogging:
@@ -32,6 +32,7 @@ class TestLogging:
         [
             ("string {} {} {}", "string 101 102 103", (101, 102, 103)),
             ("string {}", "string 0x41 0x42 0x43 0x44", (b"ABCD", ":hex")),
+            ("string {}", "string b'41424344'", (b"ABCD", ":b2a")),
             ("string {}", "string 125", (125, ":str")),
         ],
     )
@@ -39,3 +40,18 @@ class TestLogging:
         """Test string with parameters (old f-string)."""
         log_txt = Log.build_msg(txt, *params)
         assert log_txt == result
+
+    def test_apply_logging(self):
+        """Test pymodbus_apply_logging_config."""
+
+        pymodbus_apply_logging_config("debug")
+        pymodbus_apply_logging_config(logging.NOTSET)
+        pymodbus_apply_logging_config("debug", "pymodbus.log")
+        pymodbus_apply_logging_config("info")
+        Log.info("test")
+        pymodbus_apply_logging_config("warning")
+        Log.warning("test")
+        pymodbus_apply_logging_config("critical")
+        Log.critical("test")
+        pymodbus_apply_logging_config("error")
+        Log.error("test")

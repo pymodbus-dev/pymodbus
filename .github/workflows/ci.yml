@@ -17,6 +17,12 @@ on:
   workflow_dispatch:
 
 jobs:
+  faildraft:
+    name: "fail draft"
+    if: github.event.pull_request.draft == true
+    steps:
+      - run: exit 1
+
   testing:
     name: ${{ matrix.os }} - ${{ matrix.python }}
     if: github.event.pull_request.draft == false

@@ -10,6 +10,7 @@ on:
   pull_request:
     branches:
       - dev
+    types: [opened, synchronize, reopened, ready_for_review]
   schedule:
     # Sunday at 02:10 UTC.
     - cron: '10 2 * * 0'
@@ -18,6 +19,7 @@ on:
 jobs:
   testing:
     name: ${{ matrix.os }} - ${{ matrix.python }}
+    if: github.event.pull_request.draft == false
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     strategy:
@@ -114,6 +116,7 @@ jobs:
 
   analyze:
     name: Analyze Python
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     steps:

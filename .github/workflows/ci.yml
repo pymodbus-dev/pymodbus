@@ -18,10 +18,12 @@ on:
 
 jobs:
   faildraft:
-    name: "fail draft"
+    name: fail draft
     if: github.event.pull_request.draft == true
     steps:
-      - run: exit 1
+      - name: fail draft
+        run: |
+          exit 1
 
   testing:
     name: ${{ matrix.os }} - ${{ matrix.python }}

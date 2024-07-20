@@ -120,10 +120,9 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert trans.retries == 3
         assert not trans.retry_on_empty
 
-        trans.getTransaction = mock.MagicMock()
-        trans.getTransaction.return_value = "response"
+        trans.getTransaction = mock.MagicMock(return_value = b"response")
         response = trans.execute(request)
-        assert response == "response"
+        assert response == b"response"
         # No response
         trans._recv = mock.MagicMock(  # pylint: disable=protected-access
             return_value=b"abcdef"

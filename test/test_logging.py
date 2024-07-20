@@ -43,7 +43,6 @@ class TestLogging:
 
     def test_apply_logging(self):
         """Test pymodbus_apply_logging_config."""
-
         pymodbus_apply_logging_config("debug")
         pymodbus_apply_logging_config(logging.NOTSET)
         pymodbus_apply_logging_config("debug", "pymodbus.log")

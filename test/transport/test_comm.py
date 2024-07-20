@@ -174,6 +174,10 @@ class TestTransportComm:
     )
     async def test_serial_poll(self, client, server, use_port):
         """Test connection and data exchange."""
+        if SerialTransport.force_poll:
+            client.close()
+            server.close()
+            return
         Log.debug("test_serial_poll {}", use_port)
         assert await server.listen()
         SerialTransport.force_poll = True
@@ -188,6 +192,7 @@ class TestTransportComm:
         assert not client.recv_buffer
         client.close()
         server.close()
+        SerialTransport.force_poll = False
 
     @pytest.mark.parametrize(
         ("use_comm_type", "use_host"),

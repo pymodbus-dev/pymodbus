@@ -20,6 +20,7 @@ jobs:
   faildraft:
     name: fail draft
     if: github.event.pull_request.draft == true
+    runs-on: ubuntu-latest
     steps:
       - name: fail draft
         run: |

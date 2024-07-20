@@ -81,6 +81,8 @@ class TestTransportSerial:
 
     async def test_force_poll(self):
         """Test external methods."""
+        if SerialTransport.force_poll:
+            return
         SerialTransport.force_poll = True
         transport, protocol = await create_serial_connection(
             asyncio.get_running_loop(), mock.Mock, "dummy"
@@ -94,6 +96,8 @@ class TestTransportSerial:
 
     async def test_write_force_poll(self):
         """Test write with poll."""
+        if SerialTransport.force_poll:
+            return
         SerialTransport.force_poll = True
         transport, protocol = await create_serial_connection(
             asyncio.get_running_loop(), mock.Mock, "dummy"

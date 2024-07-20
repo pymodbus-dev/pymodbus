@@ -195,33 +195,20 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
 
     def test_get_transaction_manager_transaction(self):
         """Test the getting a transaction from the transaction manager."""
-
-        class Request:  # pylint: disable=too-few-public-methods
-            """Request."""
-
         self._manager.reset()
-        handle = Request()
-        handle.transaction_id = (  # pylint: disable=attribute-defined-outside-init
-            self._manager.getNextTID()
+        handle = ModbusRequest(
+            0, self._manager.getNextTID(), 0, False
         )
-        handle.message = b"testing"  # pylint: disable=attribute-defined-outside-init
         self._manager.addTransaction(handle)
         result = self._manager.getTransaction(handle.transaction_id)
-        assert handle.message == result.message
+        assert handle is result
 
     def test_delete_transaction_manager_transaction(self):
         """Test deleting a transaction from the dict transaction manager."""
-
-        class Request:  # pylint: disable=too-few-public-methods
-            """Request."""
-
         self._manager.reset()
-        handle = Request()
-        handle.transaction_id = (  # pylint: disable=attribute-defined-outside-init
-            self._manager.getNextTID()
+        handle = ModbusRequest(
+            0, self._manager.getNextTID(), 0, False
         )
-        handle.message = b"testing"  # pylint: disable=attribute-defined-outside-init
-
         self._manager.addTransaction(handle)
         self._manager.delTransaction(handle.transaction_id)
         assert not self._manager.getTransaction(handle.transaction_id)

@@ -2,11 +2,16 @@
 from itertools import count
 from unittest import mock
 
+from pymodbus import FramerType
+from pymodbus.client import ModbusSerialClient, ModbusTcpClient, ModbusTlsClient
+from pymodbus.client.base import ModbusBaseSyncClient
 from pymodbus.exceptions import (
     ModbusIOException,
 )
 from pymodbus.factory import ServerDecoder
+from pymodbus.framer import ModbusFramer
 from pymodbus.pdu import ModbusRequest
+from pymodbus.pdu.bit_read_message import ReadDiscreteInputsRequest
 from pymodbus.transaction import (
     ModbusAsciiFramer,
     ModbusRtuFramer,
@@ -14,6 +19,8 @@ from pymodbus.transaction import (
     ModbusTlsFramer,
     SyncModbusTransactionManager,
 )
+from pymodbus.transport import CommParams
+from pymodbus.utilities import ModbusTransactionState
 
 
 TEST_MESSAGE = b"\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d"
@@ -22,27 +29,38 @@ TEST_MESSAGE = b"\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d"
 class TestTransaction:  # pylint: disable=too-many-public-methods
     """Unittest for the pymodbus.transaction module."""
 
-    client = None
-    decoder = None
-    _tcp = None
-    _tls = None
-    _rtu = None
-    _ascii = None
-    _manager = None
-    _tm = None
+    client: ModbusBaseSyncClient
+    decoder: ServerDecoder
+    _tcp: ModbusSocketFramer
+    _tls: ModbusTlsFramer
+    _rtu: ModbusRtuFramer
+    _ascii: ModbusAsciiFramer
+    _manager: SyncModbusTransactionManager
 
     # ----------------------------------------------------------------------- #
     # Test Construction
     # ----------------------------------------------------------------------- #
     def setup_method(self):
         """Set up the test environment."""
-        self.client = None
+        self.client = mock.MagicMock(spec=ModbusBaseSyncClient)
+        self.client.framer = mock.MagicMock(spec=ModbusFramer)
         self.decoder = ServerDecoder()
-        self._tcp = ModbusSocketFramer(decoder=self.decoder, client=None)
-        self._tls = ModbusTlsFramer(decoder=self.decoder, client=None)
-        self._rtu = ModbusRtuFramer(decoder=self.decoder, client=None)
-        self._ascii = ModbusAsciiFramer(decoder=self.decoder, client=None)
-        self._manager = SyncModbusTransactionManager(self.client, 0.3, False, False, 3)
+        self._tcp = ModbusSocketFramer(
+            decoder=self.decoder, client=ModbusTcpClient("127.0.0.1")
+        )
+        self._tls = ModbusTlsFramer(
+            decoder=self.decoder, client=ModbusTlsClient("127.0.0.1")
+        )
+        self._rtu = ModbusRtuFramer(
+            decoder=self.decoder, client=ModbusSerialClient("/dev/null")
+        )
+        self._ascii = ModbusAsciiFramer(
+            decoder=self.decoder,
+            client=ModbusSerialClient("/dev/null", framer=FramerType.ASCII)
+        )
+        self._manager = SyncModbusTransactionManager(
+            self.client, 0.3, False, False, 3
+        )
 
     # ----------------------------------------------------------------------- #
     # Modbus transaction manager
@@ -94,8 +112,11 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test execute."""
         mock_time.time.side_effect = count()
 
-        client = mock.MagicMock()
-        client.framer = self._ascii
+        client = mock.MagicMock(spec=ModbusBaseSyncClient)
+        client.framer = mock.MagicMock(spec=ModbusFramer)
+        client.state = mock.MagicMock(spec=ModbusTransactionState)
+        client.comm_params = mock.MagicMock(spec=CommParams)
+        client.params = mock.MagicMock(spec=ModbusBaseSyncClient._params)  # pylint: disable=protected-access
         client.framer._buffer = b"deadbeef"  # pylint: disable=protected-access
         client.framer.processIncomingPacket = mock.MagicMock()
         client.framer.processIncomingPacket.return_value = None
@@ -114,56 +135,50 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         request.slave_id = 1
         request.function_code = 222
         trans = SyncModbusTransactionManager(client, 0.3, False, False, 3)
-        trans._recv = mock.MagicMock(  # pylint: disable=protected-access
-            return_value=b"abcdef"
-        )
+        setattr(trans, "_recv", mock.MagicMock(return_value=b"abcdef"))
         assert trans.retries == 3
         assert not trans.retry_on_empty
 
-        trans.getTransaction = mock.MagicMock()
-        trans.getTransaction.return_value = "response"
+        setattr(trans, "getTransaction", mock.MagicMock(return_value=b"response"))
         response = trans.execute(request)
-        assert response == "response"
+        assert response == b"response"
         # No response
-        trans._recv = mock.MagicMock(  # pylint: disable=protected-access
-            return_value=b"abcdef"
-        )
+        setattr(trans, "_recv", mock.MagicMock(return_value=b"abcdef"))
         trans.transactions = {}
-        trans.getTransaction = mock.MagicMock()
-        trans.getTransaction.return_value = None
+        setattr(trans, "getTransaction", mock.MagicMock(return_value=None))
         response = trans.execute(request)
         assert isinstance(response, ModbusIOException)
 
         # No response with retries
         trans.retry_on_empty = True
-        trans._recv = mock.MagicMock(  # pylint: disable=protected-access
-            side_effect=iter([b"", b"abcdef"])
-        )
+        setattr(trans, "_recv", mock.MagicMock(side_effect=iter([b"", b"abcdef"])))
         response = trans.execute(request)
         assert isinstance(response, ModbusIOException)
 
         # wrong handle_local_echo
-        trans._recv = mock.MagicMock(  # pylint: disable=protected-access
-            side_effect=iter([b"abcdef", b"deadbe", b"123456"])
+        setattr(
+            trans, "_recv",
+            mock.MagicMock(side_effect=iter([b"abcdef", b"deadbe", b"123456"]))
         )
         client.comm_params.handle_local_echo = True
         trans.retry_on_empty = False
         trans.retry_on_invalid = False
-        assert trans.execute(request).message == "[Input/Output] Wrong local echo"
+        response = trans.execute(request)
+        assert isinstance(response, ModbusIOException)
+        assert response.message == "[Input/Output] Wrong local echo"
         client.comm_params.handle_local_echo = False
 
         # retry on invalid response
         trans.retry_on_invalid = True
-        trans._recv = mock.MagicMock(  # pylint: disable=protected-access
-            side_effect=iter([b"", b"abcdef", b"deadbe", b"123456"])
+        setattr(
+            trans, "_recv",
+            mock.MagicMock(side_effect=iter([b"", b"abcdef", b"deadbe", b"123456"]))
         )
         response = trans.execute(request)
         assert isinstance(response, ModbusIOException)
 
         # Unable to decode response
-        trans._recv = mock.MagicMock(  # pylint: disable=protected-access
-            side_effect=ModbusIOException()
-        )
+        setattr(trans, "_recv", mock.MagicMock(side_effect=ModbusIOException()))
         client.framer.processIncomingPacket.side_effect = mock.MagicMock(
             side_effect=ModbusIOException()
         )
@@ -179,7 +194,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         client.comm_params.handle_local_echo = True
         client.params.broadcast_enable = True
         recv = mock.MagicMock(return_value=b"deadbeef")
-        trans._recv = recv  # pylint: disable=protected-access
+        setattr(trans, "_recv", recv)
         request.slave_id = 0
         response = trans.execute(request)
         assert response == b"Broadcast write sent - no response expected"
@@ -195,33 +210,20 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
 
     def test_get_transaction_manager_transaction(self):
         """Test the getting a transaction from the transaction manager."""
-
-        class Request:  # pylint: disable=too-few-public-methods
-            """Request."""
-
         self._manager.reset()
-        handle = Request()
-        handle.transaction_id = (  # pylint: disable=attribute-defined-outside-init
-            self._manager.getNextTID()
+        handle = ModbusRequest(
+            0, self._manager.getNextTID(), 0, False
         )
-        handle.message = b"testing"  # pylint: disable=attribute-defined-outside-init
         self._manager.addTransaction(handle)
         result = self._manager.getTransaction(handle.transaction_id)
-        assert handle.message == result.message
+        assert handle is result
 
     def test_delete_transaction_manager_transaction(self):
         """Test deleting a transaction from the dict transaction manager."""
-
-        class Request:  # pylint: disable=too-few-public-methods
-            """Request."""
-
         self._manager.reset()
-        handle = Request()
-        handle.transaction_id = (  # pylint: disable=attribute-defined-outside-init
-            self._manager.getNextTID()
+        handle = ModbusRequest(
+            0, self._manager.getNextTID(), 0, False
         )
-        handle.message = b"testing"  # pylint: disable=attribute-defined-outside-init
-
         self._manager.addTransaction(handle)
         self._manager.delTransaction(handle.transaction_id)
         assert not self._manager.getTransaction(handle.transaction_id)
@@ -256,6 +258,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
 
         msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
         self._tcp.processIncomingPacket(msg, callback, [0, 1])
+        assert isinstance(result, ReadDiscreteInputsRequest)
         assert result.function_code.to_bytes(1,'big') + result.encode() == msg[7:]
 
     def test_tcp_framer_transaction_half(self):
@@ -274,6 +277,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert not result
         self._tcp.processIncomingPacket(msg2, callback, [0, 1])
         assert result
+        assert isinstance(result, ReadDiscreteInputsRequest)
         assert result.function_code.to_bytes(1,'big') + result.encode() == msg2[2:]
 
     def test_tcp_framer_transaction_half2(self):
@@ -292,6 +296,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert not result
         self._tcp.processIncomingPacket(msg2, callback, [0, 1])
         assert result
+        assert isinstance(result, ReadDiscreteInputsRequest)
         assert result.function_code.to_bytes(1,'big') + result.encode() == msg2
 
     def test_tcp_framer_transaction_half3(self):
@@ -310,6 +315,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert not result
         self._tcp.processIncomingPacket(msg2, callback, [0, 1])
         assert result
+        assert isinstance(result, ReadDiscreteInputsRequest)
         assert result.function_code.to_bytes(1,'big') + result.encode() == msg1[7:] + msg2
 
     def test_tcp_framer_transaction_short(self):
@@ -329,6 +335,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert not result
         self._tcp.processIncomingPacket(msg2, callback, [0, 1])
         assert result
+        assert isinstance(result, ReadDiscreteInputsRequest)
         assert result.function_code.to_bytes(1,'big') + result.encode() == msg2[7:]
 
     def test_tcp_framer_populate(self):
@@ -356,7 +363,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     def test_tcp_framer_packet(self):
         """Test a tcp frame packet build."""
         old_encode = ModbusRequest.encode
-        ModbusRequest.encode = lambda self: b""
+        setattr(ModbusRequest, "encode", lambda self: b"")
         message = ModbusRequest(0, 0, 0, False)
         message.transaction_id = 0x0001
         message.protocol_id = 0x0000
@@ -365,7 +372,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         expected = b"\x00\x01\x00\x00\x00\x02\xff\x01"
         actual = self._tcp.buildPacket(message)
         assert expected == actual
-        ModbusRequest.encode = old_encode
+        setattr(ModbusRequest, "encode", old_encode)
 
     # ----------------------------------------------------------------------- #
     # TLS tests
@@ -511,13 +518,13 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     def test_framer_tls_framer_packet(self):
         """Test a tls frame packet build."""
         old_encode = ModbusRequest.encode
-        ModbusRequest.encode = lambda self: b""
+        setattr(ModbusRequest, "encode", lambda self: b"")
         message = ModbusRequest(0, 0, 0, False)
         message.function_code = 0x01
         expected = b"\x01"
         actual = self._tls.buildPacket(message)
         assert expected == actual
-        ModbusRequest.encode = old_encode
+        setattr(ModbusRequest, "encode", old_encode)
 
     # ----------------------------------------------------------------------- #
     # RTU tests
@@ -588,14 +595,14 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     def test_rtu_framer_packet(self):
         """Test a rtu frame packet build."""
         old_encode = ModbusRequest.encode
-        ModbusRequest.encode = lambda self: b""
+        setattr(ModbusRequest, "encode", lambda self: b"")
         message = ModbusRequest(0, 0, 0, False)
         message.slave_id = 0xFF
         message.function_code = 0x01
         expected = b"\xff\x01\x81\x80"  # only header + CRC - no data
         actual = self._rtu.buildPacket(message)
         assert expected == actual
-        ModbusRequest.encode = old_encode
+        setattr(ModbusRequest, "encode", old_encode)
 
     def test_rtu_decode_exception(self):
         """Test that the RTU framer can decode errors."""
@@ -697,14 +704,14 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     def test_ascii_framer_packet(self):
         """Test a ascii frame packet build."""
         old_encode = ModbusRequest.encode
-        ModbusRequest.encode = lambda self: b""
+        setattr(ModbusRequest, "encode", lambda self: b"")
         message = ModbusRequest(0, 0, 0, False)
         message.slave_id = 0xFF
         message.function_code = 0x01
         expected = b":FF0100\r\n"
         actual = self._ascii.buildPacket(message)
         assert expected == actual
-        ModbusRequest.encode = old_encode
+        setattr(ModbusRequest, "encode", old_encode)
 
     def test_ascii_process_incoming_packets(self):
         """Test ascii process incoming packet."""

@@ -80,7 +80,7 @@ class ModbusFramer:
         """
         return self.client.send(message)
 
-    def recvPacket(self, size: int) -> bytes:
+    def recvPacket(self, size: int | None) -> bytes:
         """Receive packet from the bus.
 
         With specified len

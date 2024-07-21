@@ -4,9 +4,9 @@ from __future__ import annotations
 import asyncio
 import socket
 from abc import abstractmethod
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import Any, Union, cast
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.client.modbusclientprotocol import ModbusClientProtocol
@@ -20,7 +20,7 @@ from pymodbus.transport import CommParams, CommType
 from pymodbus.utilities import ModbusTransactionState
 
 
-class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
+class ModbusBaseClient(ModbusClientMixin[Coroutine[Any, Any, Union[ModbusResponse, None]]]):
     """**ModbusBaseClient**.
 
     Fixed parameters:
@@ -144,7 +144,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
             return 0
         return self.last_frame_end + self.silent_interval
 
-    def execute(self, request: ModbusRequest):
+    def execute(self, request: ModbusRequest) -> Coroutine[Any, Any, ModbusResponse | None]:
         """Execute request and get response (call **sync/async**).
 
         :param request: The request to process
@@ -158,7 +158,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
     # ----------------------------------------------------------------------- #
     # Merged client methods
     # ----------------------------------------------------------------------- #
-    async def async_execute(self, request) -> ModbusResponse:
+    async def async_execute(self, request) -> ModbusResponse | None:
         """Execute requests asynchronously."""
         request.transaction_id = self.ctx.transaction.getNextTID()
         packet = self.ctx.framer.buildPacket(request)
@@ -186,9 +186,9 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
                 f"ERROR: No response received after {self.retries} retries"
             )
 
-        return resp  # type: ignore[return-value]
+        return resp
 
-    def build_response(self, request: ModbusRequest):
+    def build_response(self, request: ModbusRequest) -> asyncio.Future[ModbusResponse]:
         """Return a deferred response for the current request."""
         my_future: asyncio.Future = asyncio.Future()
         request.fut = my_future
@@ -225,7 +225,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         )
 
 
-class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
+class ModbusBaseSyncClient(ModbusClientMixin[Union[ModbusResponse, bytes, ModbusIOException]]):
     """**ModbusBaseClient**.
 
     Fixed parameters:
@@ -279,7 +279,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
-        ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
+        ModbusClientMixin.__init__(self)  # type: ignore[arg-type] # pylint: disable=non-parent-init-called
         self.comm_params = CommParams(
             comm_type=comm_type,
             comm_name="comm",
@@ -346,7 +346,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
             return 0
         return self.last_frame_end + self.silent_interval
 
-    def execute(self, request: ModbusRequest) -> ModbusResponse:
+    def execute(self, request: ModbusRequest) -> ModbusResponse | bytes | ModbusIOException:
         """Execute request and get response (call **sync/async**).
 
         :param request: The request to process

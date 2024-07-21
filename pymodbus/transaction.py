@@ -29,7 +29,7 @@ from pymodbus.framer import (
     ModbusTlsFramer,
 )
 from pymodbus.logging import Log
-from pymodbus.pdu import ModbusRequest
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.transport import CommType
 from pymodbus.utilities import ModbusTransactionState, hexlify_packets
 
@@ -167,13 +167,13 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
         else:
             self.base_adu_size = -1
 
-    def _calculate_response_length(self, expected_pdu_size):
+    def _calculate_response_length(self, expected_pdu_size: int) -> int | None:
         """Calculate response length."""
         if self.base_adu_size == -1:
             return None
         return self.base_adu_size + expected_pdu_size
 
-    def _calculate_exception_length(self):
+    def _calculate_exception_length(self) -> int | None:
         """Return the length of the Modbus Exception Response according to the type of Framer."""
         if isinstance(self.client.framer, (ModbusSocketFramer, ModbusTlsFramer)):
             return self.base_adu_size + 2  # Fcode(1), ExceptionCode(1)
@@ -183,7 +183,9 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
             return self.base_adu_size + 2  # Fcode(1), ExceptionCode(1)
         return None
 
-    def _validate_response(self, request: ModbusRequest, response, exp_resp_len, is_udp=False):
+    def _validate_response(
+            self, request: ModbusRequest, response: bytes | int, exp_resp_len: int | None, is_udp=False
+    ) -> bool:
         """Validate Incoming response against request.
 
         :param request: Request sent
@@ -208,7 +210,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
             return mbap.get("length") == exp_resp_len
         return True
 
-    def execute(self, request: ModbusRequest):  # noqa: C901
+    def execute(self, request: ModbusRequest) -> ModbusResponse | bytes | ModbusIOException:  # noqa: C901
         """Start the producer to send the next request to consumer.write(Frame(request))."""
         with self._transaction_lock:
             try:
@@ -333,7 +335,9 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 self.client.close()
                 return exc
 
-    def _retry_transaction(self, retries, reason, packet, response_length, full=False):
+    def _retry_transaction(
+            self, retries: int, reason: str, request: ModbusRequest, response_length: int | None, full=False
+    ) -> tuple[bytes, str | Exception | None]:
         """Retry transaction."""
         Log.debug("Retry on {} response - {}", reason, retries)
         Log.debug('Changing transaction state from "WAITING_FOR_REPLY" to "RETRYING"')
@@ -350,9 +354,11 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 if response_length == in_waiting:
                     result = self._recv(response_length, full)
                     return result, None
-        return self._transact(packet, response_length, full=full)
+        return self._transact(request, response_length, full=full)
 
-    def _transact(self, request: ModbusRequest, response_length, full=False, broadcast=False):
+    def _transact(
+            self, request: ModbusRequest, response_length: int | None, full=False, broadcast=False
+    ) -> tuple[bytes, str | Exception | None]:
         """Do a Write and Read transaction.
 
         :param packet: packet to be sent
@@ -368,16 +374,12 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
             packet = self.client.framer.buildPacket(request)
             Log.debug("SEND: {}", packet, ":hex")
             size = self._send(packet)
-            if (
-                isinstance(size, bytes)
-                and self.client.state == ModbusTransactionState.RETRYING
-            ):
+            if size and self.client.state == ModbusTransactionState.RETRYING:
                 Log.debug(
                     "Changing transaction state from "
                     '"RETRYING" to "PROCESSING REPLY"'
                 )
                 self.client.state = ModbusTransactionState.PROCESSING_REPLY
-                return size, None
             if self.client.comm_params.handle_local_echo is True:
                 if self._recv(size, full) != packet:
                     return b"", "Wrong local echo"
@@ -405,23 +407,22 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
             result = b""
         return result, last_exception
 
-    def _send(self, packet: bytes, _retrying=False):
+    def _send(self, packet: bytes, _retrying=False) -> int:
         """Send."""
         return self.client.framer.sendPacket(packet)
 
-    def _recv(self, expected_response_length, full) -> bytes:  # noqa: C901
+    def _recv(self, expected_response_length: int | None, full: bool) -> bytes:  # noqa: C901
         """Receive."""
         total = None
         if not full:
             exception_length = self._calculate_exception_length()
+            min_size = expected_response_length
             if isinstance(self.client.framer, ModbusSocketFramer):
                 min_size = 8
             elif isinstance(self.client.framer, ModbusRtuFramer):
                 min_size = 4
             elif isinstance(self.client.framer, ModbusAsciiFramer):
                 min_size = 5
-            else:
-                min_size = expected_response_length
 
             read_min = self.client.framer.recvPacket(min_size)
             if len(read_min) != min_size:
@@ -462,7 +463,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     if expected_response_length is not None:
                         expected_response_length -= min_size
                         total = expected_response_length + min_size
-                else:
+                if func_code >= 0x80 and exception_length:
                     expected_response_length = exception_length - min_size
                     total = expected_response_length + min_size
             else:

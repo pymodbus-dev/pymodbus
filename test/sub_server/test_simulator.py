@@ -20,6 +20,12 @@ FX_WRITE_BIT = 5
 FX_WRITE_REG = 6
 
 
+def custom_action3(_registers, _inx, cell, func_code, access_type):
+    """Test action which includes function code and access type as parameters."""
+    if func_code == 6 and access_type == "set":
+        cell.value = 0x5555
+
+
 def custom_actions_test_module():
     module_contents = (
          "from test_simulator import TestSimulator\n"
@@ -199,11 +205,6 @@ class TestSimulator:
     @classmethod
     def custom_action2(cls, _inx, _cell):
         """Test action."""
-    @classmethod
-    def custom_action3(cls, registers, inx, _cell, func_code, access_type):
-        """Test action which includes function code and access type as parameters."""
-        if func_code == 6 and access_type == "set":
-            registers[inx] = 0xA5A5
 
     custom_actions = {
         "custom1": custom_action1,
@@ -407,6 +408,7 @@ class TestSimulator:
             (FX_READ_REG, 19, 1, [14662]),
             (FX_READ_REG, 16, 2, [3124, 5678]),
             (FX_READ_REG, 16, 2, [3124, 5678]),
+            (FX_READ_REG, 49, 1, [0XAAAA]),
         ):
             values = self.simulator.getValues(entry[0], entry[1], entry[2])
             assert entry[3] == values, f"at entry {entry}"
@@ -435,6 +437,12 @@ class TestSimulator:
         result = exc_simulator.getValues(FX_READ_BIT, 86, 3)
         assert [True, False, False] == result
         exc_simulator.setValues(FX_WRITE_BIT, 80, [True] * 17)
+
+        value = [0x5555]
+        exc_simulator.setValues(FX_WRITE_REG, 49, [0xAAAA])
+        result = exc_simulator.getValues(FX_READ_REG, 49)
+        assert value == result
+
 
     def test_simulator_get_text(self):
         """Test get_text_register()."""
@@ -611,8 +619,8 @@ class TestSimulator:
     def test_simulator_get_method_parameters(self):
         params = self.simulator.get_method_parameters(self.custom_action1)
         assert params == {"_inx", "_cell"}
-        params = self.simulator.get_method_parameters(self.custom_action3)
-        assert params == {"registers", "inx", "_cell", "func_code", "access_type"}
+        params = self.simulator.get_method_parameters(custom_action3)
+        assert params == {"_registers", "_inx", "cell", "func_code", "access_type"}
 
     @patch(
         "builtins.open",

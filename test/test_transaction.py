@@ -2,11 +2,14 @@
 from itertools import count
 from unittest import mock
 
+from pymodbus.client.base import ModbusBaseSyncClient
 from pymodbus.exceptions import (
     ModbusIOException,
 )
 from pymodbus.factory import ServerDecoder
+from pymodbus.framer import ModbusFramer
 from pymodbus.pdu import ModbusRequest
+from pymodbus.pdu.bit_read_message import ReadDiscreteInputsRequest
 from pymodbus.transaction import (
     ModbusAsciiFramer,
     ModbusRtuFramer,
@@ -23,27 +26,14 @@ TEST_MESSAGE = b"\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d"
 class TestTransaction:  # pylint: disable=too-many-public-methods
     """Unittest for the pymodbus.transaction module."""
 
-    client = None
-    decoder = None
-    _tcp = None
-    _tls = None
-    _rtu = None
-    _ascii = None
-    _manager = None
-    _tm = None
-
-    # ----------------------------------------------------------------------- #
-    # Test Construction
-    # ----------------------------------------------------------------------- #
-    def setup_method(self):
-        """Set up the test environment."""
-        self.client = None
-        self.decoder = ServerDecoder()
-        self._tcp = ModbusSocketFramer(decoder=self.decoder, client=None)
-        self._tls = ModbusTlsFramer(decoder=self.decoder, client=None)
-        self._rtu = ModbusRtuFramer(decoder=self.decoder, client=None)
-        self._ascii = ModbusAsciiFramer(decoder=self.decoder, client=None)
-        self._manager = SyncModbusTransactionManager(self.client, 0.3, False, False, 3)
+    client = mock.create_autospec(ModbusBaseSyncClient)
+    client.framer = mock.create_autospec(ModbusFramer)
+    decoder = ServerDecoder()
+    _tcp = ModbusSocketFramer(decoder=decoder, client=None)
+    _tls = ModbusTlsFramer(decoder=decoder, client=None)
+    _rtu = ModbusRtuFramer(decoder=decoder, client=None)
+    _ascii = ModbusAsciiFramer(decoder=decoder, client=None)
+    _manager = SyncModbusTransactionManager(client, 0.3, False, False, 3)
 
     # ----------------------------------------------------------------------- #
     # Modbus transaction manager
@@ -93,21 +83,30 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     @mock.patch("pymodbus.transaction.time")
     @mock.patch.object(SyncModbusTransactionManager, "_recv")
     @mock.patch.object(ModbusTransactionManager, "getTransaction")
-    def test_execute(self, mock_get_transaction, mock_recv, mock_time):
+    @mock.patch.object(ModbusFramer, "processIncomingPacket")
+    @mock.patch.object(ModbusFramer, "buildPacket")
+    @mock.patch.object(ModbusFramer, "sendPacket")
+    @mock.patch.object(ModbusAsciiFramer, "decode_data")
+    def test_execute(
+            self,
+            mock_decode_data,
+            mock_send_packet,
+            mock_build_packet,
+            mock_process_incoming_packet,
+            mock_get_transaction,
+            mock_recv,
+            mock_time,
+    ):
         """Test execute."""
         mock_time.time.side_effect = count()
 
         client = mock.MagicMock()
         client.framer = self._ascii
         client.framer._buffer = b"deadbeef"  # pylint: disable=protected-access
-        client.framer.processIncomingPacket = mock.MagicMock()
-        client.framer.processIncomingPacket.return_value = None
-        client.framer.buildPacket = mock.MagicMock()
-        client.framer.buildPacket.return_value = b"deadbeef"
-        client.framer.sendPacket = mock.MagicMock()
-        client.framer.sendPacket.return_value = len(b"deadbeef")
-        client.framer.decode_data = mock.MagicMock()
-        client.framer.decode_data.return_value = {
+        mock_process_incoming_packet.return_value = None
+        mock_build_packet.return_value = b"deadbeef"
+        mock_send_packet.return_value = len(b"deadbeef")
+        mock_decode_data.return_value = {
             "slave": 1,
             "fcode": 222,
             "length": 27,
@@ -165,9 +164,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         mock_recv.reset_mock(
             side_effect=ModbusIOException()
         )
-        client.framer.processIncomingPacket.side_effect = mock.MagicMock(
-            side_effect=ModbusIOException()
-        )
+        mock_process_incoming_packet.side_effect = ModbusIOException()
         assert isinstance(trans.execute(request), ModbusIOException)
 
         # Broadcast
@@ -243,6 +240,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
 
         msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
         self._tcp.processIncomingPacket(msg, callback, [0, 1])
+        assert isinstance(result, ReadDiscreteInputsRequest)
         assert result.function_code.to_bytes(1,'big') + result.encode() == msg[7:]
 
     def test_tcp_framer_transaction_half(self):

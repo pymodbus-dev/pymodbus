@@ -28,15 +28,15 @@ def custom_action3(_registers, _inx, cell, func_code, access_type):
 
 def custom_actions_test_module():
     module_contents = (
-         "from test_simulator import TestSimulator\n"
-         "\n"
-         "def custom_action(registers, inx, _cell, func_code, access_type):\n"
-         "    return TestSimulator.custom_action3(registers, inx, _cell, func_code, access_type)\n"
-         "\n"
-         "custom_actions_dict = {\n"
-         "    \"custom3\": custom_action\n"
-         "}"
-         "\n"
+        "from test_simulator import TestSimulator\n"
+        "\n"
+        "def custom_action(registers, inx, _cell, func_code, access_type):\n"
+        "    return TestSimulator.custom_action3(registers, inx, _cell, func_code, access_type)\n"
+        "\n"
+        "custom_actions_dict = {\n"
+        '    "custom3": custom_action\n'
+        "}"
+        "\n"
     )
     return module_contents
 
@@ -327,7 +327,6 @@ class TestSimulator:
         with pytest.raises(RuntimeError):
             ModbusSimulatorContext(exc_setup, self.custom_actions)
 
-
     def test_simulator_validate_illegal(self):
         """Test validation without exceptions."""
         illegal_cell_list = (0, 1, 2, 3, 4, 6, 9, 15)
@@ -408,7 +407,7 @@ class TestSimulator:
             (FX_READ_REG, 19, 1, [14662]),
             (FX_READ_REG, 16, 2, [3124, 5678]),
             (FX_READ_REG, 16, 2, [3124, 5678]),
-            (FX_READ_REG, 49, 1, [0XAAAA]),
+            (FX_READ_REG, 49, 1, [0xAAAA]),
         ):
             values = self.simulator.getValues(entry[0], entry[1], entry[2])
             assert entry[3] == values, f"at entry {entry}"
@@ -442,7 +441,6 @@ class TestSimulator:
         exc_simulator.setValues(FX_WRITE_REG, 49, [0xAAAA])
         result = exc_simulator.getValues(FX_READ_REG, 49)
         assert value == result
-
 
     def test_simulator_get_text(self):
         """Test get_text_register()."""
@@ -566,7 +564,7 @@ class TestSimulator:
                 regs = exc_simulator.getValues(FX_READ_REG, 30, reg_count)
             else:
                 reg_bits = exc_simulator.getValues(FX_READ_BIT, 30 * 16, 16)
-                reg_value = sum([ bit * 2 ** i for i, bit in enumerate(reg_bits)])
+                reg_value = sum([bit * 2**i for i, bit in enumerate(reg_bits)])
                 regs = [reg_value]
             if reg_count == 1:
                 assert expect_value == regs[0], f"type({celltype})"
@@ -606,7 +604,7 @@ class TestSimulator:
                 regs = exc_simulator.getValues(FX_READ_REG, 30, reg_count)
             else:
                 reg_bits = exc_simulator.getValues(FX_READ_BIT, 30 * 16, 16)
-                reg_value = sum([ bit * 2 ** i for i, bit in enumerate(reg_bits)])
+                reg_value = sum([bit * 2**i for i, bit in enumerate(reg_bits)])
                 regs = [reg_value]
             if reg_count == 1:
                 new_value = regs[0]
@@ -639,11 +637,13 @@ class TestSimulator:
         test_tmp_path.mkdir()
         custom_actions_module_path = test_tmp_path / "custom_actions.py"
         sys.path.append(str(test_tmp_path))
-        custom_actions_module_path.write_text(custom_actions_test_module(), encoding="utf-8")
+        custom_actions_module_path.write_text(
+            custom_actions_test_module(), encoding="utf-8"
+        )
 
         task = ModbusSimulatorServer(
             http_port=unused_tcp_port,
-            custom_actions_module=str(custom_actions_module_path.stem)
+            custom_actions_module=str(custom_actions_module_path.stem),
         )
         await task.run_forever(only_start=True)
         await asyncio.sleep(0.5)

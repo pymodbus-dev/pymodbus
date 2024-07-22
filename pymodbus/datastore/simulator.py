@@ -1,10 +1,10 @@
 """Pymodbus ModbusSimulatorContext."""
+
 from __future__ import annotations
 
 import dataclasses
 import random
 import struct
-import enum
 import inspect
 from collections.abc import Callable
 from datetime import datetime
@@ -100,12 +100,6 @@ class Label:  # pylint: disable=too-many-instance-attributes
             txt = f"ERROR Configuration invalid, missing {key} in {config_part}"
             raise RuntimeError(txt)
         return config_part[key]
-
-
-class AccessType(enum.Enum):
-    """Simulator register value access type"""
-    GET = 1
-    SET = 2
 
 
 class Setup:
@@ -600,7 +594,9 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
                 kwargs = reg.action_kwargs if reg.action_kwargs else {}
                 if reg.action:
                     action_method = self.action_methods[reg.action]
-                    if set(("func_code", "access_type")).issubset(self.get_method_parameters(action_method)):
+                    if set(("func_code", "access_type")).issubset(
+                        self.get_method_parameters(action_method)
+                    ):
                         kwargs.update({"func_code": func_code, "access_type": "get"})
                     action_method(self.registers, i, reg, **kwargs)
                 self.registers[i].count_read += 1
@@ -615,7 +611,9 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
                 if reg.action:
                     kwargs = reg.action_kwargs or {}
                     action_method = self.action_methods[reg.action]
-                    if set(("func_code", "access_type")).issubset(self.get_method_parameters(action_method)):
+                    if set(("func_code", "access_type")).issubset(
+                        self.get_method_parameters(action_method)
+                    ):
                         kwargs.update({"func_code": func_code, "access_type": "get"})
                     action_method(self.registers, i, reg, **kwargs)
                 self.registers[i].count_read += 1
@@ -642,7 +640,9 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
                 if reg.action:
                     action_method = self.action_methods[reg.action]
                     kwargs = reg.action_kwargs if reg.action_kwargs else {}
-                    if set(("func_code", "access_type")).issubset(self.get_method_parameters(action_method)):
+                    if set(("func_code", "access_type")).issubset(
+                        self.get_method_parameters(action_method)
+                    ):
                         kwargs.update({"func_code": func_code, "access_type": "set"})
                     action_method(self.registers, i, reg, **kwargs)
             return
@@ -668,7 +668,9 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
             if reg.action:
                 action_method = self.action_methods[reg.action]
                 kwargs = reg.action_kwargs if reg.action_kwargs else {}
-                if set(("func_code", "access_type")).issubset(self.get_method_parameters(action_method)):
+                if set(("func_code", "access_type")).issubset(
+                    self.get_method_parameters(action_method)
+                ):
                     kwargs.update({"func_code": func_code, "access_type": "set"})
                 action_method(self.registers, i, reg, **kwargs)
         return

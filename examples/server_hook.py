@@ -17,11 +17,7 @@ from pymodbus.server import ModbusTcpServer
 
 
 class Manipulator:
-    """A Class to run the server.
-
-    Using a class allows the easy use of global variables, but
-    are not strictly needed
-    """
+    """A Class to run the server."""
 
     message_count: int = 1
     server: ModbusTcpServer = None

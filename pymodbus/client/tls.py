@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import socket
 import ssl
+from collections.abc import Callable
 from typing import Any
 
 from pymodbus.client.tcp import AsyncModbusTcpClient, ModbusTcpClient
@@ -20,23 +21,24 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
 
     Optional parameters:
 
-    :param port: Port used for communication
-    :param source_address: Source address of client
     :param sslctx: SSLContext to use for TLS
-    :param server_hostname: Bind certificate to host
-
-    Common optional parameters:
-
-    :param framer: Framer enum name
-    :param timeout: Timeout for a request, in seconds.
+    :param framer: Framer name, default FramerType.TLS
+    :param port: Port used for communication
+    :param name: Set communication name, used in logging
+    :param source_address: Source address of client
+    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
+    :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
     :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
-    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
-    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
     :param no_resend_on_retry: Do not resend request when retrying due to missing response.
-    :param kwargs: Experimental parameters.
+    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+
+    .. tip::
+        **reconnect_delay** doubles automatically with each unsuccessful connect, from
+        **reconnect_delay** to **reconnect_delay_max**.
+        Set `reconnect_delay=0` to avoid automatic reconnection.
 
     Example::
 
@@ -52,26 +54,49 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         host: str,
-        port: int = 802,
-        framer: FramerType = FramerType.TLS,
         sslctx: ssl.SSLContext = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT),
-        server_hostname: str | None = None,
+        framer: FramerType = FramerType.TLS,
+        port: int = 802,
+        name: str = "comm",
+        source_address: tuple[str, int] | None = None,
+        reconnect_delay: float = 0.1,
+        reconnect_delay_max: float = 300,
+        timeout: float = 3,
+        retries: int = 3,
+        retry_on_empty: bool = False,
+        broadcast_enable: bool = False,
+        no_resend_on_retry: bool = False,
+        on_connect_callback: Callable[[bool], None] | None = None,
+
+        #     ----- OLD ------
         **kwargs: Any,
     ):
         """Initialize Asyncio Modbus TLS Client."""
+        self.comm_params = CommParams(
+            comm_type=CommType.TLS,
+            host=host,
+            sslctx=sslctx,
+            port=port,
+            comm_name=name,
+            source_address=source_address,
+            reconnect_delay=reconnect_delay,
+            reconnect_delay_max=reconnect_delay_max,
+            timeout_connect=timeout,
+        )
         AsyncModbusTcpClient.__init__(
             self,
-            host,
-            port=port,
+            "",
             framer=framer,
-            comm_type=CommType.TLS,
-            sslctx=sslctx,
+            retries=retries,
+            retry_on_empty=retry_on_empty,
+            broadcast_enable=broadcast_enable,
+            no_resend_on_retry=no_resend_on_retry,
+            on_connect_callback=on_connect_callback,
             **kwargs,
         )
-        self.server_hostname = server_hostname
 
     @classmethod
     def generate_ssl(
@@ -104,24 +129,23 @@ class ModbusTlsClient(ModbusTcpClient):
 
     Optional parameters:
 
-    :param port: Port used for communication
-    :param source_address: Source address of client
     :param sslctx: SSLContext to use for TLS
-    :param server_hostname: Bind certificate to host
-    :param kwargs: Experimental parameters
-
-    Common optional parameters:
-
-    :param framer: Framer enum name
-    :param timeout: Timeout for a request, in seconds.
+    :param framer: Framer name, default FramerType.TLS
+    :param port: Port used for communication
+    :param name: Set communication name, used in logging
+    :param source_address: Source address of client
+    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
+    :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
     :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
-    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
-    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
     :param no_resend_on_retry: Do not resend request when retrying due to missing response.
-    :param kwargs: Experimental parameters.
+
+    .. tip::
+        **reconnect_delay** doubles automatically with each unsuccessful connect, from
+        **reconnect_delay** to **reconnect_delay_max**.
+        Set `reconnect_delay=0` to avoid automatic reconnection.
 
     Example::
 
@@ -139,22 +163,46 @@ class ModbusTlsClient(ModbusTcpClient):
     Remark: There are no automatic reconnect as with AsyncModbusTlsClient
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         host: str,
-        port: int = 802,
-        framer: FramerType = FramerType.TLS,
         sslctx: ssl.SSLContext = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT),
-        server_hostname: str | None = None,
+        framer: FramerType = FramerType.TLS,
+        port: int = 802,
+        name: str = "comm",
+        source_address: tuple[str, int] | None = None,
+        reconnect_delay: float = 0.1,
+        reconnect_delay_max: float = 300,
+        timeout: float = 3,
+        retries: int = 3,
+        retry_on_empty: bool = False,
+        broadcast_enable: bool = False,
+        no_resend_on_retry: bool = False,
+
+        #     ----- OLD ------
         **kwargs: Any,
     ):
         """Initialize Modbus TLS Client."""
-        super().__init__(
-            host, comm_type=CommType.TLS, port=port, framer=framer, **kwargs
+        self.comm_params = CommParams(
+            comm_type=CommType.TLS,
+            host=host,
+            sslctx=sslctx,
+            port=port,
+            comm_name=name,
+            source_address=source_address,
+            reconnect_delay=reconnect_delay,
+            reconnect_delay_max=reconnect_delay_max,
+            timeout_connect=timeout,
         )
-        self.sslctx = sslctx
-        self.server_hostname = server_hostname
-
+        super().__init__(
+            "",
+            framer=framer,
+            retries=retries,
+            retry_on_empty=retry_on_empty,
+            broadcast_enable=broadcast_enable,
+            no_resend_on_retry=no_resend_on_retry,
+            **kwargs
+        )
 
     @classmethod
     def generate_ssl(
@@ -188,11 +236,9 @@ class ModbusTlsClient(ModbusTcpClient):
             return True
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            if self.params.source_address:
-                sock.bind(self.params.source_address)
-            self.socket = self.sslctx.wrap_socket(
-                sock, server_side=False, server_hostname=self.server_hostname
-            )
+            if self.comm_params.source_address:
+                sock.bind(self.comm_params.source_address)
+            self.socket = self.comm_params.sslctx.wrap_socket(sock, server_side=False)  # type: ignore[union-attr]
             self.socket.settimeout(self.comm_params.timeout_connect)
             self.socket.connect((self.comm_params.host, self.comm_params.port))
         except OSError as msg:
@@ -209,6 +255,6 @@ class ModbusTlsClient(ModbusTcpClient):
         """Return string representation."""
         return (
             f"<{self.__class__.__name__} at {hex(id(self))} socket={self.socket}, "
-            f"ipaddr={self.comm_params.host}, port={self.comm_params.port}, sslctx={self.sslctx}, "
+            f"ipaddr={self.comm_params.host}, port={self.comm_params.port}, sslctx={self.comm_params.sslctx}, "
             f"timeout={self.comm_params.timeout_connect}>"
         )

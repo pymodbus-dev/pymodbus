@@ -14,7 +14,7 @@ from pymodbus.framer import (
     ModbusTlsFramer,
 )
 from pymodbus.pdu.bit_read_message import ReadCoilsRequest
-from pymodbus.transport import CommType
+from pymodbus.transport import CommParams, CommType
 from pymodbus.utilities import ModbusTransactionState
 
 
@@ -327,9 +327,11 @@ class TestFramers:
         message = TEST_MESSAGE
         client = ModbusBaseClient(
             FramerType.ASCII,
-            host="localhost",
-            port=BASE_PORT + 1,
-            CommType=CommType.TCP,
+            comm_params=CommParams(
+                comm_type=CommType.TCP,
+                host="localhost",
+                port=BASE_PORT + 1,
+            ),
         )
         client.state = ModbusTransactionState.TRANSACTION_COMPLETE
         client.silent_interval = 1

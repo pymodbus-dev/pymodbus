@@ -12,7 +12,6 @@ __all__ = [
 ]
 
 import struct
-import time
 from contextlib import suppress
 from threading import RLock
 from typing import TYPE_CHECKING
@@ -134,19 +133,16 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
     Results are keyed based on the supplied transaction id.
     """
 
-    def __init__(self, client: ModbusBaseSyncClient, backoff, retry_on_empty, retry_on_invalid, retries):
+    def __init__(self, client: ModbusBaseSyncClient, retry_on_empty, retries):
         """Initialize an instance of the ModbusTransactionManager.
 
         :param client: The client socket wrapper
-        :param backoff: 0.3
         :param retry_on_empty: Should the client retry on empty
         :param retries: The number of retries to allow
         """
         super().__init__()
         self.client: ModbusBaseSyncClient = client
-        self.backoff = backoff
         self.retry_on_empty = retry_on_empty
-        self.retry_on_invalid = retry_on_invalid
         self.retries = retries
         self._transaction_lock = RLock()
         self._no_response_devices: list[int] = []
@@ -225,7 +221,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     Log.debug("Clearing current Frame: - {}", _buffer)
                     self.client.framer.resetFrame()
                 if broadcast := (
-                    self.client.params.broadcast_enable and not request.slave_id
+                    self.client.broadcast_enable and not request.slave_id
                 ):
                     self._transact(request, None, broadcast=True)
                     response = b"Broadcast write sent - no response expected"
@@ -286,15 +282,6 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                             else:
                                 # No response received and retries not enabled
                                 break
-                        elif self.retry_on_invalid:
-                            response, last_exception = self._retry_transaction(
-                                retries,
-                                "invalid",
-                                request,
-                                expected_response_length,
-                                full=full,
-                            )
-                            retries -= 1
                         else:
                             break
                         # full = False
@@ -338,10 +325,6 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
         Log.debug("Retry on {} response - {}", reason, retries)
         Log.debug('Changing transaction state from "WAITING_FOR_REPLY" to "RETRYING"')
         self.client.state = ModbusTransactionState.RETRYING
-        if self.backoff:
-            delay = 2 ** (self.retries - retries) * self.backoff
-            time.sleep(delay)
-            Log.debug("Sleeping {}", delay)
         self.client.connect()
         if hasattr(self.client, "_in_waiting"):
             if (

@@ -53,7 +53,6 @@ async def run_async_simple_client(comm, host, port, framer=FramerType.SOCKET):
             # timeout=10,
             # retries=3,
             # retry_on_empty=False,
-            # strict=True,
             baudrate=9600,
             bytesize=8,
             parity="N",
@@ -72,7 +71,6 @@ async def run_async_simple_client(comm, host, port, framer=FramerType.SOCKET):
             certfile="../examples/certificates/pymodbus.crt",
             keyfile="../examples/certificates/pymodbus.key",
             # password="none",
-            server_hostname="localhost",
         )
     else:
         print(f"Unknown client {comm} selected")

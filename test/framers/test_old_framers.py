@@ -327,6 +327,11 @@ class TestFramers:
         message = TEST_MESSAGE
         client = ModbusBaseClient(
             FramerType.ASCII,
+            3,
+            False,
+            False,
+            False,
+            None,
             comm_params=CommParams(
                 comm_type=CommType.TCP,
                 host="localhost",

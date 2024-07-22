@@ -61,19 +61,6 @@ def run_sync_simple_client(comm, host, port, framer=FramerType.SOCKET):
             stopbits=1,
             # handle_local_echo=False,
         )
-    elif comm == "tls":
-        client = ModbusClient.ModbusTlsClient(
-            host,
-            port=port,
-            framer=FramerType.TLS,
-            # timeout=10,
-            # retries=3,
-            # retry_on_empty=False,
-            # sslctx=None,
-            certfile="../examples/certificates/pymodbus.crt",
-            keyfile="../examples/certificates/pymodbus.key",
-            # password=None,
-        )
     else:
         print(f"Unknown client {comm} selected")
         return

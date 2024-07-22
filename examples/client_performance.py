@@ -29,7 +29,7 @@ def run_sync_client_test():
     print("--- Testing sync client v3.4.1")
     client = ModbusSerialClient(
         "/dev/ttys007",
-        framer_name=FramerType.RTU,
+        framer=FramerType.RTU,
         baudrate=9600,
     )
     client.connect()
@@ -56,7 +56,7 @@ async def run_async_client_test():
     print("--- Testing async client v3.4.1")
     client = AsyncModbusSerialClient(
         "/dev/ttys007",
-        framer_name=FramerType.RTU,
+        framer=FramerType.RTU,
         baudrate=9600,
     )
     await client.connect()

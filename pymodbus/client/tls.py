@@ -4,7 +4,6 @@ from __future__ import annotations
 import socket
 import ssl
 from collections.abc import Callable
-from typing import Any
 
 from pymodbus.client.tcp import AsyncModbusTcpClient, ModbusTcpClient
 from pymodbus.framer import FramerType
@@ -70,9 +69,6 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         broadcast_enable: bool = False,
         no_resend_on_retry: bool = False,
         on_connect_callback: Callable[[bool], None] | None = None,
-
-        #     ----- OLD ------
-        **kwargs: Any,
     ):
         """Initialize Asyncio Modbus TLS Client."""
         self.comm_params = CommParams(
@@ -95,7 +91,6 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
             broadcast_enable=broadcast_enable,
             no_resend_on_retry=no_resend_on_retry,
             on_connect_callback=on_connect_callback,
-            **kwargs,
         )
 
     @classmethod
@@ -178,9 +173,6 @@ class ModbusTlsClient(ModbusTcpClient):
         retry_on_empty: bool = False,
         broadcast_enable: bool = False,
         no_resend_on_retry: bool = False,
-
-        #     ----- OLD ------
-        **kwargs: Any,
     ):
         """Initialize Modbus TLS Client."""
         self.comm_params = CommParams(
@@ -201,7 +193,6 @@ class ModbusTlsClient(ModbusTcpClient):
             retry_on_empty=retry_on_empty,
             broadcast_enable=broadcast_enable,
             no_resend_on_retry=no_resend_on_retry,
-            **kwargs
         )
 
     @classmethod

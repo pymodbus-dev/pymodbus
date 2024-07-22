@@ -4,7 +4,7 @@ from __future__ import annotations
 import time
 from collections.abc import Callable
 from functools import partial
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
@@ -86,9 +86,6 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         broadcast_enable: bool = False,
         no_resend_on_retry: bool = False,
         on_connect_callback: Callable[[bool], None] | None = None,
-
-        #     ----- OLD ------
-        **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
         if PYSERIAL_MISSING:
@@ -112,12 +109,11 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         ModbusBaseClient.__init__(
             self,
             framer,
-            retries=retries,
-            retry_on_empty=retry_on_empty,
-            broadcast_enable=broadcast_enable,
-            no_resend_on_retry=no_resend_on_retry,
-            on_connect_callback=on_connect_callback,
-            **kwargs,
+            retries,
+            retry_on_empty,
+            broadcast_enable,
+            no_resend_on_retry,
+            on_connect_callback,
         )
 
     def close(self, reconnect: bool = False) -> None:
@@ -191,9 +187,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         retry_on_empty: bool = False,
         broadcast_enable: bool = False,
         no_resend_on_retry: bool = False,
-
-        #     ----- OLD ------
-        **kwargs: Any,
     ) -> None:
         """Initialize Modbus Serial Client."""
         self.comm_params = CommParams(
@@ -211,11 +204,10 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         )
         super().__init__(
             framer,
-            retries=retries,
-            retry_on_empty=retry_on_empty,
-            broadcast_enable=broadcast_enable,
-            no_resend_on_retry=no_resend_on_retry,
-            **kwargs,
+            retries,
+            retry_on_empty,
+            broadcast_enable,
+            no_resend_on_retry,
         )
         self.socket: serial.Serial | None = None
         self.last_frame_end = None

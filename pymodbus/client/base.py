@@ -28,12 +28,12 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
     def __init__(
         self,
         framer: FramerType,
-        retries: int = 3,
+        retries: int,
+        retry_on_empty: bool,
+        broadcast_enable: bool,
+        no_resend_on_retry: bool,
+        on_connect_callback: Callable[[bool], None] | None,
         comm_params: CommParams | None = None,
-        retry_on_empty: bool = False,
-        broadcast_enable: bool = False,
-        no_resend_on_retry: bool = False,
-        on_connect_callback: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize a client instance."""
         ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
@@ -183,11 +183,11 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
     def __init__(
         self,
         framer: FramerType,
-        retries: int = 3,
+        retries: int,
+        retry_on_empty: bool,
+        broadcast_enable: bool,
+        no_resend_on_retry: bool,
         comm_params: CommParams | None = None,
-        retry_on_empty: bool = False,
-        broadcast_enable: bool = False,
-        no_resend_on_retry: bool = False,
     ) -> None:
         """Initialize a client instance."""
         ModbusClientMixin.__init__(self)  # type: ignore[arg-type]

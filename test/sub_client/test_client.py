@@ -263,6 +263,11 @@ async def test_client_modbusbaseclient():
     """Test modbus base client class."""
     client = ModbusBaseClient(
         FramerType.ASCII,
+        3,
+        False,
+        False,
+        False,
+        None,
         comm_params=CommParams(
             host="localhost",
             port=BASE_PORT + 1,
@@ -300,6 +305,11 @@ async def test_client_base_async():
         p_close.return_value.set_result(True)
         async with ModbusBaseClient(
             FramerType.ASCII,
+            3,
+            False,
+            False,
+            False,
+            None,
             comm_params=CommParams(
                 host="localhost",
                 port=BASE_PORT + 2,
@@ -316,8 +326,15 @@ async def test_client_base_async():
 @pytest.mark.skip()
 async def test_client_protocol_receiver():
     """Test the client protocol data received."""
-    base = ModbusBaseClient(FramerType.SOCKET, comm_params=CommParams(),
-)
+    base = ModbusBaseClient(
+        FramerType.SOCKET,
+        3,
+        False,
+        False,
+        False,
+        None,
+        comm_params=CommParams(),
+    )
     transport = mock.MagicMock()
     base.ctx.connection_made(transport)
     assert base.transport == transport
@@ -339,8 +356,15 @@ async def test_client_protocol_receiver():
 @pytest.mark.skip()
 async def test_client_protocol_response():
     """Test the udp client protocol builds responses."""
-    base = ModbusBaseClient(FramerType.SOCKET, comm_params=CommParams(),
-)
+    base = ModbusBaseClient(
+        FramerType.SOCKET,
+        3,
+        False,
+        False,
+        False,
+        None,
+        comm_params=CommParams(),
+    )
     response = base.build_response(0x00)  # pylint: disable=protected-access
     excp = response.exception()
     assert isinstance(excp, ConnectionException)
@@ -355,6 +379,11 @@ async def test_client_protocol_handler():
     """Test the client protocol handles responses."""
     base = ModbusBaseClient(
         FramerType.ASCII,
+        3,
+        False,
+        False,
+        False,
+        None,
         comm_params=CommParams(
             host="localhost",
             port=BASE_PORT + 3,
@@ -409,6 +438,11 @@ async def test_client_protocol_execute():
     """Test the client protocol execute method."""
     base = ModbusBaseClient(
         FramerType.SOCKET,
+        3,
+        False,
+        False,
+        False,
+        None,
         comm_params=CommParams(
             host="127.0.0.1",
             timeout_connect=3,
@@ -426,6 +460,11 @@ async def test_client_execute_broadcast():
     """Test the client protocol execute method."""
     base = ModbusBaseClient(
         FramerType.SOCKET,
+        3,
+        False,
+        False,
+        False,
+        None,
         comm_params=CommParams(
             host="127.0.0.1",
         ),
@@ -441,6 +480,11 @@ async def test_client_protocol_retry():
     """Test the client protocol execute method with retries."""
     base = ModbusBaseClient(
         FramerType.SOCKET,
+        3,
+        False,
+        False,
+        False,
+        None,
         comm_params=CommParams(
             host="127.0.0.1",
             timeout_connect=0.1,
@@ -460,7 +504,11 @@ async def test_client_protocol_timeout():
     """Test the client protocol execute method with timeout."""
     base = ModbusBaseClient(
         FramerType.SOCKET,
-        retries=2,
+        2,
+        False,
+        False,
+        False,
+        None,
         comm_params=CommParams(
             host="127.0.0.1",
             timeout_connect=0.1,
@@ -665,8 +713,15 @@ def test_client_mixin_convert_fail():
 
 async def test_client_build_response():
     """Test fail of build_response."""
-    client = ModbusBaseClient(FramerType.RTU, comm_params=CommParams(),
-)
+    client = ModbusBaseClient(
+        FramerType.RTU,
+        3,
+        False,
+        False,
+        False,
+        None,
+        comm_params=CommParams(),
+    )
     with pytest.raises(ConnectionException):
         await client.build_response(ModbusRequest(0, 0, 0, False))
 

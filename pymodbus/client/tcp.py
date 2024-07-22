@@ -5,7 +5,6 @@ import select
 import socket
 import time
 from collections.abc import Callable
-from typing import Any
 
 from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
@@ -72,9 +71,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         broadcast_enable: bool = False,
         no_resend_on_retry: bool = False,
         on_connect_callback: Callable[[bool], None] | None = None,
-
-        #     ----- OLD ------
-        **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
         if not hasattr(self,"comm_params"):
@@ -91,12 +87,11 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         ModbusBaseClient.__init__(
             self,
             framer,
-            retries=retries,
-            retry_on_empty=retry_on_empty,
-            broadcast_enable=broadcast_enable,
-            no_resend_on_retry=no_resend_on_retry,
-            on_connect_callback=on_connect_callback,
-            **kwargs,
+            retries,
+            retry_on_empty,
+            broadcast_enable,
+            no_resend_on_retry,
+            on_connect_callback,
         )
 
     def close(self, reconnect: bool = False) -> None:
@@ -162,9 +157,6 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         retry_on_empty: bool = False,
         broadcast_enable: bool = False,
         no_resend_on_retry: bool = False,
-
-        #     ----- OLD ------
-        **kwargs: Any,
     ) -> None:
         """Initialize Modbus TCP Client."""
         if not hasattr(self,"comm_params"):
@@ -180,11 +172,10 @@ class ModbusTcpClient(ModbusBaseSyncClient):
             )
         super().__init__(
             framer,
-            retries=retries,
-            retry_on_empty=retry_on_empty,
-            broadcast_enable=broadcast_enable,
-            no_resend_on_retry=no_resend_on_retry,
-            **kwargs,
+            retries,
+            retry_on_empty,
+            broadcast_enable,
+            no_resend_on_retry,
         )
         self.socket = None
 

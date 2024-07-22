@@ -59,19 +59,6 @@ async def run_async_simple_client(comm, host, port, framer=FramerType.SOCKET):
             stopbits=1,
             # handle_local_echo=False,
         )
-    elif comm == "tls":
-        client = ModbusClient.AsyncModbusTlsClient(
-            host,
-            port=port,
-            framer=FramerType.TLS,
-            # timeout=10,
-            # retries=3,
-            # retry_on_empty=False,
-            # sslctx=sslctx,
-            certfile="../examples/certificates/pymodbus.crt",
-            keyfile="../examples/certificates/pymodbus.key",
-            # password="none",
-        )
     else:
         print(f"Unknown client {comm} selected")
         return

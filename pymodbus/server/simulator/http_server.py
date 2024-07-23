@@ -157,7 +157,7 @@ class ModbusSimulatorServer:
         datastore = None
         if "device_id" in server:
             # Designated ModBus unit address. Will only serve data if the address matches
-            datastore = ModbusServerContext(slaves={int(server["device_id"]): self.datastore_context}, single=False)
+            datastore = ModbusServerContext(slaves={int(server["device_id"]): self.datastore_context}, single=True)
         else:
             # Will server any request regardless of addressing
             datastore = ModbusServerContext(slaves=self.datastore_context, single=True)

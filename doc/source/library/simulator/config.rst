@@ -69,7 +69,7 @@ The entry “framer” allows the following values:
 - “socket” to use :class:`pymodbus.framer.ModbusSocketFramer`.
 
 Optional entry "device_id" will limit server to only accept if. If
-not set, the server will respond to all addresses.
+not set, the server will accept all device id.
 
 .. warning::
 

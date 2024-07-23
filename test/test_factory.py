@@ -6,16 +6,11 @@ from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 
 
-def _raise_exception(_):
-    """Raise exception."""
-    raise ModbusException("something")
-
-
 class TestFactory:
     """Unittest for the pymod.exceptions module."""
 
-    client = None
-    server = None
+    client: ClientDecoder
+    server: ServerDecoder
     request = (
         (0x01, b"\x01\x00\x01\x00\x01"),  # read coils
         (0x02, b"\x02\x00\x01\x00\x01"),  # read discrete inputs
@@ -139,15 +134,13 @@ class TestFactory:
 
     def test_client_factory_fails(self):
         """Tests that a client factory will fail to decode a bad message."""
-        self.client._helper = _raise_exception  # pylint: disable=protected-access
-        actual = self.client.decode(None)
-        assert not actual
+        with pytest.raises(TypeError):
+            self.client.decode(None)
 
     def test_server_factory_fails(self):
         """Tests that a server factory will fail to decode a bad message."""
-        self.server._helper = _raise_exception  # pylint: disable=protected-access
-        actual = self.server.decode(None)
-        assert not actual
+        with pytest.raises(TypeError):
+            self.server.decode(None)
 
     def test_server_register_custom_request(self):
         """Test server register custom request."""

@@ -4,6 +4,7 @@
 # pylint: disable=missing-type-doc
 import struct
 
+from pymodbus.exceptions import ModbusIOException
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 
@@ -88,6 +89,8 @@ class ReadRegistersResponseBase(ModbusResponse):
         :param data: The request to decode
         """
         byte_count = int(data[0])
+        if byte_count < 2 or byte_count > 246 or byte_count % 2 == 1 or byte_count != len(data) - 1:
+            raise ModbusIOException(f"Invalid response {data} has byte count of {byte_count}")
         self.registers = []
         for i in range(1, byte_count + 1, 2):
             self.registers.append(struct.unpack(">H", data[i : i + 2])[0])

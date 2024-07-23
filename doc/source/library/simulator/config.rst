@@ -68,6 +68,9 @@ The entry “framer” allows the following values:
 - “tls” to use :class:`pymodbus.framer.ModbusTlsFramer`,
 - “socket” to use :class:`pymodbus.framer.ModbusSocketFramer`.
 
+Optional entry "device_id" will enable address-specific server addressing. If
+not set, the server will respond to all addresses.
+
 .. warning::
 
     not all "framer" types can be used with all “comm” types.

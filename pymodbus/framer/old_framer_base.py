@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.framer.base import FramerBase
 from pymodbus.logging import Log
-from pymodbus.pdu import ModbusRequest
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 
 
 if TYPE_CHECKING:
@@ -158,7 +158,7 @@ class ModbusFramer:
     ) -> None:
         """Process new packet pattern."""
 
-    def buildPacket(self, message: ModbusRequest) -> bytes:
+    def buildPacket(self, message: ModbusRequest | ModbusResponse) -> bytes:
         """Create a ready to send modbus packet.
 
         :param message: The populated request/response to send

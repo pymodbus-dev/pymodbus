@@ -354,7 +354,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
         )
 
 
-class ReadWriteMultipleRegistersResponse(ModbusResponse):
+class ReadWriteMultipleRegistersResponse(ReadHoldingRegistersResponse):
     """Read/write multiple registers.
 
     The normal response contains the data from the group of registers that
@@ -365,38 +365,3 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
     """
 
     function_code = 23
-    _rtu_byte_count_pos = 2
-
-    def __init__(self, values=None, slave=0, transaction=0, protocol=0, skip_encode=False):
-        """Initialize a new instance.
-
-        :param values: The register values to write
-        """
-        super().__init__(slave, transaction, protocol, skip_encode)
-        self.registers = values or []
-
-    def encode(self):
-        """Encode the response packet.
-
-        :returns: The encoded packet
-        """
-        result = struct.pack(">B", len(self.registers) * 2)
-        for register in self.registers:
-            result += struct.pack(">H", register)
-        return result
-
-    def decode(self, data):
-        """Decode the register response packet.
-
-        :param data: The response to decode
-        """
-        bytecount = int(data[0])
-        for i in range(1, bytecount, 2):
-            self.registers.append(struct.unpack(">H", data[i : i + 2])[0])
-
-    def __str__(self):
-        """Return a string representation of the instance.
-
-        :returns: A string representation of the instance
-        """
-        return f"ReadWriteNRegisterResponse ({len(self.registers)})"

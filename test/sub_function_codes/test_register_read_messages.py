@@ -30,10 +30,9 @@ class TestReadRegisterMessages:
     * Read Holding Registers
     """
 
-    value = None
-    values = None
-    request_read = None
-    response_read = None
+    values: list
+    request_read: dict
+    response_read: dict
 
     def setup_method(self):
         """Initialize the test environment and builds request/result encoding pairs."""
@@ -42,7 +41,6 @@ class TestReadRegisterMessages:
             "read_count": 5,
             "write_address": 1,
         }
-        self.value = 0xABCD
         self.values = [0xA, 0xB, 0xC]
         self.request_read = {
             ReadRegistersRequestBase(1, 5): b"\x00\x01\x00\x05",
@@ -84,20 +82,9 @@ class TestReadRegisterMessages:
 
     def test_register_read_response_decode(self):
         """Test register read response."""
-        registers = [
-            [0x0A, 0x0B, 0x0C],
-            [0x0A, 0x0B, 0x0C],
-            [0x0A, 0x0B, 0x0C],
-            [0x0A, 0x0B, 0x0C],
-        ]
-        values = sorted(
-            self.response_read.items(),
-            key=lambda x: str(x),  # pylint: disable=unnecessary-lambda
-        )
-        for packet, register in zip(values, registers):
-            request, response = packet
-            request.decode(response)
-            assert request.registers == register
+        for response, packet in self.response_read.items():
+            response.decode(packet)
+            assert response.registers == self.values
 
     async def test_register_read_requests_count_errors(self):
         """This tests that the register request messages.

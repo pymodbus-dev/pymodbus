@@ -236,8 +236,6 @@ class ClientDecoder:
             return self._helper(message)
         except ModbusException as exc:
             Log.error("Unable to decode response {}", exc)
-        except Exception as exc:  # pylint: disable=broad-except
-            Log.error("General exception: {}", exc)
         return None
 
     def _helper(self, data: str):

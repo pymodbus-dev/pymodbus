@@ -465,8 +465,53 @@ class ModbusSimulatorServer:
         return html
 
     def build_json_registers(self, params):
-        """Build html registers page."""
-        return f"json build registers: {params}"
+        """Build json registers response."""
+        # Process params using the helper function
+        result_txt, foot = self.helper_handle_submit(params, {
+            "Set": self.action_set,
+        })
+
+        if not result_txt:
+            result_txt = "ok"
+        if not foot:
+            foot = "Operation completed successfully"
+
+        # Extract necessary parameters
+        try:
+            range_start = int(params.get("range_start", 0))
+            range_stop = int(params.get("range_stop", range_start))
+        except ValueError:
+            return {"result": "error", "error": "Invalid range parameters"}
+
+        # Retrieve register details
+        register_rows = []
+        for i in range(range_start, range_stop + 1):
+            inx, reg = self.datastore_context.get_text_register(i)
+            row = {
+                "index": inx,
+                "type": reg.type,
+                "access": reg.access,
+                "action": reg.action,
+                "value": reg.value,
+                "count_read": reg.count_read,
+                "count_write": reg.count_write
+            }
+            register_rows.append(row)
+
+        # Generate register types and actions (assume these are predefined mappings)
+        register_types = dict(self.datastore_context.registerType_name_to_id)
+        register_actions = dict(self.datastore_context.action_name_to_id)
+
+        # Build the JSON response
+        json_response = {
+            "result": result_txt,
+            "footer": foot,
+            "register_types": register_types,
+            "register_actions": register_actions,
+            "register_rows": register_rows,
+        }
+
+        return json_response
 
     def build_json_calls(self, params):
         """Build html calls page."""

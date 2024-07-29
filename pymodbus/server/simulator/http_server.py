@@ -303,8 +303,7 @@ class ModbusSimulatorServer:
         """Handle api registers."""
         page_type = request.path.split("/")[-1]
         params = await request.post()
-        json_dict = self.generator_json[page_type][0].copy()
-        result = self.generator_json[page_type][1](params, json_dict)
+        result = self.generator_json[page_type](params)
         return web.Response(text=f"json build: {page_type} - {params} - {result}")
 
     def build_html_registers(self, params, html):
@@ -461,21 +460,21 @@ class ModbusSimulatorServer:
         """Build html server page."""
         return html
 
-    def build_json_registers(self, params, json_dict):
+    def build_json_registers(self, params):
         """Build html registers page."""
-        return f"json build registers: {params} - {json_dict}"
+        return f"json build registers: {params}"
 
-    def build_json_calls(self, params, json_dict):
+    def build_json_calls(self, params):
         """Build html calls page."""
-        return f"json build calls: {params} - {json_dict}"
+        return f"json build calls: {params}"
 
-    def build_json_log(self, params, json_dict):
+    def build_json_log(self, params):
         """Build json log page."""
-        return f"json build log: {params} - {json_dict}"
+        return f"json build log: {params}"
 
-    def build_json_server(self, params, json_dict):
+    def build_json_server(self, params):
         """Build html server page."""
-        return f"json build server: {params} - {json_dict}"
+        return f"json build server: {params}"
 
     def helper_build_html_submit(self, params):
         """Build html register submit."""

@@ -180,7 +180,7 @@ class ModbusSimulatorServer:
         self.web_app.add_routes(
             [
                 web.get("/api/{tail:[a-z]*}", self.handle_html),
-                web.post("/api/{tail:[a-z]*}", self.handle_json),
+                web.post("/restapi/{tail:[a-z]*}", self.handle_json),
                 web.get("/{tail:[a-z0-9.]*}", self.handle_html_static),
                 web.get("/", self.handle_html_static),
             ]

@@ -303,7 +303,7 @@ class ModbusSimulatorServer:
         """Handle api registers."""
         page_type = request.path.split("/")[-1]
         params = await request.post()
-        json_dict = self.generator_html[page_type][0].copy()
+        json_dict = self.generator_json[page_type][0].copy()
         result = self.generator_json[page_type][1](params, json_dict)
         return web.Response(text=f"json build: {page_type} - {params} - {result}")
 

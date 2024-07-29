@@ -605,11 +605,11 @@ class ModbusSimulatorServer:
 
     def build_json_log(self, params):
         """Build json log page."""
-        return f"json build log: {params}"
+        return {"result": "error", "error": "log endpoint not implemented", "params": params}
 
     def build_json_server(self, params):
         """Build html server page."""
-        return f"json build server: {params}"
+        return {"result": "error", "error": "server endpoint not implemented", "params": params}
 
     def helper_handle_submit(self, params, submit_actions):
         """Build html register submit."""

@@ -46,7 +46,6 @@ class AsyncModbusSerialClient(ModbusBaseClient):
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
     :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
     :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
 
     .. tip::
@@ -84,7 +83,6 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         retries: int = 3,
         retry_on_empty: bool = False,
         broadcast_enable: bool = False,
-        no_resend_on_retry: bool = False,
         on_connect_callback: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
@@ -112,7 +110,6 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             retries,
             retry_on_empty,
             broadcast_enable,
-            no_resend_on_retry,
             on_connect_callback,
         )
 
@@ -143,7 +140,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
     :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
 
     .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect, from
@@ -186,7 +182,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         retries: int = 3,
         retry_on_empty: bool = False,
         broadcast_enable: bool = False,
-        no_resend_on_retry: bool = False,
     ) -> None:
         """Initialize Modbus Serial Client."""
         self.comm_params = CommParams(
@@ -207,7 +202,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             retries,
             retry_on_empty,
             broadcast_enable,
-            no_resend_on_retry,
         )
         self.socket: serial.Serial | None = None
         self.last_frame_end = None

@@ -33,7 +33,6 @@ class AsyncModbusUdpClient(ModbusBaseClient):
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
     :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
     :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
 
     .. tip::
@@ -68,7 +67,6 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         retries: int = 3,
         retry_on_empty: bool = False,
         broadcast_enable: bool = False,
-        no_resend_on_retry: bool = False,
         on_connect_callback: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus UDP Client."""
@@ -85,11 +83,10 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         ModbusBaseClient.__init__(
             self,
             framer,
-            retries=retries,
-            retry_on_empty=retry_on_empty,
-            broadcast_enable=broadcast_enable,
-            no_resend_on_retry=no_resend_on_retry,
-            on_connect_callback=on_connect_callback,
+            retries,
+            retry_on_empty,
+            broadcast_enable,
+            on_connect_callback,
         )
         self.source_address = source_address
 
@@ -118,7 +115,6 @@ class ModbusUdpClient(ModbusBaseSyncClient):
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
     :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
 
     .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect, from
@@ -156,7 +152,6 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         retries: int = 3,
         retry_on_empty: bool = False,
         broadcast_enable: bool = False,
-        no_resend_on_retry: bool = False,
     ) -> None:
         """Initialize Modbus UDP Client."""
         self.comm_params = CommParams(
@@ -171,10 +166,9 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         )
         super().__init__(
             framer,
-            retries=retries,
-            retry_on_empty=retry_on_empty,
-            broadcast_enable=broadcast_enable,
-            no_resend_on_retry=no_resend_on_retry,
+            retries,
+            retry_on_empty,
+            broadcast_enable,
         )
         self.socket = None
 

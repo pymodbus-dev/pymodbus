@@ -266,7 +266,6 @@ async def test_client_modbusbaseclient():
         3,
         False,
         False,
-        False,
         None,
         comm_params=CommParams(
             host="localhost",
@@ -308,7 +307,6 @@ async def test_client_base_async():
             3,
             False,
             False,
-            False,
             None,
             comm_params=CommParams(
                 host="localhost",
@@ -329,7 +327,6 @@ async def test_client_protocol_receiver():
     base = ModbusBaseClient(
         FramerType.SOCKET,
         3,
-        False,
         False,
         False,
         None,
@@ -361,7 +358,6 @@ async def test_client_protocol_response():
         3,
         False,
         False,
-        False,
         None,
         comm_params=CommParams(),
     )
@@ -380,7 +376,6 @@ async def test_client_protocol_handler():
     base = ModbusBaseClient(
         FramerType.ASCII,
         3,
-        False,
         False,
         False,
         None,
@@ -441,7 +436,6 @@ async def test_client_protocol_execute():
         3,
         False,
         False,
-        False,
         None,
         comm_params=CommParams(
             host="127.0.0.1",
@@ -463,7 +457,6 @@ async def test_client_execute_broadcast():
         3,
         False,
         False,
-        False,
         None,
         comm_params=CommParams(
             host="127.0.0.1",
@@ -481,7 +474,6 @@ async def test_client_protocol_retry():
     base = ModbusBaseClient(
         FramerType.SOCKET,
         3,
-        False,
         False,
         False,
         None,
@@ -505,7 +497,6 @@ async def test_client_protocol_timeout():
     base = ModbusBaseClient(
         FramerType.SOCKET,
         2,
-        False,
         False,
         False,
         None,
@@ -716,7 +707,6 @@ async def test_client_build_response():
     client = ModbusBaseClient(
         FramerType.RTU,
         3,
-        False,
         False,
         False,
         None,

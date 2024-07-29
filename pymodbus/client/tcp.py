@@ -32,7 +32,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
     :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
     :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
 
     .. tip::
@@ -69,7 +68,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         retries: int = 3,
         retry_on_empty: bool = False,
         broadcast_enable: bool = False,
-        no_resend_on_retry: bool = False,
         on_connect_callback: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
@@ -90,7 +88,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             retries,
             retry_on_empty,
             broadcast_enable,
-            no_resend_on_retry,
             on_connect_callback,
         )
 
@@ -118,7 +115,6 @@ class ModbusTcpClient(ModbusBaseSyncClient):
     :param retries: Max number of retries per request.
     :param retry_on_empty: Retry on empty response.
     :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
 
     .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect, from
@@ -156,7 +152,6 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         retries: int = 3,
         retry_on_empty: bool = False,
         broadcast_enable: bool = False,
-        no_resend_on_retry: bool = False,
     ) -> None:
         """Initialize Modbus TCP Client."""
         if not hasattr(self,"comm_params"):
@@ -175,7 +170,6 @@ class ModbusTcpClient(ModbusBaseSyncClient):
             retries,
             retry_on_empty,
             broadcast_enable,
-            no_resend_on_retry,
         )
         self.socket = None
 

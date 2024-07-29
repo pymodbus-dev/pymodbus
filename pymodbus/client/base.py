@@ -31,7 +31,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         retries: int,
         retry_on_empty: bool,
         broadcast_enable: bool,
-        no_resend_on_retry: bool,
         on_connect_callback: Callable[[bool], None] | None,
         comm_params: CommParams | None = None,
     ) -> None:
@@ -46,7 +45,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
             self.comm_params,
             on_connect_callback,
         )
-        self.no_resend_on_retry = no_resend_on_retry
         self.broadcast_enable = broadcast_enable
 
         # Common variables.
@@ -119,9 +117,8 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         while count <= self.retries:
             async with self._lock:
                 req = self.build_response(request)
-                if not count or not self.no_resend_on_retry:
-                    self.ctx.framer.resetFrame()
-                    self.ctx.send(packet)
+                self.ctx.framer.resetFrame()
+                self.ctx.send(packet)
                 if self.broadcast_enable and not request.slave_id:
                     resp = None
                     break
@@ -186,7 +183,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         retries: int,
         retry_on_empty: bool,
         broadcast_enable: bool,
-        no_resend_on_retry: bool,
         comm_params: CommParams | None = None,
     ) -> None:
         """Initialize a client instance."""
@@ -196,7 +192,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         self.retries = retries
         self.broadcast_enable = bool(broadcast_enable)
         self.retry_on_empty = retry_on_empty
-        self.no_resend_on_retry = no_resend_on_retry
         self.slaves: list[int] = []
 
         # Common variables.

@@ -330,7 +330,6 @@ class TestFramers:
             3,
             False,
             False,
-            False,
             None,
             comm_params=CommParams(
                 comm_type=CommType.TCP,

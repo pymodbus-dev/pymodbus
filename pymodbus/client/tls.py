@@ -29,7 +29,6 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
-    :param broadcast_enable: True to treat id 0 as broadcast address.
     :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
 
     .. tip::
@@ -63,7 +62,6 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        broadcast_enable: bool = False,
         on_connect_callback: Callable[[bool], None] | None = None,
     ):
         """Initialize Asyncio Modbus TLS Client."""
@@ -83,7 +81,6 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
             "",
             framer=framer,
             retries=retries,
-            broadcast_enable=broadcast_enable,
             on_connect_callback=on_connect_callback,
         )
 
@@ -127,7 +124,6 @@ class ModbusTlsClient(ModbusTcpClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
-    :param broadcast_enable: True to treat id 0 as broadcast address.
 
     .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect, from
@@ -162,7 +158,6 @@ class ModbusTlsClient(ModbusTcpClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        broadcast_enable: bool = False,
     ):
         """Initialize Modbus TLS Client."""
         self.comm_params = CommParams(
@@ -180,7 +175,6 @@ class ModbusTlsClient(ModbusTcpClient):
             "",
             framer=framer,
             retries=retries,
-            broadcast_enable=broadcast_enable,
         )
 
     @classmethod

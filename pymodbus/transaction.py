@@ -214,9 +214,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 ):
                     Log.debug("Clearing current Frame: - {}", _buffer)
                     self.client.framer.resetFrame()
-                if broadcast := (
-                    self.client.broadcast_enable and not request.slave_id
-                ):
+                if broadcast := not request.slave_id:
                     self._transact(request, None, broadcast=True)
                     response = b"Broadcast write sent - no response expected"
                 else:

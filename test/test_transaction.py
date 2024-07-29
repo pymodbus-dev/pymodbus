@@ -162,14 +162,12 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert isinstance(trans.execute(request), ModbusIOException)
 
         # Broadcast
-        client.params.broadcast_enable = True
         request.slave_id = 0
         response = trans.execute(request)
         assert response == b"Broadcast write sent - no response expected"
 
         # Broadcast w/ Local echo
         client.comm_params.handle_local_echo = True
-        client.params.broadcast_enable = True
         mock_recv.reset_mock(return_value=b"deadbeef")
         request.slave_id = 0
         response = trans.execute(request)

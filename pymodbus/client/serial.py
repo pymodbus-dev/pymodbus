@@ -44,7 +44,6 @@ class AsyncModbusSerialClient(ModbusBaseClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
-    :param broadcast_enable: True to treat id 0 as broadcast address.
     :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
 
     .. tip::
@@ -80,7 +79,6 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        broadcast_enable: bool = False,
         on_connect_callback: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
@@ -106,7 +104,6 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             self,
             framer,
             retries,
-            broadcast_enable,
             on_connect_callback,
         )
 
@@ -135,7 +132,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
-    :param broadcast_enable: True to treat id 0 as broadcast address.
 
     .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect, from
@@ -176,7 +172,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        broadcast_enable: bool = False,
     ) -> None:
         """Initialize Modbus Serial Client."""
         self.comm_params = CommParams(
@@ -195,7 +190,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         super().__init__(
             framer,
             retries,
-            broadcast_enable,
         )
         self.socket: serial.Serial | None = None
         self.last_frame_end = None

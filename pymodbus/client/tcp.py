@@ -30,7 +30,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
-    :param broadcast_enable: True to treat id 0 as broadcast address.
     :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
 
     .. tip::
@@ -65,7 +64,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        broadcast_enable: bool = False,
         on_connect_callback: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
@@ -84,7 +82,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             self,
             framer,
             retries,
-            broadcast_enable,
             on_connect_callback,
         )
 
@@ -110,7 +107,6 @@ class ModbusTcpClient(ModbusBaseSyncClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
-    :param broadcast_enable: True to treat id 0 as broadcast address.
 
     .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect, from
@@ -135,7 +131,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
 
     socket: socket.socket | None
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         host: str,
         framer: FramerType = FramerType.SOCKET,
@@ -146,7 +142,6 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        broadcast_enable: bool = False,
     ) -> None:
         """Initialize Modbus TCP Client."""
         if not hasattr(self,"comm_params"):
@@ -160,11 +155,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
                 reconnect_delay_max=reconnect_delay_max,
                 timeout_connect=timeout,
             )
-        super().__init__(
-            framer,
-            retries,
-            broadcast_enable,
-        )
+        super().__init__(framer, retries)
         self.socket = None
 
     @property

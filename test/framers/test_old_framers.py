@@ -328,7 +328,6 @@ class TestFramers:
         client = ModbusBaseClient(
             FramerType.ASCII,
             3,
-            False,
             None,
             comm_params=CommParams(
                 comm_type=CommType.TCP,

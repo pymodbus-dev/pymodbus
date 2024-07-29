@@ -29,7 +29,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         self,
         framer: FramerType,
         retries: int,
-        broadcast_enable: bool,
         on_connect_callback: Callable[[bool], None] | None,
         comm_params: CommParams | None = None,
     ) -> None:
@@ -43,7 +42,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
             self.comm_params,
             on_connect_callback,
         )
-        self.broadcast_enable = broadcast_enable
 
         # Common variables.
         self.use_udp = False
@@ -117,7 +115,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
                 req = self.build_response(request)
                 self.ctx.framer.resetFrame()
                 self.ctx.send(packet)
-                if self.broadcast_enable and not request.slave_id:
+                if not request.slave_id:
                     resp = None
                     break
                 try:
@@ -179,7 +177,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         self,
         framer: FramerType,
         retries: int,
-        broadcast_enable: bool,
         comm_params: CommParams | None = None,
     ) -> None:
         """Initialize a client instance."""
@@ -187,7 +184,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         if comm_params:
             self.comm_params = comm_params
         self.retries = retries
-        self.broadcast_enable = bool(broadcast_enable)
         self.slaves: list[int] = []
 
         # Common variables.

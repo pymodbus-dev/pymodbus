@@ -133,16 +133,10 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
     Results are keyed based on the supplied transaction id.
     """
 
-    def __init__(self, client: ModbusBaseSyncClient, retry_on_empty, retries):
-        """Initialize an instance of the ModbusTransactionManager.
-
-        :param client: The client socket wrapper
-        :param retry_on_empty: Should the client retry on empty
-        :param retries: The number of retries to allow
-        """
+    def __init__(self, client: ModbusBaseSyncClient, retries):
+        """Initialize an instance of the ModbusTransactionManager."""
         super().__init__()
         self.client: ModbusBaseSyncClient = client
-        self.retry_on_empty = retry_on_empty
         self.retries = retries
         self._transaction_lock = RLock()
         self._no_response_devices: list[int] = []
@@ -270,22 +264,8 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                         if not response:
                             if request.slave_id not in self._no_response_devices:
                                 self._no_response_devices.append(request.slave_id)
-                            if self.retry_on_empty:
-                                response, last_exception = self._retry_transaction(
-                                    retries,
-                                    "empty",
-                                    request,
-                                    expected_response_length,
-                                    full=full,
-                                )
-                                retries -= 1
-                            else:
-                                # No response received and retries not enabled
-                                break
-                        else:
-                            break
-                        # full = False
-                        Log.debug("Retry getting response: - {}", _buffer)
+                            # No response received and retries not enabled
+                        break
                     self.client.framer.processIncomingPacket(
                         response,
                         self.addTransaction,

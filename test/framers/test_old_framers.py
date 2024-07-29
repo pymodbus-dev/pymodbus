@@ -329,7 +329,6 @@ class TestFramers:
             FramerType.ASCII,
             3,
             False,
-            False,
             None,
             comm_params=CommParams(
                 comm_type=CommType.TCP,

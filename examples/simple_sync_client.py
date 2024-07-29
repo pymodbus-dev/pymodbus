@@ -35,7 +35,6 @@ def run_sync_simple_client(comm, host, port, framer=FramerType.SOCKET):
             framer=framer,
             # timeout=10,
             # retries=3,
-            # retry_on_empty=False,y
             # source_address=("localhost", 0),
         )
     elif comm == "udp":
@@ -45,7 +44,6 @@ def run_sync_simple_client(comm, host, port, framer=FramerType.SOCKET):
             framer=framer,
             # timeout=10,
             # retries=3,
-            # retry_on_empty=False,
             # source_address=None,
         )
     elif comm == "serial":
@@ -54,7 +52,6 @@ def run_sync_simple_client(comm, host, port, framer=FramerType.SOCKET):
             framer=framer,
             # timeout=10,
             # retries=3,
-            # retry_on_empty=False,
             baudrate=9600,
             bytesize=8,
             parity="N",

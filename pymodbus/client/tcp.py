@@ -30,7 +30,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
-    :param retry_on_empty: Retry on empty response.
     :param broadcast_enable: True to treat id 0 as broadcast address.
     :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
 
@@ -66,7 +65,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        retry_on_empty: bool = False,
         broadcast_enable: bool = False,
         on_connect_callback: Callable[[bool], None] | None = None,
     ) -> None:
@@ -86,7 +84,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             self,
             framer,
             retries,
-            retry_on_empty,
             broadcast_enable,
             on_connect_callback,
         )
@@ -113,7 +110,6 @@ class ModbusTcpClient(ModbusBaseSyncClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
-    :param retry_on_empty: Retry on empty response.
     :param broadcast_enable: True to treat id 0 as broadcast address.
 
     .. tip::
@@ -150,7 +146,6 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        retry_on_empty: bool = False,
         broadcast_enable: bool = False,
     ) -> None:
         """Initialize Modbus TCP Client."""
@@ -168,7 +163,6 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         super().__init__(
             framer,
             retries,
-            retry_on_empty,
             broadcast_enable,
         )
         self.socket = None

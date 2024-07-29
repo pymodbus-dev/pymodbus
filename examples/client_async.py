@@ -64,8 +64,6 @@ def setup_async_client(description=None, cmdline=None):
             retries=3,
             reconnect_delay=1,
             reconnect_delay_max=10,
-            #    retry_on_empty=False,
-            # TCP setup parameters
             #    source_address=("localhost", 0),
         )
     elif args.comm == "udp":
@@ -76,7 +74,6 @@ def setup_async_client(description=None, cmdline=None):
             framer=args.framer,
             timeout=args.timeout,
             #    retries=3,
-            #    retry_on_empty=False,
             # UDP setup parameters
             #    source_address=None,
         )
@@ -87,7 +84,6 @@ def setup_async_client(description=None, cmdline=None):
             #    framer=ModbusRtuFramer,
             timeout=args.timeout,
             #    retries=3,
-            #    retry_on_empty=False,
             # Serial setup parameters
             baudrate=args.baudrate,
             #    bytesize=8,
@@ -103,7 +99,6 @@ def setup_async_client(description=None, cmdline=None):
             framer=args.framer,
             timeout=args.timeout,
             #    retries=3,
-            #    retry_on_empty=False,
             # TLS setup parameters
             sslctx=modbusClient.AsyncModbusTlsClient.generate_ssl(
                 certfile=helper.get_certificate("crt"),

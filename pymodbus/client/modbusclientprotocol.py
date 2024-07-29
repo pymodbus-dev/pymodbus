@@ -14,14 +14,6 @@ from pymodbus.transport import CommParams, ModbusProtocol
 class ModbusClientProtocol(ModbusProtocol):
     """**ModbusClientProtocol**.
 
-    Fixed parameters:
-
-    :param framer: Framer enum name
-    :param params: Comm parameters for transport
-    :param retries: Max number of retries per request.
-    :param retry_on_empty: Retry on empty response.
-    :param on_connect_callback: Will be called when connected/disconnected (bool parameter)
-
     :mod:`ModbusClientProtocol` is normally not referenced outside :mod:`pymodbus`.
     """
 

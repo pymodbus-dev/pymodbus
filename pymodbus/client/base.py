@@ -29,7 +29,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         self,
         framer: FramerType,
         retries: int,
-        retry_on_empty: bool,
         broadcast_enable: bool,
         on_connect_callback: Callable[[bool], None] | None,
         comm_params: CommParams | None = None,
@@ -39,7 +38,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         if comm_params:
             self.comm_params = comm_params
         self.retries = retries
-        self.retry_on_empty = retry_on_empty
         self.ctx = ModbusClientProtocol(
             framer,
             self.comm_params,
@@ -181,7 +179,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         self,
         framer: FramerType,
         retries: int,
-        retry_on_empty: bool,
         broadcast_enable: bool,
         comm_params: CommParams | None = None,
     ) -> None:
@@ -191,7 +188,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
             self.comm_params = comm_params
         self.retries = retries
         self.broadcast_enable = bool(broadcast_enable)
-        self.retry_on_empty = retry_on_empty
         self.slaves: list[int] = []
 
         # Common variables.
@@ -200,7 +196,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         )(ClientDecoder(), self)
         self.transaction = SyncModbusTransactionManager(
             self,
-            retry_on_empty,
             self.retries,
         )
         self.reconnect_delay_current = self.comm_params.reconnect_delay or 0

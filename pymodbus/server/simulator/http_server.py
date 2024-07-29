@@ -199,7 +199,7 @@ class ModbusSimulatorServer:
             "calls": self.build_json_calls,
             "server": self.build_json_server,
         }
-        self.submit = {
+        self.submit_html = {
             "Clear": self.action_clear,
             "Stop": self.action_stop,
             "Reset": self.action_reset,
@@ -312,7 +312,7 @@ class ModbusSimulatorServer:
 
     def build_html_registers(self, params, html):
         """Build html registers page."""
-        result_txt, foot = self.helper_build_html_submit(params)
+        result_txt, foot = self.helper_handle_submit(params, self.submit_html)
         if not result_txt:
             result_txt = "ok"
         if not foot:
@@ -357,7 +357,7 @@ class ModbusSimulatorServer:
 
     def build_html_calls(self, params: dict, html: str) -> str:
         """Build html calls page."""
-        result_txt, foot = self.helper_build_html_submit(params)
+        result_txt, foot = self.helper_handle_submit(params, self.submit_html)
         if not foot:
             foot = "Montitoring active" if self.call_monitor.active else "not active"
         if not result_txt:
@@ -480,7 +480,7 @@ class ModbusSimulatorServer:
         """Build html server page."""
         return f"json build server: {params}"
 
-    def helper_build_html_submit(self, params):
+    def helper_handle_submit(self, params, submit_actions):
         """Build html register submit."""
         try:
             range_start = int(params.get("range_start", -1))
@@ -490,9 +490,9 @@ class ModbusSimulatorServer:
             range_stop = int(params.get("range_stop", range_start))
         except ValueError:
             range_stop = -1
-        if (submit := params["submit"]) not in self.submit:
+        if (submit := params["submit"]) not in submit_actions:
             return None, None
-        return self.submit[submit](params, range_start, range_stop)
+        return submit_actions[submit](params, range_start, range_stop)
 
     def action_clear(self, _params, _range_start, _range_stop):
         """Clear register filter."""

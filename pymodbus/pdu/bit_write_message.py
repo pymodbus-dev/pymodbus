@@ -113,7 +113,7 @@ class WriteSingleCoilResponse(ModbusResponse):
     function_code = 5
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, address=None, value=None, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param address: The variable address written to
@@ -250,7 +250,7 @@ class WriteMultipleCoilsResponse(ModbusResponse):
     function_code = 15
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, count=None, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, address=None, count=None, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param address: The starting variable address written to

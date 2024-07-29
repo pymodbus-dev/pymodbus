@@ -72,7 +72,7 @@ class ReadExceptionStatusResponse(ModbusResponse):
     function_code = 0x07
     _rtu_frame_size = 5
 
-    def __init__(self, status=0x00, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, status=0x00, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param status: The status response to report
@@ -135,7 +135,7 @@ class GetCommEventCounterRequest(ModbusRequest):
     function_code_name = "get_event_counter"
     _rtu_frame_size = 4
 
-    def __init__(self, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance."""
         ModbusRequest.__init__(self, slave, transaction, protocol, skip_encode)
 
@@ -178,7 +178,7 @@ class GetCommEventCounterResponse(ModbusResponse):
     function_code = 0x0B
     _rtu_frame_size = 8
 
-    def __init__(self, count=0x0000, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, count=0x0000, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param count: The current event counter value
@@ -246,7 +246,7 @@ class GetCommEventLogRequest(ModbusRequest):
     function_code_name = "get_event_log"
     _rtu_frame_size = 4
 
-    def __init__(self, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance."""
         ModbusRequest.__init__(self, slave, transaction, protocol, skip_encode)
 
@@ -293,7 +293,7 @@ class GetCommEventLogResponse(ModbusResponse):
     function_code = 0x0C
     _rtu_byte_count_pos = 2
 
-    def __init__(self, status=True, message_count=0, event_count=0, events=None, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, status=True, message_count=0, event_count=0, events=None, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param status: The status response to report
@@ -367,7 +367,7 @@ class ReportSlaveIdRequest(ModbusRequest):
     function_code_name = "report_slave_id"
     _rtu_frame_size = 4
 
-    def __init__(self, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param slave: Modbus slave slave ID
@@ -426,7 +426,7 @@ class ReportSlaveIdResponse(ModbusResponse):
     function_code = 0x11
     _rtu_byte_count_pos = 2
 
-    def __init__(self, identifier=b"\x00", status=True, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, identifier=b"\x00", status=True, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param identifier: The identifier of the slave

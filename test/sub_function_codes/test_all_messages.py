@@ -84,12 +84,12 @@ class TestAllMessages:
 
     def test_forwarding_to_pdu(self):
         """Test that parameters are forwarded to the pdu correctly."""
-        request = ReadCoilsRequest(1, 5, slave=0x12, transaction=0x12, protocol=0x12)
+        request = ReadCoilsRequest(1, 5, slave=18, transaction=0x12, protocol=0x12)
         assert request.slave_id == 0x12
         assert request.transaction_id == 0x12
         assert request.protocol_id == 0x12
 
         request = ReadCoilsRequest(1, 5)
-        assert not request.slave_id
+        assert request.slave_id == 1
         assert not request.transaction_id
         assert not request.protocol_id

@@ -5,6 +5,7 @@ Versions (X.Y.Z) where Z > 0 e.g. 3.0.1 do NOT have API changes!
 
 API changes 3.7.0
 -----------------
+- default slave changed to 1 from 0 (which is broadcast).
 - no_resend_on_retry parameter removed.
 - class method generate_ssl() added to TLS client (sync/async).
 - removed certfile, keyfile, password from TLS client, please use generate_ssl()

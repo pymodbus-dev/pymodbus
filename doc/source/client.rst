@@ -177,7 +177,8 @@ The physical devices are addressed with the :mod:`slave=` parameter.
 
 :mod:`slave=0` is used as broadcast in order to address all devices.
 However experience shows that modern devices do not allow broadcast, mostly because it is
-inheriently dangerous. With :mod:`slave=0` the application can get upto 254 responses on a single request!
+inheriently dangerous. With :mod:`slave=0` the application can get upto 254 responses on a single request,
+and this is not handled with the normal API calls!
 
 The simple request calls (mixin) do NOT support broadcast, if an application wants to use broadcast
 it must call :mod:`client.execute` and deal with the responses.

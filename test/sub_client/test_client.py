@@ -467,7 +467,8 @@ async def test_client_execute_broadcast():
     transport = MockTransport(base, request)
     base.ctx.connection_made(transport=transport)
 
-    assert not await base.async_execute(request)
+    with pytest.raises(ModbusIOException):
+        assert not await base.async_execute(request)
 
 async def test_client_protocol_retry():
     """Test the client protocol execute method with retries."""

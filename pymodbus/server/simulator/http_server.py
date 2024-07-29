@@ -302,9 +302,9 @@ class ModbusSimulatorServer:
     async def handle_json(self, request):
         """Handle api registers."""
         page_type = request.path.split("/")[-1]
-        params = await request.post()
+        params = await request.json()
         result = self.generator_json[page_type](params)
-        return web.Response(text=f"json build: {page_type} - {params} - {result}")
+        return web.json_response(result)
 
     def build_html_registers(self, params, html):
         """Build html registers page."""

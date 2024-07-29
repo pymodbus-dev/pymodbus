@@ -184,7 +184,7 @@ class ExceptionResponse(ModbusResponse):
     ExceptionOffset = 0x80
     _rtu_frame_size = 5
 
-    def __init__(self, function_code, exception_code=None, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, function_code, exception_code=None, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize the modbus exception response.
 
         :param function_code: The function to build an exception response for

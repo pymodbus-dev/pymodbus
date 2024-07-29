@@ -122,16 +122,12 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                 "opt_args": {
                     "timeout": 3 + 2,
                     "retries": 3 + 2,
-                    "retry_on_empty": True,
-                    "broadcast_enable": not False,
                     "reconnect_delay": 117,
                     "reconnect_delay_max": 250,
                 },
                 "defaults": {
                     "timeout": 3,
                     "retries": 3,
-                    "retry_on_empty": False,
-                    "broadcast_enable": False,
                     "reconnect_delay": 100,
                     "reconnect_delay_max": 1000 * 60 * 5,
                 },
@@ -264,9 +260,6 @@ async def test_client_modbusbaseclient():
     client = ModbusBaseClient(
         FramerType.ASCII,
         3,
-        False,
-        False,
-        False,
         None,
         comm_params=CommParams(
             host="localhost",
@@ -306,9 +299,6 @@ async def test_client_base_async():
         async with ModbusBaseClient(
             FramerType.ASCII,
             3,
-            False,
-            False,
-            False,
             None,
             comm_params=CommParams(
                 host="localhost",
@@ -329,9 +319,6 @@ async def test_client_protocol_receiver():
     base = ModbusBaseClient(
         FramerType.SOCKET,
         3,
-        False,
-        False,
-        False,
         None,
         comm_params=CommParams(),
     )
@@ -359,9 +346,6 @@ async def test_client_protocol_response():
     base = ModbusBaseClient(
         FramerType.SOCKET,
         3,
-        False,
-        False,
-        False,
         None,
         comm_params=CommParams(),
     )
@@ -380,9 +364,6 @@ async def test_client_protocol_handler():
     base = ModbusBaseClient(
         FramerType.ASCII,
         3,
-        False,
-        False,
-        False,
         None,
         comm_params=CommParams(
             host="localhost",
@@ -439,9 +420,6 @@ async def test_client_protocol_execute():
     base = ModbusBaseClient(
         FramerType.SOCKET,
         3,
-        False,
-        False,
-        False,
         None,
         comm_params=CommParams(
             host="127.0.0.1",
@@ -461,29 +439,23 @@ async def test_client_execute_broadcast():
     base = ModbusBaseClient(
         FramerType.SOCKET,
         3,
-        False,
-        False,
-        False,
         None,
         comm_params=CommParams(
             host="127.0.0.1",
         ),
     )
-    base.broadcast_enable = True
     request = pdu_bit_read.ReadCoilsRequest(1, 1)
     transport = MockTransport(base, request)
     base.ctx.connection_made(transport=transport)
 
-    assert not await base.async_execute(request)
+    with pytest.raises(ModbusIOException):
+        assert not await base.async_execute(request)
 
 async def test_client_protocol_retry():
     """Test the client protocol execute method with retries."""
     base = ModbusBaseClient(
         FramerType.SOCKET,
         3,
-        False,
-        False,
-        False,
         None,
         comm_params=CommParams(
             host="127.0.0.1",
@@ -505,9 +477,6 @@ async def test_client_protocol_timeout():
     base = ModbusBaseClient(
         FramerType.SOCKET,
         2,
-        False,
-        False,
-        False,
         None,
         comm_params=CommParams(
             host="127.0.0.1",
@@ -716,9 +685,6 @@ async def test_client_build_response():
     client = ModbusBaseClient(
         FramerType.RTU,
         3,
-        False,
-        False,
-        False,
         None,
         comm_params=CommParams(),
     )

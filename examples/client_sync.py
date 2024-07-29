@@ -67,7 +67,6 @@ def setup_sync_client(description=None, cmdline=None):
             framer=args.framer,
             timeout=args.timeout,
             #    retries=3,
-            #    retry_on_empty=False,y
             # TCP setup parameters
             #    source_address=("localhost", 0),
         )
@@ -79,7 +78,6 @@ def setup_sync_client(description=None, cmdline=None):
             framer=args.framer,
             timeout=args.timeout,
             #    retries=3,
-            #    retry_on_empty=False,
             # UDP setup parameters
             #    source_address=None,
         )
@@ -90,7 +88,6 @@ def setup_sync_client(description=None, cmdline=None):
             #    framer=ModbusRtuFramer,
             timeout=args.timeout,
             #    retries=3,
-            #    retry_on_empty=False,
             # Serial setup parameters
             baudrate=args.baudrate,
             #    bytesize=8,
@@ -106,7 +103,6 @@ def setup_sync_client(description=None, cmdline=None):
             framer=args.framer,
             timeout=args.timeout,
             #    retries=3,
-            #    retry_on_empty=False,
             # TLS setup parameters
             sslctx=modbusClient.ModbusTlsClient.generate_ssl(
                 certfile=helper.get_certificate("crt"),

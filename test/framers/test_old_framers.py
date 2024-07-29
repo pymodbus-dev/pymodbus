@@ -328,9 +328,6 @@ class TestFramers:
         client = ModbusBaseClient(
             FramerType.ASCII,
             3,
-            False,
-            False,
-            False,
             None,
             comm_params=CommParams(
                 comm_type=CommType.TCP,
@@ -423,9 +420,9 @@ class TestFramers:
             response_ok = False
             framer = ModbusSocketFramer(ClientDecoder())
             if i:
-                framer.processIncomingPacket(part1, _handle_response, slave=0)
+                framer.processIncomingPacket(part1, _handle_response, 0)
                 assert not response_ok, "Response should not be accepted"
-            framer.processIncomingPacket(part2, _handle_response, slave=0)
+            framer.processIncomingPacket(part2, _handle_response, 0)
             assert response_ok, "Response is valid, but not accepted"
 
 
@@ -441,13 +438,13 @@ class TestFramers:
         message = bytearray(b"\x00\x02\x00\x00\x00\x03\x01\x84\x02")
         response_ok = False
         framer = ModbusSocketFramer(ClientDecoder())
-        framer.processIncomingPacket(message, _handle_response, slave=0)
+        framer.processIncomingPacket(message, _handle_response, 0)
         assert response_ok, "Response is valid, but not accepted"
 
         message = bytearray(b"\x00\x01\x00\x00\x00\x0b\x01\x03\x08\x00\xb5\x12\x2f\x37\x21\x00\x03")
         response_ok = False
         framer = ModbusSocketFramer(ClientDecoder())
-        framer.processIncomingPacket(message, _handle_response, slave=0)
+        framer.processIncomingPacket(message, _handle_response, 0)
         assert response_ok, "Response is valid, but not accepted"
 
     def test_recv_socket_exception_faulty(self):
@@ -462,16 +459,16 @@ class TestFramers:
         message = bytearray(b"\x00\x02\x00\x00\x00\x02\x01\x84\x02")
         response_ok = False
         framer = ModbusSocketFramer(ClientDecoder())
-        framer.processIncomingPacket(message, _handle_response, slave=0)
+        framer.processIncomingPacket(message, _handle_response, 0)
         assert response_ok, "Response is valid, but not accepted"
 
     # ---- 100% coverage
     @pytest.mark.parametrize(
         ("framer", "message"),
         [
-            (ModbusAsciiFramer, b':00010001000AF4\r\n',),
-            (ModbusRtuFramer, b"\x00\x01\x00\x01\x00\n\xec\x1c",),
-            (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x00\x01\x00\x01\x00\n',),
+            (ModbusAsciiFramer, b':01010001000AF3\r\n',),
+            (ModbusRtuFramer, b"\x01\x01\x00\x01\x00\n\xed\xcd",),
+            (ModbusSocketFramer, b'\x00\x00\x00\x00\x00\x06\x01\x01\x00\x01\x00\n',),
         ]
     )
     def test_build_packet(self, framer, message):

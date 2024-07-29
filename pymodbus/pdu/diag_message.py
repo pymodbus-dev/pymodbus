@@ -31,7 +31,7 @@ class DiagnosticStatusRequest(ModbusRequest):
     function_code_name = "diagnostic_status"
     _rtu_frame_size = 8
 
-    def __init__(self, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a diagnostic request."""
         ModbusRequest.__init__(self, slave, transaction, protocol, skip_encode)
         self.message = None
@@ -93,7 +93,7 @@ class DiagnosticStatusResponse(ModbusResponse):
     function_code = 0x08
     _rtu_frame_size = 8
 
-    def __init__(self, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a diagnostic response."""
         ModbusResponse.__init__(self, slave, transaction, protocol, skip_encode)
         self.message = None
@@ -150,7 +150,7 @@ class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
     the execute method
     """
 
-    def __init__(self, data=0x0000, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, data=0x0000, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a simple diagnostic request.
 
         The data defaults to 0x0000 if not provided as over half
@@ -175,7 +175,7 @@ class DiagnosticStatusSimpleResponse(DiagnosticStatusResponse):
     2 bytes of data.
     """
 
-    def __init__(self, data=0x0000, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, data=0x0000, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Return a simple diagnostic response.
 
         :param data: The resulting data to return to the client
@@ -197,7 +197,7 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
 
     sub_function_code = 0x0000
 
-    def __init__(self, message=b"\x00\x00", slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, message=b"\x00\x00", slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance of the request.
 
         :param message: The message to send to loopback
@@ -225,7 +225,7 @@ class ReturnQueryDataResponse(DiagnosticStatusResponse):
 
     sub_function_code = 0x0000
 
-    def __init__(self, message=b"\x00\x00", slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, message=b"\x00\x00", slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance of the response.
 
         :param message: The message to loopback
@@ -252,7 +252,7 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
 
     sub_function_code = 0x0001
 
-    def __init__(self, toggle=False, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, toggle=False, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new request.
 
         :param toggle: Set to True to toggle, False otherwise
@@ -285,7 +285,7 @@ class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
 
     sub_function_code = 0x0001
 
-    def __init__(self, toggle=False, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, toggle=False, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new response.
 
         :param toggle: Set to True if we toggled, False otherwise
@@ -396,7 +396,7 @@ class ForceListenOnlyModeResponse(DiagnosticStatusResponse):
     sub_function_code = 0x0004
     should_respond = False
 
-    def __init__(self, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize to block a return response."""
         DiagnosticStatusResponse.__init__(self, slave=slave, transaction=transaction, protocol=protocol, skip_encode=skip_encode)
         self.message = []
@@ -778,7 +778,7 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0015
 
-    def __init__(self, data=0, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, data=0, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize."""
         super().__init__(slave=slave, transaction=transaction, protocol=protocol, skip_encode=skip_encode)
         self.message=data

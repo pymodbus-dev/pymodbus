@@ -29,9 +29,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         self,
         framer: FramerType,
         retries: int,
-        retry_on_empty: bool,
-        broadcast_enable: bool,
-        no_resend_on_retry: bool,
         on_connect_callback: Callable[[bool], None] | None,
         comm_params: CommParams | None = None,
     ) -> None:
@@ -40,14 +37,11 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         if comm_params:
             self.comm_params = comm_params
         self.retries = retries
-        self.retry_on_empty = retry_on_empty
         self.ctx = ModbusClientProtocol(
             framer,
             self.comm_params,
             on_connect_callback,
         )
-        self.no_resend_on_retry = no_resend_on_retry
-        self.broadcast_enable = broadcast_enable
 
         # Common variables.
         self.use_udp = False
@@ -119,10 +113,9 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         while count <= self.retries:
             async with self._lock:
                 req = self.build_response(request)
-                if not count or not self.no_resend_on_retry:
-                    self.ctx.framer.resetFrame()
-                    self.ctx.send(packet)
-                if self.broadcast_enable and not request.slave_id:
+                self.ctx.framer.resetFrame()
+                self.ctx.send(packet)
+                if not request.slave_id:
                     resp = None
                     break
                 try:
@@ -184,9 +177,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         self,
         framer: FramerType,
         retries: int,
-        retry_on_empty: bool,
-        broadcast_enable: bool,
-        no_resend_on_retry: bool,
         comm_params: CommParams | None = None,
     ) -> None:
         """Initialize a client instance."""
@@ -194,9 +184,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         if comm_params:
             self.comm_params = comm_params
         self.retries = retries
-        self.broadcast_enable = bool(broadcast_enable)
-        self.retry_on_empty = retry_on_empty
-        self.no_resend_on_retry = no_resend_on_retry
         self.slaves: list[int] = []
 
         # Common variables.
@@ -205,7 +192,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         )(ClientDecoder(), self)
         self.transaction = SyncModbusTransactionManager(
             self,
-            retry_on_empty,
             self.retries,
         )
         self.reconnect_delay_current = self.comm_params.reconnect_delay or 0

@@ -207,7 +207,7 @@ async def client_calls(client):
     """Test client API."""
     Log.debug("--> Client calls starting.")
     try:
-        resp = await client.read_holding_registers(address=124, count=4, slave=0)
+        resp = await client.read_holding_registers(address=124, count=4, slave=1)
     except ModbusException as exc:
         txt = f"ERROR: exception in pymodbus {exc}"
         Log.error(txt)

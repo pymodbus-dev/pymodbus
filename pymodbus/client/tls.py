@@ -29,9 +29,6 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
-    :param retry_on_empty: Retry on empty response.
-    :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
     :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
 
     .. tip::
@@ -65,9 +62,6 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        retry_on_empty: bool = False,
-        broadcast_enable: bool = False,
-        no_resend_on_retry: bool = False,
         on_connect_callback: Callable[[bool], None] | None = None,
     ):
         """Initialize Asyncio Modbus TLS Client."""
@@ -87,9 +81,6 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
             "",
             framer=framer,
             retries=retries,
-            retry_on_empty=retry_on_empty,
-            broadcast_enable=broadcast_enable,
-            no_resend_on_retry=no_resend_on_retry,
             on_connect_callback=on_connect_callback,
         )
 
@@ -133,9 +124,6 @@ class ModbusTlsClient(ModbusTcpClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
-    :param retry_on_empty: Retry on empty response.
-    :param broadcast_enable: True to treat id 0 as broadcast address.
-    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
 
     .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect, from
@@ -170,9 +158,6 @@ class ModbusTlsClient(ModbusTcpClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        retry_on_empty: bool = False,
-        broadcast_enable: bool = False,
-        no_resend_on_retry: bool = False,
     ):
         """Initialize Modbus TLS Client."""
         self.comm_params = CommParams(
@@ -190,9 +175,6 @@ class ModbusTlsClient(ModbusTcpClient):
             "",
             framer=framer,
             retries=retries,
-            retry_on_empty=retry_on_empty,
-            broadcast_enable=broadcast_enable,
-            no_resend_on_retry=no_resend_on_retry,
         )
 
     @classmethod

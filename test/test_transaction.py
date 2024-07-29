@@ -42,7 +42,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tls = ModbusTlsFramer(decoder=self.decoder, client=None)
         self._rtu = ModbusRtuFramer(decoder=self.decoder, client=None)
         self._ascii = ModbusAsciiFramer(decoder=self.decoder, client=None)
-        self._manager = SyncModbusTransactionManager(self.client, False, 3)
+        self._manager = SyncModbusTransactionManager(self.client, 3)
 
     # ----------------------------------------------------------------------- #
     # Modbus transaction manager
@@ -112,12 +112,11 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         request.get_response_pdu_size.return_value = 10
         request.slave_id = 1
         request.function_code = 222
-        trans = SyncModbusTransactionManager(client, False, 3)
+        trans = SyncModbusTransactionManager(client, 3)
         mock_recv.reset_mock(
             return_value=b"abcdef"
         )
         assert trans.retries == 3
-        assert not trans.retry_on_empty
 
         mock_get_transaction.return_value = b"response"
         response = trans.execute(request)
@@ -132,7 +131,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert isinstance(response, ModbusIOException)
 
         # No response with retries
-        trans.retry_on_empty = True
         mock_recv.reset_mock(
             side_effect=iter([b"", b"abcdef"])
         )
@@ -144,7 +142,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
             side_effect=iter([b"abcdef", b"deadbe", b"123456"])
         )
         client.comm_params.handle_local_echo = True
-        trans.retry_on_empty = False
         assert trans.execute(request).message == "[Input/Output] Wrong local echo"
         client.comm_params.handle_local_echo = False
 
@@ -165,14 +162,12 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert isinstance(trans.execute(request), ModbusIOException)
 
         # Broadcast
-        client.params.broadcast_enable = True
         request.slave_id = 0
         response = trans.execute(request)
         assert response == b"Broadcast write sent - no response expected"
 
         # Broadcast w/ Local echo
         client.comm_params.handle_local_echo = True
-        client.params.broadcast_enable = True
         mock_recv.reset_mock(return_value=b"deadbeef")
         request.slave_id = 0
         response = trans.execute(request)

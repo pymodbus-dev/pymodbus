@@ -14,7 +14,7 @@ class ReadRegistersRequestBase(ModbusRequest):
 
     _rtu_frame_size = 8
 
-    def __init__(self, address, count, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, address, count, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param address: The address to start the read from
@@ -62,7 +62,7 @@ class ReadRegistersResponseBase(ModbusResponse):
 
     _rtu_byte_count_pos = 2
 
-    def __init__(self, values, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, values, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new instance.
 
         :param values: The values to write to
@@ -124,7 +124,7 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
     function_code = 3
     function_code_name = "read_holding_registers"
 
-    def __init__(self, address=None, count=None, slave=0, transaction=0, protocol=0, skip_encode=0):
+    def __init__(self, address=None, count=None, slave=1, transaction=0, protocol=0, skip_encode=0):
         """Initialize a new instance of the request.
 
         :param address: The starting address to read from
@@ -184,7 +184,7 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
     function_code = 4
     function_code_name = "read_input_registers"
 
-    def __init__(self, address=None, count=None, slave=0, transaction=0, protocol=0, skip_encode=0):
+    def __init__(self, address=None, count=None, slave=1, transaction=0, protocol=0, skip_encode=0):
         """Initialize a new instance of the request.
 
         :param address: The starting address to read from
@@ -251,7 +251,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
     function_code_name = "read_write_multiple_registers"
     _rtu_byte_count_pos = 10
 
-    def __init__(self, read_address=0x00, read_count=0, write_address=0x00, write_registers=None, slave=0, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, read_address=0x00, read_count=0, write_address=0x00, write_registers=None, slave=1, transaction=0, protocol=0, skip_encode=False):
         """Initialize a new request message.
 
         :param read_address: The address to start reading from

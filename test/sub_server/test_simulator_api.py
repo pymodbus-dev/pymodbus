@@ -141,3 +141,145 @@ class TestSimulatorApi:
         task.cancel()
         await task
         await simulator.stop()
+
+    @pytest.mark.asyncio
+    async def test_registers_json_valid(self, client, simulator):
+        """Test the /restapi/registers endpoint with valid parameters."""
+        url = f"http://{simulator.http_host}:{simulator.http_port}/restapi/registers"
+        data = {
+            "submit": "Registers",
+            "range_start": 16,
+            "range_stop": 16,
+        }
+
+        async with client.post(url, json=data) as resp:
+            assert resp.status == 200
+
+            json_response = await resp.json()
+
+            assert "result" in json_response
+            assert "footer" in json_response
+            assert "register_types" in json_response
+            assert "register_actions" in json_response
+            assert "register_rows" in json_response
+
+            assert json_response["result"] == "ok"
+
+            # Check that we got the correct register and correct fields. Ignore
+            # the contents of the ones that haven't been explicitly set in
+            # config, just make sure they are present.
+            assert json_response["register_rows"][0]["index"] == "16"
+            assert json_response["register_rows"][0]["type"] == "uint16"
+            assert json_response["register_rows"][0]["value"] == "3124"
+            assert "action" in json_response["register_rows"][0]
+            assert "access" in json_response["register_rows"][0]
+            assert "count_read" in json_response["register_rows"][0]
+            assert "count_write" in json_response["register_rows"][0]
+
+    @pytest.mark.asyncio
+    async def test_registers_json_invalid_params(self, client, simulator):
+        """Test the /restapi/registers endpoint with invalid parameters."""
+        url = f"http://{simulator.http_host}:{simulator.http_port}/restapi/registers"
+        data = {
+            "submit": "Registers",
+            "range_start": "invalid",
+            "range_stop": 5,
+        }
+
+        async with client.post(url, json=data) as resp:
+            # At the moment, errors are stored in the data. Only malformed
+            # requests or bad endpoints will return a non-200 status code.
+            assert resp.status == 200
+
+            json_response = await resp.json()
+
+            assert "error" in json_response
+            assert json_response["error"] == "Invalid range parameters"
+
+    @pytest.mark.asyncio
+    async def test_registers_json_non_existent_range(self, client, simulator):
+        """Test the /restapi/registers endpoint with a non-existent range."""
+        url = f"http://{simulator.http_host}:{simulator.http_port}/restapi/registers"
+        data = {
+            "submit": "Registers",
+            "range_start": 5,
+            "range_stop": 7,
+        }
+
+        async with client.post(url, json=data) as resp:
+            assert resp.status == 200
+
+            json_response = await resp.json()
+            assert json_response["result"] == "ok"
+
+            # The simulator should respond with all of the ranges, but the ones that
+            # do not exist are marked as "invalid"
+            assert len(json_response["register_rows"]) == 3
+
+            assert json_response["register_rows"][0]["index"] == "5"
+            assert json_response["register_rows"][0]["type"] == "bits"
+            assert json_response["register_rows"][1]["index"] == "6"
+            assert json_response["register_rows"][1]["type"] == "invalid"
+            assert json_response["register_rows"][2]["index"] == "7"
+            assert json_response["register_rows"][2]["type"] == "bits"
+
+    @pytest.mark.asyncio
+    async def test_registers_json_set_value(self, client, simulator):
+        """Test the /restapi/registers endpoint with a set value request."""
+        url = f"http://{simulator.http_host}:{simulator.http_port}/restapi/registers"
+        data = {
+            "submit": "Set",
+            "register": 16,
+            "value": 1234,
+            # The range parameters are her edue to the API not being properly
+            # formed (yet). They are equivalent of form fields that should not
+            # be present in a smark json request.
+            "range_start": 16,
+            "range_stop": 16,
+        }
+
+        async with client.post(url, json=data) as resp:
+            assert resp.status == 200
+
+            json_response = await resp.json()
+
+            assert "result" in json_response
+            assert json_response["result"] == "ok"
+
+            # Check that the value was set correctly
+            assert json_response["register_rows"][0]["index"] == "16"
+            assert json_response["register_rows"][0]["value"] == "1234"
+
+        # Double check that the value was set correctly, not just the response
+        data2 = {
+            "submit": "Registers",
+            "range_start": 16,
+            "range_stop": 16,
+        }
+        async with client.post(url, json=data2) as resp:
+            assert resp.status == 200
+
+            json_response = await resp.json()
+            assert json_response["result"] == "ok"
+
+            assert json_response["register_rows"][0]["index"] == "16"
+            assert json_response["register_rows"][0]["value"] == "1234"
+
+    @pytest.mark.asyncio
+    async def test_registers_json_set_invalid_value(self, client, simulator):
+        """Test the /restapi/registers endpoint with an invalid set value request."""
+        url = f"http://{simulator.http_host}:{simulator.http_port}/restapi/registers"
+        data = {
+            "submit": "Set",
+            "register": 16,
+            "value": "invalid",
+        }
+
+        async with client.post(url, json=data) as resp:
+            assert resp.status == 200
+
+            json_response = await resp.json()
+
+            assert "error" in json_response
+            # Do not check for error content. It is currently
+            # unhandled, so it is not guaranteed to be consistent.

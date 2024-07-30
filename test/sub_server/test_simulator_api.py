@@ -384,3 +384,83 @@ class TestSimulatorApi:
 
             json_response = await resp.json()
             assert json_response["result"] == "ok"
+
+    @pytest.mark.asyncio
+    async def test_log_json_download(self, client, simulator):
+        """
+        Test the /restapi/log endpoint with a download request.
+
+        This test is just a placeholder at the moment to make sure the endpoint
+        is reachable. The actual functionality is not implemented.
+        """
+        url = f"http://{simulator.http_host}:{simulator.http_port}/restapi/log"
+        data = {
+            "submit": "Download",
+        }
+
+        # The call is undefined. Just make sure it returns 200
+        async with client.post(url, json=data) as resp:
+            assert resp.status == 200
+
+            json_response = await resp.json()
+            assert json_response["error"] == "log endpoint not implemented"
+
+    @pytest.mark.asyncio
+    async def test_log_json_monitor(self, client, simulator):
+        """
+        Test the /restapi/log endpoint with a monitor request.
+
+        This test is just a placeholder at the moment to make sure the endpoint
+        is reachable. The actual functionality is not implemented.
+        """
+        url = f"http://{simulator.http_host}:{simulator.http_port}/restapi/log"
+        data = {
+            "submit": "Monitor",
+        }
+
+        # The call is undefined. Just make sure it returns 200
+        async with client.post(url, json=data) as resp:
+            assert resp.status == 200
+
+            json_response = await resp.json()
+            assert json_response["error"] == "log endpoint not implemented"
+
+    @pytest.mark.asyncio
+    async def test_log_json_clear(self, client, simulator):
+        """
+        Test the /restapi/log endpoint with a clear request.
+
+        This test is just a placeholder at the moment to make sure the endpoint
+        is reachable. The actual functionality is not implemented.
+        """
+        url = f"http://{simulator.http_host}:{simulator.http_port}/restapi/log"
+        data = {
+            "submit": "Clear",
+        }
+
+        # The call is undefined. Just make sure it returns 200
+        async with client.post(url, json=data) as resp:
+            assert resp.status == 200
+
+            json_response = await resp.json()
+            assert json_response["error"] == "log endpoint not implemented"
+
+    @pytest.mark.asyncio
+    async def test_server_json_restart(self, client, simulator):
+        """
+        Test the /restapi/server endpoint with a restart request.
+
+        This test is just a placeholder at the moment to make sure the endpoint
+        is reachable. The actual functionality is not implemented.
+        """
+        url = f"http://{simulator.http_host}:{simulator.http_port}/restapi/server"
+        data = {
+            "submit": "Restart",
+        }
+
+        # The call is undefined. Just make sure it returns 200
+        async with client.post(url, json=data) as resp:
+            assert resp.status == 200
+
+            json_response = await resp.json()
+            assert json_response["error"] == "server endpoint not implemented"

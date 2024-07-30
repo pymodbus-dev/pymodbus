@@ -513,9 +513,95 @@ class ModbusSimulatorServer:
 
         return json_response
 
-    def build_json_calls(self, params):
-        """Build html calls page."""
-        return f"json build calls: {params}"
+    def build_json_calls(self, params: dict) -> dict:
+        """Build json calls response."""
+        result_txt, foot = self.helper_handle_submit(params, {
+            "Reset": self.action_reset,
+            "Add": self.action_add,
+            "Simulate": self.action_simulate,
+        })
+        if not foot:
+            foot = "Monitoring active" if self.call_monitor.active else "not active"
+        if not result_txt:
+            result_txt = "ok"
+
+        function_error = []
+        for i, txt in (
+            (1, "IllegalFunction"),
+            (2, "IllegalAddress"),
+            (3, "IllegalValue"),
+            (4, "SlaveFailure"),
+            (5, "Acknowledge"),
+            (6, "SlaveBusy"),
+            (7, "MemoryParityError"),
+            (10, "GatewayPathUnavailable"),
+            (11, "GatewayNoResponse"),
+        ):
+            function_error.append({
+                "value": i,
+                "text": txt,
+                "selected": i == self.call_response.error_response
+            })
+
+        range_start = (
+            self.call_monitor.range_start
+            if self.call_monitor.range_start != -1
+            else None
+        )
+        range_stop = (
+            self.call_monitor.range_stop
+            if self.call_monitor.range_stop != -1
+            else None
+        )
+
+        function_codes = []
+        for function in self.request_lookup.values():
+            function_codes.append({
+                "value": function.function_code,    # type: ignore[attr-defined]
+                "text": function.function_code_name,    # type: ignore[attr-defined]
+                "selected": function.function_code == self.call_monitor.function  # type: ignore[attr-defined]
+            })
+
+        simulation_action = "ACTIVE" if self.call_response.active != RESPONSE_INACTIVE else ""
+
+        max_len = MAX_FILTER if self.call_monitor.active else 0
+        while len(self.call_list) > max_len:
+            del self.call_list[0]
+        call_rows = []
+        for entry in reversed(self.call_list):
+            call_rows.append({
+                "call": entry.call,
+                "fc": entry.fc,
+                "address": entry.address,
+                "count": entry.count,
+                "data": entry.data.decode()
+            })
+
+        json_response = {
+            "simulation_action": simulation_action,
+            "range_start": range_start,
+            "range_stop": range_stop,
+            "function_codes": function_codes,
+            "function_show_hex_checked": self.call_monitor.hex,
+            "function_show_decoded_checked": self.call_monitor.decode,
+            "function_response_normal_checked": self.call_response.active == RESPONSE_NORMAL,
+            "function_response_error_checked": self.call_response.active == RESPONSE_ERROR,
+            "function_response_empty_checked": self.call_response.active == RESPONSE_EMPTY,
+            "function_response_junk_checked": self.call_response.active == RESPONSE_JUNK,
+            "function_response_split_checked": self.call_response.split > 0,
+            "function_response_split_delay": self.call_response.split,
+            "function_response_cr_checked": self.call_response.change_rate > 0,
+            "function_response_cr_pct": self.call_response.change_rate,
+            "function_response_delay": self.call_response.delay,
+            "function_response_junk": self.call_response.junk_len,
+            "function_error": function_error,
+            "function_response_clear_after": self.call_response.clear_after,
+            "call_rows": call_rows,
+            "foot": foot,
+            "result": result_txt
+        }
+
+        return json_response
 
     def build_json_log(self, params):
         """Build json log page."""

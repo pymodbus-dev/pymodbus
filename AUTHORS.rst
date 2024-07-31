@@ -33,6 +33,7 @@ Thanks to
 - Dominique Martinet
 - Dries
 - duc996
+- Esco441-91
 - Farzad Panahi
 - Fredo70
 - Gao Fang
@@ -54,6 +55,7 @@ Thanks to
 - julian
 - Justin Standring
 - Kenny Johansson
+- Martyy
 - Matthias Straka
 - laund
 - Logan Gunthorpe

@@ -11,9 +11,12 @@ PyModbus - A Python Modbus Stack
 
 Pymodbus is a full Modbus protocol implementation offering client/server with synchronous/asynchronous API a well as simulators.
 
-Current release is `3.6.9 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.6.9>`_.
+Current release is `3.7.0 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.7.0>`_.
 
 Bleeding edge (not released) is `dev <https://github.com/pymodbus-dev/pymodbus/tree/dev>`_.
+
+Waiting for v3.8.0 (not released) is `wait3.8.0 <https://github.com/pymodbus-dev/pymodbus/tree/wait3.8.0>`_. This contains
+dev + merged pull requests that have API changes, and thus have to wait.
 
 All changes are described in `release notes <https://pymodbus.readthedocs.io/en/latest/source/changelog.html>`_
 and all API changes are `documented <https://pymodbus.readthedocs.io/en/latest/source/api_changes.html>`_

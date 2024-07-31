@@ -8,6 +8,47 @@ helps make pymodbus a better product.
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
 
+Version 3.7.0
+-------------
+* Remove unneeded client parameters. (#2272)
+* simulator: Fix context single parameter (#2264)
+* buildPacket can be used for Request and Response (#2262)
+* More descriptive decoder exceptions (#2260)
+* Cleanup ReadWriteMultipleRegistersResponse and testing (#2261)
+* Feature/simulator addressing (#2258)
+* Framer optimization (apart from RTU). (#2146)
+* Use mock.patch.object to avoid protected access errors. (#2251)
+* Fix some mypy type checking errors in test_transaction.py (#2250)
+* Update check for windows platform (#2247)
+* Logging 100% coverage. (#2248)
+* CI, Block draft PRs to use CPU minutes. (#2245, #2246)
+* Remove kwargs client. (#2243, #2244, #2257)
+* remove kwargs PDU messagees. (#2240)
+* Remove message_generator example (not part of API). (#2239)
+* Update dev dependencies (#2241)
+* Fix ruff check in CI (#2242)
+* Remove kwargs. (#2236, #2237)
+* Simulator config, kwargs -> parameters. (#2235)
+* Refactor transaction handling to better separate async and sync code. (#2232)
+* Simplify some BinaryPayload pack operations (#2224)
+* Fix writing to serial (rs485) on windows os. (#2191)
+* Remember to remove serial writer. (#2209)
+* Transaction_id for serial == 0. (#2208)
+* Solve pylint error.
+* Sync TLS needs time before reading frame (#2186)
+* Update transaction.py (#2174)
+* PDU classes --> pymodbus/pdu. (#2160)
+* Speed up no data detection. (#2150)
+* RTU decode hunt part. (#2138)
+* Dislodge client classes from modbusProtocol. (#2137)
+* Merge new message layer and old framer directory. (#2135)
+* Coverage == 91%. (#2132)
+* Remove binary_framer. (#2130)
+* on_reconnect_callback --> on_connect_callback. (#2122)
+* Remove certfile,keyfile,password from TLS client. (#2121)
+* Drop support for python 3.8 (#2112)
+
+
 Version 3.6.9
 -------------
 * Remove python 3.8 from CI

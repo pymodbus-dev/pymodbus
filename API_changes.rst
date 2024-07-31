@@ -16,6 +16,7 @@ API changes 3.7.0
 - PDU classes moved to pymodbus/pdu
 - Simulator config custom actions kwargs -> parameters
 - Non defined parameters (kwargs) no longer valid
+- Drop support for Python 3.8 (its no longer tested, but will probably work)
 
 
 API changes 3.6.0

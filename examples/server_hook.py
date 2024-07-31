@@ -7,7 +7,7 @@ manipulate the messages to/from the modbus server
 import asyncio
 import logging
 
-from pymodbus import Framer, pymodbus_apply_logging_config
+from pymodbus import FramerType, pymodbus_apply_logging_config
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
@@ -17,11 +17,7 @@ from pymodbus.server import ModbusTcpServer
 
 
 class Manipulator:
-    """A Class to run the server.
-
-    Using a class allows the easy use of global variables, but
-    are not strictly needed
-    """
+    """A Class to run the server."""
 
     message_count: int = 1
     server: ModbusTcpServer = None
@@ -63,7 +59,7 @@ class Manipulator:
         )
         self.server = ModbusTcpServer(
             context,
-            Framer.SOCKET,
+            FramerType.SOCKET,
             None,
             ("127.0.0.1", 5020),
             request_tracer=self.server_request_tracer,

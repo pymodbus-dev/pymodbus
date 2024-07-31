@@ -17,17 +17,16 @@ from pymodbus.utilities import pack_bitstring, unpack_bitstring
 class RedisSlaveContext(ModbusBaseSlaveContext):
     """This is a modbus slave context using redis as a backing store."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, host="localhost", port=6379, prefix="pymodbus", client=None):
         """Initialize the datastores.
 
         :param host: The host to connect to
         :param port: The port to connect to
         :param prefix: A prefix for the keys
+        :param client: redis client
         """
-        host = kwargs.get("host", "localhost")
-        port = kwargs.get("port", 6379)
-        self.prefix = kwargs.get("prefix", "pymodbus")
-        self.client = kwargs.get("client", redis.Redis(host=host, port=port))
+        self.prefix = prefix
+        self.client = client if client else redis.Redis(host=host, port=port)
         self._build_mapping()
 
     def __str__(self):

@@ -85,7 +85,7 @@ class TestSimulator:
                 "addr": [31, 32],
                 "value": 50,
                 "action": "random",
-                "kwargs": {"minval": 10, "maxval": 80},
+                "parameters": {"minval": 10, "maxval": 80},
             },
         ],
         "float32": [
@@ -151,7 +151,7 @@ class TestSimulator:
         Cell(type=CellType.UINT32, value=5, action=1),
         Cell(type=CellType.NEXT, value=17320),  # 30
         Cell(
-            type=CellType.UINT32, action=2, action_kwargs={"minval": 10, "maxval": 80}
+            type=CellType.UINT32, action=2, action_parameters={"minval": 10, "maxval": 80}
         ),
         Cell(type=CellType.NEXT, value=50),
         Cell(type=CellType.FLOAT32, access=True, value=17731),
@@ -215,7 +215,7 @@ class TestSimulator:
                 assert reg.value == test_cell.value, f"at index {i} - {offset}"
                 assert reg.action == test_cell.action, f"at index {i} - {offset}"
                 assert (
-                    reg.action_kwargs == test_cell.action_kwargs
+                    reg.action_parameters == test_cell.action_parameters
                 ), f"at index {i} - {offset}"
                 assert (
                     reg.count_read == test_cell.count_read
@@ -404,10 +404,10 @@ class TestSimulator:
         exc_simulator.setValues(FX_WRITE_BIT, 84, [True])
         exc_simulator.setValues(FX_WRITE_BIT, 86, [True, False, True])
         result = exc_simulator.getValues(FX_READ_BIT, 80, 8)
-        assert [True, False] * 4 == result
+        assert result == [True, False] * 4
         exc_simulator.setValues(FX_WRITE_BIT, 88, [False])
         result = exc_simulator.getValues(FX_READ_BIT, 86, 3)
-        assert [True, False, False] == result
+        assert result == [True, False, False]
         exc_simulator.setValues(FX_WRITE_BIT, 80, [True] * 17)
 
     def test_simulator_get_text(self):
@@ -509,13 +509,13 @@ class TestSimulator:
         exc_setup = copy.deepcopy(self.default_config)
         exc_simulator = ModbusSimulatorContext(exc_setup, None)
         action = exc_simulator.action_name_to_id[Label.increment]
-        kwargs = {
+        parameters = {
             "minval": minval,
             "maxval": maxval,
         }
         exc_simulator.registers[30].type = celltype
         exc_simulator.registers[30].action = action
-        exc_simulator.registers[30].action_kwargs = kwargs
+        exc_simulator.registers[30].action_parameters = parameters
         exc_simulator.registers[31].type = CellType.NEXT
 
         is_int = celltype != CellType.FLOAT32
@@ -557,13 +557,13 @@ class TestSimulator:
         exc_setup = copy.deepcopy(self.default_config)
         exc_simulator = ModbusSimulatorContext(exc_setup, None)
         action = exc_simulator.action_name_to_id[Label.random]
-        kwargs = {
+        parameters = {
             "minval": minval,
             "maxval": maxval,
         }
         exc_simulator.registers[30].type = celltype
         exc_simulator.registers[30].action = action
-        exc_simulator.registers[30].action_kwargs = kwargs
+        exc_simulator.registers[30].action_parameters = parameters
         exc_simulator.registers[31].type = CellType.NEXT
         is_int = celltype != CellType.FLOAT32
         reg_count = 1 if celltype in (CellType.BITS, CellType.UINT16) else 2

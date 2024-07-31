@@ -52,10 +52,11 @@ import asyncio
 import dataclasses
 import ssl
 from abc import abstractmethod
+from collections.abc import Callable, Coroutine
 from contextlib import suppress
 from enum import Enum
 from functools import partial
-from typing import Any, Callable, Coroutine
+from typing import Any
 
 from pymodbus.logging import Log
 from pymodbus.transport.serialtransport import create_serial_connection
@@ -82,7 +83,7 @@ class CommParams:
     comm_type: CommType | None = None
     reconnect_delay: float | None = None
     reconnect_delay_max: float = 0.0
-    timeout_connect: float | None = None
+    timeout_connect: float = 0.0
     host: str = "localhost" # On some machines this will now be ::1
     port: int = 0
     source_address: tuple[str, int] | None = None
@@ -201,7 +202,6 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 parity=self.comm_params.parity,
                 stopbits=self.comm_params.stopbits,
                 timeout=self.comm_params.timeout_connect,
-                exclusive=True,
             )
             return
         if self.comm_params.comm_type == CommType.UDP:

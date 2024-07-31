@@ -1,16 +1,16 @@
 """Modbus client async serial communication."""
 from __future__ import annotations
 
-import asyncio
 import time
+from collections.abc import Callable
 from functools import partial
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
-from pymodbus.framer import Framer
+from pymodbus.framer import FramerType
 from pymodbus.logging import Log
-from pymodbus.transport import CommType
+from pymodbus.transport import CommParams, CommType
 from pymodbus.utilities import ModbusTransactionState
 
 
@@ -24,7 +24,7 @@ except ImportError:
         # type checkers do not understand the Raise RuntimeError in __init__()
         import serial
 
-class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
+class AsyncModbusSerialClient(ModbusBaseClient):
     """**AsyncModbusSerialClient**.
 
     Fixed parameters:
@@ -33,24 +33,23 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
 
     Optional parameters:
 
+    :param framer: Framer name, default FramerType.RTU
     :param baudrate: Bits per second.
     :param bytesize: Number of bits per byte 7-8.
     :param parity: 'E'ven, 'O'dd or 'N'one
     :param stopbits: Number of stop bits 1, 1.5, 2.
     :param handle_local_echo: Discard local echo from dongle.
-
-    Common optional parameters:
-
-    :param framer: Framer enum name
-    :param timeout: Timeout for a request, in seconds.
-    :param retries: Max number of retries per request.
-    :param retry_on_empty: Retry on empty response.
-    :param broadcast_enable: True to treat id 0 as broadcast address.
+    :param name: Set communication name, used in logging
     :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
+    :param timeout: Timeout for a connection request, in seconds.
+    :param retries: Max number of retries per request.
     :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
-    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
-    :param kwargs: Experimental parameters.
+
+    .. tip::
+        **reconnect_delay** doubles automatically with each unsuccessful connect, from
+        **reconnect_delay** to **reconnect_delay_max**.
+        Set `reconnect_delay=0` to avoid automatic reconnection.
 
     Example::
 
@@ -66,15 +65,21 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         port: str,
-        framer: Framer = Framer.RTU,
+        framer: FramerType = FramerType.RTU,
         baudrate: int = 19200,
         bytesize: int = 8,
         parity: str = "N",
         stopbits: int = 1,
-        **kwargs: Any,
+        handle_local_echo: bool = False,
+        name: str = "comm",
+        reconnect_delay: float = 0.1,
+        reconnect_delay_max: float = 300,
+        timeout: float = 3,
+        retries: int = 3,
+        on_connect_callback: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
         if PYSERIAL_MISSING:
@@ -82,24 +87,25 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
                 "Serial client requires pyserial "
                 'Please install with "pip install pyserial" and try again.'
             )
-        asyncio.Protocol.__init__(self)
-        ModbusBaseClient.__init__(
-            self,
-            framer,
-            CommType=CommType.SERIAL,
+        self.comm_params = CommParams(
+            comm_type=CommType.SERIAL,
             host=port,
             baudrate=baudrate,
             bytesize=bytesize,
             parity=parity,
             stopbits=stopbits,
-            **kwargs,
+            handle_local_echo=handle_local_echo,
+            comm_name=name,
+            reconnect_delay=reconnect_delay,
+            reconnect_delay_max=reconnect_delay_max,
+            timeout_connect=timeout,
         )
-
-    async def connect(self) -> bool:
-        """Connect Async client."""
-        self.reset_delay()
-        Log.debug("Connecting to {}.", self.comm_params.host)
-        return await self.base_connect()
+        ModbusBaseClient.__init__(
+            self,
+            framer,
+            retries,
+            on_connect_callback,
+        )
 
     def close(self, reconnect: bool = False) -> None:
         """Close connection."""
@@ -115,25 +121,22 @@ class ModbusSerialClient(ModbusBaseSyncClient):
 
     Optional parameters:
 
+    :param framer: Framer name, default FramerType.RTU
     :param baudrate: Bits per second.
     :param bytesize: Number of bits per byte 7-8.
     :param parity: 'E'ven, 'O'dd or 'N'one
     :param stopbits: Number of stop bits 0-2.
     :param handle_local_echo: Discard local echo from dongle.
-
-    Common optional parameters:
-
-    :param framer: Framer enum name
-    :param timeout: Timeout for a request, in seconds.
-    :param retries: Max number of retries per request.
-    :param retry_on_empty: Retry on empty response.
-    :param strict: Strict timing, 1.5 character between requests.
-    :param broadcast_enable: True to treat id 0 as broadcast address.
+    :param name: Set communication name, used in logging
     :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
-    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
-    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
-    :param kwargs: Experimental parameters.
+    :param timeout: Timeout for a connection request, in seconds.
+    :param retries: Max number of retries per request.
+
+    .. tip::
+        **reconnect_delay** doubles automatically with each unsuccessful connect, from
+        **reconnect_delay** to **reconnect_delay_max**.
+        Set `reconnect_delay=0` to avoid automatic reconnection.
 
     Example::
 
@@ -155,33 +158,41 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     inter_byte_timeout: float = 0
     silent_interval: float = 0
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         port: str,
-        framer: Framer = Framer.RTU,
+        framer: FramerType = FramerType.RTU,
         baudrate: int = 19200,
         bytesize: int = 8,
         parity: str = "N",
         stopbits: int = 1,
-        strict: bool = True,
-        **kwargs: Any,
+        handle_local_echo: bool = False,
+        name: str = "comm",
+        reconnect_delay: float = 0.1,
+        reconnect_delay_max: float = 300,
+        timeout: float = 3,
+        retries: int = 3,
     ) -> None:
         """Initialize Modbus Serial Client."""
-        super().__init__(
-            framer,
-            CommType=CommType.SERIAL,
+        self.comm_params = CommParams(
+            comm_type=CommType.SERIAL,
             host=port,
             baudrate=baudrate,
             bytesize=bytesize,
             parity=parity,
             stopbits=stopbits,
-            **kwargs,
+            handle_local_echo=handle_local_echo,
+            comm_name=name,
+            reconnect_delay=reconnect_delay,
+            reconnect_delay_max=reconnect_delay_max,
+            timeout_connect=timeout,
+        )
+        super().__init__(
+            framer,
+            retries,
         )
         self.socket: serial.Serial | None = None
-        self.strict = bool(strict)
-
         self.last_frame_end = None
-
         self._t0 = float(1 + bytesize + stopbits) / baudrate
 
         # Check every 4 bytes / 2 registers if the reading is ready
@@ -201,7 +212,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Connect internal."""
         return self.connect()
 
-    def connect(self):
+    def connect(self) -> bool:
         """Connect to the modbus serial server."""
         if self.socket:
             return True
@@ -215,8 +226,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
                 parity=self.comm_params.parity,
                 exclusive=True,
             )
-            if self.strict:
-                self.socket.inter_byte_timeout = self.inter_byte_timeout
+            self.socket.inter_byte_timeout = self.inter_byte_timeout
             self.last_frame_end = None
         # except serial.SerialException as msg:
         # pyserial raises undocumented exceptions like termios
@@ -235,25 +245,26 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Return waiting bytes."""
         return getattr(self.socket, "in_waiting") if hasattr(self.socket, "in_waiting") else getattr(self.socket, "inWaiting")()
 
-    def send(self, request):
+    def send(self, request: bytes) -> int:
         """Send data on the underlying socket.
 
         If receive buffer still holds some data then flush it.
 
         Sleep if last send finished less than 3.5 character times ago.
         """
-        super().send(request)
+        super()._start_send()
         if not self.socket:
             raise ConnectionException(str(self))
         if request:
             if waitingbytes := self._in_waiting():
                 result = self.socket.read(waitingbytes)
                 Log.warning("Cleanup recv buffer before send: {}", result, ":hex")
-            size = self.socket.write(request)
+            if (size := self.socket.write(request)) is None:
+                size = 0
             return size
         return 0
 
-    def _wait_for_data(self):
+    def _wait_for_data(self) -> int:
         """Wait for data."""
         size = 0
         more_data = False
@@ -272,9 +283,8 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             time.sleep(self._recv_interval)
         return size
 
-    def recv(self, size):
+    def recv(self, size: int | None) -> bytes:
         """Read data from the underlying descriptor."""
-        super().recv(size)
         if not self.socket:
             raise ConnectionException(str(self))
         if size is None:
@@ -284,7 +294,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         result = self.socket.read(size)
         return result
 
-    def is_socket_open(self):
+    def is_socket_open(self) -> bool:
         """Check if socket is open."""
         if self.socket:
             return self.socket.is_open

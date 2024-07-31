@@ -10,19 +10,19 @@ kept as a result of a pre-computed lookup dictionary.
 """
 
 # pylint: disable=missing-type-doc
-from typing import Callable, Dict
+from collections.abc import Callable
 
-from pymodbus import bit_read_message as bit_r_msg
-from pymodbus import bit_write_message as bit_w_msg
-from pymodbus import diag_message as diag_msg
-from pymodbus import file_message as file_msg
-from pymodbus import mei_message as mei_msg
-from pymodbus import other_message as o_msg
-from pymodbus import pdu
-from pymodbus import register_read_message as reg_r_msg
-from pymodbus import register_write_message as reg_w_msg
 from pymodbus.exceptions import MessageRegisterException, ModbusException
 from pymodbus.logging import Log
+from pymodbus.pdu import bit_read_message as bit_r_msg
+from pymodbus.pdu import bit_write_message as bit_w_msg
+from pymodbus.pdu import diag_message as diag_msg
+from pymodbus.pdu import file_message as file_msg
+from pymodbus.pdu import mei_message as mei_msg
+from pymodbus.pdu import other_message as o_msg
+from pymodbus.pdu import pdu
+from pymodbus.pdu import register_read_message as reg_r_msg
+from pymodbus.pdu import register_write_message as reg_w_msg
 
 
 # --------------------------------------------------------------------------- #
@@ -77,7 +77,7 @@ class ServerDecoder:
     ]
 
     @classmethod
-    def getFCdict(cls) -> Dict[int, Callable]:
+    def getFCdict(cls) -> dict[int, Callable]:
         """Build function code - class list."""
         return {f.function_code: f for f in cls.__function_table}  # type: ignore[attr-defined]
 
@@ -85,7 +85,7 @@ class ServerDecoder:
         """Initialize the client lookup tables."""
         functions = {f.function_code for f in self.__function_table}  # type: ignore[attr-defined]
         self.lookup = self.getFCdict()
-        self.__sub_lookup: Dict[int, Dict[int, Callable]] = {f: {} for f in functions}
+        self.__sub_lookup: dict[int, dict[int, Callable]] = {f: {} for f in functions}
         for f in self.__sub_function_table:
             self.__sub_lookup[f.function_code][f.sub_function_code] = f  # type: ignore[attr-defined]
 
@@ -120,7 +120,7 @@ class ServerDecoder:
         function_code = int(data[0])
         if not (request := self.lookup.get(function_code, lambda: None)()):
             Log.debug("Factory Request[{}]", function_code)
-            request = pdu.IllegalFunctionRequest(function_code)
+            request = pdu.IllegalFunctionRequest(function_code, 0, 0, 0, False)
         else:
             fc_string = "{}: {}".format(  # pylint: disable=consider-using-f-string
                 str(self.lookup[function_code])  # pylint: disable=use-maxsplit-arg
@@ -214,7 +214,7 @@ class ClientDecoder:
         """Initialize the client lookup tables."""
         functions = {f.function_code for f in self.function_table}  # type: ignore[attr-defined]
         self.lookup = {f.function_code: f for f in self.function_table}  # type: ignore[attr-defined]
-        self.__sub_lookup: Dict[int, Dict[int, Callable]] = {f: {} for f in functions}
+        self.__sub_lookup: dict[int, dict[int, Callable]] = {f: {} for f in functions}
         for f in self.__sub_function_table:
             self.__sub_lookup[f.function_code][f.sub_function_code] = f  # type: ignore[attr-defined]
 
@@ -236,8 +236,6 @@ class ClientDecoder:
             return self._helper(message)
         except ModbusException as exc:
             Log.error("Unable to decode response {}", exc)
-        except Exception as exc:  # pylint: disable=broad-except
-            Log.error("General exception: {}", exc)
         return None
 
     def _helper(self, data: str):

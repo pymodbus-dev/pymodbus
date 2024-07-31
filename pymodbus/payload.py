@@ -11,6 +11,8 @@ __all__ = [
     "BinaryPayloadDecoder",
 ]
 
+from array import array
+
 # pylint: disable=missing-type-doc
 from struct import pack, unpack
 
@@ -21,9 +23,6 @@ from pymodbus.utilities import (
     pack_bitstring,
     unpack_bitstring,
 )
-
-
-WC = {"b": 1, "h": 2, "e": 2, "i": 4, "l": 4, "q": 8, "f": 4, "d": 8}
 
 
 class BinaryPayloadBuilder:
@@ -69,15 +68,14 @@ class BinaryPayloadBuilder:
         :return:
         """
         value = pack(f"!{fstring}", value)
-        wordorder = WC.get(fstring.lower()) // 2  # type: ignore[operator]
-        upperbyte = f"!{wordorder}H"
-        payload = unpack(upperbyte, value)
-
-        if self._wordorder == Endian.LITTLE:
-            payload = payload[::-1]
-
-        fstring = self._byteorder + "H"
-        return b"".join(pack(fstring, word) for word in payload)
+        if Endian.LITTLE in {self._byteorder, self._wordorder}:
+            value = array("H", value)
+            if self._byteorder == Endian.LITTLE:
+                value.byteswap()
+            if self._wordorder == Endian.LITTLE:
+                value.reverse()
+            value = value.tobytes()
+        return value
 
     def encode(self) -> bytes:
         """Get the payload buffer encoded in bytes."""
@@ -295,7 +293,7 @@ class BinaryPayloadDecoder:
         """
         Log.debug("{}", registers)
         if isinstance(registers, list):  # repack into flat binary
-            payload = b"".join(pack("!H", x) for x in registers)
+            payload = pack(f"!{len(registers)}H", *registers)
             return cls(payload, byteorder, wordorder)
         raise ParameterException("Invalid collection of registers supplied")
 
@@ -324,7 +322,7 @@ class BinaryPayloadDecoder:
             return cls(payload, byteorder)
         raise ParameterException("Invalid collection of coils supplied")
 
-    def _unpack_words(self, fstring: str, handle) -> bytes:
+    def _unpack_words(self, handle) -> bytes:
         """Unpack words based on the word order and byte order.
 
         # ---------------------------------------------- #
@@ -336,15 +334,14 @@ class BinaryPayloadDecoder:
         :param handle: Value to be unpacked
         :return:
         """
-        wc_value = WC.get(fstring.lower()) // 2  # type: ignore[operator]
-        handle = unpack(f"!{wc_value}H", handle)
-        if self._wordorder == Endian.LITTLE:
-            handle = list(reversed(handle))
-
-        # Repack as unsigned Integer
-        handle = [pack(self._byteorder + "H", p) for p in handle]
+        if Endian.LITTLE in {self._byteorder, self._wordorder}:
+            handle = array("H", handle)
+            if self._byteorder == Endian.LITTLE:
+                handle.byteswap()
+            if self._wordorder == Endian.LITTLE:
+                handle.reverse()
+            handle = handle.tobytes()
         Log.debug("handle: {}", handle)
-        handle = b"".join(handle)
         return handle
 
     def reset(self):
@@ -377,7 +374,7 @@ class BinaryPayloadDecoder:
         self._pointer += 4
         fstring = "I"
         handle = self._payload[self._pointer - 4 : self._pointer]
-        handle = self._unpack_words(fstring, handle)
+        handle = self._unpack_words(handle)
         return unpack("!" + fstring, handle)[0]
 
     def decode_64bit_uint(self):
@@ -385,7 +382,7 @@ class BinaryPayloadDecoder:
         self._pointer += 8
         fstring = "Q"
         handle = self._payload[self._pointer - 8 : self._pointer]
-        handle = self._unpack_words(fstring, handle)
+        handle = self._unpack_words(handle)
         return unpack("!" + fstring, handle)[0]
 
     def decode_8bit_int(self):
@@ -407,7 +404,7 @@ class BinaryPayloadDecoder:
         self._pointer += 4
         fstring = "i"
         handle = self._payload[self._pointer - 4 : self._pointer]
-        handle = self._unpack_words(fstring, handle)
+        handle = self._unpack_words(handle)
         return unpack("!" + fstring, handle)[0]
 
     def decode_64bit_int(self):
@@ -415,7 +412,7 @@ class BinaryPayloadDecoder:
         self._pointer += 8
         fstring = "q"
         handle = self._payload[self._pointer - 8 : self._pointer]
-        handle = self._unpack_words(fstring, handle)
+        handle = self._unpack_words(handle)
         return unpack("!" + fstring, handle)[0]
 
     def decode_16bit_float(self):
@@ -423,7 +420,7 @@ class BinaryPayloadDecoder:
         self._pointer += 2
         fstring = "e"
         handle = self._payload[self._pointer - 2 : self._pointer]
-        handle = self._unpack_words(fstring, handle)
+        handle = self._unpack_words(handle)
         return unpack("!" + fstring, handle)[0]
 
     def decode_32bit_float(self):
@@ -431,7 +428,7 @@ class BinaryPayloadDecoder:
         self._pointer += 4
         fstring = "f"
         handle = self._payload[self._pointer - 4 : self._pointer]
-        handle = self._unpack_words(fstring, handle)
+        handle = self._unpack_words(handle)
         return unpack("!" + fstring, handle)[0]
 
     def decode_64bit_float(self):
@@ -439,7 +436,7 @@ class BinaryPayloadDecoder:
         self._pointer += 8
         fstring = "d"
         handle = self._payload[self._pointer - 8 : self._pointer]
-        handle = self._unpack_words(fstring, handle)
+        handle = self._unpack_words(handle)
         return unpack("!" + fstring, handle)[0]
 
     def decode_string(self, size=1):

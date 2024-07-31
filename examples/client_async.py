@@ -4,7 +4,7 @@
 usage::
 
     client_async.py [-h] [-c {tcp,udp,serial,tls}]
-                    [-f {ascii,binary,rtu,socket,tls}]
+                    [-f {ascii,rtu,socket,tls}]
                     [-l {critical,error,warning,info,debug}] [-p PORT]
                     [--baudrate BAUDRATE] [--host HOST]
 
@@ -12,7 +12,7 @@ usage::
         show this help message and exit
     -c, -comm {tcp,udp,serial,tls}
         set communication, default is tcp
-    -f, --framer {ascii,binary,rtu,socket,tls}
+    -f, --framer {ascii,rtu,socket,tls}
         set framer, default depends on --comm
     -l, --log {critical,error,warning,info,debug}
         set log level, default is info
@@ -64,8 +64,6 @@ def setup_async_client(description=None, cmdline=None):
             retries=3,
             reconnect_delay=1,
             reconnect_delay_max=10,
-            #    retry_on_empty=False,
-            # TCP setup parameters
             #    source_address=("localhost", 0),
         )
     elif args.comm == "udp":
@@ -76,7 +74,6 @@ def setup_async_client(description=None, cmdline=None):
             framer=args.framer,
             timeout=args.timeout,
             #    retries=3,
-            #    retry_on_empty=False,
             # UDP setup parameters
             #    source_address=None,
         )
@@ -87,14 +84,12 @@ def setup_async_client(description=None, cmdline=None):
             #    framer=ModbusRtuFramer,
             timeout=args.timeout,
             #    retries=3,
-            #    retry_on_empty=False,
             # Serial setup parameters
             baudrate=args.baudrate,
             #    bytesize=8,
             #    parity="N",
             #    stopbits=1,
             #    handle_local_echo=False,
-            #    strict=True,
         )
     elif args.comm == "tls":
         client = modbusClient.AsyncModbusTlsClient(
@@ -104,14 +99,15 @@ def setup_async_client(description=None, cmdline=None):
             framer=args.framer,
             timeout=args.timeout,
             #    retries=3,
-            #    retry_on_empty=False,
             # TLS setup parameters
-            #    sslctx=sslctx,
-            certfile=helper.get_certificate("crt"),
-            keyfile=helper.get_certificate("key"),
+            sslctx=modbusClient.AsyncModbusTlsClient.generate_ssl(
+                certfile=helper.get_certificate("crt"),
+                keyfile=helper.get_certificate("key"),
             #    password="none",
-            server_hostname="localhost",
+            ),
         )
+    else:
+        raise RuntimeError(f"Unknown commtype {args.comm}")
     return client
 
 

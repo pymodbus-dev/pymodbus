@@ -69,47 +69,47 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
 
     def __build_mapping(self):
         """Build the function code mapper."""
-        kwargs = {}
+        params = {}
         if self.slave:
-            kwargs["slave"] = self.slave
+            params["slave"] = self.slave
         self.__get_callbacks = {
             "d": lambda a, c: self._client.read_discrete_inputs(
-                a, c, **kwargs
+                a, c, **params
             ),
             "c": lambda a, c: self._client.read_coils(
-                a, c, **kwargs
+                a, c, **params
             ),
             "h": lambda a, c: self._client.read_holding_registers(
-                a, c, **kwargs
+                a, c, **params
             ),
             "i": lambda a, c: self._client.read_input_registers(
-                a, c, **kwargs
+                a, c, **params
             ),
         }
         self.__set_callbacks = {
             "d5": lambda a, v: self._client.write_coil(
-                a, v, **kwargs
+                a, v, **params
             ),
             "d15": lambda a, v: self._client.write_coils(
-                a, v, **kwargs
+                a, v, **params
             ),
             "c5": lambda a, v: self._client.write_coil(
-                a, v, **kwargs
+                a, v, **params
             ),
             "c15": lambda a, v: self._client.write_coils(
-                a, v, **kwargs
+                a, v, **params
             ),
             "h6": lambda a, v: self._client.write_register(
-                a, v, **kwargs
+                a, v, **params
             ),
             "h16": lambda a, v: self._client.write_registers(
-                a, v, **kwargs
+                a, v, **params
             ),
             "i6": lambda a, v: self._client.write_register(
-                a, v, **kwargs
+                a, v, **params
             ),
             "i16": lambda a, v: self._client.write_registers(
-                a, v, **kwargs
+                a, v, **params
             ),
         }
         self._write_fc = (0x05, 0x06, 0x0F, 0x10)

@@ -63,11 +63,13 @@ The entry “comm” allows the following values:
 
 The entry “framer” allows the following values:
 
-- “ascii” to use :class:`pymodbus.framer.ascii_framer.ModbusAsciiFramer`,
-- "binary to use :class:`pymodbus.framer.ascii_framer.ModbusBinaryFramer`,
-- “rtu” to use :class:`pymodbus.framer.ascii_framer.ModbusRtuFramer`,
-- “tls” to use :class:`pymodbus.framer.ascii_framer.ModbusTlsFramer`,
-- “socket” to use :class:`pymodbus.framer.ascii_framer.ModbusSocketFramer`.
+- “ascii” to use :class:`pymodbus.framer.ModbusAsciiFramer`,
+- “rtu” to use :class:`pymodbus.framer.ModbusRtuFramer`,
+- “tls” to use :class:`pymodbus.framer.ModbusTlsFramer`,
+- “socket” to use :class:`pymodbus.framer.ModbusSocketFramer`.
+
+Optional entry "device_id" will limit server to only accept a single id. If
+not set, the server will accept all device id.
 
 .. warning::
 
@@ -289,8 +291,8 @@ In case of **"increment"**, the counter is reset to the minimum value, if the ma
 
 .. code-block::
 
-    {"addr": 9, "value": 7, "action": "random", "kwargs": {"minval": 0, "maxval": 12} },
-    {"addr": 10, "value": 100, "action": "increment", "kwargs": {"minval": 50} }
+    {"addr": 9, "value": 7, "action": "random", "parameters": {"minval": 0, "maxval": 12} },
+    {"addr": 10, "value": 100, "action": "increment", "parameters": {"minval": 50} }
 
 
 Invalid section

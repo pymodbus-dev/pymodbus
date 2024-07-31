@@ -11,9 +11,12 @@ PyModbus - A Python Modbus Stack
 
 Pymodbus is a full Modbus protocol implementation offering client/server with synchronous/asynchronous API a well as simulators.
 
-Current release is `3.6.9 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.6.9>`_.
+Current release is `3.7.0 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.7.0>`_.
 
 Bleeding edge (not released) is `dev <https://github.com/pymodbus-dev/pymodbus/tree/dev>`_.
+
+Waiting for v3.8.0 (not released) is `wait3.8.0 <https://github.com/pymodbus-dev/pymodbus/tree/wait3.8.0>`_. This contains
+dev + merged pull requests that have API changes, and thus have to wait.
 
 All changes are described in `release notes <https://pymodbus.readthedocs.io/en/latest/source/changelog.html>`_
 and all API changes are `documented <https://pymodbus.readthedocs.io/en/latest/source/api_changes.html>`_
@@ -40,9 +43,9 @@ Common features
 * support all standard frames: socket, rtu, rtu-over-tcp, tcp and ascii
 * does not have third party dependencies, apart from pyserial (optional)
 * very lightweight project
-* requires Python >= 3.8
+* requires Python >= 3.9
 * thorough test suite, that test all corners of the library
-* automatically tested on Windows, Linux and MacOS combined with python 3.8 - 3.12
+* automatically tested on Windows, Linux and MacOS combined with python 3.9 - 3.12
 * strongly typed API (py.typed present)
 
 The modbus protocol specification: Modbus_Application_Protocol_V1_1b3.pdf can be found on
@@ -276,7 +279,7 @@ There are 2 bigger projects ongoing:
 
 Development instructions
 ------------------------
-The current code base is compatible with python >= 3.8.
+The current code base is compatible with python >= 3.9.
 
 Here are some of the common commands to perform a range of activities::
 

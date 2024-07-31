@@ -470,7 +470,7 @@ class ModbusControlBlock:
         """
         return self.__counters.__iter__()
 
-    def __new__(cls, *_args, **_kwargs):
+    def __new__(cls):
         """Create a new instance."""
         if "_inst" not in vars(cls):
             cls._inst = object.__new__(cls)

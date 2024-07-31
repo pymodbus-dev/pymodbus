@@ -15,11 +15,11 @@ class TestPdu:
     """Unittest for the pymod.pdu module."""
 
     bad_requests = (
-        ModbusRequest(),
-        ModbusResponse(),
+        ModbusRequest(0, 0, 0, False),
+        ModbusResponse(0, 0, 0, False),
     )
-    illegal = IllegalFunctionRequest(1)
-    exception = ExceptionResponse(1, 1)
+    illegal = IllegalFunctionRequest(1, 0, 0, 0, False)
+    exception = ExceptionResponse(1, 1, 0, 0, 0, False)
 
     def test_not_impelmented(self):
         """Test a base classes for not implemented functions."""
@@ -43,7 +43,7 @@ class TestPdu:
 
     def test_request_exception_factory(self):
         """Test all error methods."""
-        request = ModbusRequest()
+        request = ModbusRequest(0, 0, 0, False)
         request.function_code = 1
         errors = {ModbusExceptions.decode(c): c for c in range(1, 20)}
         for error, code in iter(errors.items()):

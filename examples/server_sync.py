@@ -6,7 +6,7 @@ An example of a single threaded synchronous server.
 usage::
 
     server_sync.py [-h] [--comm {tcp,udp,serial,tls}]
-                   [--framer {ascii,binary,rtu,socket,tls}]
+                   [--framer {ascii,rtu,socket,tls}]
                    [--log {critical,error,warning,info,debug}]
                    [--port PORT] [--store {sequential,sparse,factory,none}]
                    [--slaves SLAVES]
@@ -15,7 +15,7 @@ usage::
         show this help message and exit
     -c, --comm {tcp,udp,serial,tls}
         set communication, default is tcp
-    -f, --framer {ascii,binary,rtu,socket,tls}
+    -f, --framer {ascii,rtu,socket,tls}
         set framer, default depends on --comm
     -l, --log {critical,error,warning,info,debug}
         set log level, default is info
@@ -110,7 +110,6 @@ def run_sync_server(args):
             # handle_local_echo=False,  # Handle local echo of the USB-to-RS485 adaptor
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
-            # strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif args.comm == "tls":
         address = ("", args.port) if args.port else None

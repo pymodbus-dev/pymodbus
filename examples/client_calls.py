@@ -138,7 +138,7 @@ def handle_holding_registers(client):
     assert not rr.isError()  # test that call was OK
     assert rr.registers == [10] * 8
 
-    _logger.info("### write read holding registers, using **kwargs")
+    _logger.info("### write read holding registers")
     arguments = {
         "read_address": 1,
         "read_count": 8,

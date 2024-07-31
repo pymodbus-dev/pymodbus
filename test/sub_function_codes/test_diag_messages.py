@@ -2,7 +2,8 @@
 import pytest
 
 from pymodbus.constants import ModbusPlusOperation
-from pymodbus.diag_message import (
+from pymodbus.exceptions import NotImplementedException
+from pymodbus.pdu.diag_message import (
     ChangeAsciiInputDelimiterRequest,
     ChangeAsciiInputDelimiterResponse,
     ClearCountersRequest,
@@ -42,7 +43,6 @@ from pymodbus.diag_message import (
     ReturnSlaveNoResponseCountRequest,
     ReturnSlaveNoResponseCountResponse,
 )
-from pymodbus.exceptions import NotImplementedException
 
 
 class TestDataStore:

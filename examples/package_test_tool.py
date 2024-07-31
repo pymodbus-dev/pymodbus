@@ -45,11 +45,11 @@ There are 4 functions which can be modified to test the client/server functional
 from __future__ import annotations
 
 import asyncio
-from typing import Callable
+from collections.abc import Callable
 
 import pymodbus.client as modbusClient
 import pymodbus.server as modbusServer
-from pymodbus import Framer, ModbusException, pymodbus_apply_logging_config
+from pymodbus import FramerType, ModbusException, pymodbus_apply_logging_config
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
@@ -122,7 +122,7 @@ class ClientTester:  # pylint: disable=too-few-public-methods
             )
         else:
             raise RuntimeError("ERROR: CommType not implemented")
-        server_params = self.client.comm_params.copy()
+        server_params = self.client.ctx.comm_params.copy()
         server_params.source_address = (host, test_port)
         self.stub = TransportStub(server_params, True, simulate_server)
         test_port += 1
@@ -160,14 +160,14 @@ class ServerTester:  # pylint: disable=too-few-public-methods
         if comm == CommType.TCP:
             self.server = modbusServer.ModbusTcpServer(
                 self.context,
-                framer=Framer.SOCKET,
+                framer=FramerType.SOCKET,
                 identity=self.identity,
                 address=(NULLMODEM_HOST, test_port),
             )
         elif comm == CommType.SERIAL:
             self.server = modbusServer.ModbusSerialServer(
                 self.context,
-                framer=Framer.SOCKET,
+                framer=FramerType.SOCKET,
                 identity=self.identity,
                 port=f"{NULLMODEM_HOST}:{test_port}",
             )
@@ -207,7 +207,7 @@ async def client_calls(client):
     """Test client API."""
     Log.debug("--> Client calls starting.")
     try:
-        resp = await client.read_holding_registers(address=124, count=4, slave=0)
+        resp = await client.read_holding_registers(address=124, count=4, slave=1)
     except ModbusException as exc:
         txt = f"ERROR: exception in pymodbus {exc}"
         Log.error(txt)

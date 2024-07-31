@@ -1,23 +1,20 @@
 """Modbus client async UDP communication."""
 from __future__ import annotations
 
-import asyncio
 import socket
-from typing import Any
+from collections.abc import Callable
 
 from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
-from pymodbus.framer import Framer
+from pymodbus.framer import FramerType
 from pymodbus.logging import Log
-from pymodbus.transport import CommType
+from pymodbus.transport import CommParams, CommType
 
 
 DGRAM_TYPE = socket.SOCK_DGRAM
 
 
-class AsyncModbusUdpClient(
-    ModbusBaseClient, asyncio.Protocol, asyncio.DatagramProtocol
-):
+class AsyncModbusUdpClient(ModbusBaseClient):
     """**AsyncModbusUdpClient**.
 
     Fixed parameters:
@@ -26,21 +23,20 @@ class AsyncModbusUdpClient(
 
     Optional parameters:
 
+    :param framer: Framer name, default FramerType.SOCKET
     :param port: Port used for communication.
+    :param name: Set communication name, used in logging
     :param source_address: source address of client,
-
-    Common optional parameters:
-
-    :param framer: Framer enum name
-    :param timeout: Timeout for a request, in seconds.
-    :param retries: Max number of retries per request.
-    :param retry_on_empty: Retry on empty response.
-    :param broadcast_enable: True to treat id 0 as broadcast address.
     :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
+    :param timeout: Timeout for a connection request, in seconds.
+    :param retries: Max number of retries per request.
     :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
-    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
-    :param kwargs: Experimental parameters.
+
+    .. tip::
+        **reconnect_delay** doubles automatically with each unsuccessful connect, from
+        **reconnect_delay** to **reconnect_delay_max**.
+        Set `reconnect_delay=0` to avoid automatic reconnection.
 
     Example::
 
@@ -56,44 +52,42 @@ class AsyncModbusUdpClient(
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         host: str,
+        framer: FramerType = FramerType.SOCKET,
         port: int = 502,
-        framer: Framer = Framer.SOCKET,
+        name: str = "comm",
         source_address: tuple[str, int] | None = None,
-        **kwargs: Any,
+        reconnect_delay: float = 0.1,
+        reconnect_delay_max: float = 300,
+        timeout: float = 3,
+        retries: int = 3,
+        on_connect_callback: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus UDP Client."""
-        asyncio.DatagramProtocol.__init__(self)
-        asyncio.Protocol.__init__(self)
+        self.comm_params = CommParams(
+            comm_type=CommType.UDP,
+            host=host,
+            port=port,
+            comm_name=name,
+            source_address=source_address,
+            reconnect_delay=reconnect_delay,
+            reconnect_delay_max=reconnect_delay_max,
+            timeout_connect=timeout,
+        )
         ModbusBaseClient.__init__(
             self,
             framer,
-            CommType=CommType.UDP,
-            host=host,
-            port=port,
-            **kwargs,
+            retries,
+            on_connect_callback,
         )
         self.source_address = source_address
 
     @property
     def connected(self):
         """Return true if connected."""
-        return self.is_active()
-
-    async def connect(self) -> bool:
-        """Start reconnecting asynchronous udp client.
-
-        :meta private:
-        """
-        self.reset_delay()
-        Log.debug(
-            "Connecting to {}:{}.",
-            self.comm_params.host,
-            self.comm_params.port,
-        )
-        return await self.base_connect()
+        return self.ctx.is_active()
 
 
 class ModbusUdpClient(ModbusBaseSyncClient):
@@ -105,21 +99,19 @@ class ModbusUdpClient(ModbusBaseSyncClient):
 
     Optional parameters:
 
+    :param framer: Framer name, default FramerType.SOCKET
     :param port: Port used for communication.
+    :param name: Set communication name, used in logging
     :param source_address: source address of client,
-
-    Common optional parameters:
-
-    :param framer: Framer enum name
-    :param timeout: Timeout for a request, in seconds.
-    :param retries: Max number of retries per request.
-    :param retry_on_empty: Retry on empty response.
-    :param broadcast_enable: True to treat id 0 as broadcast address.
     :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
-    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
-    :param no_resend_on_retry: Do not resend request when retrying due to missing response.
-    :param kwargs: Experimental parameters.
+    :param timeout: Timeout for a connection request, in seconds.
+    :param retries: Max number of retries per request.
+
+    .. tip::
+        **reconnect_delay** doubles automatically with each unsuccessful connect, from
+        **reconnect_delay** to **reconnect_delay_max**.
+        Set `reconnect_delay=0` to avoid automatic reconnection.
 
     Example::
 
@@ -142,21 +134,27 @@ class ModbusUdpClient(ModbusBaseSyncClient):
     def __init__(
         self,
         host: str,
+        framer: FramerType = FramerType.SOCKET,
         port: int = 502,
-        framer: Framer = Framer.SOCKET,
+        name: str = "comm",
         source_address: tuple[str, int] | None = None,
-        **kwargs: Any,
+        reconnect_delay: float = 0.1,
+        reconnect_delay_max: float = 300,
+        timeout: float = 3,
+        retries: int = 3,
     ) -> None:
         """Initialize Modbus UDP Client."""
-        super().__init__(
-            framer,
-            port=port,
+        self.comm_params = CommParams(
+            comm_type=CommType.UDP,
             host=host,
-            CommType=CommType.UDP,
-            **kwargs,
+            port=port,
+            comm_name=name,
+            source_address=source_address,
+            reconnect_delay=reconnect_delay,
+            reconnect_delay_max=reconnect_delay_max,
+            timeout_connect=timeout,
         )
-        self.params.source_address = source_address
-
+        super().__init__(framer, retries)
         self.socket = None
 
     @property
@@ -187,12 +185,12 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         """
         self.socket = None
 
-    def send(self, request):
+    def send(self, request: bytes) -> int:
         """Send data on the underlying socket.
 
         :meta private:
         """
-        super().send(request)
+        super()._start_send()
         if not self.socket:
             raise ConnectionException(str(self))
         if request:
@@ -201,14 +199,15 @@ class ModbusUdpClient(ModbusBaseSyncClient):
             )
         return 0
 
-    def recv(self, size):
+    def recv(self, size: int | None) -> bytes:
         """Read data from the underlying descriptor.
 
         :meta private:
         """
-        super().recv(size)
         if not self.socket:
             raise ConnectionException(str(self))
+        if size is None:
+            size = 0
         return self.socket.recvfrom(size)[0]
 
     def is_socket_open(self):

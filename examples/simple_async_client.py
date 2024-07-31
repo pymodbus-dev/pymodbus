@@ -14,13 +14,13 @@ import asyncio
 import pymodbus.client as ModbusClient
 from pymodbus import (
     ExceptionResponse,
-    Framer,
+    FramerType,
     ModbusException,
     pymodbus_apply_logging_config,
 )
 
 
-async def run_async_simple_client(comm, host, port, framer=Framer.SOCKET):
+async def run_async_simple_client(comm, host, port, framer=FramerType.SOCKET):
     """Run async client."""
     # activate debugging
     pymodbus_apply_logging_config("DEBUG")
@@ -33,7 +33,6 @@ async def run_async_simple_client(comm, host, port, framer=Framer.SOCKET):
             framer=framer,
             # timeout=10,
             # retries=3,
-            # retry_on_empty=False,
             # source_address=("localhost", 0),
         )
     elif comm == "udp":
@@ -43,7 +42,6 @@ async def run_async_simple_client(comm, host, port, framer=Framer.SOCKET):
             framer=framer,
             # timeout=10,
             # retries=3,
-            # retry_on_empty=False,
             # source_address=None,
         )
     elif comm == "serial":
@@ -52,27 +50,11 @@ async def run_async_simple_client(comm, host, port, framer=Framer.SOCKET):
             framer=framer,
             # timeout=10,
             # retries=3,
-            # retry_on_empty=False,
-            # strict=True,
             baudrate=9600,
             bytesize=8,
             parity="N",
             stopbits=1,
             # handle_local_echo=False,
-        )
-    elif comm == "tls":
-        client = ModbusClient.AsyncModbusTlsClient(
-            host,
-            port=port,
-            framer=Framer.TLS,
-            # timeout=10,
-            # retries=3,
-            # retry_on_empty=False,
-            # sslctx=sslctx,
-            certfile="../examples/certificates/pymodbus.crt",
-            keyfile="../examples/certificates/pymodbus.key",
-            # password="none",
-            server_hostname="localhost",
         )
     else:
         print(f"Unknown client {comm} selected")

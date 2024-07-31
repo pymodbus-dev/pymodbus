@@ -6,22 +6,23 @@ from unittest import mock
 
 import pytest
 
-import pymodbus.bit_read_message as pdu_bit_read
-import pymodbus.bit_write_message as pdu_bit_write
 import pymodbus.client as lib_client
-import pymodbus.diag_message as pdu_diag
-import pymodbus.file_message as pdu_file_msg
-import pymodbus.other_message as pdu_other_msg
-import pymodbus.register_read_message as pdu_reg_read
-import pymodbus.register_write_message as pdu_req_write
-from pymodbus import Framer
+import pymodbus.pdu.bit_read_message as pdu_bit_read
+import pymodbus.pdu.bit_write_message as pdu_bit_write
+import pymodbus.pdu.diag_message as pdu_diag
+import pymodbus.pdu.file_message as pdu_file_msg
+import pymodbus.pdu.other_message as pdu_other_msg
+import pymodbus.pdu.register_read_message as pdu_reg_read
+import pymodbus.pdu.register_write_message as pdu_req_write
+from examples.helper import get_certificate
+from pymodbus import FramerType
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.exceptions import ConnectionException, ModbusException, ModbusIOException
 from pymodbus.pdu import ModbusRequest
-from pymodbus.transport import CommType
+from pymodbus.transport import CommParams, CommType
 
 
 BASE_PORT = 6500
@@ -121,18 +122,12 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                 "opt_args": {
                     "timeout": 3 + 2,
                     "retries": 3 + 2,
-                    "retry_on_empty": True,
-                    "strict": False,
-                    "broadcast_enable": not False,
                     "reconnect_delay": 117,
                     "reconnect_delay_max": 250,
                 },
                 "defaults": {
                     "timeout": 3,
                     "retries": 3,
-                    "retry_on_empty": False,
-                    "strict": True,
-                    "broadcast_enable": False,
                     "reconnect_delay": 100,
                     "reconnect_delay_max": 1000 * 60 * 5,
                 },
@@ -140,7 +135,7 @@ def test_client_mixin(arglist, method, arg, pdu_request):
             "serial": {
                 "pos_arg": "/dev/tty",
                 "opt_args": {
-                    "framer": Framer.ASCII,
+                    "framer": FramerType.ASCII,
                     "baudrate": 19200 + 500,
                     "bytesize": 8 - 1,
                     "parity": "E",
@@ -148,9 +143,8 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                     "handle_local_echo": True,
                 },
                 "defaults": {
-                    "host": None,
                     "port": "/dev/tty",
-                    "framer": Framer.RTU,
+                    "framer": FramerType.RTU,
                     "baudrate": 19200,
                     "bytesize": 8,
                     "parity": "N",
@@ -162,13 +156,12 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                 "pos_arg": "192.168.1.2",
                 "opt_args": {
                     "port": 112,
-                    "framer": Framer.ASCII,
+                    "framer": FramerType.ASCII,
                     "source_address": ("195.6.7.8", 1025),
                 },
                 "defaults": {
-                    "host": "192.168.1.2",
                     "port": 502,
-                    "framer": Framer.SOCKET,
+                    "framer": FramerType.SOCKET,
                     "source_address": None,
                 },
             },
@@ -176,35 +169,27 @@ def test_client_mixin(arglist, method, arg, pdu_request):
                 "pos_arg": "192.168.1.2",
                 "opt_args": {
                     "port": 211,
-                    "framer": Framer.ASCII,
+                    "framer": FramerType.ASCII,
                     "source_address": ("195.6.7.8", 1025),
                     "sslctx": None,
-                    "certfile": None,
-                    "keyfile": None,
-                    "password": None,
                 },
                 "defaults": {
-                    "host": "192.168.1.2",
                     "port": 802,
-                    "framer": Framer.TLS,
+                    "framer": FramerType.TLS,
                     "source_address": None,
                     "sslctx": None,
-                    "certfile": None,
-                    "keyfile": None,
-                    "password": None,
                 },
             },
             "udp": {
                 "pos_arg": "192.168.1.2",
                 "opt_args": {
                     "port": 121,
-                    "framer": Framer.ASCII,
+                    "framer": FramerType.ASCII,
                     "source_address": ("195.6.7.8", 1025),
                 },
                 "defaults": {
-                    "host": "192.168.1.2",
                     "port": 502,
-                    "framer": Framer.SOCKET,
+                    "framer": FramerType.SOCKET,
                     "source_address": None,
                 },
             },
@@ -235,15 +220,12 @@ async def test_client_instanciate(
     cur_args = arg_list[type_args]
     if test_default:
         client = clientclass(cur_args["pos_arg"])
-        to_test = dict(arg_list["fix"]["defaults"], **cur_args["defaults"])
     else:
         client = clientclass(
             cur_args["pos_arg"],
             **arg_list["fix"]["opt_args"],
             **cur_args["opt_args"],
         )
-        to_test = dict(arg_list["fix"]["opt_args"], **cur_args["opt_args"])
-        to_test["host"] = cur_args["defaults"]["host"]
 
     # Test information methods
     client.last_frame_end = 2
@@ -261,7 +243,7 @@ async def test_client_instanciate(
     client.connect = lambda: False
     client.transport = None
     with pytest.raises(ConnectionException):
-        client.execute()
+        client.execute(ModbusRequest(0, 0, 0, False))
 
 async def test_serial_not_installed():
     """Try to instantiate clients."""
@@ -276,10 +258,14 @@ async def test_serial_not_installed():
 async def test_client_modbusbaseclient():
     """Test modbus base client class."""
     client = ModbusBaseClient(
-        Framer.ASCII,
-        host="localhost",
-        port=BASE_PORT + 1,
-        CommType=CommType.TCP,
+        FramerType.ASCII,
+        3,
+        None,
+        comm_params=CommParams(
+            host="localhost",
+            port=BASE_PORT + 1,
+            comm_type=CommType.TCP,
+        ),
     )
     client.register(pdu_bit_read.ReadCoilsResponse)
     assert str(client)
@@ -293,7 +279,7 @@ async def test_client_connection_made():
 
     transport = mock.AsyncMock()
     transport.close = lambda : ()
-    client.connection_made(transport)
+    client.ctx.connection_made(transport)
     # assert await client.connected
     client.close()
 
@@ -311,10 +297,14 @@ async def test_client_base_async():
         p_close.return_value = asyncio.Future()
         p_close.return_value.set_result(True)
         async with ModbusBaseClient(
-            Framer.ASCII,
-            host="localhost",
-            port=BASE_PORT + 2,
-            CommType=CommType.TCP,
+            FramerType.ASCII,
+            3,
+            None,
+            comm_params=CommParams(
+                host="localhost",
+                port=BASE_PORT + 2,
+                comm_type=CommType.TCP,
+            ),
         ) as client:
             str(client)
         p_connect.return_value = asyncio.Future()
@@ -326,9 +316,14 @@ async def test_client_base_async():
 @pytest.mark.skip()
 async def test_client_protocol_receiver():
     """Test the client protocol data received."""
-    base = ModbusBaseClient(Framer.SOCKET)
+    base = ModbusBaseClient(
+        FramerType.SOCKET,
+        3,
+        None,
+        comm_params=CommParams(),
+    )
     transport = mock.MagicMock()
-    base.connection_made(transport)
+    base.ctx.connection_made(transport)
     assert base.transport == transport
     assert base.transport
     data = b"\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04"
@@ -336,7 +331,7 @@ async def test_client_protocol_receiver():
     # setup existing request
     assert not list(base.transaction)
     response = base.build_response(0x00)  # pylint: disable=protected-access
-    base.data_received(data)
+    base.ctx.data_received(data)
     result = response.result()
     assert isinstance(result, pdu_bit_read.ReadCoilsResponse)
 
@@ -348,7 +343,12 @@ async def test_client_protocol_receiver():
 @pytest.mark.skip()
 async def test_client_protocol_response():
     """Test the udp client protocol builds responses."""
-    base = ModbusBaseClient(Framer.SOCKET)
+    base = ModbusBaseClient(
+        FramerType.SOCKET,
+        3,
+        None,
+        comm_params=CommParams(),
+    )
     response = base.build_response(0x00)  # pylint: disable=protected-access
     excp = response.exception()
     assert isinstance(excp, ConnectionException)
@@ -362,16 +362,23 @@ async def test_client_protocol_response():
 async def test_client_protocol_handler():
     """Test the client protocol handles responses."""
     base = ModbusBaseClient(
-        Framer.ASCII, host="localhost", port=+3, CommType=CommType.TCP
+        FramerType.ASCII,
+        3,
+        None,
+        comm_params=CommParams(
+            host="localhost",
+            port=BASE_PORT + 3,
+            comm_type=CommType.TCP,
+        ),
     )
     transport = mock.MagicMock()
-    base.connection_made(transport=transport)
+    base.ctx.connection_made(transport=transport)
     reply = pdu_bit_read.ReadCoilsRequest(1, 1)
     reply.transaction_id = 0x00
-    base._handle_response(None)  # pylint: disable=protected-access
-    base._handle_response(reply)  # pylint: disable=protected-access
-    response = base.build_response(0x00)  # pylint: disable=protected-access
-    base._handle_response(reply)  # pylint: disable=protected-access
+    base.ctx._handle_response(None)  # pylint: disable=protected-access
+    base.ctx._handle_response(reply)  # pylint: disable=protected-access
+    response = base.build_response(reply)  # pylint: disable=protected-access
+    base.ctx._handle_response(reply)  # pylint: disable=protected-access
     result = response.result()
     assert result == reply
 
@@ -392,8 +399,8 @@ class MockTransport:
         """Send a response to a received packet."""
         await asyncio.sleep(0.05)
         resp = await self.req.execute(self.ctx)
-        pkt = self.base.framer.buildPacket(resp)
-        self.base.data_received(pkt)
+        pkt = self.base.ctx.framer.buildPacket(resp)
+        self.base.ctx.data_received(pkt)
 
     def write(self, data, addr=None):
         """Write data to the transport, start a task to send the response."""
@@ -410,10 +417,18 @@ class MockTransport:
 
 async def test_client_protocol_execute():
     """Test the client protocol execute method."""
-    base = ModbusBaseClient(Framer.SOCKET, host="127.0.0.1")
+    base = ModbusBaseClient(
+        FramerType.SOCKET,
+        3,
+        None,
+        comm_params=CommParams(
+            host="127.0.0.1",
+            timeout_connect=3,
+        ),
+    )
     request = pdu_bit_read.ReadCoilsRequest(1, 1)
     transport = MockTransport(base, request)
-    base.connection_made(transport=transport)
+    base.ctx.connection_made(transport=transport)
 
     response = await base.async_execute(request)
     assert not response.isError()
@@ -421,20 +436,35 @@ async def test_client_protocol_execute():
 
 async def test_client_execute_broadcast():
     """Test the client protocol execute method."""
-    base = ModbusBaseClient(Framer.SOCKET, host="127.0.0.1")
-    base.broadcast_enable = True
+    base = ModbusBaseClient(
+        FramerType.SOCKET,
+        3,
+        None,
+        comm_params=CommParams(
+            host="127.0.0.1",
+        ),
+    )
     request = pdu_bit_read.ReadCoilsRequest(1, 1)
     transport = MockTransport(base, request)
-    base.connection_made(transport=transport)
+    base.ctx.connection_made(transport=transport)
 
-    assert not await base.async_execute(request)
+    with pytest.raises(ModbusIOException):
+        assert not await base.async_execute(request)
 
 async def test_client_protocol_retry():
     """Test the client protocol execute method with retries."""
-    base = ModbusBaseClient(Framer.SOCKET, host="127.0.0.1", timeout=0.1)
+    base = ModbusBaseClient(
+        FramerType.SOCKET,
+        3,
+        None,
+        comm_params=CommParams(
+            host="127.0.0.1",
+            timeout_connect=0.1,
+        ),
+    )
     request = pdu_bit_read.ReadCoilsRequest(1, 1)
     transport = MockTransport(base, request, retries=2)
-    base.connection_made(transport=transport)
+    base.ctx.connection_made(transport=transport)
 
     response = await base.async_execute(request)
     assert transport.retries == 0
@@ -444,12 +474,20 @@ async def test_client_protocol_retry():
 
 async def test_client_protocol_timeout():
     """Test the client protocol execute method with timeout."""
-    base = ModbusBaseClient(Framer.SOCKET, host="127.0.0.1", timeout=0.1, retries=2)
+    base = ModbusBaseClient(
+        FramerType.SOCKET,
+        2,
+        None,
+        comm_params=CommParams(
+            host="127.0.0.1",
+            timeout_connect=0.1,
+        ),
+    )
     # Avoid creating do_reconnect() task
-    base.connection_lost = mock.MagicMock()
+    base.ctx.connection_lost = mock.MagicMock()
     request = pdu_bit_read.ReadCoilsRequest(1, 1)
     transport = MockTransport(base, request, retries=4)
-    base.connection_made(transport=transport)
+    base.ctx.connection_made(transport=transport)
 
     with pytest.raises(ModbusIOException):
         await base.async_execute(request)
@@ -516,25 +554,40 @@ def test_client_tcp_reuse():
 
 def test_client_tls_connect():
     """Test the tls client connection method."""
+    sslctx=lib_client.ModbusTlsClient.generate_ssl(
+        certfile=get_certificate("crt"),
+        keyfile=get_certificate("key"),
+    )
     with mock.patch.object(ssl.SSLSocket, "connect") as mock_method:
-        client = lib_client.ModbusTlsClient("127.0.0.1")
+        client = lib_client.ModbusTlsClient(
+            "127.0.0.1",
+            sslctx=sslctx,
+        )
         assert client.connect()
 
     with mock.patch.object(socket, "create_connection") as mock_method:
         mock_method.side_effect = OSError()
-        client = lib_client.ModbusTlsClient("127.0.0.1")
+        client = lib_client.ModbusTlsClient("127.0.0.1", sslctx=sslctx)
         assert not client.connect()
 
 
 def test_client_tls_connect2():
     """Test the tls client connection method."""
+    sslctx=lib_client.ModbusTlsClient.generate_ssl(
+        certfile=get_certificate("crt"),
+        keyfile=get_certificate("key"),
+    )
     with mock.patch.object(ssl.SSLSocket, "connect") as mock_method:
-        client = lib_client.ModbusTlsClient("127.0.0.1", source_address=("0.0.0.0", 0))
+        client = lib_client.ModbusTlsClient(
+            "127.0.0.1",
+            sslctx=sslctx,
+            source_address=("0.0.0.0", 0)
+        )
         assert client.connect()
 
     with mock.patch.object(socket, "create_connection") as mock_method:
         mock_method.side_effect = OSError()
-        client = lib_client.ModbusTlsClient("127.0.0.1")
+        client = lib_client.ModbusTlsClient("127.0.0.1", sslctx=sslctx)
         assert not client.connect()
 
 
@@ -629,15 +682,20 @@ def test_client_mixin_convert_fail():
 
 async def test_client_build_response():
     """Test fail of build_response."""
-    client = ModbusBaseClient(Framer.RTU)
+    client = ModbusBaseClient(
+        FramerType.RTU,
+        3,
+        None,
+        comm_params=CommParams(),
+    )
     with pytest.raises(ConnectionException):
-        await client.build_response(0)
+        await client.build_response(ModbusRequest(0, 0, 0, False))
 
 
 async def test_client_mixin_execute():
     """Test dummy execute for both sync and async."""
     client = ModbusClientMixin()
     with pytest.raises(NotImplementedError):
-        client.execute(ModbusRequest())
+        client.execute(ModbusRequest(0, 0, 0, False))
     with pytest.raises(NotImplementedError):
-        await client.execute(ModbusRequest())
+        await client.execute(ModbusRequest(0, 0, 0, False))

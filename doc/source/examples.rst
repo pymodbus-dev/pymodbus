@@ -177,15 +177,6 @@ Source: :github:`examples/datastore_simulator_share.py`
     :noindex:
 
 
-Message generator
-^^^^^^^^^^^^^^^^^
-Source: :github:`examples/message_generator.py`
-
-.. automodule:: examples.message_generator
-    :undoc-members:
-    :noindex:
-
-
 Message Parser
 ^^^^^^^^^^^^^^
 Source: :github:`examples/message_parser.py`

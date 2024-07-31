@@ -6,7 +6,8 @@ bit based request/response messages:
 * Read/Write Discretes
 * Read Coils
 """
-from pymodbus.file_message import (
+from pymodbus.pdu import ModbusExceptions
+from pymodbus.pdu.file_message import (
     FileRecord,
     ReadFifoQueueRequest,
     ReadFifoQueueResponse,
@@ -15,7 +16,6 @@ from pymodbus.file_message import (
     WriteFileRecordRequest,
     WriteFileRecordResponse,
 )
-from pymodbus.pdu import ModbusExceptions
 from test.conftest import MockContext  # pylint: disable=wrong-import-order
 
 

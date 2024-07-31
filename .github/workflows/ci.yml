@@ -10,14 +10,25 @@ on:
   pull_request:
     branches:
       - dev
+    types: [opened, synchronize, reopened, ready_for_review]
   schedule:
     # Sunday at 02:10 UTC.
     - cron: '10 2 * * 0'
   workflow_dispatch:
 
 jobs:
+  faildraft:
+    name: fail draft
+    if: github.event.pull_request.draft == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: fail draft
+        run: |
+          exit 1
+
   testing:
     name: ${{ matrix.os }} - ${{ matrix.python }}
+    if: github.event.pull_request.draft == false
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     strategy:
@@ -98,7 +109,7 @@ jobs:
       - name: ruff
         if: matrix.run_lint == true
         run: |
-          ruff .
+          ruff check .
 
       - name: pytest
         if: ${{ (matrix.os != 'ubuntu-latest') || (matrix.python != '3.12') }}
@@ -114,6 +125,7 @@ jobs:
 
   analyze:
     name: Analyze Python
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     steps:

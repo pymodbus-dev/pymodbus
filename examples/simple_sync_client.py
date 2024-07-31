@@ -16,13 +16,13 @@ The corresponding server must be started before e.g. as:
 import pymodbus.client as ModbusClient
 from pymodbus import (
     ExceptionResponse,
-    Framer,
+    FramerType,
     ModbusException,
     pymodbus_apply_logging_config,
 )
 
 
-def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
+def run_sync_simple_client(comm, host, port, framer=FramerType.SOCKET):
     """Run sync client."""
     # activate debugging
     pymodbus_apply_logging_config("DEBUG")
@@ -35,7 +35,6 @@ def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
             framer=framer,
             # timeout=10,
             # retries=3,
-            # retry_on_empty=False,y
             # source_address=("localhost", 0),
         )
     elif comm == "udp":
@@ -45,7 +44,6 @@ def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
             framer=framer,
             # timeout=10,
             # retries=3,
-            # retry_on_empty=False,
             # source_address=None,
         )
     elif comm == "serial":
@@ -54,27 +52,11 @@ def run_sync_simple_client(comm, host, port, framer=Framer.SOCKET):
             framer=framer,
             # timeout=10,
             # retries=3,
-            # retry_on_empty=False,
-            # strict=True,
             baudrate=9600,
             bytesize=8,
             parity="N",
             stopbits=1,
             # handle_local_echo=False,
-        )
-    elif comm == "tls":
-        client = ModbusClient.ModbusTlsClient(
-            host,
-            port=port,
-            framer=Framer.TLS,
-            # timeout=10,
-            # retries=3,
-            # retry_on_empty=False,
-            # sslctx=None,
-            certfile="../examples/certificates/pymodbus.crt",
-            keyfile="../examples/certificates/pymodbus.key",
-            # password=None,
-            server_hostname="localhost",
         )
     else:
         print(f"Unknown client {comm} selected")

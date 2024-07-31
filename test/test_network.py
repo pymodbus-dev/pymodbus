@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Callable
+from collections.abc import Callable
 
 import pytest
 
@@ -27,9 +27,7 @@ class ModbusProtocolStub(ModbusProtocol):
 
     async def start_run(self):
         """Call need functions to start server/client."""
-        if  self.is_server:
-            return await self.listen()
-        return await self.connect()
+        return await self.listen()
 
 
     def callback_connected(self) -> None:
@@ -76,7 +74,7 @@ class TestNetwork:
         assert await stub.start_run()
         assert await client.connect()
         test_data = b"Data got echoed."
-        client.transport.write(test_data)
+        client.ctx.transport.write(test_data)
         client.close()
         stub.close()
 

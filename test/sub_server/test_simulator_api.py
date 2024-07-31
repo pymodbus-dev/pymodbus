@@ -283,3 +283,104 @@ class TestSimulatorApi:
             assert "error" in json_response
             # Do not check for error content. It is currently
             # unhandled, so it is not guaranteed to be consistent.
+
+    @pytest.mark.parametrize("response_type", [
+        http_server.RESPONSE_NORMAL,
+        http_server.RESPONSE_ERROR,
+        http_server.RESPONSE_EMPTY,
+        http_server.RESPONSE_JUNK
+    ])
+    @pytest.mark.parametrize("call", [
+        ("split_delay", 1),
+        ("response_cr_pct", 1),
+        ("response_delay", 1),
+        ("response_error", 1),
+        ("response_junk_datalen", 1),
+        ("response_clear_after", 1),
+    ])
+    @pytest.mark.asyncio
+    async def test_calls_json_simulate(self, client, simulator, response_type, call):
+        """
+        Test the /restapi/calls endpoint to make sure simulations are set without errors.
+
+        Some have extra parameters, others don't
+        """
+        url = f"http://{simulator.http_host}:{simulator.http_port}/restapi/calls"
+
+        # The default arguments which must be present in the request
+        data = {
+            "submit": "Simulate",
+            "response_type": response_type,
+            "response_split": "nomatter",
+            "split_delay": 0,
+            "response_cr": "nomatter",
+            "response_cr_pct": 0,
+            "response_delay": 0,
+            "response_error": 0,
+            "response_junk_datalen": 0,
+            "response_clear_after": 0,
+        }
+
+        # Change the value of one call based on the parameter
+        data[call[0]] = call[1]
+
+        async with client.post(url, json=data) as resp:
+            assert resp.status == 200
+
+            json_response = await resp.json()
+            assert json_response["result"] == "ok"
+
+
+    @pytest.mark.asyncio
+    async def test_calls_json_simulate_reset_no_simulation(self, client, simulator):
+        """
+        Test the /restapi/calls endpoint with a reset request.
+
+        Just make sure that there will be no error when resetting without triggering
+        a simulation.
+        """
+        url = f"http://{simulator.http_host}:{simulator.http_port}/restapi/calls"
+
+        data = {
+            "submit": "Reset",
+        }
+
+        async with client.post(url, json=data) as resp:
+            assert resp.status == 200
+
+            json_response = await resp.json()
+            assert json_response["result"] == "ok"
+
+    @pytest.mark.asyncio
+    async def test_calls_json_simulate_reset_with_simulation(self, client, simulator):
+        """Test the /restapi/calls endpoint with a reset request after a simulation."""
+        url = f"http://{simulator.http_host}:{simulator.http_port}/restapi/calls"
+
+        data = {
+            "submit": "Simulate",
+            "response_type": http_server.RESPONSE_EMPTY,
+            "response_split": "nomatter",
+            "split_delay": 0,
+            "response_cr": "nomatter",
+            "response_cr_pct": 0,
+            "response_delay": 100,
+            "response_error": 0,
+            "response_junk_datalen": 0,
+            "response_clear_after": 0,
+        }
+
+        async with client.post(url, json=data) as resp:
+            assert resp.status == 200
+
+            json_response = await resp.json()
+            assert json_response["result"] == "ok"
+
+        data = {
+            "submit": "Reset",
+        }
+
+        async with client.post(url, json=data) as resp:
+            assert resp.status == 200
+
+            json_response = await resp.json()
+            assert json_response["result"] == "ok"

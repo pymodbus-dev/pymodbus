@@ -7,6 +7,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
+from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.datastore import ModbusSimulatorContext
 from pymodbus.datastore.simulator import Cell, CellType, Label
 from pymodbus.server import ModbusSimulatorServer
@@ -22,8 +23,7 @@ FX_WRITE_REG = 6
 class TestSimulator:
     """Unittest for the pymodbus.Simutor module."""
 
-    simulator = None
-    default_config = {
+    default_device = {
         "setup": {
             "co size": 100,
             "di size": 150,
@@ -100,7 +100,7 @@ class TestSimulator:
         "repeat": [{"addr": [0, 48], "to": [49, 147]}],
     }
 
-    default_server_config = {
+    default_server = {
         "server": {
             "comm": "tcp",
             "host": NULLMODEM_HOST,
@@ -173,6 +173,13 @@ class TestSimulator:
         # 48 MAX before repeat
     ]
 
+    @staticmethod
+    @pytest.fixture(name="use_port")
+    def get_port_in_class(base_ports):
+        """Return next port."""
+        base_ports[__class__.__name__] += 1
+        return base_ports[__class__.__name__]
+
     @classmethod
     def custom_action1(cls, _inx, _cell):
         """Test action."""
@@ -186,10 +193,44 @@ class TestSimulator:
         "custom2": custom_action2,
     }
 
-    def setup_method(self):
-        """Do simulator test setup."""
-        test_setup = copy.deepcopy(self.default_config)
-        self.simulator = ModbusSimulatorContext(test_setup, self.custom_actions)
+    @pytest.fixture(name="device")
+    def copy_default_device(self):
+        """Copy default device."""
+        return copy.deepcopy(self.default_device)
+
+    @pytest.fixture(name="simulator")
+    def create_simulator(self, device):
+        """Create simulator context."""
+        return ModbusSimulatorContext(device, self.custom_actions)
+
+    @pytest.fixture(name="server")
+    def copy_default_server(self, use_port):
+        """Create simulator context."""
+        server = copy.deepcopy(self.default_server)
+        server["server"]["port"] = use_port
+        return server
+
+    @pytest.fixture(name="simulator_server")
+    async def setup_simulator_server(self, server, device, unused_tcp_port):
+        """Mock open for simulator server."""
+        with patch(
+            "builtins.open",
+            mock_open(
+                read_data=json.dumps(
+                    {
+                        "server_list": server,
+                        "device_list": {"device": device},
+                    }
+                )
+            )
+        ):
+            task = ModbusSimulatorServer(http_port=unused_tcp_port)
+            await task.run_forever(only_start=True)
+            await asyncio.sleep(0.5)
+            task_future = task.serving
+            yield task
+            await task.stop()
+            await task_future
 
     def test_pack_unpack_values(self):
         """Test the pack unpack methods."""
@@ -203,13 +244,13 @@ class TestSimulator:
         test_value = ModbusSimulatorContext.build_value_from_registers(regs, False)
         assert round(value, 6) == round(test_value, 6)
 
-    def test_simulator_config_verify(self):
+    def test_simulator_config_verify(self, simulator):
         """Test basic configuration."""
         # Manually build expected memory image and then compare.
-        assert self.simulator.register_count == 250
+        assert simulator.register_count == 250
         for offset in (0, 49, 98):
             for i, test_cell in enumerate(self.test_registers):
-                reg = self.simulator.registers[i + offset]
+                reg = simulator.registers[i + offset]
                 assert reg.type == test_cell.type, f"at index {i} - {offset}"
                 assert reg.access == test_cell.access, f"at index {i} - {offset}"
                 assert reg.value == test_cell.value, f"at index {i} - {offset}"
@@ -224,85 +265,97 @@ class TestSimulator:
                     reg.count_write == test_cell.count_write
                 ), f"at index {i} - {offset}"
 
-    def test_simulator_config_verify2(self):
+    def test_simulator_config_verify2(self, device):
         """Test basic configuration."""
         # Manually build expected memory image and then compare.
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_setup[Label.setup][Label.shared_blocks] = False
-        exc_setup[Label.setup][Label.co_size] = 15
-        exc_setup[Label.setup][Label.di_size] = 15
-        exc_setup[Label.setup][Label.hr_size] = 15
-        exc_setup[Label.setup][Label.ir_size] = 15
-        del exc_setup[Label.repeat]
-        exc_setup[Label.repeat] = []
-        simulator = ModbusSimulatorContext(exc_setup, None)
+        device[Label.setup][Label.shared_blocks] = False
+        device[Label.setup][Label.co_size] = 15
+        device[Label.setup][Label.di_size] = 15
+        device[Label.setup][Label.hr_size] = 15
+        device[Label.setup][Label.ir_size] = 15
+        del device[Label.repeat]
+        device[Label.repeat] = []
+        simulator = ModbusSimulatorContext(device, None)
         assert simulator.register_count == 60
         for i, test_cell in enumerate(self.test_registers):
             reg = simulator.registers[i]
             assert reg.type == test_cell.type, f"at index {i}"
             assert reg.value == test_cell.value, f"at index {i}"
 
-    def test_simulator_invalid_config(self):
+    def test_simulator_invalid_config1(self, device):
         """Test exception for invalid configuration."""
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_setup["bad section"] = True
+        device["bad section"] = True
         with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
-        for entry in (
+            ModbusSimulatorContext(device, None)
+
+    @pytest.mark.parametrize(
+        ("entry"),
+        [
             (Label.type_bits, 5),
             (Label.type_uint16, 16),
             (Label.type_uint32, [31, 32]),
             (Label.type_float32, [33, 34]),
             (Label.type_string, [43, 44]),
-        ):
-            exc_setup = copy.deepcopy(self.default_config)
-            exc_setup[entry[0]].append(entry[1])
-            with pytest.raises(RuntimeError):
-                ModbusSimulatorContext(exc_setup, None)
-        exc_setup = copy.deepcopy(self.default_config)
-        del exc_setup[Label.type_bits]
+        ],
+    )
+    def test_simulator_invalid_config2(self, entry, device):
+        """Test exception for invalid configuration."""
+        device[entry[0]].append(entry[1])
         with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_setup[Label.type_string][1][Label.value] = "very long string again"
+            ModbusSimulatorContext(device, None)
+
+    def test_simulator_invalid_config3(self, device):
+        """Test exception for invalid configuration."""
+        del device[Label.type_bits]
         with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_setup[Label.setup][Label.defaults][Label.action][
+            ModbusSimulatorContext(device, None)
+
+    def test_simulator_invalid_config4(self, device):
+        """Test exception for invalid configuration."""
+        device[Label.type_string][1][Label.value] = "very long string again"
+        with pytest.raises(RuntimeError):
+            ModbusSimulatorContext(device, None)
+
+    def test_simulator_invalid_config5(self, device):
+        """Test exception for invalid configuration."""
+        device[Label.setup][Label.defaults][Label.action][
             Label.type_bits
         ] = "bad action"
         with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_setup[Label.invalid].append(700)
-        with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_setup[Label.write].append(700)
-        with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_setup[Label.write].append(1)
-        with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_setup[Label.type_bits].append(700)
-        with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_setup[Label.repeat][0][Label.repeat_to] = [48, 500]
-        with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_setup[Label.type_uint16].append(0)
-        ModbusSimulatorContext(exc_setup, None)
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_setup[Label.type_uint16].append(250)
-        with pytest.raises(RuntimeError):
-            ModbusSimulatorContext(exc_setup, None)
+            ModbusSimulatorContext(device, None)
 
+    def test_simulator_invalid_config6(self, device):
+        """Test exception for invalid configuration."""
+        device[Label.invalid].append(700)
+        with pytest.raises(RuntimeError):
+            ModbusSimulatorContext(device, None)
 
-    def test_simulator_validate_illegal(self):
+    @pytest.mark.parametrize(("entry"), [700, 1])
+    def test_simulator_invalid_config7(self, entry, device):
+        """Test exception for invalid configuration."""
+        device[Label.write].append(entry)
+        with pytest.raises(RuntimeError):
+            ModbusSimulatorContext(device, None)
+
+    def test_simulator_invalid_config8(self, device):
+        """Test exception for invalid configuration."""
+        device[Label.type_bits].append(700)
+        with pytest.raises(RuntimeError):
+            ModbusSimulatorContext(device, None)
+
+    def test_simulator_invalid_config9(self, device):
+        """Test exception for invalid configuration."""
+        device[Label.repeat][0][Label.repeat_to] = [48, 500]
+        with pytest.raises(RuntimeError):
+            ModbusSimulatorContext(device, None)
+
+    def test_simulator_invalid_config10(self, device):
+        """Test exception for invalid configuration."""
+        device[Label.type_uint16].append(250)
+        with pytest.raises(RuntimeError):
+            ModbusSimulatorContext(device, None)
+
+    def test_simulator_validate_illegal(self, simulator):
         """Test validation without exceptions."""
         illegal_cell_list = (0, 1, 2, 3, 4, 6, 9, 15)
         write_cell_list = (
@@ -328,8 +381,8 @@ class TestSimulator:
         # for func_code in (FX_READ_BIT, FX_READ_REG, FX_WRITE_BIT, FX_WRITE_REG):
         for func_code in (FX_READ_BIT,):
             for addr in range(len(self.test_registers) - 1):
-                exp1 = self.simulator.validate(func_code, addr * 16, 1)
-                exp2 = self.simulator.validate(func_code, addr * 16, 20)
+                exp1 = simulator.validate(func_code, addr * 16, 1)
+                exp2 = simulator.validate(func_code, addr * 16, 20)
                 # Illegal cell and no write
                 if addr in illegal_cell_list:
                     assert not exp1, f"wrong illegal at index {addr}"
@@ -347,14 +400,13 @@ class TestSimulator:
                 assert exp1, f"wrong legal at index {addr}"
                 assert exp2, f"wrong legal at second index {addr+1}"
         addr = 27
-        exp1 = self.simulator.validate(FX_WRITE_REG, addr, 1)
+        exp1 = simulator.validate(FX_WRITE_REG, addr, 1)
         assert not exp1, f"wrong legal at index {addr}"
 
-    def test_simulator_validate_type(self):
+    def test_simulator_validate_type(self, device):
         """Test validate call."""
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_setup["setup"]["type exception"] = True
-        exc_simulator = ModbusSimulatorContext(exc_setup, None)
+        device["setup"]["type exception"] = True
+        exc_simulator = ModbusSimulatorContext(device, None)
 
         for entry in (
             (FX_READ_BIT, 80, 1, True),
@@ -372,7 +424,7 @@ class TestSimulator:
             validated = exc_simulator.validate(entry[0], entry[1], entry[2])
             assert entry[3] == validated, f"at entry {entry}"
 
-    def test_simulator_get_values(self):
+    def test_simulator_get_values(self, simulator):
         """Test simulator get values."""
         for entry in (
             (FX_READ_BIT, 194, 1, [False]),
@@ -382,13 +434,12 @@ class TestSimulator:
             (FX_READ_REG, 19, 1, [14662]),
             (FX_READ_REG, 16, 2, [3124, 5678]),
         ):
-            values = self.simulator.getValues(entry[0], entry[1], entry[2])
+            values = simulator.getValues(entry[0], entry[1], entry[2])
             assert entry[3] == values, f"at entry {entry}"
 
-    def test_simulator_set_values(self):
+    def test_simulator_set_values(self, device):
         """Test simulator set values."""
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_simulator = ModbusSimulatorContext(exc_setup, None)
+        exc_simulator = ModbusSimulatorContext(device, None)
         value = [31234]
         exc_simulator.setValues(FX_WRITE_REG, 16, value)
         result = exc_simulator.getValues(FX_READ_REG, 16, 1)
@@ -410,7 +461,7 @@ class TestSimulator:
         assert result == [True, False, False]
         exc_simulator.setValues(FX_WRITE_BIT, 80, [True] * 17)
 
-    def test_simulator_get_text(self):
+    def test_simulator_get_text(self, simulator):
         """Test get_text_register()."""
         for test_reg, test_entry, test_cell in (
             (1, "1", Cell(type=Label.invalid, action="none", value="0")),
@@ -427,8 +478,8 @@ class TestSimulator:
             (33, "33-34", Cell(type=Label.type_float32, action="none", value="3124.5")),
             (43, "43-44", Cell(type=Label.type_string, action="none", value="Str ")),
         ):
-            reg = self.simulator.registers[test_reg]
-            entry, cell = self.simulator.get_text_register(test_reg)
+            reg = simulator.registers[test_reg]
+            entry, cell = simulator.get_text_register(test_reg)
             assert entry == test_entry, f"at register {test_reg}"
             assert cell.type == test_cell.type, f"at register {test_reg}"
             assert cell.access == str(reg.access), f"at register {test_reg}"
@@ -454,10 +505,9 @@ class TestSimulator:
             Label.uptime,
         ],
     )
-    def test_simulator_actions(self, func, addr, action):
+    def test_simulator_actions(self, func, addr, action, device):
         """Test actions."""
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_simulator = ModbusSimulatorContext(exc_setup, None)
+        exc_simulator = ModbusSimulatorContext(device, None)
         reg1 = exc_simulator.registers[addr]
         reg2 = exc_simulator.registers[addr + 1]
         reg1.action = exc_simulator.action_name_to_id[action]
@@ -468,20 +518,18 @@ class TestSimulator:
         values = exc_simulator.getValues(func, addr, 2)
         assert values[0] or values[1]
 
-    def test_simulator_action_timestamp(self):
+    def test_simulator_action_timestamp(self, device):
         """Test action timestamp."""
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_simulator = ModbusSimulatorContext(exc_setup, None)
+        exc_simulator = ModbusSimulatorContext(device, None)
         addr = 12
         exc_simulator.registers[addr].action = exc_simulator.action_name_to_id[
             Label.timestamp
         ]
         exc_simulator.getValues(FX_READ_REG, addr, 1)
 
-    def test_simulator_action_reset(self):
+    def test_simulator_action_reset(self, device):
         """Test action reset."""
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_simulator = ModbusSimulatorContext(exc_setup, None)
+        exc_simulator = ModbusSimulatorContext(device, None)
         addr = 12
         exc_simulator.registers[addr].action = exc_simulator.action_name_to_id[
             Label.reset
@@ -503,11 +551,10 @@ class TestSimulator:
         ],
     )
     def test_simulator_action_increment(
-        self, celltype, minval, maxval, value, expected
+        self, celltype, minval, maxval, value, expected, device
     ):
         """Test action increment."""
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_simulator = ModbusSimulatorContext(exc_setup, None)
+        exc_simulator = ModbusSimulatorContext(device, None)
         action = exc_simulator.action_name_to_id[Label.increment]
         parameters = {
             "minval": minval,
@@ -552,10 +599,9 @@ class TestSimulator:
             (CellType.FLOAT32, 65.0, 78.0),
         ],
     )
-    def test_simulator_action_random(self, celltype, minval, maxval):
+    def test_simulator_action_random(self, celltype, minval, maxval, device):
         """Test action random."""
-        exc_setup = copy.deepcopy(self.default_config)
-        exc_simulator = ModbusSimulatorContext(exc_setup, None)
+        exc_simulator = ModbusSimulatorContext(device, None)
         action = exc_simulator.action_name_to_id[Label.random]
         parameters = {
             "minval": minval,
@@ -582,20 +628,13 @@ class TestSimulator:
                 )
             assert minval <= new_value <= maxval
 
-    @patch(
-        "builtins.open",
-        mock_open(
-            read_data=json.dumps(
-                {
-                    "server_list": default_server_config,
-                    "device_list": {"device": default_config},
-                }
-            )
-        ),
-    )
-    async def test_simulator_server_tcp(self, unused_tcp_port):
+    async def test_simulator_server_tcp(self, simulator_server):
         """Test init simulator server."""
-        task = ModbusSimulatorServer(http_port=unused_tcp_port)
-        await task.run_forever(only_start=True)
-        await asyncio.sleep(0.5)
-        await task.stop()
+
+
+    async def test_simulator_server_end_to_end(self, simulator_server, use_port):
+        """Test simulator server end to end."""
+        client = AsyncModbusTcpClient(NULLMODEM_HOST, port=use_port)
+        assert await client.connect()
+        result = await client.read_holding_registers(16, 1)
+        assert result.registers[0] == 3124

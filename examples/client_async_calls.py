@@ -137,6 +137,11 @@ async def async_handle_holding_registers(client):
     assert not rr.isError()  # test that call was OK
     assert rr.registers == [10] * 8
 
+    await client.write_registers(1, [10], slave=SLAVE)
+    rr = await client.read_holding_registers(1, 1, slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    assert rr.registers == [10]
+
     _logger.info("### write read holding registers")
     arguments = {
         "read_address": 1,

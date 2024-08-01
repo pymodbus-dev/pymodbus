@@ -122,6 +122,10 @@ class TestWriteRegisterMessages:
         result = await request.execute(context)
         assert result.function_code == request.function_code
 
+        request = WriteMultipleRegistersRequest(0x00, [0x00])
+        result = await request.execute(context)
+        assert result.function_code == request.function_code
+
         # -----------------------------------------------------------------------#
         # Mask Write Register Request
         # -----------------------------------------------------------------------#

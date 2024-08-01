@@ -322,11 +322,11 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         )
 
     def write_registers(
-        self, address: int, values: list[int] | int, slave: int = 1, skip_encode: bool = False) -> T:
+        self, address: int, values: list[int], slave: int = 1, skip_encode: bool = False) -> T:
         """Write registers (code 0x10).
 
         :param address: Start address to write to
-        :param values: List of values to write, or a single value to write
+        :param values: List of values to write
         :param slave: (optional) Modbus slave ID
         :param skip_encode: (optional) do not encode values
         :raises ModbusException:

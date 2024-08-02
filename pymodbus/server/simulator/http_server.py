@@ -194,10 +194,10 @@ class ModbusSimulatorServer:
             "server": ["", self.build_html_server],
         }
         self.generator_json: dict[str, list] = {
-            "log_json": [None, self.build_json_log],
-            "registers_json": [None, self.build_json_registers],
-            "calls_json": [None, self.build_json_calls],
-            "server_json": [None, self.build_json_server],
+            "log": [None, self.build_json_log],
+            "registers": [None, self.build_json_registers],
+            "calls": [None, self.build_json_calls],
+            "server": [None, self.build_json_server],
         }
         self.submit = {
             "Clear": self.action_clear,

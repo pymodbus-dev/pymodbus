@@ -301,10 +301,10 @@ class ModbusSimulatorServer:
 
     async def handle_json(self, request):
         """Handle api registers."""
-        page_type = request.path.split("/")[-1]
+        command = request.path.split("/")[-1]
         params = await request.json()
         try:
-            result = self.generator_json[page_type](params)
+            result = self.generator_json[command](params)
         except (KeyError, ValueError, TypeError, IndexError) as exc:
             Log.error("Unhandled error during json request: {}", exc)
             return web.json_response({"result": "error", "error": f"Unhandled error Error: {exc}"})

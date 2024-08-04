@@ -50,6 +50,7 @@ from __future__ import annotations
 
 import asyncio
 import dataclasses
+import socket
 import ssl
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine
@@ -87,6 +88,7 @@ class CommParams:
     host: str = "localhost" # On some machines this will now be ::1
     port: int = 0
     source_address: tuple[str, int] | None = None
+    socket: socket.socket | None = None
     handle_local_echo: bool = False
 
     # tls
@@ -231,6 +233,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 self.handle_new_connection,
                 host,
                 port,
+                sock=self.comm_params.socket,
                 local_addr=self.comm_params.source_address,
                 ssl=self.comm_params.sslctx,
             )

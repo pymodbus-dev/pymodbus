@@ -20,7 +20,7 @@ Our releases is defined as X.Y.Z, and we have strict rules what to release when:
 Upgrade examples:
 
 - 3.6.1 -> 3.6.9: just plugin the new version, no changes needed.
-- 3.6.1 -> 3.7.0: Smaller changes to the pymodbus calls might neede
+- 3.6.1 -> 3.7.0: Smaller changes to the pymodbus calls might be needed
 - 2.5.4 -> 3.0.0: Major changes in the application might be needed
 
 Current release is `3.7.0 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.7.0>`_.

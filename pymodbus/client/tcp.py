@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import select
-import socket
+import socket as sckt
 import time
 from collections.abc import Callable
 
@@ -26,6 +26,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
     :param port: Port used for communication
     :param name: Set communication name, used in logging
     :param source_address: source address of client
+    :param socket: If given, should be an existing, already connected socket.socket object to be used.
     :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for a connection request, in seconds.
@@ -51,7 +52,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
-    socket: socket.socket | None
+    socket: sckt.socket | None
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
@@ -60,6 +61,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         port: int = 502,
         name: str = "comm",
         source_address: tuple[str, int] | None = None,
+        socket: sckt.socket | None = None,
         reconnect_delay: float = 0.1,
         reconnect_delay_max: float = 300,
         timeout: float = 3,
@@ -74,6 +76,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
                 port=port,
                 comm_name=name,
                 source_address=source_address,
+                socket=socket,
                 reconnect_delay=reconnect_delay,
                 reconnect_delay_max=reconnect_delay_max,
                 timeout_connect=timeout,
@@ -129,7 +132,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
     Remark: There are no automatic reconnect as with AsyncModbusTcpClient
     """
 
-    socket: socket.socket | None
+    socket: sckt.socket | None
 
     def __init__(
         self,
@@ -168,7 +171,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         if self.socket:
             return True
         try:
-            self.socket = socket.create_connection(
+            self.socket = sckt.create_connection(
                 (self.comm_params.host, self.comm_params.port),
                 timeout=self.comm_params.timeout_connect,
                 source_address=self.comm_params.source_address,

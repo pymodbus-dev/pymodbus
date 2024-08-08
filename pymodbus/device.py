@@ -444,14 +444,14 @@ class ModbusControlBlock:
     should come from here.
     """
 
-    __mode = "ASCII"
-    __diagnostic = [False] * 16
-    __listen_only = False
-    __delimiter = b"\r"
-    __counters = ModbusCountersHandler()
-    __identity = ModbusDeviceIdentification()
-    __plus = ModbusPlusStatistics()
-    __events: list[ModbusEvent] = []
+    _mode = "ASCII"
+    _diagnostic = [False] * 16
+    _listen_only = False
+    _delimiter = b"\r"
+    _counters = ModbusCountersHandler()
+    _identity = ModbusDeviceIdentification()
+    _plus = ModbusPlusStatistics()
+    _events: list[ModbusEvent] = []
 
     # -------------------------------------------------------------------------#
     #  Magic
@@ -468,7 +468,7 @@ class ModbusControlBlock:
 
         :returns: An iterator of the device counters
         """
-        return self.__counters.__iter__()
+        return self._counters.__iter__()
 
     def __new__(cls):
         """Create a new instance."""
@@ -484,8 +484,8 @@ class ModbusControlBlock:
 
         :param event: A new event to add to the log
         """
-        self.__events.insert(0, event)
-        self.__events = self.__events[0:64]  # chomp to 64 entries
+        self._events.insert(0, event)
+        self._events = self._events[0:64]  # chomp to 64 entries
         self.Counter.Event += 1
 
     def getEvents(self):
@@ -493,26 +493,26 @@ class ModbusControlBlock:
 
         :returns: The encoded events packet
         """
-        events = [event.encode() for event in self.__events]
+        events = [event.encode() for event in self._events]
         return b"".join(events)
 
     def clearEvents(self):
         """Clear the current list of events."""
-        self.__events = []
+        self._events = []
 
     # -------------------------------------------------------------------------#
     #  Other Properties
     # -------------------------------------------------------------------------#
-    Identity = property(lambda s: s.__identity)
-    Counter = property(lambda s: s.__counters)
-    Events = property(lambda s: s.__events)
-    Plus = property(lambda s: s.__plus)
+    Identity = property(lambda s: s._identity)
+    Counter = property(lambda s: s._counters)
+    Events = property(lambda s: s._events)
+    Plus = property(lambda s: s._plus)
 
     def reset(self):
         """Clear all of the system counters and the diagnostic register."""
-        self.__events = []
-        self.__counters.reset()
-        self.__diagnostic = [False] * 16
+        self._events = []
+        self._counters.reset()
+        self._diagnostic = [False] * 16
 
     # -------------------------------------------------------------------------#
     #  Listen Properties
@@ -522,9 +522,9 @@ class ModbusControlBlock:
 
         :param value: The value to set the listen status to
         """
-        self.__listen_only = bool(value)  # pylint: disable=unused-private-member
+        self._listen_only = bool(value)
 
-    ListenOnly = property(lambda s: s.__listen_only, _setListenOnly)
+    ListenOnly = property(lambda s: s._listen_only, _setListenOnly)
 
     # -------------------------------------------------------------------------#
     #  Mode Properties
@@ -535,9 +535,9 @@ class ModbusControlBlock:
         :param mode: The data transfer method in (RTU, ASCII)
         """
         if mode in {"ASCII", "RTU"}:
-            self.__mode = mode  # pylint: disable=unused-private-member
+            self._mode = mode
 
-    Mode = property(lambda s: s.__mode, _setMode)
+    Mode = property(lambda s: s._mode, _setMode)
 
     # -------------------------------------------------------------------------#
     #  Delimiter Properties
@@ -548,15 +548,13 @@ class ModbusControlBlock:
         :param char: The new serial delimiter character
         """
         if isinstance(char, str):
-            self.__delimiter = char.encode()  # pylint: disable=unused-private-member
+            self._delimiter = char.encode()
         if isinstance(char, bytes):
-            self.__delimiter = char  # pylint: disable=unused-private-member
+            self._delimiter = char
         elif isinstance(char, int):
-            self.__delimiter = struct.pack(  # pylint: disable=unused-private-member
-                ">B", char
-            )
+            self._delimiter = struct.pack(">B", char)
 
-    Delimiter = property(lambda s: s.__delimiter, _setDelimiter)
+    Delimiter = property(lambda s: s._delimiter, _setDelimiter)
 
     # -------------------------------------------------------------------------#
     #  Diagnostic Properties
@@ -567,8 +565,8 @@ class ModbusControlBlock:
         :param mapping: Dictionary of key:value pairs to set
         """
         for entry in iter(mapping.items()):
-            if entry[0] >= 0 and entry[0] < len(self.__diagnostic):
-                self.__diagnostic[entry[0]] = bool(entry[1])
+            if entry[0] >= 0 and entry[0] < len(self._diagnostic):
+                self._diagnostic[entry[0]] = bool(entry[1])
 
     def getDiagnostic(self, bit):
         """Get the value in the diagnostic register.
@@ -577,8 +575,8 @@ class ModbusControlBlock:
         :returns: The current value of the requested bit
         """
         try:
-            if bit and 0 <= bit < len(self.__diagnostic):
-                return self.__diagnostic[bit]
+            if bit and 0 <= bit < len(self._diagnostic):
+                return self._diagnostic[bit]
         except Exception:  # pylint: disable=broad-except
             return None
         return None
@@ -588,4 +586,4 @@ class ModbusControlBlock:
 
         :returns: The diagnostic register collection
         """
-        return self.__diagnostic
+        return self._diagnostic

@@ -21,9 +21,9 @@ class TestDataStore:
     #  Setup/TearDown
     # -----------------------------------------------------------------------#
 
-    info = None
-    ident = None
-    control = None
+    info: dict
+    ident: ModbusDeviceIdentification
+    control: ModbusControlBlock
 
     def setup_method(self):
         """Do setup."""
@@ -255,9 +255,9 @@ class TestDataStore:
         self.control.Delimiter = b"\r"
         assert self.control.Delimiter == b"\r"
         self.control.Delimiter = "="
-        assert self.control.Delimiter == b"="
+        assert self.control.Delimiter == b"="  # type: ignore[comparison-overlap]
         self.control.Delimiter = 61
-        assert self.control.Delimiter == b"="
+        assert self.control.Delimiter == b"="  # type: ignore[comparison-overlap]
 
     def test_modbus_control_block_diagnostic(self):
         """Tests the MCB delimiter setting methods."""

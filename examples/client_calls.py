@@ -13,8 +13,8 @@ All available modbus calls are present.
 If you are performing a request that is not available in the client
 mixin, you have to perform the request like this instead::
 
-    from pymodbus.diag_message import ClearCountersRequest
-    from pymodbus.diag_message import ClearCountersResponse
+    from pymodbus.pdu.diag_message import ClearCountersRequest
+    from pymodbus.pdu.diag_message import ClearCountersResponse
 
     request  = ClearCountersRequest()
     response = client.execute(request)

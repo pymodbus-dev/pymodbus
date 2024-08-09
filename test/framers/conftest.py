@@ -29,7 +29,7 @@ async def prepare_test_framer(entry, is_server):
     if entry == FramerType.RTU:
         func_table = (ServerDecoder if is_server else ClientDecoder)().lookup  # type: ignore[attr-defined]
         for key, ent in func_table.items():
-            fix_len = ent._rtu_frame_size if hasattr(ent, "_rtu_frame_size") else 0  # pylint: disable=protected-access
-            cnt_pos = ent. _rtu_byte_count_pos if hasattr(ent, "_rtu_byte_count_pos") else 0  # pylint: disable=protected-access
+            fix_len = getattr(ent, "_rtu_frame_size", 0)
+            cnt_pos = getattr(ent, "_rtu_byte_count_pos", 0)
             framer.handle.set_fc_calc(key, fix_len, cnt_pos)
     return framer

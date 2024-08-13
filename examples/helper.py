@@ -76,7 +76,6 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
             help="set number of slaves, default is 0 (any)",
             default=0,
             type=int,
-            nargs="+",
         )
         parser.add_argument(
             "--context",

@@ -313,7 +313,7 @@ async def test_client_base_async():
         p_close.return_value.set_result(False)
 
 
-@pytest.mark.skip()
+@pytest.mark.skip
 async def test_client_protocol_receiver():
     """Test the client protocol data received."""
     base = ModbusBaseClient(
@@ -340,7 +340,7 @@ async def test_client_protocol_receiver():
         await base.build_response(0x00)  # pylint: disable=protected-access
 
 
-@pytest.mark.skip()
+@pytest.mark.skip
 async def test_client_protocol_response():
     """Test the udp client protocol builds responses."""
     base = ModbusBaseClient(

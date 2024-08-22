@@ -5,7 +5,7 @@ import pytest
 from pymodbus.datastore import ModbusSparseDataBlock
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_check_async_sparsedatastore():
     """Test check frame."""
     data_in_block = {

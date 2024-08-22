@@ -13,7 +13,7 @@ class TestFramerRTU:
         """Return message object."""
         return FramerRTU()
 
-    @pytest.mark.skip()
+    @pytest.mark.skip
     @pytest.mark.parametrize(
         ("packet", "used_len", "res_id", "res"),
         [

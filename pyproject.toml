@@ -218,6 +218,7 @@ all_files = "1"
 testpaths = ["test"]
 addopts = "--cov-report html --durations=10 --dist loadscope --numprocesses auto"
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 timeout = 120
 
 [tool.coverage.run]

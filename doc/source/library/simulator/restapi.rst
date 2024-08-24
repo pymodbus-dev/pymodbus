@@ -4,7 +4,7 @@ Pymodbus simulator ReST API
 This is still a Work In Progress. There may be large changes to the API in the
 future.
 
-There is a skeleton API for the Pymodbus simulator. The API is a simple copy of
+The API is a simple copy of
 having most of the same features as in the Web UI.
 
 The API provides the following endpoints:

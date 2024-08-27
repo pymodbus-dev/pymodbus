@@ -7,6 +7,24 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.7.1
+-------------
+* Better error message, when pyserial is missing.
+* Slave=0 will return first response, used to identify device address. (#2298)
+* Feature/add simulator api skeleton (#2274)
+* Correct max. read size for registers. (#2295)
+* Ruff complains, due to upgrade. (#2296)
+* Properly process 'slaves' argument (#2292)
+* Update repl requirement to >= 2.0.4 (#2291)
+* Fix aiohttp < 3.9.0 (#2289)
+* Simplify framer test setup (#2290)
+* Clean up ModbusControlBlock (#2288)
+* example docstrings diag_message -> pdu.diag_message (#2286)
+* Explain version schema (#2284)
+* Add more testing for WriteRegisters. (#2280)
+* Proof for issue 2273. (#2277)
+* Update simulator tests. (#2276)
+
 
 Version 3.7.0
 -------------

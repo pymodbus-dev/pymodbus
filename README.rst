@@ -23,11 +23,11 @@ Upgrade examples:
 - 3.6.1 -> 3.7.0: Smaller changes to the pymodbus calls might be needed
 - 2.5.4 -> 3.0.0: Major changes in the application might be needed
 
-Current release is `3.7.0 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.7.0>`_.
+Current release is `3.7.2 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.7.2>`_.
 
 Bleeding edge (not released) is `dev <https://github.com/pymodbus-dev/pymodbus/tree/dev>`_.
 
-Waiting for v3.8.0 (not released) is `wait3.8.0 <https://github.com/pymodbus-dev/pymodbus/tree/wait3.8.0>`_. This contains
+Waiting for v3.8.0 (not released) is `wait_next_API <https://github.com/pymodbus-dev/pymodbus/tree/wait_next_API>`_. This contains
 dev + merged pull requests that have API changes, and thus have to wait.
 
 All changes are described in `release notes <https://pymodbus.readthedocs.io/en/latest/source/changelog.html>`_

@@ -47,7 +47,7 @@ serial = [
     "pyserial>=3.5"
 ]
 repl = [
-   "pymodbus-repl>=2.0.3"
+   "pymodbus-repl>=2.0.4"
 ]
 
 simulator = [
@@ -71,6 +71,7 @@ development = [
     "pytest-profiling>=1.7.0",
     "pytest-timeout>=2.3.1",
     "pytest-xdist>=3.6.1",
+    "pytest-aiohttp>=1.0.5",
     "ruff>=0.5.3",
     "twine>=5.1.1",
     "types-Pygments",
@@ -218,6 +219,7 @@ all_files = "1"
 testpaths = ["test"]
 addopts = "--cov-report html --durations=10 --dist loadscope --numprocesses auto"
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 timeout = 120
 
 [tool.coverage.run]

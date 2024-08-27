@@ -89,7 +89,7 @@ def setup_server(description=None, context=None, cmdline=None):
             # full address range::
             datablock = lambda : ModbusSequentialDataBlock.create()  # pylint: disable=unnecessary-lambda-assignment,unnecessary-lambda
 
-        if args.slaves:
+        if args.slaves > 1:
             # The server then makes use of a server context that allows the server
             # to respond with different slave contexts for different slave ids.
             # By default it will return the same context for every slave id supplied
@@ -101,27 +101,16 @@ def setup_server(description=None, context=None, cmdline=None):
             # that a request to address(0-7) will map to the address (0-7).
             # The default is False which is based on section 4.4 of the
             # specification, so address(0-7) will map to (1-8)::
-            context = {
-                0x01: ModbusSlaveContext(
+            context = {}
+
+            for slave in range(args.slaves):
+                context[slave] = ModbusSlaveContext(
                     di=datablock(),
                     co=datablock(),
                     hr=datablock(),
                     ir=datablock(),
-                ),
-                0x02: ModbusSlaveContext(
-                    di=datablock(),
-                    co=datablock(),
-                    hr=datablock(),
-                    ir=datablock(),
-                ),
-                0x03: ModbusSlaveContext(
-                    di=datablock(),
-                    co=datablock(),
-                    hr=datablock(),
-                    ir=datablock(),
-                    zero_mode=True,
-                ),
-            }
+                )
+
             single = False
         else:
             context = ModbusSlaveContext(

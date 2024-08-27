@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import os
+import sys
 
 
 with contextlib.suppress(ImportError):
@@ -18,6 +19,11 @@ class SerialTransport(asyncio.Transport):
     def __init__(self, loop, protocol, url, baudrate, bytesize, parity, stopbits, timeout) -> None:
         """Initialize."""
         super().__init__()
+        if "serial" not in sys.modules:
+            raise RuntimeError(
+                "Serial client requires pyserial "
+                'Please install with "pip install pyserial" and try again.'
+            )
         self.async_loop = loop
         self.intern_protocol: asyncio.BaseProtocol = protocol
         self.sync_serial = serial.serial_for_url(url, exclusive=True,

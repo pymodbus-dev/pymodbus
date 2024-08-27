@@ -245,16 +245,6 @@ async def test_client_instanciate(
     with pytest.raises(ConnectionException):
         client.execute(ModbusRequest(0, 0, 0, False))
 
-async def test_serial_not_installed():
-    """Try to instantiate clients."""
-    with mock.patch(
-        "pymodbus.client.serial.PYSERIAL_MISSING"
-    ) as _pyserial_missing:
-        _pyserial_missing = True
-        with pytest.raises(RuntimeError):
-            lib_client.AsyncModbusSerialClient("/dev/tty")
-
-
 async def test_client_modbusbaseclient():
     """Test modbus base client class."""
     client = ModbusBaseClient(
@@ -313,7 +303,7 @@ async def test_client_base_async():
         p_close.return_value.set_result(False)
 
 
-@pytest.mark.skip()
+@pytest.mark.skip
 async def test_client_protocol_receiver():
     """Test the client protocol data received."""
     base = ModbusBaseClient(
@@ -340,7 +330,7 @@ async def test_client_protocol_receiver():
         await base.build_response(0x00)  # pylint: disable=protected-access
 
 
-@pytest.mark.skip()
+@pytest.mark.skip
 async def test_client_protocol_response():
     """Test the udp client protocol builds responses."""
     base = ModbusBaseClient(

@@ -180,7 +180,7 @@ class ModbusSimulatorServer:
         self.web_app.add_routes(
             [
                 web.get("/api/{tail:[a-z]*}", self.handle_html),
-                web.post("/api/{tail:[a-z]*}", self.handle_json),
+                web.post("/restapi/{tail:[a-z]*}", self.handle_json),
                 web.get("/{tail:[a-z0-9.]*}", self.handle_html_static),
                 web.get("/", self.handle_html_static),
             ]
@@ -193,13 +193,13 @@ class ModbusSimulatorServer:
             "calls": ["", self.build_html_calls],
             "server": ["", self.build_html_server],
         }
-        self.generator_json: dict[str, list] = {
-            "log_json": [None, self.build_json_log],
-            "registers_json": [None, self.build_json_registers],
-            "calls_json": [None, self.build_json_calls],
-            "server_json": [None, self.build_json_server],
+        self.generator_json = {
+            "log": self.build_json_log,
+            "registers": self.build_json_registers,
+            "calls": self.build_json_calls,
+            "server": self.build_json_server,
         }
-        self.submit = {
+        self.submit_html = {
             "Clear": self.action_clear,
             "Stop": self.action_stop,
             "Reset": self.action_reset,
@@ -218,7 +218,8 @@ class ModbusSimulatorServer:
         self.request_lookup = ServerDecoder.getFCdict()
         self.call_monitor = CallTypeMonitor()
         self.call_response = CallTypeResponse()
-        self.api_key: web.AppKey = web.AppKey("modbus_server")
+        app_key = getattr(web, 'AppKey', str)  # fall back to str for aiohttp < 3.9.0
+        self.api_key = app_key("modbus_server")
 
     async def start_modbus_server(self, app):
         """Start Modbus server as asyncio task."""
@@ -300,15 +301,18 @@ class ModbusSimulatorServer:
 
     async def handle_json(self, request):
         """Handle api registers."""
-        page_type = request.path.split("/")[-1]
-        params = await request.post()
-        json_dict = self.generator_html[page_type][0].copy()
-        result = self.generator_json[page_type][1](params, json_dict)
-        return web.Response(text=f"json build: {page_type} - {params} - {result}")
+        command = request.path.split("/")[-1]
+        params = await request.json()
+        try:
+            result = self.generator_json[command](params)
+        except (KeyError, ValueError, TypeError, IndexError) as exc:
+            Log.error("Unhandled error during json request: {}", exc)
+            return web.json_response({"result": "error", "error": f"Unhandled error Error: {exc}"})
+        return web.json_response(result)
 
     def build_html_registers(self, params, html):
         """Build html registers page."""
-        result_txt, foot = self.helper_build_html_submit(params)
+        result_txt, foot = self.helper_handle_submit(params, self.submit_html)
         if not result_txt:
             result_txt = "ok"
         if not foot:
@@ -353,7 +357,7 @@ class ModbusSimulatorServer:
 
     def build_html_calls(self, params: dict, html: str) -> str:
         """Build html calls page."""
-        result_txt, foot = self.helper_build_html_submit(params)
+        result_txt, foot = self.helper_handle_submit(params, self.submit_html)
         if not foot:
             foot = "Montitoring active" if self.call_monitor.active else "not active"
         if not result_txt:
@@ -460,23 +464,154 @@ class ModbusSimulatorServer:
         """Build html server page."""
         return html
 
-    def build_json_registers(self, params, json_dict):
-        """Build html registers page."""
-        return f"json build registers: {params} - {json_dict}"
+    def build_json_registers(self, params):
+        """Build json registers response."""
+        # Process params using the helper function
+        result_txt, foot = self.helper_handle_submit(params, {
+            "Set": self.action_set,
+        })
 
-    def build_json_calls(self, params, json_dict):
-        """Build html calls page."""
-        return f"json build calls: {params} - {json_dict}"
+        if not result_txt:
+            result_txt = "ok"
+        if not foot:
+            foot = "Operation completed successfully"
 
-    def build_json_log(self, params, json_dict):
+        # Extract necessary parameters
+        try:
+            range_start = int(params.get("range_start", 0))
+            range_stop = int(params.get("range_stop", range_start))
+        except ValueError:
+            return {"result": "error", "error": "Invalid range parameters"}
+
+        # Retrieve register details
+        register_rows = []
+        for i in range(range_start, range_stop + 1):
+            inx, reg = self.datastore_context.get_text_register(i)
+            row = {
+                "index": inx,
+                "type": reg.type,
+                "access": reg.access,
+                "action": reg.action,
+                "value": reg.value,
+                "count_read": reg.count_read,
+                "count_write": reg.count_write
+            }
+            register_rows.append(row)
+
+        # Generate register types and actions (assume these are predefined mappings)
+        register_types = dict(self.datastore_context.registerType_name_to_id)
+        register_actions = dict(self.datastore_context.action_name_to_id)
+
+        # Build the JSON response
+        json_response = {
+            "result": result_txt,
+            "footer": foot,
+            "register_types": register_types,
+            "register_actions": register_actions,
+            "register_rows": register_rows,
+        }
+
+        return json_response
+
+    def build_json_calls(self, params: dict) -> dict:
+        """Build json calls response."""
+        result_txt, foot = self.helper_handle_submit(params, {
+            "Reset": self.action_reset,
+            "Add": self.action_add,
+            "Simulate": self.action_simulate,
+        })
+        if not foot:
+            foot = "Monitoring active" if self.call_monitor.active else "not active"
+        if not result_txt:
+            result_txt = "ok"
+
+        function_error = []
+        for i, txt in (
+            (1, "IllegalFunction"),
+            (2, "IllegalAddress"),
+            (3, "IllegalValue"),
+            (4, "SlaveFailure"),
+            (5, "Acknowledge"),
+            (6, "SlaveBusy"),
+            (7, "MemoryParityError"),
+            (10, "GatewayPathUnavailable"),
+            (11, "GatewayNoResponse"),
+        ):
+            function_error.append({
+                "value": i,
+                "text": txt,
+                "selected": i == self.call_response.error_response
+            })
+
+        range_start = (
+            self.call_monitor.range_start
+            if self.call_monitor.range_start != -1
+            else None
+        )
+        range_stop = (
+            self.call_monitor.range_stop
+            if self.call_monitor.range_stop != -1
+            else None
+        )
+
+        function_codes = []
+        for function in self.request_lookup.values():
+            function_codes.append({
+                "value": function.function_code,    # type: ignore[attr-defined]
+                "text": function.function_code_name,    # type: ignore[attr-defined]
+                "selected": function.function_code == self.call_monitor.function  # type: ignore[attr-defined]
+            })
+
+        simulation_action = "ACTIVE" if self.call_response.active != RESPONSE_INACTIVE else ""
+
+        max_len = MAX_FILTER if self.call_monitor.active else 0
+        while len(self.call_list) > max_len:
+            del self.call_list[0]
+        call_rows = []
+        for entry in reversed(self.call_list):
+            call_rows.append({
+                "call": entry.call,
+                "fc": entry.fc,
+                "address": entry.address,
+                "count": entry.count,
+                "data": entry.data.decode()
+            })
+
+        json_response = {
+            "simulation_action": simulation_action,
+            "range_start": range_start,
+            "range_stop": range_stop,
+            "function_codes": function_codes,
+            "function_show_hex_checked": self.call_monitor.hex,
+            "function_show_decoded_checked": self.call_monitor.decode,
+            "function_response_normal_checked": self.call_response.active == RESPONSE_NORMAL,
+            "function_response_error_checked": self.call_response.active == RESPONSE_ERROR,
+            "function_response_empty_checked": self.call_response.active == RESPONSE_EMPTY,
+            "function_response_junk_checked": self.call_response.active == RESPONSE_JUNK,
+            "function_response_split_checked": self.call_response.split > 0,
+            "function_response_split_delay": self.call_response.split,
+            "function_response_cr_checked": self.call_response.change_rate > 0,
+            "function_response_cr_pct": self.call_response.change_rate,
+            "function_response_delay": self.call_response.delay,
+            "function_response_junk": self.call_response.junk_len,
+            "function_error": function_error,
+            "function_response_clear_after": self.call_response.clear_after,
+            "call_rows": call_rows,
+            "foot": foot,
+            "result": result_txt
+        }
+
+        return json_response
+
+    def build_json_log(self, params):
         """Build json log page."""
-        return f"json build log: {params} - {json_dict}"
+        return {"result": "error", "error": "log endpoint not implemented", "params": params}
 
-    def build_json_server(self, params, json_dict):
+    def build_json_server(self, params):
         """Build html server page."""
-        return f"json build server: {params} - {json_dict}"
+        return {"result": "error", "error": "server endpoint not implemented", "params": params}
 
-    def helper_build_html_submit(self, params):
+    def helper_handle_submit(self, params, submit_actions):
         """Build html register submit."""
         try:
             range_start = int(params.get("range_start", -1))
@@ -486,9 +621,9 @@ class ModbusSimulatorServer:
             range_stop = int(params.get("range_stop", range_start))
         except ValueError:
             range_stop = -1
-        if (submit := params["submit"]) not in self.submit:
+        if (submit := params["submit"]) not in submit_actions:
             return None, None
-        return self.submit[submit](params, range_start, range_stop)
+        return submit_actions[submit](params, range_start, range_stop)
 
     def action_clear(self, _params, _range_start, _range_stop):
         """Clear register filter."""

@@ -13,8 +13,8 @@ All available modbus calls are present.
 If you are performing a request that is not available in the client
 mixin, you have to perform the request like this instead::
 
-    from pymodbus.diag_message import ClearCountersRequest
-    from pymodbus.diag_message import ClearCountersResponse
+    from pymodbus.pdu.diag_message import ClearCountersRequest
+    from pymodbus.pdu.diag_message import ClearCountersResponse
 
     request  = ClearCountersRequest()
     response = client.execute(request)
@@ -136,6 +136,11 @@ async def async_handle_holding_registers(client):
     rr = await client.read_holding_registers(1, 8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == [10] * 8
+
+    await client.write_registers(1, [10], slave=SLAVE)
+    rr = await client.read_holding_registers(1, 1, slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    assert rr.registers == [10]
 
     _logger.info("### write read holding registers")
     arguments = {

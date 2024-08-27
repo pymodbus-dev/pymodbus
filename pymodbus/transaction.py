@@ -214,82 +214,78 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 ):
                     Log.debug("Clearing current Frame: - {}", _buffer)
                     self.client.framer.resetFrame()
-                if broadcast := not request.slave_id:
-                    self._transact(request, None, broadcast=True)
-                    response = b"Broadcast write sent - no response expected"
+                broadcast = not request.slave_id
+                expected_response_length = None
+                if not isinstance(self.client.framer, ModbusSocketFramer):
+                    if hasattr(request, "get_response_pdu_size"):
+                        response_pdu_size = request.get_response_pdu_size()
+                        if isinstance(self.client.framer, ModbusAsciiFramer):
+                            response_pdu_size *= 2
+                        if response_pdu_size:
+                            expected_response_length = (
+                                self._calculate_response_length(response_pdu_size)
+                            )
+                if (  # pylint: disable=simplifiable-if-statement
+                    request.slave_id in self._no_response_devices
+                ):
+                    full = True
                 else:
-                    expected_response_length = None
-                    if not isinstance(self.client.framer, ModbusSocketFramer):
-                        if hasattr(request, "get_response_pdu_size"):
-                            response_pdu_size = request.get_response_pdu_size()
-                            if isinstance(self.client.framer, ModbusAsciiFramer):
-                                response_pdu_size *= 2
-                            if response_pdu_size:
-                                expected_response_length = (
-                                    self._calculate_response_length(response_pdu_size)
-                                )
-                    if (  # pylint: disable=simplifiable-if-statement
-                        request.slave_id in self._no_response_devices
-                    ):
-                        full = True
-                    else:
-                        full = False
-                    is_udp = False
-                    if self.client.comm_params.comm_type == CommType.UDP:
-                        is_udp = True
-                        full = True
-                        if not expected_response_length:
-                            expected_response_length = 1024
-                    response, last_exception = self._transact(
-                        request,
-                        expected_response_length,
-                        full=full,
-                        broadcast=broadcast,
+                    full = False
+                is_udp = False
+                if self.client.comm_params.comm_type == CommType.UDP:
+                    is_udp = True
+                    full = True
+                    if not expected_response_length:
+                        expected_response_length = 1024
+                response, last_exception = self._transact(
+                    request,
+                    expected_response_length,
+                    full=full,
+                    broadcast=broadcast,
+                )
+                while retries > 0:
+                    valid_response = self._validate_response(
+                        request, response, expected_response_length,
+                        is_udp=is_udp
                     )
-                    while retries > 0:
-                        valid_response = self._validate_response(
-                            request, response, expected_response_length,
-                            is_udp=is_udp
-                        )
-                        if valid_response:
-                            if (
-                                request.slave_id in self._no_response_devices
-                                and response
-                            ):
-                                self._no_response_devices.remove(request.slave_id)
-                                Log.debug("Got response!!!")
-                            break
-                        if not response:
-                            if request.slave_id not in self._no_response_devices:
-                                self._no_response_devices.append(request.slave_id)
-                            # No response received and retries not enabled
+                    if valid_response:
+                        if (
+                            request.slave_id in self._no_response_devices
+                            and response
+                        ):
+                            self._no_response_devices.remove(request.slave_id)
+                            Log.debug("Got response!!!")
                         break
-                    self.client.framer.processIncomingPacket(
-                        response,
-                        self.addTransaction,
-                        request.slave_id,
-                        tid=request.transaction_id,
-                    )
-                    if not (response := self.getTransaction(request.transaction_id)):
-                        if len(self.transactions):
-                            response = self.getTransaction(tid=0)
-                        else:
-                            last_exception = last_exception or (
-                                "No Response received from the remote slave"
-                                "/Unable to decode response"
-                            )
-                            response = ModbusIOException(
-                                last_exception, request.function_code  # type: ignore[assignment]
-                            )
-                        self.client.close()
-                    if hasattr(self.client, "state"):
-                        Log.debug(
-                            "Changing transaction state from "
-                            '"PROCESSING REPLY" to '
-                            '"TRANSACTION_COMPLETE"'
+                    if not response:
+                        if request.slave_id not in self._no_response_devices:
+                            self._no_response_devices.append(request.slave_id)
+                    # No response received and retries not enabled
+                    break
+                self.client.framer.processIncomingPacket(
+                    response,
+                    self.addTransaction,
+                    request.slave_id,
+                    tid=request.transaction_id,
+                )
+                if not (response := self.getTransaction(request.transaction_id)):
+                    if len(self.transactions):
+                        response = self.getTransaction(tid=0)
+                    else:
+                        last_exception = last_exception or (
+                            "No Response received from the remote slave"
+                            "/Unable to decode response"
                         )
-                        self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
-
+                        response = ModbusIOException(
+                            last_exception, request.function_code
+                        )
+                    self.client.close()
+                if hasattr(self.client, "state"):
+                    Log.debug(
+                        "Changing transaction state from "
+                        '"PROCESSING REPLY" to '
+                        '"TRANSACTION_COMPLETE"'
+                    )
+                    self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
                 return response
             except ModbusIOException as exc:
                 # Handle decode errors in processIncomingPacket method

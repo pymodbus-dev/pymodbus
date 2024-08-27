@@ -7,6 +7,12 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.7.2
+-------------
+* Correct README
+* Rename branch wait3.8.0 to wait_next_API
+
+
 Version 3.7.1
 -------------
 * Better error message, when pyserial is missing.

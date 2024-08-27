@@ -161,20 +161,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         )
         assert isinstance(trans.execute(request), ModbusIOException)
 
-        # Broadcast
-        request.slave_id = 0
-        response = trans.execute(request)
-        assert response == b"Broadcast write sent - no response expected"
-
-        # Broadcast w/ Local echo
-        client.comm_params.handle_local_echo = True
-        mock_recv.reset_mock(return_value=b"deadbeef")
-        request.slave_id = 0
-        response = trans.execute(request)
-        assert response == b"Broadcast write sent - no response expected"
-        mock_recv.assert_called_once_with(8, False)
-        client.comm_params.handle_local_echo = False
-
     def test_transaction_manager_tid(self):
         """Test the transaction manager TID."""
         for tid in range(1, self._manager.getNextTID() + 10):

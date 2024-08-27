@@ -214,10 +214,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 ):
                     Log.debug("Clearing current Frame: - {}", _buffer)
                     self.client.framer.resetFrame()
-                if broadcast := not request.slave_id:
-                    self._transact(request, None, broadcast=True)
-                    return b"Broadcast write sent - no response expected"
-
+                broadcast = not request.slave_id
                 expected_response_length = None
                 if not isinstance(self.client.framer, ModbusSocketFramer):
                     if hasattr(request, "get_response_pdu_size"):
@@ -279,7 +276,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                             "/Unable to decode response"
                         )
                         response = ModbusIOException(
-                            last_exception, request.function_code  # type: ignore[assignment]
+                            last_exception, request.function_code
                         )
                     self.client.close()
                 if hasattr(self.client, "state"):

@@ -13,9 +13,9 @@ __pycache__/
 .venv
 .vscode
 .vscode/
-build/
 prof/
-/dist/
+dist/pymodbus*
+build/html
 /pymodbus.egg-info/
 venv
 downloaded_files/

@@ -1,10 +1,11 @@
 """Modbus client async serial communication."""
 from __future__ import annotations
 
+import contextlib
+import sys
 import time
 from collections.abc import Callable
 from functools import partial
-from typing import TYPE_CHECKING
 
 from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
@@ -14,15 +15,9 @@ from pymodbus.transport import CommParams, CommType
 from pymodbus.utilities import ModbusTransactionState
 
 
-try:
+with contextlib.suppress(ImportError):
     import serial
 
-    PYSERIAL_MISSING = False
-except ImportError:
-    PYSERIAL_MISSING = True
-    if TYPE_CHECKING:  # always False at runtime
-        # type checkers do not understand the Raise RuntimeError in __init__()
-        import serial
 
 class AsyncModbusSerialClient(ModbusBaseClient):
     """**AsyncModbusSerialClient**.
@@ -82,7 +77,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         on_connect_callback: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
-        if PYSERIAL_MISSING:
+        if "serial" not in sys.modules:
             raise RuntimeError(
                 "Serial client requires pyserial "
                 'Please install with "pip install pyserial" and try again.'
@@ -191,6 +186,11 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             framer,
             retries,
         )
+        if "serial" not in sys.modules:
+            raise RuntimeError(
+                "Serial client requires pyserial "
+                'Please install with "pip install pyserial" and try again.'
+            )
         self.socket: serial.Serial | None = None
         self.last_frame_end = None
         self._t0 = float(1 + bytesize + stopbits) / baudrate

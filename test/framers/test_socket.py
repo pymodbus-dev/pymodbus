@@ -35,7 +35,7 @@ class TestFramerSocket:
 
 
     @pytest.mark.parametrize(
-        ("data", "dev_id", "tid", "res_msg"),
+        ("data", "dev_id", "tr_id", "res_msg"),
         [
             (b'\x01\x05\x04\x00\x17', 7, 5, b'\x00\x05\x00\x00\x00\x06\x07\x01\x05\x04\x00\x17'),
             (b'\x03\x07\x06\x00\x73', 2, 9, b'\x00\x09\x00\x00\x00\x06\x02\x03\x07\x06\x00\x73'),
@@ -43,11 +43,11 @@ class TestFramerSocket:
             (b'\x84\x01', 4, 8, b'\x00\x08\x00\x00\x00\x03\x04\x84\x01'),
         ],
     )
-    def test_roundtrip(self, frame, data, dev_id, tid, res_msg):
+    def test_roundtrip(self, frame, data, dev_id, tr_id, res_msg):
         """Test encode."""
-        msg = frame.encode(data, dev_id, tid)
+        msg = frame.encode(data, dev_id, tr_id)
         res_len, res_tid, res_id, res_data = frame.decode(msg)
         assert data == res_data
         assert dev_id == res_id
-        assert tid == res_tid
+        assert tr_id == res_tid
         assert res_len == len(res_msg)

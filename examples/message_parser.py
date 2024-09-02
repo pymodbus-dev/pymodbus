@@ -80,10 +80,7 @@ class Decoder:
             print(f"{decoder.decoder.__class__.__name__}")
             print("-" * 80)
             try:
-                slave = decoder._header.get(  # pylint: disable=protected-access
-                    "uid", 0x00
-                )
-                decoder.processIncomingPacket(message, self.report, slave)
+                decoder.processIncomingPacket(message, self.report, 0)
             except Exception:  # pylint: disable=broad-except
                 self.check_errors(decoder, message)
 

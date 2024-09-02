@@ -74,17 +74,17 @@ class TestFramer:
         assert res_data == t_data
 
     @pytest.mark.parametrize(
-        ("data", "dev_id", "tid", "res_data"), [
+        ("data", "dev_id", "tr_id", "res_data"), [
         (b'\x01\x02', 5, 6, b'\x05\x06\x01\x02'),
         (b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09', 17, 25, b'\x11\x19\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09'),
     ])
-    async def test_framer_encode(self, dummy_framer, data, dev_id, tid, res_data):
+    async def test_framer_encode(self, dummy_framer, data, dev_id, tr_id, res_data):
         """Test decode method in all types."""
-        t_data = dummy_framer.handle.encode(data, dev_id, tid)
+        t_data = dummy_framer.handle.encode(data, dev_id, tr_id)
         assert res_data == t_data
 
     @pytest.mark.parametrize(
-        ("func", "lrc", "expect"),
+        ("func", "test_compare", "expect"),
         [(FramerAscii.check_LRC, 0x1c, True),
          (FramerAscii.check_LRC, 0x0c, False),
          (FramerAscii.compute_LRC, None, 0x1c),
@@ -93,10 +93,10 @@ class TestFramer:
          (FramerRTU.compute_CRC, None, 0xE2DB),
         ]
     )
-    def test_LRC_CRC(self, func, lrc, expect):
+    def test_LRC_CRC(self, func, test_compare, expect):
         """Test check_LRC."""
         data = b'\x12\x34\x23\x45\x34\x56\x45\x67'
-        assert expect == func(data, lrc) if lrc else func(data)
+        assert expect == func(data, test_compare) if test_compare else func(data)
 
     def test_roundtrip_LRC(self):
         """Test combined compute/check LRC."""
@@ -226,23 +226,23 @@ class TestFramerType:
         ]
     )
     @pytest.mark.parametrize(
-        ("inx3", "tid"),
+        ("inx3", "tr_id"),
         [
             (0, 0),
             (9, 3077),
         ]
     )
-    def test_encode_type(self, frame, frame_expected, data, dev_id, tid, inx1, inx2, inx3):
+    def test_encode_type(self, frame, frame_expected, data, dev_id, tr_id, inx1, inx2, inx3):
         """Test encode method."""
-        if frame == FramerTLS and dev_id + tid:
+        if frame == FramerTLS and dev_id + tr_id:
             return
         frame_obj = frame()
         expected = frame_expected[inx1 + inx2 + inx3]
-        encoded_data = frame_obj.encode(data, dev_id, tid)
+        encoded_data = frame_obj.encode(data, dev_id, tr_id)
         assert encoded_data == expected
 
     @pytest.mark.parametrize(
-        ("entry", "is_server", "data", "dev_id", "tid", "expected"),
+        ("entry", "is_server", "data", "dev_id", "tr_id", "expected"),
         [
             (FramerType.ASCII, True, b':0003007C00027F\r\n', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
             (FramerType.ASCII, False, b':000304008D008EDE\r\n', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
@@ -293,7 +293,7 @@ class TestFramerType:
             "single",
         ]
     )
-    async def test_decode_type(self, entry, dummy_framer, data, dev_id, tid, expected, split):
+    async def test_decode_type(self, entry, dummy_framer, data, dev_id, tr_id, expected, split):
         """Test encode method."""
         if entry == FramerType.TLS and split != "no":
             return
@@ -314,7 +314,7 @@ class TestFramerType:
                 dummy_framer.callback_request_response.assert_not_called()
             used_len = dummy_framer.callback_data(data)
         assert used_len == len(data)
-        dummy_framer.callback_request_response.assert_called_with(expected, dev_id, tid)
+        dummy_framer.callback_request_response.assert_called_with(expected, dev_id, tr_id)
 
     @pytest.mark.parametrize(
         ("entry", "data", "exp"),

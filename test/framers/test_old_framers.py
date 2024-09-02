@@ -58,36 +58,15 @@ class TestFramers:
         assert framer._buffer == b""  # pylint: disable=protected-access
         assert framer.decoder == decoder
         if isinstance(framer, ModbusAsciiFramer):
-            assert framer._header == {  # pylint: disable=protected-access
-                "tid": 0,
-                "pid": 0,
-                "lrc": "0000",
-                "len": 0,
-                "uid": 0x00,
-                "crc": b"\x00\x00",
-            }
+            assert not framer.dev_id
             assert framer._hsize == 0x02  # pylint: disable=protected-access
             assert framer._start == b":"  # pylint: disable=protected-access
             assert framer._end == b"\r\n"  # pylint: disable=protected-access
         elif isinstance(framer, ModbusRtuFramer):
-            assert framer._header == {  # pylint: disable=protected-access
-                "tid": 0,
-                "pid": 0,
-                "lrc": "0000",
-                "uid": 0x00,
-                "len": 0,
-                "crc": b"\x00\x00",
-            }
+            assert not framer.dev_id
             assert framer._hsize == 0x01  # pylint: disable=protected-access
         else:
-            assert framer._header == {  # pylint: disable=protected-access
-                "tid": 0,
-                "pid": 0,
-                "lrc": "0000",
-                "crc": b"\x00\x00",
-                "len": 0,
-                "uid": 0x00,
-            }
+            assert not framer.dev_id
             assert framer._hsize == 0x07  # pylint: disable=protected-access
 
 
@@ -115,18 +94,14 @@ class TestFramers:
 
 
     @pytest.mark.parametrize(
-        ("data", "header", "res"),
+        ("data", "res"),
         [
-            (b"", {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}, 0),
-            (b"abcd", {"uid": 0x00, "len": 2, "crc": b"\x00\x00"}, 0),
-            (
-                b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x12\x03",  # real case, frame size is 11
-                {"uid": 0x00, "len": 11, "crc": b"\x00\x00"},
-                1,
-            ),
+            (b"", 0),
+            (b"abcd", 0),
+            (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x12\x03", 1),  # real case, frame size is 11
         ],
     )
-    def test_rtu_advance_framer(self, rtu_framer, data, header, res):
+    def test_rtu_advance_framer(self, rtu_framer, data, res):
         """Test rtu advance framer."""
         count = 0
         result = None
@@ -136,7 +111,7 @@ class TestFramers:
             count += 1
             result = data
 
-        rtu_framer._header = header  # pylint: disable=protected-access
+        rtu_framer.dev_id = 0
         rtu_framer.processIncomingPacket(data, callback, self.slaves)
         assert count == res
 
@@ -146,14 +121,7 @@ class TestFramers:
         """Test rtu reset framer."""
         rtu_framer._buffer = data  # pylint: disable=protected-access
         rtu_framer.resetFrame()
-        assert rtu_framer._header == {  # pylint: disable=protected-access
-            "lrc": "0000",
-            "crc": b"\x00\x00",
-            "len": 0,
-            "uid": 0x00,
-            "pid": 0,
-            "tid": 0,
-        }
+        assert not rtu_framer.dev_id
 
 
     @pytest.mark.parametrize(
@@ -192,7 +160,7 @@ class TestFramers:
             b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x43",
         ],
     )
-    def test_rtu_populate_header_fail(self, rtu_framer, data):
+    def test_rtu_populate_fail(self, rtu_framer, data):
         """Test rtu populate header fail."""
         count = 0
         result = None
@@ -208,29 +176,17 @@ class TestFramers:
         assert count
 
     @pytest.mark.parametrize(
-        ("data", "header"),
+        ("data", "dev_id"),
         [
             (
-                b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD",
-                {
-                    "crc": b"\x49\xAD",
-                    "uid": 17,
-                    "len": 11,
-                    "tid": 0,
-                },
+                b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD", 17,
             ),
             (
-                b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x11\x03",
-                {
-                    "crc": b"\x49\xAD",
-                    "uid": 17,
-                    "len": 11,
-                    "tid": 0,
-                },
+                b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x11\x03", 17,
             ),
         ],
     )
-    def test_rtu_populate_header(self, rtu_framer, data, header):
+    def test_rtu_populate(self, rtu_framer, data, dev_id):
         """Test rtu populate header."""
         count = 0
         result = None
@@ -241,7 +197,7 @@ class TestFramers:
             result = data
 
         rtu_framer.processIncomingPacket(data, callback, self.slaves)
-        assert rtu_framer._header == header  # pylint: disable=protected-access
+        assert rtu_framer.dev_id == dev_id
 
 
     def test_get_frame(self, rtu_framer):
@@ -262,7 +218,7 @@ class TestFramers:
 
     def test_populate_result(self, rtu_framer):
         """Test populate result."""
-        rtu_framer._header["uid"] = 255  # pylint: disable=protected-access
+        rtu_framer.dev_id = 255
         result = mock.Mock()
         rtu_framer.populateResult(result)
         assert result.slave_id == 255

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.framer.base import FramerBase
@@ -41,20 +41,10 @@ class ModbusFramer:
         """
         self.decoder = decoder
         self.client = client
-        self._header: dict[str, Any]
-        self._reset_header()
         self._buffer = b""
         self.message_handler: FramerBase
-
-    def _reset_header(self) -> None:
-        self._header = {
-            "lrc": "0000",
-            "len": 0,
-            "uid": 0x00,
-            "tid": 0,
-            "pid": 0,
-            "crc": b"\x00\x00",
-        }
+        self.tid = 0
+        self.dev_id = 0
 
     def _validate_slave_id(self, slaves: list, single: bool) -> bool:
         """Validate if the received data is valid for the client.
@@ -69,7 +59,7 @@ class ModbusFramer:
             # Handle Modbus TCP slave identifier (0x00 0r 0xFF)
             # in asynchronous requests
             return True
-        return self._header["uid"] in slaves
+        return self.dev_id in slaves
 
     def sendPacket(self, message: bytes):
         """Send packets on the bus.
@@ -104,14 +94,8 @@ class ModbusFramer:
             "Resetting frame - Current Frame in buffer - {}", self._buffer, ":hex"
         )
         self._buffer = b""
-        self._header = {
-            "lrc": "0000",
-            "crc": b"\x00\x00",
-            "len": 0,
-            "uid": 0x00,
-            "pid": 0,
-            "tid": 0,
-        }
+        self.dev_id = 0
+        self.tid = 0
 
     def populateResult(self, result):
         """Populate the modbus result header.
@@ -121,9 +105,9 @@ class ModbusFramer:
 
         :param result: The response packet
         """
-        result.slave_id = self._header.get("uid", 0)
-        result.transaction_id = self._header.get("tid", 0)
-        result.protocol_id = self._header.get("pid", 0)
+        result.slave_id = self.dev_id
+        result.transaction_id = self.tid
+        result.protocol_id = 0
 
     def processIncomingPacket(self, data: bytes, callback, slave, single=False, tid=None):
         """Process new packet pattern.

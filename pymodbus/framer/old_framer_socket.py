@@ -47,12 +47,10 @@ class ModbusSocketFramer(ModbusFramer):
     def decode_data(self, data):
         """Decode data."""
         if len(data) > self._hsize:
-            tid, pid, length, uid, fcode = struct.unpack(
+            _tid, _pid, length, uid, fcode = struct.unpack(
                 SOCKET_FRAME_HEADER, data[0 : self._hsize + 1]
             )
             return {
-                "tid": tid,
-                "pid": pid,
                 "length": length,
                 "slave": uid,
                 "fcode": fcode,
@@ -77,9 +75,8 @@ class ModbusSocketFramer(ModbusFramer):
             used_len, use_tid, dev_id, data = self.message_handler.decode(self._buffer)
             if not data:
                 return
-            self._header["uid"] = dev_id
-            self._header["tid"] = use_tid
-            self._header["pid"] = 0
+            self.dev_id = dev_id
+            self.tid = use_tid
             if not self._validate_slave_id(slave, single):
                 Log.debug("Not a valid slave id - {}, ignoring!!", dev_id)
                 self.resetFrame()
@@ -89,7 +86,6 @@ class ModbusSocketFramer(ModbusFramer):
                 raise ModbusIOException("Unable to decode request")
             self.populateResult(result)
             self._buffer: bytes = self._buffer[used_len:]
-            self._reset_header()
             if tid and tid != result.transaction_id:
                 self.resetFrame()
             else:

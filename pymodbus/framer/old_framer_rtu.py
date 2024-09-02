@@ -60,6 +60,7 @@ class ModbusRtuFramer(ModbusFramer):
         self._hsize = 0x01
         self.function_codes = decoder.lookup.keys() if decoder else {}
         self.message_handler = FramerRTU()
+        self.msg_len = 0
 
     def decode_data(self, data):
         """Decode data."""
@@ -75,20 +76,17 @@ class ModbusRtuFramer(ModbusFramer):
 
         def is_frame_ready(self):
             """Check if we should continue decode logic."""
-            size = self._header.get("len", 0)
+            size = self.msg_len
             if not size and len(self._buffer) > self._hsize:
                 try:
-                    self._header["uid"] = int(self._buffer[0])
-                    self._header["tid"] = int(self._buffer[0])
-                    self._header["tid"] = 0  # fix for now
+                    self.dev_id = int(self._buffer[0])
                     func_code = int(self._buffer[1])
                     pdu_class = self.decoder.lookupPduClass(func_code)
                     size = pdu_class.calculateRtuFrameSize(self._buffer)
-                    self._header["len"] = size
+                    self.msg_len = size
 
                     if len(self._buffer) < size:
                         raise IndexError
-                    self._header["crc"] = self._buffer[size - 2 : size]
                 except IndexError:
                     return False
             return len(self._buffer) >= size if size > 0 else False
@@ -116,20 +114,17 @@ class ModbusRtuFramer(ModbusFramer):
         def check_frame(self):
             """Check if the next frame is available."""
             try:
-                self._header["uid"] = int(self._buffer[0])
-                self._header["tid"] = int(self._buffer[0])
-                self._header["tid"] = 0  # fix for now
+                self.dev_id = int(self._buffer[0])
                 func_code = int(self._buffer[1])
                 pdu_class = self.decoder.lookupPduClass(func_code)
                 size = pdu_class.calculateRtuFrameSize(self._buffer)
-                self._header["len"] = size
+                self.msg_len = size
 
                 if len(self._buffer) < size:
                     raise IndexError
-                self._header["crc"] = self._buffer[size - 2 : size]
-                frame_size = self._header["len"]
+                frame_size = self.msg_len
                 data = self._buffer[: frame_size - 2]
-                crc = self._header["crc"]
+                crc = self._buffer[size - 2 : size]
                 crc_val = (int(crc[0]) << 8) + int(crc[1])
                 return FramerRTU.check_CRC(data, crc_val)
             except (IndexError, KeyError, struct.error):
@@ -138,7 +133,8 @@ class ModbusRtuFramer(ModbusFramer):
         broadcast = not slave[0]
         skip_cur_frame = False
         while get_frame_start(self, slave, broadcast, skip_cur_frame):
-            self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
+            self.dev_id = 0
+            self.msg_len = 0
             if not is_frame_ready(self):
                 Log.debug("Frame - not ready")
                 break
@@ -150,7 +146,7 @@ class ModbusRtuFramer(ModbusFramer):
                 skip_cur_frame = True
                 continue
             start = self._hsize
-            end = self._header["len"] - 2
+            end = self.msg_len - 2
             buffer = self._buffer[start:end]
             if end > 0:
                 Log.debug("Getting Frame - {}", buffer, ":hex")
@@ -159,9 +155,9 @@ class ModbusRtuFramer(ModbusFramer):
                 data = b""
             if (result := self.decoder.decode(data)) is None:
                 raise ModbusIOException("Unable to decode request")
-            result.slave_id = self._header["uid"]
+            result.slave_id = self.dev_id
             result.transaction_id = 0
-            self._buffer = self._buffer[self._header["len"] :]
+            self._buffer = self._buffer[self.msg_len :]
             Log.debug("Frame advanced, resetting header!!")
             callback(result)  # defer or push to a thread?
 

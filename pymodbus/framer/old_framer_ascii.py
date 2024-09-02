@@ -57,7 +57,7 @@ class ModbusAsciiFramer(ModbusFramer):
                     return
                 self._buffer = self._buffer[used_len :]
                 continue
-            self._header["uid"] = dev_id
+            self.dev_id = dev_id
             if not self._validate_slave_id(slave, single):
                 Log.error("Not a valid slave id - {}, ignoring!!", dev_id)
                 self.resetFrame()
@@ -67,5 +67,5 @@ class ModbusAsciiFramer(ModbusFramer):
                 raise ModbusIOException("Unable to decode response")
             self.populateResult(result)
             self._buffer = self._buffer[used_len :]
-            self._header = {"uid": 0x00}
+            self.dev_id = 0
             callback(result)  # defer this

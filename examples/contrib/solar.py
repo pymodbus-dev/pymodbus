@@ -3,7 +3,7 @@
 
 Modified to test long term connection.
 
-Modified to actualy work with Huawei SUN2000 inverters, that better support async Modbus operations so errors will occur
+Modified to actually work with Huawei SUN2000 inverters, that better support async Modbus operations so errors will occur
 Configure HOST (the IP address of the inverter as a string), PORT and CYCLES to fit your needs
 
 """

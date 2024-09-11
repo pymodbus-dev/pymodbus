@@ -138,7 +138,7 @@ def unpack_bitstring(data: bytes) -> list[bool]:
     byte_count = len(data)
     bits = []
     for byte in range(byte_count):
-        value = int(int(data[byte]))
+        value = int(data[byte])
         for _ in range(8):
             bits.append((value & 1) == 1)
             value >>= 1

@@ -9,6 +9,7 @@ Configure HOST (the IP address of the inverter as a string), PORT and CYCLES to 
 """
 import logging
 from enum import Enum
+from math import log10
 from time import sleep
 
 from pymodbus import pymodbus_apply_logging_config
@@ -41,17 +42,16 @@ def main() -> None:
         port=PORT,
         # Common optional parameters:
         framer=FramerType.SOCKET,
-        timeout=1,
+        timeout=5,
     )
     client.connect()
     _logger.info("### Client connected")
     sleep(1)
     _logger.info("### Client starting")
-    sleep_time = 2
     for count in range(CYCLES):
         _logger.info(f"Running loop {count}")
         solar_calls(client)
-        sleep(sleep_time)  # scan_interval
+        sleep(10)  # scan interval
     client.close()
     _logger.info("### End of Program")
 
@@ -61,17 +61,17 @@ def solar_calls(client: ModbusTcpClient) -> None:
     error = False
         
     for addr, format, factor, comment, unit in ( # data_type according to ModbusClientMixin.DATATYPE.value[0]
-        (32008, "H", 1, "Alarm 1", "(bitfield)"),
-        (32009, "H", 1, "Alarm 2", "(bitfield)"),
-        (32010, "H", 1, "Alarm 3", "(bitfield)"),
-        (32016, "h", 0.1, "PV 1 voltage", "V"),
-        (32017, "h", 0.01, "PV 1 current", "A"),
-        (32018, "h", 0.1, "PV 2 voltage", "V"),
-        (32019, "h", 0.01, "PV 2 current", "A"),
-        (32064, "i", 0.001, "Input power", "kW"),
+        (32008, "H", 1,     "Alarm 1",                          "(bitfield)"),
+        (32009, "H", 1,     "Alarm 2",                          "(bitfield)"),
+        (32010, "H", 1,     "Alarm 3",                          "(bitfield)"),
+        (32016, "h", 0.1,   "PV 1 voltage",                     "V"),
+        (32017, "h", 0.01,  "PV 1 current",                     "A"),
+        (32018, "h", 0.1,   "PV 2 voltage",                     "V"),
+        (32019, "h", 0.01,  "PV 2 current",                     "A"),
+        (32064, "i", 0.001, "Input power",                      "kW"),
         (32078, "i", 0.001, "Peak active power of current day", "kW"),
-        (32080, "i", 0.001, "Active power", "kW"),
-        (37114, "I", 0.001, "Daily energy yield", "kW"),
+        (32080, "i", 0.001, "Active power",                     "kW"),
+        (32114, "I", 0.001, "Daily energy yield",               "kWh"),
     ):
         if error:
             error = False
@@ -82,8 +82,9 @@ def solar_calls(client: ModbusTcpClient) -> None:
         
         data_type = get_data_type(format)
         count = data_type.value[1]
+        var_type = data_type.name
 
-        _logger.info(f"*** Reading {comment}")
+        _logger.info(f"*** Reading {comment} ({var_type})")
         
         try:
             rr = client.read_holding_registers(address=addr, count=count, slave=1)
@@ -101,6 +102,8 @@ def solar_calls(client: ModbusTcpClient) -> None:
             continue
         
         value = client.convert_from_registers(rr.registers, data_type) * factor
+        if factor < 1:
+            value = round(value, int(log10(factor) * -1))
         _logger.info(f"*** READ *** {comment} = {value} {unit}")
 
 

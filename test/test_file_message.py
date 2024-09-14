@@ -167,13 +167,18 @@ class TestBitMessage:
 
     def test_read_file_record_response_decode(self):
         """Test basic bit message encoding/decoding."""
-        record = FileRecord(
+        record1 = FileRecord(
             file_number=0x00, record_number=0x00, record_data=b"\x0d\xfe\x00\x20"
         )
-        request = b"\x0c\x05\x06\x0d\xfe\x00\x20\x05\x05\x06\x33\xcd\x00\x40"
+        record2 = FileRecord(
+            file_number=0x00, record_number=0x00, record_data=b"\x33\xcd\x00\x40"
+        )
+        response = b"\x0c\x05\x06\x0d\xfe\x00\x20\x05\x06\x33\xcd\x00\x40"
         handle = ReadFileRecordResponse()
-        handle.decode(request)
-        assert handle.records[0] == record
+        handle.decode(response)
+
+        assert handle.records[0] == record1
+        assert handle.records[1] == record2
 
     def test_read_file_record_response_rtu_frame_size(self):
         """Test basic bit message encoding/decoding."""

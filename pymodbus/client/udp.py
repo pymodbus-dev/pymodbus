@@ -31,7 +31,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
-    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param on_connect_callback: Function that will be called just before a connection attempt.
 
     .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect, from

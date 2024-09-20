@@ -160,7 +160,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
 
     @property
     def connected(self) -> bool:
-        """Connect internal."""
+        """Check if socket exists."""
         return self.socket is not None
 
     def connect(self):

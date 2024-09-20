@@ -210,7 +210,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     @property
     def connected(self) -> bool:
         """Check if socket exists."""
-        return self.socket is not None        
+        return self.socket is not None
 
     def connect(self) -> bool:
         """Connect to the modbus serial server."""

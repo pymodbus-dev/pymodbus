@@ -6,6 +6,7 @@ import struct
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.pdu import ExceptionResponse
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 
 
@@ -146,6 +147,8 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
         values = await context.async_getValues(
             self.function_code, self.address, self.count
         )
+        if isinstance(values, ExceptionResponse):
+            return values
         return ReadHoldingRegistersResponse(values)
 
 
@@ -206,6 +209,8 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
         values = await context.async_getValues(
             self.function_code, self.address, self.count
         )
+        if isinstance(values, ExceptionResponse):
+            return values
         return ReadInputRegistersResponse(values)
 
 
@@ -327,6 +332,8 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
         registers = await context.async_getValues(
             self.function_code, self.read_address, self.read_count
         )
+        if isinstance(registers, ExceptionResponse):
+            return registers
         return ReadWriteMultipleRegistersResponse(registers)
 
     def get_response_pdu_size(self):

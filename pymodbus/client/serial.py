@@ -208,9 +208,9 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         self.silent_interval = round(self.silent_interval, 6)
 
     @property
-    def connected(self):
-        """Connect internal."""
-        return self.connect()
+    def connected(self) -> bool:
+        """Check if socket exists."""
+        return self.socket is not None
 
     def connect(self) -> bool:
         """Connect to the modbus serial server."""

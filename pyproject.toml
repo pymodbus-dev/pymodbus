@@ -51,7 +51,7 @@ repl = [
 
 simulator = [
     "aiohttp>=3.8.6;python_version<'3.12'",
-    "aiohttp>=3.9.5;python_version=='3.12'"
+    "aiohttp>=3.10.5;python_version=='3.12'"
 ]
 documentation = [
     "recommonmark>=0.7.1",
@@ -59,13 +59,13 @@ documentation = [
     "sphinx-rtd-theme>=2.0.0"
 ]
 development = [
-    "build>=1.2.1",
+    "build>=1.2.2",
     "codespell>=2.3.0",
-    "coverage>=7.6.0",
-    "mypy>=1.10.1",
-    "pylint>=3.2.5",
-    "pytest>=8.2.2",
-    "pytest-asyncio>=0.23.8",
+    "coverage>=7.6.1",
+    "mypy>=1.11.2",
+    "pylint>=3.3.0",
+    "pytest>=8.3.3",
+    "pytest-asyncio>=0.24.0",
     "pytest-cov>=5.0.0",
     "pytest-profiling>=1.7.0",
     "pytest-timeout>=2.3.1",
@@ -163,7 +163,8 @@ attr-rgx = "([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__))$"
 method-rgx = "[a-z_][a-zA-Z0-9_]{2,}$"
 
 [tool.pylint.design]
-max-args = "10"
+max-positional = 15
+max-args = 10
 max-locals = "25"
 max-returns = "11"
 max-branches = "27"

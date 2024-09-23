@@ -94,28 +94,28 @@ class Log:
     def info(cls, txt, *args):
         """Log info messages."""
         if cls._logger.isEnabledFor(logging.INFO):
-            cls._logger.info(cls.build_msg(txt, *args))
+            cls._logger.info(cls.build_msg(txt, *args), stacklevel=2)
 
     @classmethod
     def debug(cls, txt, *args):
         """Log debug messages."""
         if cls._logger.isEnabledFor(logging.DEBUG):
-            cls._logger.debug(cls.build_msg(txt, *args))
+            cls._logger.debug(cls.build_msg(txt, *args), stacklevel=2)
 
     @classmethod
     def warning(cls, txt, *args):
         """Log warning messages."""
         if cls._logger.isEnabledFor(logging.WARNING):
-            cls._logger.warning(cls.build_msg(txt, *args))
+            cls._logger.warning(cls.build_msg(txt, *args), stacklevel=2)
 
     @classmethod
     def error(cls, txt, *args):
         """Log error messages."""
         if cls._logger.isEnabledFor(logging.ERROR):
-            cls._logger.error(cls.build_msg(txt, *args))
+            cls._logger.error(cls.build_msg(txt, *args), stacklevel=2)
 
     @classmethod
     def critical(cls, txt, *args):
         """Log critical messages."""
         if cls._logger.isEnabledFor(logging.CRITICAL):
-            cls._logger.critical(cls.build_msg(txt, *args))
+            cls._logger.critical(cls.build_msg(txt, *args), stacklevel=2)

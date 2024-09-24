@@ -174,7 +174,7 @@ class TestTransportComm:
     )
     async def test_serial_poll(self, client, server, use_port):
         """Test connection and data exchange."""
-        if SerialTransport.force_poll:
+        if SerialTransport.force_poll:  # pragma: no cover
             client.close()
             server.close()
             return

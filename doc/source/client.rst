@@ -166,8 +166,8 @@ The line :mod:`result = await client.read_coils(2, 3, slave=1)` is an example of
 
 The last line :mod:`client.close()` closes the connection and render the object inactive.
 
-Usage notes
-^^^^^^^^^^^
+Development notes
+^^^^^^^^^^^^^^^^^
 
 Large parts of the implementation are shared between the different classes,
 to ensure high stability and efficient maintenance.

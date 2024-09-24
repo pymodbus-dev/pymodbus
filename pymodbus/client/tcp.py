@@ -108,10 +108,11 @@ class ModbusTcpClient(ModbusBaseSyncClient):
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
 
-    Note that unlike the async client, the sync client does not perform
-    retries. If the connection has closed, the client will attempt to reconnect
-    once before executing each read/write request, and will raise a
-    ConnectionException if this fails.
+    .. tip::
+        Unlike the async client, the sync client does not perform
+        retries. If the connection has closed, the client will attempt to reconnect
+        once before executing each read/write request, and will raise a
+        ConnectionException if this fails.
 
     Example::
 

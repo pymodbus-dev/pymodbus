@@ -123,15 +123,15 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     :param stopbits: Number of stop bits 0-2.
     :param handle_local_echo: Discard local echo from dongle.
     :param name: Set communication name, used in logging
-    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
-    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
+    :param reconnect_delay: Not used in the sync client
+    :param reconnect_delay_max: Not used in the sync client
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
 
-    .. tip::
-        **reconnect_delay** doubles automatically with each unsuccessful connect, from
-        **reconnect_delay** to **reconnect_delay_max**.
-        Set `reconnect_delay=0` to avoid automatic reconnection.
+    Note that unlike the async client, the sync client does not perform
+    retries. If the connection has closed, the client will attempt to reconnect
+    once before executing each read/write request, and will raise a
+    ConnectionException if this fails.
 
     Example::
 
@@ -145,8 +145,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             client.close()
 
     Please refer to :ref:`Pymodbus internals` for advanced usage.
-
-    Remark: There are no automatic reconnect as with AsyncModbusSerialClient
     """
 
     state = ModbusTransactionState.IDLE

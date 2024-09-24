@@ -201,4 +201,4 @@ class TestTransportSerial:
         with mock.patch.dict(sys.modules, {'no_modules': None}) as mock_modules:
             del mock_modules['serial']
             with pytest.raises(RuntimeError):
-                comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy", None, None, None, None, None)
+                SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy", None, None, None, None, None)

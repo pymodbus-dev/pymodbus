@@ -4,7 +4,7 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.transport import CommType, NULLMODEM_HOST
+from pymodbus.transport import NULLMODEM_HOST, CommType
 
 
 class TestTransportReconnect:
@@ -88,5 +88,16 @@ class TestTransportReconnect:
         assert server.transport
         server.connection_lost(None)
         assert not server.transport
-        await asyncio.sleep(0.5)
-        # assert server.transport
+        await asyncio.sleep(1.5)
+        assert server.transport
+        server.close()
+        assert not server.transport
+
+    async def test_relisten_call(self, server):
+        """Test connection_lost()."""
+        server.loop = asyncio.get_running_loop()
+        await server.listen()
+        server.connection_lost(RuntimeError("Listener disconnected lost"))
+        assert server.reconnect_task
+        server.close()
+

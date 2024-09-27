@@ -36,9 +36,9 @@ class CustomModbusResponse(ModbusResponse):
     function_code = 55
     _rtu_byte_count_pos = 2
 
-    def __init__(self, values=None, slave=1, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, values=None, slave=1, transaction=0, skip_encode=False):
         """Initialize."""
-        ModbusResponse.__init__(self, slave, transaction, protocol, skip_encode)
+        ModbusResponse.__init__(self, slave, transaction, skip_encode)
         self.values = values or []
 
     def encode(self):
@@ -68,9 +68,9 @@ class CustomModbusRequest(ModbusRequest):
     function_code = 55
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, slave=1, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, address=None, slave=1, transaction=0, skip_encode=False):
         """Initialize."""
-        ModbusRequest.__init__(self, slave, transaction, protocol, skip_encode)
+        ModbusRequest.__init__(self, slave, transaction, skip_encode)
         self.address = address
         self.count = 16
 
@@ -100,12 +100,12 @@ class CustomModbusRequest(ModbusRequest):
 class Read16CoilsRequest(ReadCoilsRequest):
     """Read 16 coils in one request."""
 
-    def __init__(self, address, count=None, slave=1, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, address, count=None, slave=1, transaction=0, skip_encode=False):
         """Initialize a new instance.
 
         :param address: The address to start reading from
         """
-        ReadCoilsRequest.__init__(self, address, count=16, slave=slave, transaction=transaction, protocol=protocol, skip_encode=skip_encode)
+        ReadCoilsRequest.__init__(self, address, count=16, slave=slave, transaction=transaction, skip_encode=skip_encode)
 
 
 # --------------------------------------------------------------------------- #

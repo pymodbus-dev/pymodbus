@@ -152,16 +152,12 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
         self.recv_buffer: bytes = b""
         self.call_create: Callable[[], Coroutine[Any, Any, Any]] = None  # type: ignore[assignment]
-        if self.is_server:
-            self.active_connections: dict[str, ModbusProtocol] = {}
-        else:
-            self.listener: ModbusProtocol | None = None
-            self.unique_id: str = str(id(self))
-            self.reconnect_task: asyncio.Task | None = None
-            self.reconnect_delay_current = 0.0
-            self.sent_buffer: bytes = b""
-
-        # ModbusProtocol specific setup
+        self.reconnect_task: asyncio.Task | None = None
+        self.listener: ModbusProtocol | None = None
+        self.active_connections: dict[str, ModbusProtocol] = {}
+        self.unique_id: str = str(id(self))
+        self.reconnect_delay_current = 0.0
+        self.sent_buffer: bytes = b""
         if self.is_server:
             if self.comm_params.source_address is not None:
                 host = self.comm_params.source_address[0]
@@ -285,11 +281,10 @@ class ModbusProtocol(asyncio.BaseProtocol):
             return
         Log.debug("Connection lost {} due to {}", self.comm_params.comm_name, reason)
         self.__close()
-        if (
-            not self.is_server
-            and not self.listener
-            and self.comm_params.reconnect_delay
-        ):
+        if self.is_server:
+            self.reconnect_task = asyncio.create_task(self.do_relisten())
+            self.reconnect_task.set_name("transport relisten")
+        elif not self.listener and self.comm_params.reconnect_delay:
             self.reconnect_task = asyncio.create_task(self.do_reconnect())
             self.reconnect_task.set_name("transport reconnect")
         self.callback_disconnected(reason)
@@ -458,6 +453,16 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.active_connections[new_protocol.unique_id] = new_protocol
         new_protocol.listener = self
         return new_protocol
+
+    async def do_relisten(self) -> None:
+        """Handle reconnect as a task."""
+        try:
+            Log.debug("Wait 1s before reopening listener.")
+            await asyncio.sleep(1)
+            await self.listen()
+        except asyncio.CancelledError:
+            pass
+        self.reconnect_task = None
 
     async def do_reconnect(self) -> None:
         """Handle reconnect as a task."""

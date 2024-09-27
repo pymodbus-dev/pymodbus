@@ -43,7 +43,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
             host=owner.comm_params.source_address[0],
             port=owner.comm_params.source_address[1],
         )
-        super().__init__(params, False)
+        super().__init__(params, True)
         self.server = owner
         self.running = False
         self.receive_queue: asyncio.Queue = asyncio.Queue()

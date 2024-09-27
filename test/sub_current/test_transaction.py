@@ -172,7 +172,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test the getting a transaction from the transaction manager."""
         self._manager.reset()
         handle = ModbusRequest(
-            0, self._manager.getNextTID(), 0, False
+            0, self._manager.getNextTID(), False
         )
         self._manager.addTransaction(handle)
         result = self._manager.getTransaction(handle.transaction_id)
@@ -182,7 +182,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test deleting a transaction from the dict transaction manager."""
         self._manager.reset()
         handle = ModbusRequest(
-            0, self._manager.getNextTID(), 0, False
+            0, self._manager.getNextTID(), False
         )
         self._manager.addTransaction(handle)
         self._manager.delTransaction(handle.transaction_id)
@@ -303,7 +303,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
             count += 1
             result = data
 
-        expected = ModbusRequest(0, 0, 0, False)
+        expected = ModbusRequest(0, 0, False)
         expected.transaction_id = 0x0001
         expected.protocol_id = 0x1234
         expected.slave_id = 0xFF
@@ -318,7 +318,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     @mock.patch.object(ModbusRequest, "encode")
     def test_tcp_framer_packet(self, mock_encode):
         """Test a tcp frame packet build."""
-        message = ModbusRequest(0, 0, 0, False)
+        message = ModbusRequest(0, 0, False)
         message.transaction_id = 0x0001
         message.protocol_id = 0x0000
         message.slave_id = 0xFF
@@ -472,7 +472,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     @mock.patch.object(ModbusRequest, "encode")
     def test_framer_tls_framer_packet(self, mock_encode):
         """Test a tls frame packet build."""
-        message = ModbusRequest(0, 0, 0, False)
+        message = ModbusRequest(0, 0, False)
         message.function_code = 0x01
         expected = b"\x01"
         mock_encode.return_value = b""
@@ -545,7 +545,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     @mock.patch.object(ModbusRequest, "encode")
     def test_rtu_framer_packet(self, mock_encode):
         """Test a rtu frame packet build."""
-        message = ModbusRequest(0, 0, 0, False)
+        message = ModbusRequest(0, 0, False)
         message.slave_id = 0xFF
         message.function_code = 0x01
         expected = b"\xff\x01\x81\x80"  # only header + CRC - no data
@@ -646,14 +646,14 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
 
     def test_ascii_framer_populate(self):
         """Test a ascii frame packet build."""
-        request = ModbusRequest(0, 0, 0, False)
+        request = ModbusRequest(0, 0, False)
         self._ascii.populateResult(request)
         assert not request.slave_id
 
     @mock.patch.object(ModbusRequest, "encode")
     def test_ascii_framer_packet(self, mock_encode):
         """Test a ascii frame packet build."""
-        message = ModbusRequest(0, 0, 0, False)
+        message = ModbusRequest(0, 0, False)
         message.slave_id = 0xFF
         message.function_code = 0x01
         expected = b":FF0100\r\n"

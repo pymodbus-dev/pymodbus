@@ -107,7 +107,6 @@ class ModbusFramer:
         """
         result.slave_id = self.dev_id
         result.transaction_id = self.tid
-        result.protocol_id = 0
 
     def processIncomingPacket(self, data: bytes, callback, slave, single=False, tid=None):
         """Process new packet pattern.

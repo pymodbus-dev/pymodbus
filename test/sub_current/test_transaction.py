@@ -305,7 +305,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
 
         expected = ModbusRequest(0, 0, False)
         expected.transaction_id = 0x0001
-        expected.protocol_id = 0x1234
         expected.slave_id = 0xFF
         msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
         self._tcp.processIncomingPacket(msg, callback, [0, 1])
@@ -320,7 +319,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test a tcp frame packet build."""
         message = ModbusRequest(0, 0, False)
         message.transaction_id = 0x0001
-        message.protocol_id = 0x0000
         message.slave_id = 0xFF
         message.function_code = 0x01
         expected = b"\x00\x01\x00\x00\x00\x02\xff\x01"

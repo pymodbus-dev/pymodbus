@@ -153,8 +153,12 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.recv_buffer: bytes = b""
         self.call_create: Callable[[], Coroutine[Any, Any, Any]] = None  # type: ignore[assignment]
         self.reconnect_task: asyncio.Task | None = None
+        self.listener: ModbusProtocol | None = None
+        self.active_connections: dict[str, ModbusProtocol] = {}
+        self.unique_id: str = str(id(self))
+        self.reconnect_delay_current = 0.0
+        self.sent_buffer: bytes = b""
         if self.is_server:
-            self.active_connections: dict[str, ModbusProtocol] = {}
             if self.comm_params.source_address is not None:
                 host = self.comm_params.source_address[0]
                 port = int(self.comm_params.source_address[1])
@@ -164,10 +168,6 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 host = "0.0.0.0" # Any IPv4 host
                 port = 0 # Server will select an ephemeral port for itself
         else:
-            self.listener: ModbusProtocol | None = None
-            self.unique_id: str = str(id(self))
-            self.reconnect_delay_current = 0.0
-            self.sent_buffer: bytes = b""
             host = self.comm_params.host
             port = int(self.comm_params.port)
         if self.comm_params.comm_type == CommType.SERIAL and NULLMODEM_HOST in host:

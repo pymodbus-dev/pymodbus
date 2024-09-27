@@ -5,7 +5,6 @@ on:
       - dev
       - master
       - wait_next_API
-      - dev_*
     tags:
       - v*
   pull_request:

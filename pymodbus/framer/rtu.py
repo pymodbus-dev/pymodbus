@@ -39,6 +39,7 @@ class FramerRTU(FramerBase):
     this means decoding is always exactly 1 frame request, however some requests
     will be for unknown slaves, which must be ignored together with the
     response from the unknown slave.
+    >>>>> NOT IMPLEMENTED <<<<<
 
     Recovery from bad cabling and unstable USB etc is important,
     the following scenarios is possible:
@@ -52,6 +53,7 @@ class FramerRTU(FramerBase):
     Device drivers will typically flush buffer after 10ms of silence.
     If no data is received for 50ms the transmission / frame can be considered
     complete.
+    >>>>> NOT IMPLEMENTED <<<<<
     """
 
     MIN_SIZE = 5

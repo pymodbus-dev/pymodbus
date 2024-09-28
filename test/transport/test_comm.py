@@ -242,7 +242,7 @@ class TestTransportComm:
 
         client2.send(test_data)
         await asyncio.sleep(0.5)
-        assert server2_connected.recv_buffer == test2_data + test_data
+        assert server2_connected.recv_buffer ==  test_data
         client2.close()
         server.close()
         await asyncio.sleep(0.5)

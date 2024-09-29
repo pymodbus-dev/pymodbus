@@ -104,7 +104,7 @@ class FramerRTU(FramerBase):
         """Remember allowed slaves."""
         self.slaves = slaves
 
-    def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
+    def specific_decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU."""
         msg_len = len(data)
         for used_len in range(msg_len):

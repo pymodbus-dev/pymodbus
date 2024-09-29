@@ -32,7 +32,7 @@ class FramerAscii(FramerBase):
     MIN_SIZE = 10
 
 
-    def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
+    def specific_decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU."""
         buf_len = len(data)
         used_len = 0

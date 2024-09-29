@@ -1,6 +1,5 @@
 """TLS framer."""
 import struct
-from time import sleep
 
 from pymodbus.exceptions import (
     ModbusIOException,
@@ -42,11 +41,6 @@ class ModbusTlsFramer(ModbusFramer):
             (fcode,) = struct.unpack(TLS_FRAME_HEADER, data[0 : self._hsize + 1])
             return {"fcode": fcode}
         return {}
-
-    def recvPacket(self, size):
-        """Receive packet from the bus."""
-        sleep(0.5)
-        return super().recvPacket(size)
 
     def frameProcessIncomingPacket(self, _single, callback, _slave, tid=None):
         """Process new packet pattern."""

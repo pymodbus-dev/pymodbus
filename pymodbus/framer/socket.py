@@ -17,7 +17,7 @@ class FramerSocket(FramerBase):
 
     MIN_SIZE = 8
 
-    def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
+    def specific_decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU."""
         if (used_len := len(data)) < self.MIN_SIZE:
           Log.debug("Very short frame (NO MBAP): {} wait for more data", data, ":hex")

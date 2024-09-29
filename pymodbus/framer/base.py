@@ -23,7 +23,6 @@ class FramerBase:
     def set_fc_calc(self, _fc: int, _msg_size: int, _count_pos: int):
         """Set/Update function code information."""
 
-    @abstractmethod
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU.
 
@@ -33,6 +32,19 @@ class FramerBase:
             device_id (int) or 0
             modbus request/response (bytes)
         """
+        return self.specific_decode(data)
+
+    @abstractmethod
+    def specific_decode(self, data: bytes) -> tuple[int, int, int, bytes]:
+        """Decode ADU.
+
+        returns:
+            used_len (int) or 0 to read more
+            transaction_id (int) or 0
+            device_id (int) or 0
+            modbus request/response (bytes)
+        """
+
 
     @abstractmethod
     def encode(self, pdu: bytes, dev_id: int, tid: int) -> bytes:

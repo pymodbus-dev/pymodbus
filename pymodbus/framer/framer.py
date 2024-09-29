@@ -13,7 +13,6 @@ from abc import abstractmethod
 from enum import Enum
 
 from pymodbus.framer.ascii import FramerAscii
-from pymodbus.framer.raw import FramerRaw
 from pymodbus.framer.rtu import FramerRTU
 from pymodbus.framer.socket import FramerSocket
 from pymodbus.framer.tls import FramerTLS
@@ -23,14 +22,13 @@ from pymodbus.transport.transport import CommParams, ModbusProtocol
 class FramerType(str, Enum):
     """Type of Modbus frame."""
 
-    RAW = "raw"  # only used for testing
     ASCII = "ascii"
     RTU = "rtu"
     SOCKET = "socket"
     TLS = "tls"
 
 
-class Framer(ModbusProtocol):
+class AsyncFramer(ModbusProtocol):
     """Framer layer extending transport layer.
 
     extends the ModbusProtocol to handle receiving and sending of complete modbus PDU.
@@ -68,7 +66,6 @@ class Framer(ModbusProtocol):
         self.broadcast: bool = (0 in device_ids)
 
         self.handle = {
-            FramerType.RAW: FramerRaw(),
             FramerType.ASCII: FramerAscii(),
             FramerType.RTU: FramerRTU(),
             FramerType.SOCKET: FramerSocket(),

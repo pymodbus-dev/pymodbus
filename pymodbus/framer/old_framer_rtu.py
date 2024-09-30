@@ -71,48 +71,10 @@ class ModbusRtuFramer(ModbusFramer):
         return {}
 
 
-    def frameProcessIncomingPacket(self, _single, callback, slave, tid=None):  # noqa: C901
-        """Process new packet pattern."""
-
-        def is_frame_ready(self):
-            """Check if we should continue decode logic."""
-            size = self.msg_len
-            if not size and len(self._buffer) > self._hsize:
-                try:
-                    self.dev_id = int(self._buffer[0])
-                    func_code = int(self._buffer[1])
-                    pdu_class = self.decoder.lookupPduClass(func_code)
-                    size = pdu_class.calculateRtuFrameSize(self._buffer)
-                    self.msg_len = size
-
-                    if len(self._buffer) < size:
-                        raise IndexError
-                except IndexError:
-                    return False
-            return len(self._buffer) >= size if size > 0 else False
-
-        def get_frame_start(self, slaves, broadcast, skip_cur_frame, function_codes):
-            """Scan buffer for a relevant frame start."""
-            start = 1 if skip_cur_frame else 0
-            if (buf_len := len(self._buffer)) < 4:
-                return False
-            for i in range(start, buf_len - 3):  # <slave id><function code><crc 2 bytes>
-                if not broadcast and self._buffer[i] not in slaves:
-                    continue
-                if (
-                    self._buffer[i + 1] not in function_codes
-                    and (self._buffer[i + 1] - 0x80) not in function_codes
-                ):
-                    continue
-                if i:
-                    self._buffer = self._buffer[i:]  # remove preceding trash.
-                return True
-            if buf_len > 3:
-                self._buffer = self._buffer[-3:]
-            return False
-
-        def check_frame(self):
-            """Check if the next frame is available."""
+    def old_is_frame_ready(self):
+        """Check if we should continue decode logic."""
+        size = self.msg_len
+        if not size and len(self._buffer) > self._hsize:
             try:
                 self.dev_id = int(self._buffer[0])
                 func_code = int(self._buffer[1])
@@ -122,23 +84,60 @@ class ModbusRtuFramer(ModbusFramer):
 
                 if len(self._buffer) < size:
                     raise IndexError
-                frame_size = self.msg_len
-                data = self._buffer[: frame_size - 2]
-                crc = self._buffer[size - 2 : size]
-                crc_val = (int(crc[0]) << 8) + int(crc[1])
-                return FramerRTU.check_CRC(data, crc_val)
-            except (IndexError, KeyError, struct.error):
+            except IndexError:
                 return False
+        return len(self._buffer) >= size if size > 0 else False
 
+    def old_get_frame_start(self, slaves, broadcast, skip_cur_frame, function_codes):
+        """Scan buffer for a relevant frame start."""
+        start = 1 if skip_cur_frame else 0
+        if (buf_len := len(self._buffer)) < 4:
+            return False
+        for i in range(start, buf_len - 3):  # <slave id><function code><crc 2 bytes>
+            if not broadcast and self._buffer[i] not in slaves:
+                continue
+            if (
+                self._buffer[i + 1] not in function_codes
+                and (self._buffer[i + 1] - 0x80) not in function_codes
+            ):
+                continue
+            if i:
+                self._buffer = self._buffer[i:]  # remove preceding trash.
+            return True
+        if buf_len > 3:
+            self._buffer = self._buffer[-3:]
+        return False
+
+    def old_check_frame(self):
+        """Check if the next frame is available."""
+        try:
+            self.dev_id = int(self._buffer[0])
+            func_code = int(self._buffer[1])
+            pdu_class = self.decoder.lookupPduClass(func_code)
+            size = pdu_class.calculateRtuFrameSize(self._buffer)
+            self.msg_len = size
+
+            if len(self._buffer) < size:
+                raise IndexError
+            frame_size = self.msg_len
+            data = self._buffer[: frame_size - 2]
+            crc = self._buffer[size - 2 : size]
+            crc_val = (int(crc[0]) << 8) + int(crc[1])
+            return FramerRTU.check_CRC(data, crc_val)
+        except (IndexError, KeyError, struct.error):
+            return False
+
+    def frameProcessIncomingPacket(self, _single, callback, slave, tid=None):
+        """Process new packet pattern."""
         broadcast = not slave[0]
         skip_cur_frame = False
-        while get_frame_start(self, slave, broadcast, skip_cur_frame, self.function_codes):
+        while self.old_get_frame_start(slave, broadcast, skip_cur_frame, self.function_codes):
             self.dev_id = 0
             self.msg_len = 0
-            if not is_frame_ready(self):
+            if not self.old_is_frame_ready():
                 Log.debug("Frame - not ready")
                 break
-            if not check_frame(self):
+            if not self.old_check_frame():
                 Log.debug("Frame check failed, ignoring!!")
                 x = self._buffer
                 self.resetFrame()

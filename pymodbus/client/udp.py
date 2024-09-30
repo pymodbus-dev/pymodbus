@@ -89,10 +89,6 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         """Return true if connected."""
         return self.ctx.is_active()
 
-    def close(self) -> None:
-        """Close connection."""
-        super().close()
-
 
 class ModbusUdpClient(ModbusBaseSyncClient):
     """**ModbusUdpClient**.

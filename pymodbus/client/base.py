@@ -76,9 +76,12 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         """
         self.ctx.framer.decoder.register(custom_response_class)
 
-    def close(self) -> None:
+    def close(self, reconnect: bool = False) -> None:
         """Close connection."""
-        self.ctx.close()
+        if reconnect:
+            self.ctx.connection_lost(asyncio.TimeoutError("Server not responding"))
+        else:
+            self.ctx.close()
 
     def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).
@@ -123,7 +126,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
                 except asyncio.exceptions.TimeoutError:
                     count += 1
         if count > self.retries:
-            self.ctx.connection_lost(asyncio.TimeoutError("Server not responding"))
+            self.close(reconnect=True)
             raise ModbusIOException(
                 f"ERROR: No response received after {self.retries} retries"
             )

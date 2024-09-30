@@ -58,7 +58,7 @@ class ModbusRtuFramer(ModbusFramer):
         super().__init__(decoder, client)
         self._hsize = 0x01
         self.function_codes = decoder.lookup.keys() if decoder else {}
-        self.message_handler: FramerRTU = FramerRTU()
+        self.message_handler: FramerRTU = FramerRTU(function_codes=self.function_codes)
         self.msg_len = 0
 
     def decode_data(self, data):
@@ -71,10 +71,11 @@ class ModbusRtuFramer(ModbusFramer):
 
     def frameProcessIncomingPacket(self, _single, callback, slave, tid=None):
         """Process new packet pattern."""
-        broadcast = not slave[0]
-        skip_cur_frame = False
+        self.message_handler.set_slaves(slave)
         while True:
-            self._buffer, ok = self.message_handler.old_get_frame_start(self._buffer, slave, broadcast, skip_cur_frame, self.function_codes)
+            used_len, ok = self.message_handler.get_frame_start(self._buffer)
+            if used_len:
+                self._buffer = self._buffer[used_len:]
             if not ok:
                 break
             self.dev_id, self.msg_len, ok = self.message_handler.old_is_frame_ready(self._buffer, self.decoder)
@@ -86,8 +87,7 @@ class ModbusRtuFramer(ModbusFramer):
                 Log.debug("Frame check failed, ignoring!!")
                 x = self._buffer
                 self.resetFrame()
-                self._buffer: bytes = x
-                skip_cur_frame = True
+                self._buffer: bytes = x[1:]
                 continue
             start = self._hsize
             end = self.msg_len - 2

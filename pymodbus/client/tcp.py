@@ -51,8 +51,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
-    socket: socket.socket | None
-
     def __init__(  # pylint: disable=too-many-arguments
         self,
         host: str,

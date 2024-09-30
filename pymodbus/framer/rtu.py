@@ -93,6 +93,26 @@ class FramerRTU(FramerBase):
                 return dev_id, size, False
         return dev_id, size, len(buffer) >= size if size > 0 else False
 
+    def old_get_frame_start(self, buffer, slaves, broadcast, skip_cur_frame, function_codes):
+        """Scan buffer for a relevant frame start."""
+        start = 1 if skip_cur_frame else 0
+        if (buf_len := len(buffer)) < 4:
+            return buffer, False
+        for i in range(start, buf_len - 3):  # <slave id><function code><crc 2 bytes>
+            if not broadcast and buffer[i] not in slaves:
+                continue
+            if (
+                buffer[i + 1] not in function_codes
+                and (buffer[i + 1] - 0x80) not in function_codes
+            ):
+                continue
+            if i:
+                buffer = buffer[i:]  # remove preceding trash.
+            return buffer, True
+        if buf_len > 3:
+            buffer = buffer[-3:]
+        return buffer, False
+
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU."""

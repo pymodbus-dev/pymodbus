@@ -91,7 +91,7 @@ class ModbusRtuFramer(ModbusFramer):
                     return False
             return len(self._buffer) >= size if size > 0 else False
 
-        def get_frame_start(self, slaves, broadcast, skip_cur_frame):
+        def get_frame_start(self, slaves, broadcast, skip_cur_frame, function_codes):
             """Scan buffer for a relevant frame start."""
             start = 1 if skip_cur_frame else 0
             if (buf_len := len(self._buffer)) < 4:
@@ -100,8 +100,8 @@ class ModbusRtuFramer(ModbusFramer):
                 if not broadcast and self._buffer[i] not in slaves:
                     continue
                 if (
-                    self._buffer[i + 1] not in self.function_codes
-                    and (self._buffer[i + 1] - 0x80) not in self.function_codes
+                    self._buffer[i + 1] not in function_codes
+                    and (self._buffer[i + 1] - 0x80) not in function_codes
                 ):
                     continue
                 if i:
@@ -132,7 +132,7 @@ class ModbusRtuFramer(ModbusFramer):
 
         broadcast = not slave[0]
         skip_cur_frame = False
-        while get_frame_start(self, slave, broadcast, skip_cur_frame):
+        while get_frame_start(self, slave, broadcast, skip_cur_frame, self.function_codes):
             self.dev_id = 0
             self.msg_len = 0
             if not is_frame_ready(self):

@@ -71,22 +71,22 @@ class ModbusRtuFramer(ModbusFramer):
         return {}
 
 
-    def old_is_frame_ready(self):
+    def old_is_frame_ready(self, buffer):
         """Check if we should continue decode logic."""
         size = self.msg_len
-        if not size and len(self._buffer) > self._hsize:
+        if not size and len(buffer) > self._hsize:
             try:
-                self.dev_id = int(self._buffer[0])
-                func_code = int(self._buffer[1])
+                self.dev_id = int(buffer[0])
+                func_code = int(buffer[1])
                 pdu_class = self.decoder.lookupPduClass(func_code)
-                size = pdu_class.calculateRtuFrameSize(self._buffer)
+                size = pdu_class.calculateRtuFrameSize(buffer)
                 self.msg_len = size
 
-                if len(self._buffer) < size:
+                if len(buffer) < size:
                     raise IndexError
             except IndexError:
                 return False
-        return len(self._buffer) >= size if size > 0 else False
+        return len(buffer) >= size if size > 0 else False
 
     def old_get_frame_start(self, slaves, broadcast, skip_cur_frame, function_codes):
         """Scan buffer for a relevant frame start."""
@@ -108,20 +108,20 @@ class ModbusRtuFramer(ModbusFramer):
             self._buffer = self._buffer[-3:]
         return False
 
-    def old_check_frame(self):
+    def old_check_frame(self, buffer, decoder):
         """Check if the next frame is available."""
         try:
-            self.dev_id = int(self._buffer[0])
-            func_code = int(self._buffer[1])
-            pdu_class = self.decoder.lookupPduClass(func_code)
-            size = pdu_class.calculateRtuFrameSize(self._buffer)
+            self.dev_id = int(buffer[0])
+            func_code = int(buffer[1])
+            pdu_class = decoder.lookupPduClass(func_code)
+            size = pdu_class.calculateRtuFrameSize(buffer)
             self.msg_len = size
 
-            if len(self._buffer) < size:
+            if len(buffer) < size:
                 raise IndexError
             frame_size = self.msg_len
-            data = self._buffer[: frame_size - 2]
-            crc = self._buffer[size - 2 : size]
+            data = buffer[: frame_size - 2]
+            crc = buffer[size - 2 : size]
             crc_val = (int(crc[0]) << 8) + int(crc[1])
             return FramerRTU.check_CRC(data, crc_val)
         except (IndexError, KeyError, struct.error):
@@ -134,10 +134,10 @@ class ModbusRtuFramer(ModbusFramer):
         while self.old_get_frame_start(slave, broadcast, skip_cur_frame, self.function_codes):
             self.dev_id = 0
             self.msg_len = 0
-            if not self.old_is_frame_ready():
+            if not self.old_is_frame_ready(self._buffer):
                 Log.debug("Frame - not ready")
                 break
-            if not self.old_check_frame():
+            if not self.old_check_frame(self._buffer, self.decoder):
                 Log.debug("Frame check failed, ignoring!!")
                 x = self._buffer
                 self.resetFrame()

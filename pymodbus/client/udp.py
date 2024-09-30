@@ -84,11 +84,6 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         )
         self.source_address = source_address
 
-    @property
-    def connected(self):
-        """Return true if connected."""
-        return self.ctx.is_active()
-
 
 class ModbusUdpClient(ModbusBaseSyncClient):
     """**ModbusUdpClient**.

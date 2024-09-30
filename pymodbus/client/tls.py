@@ -223,6 +223,10 @@ class ModbusTlsClient(ModbusTcpClient):
             self.close()
         return self.socket is not None
 
+    def close(self) -> None:
+        """Close connection."""
+        super().close()
+
     def __repr__(self):
         """Return string representation."""
         return (

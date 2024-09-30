@@ -32,7 +32,10 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         on_connect_callback: Callable[[bool], None] | None,
         comm_params: CommParams | None = None,
     ) -> None:
-        """Initialize a client instance."""
+        """Initialize a client instance.
+
+        :meta private:
+        """
         ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
         if comm_params:
             self.comm_params = comm_params
@@ -99,13 +102,18 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         :param request: The request to process
         :returns: The result of the request execution
         :raises ConnectionException: Check exception text.
+
+        :meta private:
         """
         if not self.ctx.transport:
             raise ConnectionException(f"Not connected[{self!s}]")
         return self.async_execute(request)
 
     async def async_execute(self, request) -> ModbusResponse:
-        """Execute requests asynchronously."""
+        """Execute requests asynchronously.
+
+        :meta private:
+        """
         request.transaction_id = self.ctx.transaction.getNextTID()
         packet = self.ctx.framer.buildPacket(request)
 
@@ -134,7 +142,10 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         return resp  # type: ignore[return-value]
 
     def build_response(self, request: ModbusRequest):
-        """Return a deferred response for the current request."""
+        """Return a deferred response for the current request.
+
+        :meta private:
+        """
         my_future: asyncio.Future = asyncio.Future()
         request.fut = my_future
         if not self.ctx.transport:
@@ -179,7 +190,10 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         retries: int,
         comm_params: CommParams | None = None,
     ) -> None:
-        """Initialize a client instance."""
+        """Initialize a client instance.
+
+        :meta private:
+        """
         ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
         if comm_params:
             self.comm_params = comm_params
@@ -205,7 +219,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
     # Client external interface
     # ----------------------------------------------------------------------- #
     def register(self, custom_response_class: ModbusResponse) -> None:
-        """Register a custom response class with the decoder (call **sync**).
+        """Register a custom response class with the decoder.
 
         :param custom_response_class: (optional) Modbus response class.
         :raises MessageRegisterException: Check exception text.
@@ -231,6 +245,8 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         :param request: The request to process
         :returns: The result of the request execution
         :raises ConnectionException: Check exception text.
+
+        :meta private:
         """
         if not self.connect():
             raise ConnectionException(f"Failed to connect[{self!s}]")
@@ -264,7 +280,10 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
 
     @classmethod
     def get_address_family(cls, address):
-        """Get the correct address family."""
+        """Get the correct address family.
+
+        :meta private:
+        """
         try:
             _ = socket.inet_pton(socket.AF_INET6, address)
         except OSError:  # not a valid ipv6 address

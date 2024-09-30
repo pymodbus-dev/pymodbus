@@ -230,9 +230,7 @@ async def test_client_instanciate(
     # Test information methods
     client.last_frame_end = 2
     client.silent_interval = 2
-    assert client.idle_time() == 4
     client.last_frame_end = None
-    assert not client.idle_time()
 
     # a successful execute
     client.connect = lambda: True

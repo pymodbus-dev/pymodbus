@@ -76,6 +76,23 @@ class FramerRTU(FramerBase):
     crc16_table: list[int] = [0]
 
 
+    def old_is_frame_ready(self, buffer, decoder):
+        """Check if we should continue decode logic."""
+        size = 0
+        dev_id = 0
+        if not size and len(buffer) > 0x01: # self._hsize
+            try:
+                dev_id = int(buffer[0])
+                func_code = int(buffer[1])
+                pdu_class = decoder.lookupPduClass(func_code)
+                size = pdu_class.calculateRtuFrameSize(buffer)
+
+                if len(buffer) < size:
+                    raise IndexError
+            except IndexError:
+                return dev_id, size, False
+        return dev_id, size, len(buffer) >= size if size > 0 else False
+
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU."""

@@ -59,7 +59,7 @@ class ModbusRtuFramer(ModbusFramer):
         super().__init__(decoder, client)
         self._hsize = 0x01
         self.function_codes = decoder.lookup.keys() if decoder else {}
-        self.message_handler = FramerRTU()
+        self.message_handler: FramerRTU = FramerRTU()
         self.msg_len = 0
 
     def decode_data(self, data):
@@ -70,23 +70,6 @@ class ModbusRtuFramer(ModbusFramer):
             return {"slave": uid, "fcode": fcode}
         return {}
 
-
-    def old_is_frame_ready(self, buffer):
-        """Check if we should continue decode logic."""
-        size = self.msg_len
-        if not size and len(buffer) > self._hsize:
-            try:
-                self.dev_id = int(buffer[0])
-                func_code = int(buffer[1])
-                pdu_class = self.decoder.lookupPduClass(func_code)
-                size = pdu_class.calculateRtuFrameSize(buffer)
-                self.msg_len = size
-
-                if len(buffer) < size:
-                    raise IndexError
-            except IndexError:
-                return False
-        return len(buffer) >= size if size > 0 else False
 
     def old_get_frame_start(self, slaves, broadcast, skip_cur_frame, function_codes):
         """Scan buffer for a relevant frame start."""
@@ -132,9 +115,8 @@ class ModbusRtuFramer(ModbusFramer):
         broadcast = not slave[0]
         skip_cur_frame = False
         while self.old_get_frame_start(slave, broadcast, skip_cur_frame, self.function_codes):
-            self.dev_id = 0
-            self.msg_len = 0
-            if not self.old_is_frame_ready(self._buffer):
+            self.dev_id, self.msg_len, ok = self.message_handler.old_is_frame_ready(self._buffer, self.decoder)
+            if not ok:
                 Log.debug("Frame - not ready")
                 break
             if not self.old_check_frame(self._buffer, self.decoder):

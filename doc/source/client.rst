@@ -55,9 +55,9 @@ Pymodbus offers clients with transport different protocols and different framers
      - ASCII
      - RTU
      - RTU_OVER_TCP
-     - Socket
+     - SOCKET
      - TLS
-   * - Serial (RS-485)
+   * - SERIAL (RS-485)
      - Yes
      - Yes
      - No
@@ -247,6 +247,20 @@ There are a client class for each type of communication and for asynchronous/syn
    * - **UDP**
      - :mod:`AsyncModbusUdpClient`
      - :mod:`ModbusUdpClient`
+
+Client common
+^^^^^^^^^^^^^
+Some methods are common to all client:
+
+.. autoclass:: pymodbus.client.base.ModbusBaseClient
+    :members:
+    :member-order: bysource
+    :show-inheritance:
+
+.. autoclass:: pymodbus.client.base.ModbusBaseSyncClient
+    :members:
+    :member-order: bysource
+    :show-inheritance:
 
 Client serial
 ^^^^^^^^^^^^^

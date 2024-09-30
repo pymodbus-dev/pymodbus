@@ -86,8 +86,8 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         )
 
     def close(self, reconnect: bool = False) -> None:
-        """Close connection
-        
+        """Close connection.
+
         Since we have a TCP connection we do not need to close if we will immediately reopen it.
         Close with reconnect=True is called when a message has timed out - in tcp this is a
         modbus protocol error rather than a connection error, as a total failure to ack will

@@ -144,7 +144,7 @@ class FramerRTU(FramerBase):
             Log.debug("Short frame: {} wait for more data", data, ":hex")
             return 0, 0, 0, b''
         used_len, ok = self.get_frame_start(data)
-        return used_len, 0, 0, data[used_len] if ok else b''
+        return used_len, 0, 0, b'jan'
 
 
     def encode(self, pdu: bytes, device_id: int, _tid: int) -> bytes:

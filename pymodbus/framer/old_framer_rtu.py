@@ -74,7 +74,7 @@ class ModbusRtuFramer(ModbusFramer):
         self.message_handler.set_slaves(slave)
         while True:
             if self._buffer == b'':
-                return
+                break
             # used_len, use_tid, dev_id, data = self.message_handler.decode(self._buffer)
             # if not data:
             #    return

@@ -1,6 +1,5 @@
 """RTU framer."""
 # pylint: disable=missing-type-doc
-import struct
 import time
 
 from pymodbus.exceptions import ModbusIOException

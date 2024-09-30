@@ -86,16 +86,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         else:
             self.ctx.close()
 
-    def idle_time(self) -> float:
-        """Time before initiating next transaction (call **sync**).
-
-        Applications can call message functions without checking idle_time(),
-        this is done automatically.
-        """
-        if self.last_frame_end is None or self.silent_interval is None:
-            return 0
-        return self.last_frame_end + self.silent_interval
-
     def execute(self, request: ModbusRequest):
         """Execute request and get response (call **sync/async**).
 

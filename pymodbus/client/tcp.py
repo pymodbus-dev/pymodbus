@@ -7,7 +7,7 @@ import time
 from collections.abc import Callable
 
 from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
-from pymodbus.exceptions import ConnectionException
+from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.framer import FramerType
 from pymodbus.logging import Log
 from pymodbus.transport import CommParams, CommType
@@ -81,6 +81,13 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             framer,
             retries,
             on_connect_callback,
+        )
+
+    def no_message_response_after_retries(self, retries) -> None:
+        """Take action after a message has not been responded to after retries."""
+        #Just log exception - no other action needed on TCP connections.
+        raise ModbusIOException(
+            f"ERROR: No response received after {retries} retries - connection not closed"
         )
 
 

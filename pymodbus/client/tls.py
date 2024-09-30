@@ -6,6 +6,7 @@ import ssl
 from collections.abc import Callable
 
 from pymodbus.client.tcp import AsyncModbusTcpClient, ModbusTcpClient
+from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer import FramerType
 from pymodbus.logging import Log
 from pymodbus.transport import CommParams, CommType
@@ -82,6 +83,12 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
             framer=framer,
             retries=retries,
             on_connect_callback=on_connect_callback,
+        )
+    def no_message_response_after_retries(self, retries) -> None:
+        """Take action after a message has not been responded to after retries."""
+        #Just log exception - no other action needed on TLS connections.
+        raise ModbusIOException(
+            f"ERROR: No response received after {retries} retries - connection not closed"
         )
 
     @classmethod

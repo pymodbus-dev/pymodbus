@@ -58,7 +58,7 @@ class ModbusRtuFramer(ModbusFramer):
         super().__init__(decoder, client)
         self._hsize = 0x01
         self.function_codes = decoder.lookup.keys() if decoder else {}
-        self.message_handler: FramerRTU = FramerRTU(function_codes=self.function_codes)
+        self.message_handler: FramerRTU = FramerRTU(function_codes=self.function_codes, decoder=self.decoder)
         self.msg_len = 0
 
     def decode_data(self, data):
@@ -81,11 +81,7 @@ class ModbusRtuFramer(ModbusFramer):
             if not data:
                break
 
-            self.dev_id, self.msg_len, ok = self.message_handler.old_is_frame_ready(self._buffer, self.decoder)
-            if not ok:
-                Log.debug("Frame - not ready")
-                break
-            self.dev_id, self.msg_len, ok = self.message_handler.old_check_frame(self._buffer, self.msg_len, self.decoder)
+            self.dev_id, self.msg_len, ok = self.message_handler.old_check_frame(self._buffer, use_tid, self.decoder)
             if not ok:
                 Log.debug("Frame check failed, ignoring!!")
                 x = self._buffer

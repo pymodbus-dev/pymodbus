@@ -53,16 +53,34 @@ class FramerRTU(FramerBase):
     Device drivers will typically flush buffer after 10ms of silence.
     If no data is received for 50ms the transmission / frame can be considered
     complete.
+
+        The following table is a listing of the baud wait times for the specified
+    baud rates::
+
+        ------------------------------------------------------------------
+         Baud  1.5c (18 bits)   3.5c (38 bits)
+        ------------------------------------------------------------------
+         1200   13333.3 us       31666.7 us
+         4800    3333.3 us        7916.7 us
+         9600    1666.7 us        3958.3 us
+        19200     833.3 us        1979.2 us
+        38400     416.7 us         989.6 us
+        ...
+        ------------------------------------------------------------------
+        1 Byte = start + 8 bits + parity + stop = 11 bits
+        (1/Baud)(bits) = delay seconds
+
     >>>>> NOT IMPLEMENTED <<<<<
     """
 
-    MIN_SIZE = 4
+    MIN_SIZE = 4  # <slave id><function code><crc 2 bytes>
 
-    def __init__(self, function_codes=None) -> None:
+    def __init__(self, function_codes=None, decoder=None) -> None:
         """Initialize a ADU instance."""
         super().__init__()
         self.function_codes = function_codes
         self.slaves: list[int] = []
+        self.decoder = decoder
 
     @classmethod
     def generate_crc16_table(cls) -> list[int]:
@@ -88,35 +106,6 @@ class FramerRTU(FramerBase):
         """Remember allowed slaves."""
         self.slaves = slaves
 
-    def get_frame_start(self, buffer, buf_len):
-        """Scan buffer for a relevant frame start."""
-        for i in range(0, buf_len - 3):  # <slave id><function code><crc 2 bytes>
-            if self.slaves[0] and buffer[i] not in self.slaves:
-                continue
-            if (buffer[i + 1] & 0x7F not in self.function_codes):
-                continue
-            return i, True
-        if buf_len > 3:
-            return len(buffer) -3, False
-        return 0, False
-
-    def old_is_frame_ready(self, buffer, decoder):
-        """Check if we should continue decode logic."""
-        size = 0
-        dev_id = 0
-        if not size and len(buffer) > 0x01: # self._hsize
-            try:
-                dev_id = int(buffer[0])
-                func_code = int(buffer[1])
-                pdu_class = decoder.lookupPduClass(func_code)
-                size = pdu_class.calculateRtuFrameSize(buffer)
-
-                if len(buffer) < size:
-                    raise IndexError
-            except IndexError:
-                return dev_id, size, False
-        return dev_id, size, len(buffer) >= size if size > 0 else False
-
     def old_check_frame(self, buffer, msg_len, decoder):
         """Check if the next frame is available."""
         try:
@@ -141,8 +130,24 @@ class FramerRTU(FramerBase):
         if (msg_len := len(data))< self.MIN_SIZE:
             Log.debug("Short frame: {} wait for more data", data, ":hex")
             return 0, 0, 0, b''
-        used_len, ok = self.get_frame_start(data, msg_len)
-        return used_len, 0, 0, data[used_len:]
+        for used_len in range(msg_len -1):
+            dev_id = data[used_len]
+            func_code = data[used_len + 1]
+            if (self.slaves[0] and dev_id not in self.slaves) or func_code & 0x7F not in self.function_codes:
+                continue
+            if msg_len - used_len < self.MIN_SIZE:
+                    Log.debug("Garble in front {}, then short frame: {} wait for more data", used_len, data, ":hex")
+                    return used_len, 0, 0, b''
+            pdu_class = self.decoder.lookupPduClass(func_code)
+            try:
+                size = pdu_class.calculateRtuFrameSize(data[used_len:])
+            except IndexError:
+                size = msg_len +1
+            if msg_len < used_len +size:
+                Log.debug("Frame - not ready")
+                return used_len, 0, 0, b''
+            return used_len, size, dev_id, data[used_len:]
+        return used_len, 0, 0, b''
 
 
     def encode(self, pdu: bytes, device_id: int, _tid: int) -> bytes:

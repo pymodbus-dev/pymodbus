@@ -102,10 +102,6 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             on_connect_callback,
         )
 
-    def close(self, reconnect: bool = False) -> None:
-        """Close connection."""
-        super().close(reconnect=reconnect)
-
 
 class ModbusSerialClient(ModbusBaseSyncClient):
     """**ModbusSerialClient**.

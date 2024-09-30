@@ -51,8 +51,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
-    socket: socket.socket | None
-
     def __init__(  # pylint: disable=too-many-arguments
         self,
         host: str,
@@ -84,10 +82,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             retries,
             on_connect_callback,
         )
-
-    def close(self, reconnect: bool = False) -> None:
-        """Close connection."""
-        super().close(reconnect=reconnect)
 
 
 class ModbusTcpClient(ModbusBaseSyncClient):

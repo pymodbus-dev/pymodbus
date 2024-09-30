@@ -1,8 +1,6 @@
 """Modbus RTU frame implementation."""
 from __future__ import annotations
 
-from collections import namedtuple
-
 from pymodbus.framer.base import FramerBase
 from pymodbus.logging import Log
 
@@ -58,14 +56,6 @@ class FramerRTU(FramerBase):
 
     MIN_SIZE = 5
 
-    FC_LEN = namedtuple("FC_LEN", "req_len req_bytepos resp_len resp_bytepos")
-
-    def __init__(self) -> None:
-        """Initialize a ADU instance."""
-        super().__init__()
-        self.fc_len: dict[int, FramerRTU.FC_LEN] = {}
-
-
     @classmethod
     def generate_crc16_table(cls) -> list[int]:
         """Generate a crc16 lookup table.
@@ -86,38 +76,14 @@ class FramerRTU(FramerBase):
     crc16_table: list[int] = [0]
 
 
-    def setup_fc_len(self, _fc: int,
-        _req_len: int, _req_byte_pos: int,
-        _resp_len: int, _resp_byte_pos: int
-    ):
-        """Define request/response lengths pr function code."""
-        return
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU."""
-        if (buf_len := len(data)) < self.MIN_SIZE:
+        if len(data) < self.MIN_SIZE:
             Log.debug("Short frame: {} wait for more data", data, ":hex")
             return 0, 0, 0, b''
 
-        i = -1
-        try:
-            while True:
-                i += 1
-                if i > buf_len - self.MIN_SIZE + 1:
-                    break
-                dev_id = int(data[i])
-                fc_len = 5
-                msg_len = fc_len -2 if fc_len > 0 else int(data[i-fc_len])-fc_len+1
-                if msg_len + i + 2 > buf_len:
-                    break
-                crc_val = (int(data[i+msg_len]) << 8) + int(data[i+msg_len+1])
-                if not self.check_CRC(data[i:i+msg_len], crc_val):
-                    Log.debug("Skipping frame CRC with len {} at index {}!", msg_len, i)
-                    raise KeyError
-                return i+msg_len+2, dev_id, dev_id, data[i+1:i+msg_len]
-        except KeyError:
-            i = buf_len
-        return i, 0, 0, b''
+        return 0, 0, 0, b''
 
 
     def encode(self, pdu: bytes, device_id: int, _tid: int) -> bytes:

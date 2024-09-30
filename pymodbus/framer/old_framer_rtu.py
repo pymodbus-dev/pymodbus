@@ -70,46 +70,6 @@ class ModbusRtuFramer(ModbusFramer):
             return {"slave": uid, "fcode": fcode}
         return {}
 
-
-    def xx_get_frame_start(self, buffer, slaves, broadcast, skip_cur_frame, function_codes):
-        """Scan buffer for a relevant frame start."""
-        start = 1 if skip_cur_frame else 0
-        if (buf_len := len(buffer)) < 4:
-            return buffer, False
-        for i in range(start, buf_len - 3):  # <slave id><function code><crc 2 bytes>
-            if not broadcast and buffer[i] not in slaves:
-                continue
-            if (
-                buffer[i + 1] not in function_codes
-                and (buffer[i + 1] - 0x80) not in function_codes
-            ):
-                continue
-            if i:
-                buffer = buffer[i:]  # remove preceding trash.
-            return buffer, True
-        if buf_len > 3:
-            buffer = buffer[-3:]
-        return buffer, False
-
-    def old_check_frame(self, buffer, decoder):
-        """Check if the next frame is available."""
-        try:
-            self.dev_id = int(buffer[0])
-            func_code = int(buffer[1])
-            pdu_class = decoder.lookupPduClass(func_code)
-            size = pdu_class.calculateRtuFrameSize(buffer)
-            self.msg_len = size
-
-            if len(buffer) < size:
-                raise IndexError
-            frame_size = self.msg_len
-            data = buffer[: frame_size - 2]
-            crc = buffer[size - 2 : size]
-            crc_val = (int(crc[0]) << 8) + int(crc[1])
-            return FramerRTU.check_CRC(data, crc_val)
-        except (IndexError, KeyError, struct.error):
-            return False
-
     def frameProcessIncomingPacket(self, _single, callback, slave, tid=None):
         """Process new packet pattern."""
         broadcast = not slave[0]
@@ -122,7 +82,8 @@ class ModbusRtuFramer(ModbusFramer):
             if not ok:
                 Log.debug("Frame - not ready")
                 break
-            if not self.old_check_frame(self._buffer, self.decoder):
+            self.dev_id, self.msg_len, ok = self.message_handler.old_check_frame(self._buffer, self.msg_len, self.decoder)
+            if not ok:
                 Log.debug("Frame check failed, ignoring!!")
                 x = self._buffer
                 self.resetFrame()

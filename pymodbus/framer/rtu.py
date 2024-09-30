@@ -1,6 +1,8 @@
 """Modbus RTU frame implementation."""
 from __future__ import annotations
 
+import struct
+
 from pymodbus.framer.base import FramerBase
 from pymodbus.logging import Log
 
@@ -112,6 +114,24 @@ class FramerRTU(FramerBase):
         if buf_len > 3:
             buffer = buffer[-3:]
         return buffer, False
+
+    def old_check_frame(self, buffer, msg_len, decoder):
+        """Check if the next frame is available."""
+        try:
+            dev_id = int(buffer[0])
+            func_code = int(buffer[1])
+            pdu_class = decoder.lookupPduClass(func_code)
+            size = pdu_class.calculateRtuFrameSize(buffer)
+
+            if len(buffer) < size:
+                raise IndexError
+            frame_size = msg_len
+            data = buffer[: frame_size - 2]
+            crc = buffer[size - 2 : size]
+            crc_val = (int(crc[0]) << 8) + int(crc[1])
+            return dev_id, size, FramerRTU.check_CRC(data, crc_val)
+        except (IndexError, KeyError, struct.error):
+            return dev_id, size, False
 
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:

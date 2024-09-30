@@ -56,7 +56,7 @@ class FramerRTU(FramerBase):
     >>>>> NOT IMPLEMENTED <<<<<
     """
 
-    MIN_SIZE = 5
+    MIN_SIZE = 4
 
     def __init__(self, function_codes=None) -> None:
         """Initialize a ADU instance."""
@@ -88,10 +88,8 @@ class FramerRTU(FramerBase):
         """Remember allowed slaves."""
         self.slaves = slaves
 
-    def get_frame_start(self, buffer):
+    def get_frame_start(self, buffer, buf_len):
         """Scan buffer for a relevant frame start."""
-        if (buf_len := len(buffer)) < 4:
-            return 0, False
         for i in range(0, buf_len - 3):  # <slave id><function code><crc 2 bytes>
             if self.slaves[0] and buffer[i] not in self.slaves:
                 continue
@@ -140,11 +138,11 @@ class FramerRTU(FramerBase):
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU."""
-        if len(data) < self.MIN_SIZE:
+        if (msg_len := len(data))< self.MIN_SIZE:
             Log.debug("Short frame: {} wait for more data", data, ":hex")
             return 0, 0, 0, b''
-        used_len, ok = self.get_frame_start(data)
-        return used_len, 0, 0, b'jan'
+        used_len, ok = self.get_frame_start(data, msg_len)
+        return used_len, 0, 0, data[used_len:]
 
 
     def encode(self, pdu: bytes, device_id: int, _tid: int) -> bytes:

@@ -75,15 +75,12 @@ class ModbusRtuFramer(ModbusFramer):
         while True:
             if self._buffer == b'':
                 break
-            # used_len, use_tid, dev_id, data = self.message_handler.decode(self._buffer)
-            # if not data:
-            #    return
-
-            used_len, ok = self.message_handler.get_frame_start(self._buffer)
+            used_len, use_tid, dev_id, data = self.message_handler.decode(self._buffer)
             if used_len:
                 self._buffer = self._buffer[used_len:]
-            if not ok:
-                break
+            if not data:
+               break
+
             self.dev_id, self.msg_len, ok = self.message_handler.old_is_frame_ready(self._buffer, self.decoder)
             if not ok:
                 Log.debug("Frame - not ready")

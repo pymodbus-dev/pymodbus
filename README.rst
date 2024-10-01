@@ -84,7 +84,7 @@ Server Features
 * callback to intercept requests/responses
 * work on RS485 in parallel with other devices
 
-`Server documentation <https://pymodbus.readthedocs.io/en/latest/source/library/server.html>`_
+`Server documentation <https://pymodbus.readthedocs.io/en/latest/source/server.html>`_
 
 
 REPL Features

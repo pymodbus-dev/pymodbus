@@ -225,42 +225,38 @@ class TestFramers:
 
 
     @pytest.mark.parametrize(
-        ("data", "slaves", "reset_called", "cb_called"),
+        ("data", "slaves", "cb_called"),
         [
-            (b"\x11", [17], 0, 0),  # not complete frame
-            (b"\x11\x03", [17], 0, 0),  # not complete frame
-            (b"\x11\x03\x06", [17], 0, 0),  # not complete frame
-            (b"\x11\x03\x06\xAE\x41\x56\x52\x43", [17], 0, 0),  # not complete frame
+            (b"\x11", [17], 0),  # not complete frame
+            (b"\x11\x03", [17], 0),  # not complete frame
+            (b"\x11\x03\x06", [17], 0),  # not complete frame
+            (b"\x11\x03\x06\xAE\x41\x56\x52\x43", [17], 0),  # not complete frame
             (
                 b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40",
                 [17],
-                0,
                 0,
             ),  # not complete frame
             (
                 b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49",
                 [17],
                 0,
-                0,
             ),  # not complete frame
-            (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAC", [17], 1, 0),  # bad crc
+            (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAC", [17], 0),  # bad crc
             (
                 b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD",
                 [17],
-                0,
                 1,
             ),  # good frame
             (
                 b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD",
                 [16],
                 0,
-                0,
             ),  # incorrect slave id
-            (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x11\x03", [17], 0, 1),
+            (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x11\x03", [17], 1),
             # good frame + part of next frame
         ],
     )
-    def test_rtu_incoming_packet(self, rtu_framer, data, slaves, reset_called, cb_called):
+    def test_rtu_incoming_packet(self, rtu_framer, data, slaves, cb_called):
         """Test rtu process incoming packet."""
         count = 0
         result = None
@@ -270,12 +266,8 @@ class TestFramers:
             count += 1
             result = data
 
-        with mock.patch.object(
-            rtu_framer, "resetFrame", wraps=rtu_framer.resetFrame
-        ) as mock_reset:
-            rtu_framer.processIncomingPacket(data, callback, slaves)
-            assert count == cb_called
-            assert mock_reset.call_count == reset_called
+        rtu_framer.processIncomingPacket(data, callback, slaves)
+        assert count == cb_called
 
 
     async def test_send_packet(self, rtu_framer):

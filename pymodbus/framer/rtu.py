@@ -147,6 +147,13 @@ class FramerRTU(FramerBase):
             if msg_len < used_len +size:
                 Log.debug("Frame - not ready")
                 return used_len, 0, 0, b''
+            start_crc = used_len + size -2
+            crc = data[start_crc : start_crc + 2]
+            crc_val = (int(crc[0]) << 8) + int(crc[1])
+            if not FramerRTU.check_CRC(data[used_len: start_crc], crc_val):
+                Log.debug("Frame check failed, ignoring!!")
+                return used_len, 0, 0, b''
+
             return used_len, size, dev_id, data[used_len:]
         return used_len, 0, 0, b''
 

@@ -1,8 +1,6 @@
 """Modbus RTU frame implementation."""
 from __future__ import annotations
 
-import struct
-
 from pymodbus.framer.base import FramerBase
 from pymodbus.logging import Log
 

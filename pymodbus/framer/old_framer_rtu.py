@@ -84,7 +84,6 @@ class ModbusRtuFramer(ModbusFramer):
                 raise ModbusIOException("Unable to decode request")
             result.slave_id = self.dev_id
             result.transaction_id = 0
-            self._buffer = self._buffer[self.msg_len :]
             Log.debug("Frame advanced, resetting header!!")
             callback(result)  # defer or push to a thread?
 

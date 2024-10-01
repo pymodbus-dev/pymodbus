@@ -75,27 +75,11 @@ class ModbusRtuFramer(ModbusFramer):
         while True:
             if self._buffer == b'':
                 break
-            used_len, _, dev_id, data = self.message_handler.decode(self._buffer)
+            used_len, _, self.dev_id, data = self.message_handler.decode(self._buffer)
             if used_len:
                 self._buffer = self._buffer[used_len:]
             if not data:
                break
-
-            self.dev_id, self.msg_len, ok = self.message_handler.old_check_frame(self._buffer, self.decoder)
-            if not ok:
-                Log.debug("Frame check failed, ignoring!!")
-                x = self._buffer
-                self.resetFrame()
-                self._buffer: bytes = x[1:]
-                continue
-            start = self._hsize
-            end = self.msg_len - 2
-            buffer = self._buffer[start:end]
-            if end > 0:
-                Log.debug("Getting Frame - {}", buffer, ":hex")
-                data = buffer
-            else:
-                data = b""
             if (result := self.decoder.decode(data)) is None:
                 raise ModbusIOException("Unable to decode request")
             result.slave_id = self.dev_id

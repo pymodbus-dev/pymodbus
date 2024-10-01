@@ -196,8 +196,9 @@ class TestFramers:
             count += 1
             result = data
 
+
         rtu_framer.processIncomingPacket(data, callback, self.slaves)
-        assert rtu_framer.dev_id == dev_id
+        assert result.slave_id == dev_id
 
 
     def test_get_frame(self, rtu_framer):

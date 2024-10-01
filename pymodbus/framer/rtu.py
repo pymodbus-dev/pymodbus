@@ -127,12 +127,13 @@ class FramerRTU(FramerBase):
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU."""
-        if (msg_len := len(data))< self.MIN_SIZE:
-            Log.debug("Short frame: {} wait for more data", data, ":hex")
-            return 0, 0, 0, b''
-        for used_len in range(msg_len -1):
-            dev_id = data[used_len]
-            func_code = data[used_len + 1]
+        msg_len = len(data)
+        for used_len in range(msg_len):
+            if msg_len - used_len < self.MIN_SIZE:
+                Log.debug("Short frame: {} wait for more data", data, ":hex")
+                return 0, 0, 0, b''
+            dev_id = int(data[used_len])
+            func_code = int(data[used_len + 1])
             if (self.slaves[0] and dev_id not in self.slaves) or func_code & 0x7F not in self.function_codes:
                 continue
             if msg_len - used_len < self.MIN_SIZE:

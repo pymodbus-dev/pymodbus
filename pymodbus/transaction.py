@@ -184,10 +184,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
         if not response:
             return False
 
-        if hasattr(self.client.framer, "decode_data"):
-            mbap = self.client.framer.decode_data(response)
-        else:
-            mbap = {}
+        mbap = self.client.framer.decode_data(response)
         if (
             mbap.get("slave") != request.slave_id
             or mbap.get("fcode") & 0x7F != request.function_code

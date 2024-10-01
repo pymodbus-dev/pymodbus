@@ -85,7 +85,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
 
     def no_message_response_after_retries(self, retries) -> None:
         """Take action after a message has not been responded to after retries."""
-        """Just log exception - no other action needed on TCP connections."""
+        #Just log exception - no other action needed on TCP connections.
         raise ModbusIOException(
             f"ERROR: No response received after {retries} retries - connection not closed"
         )

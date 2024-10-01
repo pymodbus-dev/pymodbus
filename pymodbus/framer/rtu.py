@@ -106,7 +106,7 @@ class FramerRTU(FramerBase):
         """Remember allowed slaves."""
         self.slaves = slaves
 
-    def old_check_frame(self, buffer, msg_len, decoder):
+    def old_check_frame(self, buffer, decoder):
         """Check if the next frame is available."""
         try:
             dev_id = int(buffer[0])
@@ -116,13 +116,12 @@ class FramerRTU(FramerBase):
 
             if len(buffer) < size:
                 raise IndexError
-            frame_size = msg_len
-            data = buffer[: frame_size - 2]
+            data = buffer[: size - 2]
             crc = buffer[size - 2 : size]
             crc_val = (int(crc[0]) << 8) + int(crc[1])
             return dev_id, size, FramerRTU.check_CRC(data, crc_val)
         except (IndexError, KeyError, struct.error):
-            return dev_id, size, False
+            return dev_id, 0, False
 
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
@@ -154,7 +153,7 @@ class FramerRTU(FramerBase):
                 Log.debug("Frame check failed, ignoring!!")
                 return used_len, 0, 0, b''
 
-            return used_len, size, dev_id, data[used_len:]
+            return used_len, 0, dev_id, data[used_len:]
         return used_len, 0, 0, b''
 
 

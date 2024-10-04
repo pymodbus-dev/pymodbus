@@ -79,17 +79,6 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
     :param co: coils initializer ModbusDataBlock
     :param hr: holding register initializer ModbusDataBlock
     :param ir: input registers initializer ModbusDataBlock
-    :param zero_mode: Not add one to address
-
-        When True, a request for address zero to n will map to
-        datastore address zero to n.
-
-        When False, a request for address zero to n will map to
-        datastore address one to n+1, based on section 4.4 of
-        specification.
-
-        Default is False.
-
     """
 
     def __init__(self, *_args,
@@ -97,14 +86,13 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
                     co=ModbusSequentialDataBlock.create(),
                     ir=ModbusSequentialDataBlock.create(),
                     hr=ModbusSequentialDataBlock.create(),
-                    zero_mode=False):
+                ):
         """Initialize the datastores."""
         self.store = {}
         self.store["d"] = di
         self.store["c"] = co
         self.store["i"] = ir
         self.store["h"] = hr
-        self.zero_mode = zero_mode
 
     def __str__(self):
         """Return a string representation of the context.
@@ -126,8 +114,7 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
         :param count: The number of values to test
         :returns: True if the request in within range, False otherwise
         """
-        if not self.zero_mode:
-            address += 1
+        address += 1
         Log.debug("validate: fc-[{}] address-{}: count-{}", fc_as_hex, address, count)
         return self.store[self.decode(fc_as_hex)].validate(address, count)
 
@@ -139,8 +126,7 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         """
-        if not self.zero_mode:
-            address += 1
+        address += 1
         Log.debug("getValues: fc-[{}] address-{}: count-{}", fc_as_hex, address, count)
         return self.store[self.decode(fc_as_hex)].getValues(address, count)
 
@@ -151,8 +137,7 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
         :param address: The starting address
         :param values: The new values to be set
         """
-        if not self.zero_mode:
-            address += 1
+        address += 1
         Log.debug("setValues[{}] address-{}: count-{}", fc_as_hex, address, len(values))
         self.store[self.decode(fc_as_hex)].setValues(address, values)
 

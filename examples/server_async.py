@@ -96,11 +96,6 @@ def setup_server(description=None, context=None, cmdline=None):
             # (broadcast mode).
             # However, this can be overloaded by setting the single flag to False and
             # then supplying a dictionary of slave id to context mapping::
-            #
-            # The slave context can also be initialized in zero_mode which means
-            # that a request to address(0-7) will map to the address (0-7).
-            # The default is False which is based on section 4.4 of the
-            # specification, so address(0-7) will map to (1-8)::
             context = {}
 
             for slave in range(args.slaves):

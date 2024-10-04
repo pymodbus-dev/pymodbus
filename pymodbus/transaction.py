@@ -378,7 +378,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 min_size = expected_response_length
 
             read_min = self.client.framer.recvPacket(min_size)
-            if len(read_min) != min_size:
+            if min_size and len(read_min) != min_size:
                 msg_start = "Incomplete message" if read_min else "No response"
                 raise InvalidMessageReceivedException(
                     f"{msg_start} received, expected at least {min_size} bytes "

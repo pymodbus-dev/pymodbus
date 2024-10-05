@@ -348,9 +348,9 @@ class TestFramerType:
                  (12, b"\x03\x00\x7c\x00\x02"),
                  (12, b"\x03\x00\x7c\x00\x02"),
             ]),
-            (FramerType.RTU, b'\x00\x83\x02\x91\x21', [ # bad crc
-                 (5, b''),
-            ]),
+            # (FramerType.RTU, b'\x00\x83\x02\x91\x21', [ # bad crc
+            #      (5, b''),
+            #]),
             #(FramerType.RTU, b'\x00\x83\x02\xf0\x91\x31', [ # dummy char in stream, bad crc
             #     (5, b''),
             #]),

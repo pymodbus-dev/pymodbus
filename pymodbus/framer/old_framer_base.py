@@ -46,6 +46,9 @@ class ModbusFramer:
         self.tid = 0
         self.dev_id = 0
 
+    def decode_data(self, _data):
+        """Decode data."""
+
     def _validate_slave_id(self, slaves: list, single: bool) -> bool:
         """Validate if the received data is valid for the client.
 

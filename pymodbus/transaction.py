@@ -184,10 +184,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
         if not response:
             return False
 
-        if hasattr(self.client.framer, "decode_data"):
-            mbap = self.client.framer.decode_data(response)
-        else:
-            mbap = {}
+        mbap = self.client.framer.decode_data(response)
         if (
             mbap.get("slave") != request.slave_id
             or mbap.get("fcode") & 0x7F != request.function_code
@@ -381,7 +378,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 min_size = expected_response_length
 
             read_min = self.client.framer.recvPacket(min_size)
-            if len(read_min) != min_size:
+            if min_size and len(read_min) != min_size:
                 msg_start = "Incomplete message" if read_min else "No response"
                 raise InvalidMessageReceivedException(
                     f"{msg_start} received, expected at least {min_size} bytes "

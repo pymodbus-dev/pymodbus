@@ -169,7 +169,7 @@ class TestFramerType:
             (9, 3077),
         ]
     )
-    def xtest_encode_type(self, frame, frame_expected, data, dev_id, tr_id, inx1, inx2, inx3):
+    def test_encode_type(self, frame, frame_expected, data, dev_id, tr_id, inx1, inx2, inx3):
         """Test encode method."""
         if frame == FramerTLS and dev_id + tr_id:
             return
@@ -230,28 +230,35 @@ class TestFramerType:
             "single",
         ]
     )
-    async def xtest_decode_type(self, entry, dummy_async_framer, data, dev_id, tr_id, expected, split):
+    async def test_decode_type(self, entry, test_framer, data, dev_id, tr_id, expected, split):
         """Test encode method."""
         if entry == FramerType.TLS and split != "no":
             return
         if entry == FramerType.RTU:
             return
-        dummy_async_framer.callback_request_response = mock.MagicMock()
         if split == "no":
-            used_len = dummy_async_framer.callback_data(data)
+            used_len, res_data = test_framer.decode(data)
         elif split == "half":
             split_len = int(len(data) / 2)
-            assert not dummy_async_framer.callback_data(data[0:split_len])
-            dummy_async_framer.callback_request_response.assert_not_called()
-            used_len = dummy_async_framer.callback_data(data)
+            used_len, res_data = test_framer.decode(data[0:split_len])
+            assert not used_len
+            assert not res_data
+            assert not test_framer.incoming_dev_id
+            assert not test_framer.incoming_tid
+            used_len, res_data = test_framer.decode(data)
         else:
             last = len(data)
             for i in range(0, last -1):
-                assert not dummy_async_framer.callback_data(data[0:i+1])
-                dummy_async_framer.callback_request_response.assert_not_called()
-            used_len = dummy_async_framer.callback_data(data)
+                used_len, res_data = test_framer.decode(data[0:i+1])
+                assert not used_len
+                assert not res_data
+                assert not test_framer.incoming_dev_id
+                assert not test_framer.incoming_tid
+            used_len, res_data = test_framer.decode(data)
         assert used_len == len(data)
-        dummy_async_framer.callback_request_response.assert_called_with(expected, dev_id, tr_id)
+        assert res_data == expected
+        assert dev_id == test_framer.incoming_dev_id
+        assert tr_id == test_framer.incoming_tid
 
     @pytest.mark.parametrize(
         ("entry", "data", "exp"),

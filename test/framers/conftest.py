@@ -29,7 +29,7 @@ def prepare_dev_ids():
 async def prepare_test_framer(entry, is_server, dev_ids):
     """Return framer object."""
     return FRAMER_NAME_TO_CLASS[entry](
-        (ServerDecoder() if is_server else ClientDecoder)(),
+        (ServerDecoder if is_server else ClientDecoder)(),
         dev_ids,
     )
 

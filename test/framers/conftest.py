@@ -6,7 +6,7 @@ from unittest import mock
 import pytest
 
 from pymodbus.factory import ClientDecoder, ServerDecoder
-from pymodbus.framer import AsyncFramer, FramerType
+from pymodbus.framer import FRAMER_NAME_TO_CLASS, AsyncFramer, FramerType
 from pymodbus.transport import CommParams
 
 
@@ -28,8 +28,8 @@ def prepare_dev_ids():
 @pytest.fixture(name="test_framer")
 async def prepare_test_framer(entry, is_server, dev_ids):
     """Return framer object."""
-    return entry(
-        (ServerDecoder if is_server else ClientDecoder)(),
+    return FRAMER_NAME_TO_CLASS[entry](
+        (ServerDecoder() if is_server else ClientDecoder)(),
         dev_ids,
     )
 

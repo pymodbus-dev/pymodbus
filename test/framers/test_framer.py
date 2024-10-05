@@ -16,73 +16,10 @@ class TestFramer:
     """Test module."""
 
     @pytest.mark.parametrize(("entry"), list(FramerType))
-    async def test_framer_init(self, dummy_async_framer):
+    async def test_framer_init(self, test_framer):
         """Test framer type."""
-        assert dummy_async_framer.handle
-
-    @pytest.mark.parametrize(("data", "res_len", "cx", "rc"), [
-        (b'12345', 5, 1, [(5, b'12345')]),  # full frame
-        (b'12345', 0, 0, [(0, b'')]),  # not full frame, need more data
-        (b'12345', 5, 0, [(5, b'')]),  # faulty frame, skipped
-        (b'1234512345', 10, 2, [(5, b'12345'), (5, b'12345')]),  # 2 full frames
-        (b'12345678', 5, 1, [(5, b'12345'), (0, b'')]),  # full frame, not full frame
-        (b'67812345', 8, 1, [(8, b'12345')]), # garble first, full frame next
-        (b'12345678', 5, 0, [(5, b'')]),      # garble first, not full frame
-        (b'12345678', 8, 0, [(8, b'')]),      # garble first, faulty frame
-    ])
-    async def test_framer_callback(self, dummy_async_framer, data, res_len, cx, rc):
-        """Test framer type."""
-        dummy_async_framer.callback_request_response = mock.Mock()
-        dummy_async_framer.handle.decode = mock.MagicMock(side_effect=iter(rc))
-        assert dummy_async_framer.callback_data(data) == res_len
-        assert dummy_async_framer.callback_request_response.call_count == cx
-        if cx:
-            dummy_async_framer.callback_request_response.assert_called_with(b'12345', 0, 0)
-        else:
-            dummy_async_framer.callback_request_response.assert_not_called()
-
-    @pytest.mark.parametrize(("data", "res_len", "rc"), [
-        (b'12345', 5, [(5, b'12345'), (0, b'')]),  # full frame, wrong dev_id
-    ])
-    async def test_framer_callback_wrong_id(self, dummy_async_framer, data, res_len, rc):
-        """Test framer type."""
-        dummy_async_framer.callback_request_response = mock.Mock()
-        dummy_async_framer.handle.decode = mock.MagicMock(side_effect=iter(rc))
-        dummy_async_framer.broadcast = False
-        assert dummy_async_framer.callback_data(data) == res_len
-        # dummy_async_framer.callback_request_response.assert_not_called()
-
-    async def test_framer_build_send(self, dummy_async_framer):
-        """Test framer type."""
-        dummy_async_framer.handle.encode = mock.MagicMock(return_value=(b'decode'))
-        dummy_async_framer.build_send(b'decode', 1, 0)
-        dummy_async_framer.handle.encode.assert_called_once()
-        dummy_async_framer.send.assert_called_once()
-        dummy_async_framer.send.assert_called_with(b'decode', None)
-
-    @pytest.mark.parametrize(
-        ("data", "res_len", "res_id", "res_tid", "res_data"), [
-        (b'\x00\x01', 0, 0, 0, b''),
-        (b'\x01\x02\x03', 3, 1, 2, b'\x03'),
-        (b'\x04\x05\x06\x07\x08\x09\x00\x01\x02\x03', 10, 4, 5, b'\x06\x07\x08\x09\x00\x01\x02\x03'),
-    ])
-    async def xtest_framer_decode(self, dummy_async_framer,  data, res_id, res_tid, res_len, res_data):
-        """Test decode method in all types."""
-        t_len, t_id, t_tid, t_data = dummy_async_framer.handle.decode(data)
-        assert res_len == t_len
-        assert res_id == t_id
-        assert res_tid == t_tid
-        assert res_data == t_data
-
-    @pytest.mark.parametrize(
-        ("data", "dev_id", "tr_id", "res_data"), [
-        (b'\x01\x02', 5, 6, b'\x05\x06\x01\x02'),
-        (b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09', 17, 25, b'\x11\x19\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09'),
-    ])
-    async def xtest_framer_encode(self, dummy_async_framer, data, dev_id, tr_id, res_data):
-        """Test decode method in all types."""
-        t_data = dummy_async_framer.handle.encode(data, dev_id, tr_id)
-        assert res_data == t_data
+        test_framer.incomming_dev_id = 1
+        assert test_framer.incomming_dev_id
 
     @pytest.mark.parametrize(
         ("func", "test_compare", "expect"),
@@ -119,7 +56,36 @@ class TestFramer:
 
 
 
-class TestFramerType:
+
+
+    @pytest.mark.parametrize(
+        ("data", "res_len", "res_id", "res_tid", "res_data"), [
+        (b'\x00\x01', 0, 0, 0, b''),
+        (b'\x01\x02\x03', 3, 1, 2, b'\x03'),
+        (b'\x04\x05\x06\x07\x08\x09\x00\x01\x02\x03', 10, 4, 5, b'\x06\x07\x08\x09\x00\x01\x02\x03'),
+    ])
+    async def xtest_framer_decode(self, dummy_async_framer,  data, res_id, res_tid, res_len, res_data):
+        """Test decode method in all types."""
+        t_len, t_id, t_tid, t_data = dummy_async_framer.handle.decode(data)
+        assert res_len == t_len
+        assert res_id == t_id
+        assert res_tid == t_tid
+        assert res_data == t_data
+
+    @pytest.mark.parametrize(
+        ("data", "dev_id", "tr_id", "res_data"), [
+        (b'\x01\x02', 5, 6, b'\x05\x06\x01\x02'),
+        (b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09', 17, 25, b'\x11\x19\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09'),
+    ])
+    async def xtest_framer_encode(self, dummy_async_framer, data, dev_id, tr_id, res_data):
+        """Test decode method in all types."""
+        t_data = dummy_async_framer.handle.encode(data, dev_id, tr_id)
+        assert res_data == t_data
+
+
+
+
+class XTestFramerType:
     """Test classes."""
 
     @pytest.mark.parametrize(

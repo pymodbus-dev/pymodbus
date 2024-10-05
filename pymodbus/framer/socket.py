@@ -17,20 +17,17 @@ class FramerSocket(FramerBase):
 
     MIN_SIZE = 8
 
-    def specific_decode(self, data: bytes) -> tuple[int, int, int, bytes]:
+    def specific_decode(self, data: bytes, data_len: int) -> tuple[int, bytes]:
         """Decode ADU."""
-        if (used_len := len(data)) < self.MIN_SIZE:
-          Log.debug("Very short frame (NO MBAP): {} wait for more data", data, ":hex")
-          return 0, 0, 0, self.EMPTY
-        msg_tid = int.from_bytes(data[0:2], 'big')
+        self.incoming_tid = int.from_bytes(data[0:2], 'big')
         msg_len = int.from_bytes(data[4:6], 'big') + 6
-        msg_dev = int(data[6])
-        if used_len < msg_len:
+        self.incoming_dev_id = int(data[6])
+        if data_len < msg_len:
           Log.debug("Short frame: {} wait for more data", data, ":hex")
-          return 0, 0, 0, self.EMPTY
-        if msg_len == 8 and used_len == 9:
+          return 0, self.EMPTY
+        if msg_len == 8 and data_len == 9:
             msg_len = 9
-        return msg_len, msg_tid, msg_dev, data[7:msg_len]
+        return msg_len, data[7:msg_len]
 
     def encode(self, pdu: bytes, device_id: int, tid: int) -> bytes:
         """Encode ADU."""

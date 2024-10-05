@@ -42,7 +42,7 @@ class ModbusSocketFramer(ModbusFramer):
         """
         super().__init__(decoder, client)
         self._hsize = 0x07
-        self.message_handler = FramerSocket()
+        self.message_handler = FramerSocket(decoder, [0])
 
     def decode_data(self, data):
         """Decode data."""
@@ -72,13 +72,13 @@ class ModbusSocketFramer(ModbusFramer):
         while True:
             if self._buffer == b'':
                 return
-            used_len, use_tid, dev_id, data = self.message_handler.decode(self._buffer)
+            used_len, data = self.message_handler.decode(self._buffer)
             if not data:
                 return
-            self.dev_id = dev_id
-            self.tid = use_tid
+            self.dev_id = self.message_handler.incoming_dev_id
+            self.tid = self.message_handler.incoming_tid
             if not self._validate_slave_id(slave, single):
-                Log.debug("Not a valid slave id - {}, ignoring!!", dev_id)
+                Log.debug("Not a valid slave id - {}, ignoring!!", self.message_handler.incoming_dev_id)
                 self.resetFrame()
                 return
             if (result := self.decoder.decode(data)) is None:

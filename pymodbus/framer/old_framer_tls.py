@@ -33,7 +33,7 @@ class ModbusTlsFramer(ModbusFramer):
         """
         super().__init__(decoder, client)
         self._hsize = 0x0
-        self.message_handler = FramerTLS()
+        self.message_handler = FramerTLS(decoder, [0])
 
     def decode_data(self, data):
         """Decode data."""
@@ -47,11 +47,11 @@ class ModbusTlsFramer(ModbusFramer):
         # no slave id for Modbus Security Application Protocol
 
         while True:
-            used_len, use_tid, dev_id, data = self.message_handler.decode(self._buffer)
+            used_len, data = self.message_handler.decode(self._buffer)
             if not data:
                 return
-            self.dev_id = dev_id
-            self.tid = use_tid
+            self.dev_id = self.message_handler.incoming_dev_id
+            self.tid = self.message_handler.incoming_tid
 
             if (result := self.decoder.decode(data)) is None:
                 self.resetFrame()

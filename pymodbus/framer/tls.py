@@ -11,9 +11,9 @@ class FramerTLS(FramerBase):
       1b               Nb
     """
 
-    def specific_decode(self, data: bytes) -> tuple[int, int, int, bytes]:
+    def specific_decode(self, data: bytes, data_len: int) -> tuple[int, bytes]:
         """Decode ADU."""
-        return len(data), 0, 0, data
+        return data_len, data
 
     def encode(self, pdu: bytes, _device_id: int, _tid: int) -> bytes:
         """Encode ADU."""

@@ -55,26 +55,23 @@ class ModbusRtuFramer(ModbusFramer):
         :param decoder: The decoder factory implementation to use
         """
         super().__init__(decoder, client)
-        self._hsize = 0x01
-        self.function_codes = decoder.lookup.keys() if decoder else {}
-        self.message_handler: FramerRTU = FramerRTU(function_codes=self.function_codes, decoder=self.decoder)
-        self.msg_len = 0
+        self.message_handler: FramerRTU = FramerRTU(self.decoder, [0])
 
     def decode_data(self, data):
         """Decode data."""
-        if len(data) > self._hsize:
+        if len(data) > 1:
             uid = int(data[0])
             fcode = int(data[1])
             return {"slave": uid, "fcode": fcode}
         return {}
 
-    def frameProcessIncomingPacket(self, _single, callback, slave, tid=None):
+    def frameProcessIncomingPacket(self, _single, callback, _slave, tid=None):
         """Process new packet pattern."""
-        self.message_handler.set_slaves(slave)
         while True:
             if self._buffer == b'':
                 break
-            used_len, _, self.dev_id, data = self.message_handler.decode(self._buffer)
+            used_len, data = self.message_handler.decode(self._buffer)
+            self.dev_id = self.message_handler.incoming_dev_id
             if used_len:
                 self._buffer = self._buffer[used_len:]
             if not data:

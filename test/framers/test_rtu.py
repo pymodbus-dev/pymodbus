@@ -1,6 +1,7 @@
 """Test framer."""
 import pytest
 
+from pymodbus.factory import ClientDecoder
 from pymodbus.framer.rtu import FramerRTU
 
 
@@ -11,7 +12,7 @@ class TestFramerRTU:
     @pytest.fixture(name="frame")
     def prepare_frame():
         """Return message object."""
-        return FramerRTU()
+        return FramerRTU(ClientDecoder(), [0])
 
     @pytest.mark.skip
     @pytest.mark.parametrize(
@@ -31,11 +32,11 @@ class TestFramerRTU:
     )
     def test_decode(self, frame, packet, used_len, res_id, res):
         """Test decode."""
-        res_len, tid, dev_id, data = frame.decode(packet)
+        res_len, data = frame.decode(packet)
         assert res_len == used_len
         assert data == res
-        assert tid == res_id
-        assert dev_id == res_id
+        assert frame.incoming_tid == res_id
+        assert frame.incoming_dev_id == res_id
 
     @pytest.mark.parametrize(
         ("data", "dev_id", "res_msg"),

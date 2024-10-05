@@ -73,13 +73,6 @@ class FramerRTU(FramerBase):
 
     MIN_SIZE = 4  # <slave id><function code><crc 2 bytes>
 
-    def __init__(self, function_codes=None, decoder=None) -> None:
-        """Initialize a ADU instance."""
-        super().__init__()
-        self.function_codes = function_codes
-        self.slaves: list[int] = []
-        self.decoder = decoder
-
     @classmethod
     def generate_crc16_table(cls) -> list[int]:
         """Generate a crc16 lookup table.
@@ -100,41 +93,36 @@ class FramerRTU(FramerBase):
     crc16_table: list[int] = [0]
 
 
-    def set_slaves(self, slaves):
-        """Remember allowed slaves."""
-        self.slaves = slaves
-
-    def specific_decode(self, data: bytes) -> tuple[int, int, int, bytes]:
+    def specific_decode(self, data: bytes, data_len: int) -> tuple[int, bytes]:
         """Decode ADU."""
-        msg_len = len(data)
-        for used_len in range(msg_len):
-            if msg_len - used_len < self.MIN_SIZE:
+        for used_len in range(data_len):
+            if data_len - used_len < self.MIN_SIZE:
                 Log.debug("Short frame: {} wait for more data", data, ":hex")
-                return 0, 0, 0, b''
-            dev_id = int(data[used_len])
+                return 0, self.EMPTY
+            self.incoming_dev_id = int(data[used_len])
             func_code = int(data[used_len + 1])
-            if (self.slaves[0] and dev_id not in self.slaves) or func_code & 0x7F not in self.function_codes:
+            if (self.dev_ids[0] and self.incoming_dev_id not in self.dev_ids) or func_code & 0x7F not in self.decoder.lookup:
                 continue
-            if msg_len - used_len < self.MIN_SIZE:
+            if data_len - used_len < self.MIN_SIZE:
                     Log.debug("Garble in front {}, then short frame: {} wait for more data", used_len, data, ":hex")
-                    return used_len, 0, 0, b''
+                    return used_len, self.EMPTY
             pdu_class = self.decoder.lookupPduClass(func_code)
             try:
                 size = pdu_class.calculateRtuFrameSize(data[used_len:])
             except IndexError:
-                size = msg_len +1
-            if msg_len < used_len +size:
+                size = data_len +1
+            if data_len < used_len +size:
                 Log.debug("Frame - not ready")
-                return used_len, 0, 0, b''
+                return used_len, self.EMPTY
             start_crc = used_len + size -2
             crc = data[start_crc : start_crc + 2]
             crc_val = (int(crc[0]) << 8) + int(crc[1])
             if not FramerRTU.check_CRC(data[used_len : start_crc], crc_val):
                 Log.debug("Frame check failed, ignoring!!")
-                return used_len, 0, 0, b''
+                return used_len, self.EMPTY
 
-            return start_crc + 2, 0, dev_id, data[used_len + 1 : start_crc]
-        return used_len, 0, 0, b''
+            return start_crc + 2, data[used_len + 1 : start_crc]
+        return used_len, self.EMPTY
 
 
     def encode(self, pdu: bytes, device_id: int, _tid: int) -> bytes:

@@ -2,6 +2,7 @@
 
 import pytest
 
+from pymodbus.factory import ClientDecoder
 from pymodbus.framer.socket import FramerSocket
 
 
@@ -12,7 +13,7 @@ class TestFramerSocket:
     @pytest.fixture(name="frame")
     def prepare_frame():
         """Return message object."""
-        return FramerSocket()
+        return FramerSocket(ClientDecoder(), [0])
 
 
     @pytest.mark.parametrize(
@@ -27,11 +28,11 @@ class TestFramerSocket:
     )
     def test_decode(self, frame, packet, used_len, res_id, res_tid, res):
         """Test decode."""
-        res_len, tid, dev_id, data = frame.decode(packet)
+        res_len, data = frame.decode(packet)
         assert res_len == used_len
         assert res == data
-        assert res_tid == tid
-        assert dev_id == res_id
+        assert res_tid == frame.incoming_tid
+        assert frame.incoming_dev_id == res_id
 
 
     @pytest.mark.parametrize(
@@ -46,8 +47,8 @@ class TestFramerSocket:
     def test_roundtrip(self, frame, data, dev_id, tr_id, res_msg):
         """Test encode."""
         msg = frame.encode(data, dev_id, tr_id)
-        res_len, res_tid, res_id, res_data = frame.decode(msg)
+        res_len, res_data = frame.decode(msg)
         assert data == res_data
-        assert dev_id == res_id
-        assert tr_id == res_tid
+        assert dev_id == frame.incoming_dev_id
+        assert tr_id == frame.incoming_tid
         assert res_len == len(res_msg)

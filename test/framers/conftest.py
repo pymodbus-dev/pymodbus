@@ -20,9 +20,26 @@ def prepare_is_server():
     """Return client/server."""
     return False
 
+@pytest.fixture(name="dev_ids")
+def prepare_dev_ids():
+    """Return list of device ids."""
+    return [0, 17]
+
+@pytest.fixture(name="test_framer")
+async def prepare_test_framer(entry, is_server, dev_ids):
+    """Return framer object."""
+    return entry(
+        (ServerDecoder if is_server else ClientDecoder)(),
+        dev_ids,
+    )
+
+
+
+
+
 @mock.patch.multiple(AsyncFramer, __abstractmethods__=set())  # eliminate abstract methods (callbacks)
 @pytest.fixture(name="dummy_async_framer")
-async def prepare_test_framer(entry, is_server):
+async def prepare_test_async_framer(entry, is_server):
     """Return framer object."""
     decoder = (ServerDecoder if is_server else ClientDecoder)()
     framer = AsyncFramer(entry, CommParams(), is_server, decoder, [0, 1])  # type: ignore[abstract]

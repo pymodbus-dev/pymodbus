@@ -292,23 +292,18 @@ class TestFramerType:
                  (12, b"\x03\x00\x7c\x00\x02"),
                  (12, b"\x03\x00\x7c\x00\x02"),
             ]),
-            # (FramerType.RTU, b'\x00\x83\x02\x91\x21', [ # bad crc
-            #      (5, b''),
-            #]),
-            #(FramerType.RTU, b'\x00\x83\x02\xf0\x91\x31', [ # dummy char in stream, bad crc
-            #     (5, b''),
-            #]),
-            # (FramerType.RTU, b'\x00\x83\x02\x91\x21\x00\x83\x02\x91\x31', [ # bad crc + good CRC
-            #    (10, b'\x83\x02'),
-            #]),
-            #(FramerType.RTU, b'\x00\x83\x02\xf0\x91\x31\x00\x83\x02\x91\x31', [ # dummy char in stream, bad crc  + good CRC
-            #     (11, b''),
-            #]),
-
-            # (FramerType.RTU, b'\x00\x83\x02\x91\x31', 0),  # garble in front
-            # (FramerType.ASCII, b'abc:0003007C00027F\r\n', [  # garble in front
-            #     (20, b'\x03\x00\x7c\x00\x02'),
-            # ]),
+            (FramerType.RTU, b'\x00\x83\x02\x91\x21', [ # bad crc
+                 (2, b''),
+            ]),
+            (FramerType.RTU, b'\x00\x83\x02\xf0\x91\x31', [ # dummy char in stream, bad crc
+                 (3, b''),
+            ]),
+            (FramerType.RTU, b'\x00\x83\x02\x91\x21\x00\x83\x02\x91\x31', [ # bad crc + good CRC
+                (10, b'\x83\x02'),
+            ]),
+            (FramerType.RTU, b'\x00\x83\x02\xf0\x91\x31\x00\x83\x02\x91\x31', [ # dummy char in stream, bad crc  + good CRC
+                 (11, b'\x83\x02'),
+            ]),
 
             # (FramerType.RTU, b'\x00\x83\x02\x91\x31', 0),  # garble after
             # (FramerType.ASCII, b':0003007C00017F\r\nabc', [  # bad crc, garble after
@@ -326,9 +321,9 @@ class TestFramerType:
             # ]),
         ]
     )
-    async def xtest_decode_complicated(self, dummy_async_framer, data, exp):
+    async def test_decode_complicated(self, test_framer, data, exp):
         """Test encode method."""
         for ent in exp:
-            used_len, res_data = dummy_async_framer.handle.decode(data)
+            used_len, res_data = test_framer.decode(data)
             assert used_len == ent[0]
             assert res_data == ent[1]

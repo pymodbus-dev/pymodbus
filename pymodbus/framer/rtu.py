@@ -98,7 +98,7 @@ class FramerRTU(FramerBase):
         for used_len in range(data_len):
             if data_len - used_len < self.MIN_SIZE:
                 Log.debug("Short frame: {} wait for more data", data, ":hex")
-                return 0, self.EMPTY
+                return used_len, self.EMPTY
             self.incoming_dev_id = int(data[used_len])
             func_code = int(data[used_len + 1])
             if (self.dev_ids[0] and self.incoming_dev_id not in self.dev_ids) or func_code & 0x7F not in self.decoder.lookup:
@@ -113,14 +113,15 @@ class FramerRTU(FramerBase):
                 size = data_len +1
             if data_len < used_len +size:
                 Log.debug("Frame - not ready")
+                if used_len:
+                    continue
                 return used_len, self.EMPTY
             start_crc = used_len + size -2
             crc = data[start_crc : start_crc + 2]
             crc_val = (int(crc[0]) << 8) + int(crc[1])
             if not FramerRTU.check_CRC(data[used_len : start_crc], crc_val):
                 Log.debug("Frame check failed, ignoring!!")
-                return used_len, self.EMPTY
-
+                continue
             return start_crc + 2, data[used_len + 1 : start_crc]
         return used_len, self.EMPTY
 

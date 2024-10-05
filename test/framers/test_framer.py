@@ -55,37 +55,7 @@ class TestFramer:
         assert FramerRTU.check_CRC(data, 0xE2DB)
 
 
-
-
-
-    @pytest.mark.parametrize(
-        ("data", "res_len", "res_id", "res_tid", "res_data"), [
-        (b'\x00\x01', 0, 0, 0, b''),
-        (b'\x01\x02\x03', 3, 1, 2, b'\x03'),
-        (b'\x04\x05\x06\x07\x08\x09\x00\x01\x02\x03', 10, 4, 5, b'\x06\x07\x08\x09\x00\x01\x02\x03'),
-    ])
-    async def xtest_framer_decode(self, dummy_async_framer,  data, res_id, res_tid, res_len, res_data):
-        """Test decode method in all types."""
-        t_len, t_id, t_tid, t_data = dummy_async_framer.handle.decode(data)
-        assert res_len == t_len
-        assert res_id == t_id
-        assert res_tid == t_tid
-        assert res_data == t_data
-
-    @pytest.mark.parametrize(
-        ("data", "dev_id", "tr_id", "res_data"), [
-        (b'\x01\x02', 5, 6, b'\x05\x06\x01\x02'),
-        (b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09', 17, 25, b'\x11\x19\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09'),
-    ])
-    async def xtest_framer_encode(self, dummy_async_framer, data, dev_id, tr_id, res_data):
-        """Test decode method in all types."""
-        t_data = dummy_async_framer.handle.encode(data, dev_id, tr_id)
-        assert res_data == t_data
-
-
-
-
-class XTestFramerType:
+class TestFramerType:
     """Test classes."""
 
     @pytest.mark.parametrize(
@@ -199,7 +169,7 @@ class XTestFramerType:
             (9, 3077),
         ]
     )
-    def test_encode_type(self, frame, frame_expected, data, dev_id, tr_id, inx1, inx2, inx3):
+    def xtest_encode_type(self, frame, frame_expected, data, dev_id, tr_id, inx1, inx2, inx3):
         """Test encode method."""
         if frame == FramerTLS and dev_id + tr_id:
             return
@@ -260,7 +230,7 @@ class XTestFramerType:
             "single",
         ]
     )
-    async def test_decode_type(self, entry, dummy_async_framer, data, dev_id, tr_id, expected, split):
+    async def xtest_decode_type(self, entry, dummy_async_framer, data, dev_id, tr_id, expected, split):
         """Test encode method."""
         if entry == FramerType.TLS and split != "no":
             return
@@ -349,7 +319,7 @@ class XTestFramerType:
             # ]),
         ]
     )
-    async def test_decode_complicated(self, dummy_async_framer, data, exp):
+    async def xtest_decode_complicated(self, dummy_async_framer, data, exp):
         """Test encode method."""
         for ent in exp:
             used_len, res_data = dummy_async_framer.handle.decode(data)

@@ -57,14 +57,6 @@ class ModbusRtuFramer(ModbusFramer):
         super().__init__(decoder, client)
         self.message_handler: FramerRTU = FramerRTU(self.decoder, [0])
 
-    def decode_data(self, data):
-        """Decode data."""
-        if len(data) > 1:
-            uid = int(data[0])
-            fcode = int(data[1])
-            return {"slave": uid, "fcode": fcode}
-        return {}
-
     def frameProcessIncomingPacket(self, _single, callback, _slave, tid=None):
         """Process new packet pattern."""
         while True:

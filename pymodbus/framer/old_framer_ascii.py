@@ -40,14 +40,6 @@ class ModbusAsciiFramer(ModbusFramer):
         self._end = b"\r\n"
         self.message_handler = FramerAscii(decoder, [0])
 
-    def decode_data(self, data):
-        """Decode data."""
-        if len(data) > 1:
-            uid = int(data[1:3], 16)
-            fcode = int(data[3:5], 16)
-            return {"slave": uid, "fcode": fcode}
-        return {}
-
     def frameProcessIncomingPacket(self, single, callback, slave, tid=None):
         """Process new packet pattern."""
         while len(self._buffer):

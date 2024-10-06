@@ -385,15 +385,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tcp.processIncomingPacket(msg[2:], callback, [0, 1])
         assert result
 
-    def test_framer_tls_framer_decode(self):
-        """Testmessage decoding."""
-        msg1 = b""
-        msg2 = b"\x01\x12\x34\x00\x08"
-        result = self._tls.decode_data(msg1)
-        assert not result
-        result = self._tls.decode_data(msg2)
-        assert result == {"fcode": 1}
-
     def test_framer_tls_incoming_packet(self):
         """Framer tls incoming packet."""
         msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"

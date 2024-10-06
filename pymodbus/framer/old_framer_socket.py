@@ -1,10 +1,9 @@
 """Socket framer."""
-import struct
 
 from pymodbus.exceptions import (
     ModbusIOException,
 )
-from pymodbus.framer.old_framer_base import SOCKET_FRAME_HEADER, ModbusFramer
+from pymodbus.framer.old_framer_base import ModbusFramer
 from pymodbus.framer.socket import FramerSocket
 from pymodbus.logging import Log
 
@@ -43,19 +42,6 @@ class ModbusSocketFramer(ModbusFramer):
         super().__init__(decoder, client)
         self._hsize = 0x07
         self.message_handler = FramerSocket(decoder, [0])
-
-    def decode_data(self, data):
-        """Decode data."""
-        if len(data) > self._hsize:
-            _tid, _pid, length, uid, fcode = struct.unpack(
-                SOCKET_FRAME_HEADER, data[0 : self._hsize + 1]
-            )
-            return {
-                "length": length,
-                "slave": uid,
-                "fcode": fcode,
-            }
-        return {}
 
     def frameProcessIncomingPacket(self, single, callback, slave, tid=None):
         """Process new packet pattern.

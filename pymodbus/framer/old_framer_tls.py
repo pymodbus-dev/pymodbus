@@ -1,10 +1,9 @@
 """TLS framer."""
-import struct
 
 from pymodbus.exceptions import (
     ModbusIOException,
 )
-from pymodbus.framer.old_framer_base import TLS_FRAME_HEADER, ModbusFramer
+from pymodbus.framer.old_framer_base import ModbusFramer
 from pymodbus.framer.tls import FramerTLS
 
 
@@ -34,13 +33,6 @@ class ModbusTlsFramer(ModbusFramer):
         super().__init__(decoder, client)
         self._hsize = 0x0
         self.message_handler = FramerTLS(decoder, [0])
-
-    def decode_data(self, data):
-        """Decode data."""
-        if len(data) > self._hsize:
-            (fcode,) = struct.unpack(TLS_FRAME_HEADER, data[0 : self._hsize + 1])
-            return {"fcode": fcode}
-        return {}
 
     def frameProcessIncomingPacket(self, _single, callback, _slave, tid=None):
         """Process new packet pattern."""

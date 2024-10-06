@@ -38,24 +38,18 @@ class ModbusAsciiFramer(ModbusFramer):
         self._end = b"\r\n"
         self.message_handler = FramerAscii(decoder, [0])
 
-    def frameProcessIncomingPacket(self, single, callback, slave, tid=None):
+    def frameProcessIncomingPacket(self, used_len, data, callback, slave, _tid):
         """Process new packet pattern."""
-        while len(self._buffer):
-            used_len, data = self.message_handler.decode(self._buffer)
-            if not data:
-                if not used_len:
-                    return
-                self._buffer = self._buffer[used_len :]
-                continue
-            self.dev_id = self.message_handler.incoming_dev_id
-            if not self._validate_slave_id(slave, single):
-                Log.error("Not a valid slave id - {}, ignoring!!", self.message_handler.incoming_dev_id)
-                self.resetFrame()
-                return
+        if not self._validate_slave_id(slave):
+            Log.error("Not a valid slave id - {}, ignoring!!", self.message_handler.incoming_dev_id)
+            self.resetFrame()
+            return False
 
-            if (result := self.decoder.decode(data)) is None:
-                raise ModbusIOException("Unable to decode response")
-            self.populateResult(result)
-            self._buffer = self._buffer[used_len :]
-            self.dev_id = 0
-            callback(result)  # defer this
+        if (result := self.decoder.decode(data)) is None:
+            raise ModbusIOException("Unable to decode response")
+        result.slave_id = self.dev_id
+        result.transaction_id = self.tid
+        self._buffer = self._buffer[used_len :]
+        self.dev_id = 0
+        callback(result)  # defer this
+        return True

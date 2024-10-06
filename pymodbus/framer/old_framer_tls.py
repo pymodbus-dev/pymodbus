@@ -32,20 +32,15 @@ class ModbusTlsFramer(ModbusFramer):
         self._hsize = 0x0
         self.message_handler = FramerTLS(decoder, [0])
 
-    def frameProcessIncomingPacket(self, _single, callback, _slave, tid=None):
+    def frameProcessIncomingPacket(self, used_len, data, callback, _slave, _tid):
         """Process new packet pattern."""
         # no slave id for Modbus Security Application Protocol
 
-        while True:
-            used_len, data = self.message_handler.decode(self._buffer)
-            if not data:
-                return
-            self.dev_id = self.message_handler.incoming_dev_id
-            self.tid = self.message_handler.incoming_tid
-
-            if (result := self.decoder.decode(data)) is None:
-                self.resetFrame()
-                raise ModbusIOException("Unable to decode request")
-            self.populateResult(result)
-            self._buffer: bytes = self._buffer[used_len:]
-            callback(result)  # defer or push to a thread?
+        if (result := self.decoder.decode(data)) is None:
+            self.resetFrame()
+            raise ModbusIOException("Unable to decode request")
+        result.slave_id = self.dev_id
+        result.transaction_id = self.tid
+        self._buffer: bytes = self._buffer[used_len:]
+        callback(result)  # defer or push to a thread?
+        return True

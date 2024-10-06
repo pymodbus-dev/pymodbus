@@ -1,5 +1,4 @@
 """Framer start."""
-# pylint: disable=missing-type-doc
 from __future__ import annotations
 
 import time
@@ -44,15 +43,13 @@ class ModbusFramer:
         self.tid = 0
         self.dev_id = 0
 
-    def _validate_slave_id(self, slaves: list, single: bool) -> bool:
+    def _validate_slave_id(self, slaves: list) -> bool:
         """Validate if the received data is valid for the client.
 
         :param slaves: list of slave id for which the transaction is valid
         :param single: Set to true to treat this as a single context
         :return:
         """
-        if single:
-            return True
         if 0 in slaves or 0xFF in slaves:
             # Handle Modbus TCP slave identifier (0x00 0r 0xFF)
             # in asynchronous requests
@@ -95,18 +92,7 @@ class ModbusFramer:
         self.dev_id = 0
         self.tid = 0
 
-    def populateResult(self, result):
-        """Populate the modbus result header.
-
-        The serial packets do not have any header information
-        that is copied.
-
-        :param result: The response packet
-        """
-        result.slave_id = self.dev_id
-        result.transaction_id = self.tid
-
-    def processIncomingPacket(self, data: bytes, callback, slave, single=False, tid=None):
+    def processIncomingPacket(self, data: bytes, callback, slave, tid=None):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -117,14 +103,6 @@ class ModbusFramer:
 
         The processed and decoded messages are pushed to the callback
         function to process and send.
-
-        :param data: The new packet data
-        :param callback: The function to send results to
-        :param slave: Process if slave id matches, ignore otherwise (could be a
-               list of slave ids (server) or single slave id(client/server))
-        :param single: multiple slave ?
-        :param tid: transaction id
-        :raises ModbusIOException:
         """
         Log.debug("Processing: {}", data, ":hex")
         self._buffer += data
@@ -132,12 +110,24 @@ class ModbusFramer:
             return
         if not isinstance(slave, (list, tuple)):
             slave = [slave]
-        self.frameProcessIncomingPacket(single, callback, slave, tid=tid)
+        while True:
+            if self._buffer == b'':
+                return
+            used_len, data = self.message_handler.decode(self._buffer)
+            self.dev_id = self.message_handler.incoming_dev_id
+            if used_len:
+                self._buffer = self._buffer[used_len:]
+            if not data:
+                return
+            self.dev_id = self.message_handler.incoming_dev_id
+            self.tid = self.message_handler.incoming_tid
+            if not self.frameProcessIncomingPacket(used_len, data, callback, slave, tid):
+                return
 
     def frameProcessIncomingPacket(
-        self, _single, _callback, _slave, tid=None
-    ) -> None:
+        self, _used_len, _data, _callback, _slave, _tid) -> bool:
         """Process new packet pattern."""
+        return True
 
     def buildPacket(self, message: ModbusRequest | ModbusResponse) -> bytes:
         """Create a ready to send modbus packet.

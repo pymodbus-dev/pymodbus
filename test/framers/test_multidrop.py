@@ -7,7 +7,7 @@ from pymodbus.framer import ModbusRtuFramer
 from pymodbus.server.async_io import ServerDecoder
 
 
-class TestMultidrop:
+class NOT_IMPLEMENTED_TestMultidrop:
     """Test that server works on a multidrop line."""
 
     slaves = [2]

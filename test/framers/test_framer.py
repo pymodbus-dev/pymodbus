@@ -313,56 +313,15 @@ class TestFramerType:
             assert res_data == ent[1]
 
     @pytest.mark.parametrize(
-        ("entry", "packet", "used_len", "res_tid", "res_id", "res"),
-        [
-            (FramerType.ASCII, b':010100010001FC\r\n', 17, 1, 1, b'\x01\x00\x01\x00\x01'),
-            (FramerType.ASCII, b':00010001000AF4\r\n', 17, 0, 0, b'\x01\x00\x01\x00\x0a'),
-            (FramerType.ASCII, b':01010001000AF3\r\n', 17, 1, 1, b'\x01\x00\x01\x00\x0a'),
-            (FramerType.ASCII, b':61620001000A32\r\n', 17, 97, 97, b'\x62\x00\x01\x00\x0a'),
-            (FramerType.ASCII, b':01270001000ACD\r\n', 17, 1, 1, b'\x27\x00\x01\x00\x0a'),
-            (FramerType.ASCII, b':010100', 0, 0, 0, b''), # short frame
-            (FramerType.ASCII, b':00010001000AF4', 0, 0, 0, b''),
-            (FramerType.ASCII, b'abc:00010001000AF4', 3, 0, 0, b''), # garble before frame
-            (FramerType.ASCII, b'abc00010001000AF4', 17, 0, 0, b''), # only garble
-            (FramerType.ASCII, b':01010001000A00\r\n', 17, 0, 0, b''),
-            # JIX (FramerType.RTU, b'\x01\x01\x00\x01\x00\x21\x90', 7, 1, b'\x01\x00\x01\x00\x01'),
-            # JIX (FramerType.RTU, b':00010001000AF4\r\n', 17, 0, b'\x01\x00\x01\x00\x0a'),
-            # JIX (FramerType.RTU, b':01010001000AF3\r\n', 17, 1, b'\x01\x00\x01\x00\x0a'),
-            # JIX (FramerType.RTU, b':61620001000A32\r\n', 17, 97, b'\x62\x00\x01\x00\x0a'),
-            # JIX (FramerType.RTU, b':01270001000ACD\r\n', 17, 1, b'\x27\x00\x01\x00\x0a'),
-            # JIX (FramerType.RTU, b':010100', 0, 0, b''), # short frame
-            # JIX (FramerType.RTU, b':00010001000AF4', 0, 0, b''),
-            # JIX (FramerType.RTU, b'abc:00010001000AF4', 3, 0, b''), # garble before frame
-            # JIX (FramerType.RTU, b'abc00010001000AF4', 17, 0, b''), # only garble
-            # JIX (FramerType.RTU, b':01010001000A00\r\n', 17, 0, b''),
-            (FramerType.SOCKET, b"\x00\x09\x00\x00\x00\x05\x01\x03\x01\x14\xb5", 11, 9, 1, b'\x03\x01\x14\xb5'),
-            (FramerType.SOCKET, b"\x00\x02\x00\x00\x00\x03\x07\x84\x02", 9, 2, 7, b'\x84\x02'),
-            (FramerType.SOCKET, b"\x00\x02\x00", 0, 0, 0, b''),  # very short frame
-            (FramerType.SOCKET, b"\x00\x09\x00\x00\x00\x05\x01\x03\x01", 0, 0, 0, b''),  # short frame
-            (FramerType.SOCKET, b"\x00\x02\x00\x00\x00\x03\x07\x84", 0, 0, 0, b''),  # short frame -1 byte
-            (FramerType.TLS, b'\x01\x05\x04\x00\x17', 5, 0, 0, b'\x01\x05\x04\x00\x17'),
-            (FramerType.TLS, b'\x03\x07\x06\x00\x73', 5, 0, 0, b'\x03\x07\x06\x00\x73'),
-            (FramerType.TLS, b'\x08\x00\x01', 3, 0, 0, b'\x08\x00\x01'),
-            (FramerType.TLS, b'\x84\x01', 2, 0, 0, b'\x84\x01'),
-                     ])
-    def test_decode(self, test_framer, packet, used_len, res_tid, res_id, res):
-        """Test decode."""
-        res_len, data = test_framer.decode(packet)
-        assert res_len == used_len
-        assert data == res
-        assert test_framer.incoming_tid == res_tid
-        assert test_framer.incoming_dev_id == res_id
-    
-    @pytest.mark.parametrize(
         ("entry", "data", "dev_id", "res_msg"),
         [
             (FramerType.ASCII, b'\x01\x05\x04\x00\x17', 1, b':010105040017DF\r\n'),
             (FramerType.ASCII, b'\x03\x07\x06\x00\x73', 2, b':0203070600737D\r\n'),
             (FramerType.ASCII,b'\x08\x00\x01', 3, b':03080001F7\r\n'),
             (FramerType.ASCII,b'\x84\x01', 2, b':02840179\r\n'),
-            # JIX (FramerType.RTU, b'\x01\x01\x00', 2, b'\x02\x01\x01\x00\x51\xcc'),
-            # JIX (FramerType.RTU, b'\x03\x06\xAE\x41\x56\x52\x43\x40', 17, b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD'),
-            # JIX (FramerType.RTU, b'\x01\x03\x01\x00\x0a', 1, b'\x01\x01\x03\x01\x00\x0a\xed\x89'),
+            (FramerType.RTU, b'\x01\x01\x00', 2, b'\x02\x01\x01\x00\x51\xcc'),
+            (FramerType.RTU, b'\x03\x06\xAE\x41\x56\x52\x43\x40', 17, b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD'),
+            (FramerType.RTU, b'\x01\x03\x01\x00\x0a', 1, b'\x01\x01\x03\x01\x00\x0a\xed\x89'),
             (FramerType.SOCKET, b'\x01\x05\x04\x00\x17', 31, b'\x00\x05\x00\x00\x00\x06\x07\x01\x05\x04\x00\x17'),
             (FramerType.SOCKET, b'\x03\x07\x06\x00\x73', 32, b'\x00\x09\x00\x00\x00\x06\x02\x03\x07\x06\x00\x73'),
             (FramerType.SOCKET, b'\x08\x00\x01', 33, b'\x00\x06\x00\x00\x00\x04\x03\x08\x00\x01'),

@@ -102,12 +102,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         client.framer.buildPacket.return_value = b"deadbeef"
         client.framer.sendPacket = mock.MagicMock()
         client.framer.sendPacket.return_value = len(b"deadbeef")
-        client.framer.decode_data = mock.MagicMock()
-        client.framer.decode_data.return_value = {
-            "slave": 1,
-            "fcode": 222,
-            "length": 27,
-        }
         request = mock.MagicMock()
         request.get_response_pdu_size.return_value = 10
         request.slave_id = 1

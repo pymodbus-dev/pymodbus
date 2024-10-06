@@ -28,8 +28,6 @@ TLS_FRAME_HEADER = BYTE_ORDER + "B"
 class ModbusFramer:
     """Base Framer class."""
 
-    name = ""
-
     def __init__(
         self,
         decoder: ClientDecoder | ServerDecoder,

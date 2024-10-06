@@ -32,8 +32,6 @@ class ModbusSocketFramer(ModbusFramer):
         * The -1 is to account for the uid byte
     """
 
-    method = "socket"
-
     def __init__(self, decoder, client=None):
         """Initialize a new instance of the framer.
 

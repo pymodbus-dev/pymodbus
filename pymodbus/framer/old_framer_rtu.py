@@ -47,8 +47,6 @@ class ModbusRtuFramer(ModbusFramer):
         (1/Baud)(bits) = delay seconds
     """
 
-    method = "rtu"
-
     def __init__(self, decoder, client=None):
         """Initialize a new instance of the framer.
 

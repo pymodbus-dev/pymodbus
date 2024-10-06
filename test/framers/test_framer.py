@@ -1,6 +1,5 @@
 """Test framer."""
 
-from unittest import mock
 
 import pytest
 
@@ -304,21 +303,6 @@ class TestFramerType:
             (FramerType.RTU, b'\x00\x83\x02\xf0\x91\x31\x00\x83\x02\x91\x31', [ # dummy char in stream, bad crc  + good CRC
                  (11, b'\x83\x02'),
             ]),
-
-            # (FramerType.RTU, b'\x00\x83\x02\x91\x31', 0),  # garble after
-            # (FramerType.ASCII, b':0003007C00017F\r\nabc', [  # bad crc, garble after
-            #     (17, b''),
-            # ]),
-            # (FramerType.ASCII, b':0003007C00017F\r\nabcdefghijkl', [  # bad crc, garble after
-            #     (29, b''),
-            # ]),
-            # (FramerType.ASCII, b':0003007C00027F\r\nabc', [  # good crc, garble after
-            #     (17, b'\x03\x00\x7c\x00\x02'),
-            # ]),
-            # (FramerType.RTU, b'\x00\x83\x02\x91\x31', 0),  # part second framer
-            # (FramerType.ASCII, b':0003007C00017F\r\n:0003', [ # bad crc, part second framer
-            #     (17, b''),
-            # ]),
         ]
     )
     async def test_decode_complicated(self, test_framer, data, exp):
@@ -327,3 +311,43 @@ class TestFramerType:
             used_len, res_data = test_framer.decode(data)
             assert used_len == ent[0]
             assert res_data == ent[1]
+
+    @pytest.mark.parametrize(
+        ("entry", "packet", "used_len", "res_id", "res"),
+        [
+            (FramerType.ASCII, b':010100010001FC\r\n', 17, 1, b'\x01\x00\x01\x00\x01'),
+            (FramerType.ASCII, b':00010001000AF4\r\n', 17, 0, b'\x01\x00\x01\x00\x0a'),
+            (FramerType.ASCII, b':01010001000AF3\r\n', 17, 1, b'\x01\x00\x01\x00\x0a'),
+            (FramerType.ASCII, b':61620001000A32\r\n', 17, 97, b'\x62\x00\x01\x00\x0a'),
+            (FramerType.ASCII, b':01270001000ACD\r\n', 17, 1, b'\x27\x00\x01\x00\x0a'),
+            (FramerType.ASCII, b':010100', 0, 0, b''), # short frame
+            (FramerType.ASCII, b':00010001000AF4', 0, 0, b''),
+            (FramerType.ASCII, b'abc:00010001000AF4', 3, 0, b''), # garble before frame
+            (FramerType.ASCII, b'abc00010001000AF4', 17, 0, b''), # only garble
+            (FramerType.ASCII, b':01010001000A00\r\n', 17, 0, b''),
+             
+        ])
+    def test_decode(self, test_framer, packet, used_len, res_id, res):
+        """Test decode."""
+        res_len, data = test_framer.decode(packet)
+        assert res_len == used_len
+        assert data == res
+        assert test_framer.incoming_tid == res_id
+        assert test_framer.incoming_dev_id == res_id
+    
+    @pytest.mark.parametrize(
+        ("entry", "data", "dev_id", "res_msg"),
+        [
+            (FramerType.ASCII, b'\x01\x05\x04\x00\x17', 1, b':010105040017DF\r\n'),
+            (FramerType.ASCII, b'\x03\x07\x06\x00\x73', 2, b':0203070600737D\r\n'),
+            (FramerType.ASCII,b'\x08\x00\x01', 3, b':03080001F7\r\n'),
+            (FramerType.ASCII,b'\x84\x01', 2, b':02840179\r\n'),
+        ],
+    )
+    def test_roundtrip(self, test_framer, data, dev_id, res_msg):
+        """Test encode."""
+        msg = test_framer.encode(data, dev_id, 0)
+        res_len, res_data = test_framer.decode(msg)
+        assert data == res_data
+        assert dev_id == test_framer.incoming_dev_id
+        assert res_len == len(res_msg)

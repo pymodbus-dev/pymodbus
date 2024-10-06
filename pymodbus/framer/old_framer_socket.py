@@ -1,10 +1,9 @@
 """Socket framer."""
-import struct
 
 from pymodbus.exceptions import (
     ModbusIOException,
 )
-from pymodbus.framer.old_framer_base import SOCKET_FRAME_HEADER, ModbusFramer
+from pymodbus.framer.old_framer_base import ModbusFramer
 from pymodbus.framer.socket import FramerSocket
 from pymodbus.logging import Log
 
@@ -33,8 +32,6 @@ class ModbusSocketFramer(ModbusFramer):
         * The -1 is to account for the uid byte
     """
 
-    method = "socket"
-
     def __init__(self, decoder, client=None):
         """Initialize a new instance of the framer.
 
@@ -42,20 +39,7 @@ class ModbusSocketFramer(ModbusFramer):
         """
         super().__init__(decoder, client)
         self._hsize = 0x07
-        self.message_handler = FramerSocket()
-
-    def decode_data(self, data):
-        """Decode data."""
-        if len(data) > self._hsize:
-            _tid, _pid, length, uid, fcode = struct.unpack(
-                SOCKET_FRAME_HEADER, data[0 : self._hsize + 1]
-            )
-            return {
-                "length": length,
-                "slave": uid,
-                "fcode": fcode,
-            }
-        return {}
+        self.message_handler = FramerSocket(decoder, [0])
 
     def frameProcessIncomingPacket(self, single, callback, slave, tid=None):
         """Process new packet pattern.
@@ -72,13 +56,13 @@ class ModbusSocketFramer(ModbusFramer):
         while True:
             if self._buffer == b'':
                 return
-            used_len, use_tid, dev_id, data = self.message_handler.decode(self._buffer)
+            used_len, data = self.message_handler.decode(self._buffer)
             if not data:
                 return
-            self.dev_id = dev_id
-            self.tid = use_tid
+            self.dev_id = self.message_handler.incoming_dev_id
+            self.tid = self.message_handler.incoming_tid
             if not self._validate_slave_id(slave, single):
-                Log.debug("Not a valid slave id - {}, ignoring!!", dev_id)
+                Log.debug("Not a valid slave id - {}, ignoring!!", self.message_handler.incoming_dev_id)
                 self.resetFrame()
                 return
             if (result := self.decoder.decode(data)) is None:

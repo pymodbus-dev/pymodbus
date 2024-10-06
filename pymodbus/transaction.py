@@ -173,26 +173,10 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
             return self.base_adu_size + 2  # Fcode(1), ExceptionCode(1)
         return None
 
-    def _validate_response(self, request: ModbusRequest, response, exp_resp_len, is_udp=False):
-        """Validate Incoming response against request.
-
-        :param request: Request sent
-        :param response: Response received
-        :param exp_resp_len: Expected response length
-        :return: New transactions state
-        """
+    def _validate_response(self, response):
+        """Validate Incoming response against request."""
         if not response:
             return False
-
-        mbap = self.client.framer.decode_data(response)
-        if (
-            mbap.get("slave") != request.slave_id
-            or mbap.get("fcode") & 0x7F != request.function_code
-        ):
-            return False
-
-        if "length" in mbap and exp_resp_len and not is_udp:
-            return mbap.get("length") == exp_resp_len
         return True
 
     def execute(self, request: ModbusRequest):  # noqa: C901
@@ -228,9 +212,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     full = True
                 else:
                     full = False
-                is_udp = False
                 if self.client.comm_params.comm_type == CommType.UDP:
-                    is_udp = True
                     full = True
                     if not expected_response_length:
                         expected_response_length = 1024
@@ -241,11 +223,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     broadcast=broadcast,
                 )
                 while retries > 0:
-                    valid_response = self._validate_response(
-                        request, response, expected_response_length,
-                        is_udp=is_udp
-                    )
-                    if valid_response:
+                    if self._validate_response(response):
                         if (
                             request.slave_id in self._no_response_devices
                             and response

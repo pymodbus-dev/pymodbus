@@ -102,12 +102,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         client.framer.buildPacket.return_value = b"deadbeef"
         client.framer.sendPacket = mock.MagicMock()
         client.framer.sendPacket.return_value = len(b"deadbeef")
-        client.framer.decode_data = mock.MagicMock()
-        client.framer.decode_data.return_value = {
-            "slave": 1,
-            "fcode": 222,
-            "length": 27,
-        }
         request = mock.MagicMock()
         request.get_response_pdu_size.return_value = 10
         request.slave_id = 1
@@ -390,15 +384,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert not result
         self._tcp.processIncomingPacket(msg[2:], callback, [0, 1])
         assert result
-
-    def test_framer_tls_framer_decode(self):
-        """Testmessage decoding."""
-        msg1 = b""
-        msg2 = b"\x01\x12\x34\x00\x08"
-        result = self._tls.decode_data(msg1)
-        assert not result
-        result = self._tls.decode_data(msg2)
-        assert result == {"fcode": 1}
 
     def test_framer_tls_incoming_packet(self):
         """Framer tls incoming packet."""

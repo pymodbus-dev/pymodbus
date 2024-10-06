@@ -1,5 +1,4 @@
 """RTU framer."""
-# pylint: disable=missing-type-doc
 import time
 
 from pymodbus.exceptions import ModbusIOException
@@ -48,34 +47,21 @@ class ModbusRtuFramer(ModbusFramer):
         (1/Baud)(bits) = delay seconds
     """
 
-    method = "rtu"
-
     def __init__(self, decoder, client=None):
         """Initialize a new instance of the framer.
 
         :param decoder: The decoder factory implementation to use
         """
         super().__init__(decoder, client)
-        self._hsize = 0x01
-        self.function_codes = decoder.lookup.keys() if decoder else {}
-        self.message_handler: FramerRTU = FramerRTU(function_codes=self.function_codes, decoder=self.decoder)
-        self.msg_len = 0
+        self.message_handler: FramerRTU = FramerRTU(self.decoder, [0])
 
-    def decode_data(self, data):
-        """Decode data."""
-        if len(data) > self._hsize:
-            uid = int(data[0])
-            fcode = int(data[1])
-            return {"slave": uid, "fcode": fcode}
-        return {}
-
-    def frameProcessIncomingPacket(self, _single, callback, slave, tid=None):
+    def frameProcessIncomingPacket(self, _single, callback, _slave, tid=None):
         """Process new packet pattern."""
-        self.message_handler.set_slaves(slave)
         while True:
             if self._buffer == b'':
                 break
-            used_len, _, self.dev_id, data = self.message_handler.decode(self._buffer)
+            used_len, data = self.message_handler.decode(self._buffer)
+            self.dev_id = self.message_handler.incoming_dev_id
             if used_len:
                 self._buffer = self._buffer[used_len:]
             if not data:
@@ -86,17 +72,6 @@ class ModbusRtuFramer(ModbusFramer):
             result.transaction_id = 0
             Log.debug("Frame advanced, resetting header!!")
             callback(result)  # defer or push to a thread?
-
-    def buildPacket(self, message):
-        """Create a ready to send modbus packet.
-
-        :param message: The populated request/response to send
-        """
-        packet = super().buildPacket(message)
-
-        # Ensure that transaction is actually the slave id for serial comms
-        message.transaction_id = 0
-        return packet
 
     def sendPacket(self, message: bytes) -> int:
         """Send packets on the bus with 3.5char delay between frames.

@@ -12,8 +12,8 @@ from __future__ import annotations
 from abc import abstractmethod
 from enum import Enum
 
+from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.framer.ascii import FramerAscii
-from pymodbus.framer.raw import FramerRaw
 from pymodbus.framer.rtu import FramerRTU
 from pymodbus.framer.socket import FramerSocket
 from pymodbus.framer.tls import FramerTLS
@@ -23,14 +23,13 @@ from pymodbus.transport.transport import CommParams, ModbusProtocol
 class FramerType(str, Enum):
     """Type of Modbus frame."""
 
-    RAW = "raw"  # only used for testing
     ASCII = "ascii"
     RTU = "rtu"
     SOCKET = "socket"
     TLS = "tls"
 
 
-class Framer(ModbusProtocol):
+class AsyncFramer(ModbusProtocol):
     """Framer layer extending transport layer.
 
     extends the ModbusProtocol to handle receiving and sending of complete modbus PDU.
@@ -54,6 +53,7 @@ class Framer(ModbusProtocol):
             framer_type: FramerType,
             params: CommParams,
             is_server: bool,
+            decoder: ClientDecoder | ServerDecoder,
             device_ids: list[int],
         ):
         """Initialize a framer instance.
@@ -68,11 +68,10 @@ class Framer(ModbusProtocol):
         self.broadcast: bool = (0 in device_ids)
 
         self.handle = {
-            FramerType.RAW: FramerRaw(),
-            FramerType.ASCII: FramerAscii(),
-            FramerType.RTU: FramerRTU(),
-            FramerType.SOCKET: FramerSocket(),
-            FramerType.TLS: FramerTLS(),
+            FramerType.ASCII: FramerAscii(decoder, device_ids),
+            FramerType.RTU: FramerRTU(decoder, device_ids),
+            FramerType.SOCKET: FramerSocket(decoder, device_ids),
+            FramerType.TLS: FramerTLS(decoder, device_ids),
         }[framer_type]
 
 
@@ -81,11 +80,11 @@ class Framer(ModbusProtocol):
         tot_len = 0
         buf_len = len(data)
         while True:
-            used_len, tid, device_id, msg = self.handle.decode(data[tot_len:])
+            used_len, msg = self.handle.decode(data[tot_len:])
             tot_len += used_len
             if msg:
-                if self.broadcast or device_id in self.device_ids:
-                    self.callback_request_response(msg, device_id, tid)
+                if self.broadcast or self.handle.incoming_dev_id in self.device_ids:
+                    self.callback_request_response(msg, self.handle.incoming_dev_id, self.handle.incoming_tid)
                 if tot_len == buf_len:
                     return tot_len
             else:

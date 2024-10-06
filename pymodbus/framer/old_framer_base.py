@@ -28,8 +28,6 @@ TLS_FRAME_HEADER = BYTE_ORDER + "B"
 class ModbusFramer:
     """Base Framer class."""
 
-    name = ""
-
     def __init__(
         self,
         decoder: ClientDecoder | ServerDecoder,
@@ -45,9 +43,6 @@ class ModbusFramer:
         self.message_handler: FramerBase
         self.tid = 0
         self.dev_id = 0
-
-    def decode_data(self, _data):
-        """Decode data."""
 
     def _validate_slave_id(self, slaves: list, single: bool) -> bool:
         """Validate if the received data is valid for the client.

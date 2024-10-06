@@ -1,11 +1,9 @@
 """TLS framer."""
-import struct
-from time import sleep
 
 from pymodbus.exceptions import (
     ModbusIOException,
 )
-from pymodbus.framer.old_framer_base import TLS_FRAME_HEADER, ModbusFramer
+from pymodbus.framer.old_framer_base import ModbusFramer
 from pymodbus.framer.tls import FramerTLS
 
 
@@ -25,8 +23,6 @@ class ModbusTlsFramer(ModbusFramer):
           1b               Nb
     """
 
-    method = "tls"
-
     def __init__(self, decoder, client=None):
         """Initialize a new instance of the framer.
 
@@ -34,30 +30,18 @@ class ModbusTlsFramer(ModbusFramer):
         """
         super().__init__(decoder, client)
         self._hsize = 0x0
-        self.message_handler = FramerTLS()
-
-    def decode_data(self, data):
-        """Decode data."""
-        if len(data) > self._hsize:
-            (fcode,) = struct.unpack(TLS_FRAME_HEADER, data[0 : self._hsize + 1])
-            return {"fcode": fcode}
-        return {}
-
-    def recvPacket(self, size):
-        """Receive packet from the bus."""
-        sleep(0.5)
-        return super().recvPacket(size)
+        self.message_handler = FramerTLS(decoder, [0])
 
     def frameProcessIncomingPacket(self, _single, callback, _slave, tid=None):
         """Process new packet pattern."""
         # no slave id for Modbus Security Application Protocol
 
         while True:
-            used_len, use_tid, dev_id, data = self.message_handler.decode(self._buffer)
+            used_len, data = self.message_handler.decode(self._buffer)
             if not data:
                 return
-            self.dev_id = dev_id
-            self.tid = use_tid
+            self.dev_id = self.message_handler.incoming_dev_id
+            self.tid = self.message_handler.incoming_tid
 
             if (result := self.decoder.decode(data)) is None:
                 self.resetFrame()

@@ -340,8 +340,11 @@ class TestFramerType:
             (FramerType.SOCKET, b"\x00\x02\x00", 0, 0, 0, b''),  # very short frame
             (FramerType.SOCKET, b"\x00\x09\x00\x00\x00\x05\x01\x03\x01", 0, 0, 0, b''),  # short frame
             (FramerType.SOCKET, b"\x00\x02\x00\x00\x00\x03\x07\x84", 0, 0, 0, b''),  # short frame -1 byte
-             
-        ])
+            (FramerType.TLS, b'\x01\x05\x04\x00\x17', 5, 0, 0, b'\x01\x05\x04\x00\x17'),
+            (FramerType.TLS, b'\x03\x07\x06\x00\x73', 5, 0, 0, b'\x03\x07\x06\x00\x73'),
+            (FramerType.TLS, b'\x08\x00\x01', 3, 0, 0, b'\x08\x00\x01'),
+            (FramerType.TLS, b'\x84\x01', 2, 0, 0, b'\x84\x01'),
+                     ])
     def test_decode(self, test_framer, packet, used_len, res_tid, res_id, res):
         """Test decode."""
         res_len, data = test_framer.decode(packet)
@@ -364,7 +367,11 @@ class TestFramerType:
             (FramerType.SOCKET, b'\x03\x07\x06\x00\x73', 32, b'\x00\x09\x00\x00\x00\x06\x02\x03\x07\x06\x00\x73'),
             (FramerType.SOCKET, b'\x08\x00\x01', 33, b'\x00\x06\x00\x00\x00\x04\x03\x08\x00\x01'),
             (FramerType.SOCKET, b'\x84\x01', 34, b'\x00\x08\x00\x00\x00\x03\x04\x84\x01'),
-        ],
+            (FramerType.TLS, b'\x01\x05\x04\x00\x17', 0, b'\x01\x05\x04\x00\x17'),
+            (FramerType.TLS, b'\x03\x07\x06\x00\x73', 0, b'\x03\x07\x06\x00\x73'),
+            (FramerType.TLS, b'\x08\x00\x01', 0, b'\x08\x00\x01'),
+            (FramerType.TLS, b'\x84\x01', 0, b'\x84\x01'),
+         ],
     )
     def test_roundtrip(self, test_framer, data, dev_id, res_msg):
         """Test encode."""

@@ -38,11 +38,6 @@ class ModbusFramer:
         self.message_handler: FramerBase = new_framer(decoder, [0])
 
     @property
-    def dev_id(self) -> int:
-        """Return dev id."""
-        return self.message_handler.incoming_dev_id
-
-    @property
     def incoming_dev_id(self) -> int:
         """Return dev id."""
         return self.message_handler.incoming_dev_id

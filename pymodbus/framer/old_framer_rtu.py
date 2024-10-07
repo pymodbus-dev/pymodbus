@@ -1,10 +1,7 @@
 """RTU framer."""
-import time
 
 from pymodbus.framer.old_framer_base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
 from pymodbus.framer.rtu import FramerRTU
-from pymodbus.logging import Log
-from pymodbus.utilities import ModbusTransactionState
 
 
 RTU_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
@@ -51,55 +48,4 @@ class ModbusRtuFramer(ModbusFramer):
 
         :param decoder: The decoder factory implementation to use
         """
-        super().__init__(decoder, client)
-        self.message_handler: FramerRTU = FramerRTU(self.decoder, [0])
-
-    def sendPacket(self, message: bytes) -> int:
-        """Send packets on the bus with 3.5char delay between frames.
-
-        :param message: Message to be sent over the bus
-        :return:
-        """
-        super().resetFrame()
-        start = time.time()
-        if hasattr(self.client,"ctx"):
-            timeout = start + self.client.ctx.comm_params.timeout_connect
-        else:
-            timeout = start + self.client.comm_params.timeout_connect
-        while self.client.state != ModbusTransactionState.IDLE:
-            if self.client.state == ModbusTransactionState.TRANSACTION_COMPLETE:
-                timestamp = round(time.time(), 6)
-                Log.debug(
-                    "Changing state to IDLE - Last Frame End - {} Current Time stamp - {}",
-                    self.client.last_frame_end,
-                    timestamp,
-                )
-                if self.client.last_frame_end:
-                    idle_time = self.client.idle_time()
-                    if round(timestamp - idle_time, 6) <= self.client.silent_interval:
-                        Log.debug(
-                            "Waiting for 3.5 char before next send - {} ms",
-                            self.client.silent_interval * 1000,
-                        )
-                        time.sleep(self.client.silent_interval)
-                else:
-                    # Recovering from last error ??
-                    time.sleep(self.client.silent_interval)
-                self.client.state = ModbusTransactionState.IDLE
-            elif self.client.state == ModbusTransactionState.RETRYING:
-                # Simple lets settle down!!!
-                # To check for higher baudrates
-                time.sleep(self.client.comm_params.timeout_connect)
-                break
-            elif time.time() > timeout:
-                Log.debug(
-                    "Spent more time than the read time out, "
-                    "resetting the transaction to IDLE"
-                )
-                self.client.state = ModbusTransactionState.IDLE
-            else:
-                Log.debug("Sleeping")
-                time.sleep(self.client.silent_interval)
-        size = self.client.send(message)
-        self.client.last_frame_end = round(time.time(), 6)
-        return size
+        super().__init__(decoder, client, FramerRTU)

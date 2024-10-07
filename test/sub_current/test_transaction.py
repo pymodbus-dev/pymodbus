@@ -100,8 +100,8 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         client.framer.processIncomingPacket.return_value = None
         client.framer.buildPacket = mock.MagicMock()
         client.framer.buildPacket.return_value = b"deadbeef"
-        client.framer.sendPacket = mock.MagicMock()
-        client.framer.sendPacket.return_value = len(b"deadbeef")
+        client.send = mock.MagicMock()
+        client.send.return_value = len(b"deadbeef")
         request = mock.MagicMock()
         request.get_response_pdu_size.return_value = 10
         request.slave_id = 1
@@ -518,7 +518,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
 
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
         self._rtu.processIncomingPacket(msg, callback, [0, 1])
-        assert int(msg[0]) == self._rtu.dev_id
+        assert int(msg[0]) == self._rtu.incoming_dev_id
 
     @mock.patch.object(ModbusRequest, "encode")
     def test_rtu_framer_packet(self, mock_encode):

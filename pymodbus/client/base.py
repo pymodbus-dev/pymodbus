@@ -77,7 +77,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         Use register() to add non-standard responses (like e.g. a login prompt) and
         have them interpreted automatically.
         """
-        self.ctx.framer.decoder.register(custom_response_class)
+        self.ctx.framer.message_handler.decoder.register(custom_response_class)
 
     def close(self) -> None:
         """Close connection."""
@@ -108,7 +108,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         while count <= self.retries:
             async with self._lock:
                 req = self.build_response(request)
-                self.ctx.framer.resetFrame()
                 self.ctx.send(packet)
                 if not request.slave_id:
                     resp = None
@@ -214,7 +213,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         Use register() to add non-standard responses (like e.g. a login prompt) and
         have them interpreted automatically.
         """
-        self.framer.decoder.register(custom_response_class)
+        self.framer.message_handler.decoder.register(custom_response_class)
 
     def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).

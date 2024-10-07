@@ -25,6 +25,4 @@ class ModbusTlsFramer(ModbusFramer):
 
         :param decoder: The decoder factory implementation to use
         """
-        super().__init__(decoder, client)
-        self._hsize = 0x0
-        self.message_handler = FramerTLS(decoder, [0])
+        super().__init__(decoder, client, FramerTLS)

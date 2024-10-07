@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import socket
+import time
 from collections.abc import Callable
 
 from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
@@ -202,7 +203,9 @@ class ModbusUdpClient(ModbusBaseSyncClient):
             raise ConnectionException(str(self))
         if size is None:
             size = 0
-        return self.socket.recvfrom(size)[0]
+        data = self.socket.recvfrom(size)[0]
+        self.last_frame_end = round(time.time(), 6)
+        return data
 
     def is_socket_open(self):
         """Check if socket is open.

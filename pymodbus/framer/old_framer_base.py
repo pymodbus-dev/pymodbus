@@ -28,7 +28,6 @@ class ModbusFramer:
     def __init__(
         self,
         decoder: ClientDecoder | ServerDecoder,
-        _client,
         new_framer,
     ) -> None:
         """Initialize a new instance of the framer.

@@ -33,4 +33,5 @@ class ModbusSocketFramer(ModbusFramer):
 
         :param decoder: The decoder factory implementation to use
         """
-        super().__init__(decoder, client, FramerSocket)
+        print(client)
+        super().__init__(decoder, FramerSocket)

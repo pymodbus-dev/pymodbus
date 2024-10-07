@@ -25,4 +25,5 @@ class ModbusTlsFramer(ModbusFramer):
 
         :param decoder: The decoder factory implementation to use
         """
-        super().__init__(decoder, client, FramerTLS)
+        print(client)
+        super().__init__(decoder, FramerTLS)

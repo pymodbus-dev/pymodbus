@@ -7,11 +7,21 @@ According to the selected type of modbus frame a prefix/suffix is added/removed
 from __future__ import annotations
 
 from abc import abstractmethod
+from enum import Enum
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
+
+
+class FramerType(str, Enum):
+    """Type of Modbus frame."""
+
+    ASCII = "ascii"
+    RTU = "rtu"
+    SOCKET = "socket"
+    TLS = "tls"
 
 
 class FramerBase:

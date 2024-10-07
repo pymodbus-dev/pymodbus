@@ -1,12 +1,11 @@
 """Framer."""
 __all__ = [
-    "FRAMER_NAME_TO_OLD_CLASS",
     "ModbusFramer",
     "ModbusAsciiFramer",
     "ModbusRtuFramer",
     "ModbusSocketFramer",
     "ModbusTlsFramer",
-    "AsyncFramer",
+    "FramerBase",
     "FramerType",
     "FramerAscii",
     "FramerRTU",
@@ -15,7 +14,7 @@ __all__ = [
 ]
 
 from pymodbus.framer.ascii import FramerAscii
-from pymodbus.framer.framer import AsyncFramer, FramerType
+from pymodbus.framer.base import FramerBase, FramerType
 from pymodbus.framer.old_framer_ascii import ModbusAsciiFramer
 from pymodbus.framer.old_framer_base import ModbusFramer
 from pymodbus.framer.old_framer_rtu import ModbusRtuFramer

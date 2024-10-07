@@ -36,21 +36,3 @@ class ModbusSocketFramer(ModbusFramer):
         super().__init__(decoder, client)
         self._hsize = 0x07
         self.message_handler = FramerSocket(decoder, [0])
-
-    def frameProcessIncomingPacket(self, _used_len, callback, tid, result):
-        """Process new packet pattern.
-
-        This takes in a new request packet, adds it to the current
-        packet stream, and performs framing on it. That is, checks
-        for complete messages, and once found, will process all that
-        exist.  This handles the case when we read N + 1 or 1 // N
-        messages at a time instead of 1.
-
-        The processed and decoded messages are pushed to the callback
-        function to process and send.
-        """
-        if tid and tid != result.transaction_id:
-            self.resetFrame()
-        else:
-            callback(result)  # defer or push to a thread?
-        return True

@@ -133,13 +133,10 @@ class ModbusFramer:
             result.transaction_id = self.tid
             Log.debug("Frame advanced, resetting header!!")
             self._buffer = self._buffer[used_len:]
-            if not self.frameProcessIncomingPacket(used_len, callback, tid, result):
-                return
-
-    def frameProcessIncomingPacket(
-        self, _used_len, _callback, _tid, _result) -> bool:
-        """Process new packet pattern."""
-        return True
+            if tid and result.transaction_id and tid != result.transaction_id:
+                self.resetFrame()
+            else:
+                callback(result)  # defer or push to a thread?
 
     def buildPacket(self, message: ModbusRequest | ModbusResponse) -> bytes:
         """Create a ready to send modbus packet.

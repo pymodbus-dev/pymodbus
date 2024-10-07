@@ -54,11 +54,6 @@ class ModbusRtuFramer(ModbusFramer):
         super().__init__(decoder, client)
         self.message_handler: FramerRTU = FramerRTU(self.decoder, [0])
 
-    def frameProcessIncomingPacket(self, _used_len, callback, _tid, result):
-        """Process new packet pattern."""
-        callback(result)  # defer or push to a thread?
-        return True
-
     def sendPacket(self, message: bytes) -> int:
         """Send packets on the bus with 3.5char delay between frames.
 

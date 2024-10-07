@@ -35,8 +35,3 @@ class ModbusAsciiFramer(ModbusFramer):
         self._start = b":"
         self._end = b"\r\n"
         self.message_handler = FramerAscii(decoder, [0])
-
-    def frameProcessIncomingPacket(self, _used_len, callback, _tid, result):
-        """Process new packet pattern."""
-        callback(result)  # defer this
-        return True

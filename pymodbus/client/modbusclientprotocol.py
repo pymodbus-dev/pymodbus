@@ -5,7 +5,7 @@ from collections.abc import Callable
 from typing import cast
 
 from pymodbus.factory import ClientDecoder
-from pymodbus.framer import FRAMER_NAME_TO_OLD_CLASS, FramerType, ModbusFramer
+from pymodbus.framer import FRAMER_NAME_TO_OLD_CLASS, FRAMER_NAME_TO_CLASS, FramerType, ModbusFramer, FramerBase
 from pymodbus.logging import Log
 from pymodbus.transaction import ModbusTransactionManager
 from pymodbus.transport import CommParams, ModbusProtocol

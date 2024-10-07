@@ -52,11 +52,6 @@ class ModbusFramer:
         """Return tid."""
         return self.message_handler.incoming_tid
 
-    @property
-    def tid(self) -> int:
-        """Return tid."""
-        return self.message_handler.incoming_tid
-
     def processIncomingPacket(self, data: bytes, callback, slave, tid=None):
         """Process new packet pattern."""
         self.message_handler.processIncomingPacket(data, callback, slave, tid=tid)

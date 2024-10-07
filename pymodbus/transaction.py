@@ -429,5 +429,5 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
         :return: Total frame size
         """
         func_code = int(data[1])
-        pdu_class = self.client.framer.decoder.lookupPduClass(func_code)
+        pdu_class = self.client.framer.message_handler.decoder.lookupPduClass(func_code)
         return pdu_class.calculateRtuFrameSize(data)

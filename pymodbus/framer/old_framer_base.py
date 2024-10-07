@@ -37,7 +37,6 @@ class ModbusFramer:
 
         :param decoder: The decoder implementation to use
         """
-        self.decoder = decoder
         self._buffer = b""
         self.message_handler: FramerBase = new_framer(decoder, [0])
 
@@ -95,7 +94,7 @@ class ModbusFramer:
                 Log.debug("Not a valid slave id - {}, ignoring!!", self.message_handler.incoming_dev_id)
                 self.resetFrame()
                 continue
-            if (result := self.decoder.decode(data)) is None:
+            if (result := self.message_handler.decoder.decode(data)) is None:
                 self.resetFrame()
                 raise ModbusIOException("Unable to decode request")
             result.slave_id = self.message_handler.incoming_dev_id

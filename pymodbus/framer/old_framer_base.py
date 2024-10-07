@@ -4,6 +4,7 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING
 
+from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.framer.base import FramerBase
 from pymodbus.logging import Log
@@ -125,11 +126,16 @@ class ModbusFramer:
                 Log.debug("Not a valid slave id - {}, ignoring!!", self.message_handler.incoming_dev_id)
                 self.resetFrame()
                 continue
-            if not self.frameProcessIncomingPacket(used_len, data, callback, tid):
+            if (result := self.decoder.decode(data)) is None:
+                self.resetFrame()
+                raise ModbusIOException("Unable to decode request")
+            result.slave_id = self.dev_id
+            result.transaction_id = self.tid
+            if not self.frameProcessIncomingPacket(used_len, callback, tid, result):
                 return
 
     def frameProcessIncomingPacket(
-        self, _used_len, _data, _callback, _tid) -> bool:
+        self, _used_len, _callback, _tid, _result) -> bool:
         """Process new packet pattern."""
         return True
 

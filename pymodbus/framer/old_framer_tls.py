@@ -1,8 +1,5 @@
 """TLS framer."""
 
-from pymodbus.exceptions import (
-    ModbusIOException,
-)
 from pymodbus.framer.old_framer_base import ModbusFramer
 from pymodbus.framer.tls import FramerTLS
 
@@ -32,15 +29,9 @@ class ModbusTlsFramer(ModbusFramer):
         self._hsize = 0x0
         self.message_handler = FramerTLS(decoder, [0])
 
-    def frameProcessIncomingPacket(self, used_len, data, callback, _tid):
+    def frameProcessIncomingPacket(self, used_len, callback, _tid, result):
         """Process new packet pattern."""
         # no slave id for Modbus Security Application Protocol
-
-        if (result := self.decoder.decode(data)) is None:
-            self.resetFrame()
-            raise ModbusIOException("Unable to decode request")
-        result.slave_id = self.dev_id
-        result.transaction_id = self.tid
         self._buffer: bytes = self._buffer[used_len:]
         callback(result)  # defer or push to a thread?
         return True

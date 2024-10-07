@@ -1,5 +1,4 @@
 """Ascii_framer."""
-from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer.old_framer_base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
 
 from .ascii import FramerAscii
@@ -37,12 +36,8 @@ class ModbusAsciiFramer(ModbusFramer):
         self._end = b"\r\n"
         self.message_handler = FramerAscii(decoder, [0])
 
-    def frameProcessIncomingPacket(self, used_len, data, callback, _tid):
+    def frameProcessIncomingPacket(self, used_len, callback, _tid, result):
         """Process new packet pattern."""
-        if (result := self.decoder.decode(data)) is None:
-            raise ModbusIOException("Unable to decode response")
-        result.slave_id = self.dev_id
-        result.transaction_id = self.tid
         self._buffer = self._buffer[used_len :]
         self.dev_id = 0
         callback(result)  # defer this

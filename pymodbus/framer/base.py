@@ -40,6 +40,7 @@ class FramerBase:
         self.incoming_dev_id = 0
         self.incoming_tid = 0
         self.databuffer = b""
+        self.message_handler = self
 
     def decode(self, data: bytes) -> tuple[int, bytes]:
         """Decode ADU.

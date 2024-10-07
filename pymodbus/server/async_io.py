@@ -122,13 +122,10 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 slaves.append(0)
 
         Log.debug("Handling data: {}", data, ":hex")
-
-        single = self.server.context.single
         self.framer.processIncomingPacket(
             data=data,
             callback=lambda x: self.execute(x, *addr),
             slave=slaves,
-            single=single,
         )
 
     async def handle(self) -> None:

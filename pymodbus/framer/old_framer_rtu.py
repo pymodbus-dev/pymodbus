@@ -1,7 +1,6 @@
 """RTU framer."""
 import time
 
-from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer.old_framer_base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
 from pymodbus.framer.rtu import FramerRTU
 from pymodbus.logging import Log
@@ -54,24 +53,6 @@ class ModbusRtuFramer(ModbusFramer):
         """
         super().__init__(decoder, client)
         self.message_handler: FramerRTU = FramerRTU(self.decoder, [0])
-
-    def frameProcessIncomingPacket(self, _single, callback, _slave, tid=None):
-        """Process new packet pattern."""
-        while True:
-            if self._buffer == b'':
-                break
-            used_len, data = self.message_handler.decode(self._buffer)
-            self.dev_id = self.message_handler.incoming_dev_id
-            if used_len:
-                self._buffer = self._buffer[used_len:]
-            if not data:
-               break
-            if (result := self.decoder.decode(data)) is None:
-                raise ModbusIOException("Unable to decode request")
-            result.slave_id = self.dev_id
-            result.transaction_id = 0
-            Log.debug("Frame advanced, resetting header!!")
-            callback(result)  # defer or push to a thread?
 
     def sendPacket(self, message: bytes) -> int:
         """Send packets on the bus with 3.5char delay between frames.

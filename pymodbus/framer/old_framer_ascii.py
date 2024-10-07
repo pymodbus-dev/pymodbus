@@ -30,8 +30,4 @@ class ModbusAsciiFramer(ModbusFramer):
 
         :param decoder: The decoder implementation to use
         """
-        super().__init__(decoder, client)
-        self._hsize = 0x02
-        self._start = b":"
-        self._end = b"\r\n"
-        self.message_handler = FramerAscii(decoder, [0])
+        super().__init__(decoder, client, FramerAscii)

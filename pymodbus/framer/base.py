@@ -10,6 +10,7 @@ from abc import abstractmethod
 
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.logging import Log
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 
 
 class FramerBase:
@@ -62,3 +63,12 @@ class FramerBase:
         returns:
             modbus ADU (bytes)
         """
+
+    def buildPacket(self, message: ModbusRequest | ModbusResponse) -> bytes:
+        """Create a ready to send modbus packet.
+
+        :param message: The populated request/response to send
+        """
+        data = message.function_code.to_bytes(1,'big') + message.encode()
+        packet = self.encode(data, message.slave_id, message.transaction_id)
+        return packet

@@ -245,7 +245,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
             # size and the slave sends noisy data continuously.
             if time_ > end:
                 break
-
+        self.last_frame_end = round(time.time(), 6)
         return b"".join(data)
 
     def _handle_abrupt_socket_close(self, size: int | None, data: list[bytes], duration: float) -> bytes:

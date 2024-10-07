@@ -77,7 +77,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         Use register() to add non-standard responses (like e.g. a login prompt) and
         have them interpreted automatically.
         """
-        self.ctx.framer.message_handler.decoder.register(custom_response_class)
+        self.ctx.framer.decoder.register(custom_response_class)
 
     def close(self) -> None:
         """Close connection."""

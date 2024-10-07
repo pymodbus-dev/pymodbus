@@ -108,7 +108,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         while count <= self.retries:
             async with self._lock:
                 req = self.build_response(request)
-                self.ctx.framer.resetFrame()
                 self.ctx.send(packet)
                 if not request.slave_id:
                     resp = None

@@ -59,20 +59,6 @@ class ModbusFramer:
         """Return tid."""
         return self.message_handler.incoming_tid
 
-    def resetFrame(self):
-        """Reset the entire message frame.
-
-        This allows us to skip ovver errors that may be in the stream.
-        It is hard to know if we are simply out of sync or if there is
-        an error in the stream as we have no way to check the start or
-        end of the message (python just doesn't have the resolution to
-        check for millisecond delays).
-        """
-        Log.debug(
-            "Resetting frame - Current Frame in buffer - {}", self.message_handler.databuffer, ":hex"
-        )
-        self.message_handler.databuffer = b""
-
     def processIncomingPacket(self, data: bytes, callback, slave, tid=None):
         """Process new packet pattern.
 
@@ -101,17 +87,17 @@ class ModbusFramer:
                 return
             if slave and 0 not in slave and self.message_handler.incoming_dev_id not in slave:
                 Log.debug("Not a valid slave id - {}, ignoring!!", self.message_handler.incoming_dev_id)
-                self.resetFrame()
+                self.message_handler.databuffer = b''
                 continue
             if (result := self.message_handler.decoder.decode(data)) is None:
-                self.resetFrame()
+                self.message_handler.databuffer = b''
                 raise ModbusIOException("Unable to decode request")
             result.slave_id = self.message_handler.incoming_dev_id
             result.transaction_id = self.message_handler.incoming_tid
             Log.debug("Frame advanced, resetting header!!")
             self.message_handler.databuffer = self.message_handler.databuffer[used_len:]
             if tid and result.transaction_id and tid != result.transaction_id:
-                self.resetFrame()
+                self.message_handler.databuffer = b''
             else:
                 callback(result)  # defer or push to a thread?
 

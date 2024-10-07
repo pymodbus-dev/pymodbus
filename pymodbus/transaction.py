@@ -194,7 +194,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     self.client.framer.message_handler.databuffer
                 ):
                     Log.debug("Clearing current Frame: - {}", _buffer)
-                    self.client.framer.resetFrame()
+                    self.client.framer.message_handler.databuffer = b''
                 broadcast = not request.slave_id
                 expected_response_length = None
                 if not isinstance(self.client.framer, ModbusSocketFramer):

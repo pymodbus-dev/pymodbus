@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import cast
 
 from pymodbus.factory import ClientDecoder
 from pymodbus.framer import (
@@ -36,9 +35,7 @@ class ModbusClientProtocol(ModbusProtocol):
         self.on_connect_callback = on_connect_callback
 
         # Common variables.
-        self.framer = FRAMER_NAME_TO_CLASS.get(
-            framer, cast(type[FramerBase], framer)
-        )(ClientDecoder(), [0])
+        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(ClientDecoder(), [0])
         self.transaction = ModbusTransactionManager()
 
     def _handle_response(self, reply):

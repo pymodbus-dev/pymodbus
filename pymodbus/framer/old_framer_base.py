@@ -131,6 +131,8 @@ class ModbusFramer:
                 raise ModbusIOException("Unable to decode request")
             result.slave_id = self.dev_id
             result.transaction_id = self.tid
+            Log.debug("Frame advanced, resetting header!!")
+            self._buffer = self._buffer[used_len:]
             if not self.frameProcessIncomingPacket(used_len, callback, tid, result):
                 return
 

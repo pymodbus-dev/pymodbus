@@ -56,7 +56,6 @@ class ModbusRtuFramer(ModbusFramer):
 
     def frameProcessIncomingPacket(self, _used_len, callback, _tid, result):
         """Process new packet pattern."""
-        Log.debug("Frame advanced, resetting header!!")
         callback(result)  # defer or push to a thread?
         return True
 

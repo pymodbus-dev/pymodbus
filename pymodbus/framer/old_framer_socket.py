@@ -37,7 +37,7 @@ class ModbusSocketFramer(ModbusFramer):
         self._hsize = 0x07
         self.message_handler = FramerSocket(decoder, [0])
 
-    def frameProcessIncomingPacket(self, used_len, callback, tid, result):
+    def frameProcessIncomingPacket(self, _used_len, callback, tid, result):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -49,7 +49,6 @@ class ModbusSocketFramer(ModbusFramer):
         The processed and decoded messages are pushed to the callback
         function to process and send.
         """
-        self._buffer: bytes = self._buffer[used_len:]
         if tid and tid != result.transaction_id:
             self.resetFrame()
         else:

@@ -191,7 +191,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 request.transaction_id = self.getNextTID()
                 Log.debug("Running transaction {}", request.transaction_id)
                 if _buffer := hexlify_packets(
-                    self.client.framer._buffer  # pylint: disable=protected-access
+                    self.client.framer.message_handler.databuffer
                 ):
                     Log.debug("Clearing current Frame: - {}", _buffer)
                     self.client.framer.resetFrame()

@@ -37,13 +37,22 @@ class ModbusFramer:
 
         :param decoder: The decoder implementation to use
         """
-        self._buffer = b""
         self.message_handler: FramerBase = new_framer(decoder, [0])
 
     @property
     def dev_id(self) -> int:
         """Return dev id."""
         return self.message_handler.incoming_dev_id
+
+    @property
+    def incoming_dev_id(self) -> int:
+        """Return dev id."""
+        return self.message_handler.incoming_dev_id
+
+    @property
+    def incoming_tid(self) -> int:
+        """Return tid."""
+        return self.message_handler.incoming_tid
 
     @property
     def tid(self) -> int:
@@ -60,9 +69,9 @@ class ModbusFramer:
         check for millisecond delays).
         """
         Log.debug(
-            "Resetting frame - Current Frame in buffer - {}", self._buffer, ":hex"
+            "Resetting frame - Current Frame in buffer - {}", self.message_handler.databuffer, ":hex"
         )
-        self._buffer = b""
+        self.message_handler.databuffer = b""
 
     def processIncomingPacket(self, data: bytes, callback, slave, tid=None):
         """Process new packet pattern.
@@ -77,17 +86,17 @@ class ModbusFramer:
         function to process and send.
         """
         Log.debug("Processing: {}", data, ":hex")
-        self._buffer += data
-        if self._buffer == b'':
+        self.message_handler.databuffer += data
+        if self.message_handler.databuffer == b'':
             return
         if not isinstance(slave, (list, tuple)):
             slave = [slave]
         while True:
-            if self._buffer == b'':
+            if self.message_handler.databuffer == b'':
                 return
-            used_len, data = self.message_handler.decode(self._buffer)
+            used_len, data = self.message_handler.decode(self.message_handler.databuffer)
             if used_len:
-                self._buffer = self._buffer[used_len:]
+                self.message_handler.databuffer = self.message_handler.databuffer[used_len:]
             if not data:
                 return
             if slave and 0 not in slave and self.message_handler.incoming_dev_id not in slave:
@@ -100,7 +109,7 @@ class ModbusFramer:
             result.slave_id = self.message_handler.incoming_dev_id
             result.transaction_id = self.message_handler.incoming_tid
             Log.debug("Frame advanced, resetting header!!")
-            self._buffer = self._buffer[used_len:]
+            self.message_handler.databuffer = self.message_handler.databuffer[used_len:]
             if tid and result.transaction_id and tid != result.transaction_id:
                 self.resetFrame()
             else:

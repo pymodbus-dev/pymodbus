@@ -32,7 +32,7 @@ class ModbusTlsFramer(ModbusFramer):
         self._hsize = 0x0
         self.message_handler = FramerTLS(decoder, [0])
 
-    def frameProcessIncomingPacket(self, used_len, data, callback, _slave, _tid):
+    def frameProcessIncomingPacket(self, used_len, data, callback, _tid):
         """Process new packet pattern."""
         # no slave id for Modbus Security Application Protocol
 

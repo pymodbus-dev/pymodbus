@@ -50,7 +50,7 @@ class ModbusFramer:
         :param single: Set to true to treat this as a single context
         :return:
         """
-        if 0 in slaves or 0xFF in slaves:
+        if not slaves or 0 in slaves or 0xFF in slaves:
             # Handle Modbus TCP slave identifier (0x00 0r 0xFF)
             # in asynchronous requests
             return True
@@ -121,11 +121,15 @@ class ModbusFramer:
                 return
             self.dev_id = self.message_handler.incoming_dev_id
             self.tid = self.message_handler.incoming_tid
-            if not self.frameProcessIncomingPacket(used_len, data, callback, slave, tid):
+            if not self._validate_slave_id(slave):
+                Log.debug("Not a valid slave id - {}, ignoring!!", self.message_handler.incoming_dev_id)
+                self.resetFrame()
+                continue
+            if not self.frameProcessIncomingPacket(used_len, data, callback, tid):
                 return
 
     def frameProcessIncomingPacket(
-        self, _used_len, _data, _callback, _slave, _tid) -> bool:
+        self, _used_len, _data, _callback, _tid) -> bool:
         """Process new packet pattern."""
         return True
 

@@ -5,7 +5,6 @@ from pymodbus.exceptions import (
 )
 from pymodbus.framer.old_framer_base import ModbusFramer
 from pymodbus.framer.socket import FramerSocket
-from pymodbus.logging import Log
 
 
 # --------------------------------------------------------------------------- #
@@ -41,7 +40,7 @@ class ModbusSocketFramer(ModbusFramer):
         self._hsize = 0x07
         self.message_handler = FramerSocket(decoder, [0])
 
-    def frameProcessIncomingPacket(self, used_len, data, callback, slave, tid):
+    def frameProcessIncomingPacket(self, used_len, data, callback, tid):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -53,10 +52,6 @@ class ModbusSocketFramer(ModbusFramer):
         The processed and decoded messages are pushed to the callback
         function to process and send.
         """
-        if not self._validate_slave_id(slave):
-            Log.debug("Not a valid slave id - {}, ignoring!!", self.message_handler.incoming_dev_id)
-            self.resetFrame()
-            return True
         if (result := self.decoder.decode(data)) is None:
             self.resetFrame()
             raise ModbusIOException("Unable to decode request")

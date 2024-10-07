@@ -55,7 +55,7 @@ class ModbusRtuFramer(ModbusFramer):
         super().__init__(decoder, client)
         self.message_handler: FramerRTU = FramerRTU(self.decoder, [0])
 
-    def frameProcessIncomingPacket(self, _used_len, data, callback, _slave, _tid):
+    def frameProcessIncomingPacket(self, _used_len, data, callback, _tid):
         """Process new packet pattern."""
         if (result := self.decoder.decode(data)) is None:
             raise ModbusIOException("Unable to decode request")

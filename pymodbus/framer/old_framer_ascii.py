@@ -1,7 +1,6 @@
 """Ascii_framer."""
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer.old_framer_base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
-from pymodbus.logging import Log
 
 from .ascii import FramerAscii
 
@@ -38,13 +37,8 @@ class ModbusAsciiFramer(ModbusFramer):
         self._end = b"\r\n"
         self.message_handler = FramerAscii(decoder, [0])
 
-    def frameProcessIncomingPacket(self, used_len, data, callback, slave, _tid):
+    def frameProcessIncomingPacket(self, used_len, data, callback, _tid):
         """Process new packet pattern."""
-        if not self._validate_slave_id(slave):
-            Log.error("Not a valid slave id - {}, ignoring!!", self.message_handler.incoming_dev_id)
-            self.resetFrame()
-            return False
-
         if (result := self.decoder.decode(data)) is None:
             raise ModbusIOException("Unable to decode response")
         result.slave_id = self.dev_id

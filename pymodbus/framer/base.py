@@ -36,6 +36,8 @@ class FramerBase:
     ) -> None:
         """Initialize a ADU (framer) instance."""
         self.decoder = decoder
+        if 0 in dev_ids:
+            dev_ids = []
         self.dev_ids = dev_ids
         self.incoming_dev_id = 0
         self.incoming_tid = 0
@@ -84,7 +86,7 @@ class FramerBase:
         packet = self.encode(data, message.slave_id, message.transaction_id)
         return packet
 
-    def processIncomingPacket(self, data: bytes, callback, slave=[0], tid=None):  # pylint: disable=dangerous-default-value
+    def processIncomingPacket(self, data: bytes, callback, tid=None):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -100,9 +102,6 @@ class FramerBase:
         self.databuffer += data
         if self.databuffer == b'':
             return
-        if not isinstance(slave, (list, tuple)):
-            slave = [slave]
-        self.dev_ids = slave
         while True:
             if self.databuffer == b'':
                 return
@@ -111,7 +110,7 @@ class FramerBase:
                 self.databuffer = self.databuffer[used_len:]
             if not data:
                 return
-            if slave and 0 not in slave and self.incoming_dev_id not in slave:
+            if self.dev_ids and self.incoming_dev_id not in self.dev_ids:
                 Log.debug("Not a valid slave id - {}, ignoring!!", self.incoming_dev_id)
                 self.databuffer = b''
                 continue

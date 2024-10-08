@@ -235,7 +235,6 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 self.client.framer.processIncomingPacket(
                     response,
                     self.addTransaction,
-                    request.slave_id,
                     tid=request.transaction_id,
                 )
                 if not (response := self.getTransaction(request.transaction_id)):
@@ -259,7 +258,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
                 return response
             except ModbusIOException as exc:
-                # Handle decode errors in processIncomingPacket method
+                # Handle decode errors method
                 Log.error("Modbus IO exception {}", exc)
                 self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
                 self.client.close()

@@ -11,7 +11,7 @@ from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.factory import ServerDecoder
-from pymodbus.framer import FRAMER_NAME_TO_OLD_CLASS, FramerType, ModbusFramer
+from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
@@ -48,7 +48,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
         self.running = False
         self.receive_queue: asyncio.Queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
-        self.framer: ModbusFramer
+        self.framer: FramerBase
         self.loop = asyncio.get_running_loop()
 
     def _log_exception(self):
@@ -68,7 +68,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
             self.running = True
             self.framer = self.server.framer(
                 self.server.decoder,
-                client=None,
+                [0],
             )
 
             # schedule the connection handler on the event loop
@@ -271,7 +271,7 @@ class ModbusBaseServer(ModbusProtocol):
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-        self.framer = FRAMER_NAME_TO_OLD_CLASS.get(framer, framer)
+        self.framer = FRAMER_NAME_TO_CLASS[framer]
         self.serving: asyncio.Future = asyncio.Future()
 
     def callback_new_connection(self):
@@ -505,7 +505,7 @@ class ModbusSerialServer(ModbusBaseServer):
         If the identity structure is not passed in, the ModbusControlBlock
         uses its own empty structure.
         :param context: The ModbusServerContext datastore
-        :param framer: The framer strategy to use, default ModbusRtuFramer
+        :param framer: The framer strategy to use, default FramerType.RTU
         :param identity: An optional identify structure
         :param port: The serial port to attach to
         :param stopbits: The number of stop bits to use

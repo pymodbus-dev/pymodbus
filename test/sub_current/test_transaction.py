@@ -5,12 +5,14 @@ from pymodbus.exceptions import (
     ModbusIOException,
 )
 from pymodbus.factory import ServerDecoder
+from pymodbus.framer import (
+    FramerAscii,
+    FramerRTU,
+    FramerSocket,
+    FramerTLS,
+)
 from pymodbus.pdu import ModbusRequest
 from pymodbus.transaction import (
-    ModbusAsciiFramer,
-    ModbusRtuFramer,
-    ModbusSocketFramer,
-    ModbusTlsFramer,
     ModbusTransactionManager,
     SyncModbusTransactionManager,
 )
@@ -38,10 +40,10 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Set up the test environment."""
         self.client = None
         self.decoder = ServerDecoder()
-        self._tcp = ModbusSocketFramer(decoder=self.decoder, client=None)
-        self._tls = ModbusTlsFramer(decoder=self.decoder, client=None)
-        self._rtu = ModbusRtuFramer(decoder=self.decoder, client=None)
-        self._ascii = ModbusAsciiFramer(decoder=self.decoder, client=None)
+        self._tcp = FramerSocket(self.decoder, [0])
+        self._tls = FramerTLS(self.decoder, [0])
+        self._rtu = FramerRTU(self.decoder, [0])
+        self._ascii = FramerAscii(self.decoder, [0])
         self._manager = SyncModbusTransactionManager(self.client, 3)
 
     # ----------------------------------------------------------------------- #

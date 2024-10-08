@@ -85,7 +85,7 @@ def setup_sync_client(description=None, cmdline=None):
         client = modbusClient.ModbusSerialClient(
             port=args.port,  # serial port
             # Common optional parameters:
-            #    framer=ModbusRtuFramer,
+            #    framer=FramerType.RTU,
             timeout=args.timeout,
             #    retries=3,
             # Serial setup parameters

@@ -6,12 +6,21 @@ According to the selected type of modbus frame a prefix/suffix is added/removed
 """
 from __future__ import annotations
 
-from abc import abstractmethod
+from enum import Enum
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
+
+
+class FramerType(str, Enum):
+    """Type of Modbus frame."""
+
+    ASCII = "ascii"
+    RTU = "rtu"
+    SOCKET = "socket"
+    TLS = "tls"
 
 
 class FramerBase:
@@ -31,6 +40,7 @@ class FramerBase:
         self.incoming_dev_id = 0
         self.incoming_tid = 0
         self.databuffer = b""
+        self.message_handler = self
 
     def decode(self, data: bytes) -> tuple[int, bytes]:
         """Decode ADU.
@@ -48,7 +58,6 @@ class FramerBase:
             self.incoming_tid = 0
         return used_len, res_data
 
-    @abstractmethod
     def specific_decode(self, data: bytes, data_len: int) -> tuple[int, bytes]:
         """Decode ADU.
 
@@ -56,15 +65,16 @@ class FramerBase:
             used_len (int) or 0 to read more
             modbus request/response (bytes)
         """
+        return data_len, data
 
 
-    @abstractmethod
-    def encode(self, pdu: bytes, dev_id: int, tid: int) -> bytes:
+    def encode(self, pdu: bytes, _dev_id: int, _tid: int) -> bytes:
         """Encode ADU.
 
         returns:
             modbus ADU (bytes)
         """
+        return pdu
 
     def buildPacket(self, message: ModbusRequest | ModbusResponse) -> bytes:
         """Create a ready to send modbus packet.
@@ -93,6 +103,7 @@ class FramerBase:
             return
         if not isinstance(slave, (list, tuple)):
             slave = [slave]
+        self.dev_ids = slave
         while True:
             if self.databuffer == b'':
                 return

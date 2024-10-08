@@ -63,10 +63,10 @@ The entry “comm” allows the following values:
 
 The entry “framer” allows the following values:
 
-- “ascii” to use :class:`pymodbus.framer.ModbusAsciiFramer`,
-- “rtu” to use :class:`pymodbus.framer.ModbusRtuFramer`,
-- “tls” to use :class:`pymodbus.framer.ModbusTlsFramer`,
-- “socket” to use :class:`pymodbus.framer.ModbusSocketFramer`.
+- “ascii” to use :class:`pymodbus.framer.FramerAscii`,
+- “rtu” to use :class:`pymodbus.framer.FramerRTU`,
+- “socket” to use :class:`pymodbus.framer.FramerSocket`.
+- “tls” to use :class:`pymodbus.framer.FramerTLS`,
 
 Optional entry "device_id" will limit server to only accept a single id. If
 not set, the server will accept all device id.

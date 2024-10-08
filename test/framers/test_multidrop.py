@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.framer import ModbusRtuFramer
+from pymodbus.framer import FramerRTU
 from pymodbus.server.async_io import ServerDecoder
 
 
@@ -17,7 +17,7 @@ class NotImplementedTestMultidrop:
     @pytest.fixture(name="framer")
     def fixture_framer(self):
         """Prepare framer."""
-        return ModbusRtuFramer(ServerDecoder())
+        return FramerRTU(ServerDecoder(), [0])
 
     @pytest.fixture(name="callback")
     def fixture_callback(self):

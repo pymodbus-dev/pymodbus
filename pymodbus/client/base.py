@@ -5,13 +5,12 @@ import asyncio
 import socket
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable
-from typing import cast
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.client.modbusclientprotocol import ModbusClientProtocol
 from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.factory import ClientDecoder
-from pymodbus.framer import FRAMER_NAME_TO_OLD_CLASS, FramerType, ModbusFramer
+from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.transaction import SyncModbusTransactionManager
@@ -187,9 +186,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         self.slaves: list[int] = []
 
         # Common variables.
-        self.framer: ModbusFramer = FRAMER_NAME_TO_OLD_CLASS.get(
-            framer, cast(type[ModbusFramer], framer)
-        )(ClientDecoder(), self)
+        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(ClientDecoder(), [0])
         self.transaction = SyncModbusTransactionManager(
             self,
             self.retries,

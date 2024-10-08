@@ -13,10 +13,10 @@ import textwrap
 
 from pymodbus import pymodbus_apply_logging_config
 from pymodbus.factory import ClientDecoder, ServerDecoder
-from pymodbus.transaction import (
-    ModbusAsciiFramer,
-    ModbusRtuFramer,
-    ModbusSocketFramer,
+from pymodbus.framer import (
+    FramerAscii,
+    FramerRTU,
+    FramerSocket,
 )
 
 
@@ -73,8 +73,8 @@ class Decoder:
         print(f"Decoding Message {value}")
         print("=" * 80)
         decoders = [
-            self.framer(ServerDecoder(), client=None),
-            self.framer(ClientDecoder(), client=None),
+            self.framer(ServerDecoder(), [0]),
+            self.framer(ClientDecoder(), [0]),
         ]
         for decoder in decoders:
             print(f"{decoder.message_handler.decoder.__class__.__name__}")
@@ -143,9 +143,9 @@ def parse_messages(cmdline=None):
         return
 
     framer = {
-        "ascii": ModbusAsciiFramer,
-        "rtu": ModbusRtuFramer,
-        "socket": ModbusSocketFramer,
+        "ascii": FramerAscii,
+        "rtu": FramerRTU,
+        "socket": FramerSocket,
     }[args.framer]
     decoder = Decoder(framer)
 

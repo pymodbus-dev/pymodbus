@@ -4,10 +4,6 @@ from __future__ import annotations
 
 __all__ = [
     "ModbusTransactionManager",
-    "ModbusSocketFramer",
-    "ModbusTlsFramer",
-    "ModbusRtuFramer",
-    "ModbusAsciiFramer",
     "SyncModbusTransactionManager",
 ]
 
@@ -22,10 +18,10 @@ from pymodbus.exceptions import (
     ModbusIOException,
 )
 from pymodbus.framer import (
-    ModbusAsciiFramer,
-    ModbusRtuFramer,
-    ModbusSocketFramer,
-    ModbusTlsFramer,
+    FramerAscii,
+    FramerRTU,
+    FramerSocket,
+    FramerTLS,
 )
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest
@@ -146,13 +142,13 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
     def _set_adu_size(self):
         """Set adu size."""
         # base ADU size of modbus frame in bytes
-        if isinstance(self.client.framer, ModbusSocketFramer):
+        if isinstance(self.client.framer, FramerSocket):
             self.base_adu_size = 7  # tid(2), pid(2), length(2), uid(1)
-        elif isinstance(self.client.framer, ModbusRtuFramer):
+        elif isinstance(self.client.framer, FramerRTU):
             self.base_adu_size = 3  # address(1), CRC(2)
-        elif isinstance(self.client.framer, ModbusAsciiFramer):
+        elif isinstance(self.client.framer, FramerAscii):
             self.base_adu_size = 7  # start(1)+ Address(2), LRC(2) + end(2)
-        elif isinstance(self.client.framer, ModbusTlsFramer):
+        elif isinstance(self.client.framer, FramerTLS):
             self.base_adu_size = 0  # no header and footer
         else:
             self.base_adu_size = -1
@@ -165,11 +161,11 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
 
     def _calculate_exception_length(self):
         """Return the length of the Modbus Exception Response according to the type of Framer."""
-        if isinstance(self.client.framer, (ModbusSocketFramer, ModbusTlsFramer)):
+        if isinstance(self.client.framer, (FramerSocket, FramerTLS)):
             return self.base_adu_size + 2  # Fcode(1), ExceptionCode(1)
-        if isinstance(self.client.framer, ModbusAsciiFramer):
+        if isinstance(self.client.framer, FramerAscii):
             return self.base_adu_size + 4  # Fcode(2), ExceptionCode(2)
-        if isinstance(self.client.framer, ModbusRtuFramer):
+        if isinstance(self.client.framer, FramerRTU):
             return self.base_adu_size + 2  # Fcode(1), ExceptionCode(1)
         return None
 
@@ -197,10 +193,10 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     self.client.framer.message_handler.databuffer = b''
                 broadcast = not request.slave_id
                 expected_response_length = None
-                if not isinstance(self.client.framer, ModbusSocketFramer):
+                if not isinstance(self.client.framer, FramerSocket):
                     if hasattr(request, "get_response_pdu_size"):
                         response_pdu_size = request.get_response_pdu_size()
-                        if isinstance(self.client.framer, ModbusAsciiFramer):
+                        if isinstance(self.client.framer, FramerAscii):
                             response_pdu_size *= 2
                         if response_pdu_size:
                             expected_response_length = (
@@ -346,11 +342,11 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
         total = None
         if not full:
             exception_length = self._calculate_exception_length()
-            if isinstance(self.client.framer, ModbusSocketFramer):
+            if isinstance(self.client.framer, FramerSocket):
                 min_size = 8
-            elif isinstance(self.client.framer, ModbusRtuFramer):
+            elif isinstance(self.client.framer, FramerRTU):
                 min_size = 4
-            elif isinstance(self.client.framer, ModbusAsciiFramer):
+            elif isinstance(self.client.framer, FramerAscii):
                 min_size = 5
             else:
                 min_size = expected_response_length
@@ -363,21 +359,21 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     f"({len(read_min)} received)"
                 )
             if read_min:
-                if isinstance(self.client.framer, ModbusSocketFramer):
+                if isinstance(self.client.framer, FramerSocket):
                     func_code = int(read_min[-1])
-                elif isinstance(self.client.framer, ModbusRtuFramer):
+                elif isinstance(self.client.framer, FramerRTU):
                     func_code = int(read_min[1])
-                elif isinstance(self.client.framer, ModbusAsciiFramer):
+                elif isinstance(self.client.framer, FramerAscii):
                     func_code = int(read_min[3:5], 16)
                 else:
                     func_code = -1
 
                 if func_code < 0x80:  # Not an error
-                    if isinstance(self.client.framer, ModbusSocketFramer):
+                    if isinstance(self.client.framer, FramerSocket):
                         length = struct.unpack(">H", read_min[4:6])[0] - 1
                         expected_response_length = 7 + length
                     elif expected_response_length is None and isinstance(
-                        self.client.framer, ModbusRtuFramer
+                        self.client.framer, FramerRTU
                     ):
                         with suppress(
                             IndexError  # response length indeterminate with available bytes

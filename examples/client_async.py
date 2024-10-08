@@ -81,7 +81,7 @@ def setup_async_client(description=None, cmdline=None):
         client = modbusClient.AsyncModbusSerialClient(
             args.port,
             # Common optional parameters:
-            #    framer=ModbusRtuFramer,
+            #    framer=FramerType.RTU,
             timeout=args.timeout,
             #    retries=3,
             # Serial setup parameters

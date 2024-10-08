@@ -16,6 +16,7 @@ Thanks to
 - Alexander Lanin
 - Alexandre CUER
 - Alois Hockenschlohe
+- Andy Walker
 - Arjan
 - André Srinivasan
 - andrew-harness
@@ -27,6 +28,7 @@ Thanks to
 - Chandler Riehm
 - Chris Hung
 - Christian Krause
+- Daniel Rauber
 - dhoomakethu
 - doelki
 - DominicDataP
@@ -64,6 +66,8 @@ Thanks to
 - Logan Gunthorpe
 - Marko Luther
 - Matthias Straka
+- Matthias Urlichs
+- Michel F
 - Mickaël Schoentgen
 - Pavel Kostromitinov
 - peufeu2
@@ -77,6 +81,7 @@ Thanks to
 - Totally a booplicate
 - WouterTuinstra
 - wriswith
+- Yash Jani
 - Yohrog
 - yyokusa
 

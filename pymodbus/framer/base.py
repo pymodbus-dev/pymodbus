@@ -100,8 +100,6 @@ class FramerBase:
         """
         Log.debug("Processing: {}", data, ":hex")
         self.databuffer += data
-        if self.databuffer == b'':
-            return
         while True:
             if self.databuffer == b'':
                 return

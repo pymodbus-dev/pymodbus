@@ -4,11 +4,7 @@
 import pytest
 
 from pymodbus.factory import ClientDecoder
-from pymodbus.framer import FramerType
-from pymodbus.framer.ascii import FramerAscii
-from pymodbus.framer.rtu import FramerRTU
-from pymodbus.framer.socket import FramerSocket
-from pymodbus.framer.tls import FramerTLS
+from pymodbus.framer import FramerBase, FramerAscii, FramerRTU, FramerSocket, FramerTLS, FramerType
 
 from .generator import set_calls
 
@@ -22,6 +18,12 @@ class TestFramer:
         assert not is_server
         assert dev_ids == [0, 17]
         set_calls()
+
+    def test_base(self):
+        """Test FramerBase."""
+        framer = FramerBase(ClientDecoder(), [])
+        framer.decode(b'')
+        framer.encode(b'', 0, 0)
 
     @pytest.mark.parametrize(("entry"), list(FramerType))
     async def test_framer_init(self, test_framer):

@@ -104,8 +104,7 @@ class FramerBase:
             if self.databuffer == b'':
                 return
             used_len, data = self.decode(self.databuffer)
-            if used_len:
-                self.databuffer = self.databuffer[used_len:]
+            self.databuffer = self.databuffer[used_len:]
             if not data:
                 return
             if self.dev_ids and self.incoming_dev_id not in self.dev_ids:

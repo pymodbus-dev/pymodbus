@@ -84,7 +84,7 @@ class FramerBase:
         packet = self.encode(data, message.slave_id, message.transaction_id)
         return packet
 
-    def processIncomingPacket(self, data: bytes, callback, slave, tid=None):
+    def processIncomingPacket(self, data: bytes, callback, slave=[0], tid=None):  # pylint: disable=dangerous-default-value
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current

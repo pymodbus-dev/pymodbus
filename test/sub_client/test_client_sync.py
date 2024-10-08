@@ -206,7 +206,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client = ModbusTcpClient("127.0.0.1")
         client.framer = mock.Mock()
         client.register(CustomRequest)
-        client.framer.message_handler.decoder.register.assert_called_once_with(CustomRequest)
+        client.framer.decoder.register.assert_called_once_with(CustomRequest)
 
     # -----------------------------------------------------------------------#
     # Test TLS Client
@@ -296,7 +296,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client = ModbusTlsClient("127.0.0.1")
         client.framer = mock.Mock()
         client.register(CustomRequest)
-        client.framer.message_handler.decoder.register.assert_called_once_with(CustomRequest)
+        client.framer.decoder.register.assert_called_once_with(CustomRequest)
 
     # -----------------------------------------------------------------------#
     # Test Serial Client

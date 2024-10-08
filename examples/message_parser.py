@@ -77,7 +77,7 @@ class Decoder:
             self.framer(ClientDecoder(), [0]),
         ]
         for decoder in decoders:
-            print(f"{decoder.message_handler.decoder.__class__.__name__}")
+            print(f"{decoder.decoder.__class__.__name__}")
             print("-" * 80)
             try:
                 decoder.processIncomingPacket(message, self.report, 0)

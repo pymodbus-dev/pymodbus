@@ -100,14 +100,8 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         client.framer.processIncomingPacket.return_value = None
         client.framer.buildPacket = mock.MagicMock()
         client.framer.buildPacket.return_value = b"deadbeef"
-        client.framer.sendPacket = mock.MagicMock()
-        client.framer.sendPacket.return_value = len(b"deadbeef")
-        client.framer.decode_data = mock.MagicMock()
-        client.framer.decode_data.return_value = {
-            "slave": 1,
-            "fcode": 222,
-            "length": 27,
-        }
+        client.send = mock.MagicMock()
+        client.send.return_value = len(b"deadbeef")
         request = mock.MagicMock()
         request.get_response_pdu_size.return_value = 10
         request.slave_id = 1
@@ -308,11 +302,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         expected.slave_id = 0xFF
         msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
         self._tcp.processIncomingPacket(msg, callback, [0, 1])
-        # assert self._tcp.checkFrame()
-        # actual = ModbusRequest()
-        # self._tcp.populateResult(actual)
-        # for name in ("transaction_id", "protocol_id", "slave_id"):
-        #     assert getattr(expected, name) == getattr(actual, name)
 
     @mock.patch.object(ModbusRequest, "encode")
     def test_tcp_framer_packet(self, mock_encode):
@@ -390,15 +379,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert not result
         self._tcp.processIncomingPacket(msg[2:], callback, [0, 1])
         assert result
-
-    def test_framer_tls_framer_decode(self):
-        """Testmessage decoding."""
-        msg1 = b""
-        msg2 = b"\x01\x12\x34\x00\x08"
-        result = self._tls.decode_data(msg1)
-        assert not result
-        result = self._tls.decode_data(msg2)
-        assert result == {"fcode": 1}
 
     def test_framer_tls_incoming_packet(self):
         """Framer tls incoming packet."""
@@ -538,7 +518,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
 
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
         self._rtu.processIncomingPacket(msg, callback, [0, 1])
-        assert int(msg[0]) == self._rtu.dev_id
+        assert int(msg[0]) == self._rtu.incoming_dev_id
 
     @mock.patch.object(ModbusRequest, "encode")
     def test_rtu_framer_packet(self, mock_encode):
@@ -641,23 +621,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert not result
         self._ascii.processIncomingPacket(msg_parts[1], callback, [0,1])
         assert result
-
-    def test_ascii_framer_populate(self):
-        """Test a ascii frame packet build."""
-        request = ModbusRequest(0, 0, False)
-        self._ascii.populateResult(request)
-        assert not request.slave_id
-
-    @mock.patch.object(ModbusRequest, "encode")
-    def test_ascii_framer_packet(self, mock_encode):
-        """Test a ascii frame packet build."""
-        message = ModbusRequest(0, 0, False)
-        message.slave_id = 0xFF
-        message.function_code = 0x01
-        expected = b":FF0100\r\n"
-        mock_encode.return_value = b""
-        actual = self._ascii.buildPacket(message)
-        assert expected == actual
 
     def test_ascii_process_incoming_packets(self):
         """Test ascii process incoming packet."""

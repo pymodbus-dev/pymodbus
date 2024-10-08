@@ -239,7 +239,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Return waiting bytes."""
         return getattr(self.socket, "in_waiting") if hasattr(self.socket, "in_waiting") else getattr(self.socket, "inWaiting")()
 
-    def send(self, request: bytes) -> int:
+    def _send(self, request: bytes) -> int:
         """Send data on the underlying socket.
 
         If receive buffer still holds some data then flush it.
@@ -257,6 +257,51 @@ class ModbusSerialClient(ModbusBaseSyncClient):
                 size = 0
             return size
         return 0
+
+    def send(self, request: bytes) -> int:
+        """Send data on the underlying socket."""
+        start = time.time()
+        if hasattr(self,"ctx"):
+          timeout = start + self.ctx.comm_params.timeout_connect
+        else:
+            timeout = start + self.comm_params.timeout_connect
+        while self.state != ModbusTransactionState.IDLE:
+            if self.state == ModbusTransactionState.TRANSACTION_COMPLETE:
+                timestamp = round(time.time(), 6)
+                Log.debug(
+                    "Changing state to IDLE - Last Frame End - {} Current Time stamp - {}",
+                    self.last_frame_end,
+                    timestamp,
+                )
+                if self.last_frame_end:
+                    idle_time = self.idle_time()
+                    if round(timestamp - idle_time, 6) <= self.silent_interval:
+                        Log.debug(
+                            "Waiting for 3.5 char before next send - {} ms",
+                            self.silent_interval * 1000,
+                        )
+                        time.sleep(self.silent_interval)
+                else:
+                    # Recovering from last error ??
+                    time.sleep(self.silent_interval)
+                self.state = ModbusTransactionState.IDLE
+            elif self.state == ModbusTransactionState.RETRYING:
+                # Simple lets settle down!!!
+                # To check for higher baudrates
+                time.sleep(self.comm_params.timeout_connect)
+                break
+            elif time.time() > timeout:
+                Log.debug(
+                    "Spent more time than the read time out, "
+                    "resetting the transaction to IDLE"
+                )
+                self.state = ModbusTransactionState.IDLE
+            else:
+                Log.debug("Sleeping")
+                time.sleep(self.silent_interval)
+        size = self._send(request)
+        self.last_frame_end = round(time.time(), 6)
+        return size
 
     def _wait_for_data(self) -> int:
         """Wait for data."""
@@ -286,6 +331,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         if size > self._in_waiting():
             self._wait_for_data()
         result = self.socket.read(size)
+        self.last_frame_end = round(time.time(), 6)
         return result
 
     def is_socket_open(self) -> bool:

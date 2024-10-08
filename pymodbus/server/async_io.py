@@ -11,7 +11,7 @@ from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.factory import ServerDecoder
-from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType, ModbusFramer
+from pymodbus.framer import FRAMER_NAME_TO_OLD_CLASS, FramerType, ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
@@ -122,13 +122,10 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 slaves.append(0)
 
         Log.debug("Handling data: {}", data, ":hex")
-
-        single = self.server.context.single
         self.framer.processIncomingPacket(
             data=data,
             callback=lambda x: self.execute(x, *addr),
             slave=slaves,
-            single=single,
         )
 
     async def handle(self) -> None:
@@ -274,7 +271,7 @@ class ModbusBaseServer(ModbusProtocol):
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-        self.framer = FRAMER_NAME_TO_CLASS.get(framer, framer)
+        self.framer = FRAMER_NAME_TO_OLD_CLASS.get(framer, framer)
         self.serving: asyncio.Future = asyncio.Future()
 
     def callback_new_connection(self):

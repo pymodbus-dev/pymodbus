@@ -173,29 +173,10 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
             return self.base_adu_size + 2  # Fcode(1), ExceptionCode(1)
         return None
 
-    def _validate_response(self, request: ModbusRequest, response, exp_resp_len, is_udp=False):
-        """Validate Incoming response against request.
-
-        :param request: Request sent
-        :param response: Response received
-        :param exp_resp_len: Expected response length
-        :return: New transactions state
-        """
+    def _validate_response(self, response):
+        """Validate Incoming response against request."""
         if not response:
             return False
-
-        if hasattr(self.client.framer, "decode_data"):
-            mbap = self.client.framer.decode_data(response)
-        else:
-            mbap = {}
-        if (
-            mbap.get("slave") != request.slave_id
-            or mbap.get("fcode") & 0x7F != request.function_code
-        ):
-            return False
-
-        if "length" in mbap and exp_resp_len and not is_udp:
-            return mbap.get("length") == exp_resp_len
         return True
 
     def execute(self, request: ModbusRequest):  # noqa: C901
@@ -210,10 +191,10 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 request.transaction_id = self.getNextTID()
                 Log.debug("Running transaction {}", request.transaction_id)
                 if _buffer := hexlify_packets(
-                    self.client.framer._buffer  # pylint: disable=protected-access
+                    self.client.framer.message_handler.databuffer
                 ):
                     Log.debug("Clearing current Frame: - {}", _buffer)
-                    self.client.framer.resetFrame()
+                    self.client.framer.message_handler.databuffer = b''
                 broadcast = not request.slave_id
                 expected_response_length = None
                 if not isinstance(self.client.framer, ModbusSocketFramer):
@@ -231,9 +212,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     full = True
                 else:
                     full = False
-                is_udp = False
                 if self.client.comm_params.comm_type == CommType.UDP:
-                    is_udp = True
                     full = True
                     if not expected_response_length:
                         expected_response_length = 1024
@@ -244,11 +223,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     broadcast=broadcast,
                 )
                 while retries > 0:
-                    valid_response = self._validate_response(
-                        request, response, expected_response_length,
-                        is_udp=is_udp
-                    )
-                    if valid_response:
+                    if self._validate_response(response):
                         if (
                             request.slave_id in self._no_response_devices
                             and response
@@ -364,7 +339,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
 
     def _send(self, packet: bytes, _retrying=False):
         """Send."""
-        return self.client.framer.sendPacket(packet)
+        return self.client.send(packet)
 
     def _recv(self, expected_response_length, full) -> bytes:  # noqa: C901
         """Receive."""
@@ -380,8 +355,8 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
             else:
                 min_size = expected_response_length
 
-            read_min = self.client.framer.recvPacket(min_size)
-            if len(read_min) != min_size:
+            read_min = self.client.recv(min_size)
+            if min_size and len(read_min) != min_size:
                 msg_start = "Incomplete message" if read_min else "No response"
                 raise InvalidMessageReceivedException(
                     f"{msg_start} received, expected at least {min_size} bytes "
@@ -399,12 +374,8 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
 
                 if func_code < 0x80:  # Not an error
                     if isinstance(self.client.framer, ModbusSocketFramer):
-                        # Omit UID, which is included in header size
-                        h_size = (
-                            self.client.framer._hsize  # pylint: disable=protected-access
-                        )
                         length = struct.unpack(">H", read_min[4:6])[0] - 1
-                        expected_response_length = h_size + length
+                        expected_response_length = 7 + length
                     elif expected_response_length is None and isinstance(
                         self.client.framer, ModbusRtuFramer
                     ):
@@ -427,7 +398,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
         else:
             read_min = b""
             total = expected_response_length
-        result = self.client.framer.recvPacket(expected_response_length)
+        result = self.client.recv(expected_response_length)
         result = read_min + result
         actual = len(result)
         if total is not None and actual != total:
@@ -458,5 +429,5 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
         :return: Total frame size
         """
         func_code = int(data[1])
-        pdu_class = self.client.framer.decoder.lookupPduClass(func_code)
+        pdu_class = self.client.framer.message_handler.decoder.lookupPduClass(func_code)
         return pdu_class.calculateRtuFrameSize(data)

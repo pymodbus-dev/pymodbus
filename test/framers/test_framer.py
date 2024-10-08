@@ -4,7 +4,14 @@
 import pytest
 
 from pymodbus.factory import ClientDecoder
-from pymodbus.framer import FramerBase, FramerAscii, FramerRTU, FramerSocket, FramerTLS, FramerType
+from pymodbus.framer import (
+    FramerAscii,
+    FramerBase,
+    FramerRTU,
+    FramerSocket,
+    FramerTLS,
+    FramerType,
+)
 
 from .generator import set_calls
 

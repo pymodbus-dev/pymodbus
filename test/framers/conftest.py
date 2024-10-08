@@ -10,7 +10,7 @@ from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType
 @pytest.fixture(name="entry")
 def prepare_entry():
     """Return framer_type."""
-    return FramerType.ASCII
+    return FramerType.RTU
 
 @pytest.fixture(name="is_server")
 def prepare_is_server():

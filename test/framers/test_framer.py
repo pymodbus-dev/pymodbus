@@ -10,9 +10,18 @@ from pymodbus.framer.rtu import FramerRTU
 from pymodbus.framer.socket import FramerSocket
 from pymodbus.framer.tls import FramerTLS
 
+from .generator import set_calls
+
 
 class TestFramer:
     """Test module."""
+
+    def test_setup(self, entry, is_server, dev_ids):
+        """Test conftest."""
+        assert entry == FramerType.RTU
+        assert not is_server
+        assert dev_ids == [0, 17]
+        set_calls()
 
     @pytest.mark.parametrize(("entry"), list(FramerType))
     async def test_framer_init(self, test_framer):
@@ -291,6 +300,7 @@ class TestFramerType:
                  (12, b"\x03\x00\x7c\x00\x02"),
                  (12, b"\x03\x00\x7c\x00\x02"),
             ]),
+            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x02\xff\x83\x02', [(9, b'\x83\x02')],),  # Exception
             (FramerType.RTU, b'\x00\x83\x02\x91\x21', [ # bad crc
                  (2, b''),
             ]),

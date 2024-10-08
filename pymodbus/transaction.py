@@ -187,10 +187,10 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 request.transaction_id = self.getNextTID()
                 Log.debug("Running transaction {}", request.transaction_id)
                 if _buffer := hexlify_packets(
-                    self.client.framer.message_handler.databuffer
+                    self.client.framer.databuffer
                 ):
                     Log.debug("Clearing current Frame: - {}", _buffer)
-                    self.client.framer.message_handler.databuffer = b''
+                    self.client.framer.databuffer = b''
                 broadcast = not request.slave_id
                 expected_response_length = None
                 if not isinstance(self.client.framer, FramerSocket):
@@ -235,7 +235,6 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 self.client.framer.processIncomingPacket(
                     response,
                     self.addTransaction,
-                    request.slave_id,
                     tid=request.transaction_id,
                 )
                 if not (response := self.getTransaction(request.transaction_id)):
@@ -259,7 +258,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
                 return response
             except ModbusIOException as exc:
-                # Handle decode errors in processIncomingPacket method
+                # Handle decode errors method
                 Log.error("Modbus IO exception {}", exc)
                 self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
                 self.client.close()
@@ -425,5 +424,5 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
         :return: Total frame size
         """
         func_code = int(data[1])
-        pdu_class = self.client.framer.message_handler.decoder.lookupPduClass(func_code)
+        pdu_class = self.client.framer.decoder.lookupPduClass(func_code)
         return pdu_class.calculateRtuFrameSize(data)

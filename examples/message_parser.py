@@ -73,14 +73,14 @@ class Decoder:
         print(f"Decoding Message {value}")
         print("=" * 80)
         decoders = [
-            self.framer(ServerDecoder(), [0]),
-            self.framer(ClientDecoder(), [0]),
+            self.framer(ServerDecoder(), []),
+            self.framer(ClientDecoder(), []),
         ]
         for decoder in decoders:
-            print(f"{decoder.message_handler.decoder.__class__.__name__}")
+            print(f"{decoder.decoder.__class__.__name__}")
             print("-" * 80)
             try:
-                decoder.processIncomingPacket(message, self.report, 0)
+                decoder.processIncomingPacket(message, self.report)
             except Exception:  # pylint: disable=broad-except
                 self.check_errors(decoder, message)
 

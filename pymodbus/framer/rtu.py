@@ -101,7 +101,7 @@ class FramerRTU(FramerBase):
                 return used_len, self.EMPTY
             self.incoming_dev_id = int(data[used_len])
             func_code = int(data[used_len + 1])
-            if (self.dev_ids[0] and self.incoming_dev_id not in self.dev_ids) or func_code & 0x7F not in self.decoder.lookup:
+            if (self.dev_ids and self.incoming_dev_id not in self.dev_ids) or func_code & 0x7F not in self.decoder.lookup:
                 continue
             if data_len - used_len < self.MIN_SIZE:
                     Log.debug("Garble in front {}, then short frame: {} wait for more data", used_len, data, ":hex")

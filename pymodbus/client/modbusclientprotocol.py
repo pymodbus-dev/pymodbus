@@ -35,7 +35,7 @@ class ModbusClientProtocol(ModbusProtocol):
         self.on_connect_callback = on_connect_callback
 
         # Common variables.
-        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(ClientDecoder(), [0])
+        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(ClientDecoder(), [])
         self.transaction = ModbusTransactionManager()
 
     def _handle_response(self, reply):
@@ -68,7 +68,7 @@ class ModbusClientProtocol(ModbusProtocol):
 
         returns number of bytes consumed
         """
-        self.framer.processIncomingPacket(data, self._handle_response, 0)
+        self.framer.processIncomingPacket(data, self._handle_response)
         return len(data)
 
     def __str__(self):

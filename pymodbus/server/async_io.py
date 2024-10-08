@@ -64,11 +64,17 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
+        slaves = self.server.context.slaves()
+        if self.server.broadcast_enable:
+            if 0 not in slaves:
+                slaves.append(0)
+        if 0 in slaves:
+            slaves = []
         try:
             self.running = True
             self.framer = self.server.framer(
                 self.server.decoder,
-                [0],
+                slaves,
             )
 
             # schedule the connection handler on the event loop
@@ -106,7 +112,6 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
     async def inner_handle(self):
         """Handle handler."""
-        slaves = self.server.context.slaves()
         # this is an asyncio.Queue await, it will never fail
         data = await self._recv_()
         if isinstance(data, tuple):
@@ -117,15 +122,10 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
         # if broadcast is enabled make sure to
         # process requests to address 0
-        if self.server.broadcast_enable:
-            if 0 not in slaves:
-                slaves.append(0)
-
         Log.debug("Handling data: {}", data, ":hex")
         self.framer.processIncomingPacket(
             data=data,
             callback=lambda x: self.execute(x, *addr),
-            slave=slaves,
         )
 
     async def handle(self) -> None:

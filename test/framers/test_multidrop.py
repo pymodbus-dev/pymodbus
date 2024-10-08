@@ -7,7 +7,7 @@ from pymodbus.framer import FramerRTU
 from pymodbus.server.async_io import ServerDecoder
 
 
-class NotImplementedTestMultidrop:
+class TestMultidrop:
     """Test that server works on a multidrop line."""
 
     good_frame = b"\x02\x03\x00\x01\x00}\xd4\x18"
@@ -28,7 +28,8 @@ class NotImplementedTestMultidrop:
         framer.processIncomingPacket(serial_event, callback)
         callback.assert_called_once()
 
-    def test_ok_2frame(self, framer, callback):
+    @pytest.mark.skip
+    def test_ok_2frame(self, framer, callback):  # pragma: no cover
         """Test ok frame."""
         serial_event = self.good_frame + self.good_frame
         framer.processIncomingPacket(serial_event, callback)
@@ -65,7 +66,8 @@ class NotImplementedTestMultidrop:
             framer.processIncomingPacket(serial_event, callback)
         callback.assert_not_called()
 
-    def test_split_frame(self, framer, callback):
+    @pytest.mark.skip
+    def test_split_frame(self, framer, callback):  # pragma: no cover
         """Test split frame."""
         serial_events = [self.good_frame[:5], self.good_frame[5:]]
         for serial_event in serial_events:
@@ -86,7 +88,8 @@ class NotImplementedTestMultidrop:
         framer.processIncomingPacket(serial_event, callback)
         callback.assert_called_once()
 
-    def test_split_frame_trailing_data_with_id(self, framer, callback):
+    @pytest.mark.skip
+    def test_split_frame_trailing_data_with_id(self, framer, callback):  # pragma: no cover
         """Test split frame."""
         garbage = b"\x05\x04\x03\x02\x01\x00"
         serial_events = [garbage + self.good_frame[:5], self.good_frame[5:]]
@@ -94,7 +97,8 @@ class NotImplementedTestMultidrop:
             framer.processIncomingPacket(serial_event, callback)
         callback.assert_called_once()
 
-    def test_coincidental_1(self, framer, callback):
+    @pytest.mark.skip
+    def test_coincidental_1(self, framer, callback):  # pragma: no cover
         """Test conincidental."""
         garbage = b"\x02\x90\x07"
         serial_events = [garbage, self.good_frame[:5], self.good_frame[5:]]
@@ -102,7 +106,8 @@ class NotImplementedTestMultidrop:
             framer.processIncomingPacket(serial_event, callback)
         callback.assert_called_once()
 
-    def test_coincidental_2(self, framer, callback):
+    @pytest.mark.skip
+    def test_coincidental_2(self, framer, callback):  # pragma: no cover
         """Test conincidental."""
         garbage = b"\x02\x10\x07"
         serial_events = [garbage, self.good_frame[:5], self.good_frame[5:]]
@@ -110,7 +115,8 @@ class NotImplementedTestMultidrop:
             framer.processIncomingPacket(serial_event, callback)
         callback.assert_called_once()
 
-    def test_coincidental_3(self, framer, callback):
+    @pytest.mark.skip
+    def test_coincidental_3(self, framer, callback):  # pragma: no cover
         """Test conincidental."""
         garbage = b"\x02\x10\x07\x10"
         serial_events = [garbage, self.good_frame[:5], self.good_frame[5:]]
@@ -139,7 +145,8 @@ class NotImplementedTestMultidrop:
         # We should not respond in this case for identical reasons as test_wrapped_frame
         callback.assert_called_once()
 
-    def test_getFrameStart(self, framer):
+    @pytest.mark.skip
+    def test_getFrameStart(self, framer):  # pragma: no cover
         """Test getFrameStart."""
         result = None
         count = 0

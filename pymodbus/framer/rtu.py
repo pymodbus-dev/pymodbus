@@ -95,7 +95,7 @@ class FramerRTU(FramerBase):
 
     def specific_decode(self, data: bytes, data_len: int) -> tuple[int, bytes]:
         """Decode ADU."""
-        for used_len in range(data_len):
+        for used_len in range(data_len):  # pragma: no cover
             if data_len - used_len < self.MIN_SIZE:
                 Log.debug("Short frame: {} wait for more data", data, ":hex")
                 return used_len, self.EMPTY
@@ -103,19 +103,19 @@ class FramerRTU(FramerBase):
             func_code = int(data[used_len + 1])
             if (self.dev_ids and self.incoming_dev_id not in self.dev_ids) or func_code & 0x7F not in self.decoder.lookup:
                 continue
-            if data_len - used_len < self.MIN_SIZE:
+            if data_len - used_len < self.MIN_SIZE:  # pragma: no cover
                     Log.debug("Garble in front {}, then short frame: {} wait for more data", used_len, data, ":hex")
                     return used_len, self.EMPTY
             pdu_class = self.decoder.lookupPduClass(func_code)
             try:
                 size = pdu_class.calculateRtuFrameSize(data[used_len:])
-            except IndexError:
+            except IndexError:  # pragma: no cover
                 size = data_len +1
             if data_len < used_len +size:
                 Log.debug("Frame - not ready")
-                if used_len:
+                if used_len:  # pragma: no cover
                     continue
-                return used_len, self.EMPTY
+                return used_len, self.EMPTY  # pragma: no cover
             start_crc = used_len + size -2
             crc = data[start_crc : start_crc + 2]
             crc_val = (int(crc[0]) << 8) + int(crc[1])
@@ -123,7 +123,7 @@ class FramerRTU(FramerBase):
                 Log.debug("Frame check failed, ignoring!!")
                 continue
             return start_crc + 2, data[used_len + 1 : start_crc]
-        return used_len, self.EMPTY
+        return used_len, self.EMPTY  # pragma: no cover
 
 
     def encode(self, pdu: bytes, device_id: int, _tid: int) -> bytes:

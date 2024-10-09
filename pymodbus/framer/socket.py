@@ -9,6 +9,7 @@ class FramerSocket(FramerBase):
     """Modbus Socket frame type.
 
     Layout::
+
         [         MBAP Header         ] [ Function Code] [ Data ]
         [ tid ][ pid ][ length ][ uid ]
           2b     2b     2b        1b           1b           Nb

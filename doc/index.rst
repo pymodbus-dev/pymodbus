@@ -16,7 +16,6 @@ Please select a topic in the left hand column.
    source/examples
    source/authors
    source/changelog
-   source/api_changes
    source/internals
 
-.. include:: ../../README.rst
+.. include:: ../README.rst

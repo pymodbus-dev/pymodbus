@@ -5,27 +5,25 @@ can be any one of four types. The type is defined by bit 7
 (the high-order bit) in each byte. It may be further defined by bit 6.
 """
 # pylint: disable=missing-type-doc
-from pymodbus.exceptions import NotImplementedException, ParameterException
+from abc import ABC, abstractmethod
+
+from pymodbus.exceptions import ParameterException
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
-class ModbusEvent:
+class ModbusEvent(ABC):
     """Define modbus events."""
 
-    def encode(self):
-        """Encode the status bits to an event message.
+    @abstractmethod
+    def encode(self) -> bytes:
+        """Encode the status bits to an event message."""
 
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException
-
+    @abstractmethod
     def decode(self, event):
         """Decode the event message to its status bits.
 
         :param event: The event to decode
-        :raises NotImplementedException:
         """
-        raise NotImplementedException
 
 
 class RemoteReceiveEvent(ModbusEvent):

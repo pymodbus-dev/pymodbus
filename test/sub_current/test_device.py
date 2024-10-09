@@ -6,7 +6,7 @@ from pymodbus.device import (
     ModbusDeviceIdentification,
     ModbusPlusStatistics,
 )
-from pymodbus.events import ModbusEvent, RemoteReceiveEvent
+from pymodbus.events import RemoteReceiveEvent
 
 
 # ---------------------------------------------------------------------------#
@@ -281,7 +281,7 @@ class TestDataStore:
     def test_clearing_control_events(self):
         """Test adding and clearing modbus events."""
         assert self.control.Events == []
-        event = ModbusEvent()
+        event = RemoteReceiveEvent()
         self.control.addEvent(event)
         assert self.control.Events == [event]
         assert self.control.Counter.Event == 1

@@ -8,43 +8,50 @@ from pymodbus.logging import Log
 class FramerRTU(FramerBase):
     """Modbus RTU frame type.
 
-    [ Start Wait ] [Address ][ Function Code] [ Data ][ CRC ]
-      3.5 chars     1b         1b               Nb      2b
+    Layout::
 
-    * Note: due to the USB converter and the OS drivers, timing cannot be quaranteed
-    neither when receiving nor when sending.
+        [ Start Wait ] [Address ][ Function Code] [ Data ][ CRC ]
+          3.5 chars     1b         1b               Nb      2b
+
+    .. note::
+    
+            due to the USB converter and the OS drivers, timing cannot be quaranteed
+            neither when receiving nor when sending.
 
     Decoding is a complicated process because the RTU frame does not have a fixed prefix
     only suffix, therefore it is necessary to decode the content (PDU) to get length etc.
-
     There are some protocol restrictions that help with the detection.
 
     For client:
        - a request causes 1 response !
        - Multiple requests are NOT allowed (master-slave protocol)
        - the server will not retransmit responses
+    
     this means decoding is always exactly 1 frame (response)
 
     For server (Single device)
        - only 1 request allowed (master-slave) protocol
        - the client (master) may retransmit but in larger time intervals
+
     this means decoding is always exactly 1 frame (request)
 
     For server (Multidrop line --> devices in parallel)
        - only 1 request allowed (master-slave) protocol
        - other devices will send responses
        - the client (master) may retransmit but in larger time intervals
+
     this means decoding is always exactly 1 frame request, however some requests
     will be for unknown slaves, which must be ignored together with the
     response from the unknown slave.
-    >>>>> NOT IMPLEMENTED <<<<<
 
     Recovery from bad cabling and unstable USB etc is important,
     the following scenarios is possible:
-       - garble data before frame
-       - garble data in frame
-       - garble data after frame
-       - data in frame garbled (wrong CRC)
+
+        - garble data before frame
+        - garble data in frame
+        - garble data after frame
+        - data in frame garbled (wrong CRC)
+
     decoding assumes the frame is sound, and if not enters a hunting mode.
 
     The 3.5 byte transmission time at the slowest speed 1.200Bps is 31ms.
@@ -52,7 +59,7 @@ class FramerRTU(FramerBase):
     If no data is received for 50ms the transmission / frame can be considered
     complete.
 
-        The following table is a listing of the baud wait times for the specified
+    The following table is a listing of the baud wait times for the specified
     baud rates::
 
         ------------------------------------------------------------------
@@ -63,12 +70,9 @@ class FramerRTU(FramerBase):
          9600    1666.7 us        3958.3 us
         19200     833.3 us        1979.2 us
         38400     416.7 us         989.6 us
-        ...
         ------------------------------------------------------------------
         1 Byte = start + 8 bits + parity + stop = 11 bits
         (1/Baud)(bits) = delay seconds
-
-    >>>>> NOT IMPLEMENTED <<<<<
     """
 
     MIN_SIZE = 4  # <slave id><function code><crc 2 bytes>

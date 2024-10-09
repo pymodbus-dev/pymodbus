@@ -113,13 +113,13 @@ jobs:
           ruff check .
 
       - name: pytest
-        if: ${{ (matrix.os != 'ubuntu-latest') || (matrix.python != '3.12') }}
+        if: ${{ (matrix.os != 'ubuntu-latest') || (matrix.python != '3.13') }}
         run: |
           env
           pytest
 
       - name: pytest coverage
-        if: ${{ (matrix.os == 'ubuntu-latest') && (matrix.python == '3.12')  }}
+        if: ${{ (matrix.os == 'ubuntu-latest') && (matrix.python == '3.13')  }}
         run: |
           env
           pytest --cov

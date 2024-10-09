@@ -119,12 +119,16 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
                 except asyncio.exceptions.TimeoutError:
                     count += 1
         if count > self.retries:
-            self.ctx.connection_lost(asyncio.TimeoutError("Server not responding"))
-            raise ModbusIOException(
-                f"ERROR: No response received after {self.retries} retries"
-            )
+            self.no_message_response_after_retries(self.retries)
 
         return resp  # type: ignore[return-value]
+
+    def no_message_response_after_retries(self, retries) -> None:
+        """Take action after a message has not been responded to after retries."""
+        self.ctx.connection_lost(asyncio.TimeoutError("Server not responding"))
+        raise ModbusIOException(
+            f"ERROR: No response received after {retries} retries"
+        )
 
     def build_response(self, request: ModbusRequest):
         """Return a deferred response for the current request.

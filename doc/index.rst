@@ -8,7 +8,7 @@ Please select a topic in the left hand column.
    :caption: Contents:
    :hidden:
 
-   source/readme
+   source/README
    source/api_changes
    source/client
    source/server

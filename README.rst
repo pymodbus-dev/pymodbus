@@ -23,7 +23,7 @@ Upgrade examples:
 - 3.6.1 -> 3.7.0: Smaller changes to the pymodbus calls might be needed
 - 2.5.4 -> 3.0.0: Major changes in the application might be needed
 
-Current release is `3.7.2 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.7.2>`_.
+Current release is `3.7.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.7.3>`_.
 
 Bleeding edge (not released) is `dev <https://github.com/pymodbus-dev/pymodbus/tree/dev>`_.
 
@@ -84,7 +84,7 @@ Server Features
 * callback to intercept requests/responses
 * work on RS485 in parallel with other devices
 
-`Server documentation <https://pymodbus.readthedocs.io/en/latest/source/library/server.html>`_
+`Server documentation <https://pymodbus.readthedocs.io/en/latest/source/server.html>`_
 
 
 REPL Features

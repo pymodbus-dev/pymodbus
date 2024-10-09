@@ -1,90 +1,45 @@
 """Test framer."""
 
-from unittest import mock
 
 import pytest
 
-from pymodbus.framer import FramerType
-from pymodbus.framer.ascii import FramerAscii
-from pymodbus.framer.rtu import FramerRTU
-from pymodbus.framer.socket import FramerSocket
-from pymodbus.framer.tls import FramerTLS
+from pymodbus.factory import ClientDecoder
+from pymodbus.framer import (
+    FramerAscii,
+    FramerBase,
+    FramerRTU,
+    FramerSocket,
+    FramerTLS,
+    FramerType,
+)
+
+from .generator import set_calls
 
 
 class TestFramer:
     """Test module."""
 
+    def test_setup(self, entry, is_server, dev_ids):
+        """Test conftest."""
+        assert entry == FramerType.RTU
+        assert not is_server
+        assert dev_ids == [0, 17]
+        set_calls()
+
+    def test_base(self):
+        """Test FramerBase."""
+        framer = FramerBase(ClientDecoder(), [])
+        framer.decode(b'')
+        framer.encode(b'', 0, 0)
+
     @pytest.mark.parametrize(("entry"), list(FramerType))
-    async def test_framer_init(self, dummy_framer):
+    async def test_framer_init(self, test_framer):
         """Test framer type."""
-        assert dummy_framer.handle
-
-    @pytest.mark.parametrize(("data", "res_len", "cx", "rc"), [
-        (b'12345', 5, 1, [(5, 0, 0, b'12345')]),  # full frame
-        (b'12345', 0, 0, [(0, 0, 0, b'')]),  # not full frame, need more data
-        (b'12345', 5, 0, [(5, 0, 0, b'')]),  # faulty frame, skipped
-        (b'1234512345', 10, 2, [(5, 0, 0, b'12345'), (5, 0, 0, b'12345')]),  # 2 full frames
-        (b'12345678', 5, 1, [(5, 0, 0, b'12345'), (0, 0, 0, b'')]),  # full frame, not full frame
-        (b'67812345', 8, 1, [(8, 0, 0, b'12345')]), # garble first, full frame next
-        (b'12345678', 5, 0, [(5, 0, 0, b'')]),      # garble first, not full frame
-        (b'12345678', 8, 0, [(8, 0, 0, b'')]),      # garble first, faulty frame
-    ])
-    async def test_framer_callback(self, dummy_framer, data, res_len, cx, rc):
-        """Test framer type."""
-        dummy_framer.callback_request_response = mock.Mock()
-        dummy_framer.handle.decode = mock.MagicMock(side_effect=iter(rc))
-        assert dummy_framer.callback_data(data) == res_len
-        assert dummy_framer.callback_request_response.call_count == cx
-        if cx:
-            dummy_framer.callback_request_response.assert_called_with(b'12345', 0, 0)
-        else:
-            dummy_framer.callback_request_response.assert_not_called()
-
-    @pytest.mark.parametrize(("data", "res_len", "rc"), [
-        (b'12345', 5, [(5, 0, 17, b'12345'), (0, 0, 0, b'')]),  # full frame, wrong dev_id
-    ])
-    async def test_framer_callback_wrong_id(self, dummy_framer, data, res_len, rc):
-        """Test framer type."""
-        dummy_framer.callback_request_response = mock.Mock()
-        dummy_framer.handle.decode = mock.MagicMock(side_effect=iter(rc))
-        dummy_framer.broadcast = False
-        assert dummy_framer.callback_data(data) == res_len
-        dummy_framer.callback_request_response.assert_not_called()
-
-    async def test_framer_build_send(self, dummy_framer):
-        """Test framer type."""
-        dummy_framer.handle.encode = mock.MagicMock(return_value=(b'decode'))
-        dummy_framer.build_send(b'decode', 1, 0)
-        dummy_framer.handle.encode.assert_called_once()
-        dummy_framer.send.assert_called_once()
-        dummy_framer.send.assert_called_with(b'decode', None)
+        test_framer.incomming_dev_id = 1
+        assert test_framer.incomming_dev_id
 
     @pytest.mark.parametrize(
-        ("data", "res_len", "res_id", "res_tid", "res_data"), [
-        (b'\x00\x01', 0, 0, 0, b''),
-        (b'\x01\x02\x03', 3, 1, 2, b'\x03'),
-        (b'\x04\x05\x06\x07\x08\x09\x00\x01\x02\x03', 10, 4, 5, b'\x06\x07\x08\x09\x00\x01\x02\x03'),
-    ])
-    async def test_framer_decode(self, dummy_framer,  data, res_id, res_tid, res_len, res_data):
-        """Test decode method in all types."""
-        t_len, t_id, t_tid, t_data = dummy_framer.handle.decode(data)
-        assert res_len == t_len
-        assert res_id == t_id
-        assert res_tid == t_tid
-        assert res_data == t_data
-
-    @pytest.mark.parametrize(
-        ("data", "dev_id", "tid", "res_data"), [
-        (b'\x01\x02', 5, 6, b'\x05\x06\x01\x02'),
-        (b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09', 17, 25, b'\x11\x19\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09'),
-    ])
-    async def test_framer_encode(self, dummy_framer, data, dev_id, tid, res_data):
-        """Test decode method in all types."""
-        t_data = dummy_framer.handle.encode(data, dev_id, tid)
-        assert res_data == t_data
-
-    @pytest.mark.parametrize(
-        ("func", "lrc", "expect"),
+        ("func", "test_compare", "expect"),
         [(FramerAscii.check_LRC, 0x1c, True),
          (FramerAscii.check_LRC, 0x0c, False),
          (FramerAscii.compute_LRC, None, 0x1c),
@@ -93,10 +48,10 @@ class TestFramer:
          (FramerRTU.compute_CRC, None, 0xE2DB),
         ]
     )
-    def test_LRC_CRC(self, func, lrc, expect):
+    def test_LRC_CRC(self, func, test_compare, expect):
         """Test check_LRC."""
         data = b'\x12\x34\x23\x45\x34\x56\x45\x67'
-        assert expect == func(data, lrc) if lrc else func(data)
+        assert expect == func(data, test_compare) if test_compare else func(data)
 
     def test_roundtrip_LRC(self):
         """Test combined compute/check LRC."""
@@ -115,7 +70,6 @@ class TestFramer:
         data = b'\x12\x34\x23\x45\x34\x56\x45\x67'
         assert FramerRTU.compute_CRC(data) == 0xE2DB
         assert FramerRTU.check_CRC(data, 0xE2DB)
-
 
 
 class TestFramerType:
@@ -226,23 +180,23 @@ class TestFramerType:
         ]
     )
     @pytest.mark.parametrize(
-        ("inx3", "tid"),
+        ("inx3", "tr_id"),
         [
             (0, 0),
             (9, 3077),
         ]
     )
-    def test_encode_type(self, frame, frame_expected, data, dev_id, tid, inx1, inx2, inx3):
+    def test_encode_type(self, frame, frame_expected, data, dev_id, tr_id, inx1, inx2, inx3):
         """Test encode method."""
-        if frame == FramerTLS and dev_id + tid:
+        if frame == FramerTLS and dev_id + tr_id:
             return
-        frame_obj = frame()
+        frame_obj = frame(ClientDecoder(), [0])
         expected = frame_expected[inx1 + inx2 + inx3]
-        encoded_data = frame_obj.encode(data, dev_id, tid)
+        encoded_data = frame_obj.encode(data, dev_id, tr_id)
         assert encoded_data == expected
 
     @pytest.mark.parametrize(
-        ("entry", "is_server", "data", "dev_id", "tid", "expected"),
+        ("entry", "is_server", "data", "dev_id", "tr_id", "expected"),
         [
             (FramerType.ASCII, True, b':0003007C00027F\r\n', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
             (FramerType.ASCII, False, b':000304008D008EDE\r\n', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
@@ -293,28 +247,35 @@ class TestFramerType:
             "single",
         ]
     )
-    async def test_decode_type(self, entry, dummy_framer, data, dev_id, tid, expected, split):
+    async def test_decode_type(self, entry, test_framer, data, dev_id, tr_id, expected, split):
         """Test encode method."""
         if entry == FramerType.TLS and split != "no":
             return
         if entry == FramerType.RTU:
             return
-        dummy_framer.callback_request_response = mock.MagicMock()
         if split == "no":
-            used_len = dummy_framer.callback_data(data)
+            used_len, res_data = test_framer.decode(data)
         elif split == "half":
             split_len = int(len(data) / 2)
-            assert not dummy_framer.callback_data(data[0:split_len])
-            dummy_framer.callback_request_response.assert_not_called()
-            used_len = dummy_framer.callback_data(data)
+            used_len, res_data = test_framer.decode(data[0:split_len])
+            assert not used_len
+            assert not res_data
+            assert not test_framer.incoming_dev_id
+            assert not test_framer.incoming_tid
+            used_len, res_data = test_framer.decode(data)
         else:
             last = len(data)
             for i in range(0, last -1):
-                assert not dummy_framer.callback_data(data[0:i+1])
-                dummy_framer.callback_request_response.assert_not_called()
-            used_len = dummy_framer.callback_data(data)
+                used_len, res_data = test_framer.decode(data[0:i+1])
+                assert not used_len
+                assert not res_data
+                assert not test_framer.incoming_dev_id
+                assert not test_framer.incoming_tid
+            used_len, res_data = test_framer.decode(data)
         assert used_len == len(data)
-        dummy_framer.callback_request_response.assert_called_with(expected, dev_id, tid)
+        assert res_data == expected
+        assert dev_id == test_framer.incoming_dev_id
+        assert tr_id == test_framer.incoming_tid
 
     @pytest.mark.parametrize(
         ("entry", "data", "exp"),
@@ -348,43 +309,52 @@ class TestFramerType:
                  (12, b"\x03\x00\x7c\x00\x02"),
                  (12, b"\x03\x00\x7c\x00\x02"),
             ]),
+            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x02\xff\x83\x02', [(9, b'\x83\x02')],),  # Exception
             (FramerType.RTU, b'\x00\x83\x02\x91\x21', [ # bad crc
-                 (5, b''),
+                 (2, b''),
             ]),
-            #(FramerType.RTU, b'\x00\x83\x02\xf0\x91\x31', [ # dummy char in stream, bad crc
-            #     (5, b''),
-            #]),
-            # (FramerType.RTU, b'\x00\x83\x02\x91\x21\x00\x83\x02\x91\x31', [ # bad crc + good CRC
-            #    (10, b'\x83\x02'),
-            #]),
-            #(FramerType.RTU, b'\x00\x83\x02\xf0\x91\x31\x00\x83\x02\x91\x31', [ # dummy char in stream, bad crc  + good CRC
-            #     (11, b''),
-            #]),
-
-            # (FramerType.RTU, b'\x00\x83\x02\x91\x31', 0),  # garble in front
-            # (FramerType.ASCII, b'abc:0003007C00027F\r\n', [  # garble in front
-            #     (20, b'\x03\x00\x7c\x00\x02'),
-            # ]),
-
-            # (FramerType.RTU, b'\x00\x83\x02\x91\x31', 0),  # garble after
-            # (FramerType.ASCII, b':0003007C00017F\r\nabc', [  # bad crc, garble after
-            #     (17, b''),
-            # ]),
-            # (FramerType.ASCII, b':0003007C00017F\r\nabcdefghijkl', [  # bad crc, garble after
-            #     (29, b''),
-            # ]),
-            # (FramerType.ASCII, b':0003007C00027F\r\nabc', [  # good crc, garble after
-            #     (17, b'\x03\x00\x7c\x00\x02'),
-            # ]),
-            # (FramerType.RTU, b'\x00\x83\x02\x91\x31', 0),  # part second framer
-            # (FramerType.ASCII, b':0003007C00017F\r\n:0003', [ # bad crc, part second framer
-            #     (17, b''),
-            # ]),
+            (FramerType.RTU, b'\x00\x83\x02\xf0\x91\x31', [ # dummy char in stream, bad crc
+                 (3, b''),
+            ]),
+            (FramerType.RTU, b'\x00\x83\x02\x91\x21\x00\x83\x02\x91\x31', [ # bad crc + good CRC
+                (10, b'\x83\x02'),
+            ]),
+            (FramerType.RTU, b'\x00\x83\x02\xf0\x91\x31\x00\x83\x02\x91\x31', [ # dummy char in stream, bad crc  + good CRC
+                 (11, b'\x83\x02'),
+            ]),
         ]
     )
-    async def test_decode_complicated(self, dummy_framer, data, exp):
+    async def test_decode_complicated(self, test_framer, data, exp):
         """Test encode method."""
         for ent in exp:
-            used_len, _, _, res_data = dummy_framer.handle.decode(data)
+            used_len, res_data = test_framer.decode(data)
             assert used_len == ent[0]
             assert res_data == ent[1]
+
+    @pytest.mark.parametrize(
+        ("entry", "data", "dev_id", "res_msg"),
+        [
+            (FramerType.ASCII, b'\x01\x05\x04\x00\x17', 1, b':010105040017DF\r\n'),
+            (FramerType.ASCII, b'\x03\x07\x06\x00\x73', 2, b':0203070600737D\r\n'),
+            (FramerType.ASCII,b'\x08\x00\x01', 3, b':03080001F7\r\n'),
+            (FramerType.ASCII,b'\x84\x01', 2, b':02840179\r\n'),
+            (FramerType.RTU, b'\x01\x01\x00', 2, b'\x02\x01\x01\x00\x51\xcc'),
+            (FramerType.RTU, b'\x03\x06\xAE\x41\x56\x52\x43\x40', 17, b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD'),
+            (FramerType.RTU, b'\x01\x03\x01\x00\x0a', 1, b'\x01\x01\x03\x01\x00\x0a\xed\x89'),
+            (FramerType.SOCKET, b'\x01\x05\x04\x00\x17', 31, b'\x00\x05\x00\x00\x00\x06\x07\x01\x05\x04\x00\x17'),
+            (FramerType.SOCKET, b'\x03\x07\x06\x00\x73', 32, b'\x00\x09\x00\x00\x00\x06\x02\x03\x07\x06\x00\x73'),
+            (FramerType.SOCKET, b'\x08\x00\x01', 33, b'\x00\x06\x00\x00\x00\x04\x03\x08\x00\x01'),
+            (FramerType.SOCKET, b'\x84\x01', 34, b'\x00\x08\x00\x00\x00\x03\x04\x84\x01'),
+            (FramerType.TLS, b'\x01\x05\x04\x00\x17', 0, b'\x01\x05\x04\x00\x17'),
+            (FramerType.TLS, b'\x03\x07\x06\x00\x73', 0, b'\x03\x07\x06\x00\x73'),
+            (FramerType.TLS, b'\x08\x00\x01', 0, b'\x08\x00\x01'),
+            (FramerType.TLS, b'\x84\x01', 0, b'\x84\x01'),
+         ],
+    )
+    def test_roundtrip(self, test_framer, data, dev_id, res_msg):
+        """Test encode."""
+        msg = test_framer.encode(data, dev_id, 0)
+        res_len, res_data = test_framer.decode(msg)
+        assert data == res_data
+        assert dev_id == test_framer.incoming_dev_id
+        assert res_len == len(res_msg)

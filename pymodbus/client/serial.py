@@ -39,7 +39,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
-    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param on_connect_callback: Function that will be called just before a connection attempt.
 
     .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect, from
@@ -102,10 +102,6 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             on_connect_callback,
         )
 
-    def close(self, reconnect: bool = False) -> None:
-        """Close connection."""
-        super().close(reconnect=reconnect)
-
 
 class ModbusSerialClient(ModbusBaseSyncClient):
     """**ModbusSerialClient**.
@@ -123,15 +119,15 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     :param stopbits: Number of stop bits 0-2.
     :param handle_local_echo: Discard local echo from dongle.
     :param name: Set communication name, used in logging
-    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
-    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
+    :param reconnect_delay: Not used in the sync client
+    :param reconnect_delay_max: Not used in the sync client
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
 
-    .. tip::
-        **reconnect_delay** doubles automatically with each unsuccessful connect, from
-        **reconnect_delay** to **reconnect_delay_max**.
-        Set `reconnect_delay=0` to avoid automatic reconnection.
+    Note that unlike the async client, the sync client does not perform
+    retries. If the connection has closed, the client will attempt to reconnect
+    once before executing each read/write request, and will raise a
+    ConnectionException if this fails.
 
     Example::
 
@@ -145,8 +141,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             client.close()
 
     Please refer to :ref:`Pymodbus internals` for advanced usage.
-
-    Remark: There are no automatic reconnect as with AsyncModbusSerialClient
     """
 
     state = ModbusTransactionState.IDLE
@@ -208,9 +202,9 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         self.silent_interval = round(self.silent_interval, 6)
 
     @property
-    def connected(self):
-        """Connect internal."""
-        return self.connect()
+    def connected(self) -> bool:
+        """Check if socket exists."""
+        return self.socket is not None
 
     def connect(self) -> bool:
         """Connect to the modbus serial server."""
@@ -245,7 +239,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Return waiting bytes."""
         return getattr(self.socket, "in_waiting") if hasattr(self.socket, "in_waiting") else getattr(self.socket, "inWaiting")()
 
-    def send(self, request: bytes) -> int:
+    def _send(self, request: bytes) -> int:
         """Send data on the underlying socket.
 
         If receive buffer still holds some data then flush it.
@@ -263,6 +257,51 @@ class ModbusSerialClient(ModbusBaseSyncClient):
                 size = 0
             return size
         return 0
+
+    def send(self, request: bytes) -> int:
+        """Send data on the underlying socket."""
+        start = time.time()
+        if hasattr(self,"ctx"):
+          timeout = start + self.ctx.comm_params.timeout_connect
+        else:
+            timeout = start + self.comm_params.timeout_connect
+        while self.state != ModbusTransactionState.IDLE:
+            if self.state == ModbusTransactionState.TRANSACTION_COMPLETE:
+                timestamp = round(time.time(), 6)
+                Log.debug(
+                    "Changing state to IDLE - Last Frame End - {} Current Time stamp - {}",
+                    self.last_frame_end,
+                    timestamp,
+                )
+                if self.last_frame_end:
+                    idle_time = self.idle_time()
+                    if round(timestamp - idle_time, 6) <= self.silent_interval:
+                        Log.debug(
+                            "Waiting for 3.5 char before next send - {} ms",
+                            self.silent_interval * 1000,
+                        )
+                        time.sleep(self.silent_interval)
+                else:
+                    # Recovering from last error ??
+                    time.sleep(self.silent_interval)
+                self.state = ModbusTransactionState.IDLE
+            elif self.state == ModbusTransactionState.RETRYING:
+                # Simple lets settle down!!!
+                # To check for higher baudrates
+                time.sleep(self.comm_params.timeout_connect)
+                break
+            elif time.time() > timeout:
+                Log.debug(
+                    "Spent more time than the read time out, "
+                    "resetting the transaction to IDLE"
+                )
+                self.state = ModbusTransactionState.IDLE
+            else:
+                Log.debug("Sleeping")
+                time.sleep(self.silent_interval)
+        size = self._send(request)
+        self.last_frame_end = round(time.time(), 6)
+        return size
 
     def _wait_for_data(self) -> int:
         """Wait for data."""
@@ -292,6 +331,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         if size > self._in_waiting():
             self._wait_for_data()
         result = self.socket.read(size)
+        self.last_frame_end = round(time.time(), 6)
         return result
 
     def is_socket_open(self) -> bool:

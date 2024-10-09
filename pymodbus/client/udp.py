@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import socket
+import time
 from collections.abc import Callable
 
 from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
@@ -31,7 +32,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
-    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param on_connect_callback: Function that will be called just before a connection attempt.
 
     .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect, from
@@ -84,11 +85,6 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         )
         self.source_address = source_address
 
-    @property
-    def connected(self):
-        """Return true if connected."""
-        return self.ctx.is_active()
-
 
 class ModbusUdpClient(ModbusBaseSyncClient):
     """**ModbusUdpClient**.
@@ -103,15 +99,16 @@ class ModbusUdpClient(ModbusBaseSyncClient):
     :param port: Port used for communication.
     :param name: Set communication name, used in logging
     :param source_address: source address of client,
-    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
-    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
+    :param reconnect_delay: Not used in the sync client
+    :param reconnect_delay_max: Not used in the sync client
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
 
     .. tip::
-        **reconnect_delay** doubles automatically with each unsuccessful connect, from
-        **reconnect_delay** to **reconnect_delay_max**.
-        Set `reconnect_delay=0` to avoid automatic reconnection.
+        Unlike the async client, the sync client does not perform
+        retries. If the connection has closed, the client will attempt to reconnect
+        once before executing each read/write request, and will raise a
+        ConnectionException if this fails.
 
     Example::
 
@@ -125,8 +122,6 @@ class ModbusUdpClient(ModbusBaseSyncClient):
             client.close()
 
     Please refer to :ref:`Pymodbus internals` for advanced usage.
-
-    Remark: There are no automatic reconnect as with AsyncModbusUdpClient
     """
 
     socket: socket.socket | None
@@ -208,7 +203,9 @@ class ModbusUdpClient(ModbusBaseSyncClient):
             raise ConnectionException(str(self))
         if size is None:
             size = 0
-        return self.socket.recvfrom(size)[0]
+        data = self.socket.recvfrom(size)[0]
+        self.last_frame_end = round(time.time(), 6)
+        return data
 
     def is_socket_open(self):
         """Check if socket is open.

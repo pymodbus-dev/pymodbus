@@ -215,7 +215,7 @@ class TestAsyncioServer:
         BasicClient.data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x19"
         await self.start_server()
         with mock.patch(
-            "pymodbus.transaction.ModbusSocketFramer.processIncomingPacket",
+            "pymodbus.framer.FramerSocket.processIncomingPacket",
             new_callable=mock.Mock,
         ) as process:
             await self.connect_server()
@@ -345,7 +345,7 @@ class TestAsyncioServer:
         BasicClient.done = asyncio.Future()
         await self.start_server(do_udp=True)
         with mock.patch(
-            "pymodbus.transaction.ModbusSocketFramer.processIncomingPacket",
+            "pymodbus.framer.FramerSocket.processIncomingPacket",
             new_callable=lambda: mock.Mock(side_effect=Exception),
         ):
             # get the random server port pylint: disable=protected-access
@@ -361,7 +361,7 @@ class TestAsyncioServer:
         BasicClient.data = b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
         await self.start_server()
         with mock.patch(
-            "pymodbus.transaction.ModbusSocketFramer.processIncomingPacket",
+            "pymodbus.framer.FramerSocket.processIncomingPacket",
             new_callable=lambda: mock.Mock(side_effect=Exception),
         ):
             await self.connect_server()

@@ -330,9 +330,6 @@ class BinaryPayloadDecoder:
         # Change Word order if little endian word order  #
         # Pack values back based on correct byte order   #
         # ---------------------------------------------- #
-        :param fstring:
-        :param handle: Value to be unpacked
-        :return:
         """
         if Endian.LITTLE in {self._byteorder, self._wordorder}:
             handle = array("H", handle)

@@ -30,7 +30,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
-    :param on_reconnect_callback: Function that will be called just before a reconnection attempt.
+    :param on_connect_callback: Function that will be called just before a connection attempt.
 
     .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect, from
@@ -50,8 +50,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
 
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
-
-    socket: socket.socket | None
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
@@ -85,10 +83,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             on_connect_callback,
         )
 
-    def close(self, reconnect: bool = False) -> None:
-        """Close connection."""
-        super().close(reconnect=reconnect)
-
 
 class ModbusTcpClient(ModbusBaseSyncClient):
     """**ModbusTcpClient**.
@@ -103,15 +97,16 @@ class ModbusTcpClient(ModbusBaseSyncClient):
     :param port: Port used for communication
     :param name: Set communication name, used in logging
     :param source_address: source address of client
-    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
-    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
+    :param reconnect_delay: Not used in the sync client
+    :param reconnect_delay_max: Not used in the sync client
     :param timeout: Timeout for a connection request, in seconds.
     :param retries: Max number of retries per request.
 
     .. tip::
-        **reconnect_delay** doubles automatically with each unsuccessful connect, from
-        **reconnect_delay** to **reconnect_delay_max**.
-        Set `reconnect_delay=0` to avoid automatic reconnection.
+        Unlike the async client, the sync client does not perform
+        retries. If the connection has closed, the client will attempt to reconnect
+        once before executing each read/write request, and will raise a
+        ConnectionException if this fails.
 
     Example::
 
@@ -125,8 +120,6 @@ class ModbusTcpClient(ModbusBaseSyncClient):
             client.close()
 
     Please refer to :ref:`Pymodbus internals` for advanced usage.
-
-    Remark: There are no automatic reconnect as with AsyncModbusTcpClient
     """
 
     socket: socket.socket | None
@@ -160,7 +153,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
 
     @property
     def connected(self) -> bool:
-        """Connect internal."""
+        """Check if socket exists."""
         return self.socket is not None
 
     def connect(self):
@@ -252,7 +245,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
             # size and the slave sends noisy data continuously.
             if time_ > end:
                 break
-
+        self.last_frame_end = round(time.time(), 6)
         return b"".join(data)
 
     def _handle_abrupt_socket_close(self, size: int | None, data: list[bytes], duration: float) -> bytes:

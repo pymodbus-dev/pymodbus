@@ -20,11 +20,6 @@ class ModbusPDU:
        This value is used to uniquely identify a request
        response pair.  It can be implemented as a simple counter
 
-    .. attribute:: protocol_id
-
-       This is a constant set at 0 to indicate Modbus.  It is
-       put here for ease of expansion.
-
     .. attribute:: slave_id
 
        This is used to route the request to the correct child. In
@@ -46,14 +41,13 @@ class ModbusPDU:
        of encoding it again.
     """
 
-    def __init__(self, slave, transaction, protocol, skip_encode):
+    def __init__(self, slave, transaction, skip_encode):
         """Initialize the base data for a modbus request.
 
         :param slave: Modbus slave slave ID
 
         """
         self.transaction_id = transaction
-        self.protocol_id = protocol
         self.slave_id = slave
         self.skip_encode = skip_encode
         self.check = 0x0000
@@ -95,12 +89,12 @@ class ModbusRequest(ModbusPDU):
 
     function_code = -1
 
-    def __init__(self, slave, transaction, protocol, skip_encode):
+    def __init__(self, slave, transaction, skip_encode):
         """Proxy to the lower level initializer.
 
         :param slave: Modbus slave slave ID
         """
-        super().__init__(slave, transaction, protocol, skip_encode)
+        super().__init__(slave, transaction, skip_encode)
         self.fut = None
 
     def doException(self, exception):
@@ -131,13 +125,13 @@ class ModbusResponse(ModbusPDU):
     should_respond = True
     function_code = 0x00
 
-    def __init__(self, slave, transaction, protocol, skip_encode):
+    def __init__(self, slave, transaction, skip_encode):
         """Proxy the lower level initializer.
 
         :param slave: Modbus slave slave ID
 
         """
-        super().__init__(slave, transaction, protocol, skip_encode)
+        super().__init__(slave, transaction, skip_encode)
         self.bits = []
         self.registers = []
         self.request = None
@@ -184,13 +178,13 @@ class ExceptionResponse(ModbusResponse):
     ExceptionOffset = 0x80
     _rtu_frame_size = 5
 
-    def __init__(self, function_code, exception_code=None, slave=1, transaction=0, protocol=0, skip_encode=False):
+    def __init__(self, function_code, exception_code=None, slave=1, transaction=0, skip_encode=False):
         """Initialize the modbus exception response.
 
         :param function_code: The function to build an exception response for
         :param exception_code: The specific modbus exception to return
         """
-        super().__init__(slave, transaction, protocol, skip_encode)
+        super().__init__(slave, transaction, skip_encode)
         self.original_code = function_code
         self.function_code = function_code | self.ExceptionOffset
         self.exception_code = exception_code
@@ -233,12 +227,12 @@ class IllegalFunctionRequest(ModbusRequest):
 
     ErrorCode = 1
 
-    def __init__(self, function_code, xslave, xtransaction, xprotocol, xskip_encode):
+    def __init__(self, function_code, slave, transaction, xskip_encode):
         """Initialize a IllegalFunctionRequest.
 
         :param function_code: The function we are erroring on
         """
-        super().__init__(xslave, xtransaction, xprotocol, xskip_encode)
+        super().__init__(slave, transaction, xskip_encode)
         self.function_code = function_code
 
     def decode(self, _data):

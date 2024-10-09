@@ -55,9 +55,9 @@ Pymodbus offers clients with transport different protocols and different framers
      - ASCII
      - RTU
      - RTU_OVER_TCP
-     - Socket
+     - SOCKET
      - TLS
-   * - Serial (RS-485)
+   * - SERIAL (RS-485)
      - Yes
      - Yes
      - No
@@ -118,19 +118,32 @@ that a device have received the packet.
 Client usage
 ------------
 Using pymodbus client to set/get information from a device (server)
-is done in a few simple steps, like the following synchronous example::
+is done in a few simple steps.
+
+Synchronous example
+^^^^^^^^^^^^^^^^^^^
+
+::
 
     from pymodbus.client import ModbusTcpClient
 
     client = ModbusTcpClient('MyDevice.lan')   # Create client object
-    client.connect()                           # connect to device, reconnect automatically
+    client.connect()                           # connect to device
     client.write_coil(1, True, slave=1)        # set information in device
     result = client.read_coils(2, 3, slave=1)  # get information from device
     print(result.bits[0])                      # use information
     client.close()                             # Disconnect device
 
+The line :mod:`client.connect()` connects to the device (or comm port). If this cannot connect successfully within
+the timeout it throws an exception. After this initial connection, further
+calls to the same client (here, :mod:`client.write_coil(...)` and
+:mod:`client.read_coils(...)` ) will check whether the client is still
+connected, and automatically reconnect if not.
 
-and a asynchronous example::
+Asynchronous example
+^^^^^^^^^^^^^^^^^^^^
+
+::
 
     from pymodbus.client import AsyncModbusTcpClient
 
@@ -141,7 +154,7 @@ and a asynchronous example::
     print(result.bits[0])                            # use information
     client.close()                                   # Disconnect device
 
-The line :mod:`client = AsyncModbusTcpClient('MyDevice.lan')` only creates the object it does not activate
+The line :mod:`client = AsyncModbusTcpClient('MyDevice.lan')` only creates the object; it does not activate
 anything.
 
 The line :mod:`await client.connect()` connects to the device (or comm port), if this cannot connect successfully within
@@ -152,6 +165,9 @@ The line :mod:`await client.write_coil(1, True, slave=1)` is an example of a wri
 The line :mod:`result = await client.read_coils(2, 3, slave=1)` is an example of a read request, get the value of address 2, 3 and 4 (count = 3) from device 1 (slave).
 
 The last line :mod:`client.close()` closes the connection and render the object inactive.
+
+Development notes
+^^^^^^^^^^^^^^^^^
 
 Large parts of the implementation are shared between the different classes,
 to ensure high stability and efficient maintenance.
@@ -231,6 +247,20 @@ There are a client class for each type of communication and for asynchronous/syn
    * - **UDP**
      - :mod:`AsyncModbusUdpClient`
      - :mod:`ModbusUdpClient`
+
+Client common
+^^^^^^^^^^^^^
+Some methods are common to all client:
+
+.. autoclass:: pymodbus.client.base.ModbusBaseClient
+    :members:
+    :member-order: bysource
+    :show-inheritance:
+
+.. autoclass:: pymodbus.client.base.ModbusBaseSyncClient
+    :members:
+    :member-order: bysource
+    :show-inheritance:
 
 Client serial
 ^^^^^^^^^^^^^

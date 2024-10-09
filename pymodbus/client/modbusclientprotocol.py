@@ -2,10 +2,13 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import cast
 
 from pymodbus.factory import ClientDecoder
-from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType, ModbusFramer
+from pymodbus.framer import (
+    FRAMER_NAME_TO_CLASS,
+    FramerBase,
+    FramerType,
+)
 from pymodbus.logging import Log
 from pymodbus.transaction import ModbusTransactionManager
 from pymodbus.transport import CommParams, ModbusProtocol
@@ -32,9 +35,7 @@ class ModbusClientProtocol(ModbusProtocol):
         self.on_connect_callback = on_connect_callback
 
         # Common variables.
-        self.framer = FRAMER_NAME_TO_CLASS.get(
-            framer, cast(type[ModbusFramer], framer)
-        )(ClientDecoder(), self)
+        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(ClientDecoder(), [])
         self.transaction = ModbusTransactionManager()
 
     def _handle_response(self, reply):
@@ -55,7 +56,6 @@ class ModbusClientProtocol(ModbusProtocol):
         """Call when connection is succcesfull."""
         if self.on_connect_callback:
             self.loop.call_soon(self.on_connect_callback, True)
-        self.framer.resetFrame()
 
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""
@@ -68,7 +68,7 @@ class ModbusClientProtocol(ModbusProtocol):
 
         returns number of bytes consumed
         """
-        self.framer.processIncomingPacket(data, self._handle_response, 0)
+        self.framer.processIncomingPacket(data, self._handle_response)
         return len(data)
 
     def __str__(self):

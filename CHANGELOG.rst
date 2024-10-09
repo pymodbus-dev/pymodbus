@@ -7,6 +7,44 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.7.3
+-------------
+* 100% test coverage of framers (#2359)
+* Framer, final touches. (#2360)
+* Readme file renamed (#2357)
+* Remove old framers (#2358)
+* frameProcessIncomingPacket removed (#2355)
+* Cleanup framers (reduce old_framers) (#2342)
+* Run CI on PR targeted at wait_next_api.
+* Sync client, allow unknown recv msg size. (#2353)
+* integrate old rtu framer in new framer (#2344)
+* Update README.rst (#2351)
+* Client.close should not allow reconnect= (#2347)
+* Remove async client.idle_time(). (#2349)
+* Client doc, add common methods (base). (#2348)
+* Reset receive buffer with send(). (#2343)
+* Remove unused protocol_id from pdu (#2340)
+* CI run on demand on non-protected branches. (#2339)
+* Server listener and client connections have is_server set. (#2338)
+* Reopen listener in server if disconnected. (#2337)
+* Regroup test. (#2335)
+* Improve docs around sync clients and reconnection (#2321)
+* transport 100% test coverage (again) (#2333)
+* Update actions to new node.js. (#2332)
+* Bump 3rd party (#2331)
+* Documentation on_connect_callback (#2324)
+* Fixes the unexpected implementation of the ModbusSerialClient.connected property (#2327)
+* Forward error responses instead of timing out. (#2329)
+* Add `stacklevel=2` to logging functions (#2330)
+* Fix encoding & decoding of ReadFileRecordResponse (#2319)
+* Improvements for example/contib/solar (#2318)
+* Update solar.py (#2316)
+* Remove double conversion in int (#2315)
+* Complete pull request #2310 (#2312)
+* fixed type hints for write_register and write_registers (#2309)
+* Remove _header from framers. (#2305)
+
+
 Version 3.7.2
 -------------
 * Correct README

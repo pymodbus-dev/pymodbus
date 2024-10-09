@@ -2,6 +2,7 @@
 import asyncio
 import contextlib
 import os
+import sys
 from functools import partial
 from unittest import mock
 
@@ -81,7 +82,7 @@ class TestTransportSerial:
 
     async def test_force_poll(self):
         """Test external methods."""
-        if SerialTransport.force_poll:
+        if SerialTransport.force_poll:  # pragma: no cover
             return
         SerialTransport.force_poll = True
         transport, protocol = await create_serial_connection(
@@ -93,10 +94,9 @@ class TestTransportSerial:
         transport.close()
         SerialTransport.force_poll = False
 
-
     async def test_write_force_poll(self):
         """Test write with poll."""
-        if SerialTransport.force_poll:
+        if SerialTransport.force_poll:  # pragma: no cover
             return
         SerialTransport.force_poll = True
         transport, protocol = await create_serial_connection(
@@ -195,3 +195,10 @@ class TestTransportSerial:
         comm.sync_serial.read.return_value = b'abcd'
         comm.intern_read_ready()
         comm.intern_protocol.data_received.assert_called_once()
+
+    async def test_import_pyserial(self):
+        """Test pyserial not installed."""
+        with mock.patch.dict(sys.modules, {'no_modules': None}) as mock_modules:
+            del mock_modules['serial']
+            with pytest.raises(RuntimeError):
+                SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy", None, None, None, None, None)

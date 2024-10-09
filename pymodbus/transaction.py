@@ -4,10 +4,6 @@ from __future__ import annotations
 
 __all__ = [
     "ModbusTransactionManager",
-    "ModbusSocketFramer",
-    "ModbusTlsFramer",
-    "ModbusRtuFramer",
-    "ModbusAsciiFramer",
     "SyncModbusTransactionManager",
 ]
 
@@ -22,10 +18,10 @@ from pymodbus.exceptions import (
     ModbusIOException,
 )
 from pymodbus.framer import (
-    ModbusAsciiFramer,
-    ModbusRtuFramer,
-    ModbusSocketFramer,
-    ModbusTlsFramer,
+    FramerAscii,
+    FramerRTU,
+    FramerSocket,
+    FramerTLS,
 )
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest
@@ -146,13 +142,13 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
     def _set_adu_size(self):
         """Set adu size."""
         # base ADU size of modbus frame in bytes
-        if isinstance(self.client.framer, ModbusSocketFramer):
+        if isinstance(self.client.framer, FramerSocket):
             self.base_adu_size = 7  # tid(2), pid(2), length(2), uid(1)
-        elif isinstance(self.client.framer, ModbusRtuFramer):
+        elif isinstance(self.client.framer, FramerRTU):
             self.base_adu_size = 3  # address(1), CRC(2)
-        elif isinstance(self.client.framer, ModbusAsciiFramer):
+        elif isinstance(self.client.framer, FramerAscii):
             self.base_adu_size = 7  # start(1)+ Address(2), LRC(2) + end(2)
-        elif isinstance(self.client.framer, ModbusTlsFramer):
+        elif isinstance(self.client.framer, FramerTLS):
             self.base_adu_size = 0  # no header and footer
         else:
             self.base_adu_size = -1
@@ -165,37 +161,18 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
 
     def _calculate_exception_length(self):
         """Return the length of the Modbus Exception Response according to the type of Framer."""
-        if isinstance(self.client.framer, (ModbusSocketFramer, ModbusTlsFramer)):
+        if isinstance(self.client.framer, (FramerSocket, FramerTLS)):
             return self.base_adu_size + 2  # Fcode(1), ExceptionCode(1)
-        if isinstance(self.client.framer, ModbusAsciiFramer):
+        if isinstance(self.client.framer, FramerAscii):
             return self.base_adu_size + 4  # Fcode(2), ExceptionCode(2)
-        if isinstance(self.client.framer, ModbusRtuFramer):
+        if isinstance(self.client.framer, FramerRTU):
             return self.base_adu_size + 2  # Fcode(1), ExceptionCode(1)
         return None
 
-    def _validate_response(self, request: ModbusRequest, response, exp_resp_len, is_udp=False):
-        """Validate Incoming response against request.
-
-        :param request: Request sent
-        :param response: Response received
-        :param exp_resp_len: Expected response length
-        :return: New transactions state
-        """
+    def _validate_response(self, response):
+        """Validate Incoming response against request."""
         if not response:
             return False
-
-        if hasattr(self.client.framer, "decode_data"):
-            mbap = self.client.framer.decode_data(response)
-        else:
-            mbap = {}
-        if (
-            mbap.get("slave") != request.slave_id
-            or mbap.get("fcode") & 0x7F != request.function_code
-        ):
-            return False
-
-        if "length" in mbap and exp_resp_len and not is_udp:
-            return mbap.get("length") == exp_resp_len
         return True
 
     def execute(self, request: ModbusRequest):  # noqa: C901
@@ -210,16 +187,16 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 request.transaction_id = self.getNextTID()
                 Log.debug("Running transaction {}", request.transaction_id)
                 if _buffer := hexlify_packets(
-                    self.client.framer._buffer  # pylint: disable=protected-access
+                    self.client.framer.databuffer
                 ):
                     Log.debug("Clearing current Frame: - {}", _buffer)
-                    self.client.framer.resetFrame()
+                    self.client.framer.databuffer = b''
                 broadcast = not request.slave_id
                 expected_response_length = None
-                if not isinstance(self.client.framer, ModbusSocketFramer):
+                if not isinstance(self.client.framer, FramerSocket):
                     if hasattr(request, "get_response_pdu_size"):
                         response_pdu_size = request.get_response_pdu_size()
-                        if isinstance(self.client.framer, ModbusAsciiFramer):
+                        if isinstance(self.client.framer, FramerAscii):
                             response_pdu_size *= 2
                         if response_pdu_size:
                             expected_response_length = (
@@ -231,9 +208,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     full = True
                 else:
                     full = False
-                is_udp = False
                 if self.client.comm_params.comm_type == CommType.UDP:
-                    is_udp = True
                     full = True
                     if not expected_response_length:
                         expected_response_length = 1024
@@ -244,11 +219,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     broadcast=broadcast,
                 )
                 while retries > 0:
-                    valid_response = self._validate_response(
-                        request, response, expected_response_length,
-                        is_udp=is_udp
-                    )
-                    if valid_response:
+                    if self._validate_response(response):
                         if (
                             request.slave_id in self._no_response_devices
                             and response
@@ -264,7 +235,6 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 self.client.framer.processIncomingPacket(
                     response,
                     self.addTransaction,
-                    request.slave_id,
                     tid=request.transaction_id,
                 )
                 if not (response := self.getTransaction(request.transaction_id)):
@@ -288,7 +258,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
                 return response
             except ModbusIOException as exc:
-                # Handle decode errors in processIncomingPacket method
+                # Handle decode errors method
                 Log.error("Modbus IO exception {}", exc)
                 self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
                 self.client.close()
@@ -364,49 +334,45 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
 
     def _send(self, packet: bytes, _retrying=False):
         """Send."""
-        return self.client.framer.sendPacket(packet)
+        return self.client.send(packet)
 
     def _recv(self, expected_response_length, full) -> bytes:  # noqa: C901
         """Receive."""
         total = None
         if not full:
             exception_length = self._calculate_exception_length()
-            if isinstance(self.client.framer, ModbusSocketFramer):
+            if isinstance(self.client.framer, FramerSocket):
                 min_size = 8
-            elif isinstance(self.client.framer, ModbusRtuFramer):
+            elif isinstance(self.client.framer, FramerRTU):
                 min_size = 4
-            elif isinstance(self.client.framer, ModbusAsciiFramer):
+            elif isinstance(self.client.framer, FramerAscii):
                 min_size = 5
             else:
                 min_size = expected_response_length
 
-            read_min = self.client.framer.recvPacket(min_size)
-            if len(read_min) != min_size:
+            read_min = self.client.recv(min_size)
+            if min_size and len(read_min) != min_size:
                 msg_start = "Incomplete message" if read_min else "No response"
                 raise InvalidMessageReceivedException(
                     f"{msg_start} received, expected at least {min_size} bytes "
                     f"({len(read_min)} received)"
                 )
             if read_min:
-                if isinstance(self.client.framer, ModbusSocketFramer):
+                if isinstance(self.client.framer, FramerSocket):
                     func_code = int(read_min[-1])
-                elif isinstance(self.client.framer, ModbusRtuFramer):
+                elif isinstance(self.client.framer, FramerRTU):
                     func_code = int(read_min[1])
-                elif isinstance(self.client.framer, ModbusAsciiFramer):
+                elif isinstance(self.client.framer, FramerAscii):
                     func_code = int(read_min[3:5], 16)
                 else:
                     func_code = -1
 
                 if func_code < 0x80:  # Not an error
-                    if isinstance(self.client.framer, ModbusSocketFramer):
-                        # Omit UID, which is included in header size
-                        h_size = (
-                            self.client.framer._hsize  # pylint: disable=protected-access
-                        )
+                    if isinstance(self.client.framer, FramerSocket):
                         length = struct.unpack(">H", read_min[4:6])[0] - 1
-                        expected_response_length = h_size + length
+                        expected_response_length = 7 + length
                     elif expected_response_length is None and isinstance(
-                        self.client.framer, ModbusRtuFramer
+                        self.client.framer, FramerRTU
                     ):
                         with suppress(
                             IndexError  # response length indeterminate with available bytes
@@ -427,7 +393,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
         else:
             read_min = b""
             total = expected_response_length
-        result = self.client.framer.recvPacket(expected_response_length)
+        result = self.client.recv(expected_response_length)
         result = read_min + result
         actual = len(result)
         if total is not None and actual != total:

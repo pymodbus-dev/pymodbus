@@ -11,7 +11,7 @@ from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.factory import ServerDecoder
-from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType, ModbusFramer
+from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
@@ -43,12 +43,12 @@ class ModbusServerRequestHandler(ModbusProtocol):
             host=owner.comm_params.source_address[0],
             port=owner.comm_params.source_address[1],
         )
-        super().__init__(params, False)
+        super().__init__(params, True)
         self.server = owner
         self.running = False
         self.receive_queue: asyncio.Queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
-        self.framer: ModbusFramer
+        self.framer: FramerBase
         self.loop = asyncio.get_running_loop()
 
     def _log_exception(self):
@@ -64,11 +64,17 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
+        slaves = self.server.context.slaves()
+        if self.server.broadcast_enable:
+            if 0 not in slaves:
+                slaves.append(0)
+        if 0 in slaves:
+            slaves = []
         try:
             self.running = True
             self.framer = self.server.framer(
                 self.server.decoder,
-                client=None,
+                slaves,
             )
 
             # schedule the connection handler on the event loop
@@ -106,7 +112,6 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
     async def inner_handle(self):
         """Handle handler."""
-        slaves = self.server.context.slaves()
         # this is an asyncio.Queue await, it will never fail
         data = await self._recv_()
         if isinstance(data, tuple):
@@ -117,18 +122,10 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
         # if broadcast is enabled make sure to
         # process requests to address 0
-        if self.server.broadcast_enable:
-            if 0 not in slaves:
-                slaves.append(0)
-
         Log.debug("Handling data: {}", data, ":hex")
-
-        single = self.server.context.single
         self.framer.processIncomingPacket(
             data=data,
             callback=lambda x: self.execute(x, *addr),
-            slave=slaves,
-            single=single,
         )
 
     async def handle(self) -> None:
@@ -274,7 +271,7 @@ class ModbusBaseServer(ModbusProtocol):
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-        self.framer = FRAMER_NAME_TO_CLASS.get(framer, framer)
+        self.framer = FRAMER_NAME_TO_CLASS[framer]
         self.serving: asyncio.Future = asyncio.Future()
 
     def callback_new_connection(self):
@@ -508,7 +505,7 @@ class ModbusSerialServer(ModbusBaseServer):
         If the identity structure is not passed in, the ModbusControlBlock
         uses its own empty structure.
         :param context: The ModbusServerContext datastore
-        :param framer: The framer strategy to use, default ModbusRtuFramer
+        :param framer: The framer strategy to use, default FramerType.RTU
         :param identity: An optional identify structure
         :param port: The serial port to attach to
         :param stopbits: The number of stop bits to use

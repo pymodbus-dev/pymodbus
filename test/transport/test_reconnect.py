@@ -4,6 +4,8 @@ from unittest import mock
 
 import pytest
 
+from pymodbus.transport import NULLMODEM_HOST, CommType
+
 
 class TestTransportReconnect:
     """Test transport module, base part."""
@@ -70,3 +72,32 @@ class TestTransportReconnect:
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay
         assert not client.reconnect_task
         client.close()
+
+    @pytest.mark.parametrize(
+        ("use_comm_type", "use_host"),
+        [
+            (CommType.TCP, "localhost"),
+            (CommType.TLS, "localhost"),
+            (CommType.UDP, "localhost"),
+            (CommType.SERIAL, NULLMODEM_HOST),
+        ],
+    )
+    async def test_listen_disconnect(self, server):
+        """Test listen()."""
+        assert await server.listen()
+        assert server.transport
+        server.connection_lost(None)
+        assert not server.transport
+        await asyncio.sleep(1.5)
+        assert server.transport
+        server.close()
+        assert not server.transport
+
+    async def test_relisten_call(self, server):
+        """Test connection_lost()."""
+        server.loop = asyncio.get_running_loop()
+        await server.listen()
+        server.connection_lost(RuntimeError("Listener disconnected lost"))
+        assert server.reconnect_task
+        server.close()
+

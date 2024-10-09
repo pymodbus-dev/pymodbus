@@ -14,11 +14,11 @@ from pymodbus.client import (
     ModbusUdpClient,
 )
 from pymodbus.exceptions import ConnectionException
-from pymodbus.transaction import (
-    ModbusAsciiFramer,
-    ModbusRtuFramer,
-    ModbusSocketFramer,
-    ModbusTlsFramer,
+from pymodbus.framer import (
+    FramerAscii,
+    FramerRTU,
+    FramerSocket,
+    FramerTLS,
 )
 from test.conftest import mockSocket
 
@@ -217,7 +217,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         # default SSLContext
         client = ModbusTlsClient("127.0.0.1")
         assert client
-        assert isinstance(client.framer, ModbusTlsFramer)
+        assert isinstance(client.framer, FramerTLS)
         assert client.comm_params.sslctx
 
     @mock.patch("pymodbus.client.tcp.select")
@@ -307,15 +307,15 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         assert client
         assert isinstance(
             ModbusSerialClient("/dev/null", framer=FramerType.ASCII).framer,
-            ModbusAsciiFramer,
+            FramerAscii,
         )
         assert isinstance(
             ModbusSerialClient("/dev/null", framer=FramerType.RTU).framer,
-            ModbusRtuFramer,
+            FramerRTU,
         )
         assert isinstance(
             ModbusSerialClient("/dev/null", framer=FramerType.SOCKET).framer,
-            ModbusSocketFramer,
+            FramerSocket,
         )
 
     def test_sync_serial_rtu_client_timeouts(self):

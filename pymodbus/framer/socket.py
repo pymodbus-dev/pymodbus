@@ -8,11 +8,12 @@ from pymodbus.logging import Log
 class FramerSocket(FramerBase):
     """Modbus Socket frame type.
 
-    [         MBAP Header         ] [ Function Code] [ Data ]
-    [ tid ][ pid ][ length ][ uid ]
-      2b     2b     2b        1b           1b           Nb
+    Layout::
+        [         MBAP Header         ] [ Function Code] [ Data ]
+        [ tid ][ pid ][ length ][ uid ]
+          2b     2b     2b        1b           1b           Nb
 
-    * length = uid + function code + data
+    length = uid + function code + data  
     """
 
     MIN_SIZE = 8

@@ -15,6 +15,7 @@ from pymodbus.logging import Log
 class FramerAscii(FramerBase):
     r"""Modbus ASCII Frame Controller.
 
+    Layout::
         [ Start ][ Dev id ][ Function ][ Data ][ LRC ][ End ]
           1c       2c        2c          N*2c    1c     2c
 

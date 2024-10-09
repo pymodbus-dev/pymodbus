@@ -21,7 +21,8 @@ The following bullet points are what the maintainers focus on:
     - 100% test coverage fixed for all new parts (currently transport and framer)
 - 3.7.5, bug fix release, hopefully with:
     - Updated PDU, moving client/server decoder into pud.
-- 3.7.6, bug fix release, with ???
+- 3.7.6, bug fix release, with:
+    - ???
 - 3.8.0, with:
     - new transaction handling
 - 4.0.0, with:
@@ -35,4 +36,5 @@ All contributions are WELCOME, and we (the maintainers) are always open to talk 
 best way is via `discussions <https://github.com/pymodbus-dev/pymodbus/discussions>`_ on github.
 
 We have lately decided, that we do strictly follow the `modbus org <https://modbus.org>`_ standard,
-but we also accept vendor specific (like Huawei) pull requests, as long as they extend the standard.
+but we also accept vendor specific (like Huawei) pull requests, as long as they extend the standard or are actitvated with
+a specific argument like --huawei.

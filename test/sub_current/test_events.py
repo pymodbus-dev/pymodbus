@@ -4,23 +4,14 @@ import pytest
 from pymodbus.events import (
     CommunicationRestartEvent,
     EnteredListenModeEvent,
-    ModbusEvent,
     RemoteReceiveEvent,
     RemoteSendEvent,
 )
-from pymodbus.exceptions import NotImplementedException, ParameterException
+from pymodbus.exceptions import ParameterException
 
 
 class TestEvents:
     """Unittest for the pymodbus.device module."""
-
-    def test_modbus_event_base_class(self):
-        """Test modbus event base class."""
-        event = ModbusEvent()
-        with pytest.raises(NotImplementedException):
-            event.encode()
-        with pytest.raises(NotImplementedException):
-            event.decode(None)
 
     def test_remote_receive_event(self):
         """Test remove receive event."""

@@ -10,7 +10,7 @@ The maintainers are very open to these pull request, and ONLY work to secure tha
 - it is a generic feature (e.g. not just for serial 9.600 bps)
 - it have proper test cases, to ensure against side effects.
 
-It is important to note the maintainer do NOT reject ANY pull request that emcompases the above criterias.
+It is important to note the maintainer do NOT reject ANY pull request that emcompases the above criteria.
 It is the community that decides how pymodbus evolves NOT the maintainers !
 
 The following bullet points are what the maintainers focus on:

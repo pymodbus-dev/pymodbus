@@ -14,7 +14,7 @@ class FramerRTU(FramerBase):
           3.5 chars     1b         1b               Nb      2b
 
     .. note::
-    
+
             due to the USB converter and the OS drivers, timing cannot be quaranteed
             neither when receiving nor when sending.
 
@@ -26,7 +26,7 @@ class FramerRTU(FramerBase):
        - a request causes 1 response !
        - Multiple requests are NOT allowed (master-slave protocol)
        - the server will not retransmit responses
-    
+
     this means decoding is always exactly 1 frame (response)
 
     For server (Single device)

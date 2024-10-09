@@ -14,7 +14,7 @@ class FramerSocket(FramerBase):
         [ tid ][ pid ][ length ][ uid ]
           2b     2b     2b        1b           1b           Nb
 
-    length = uid + function code + data  
+    length = uid + function code + data
     """
 
     MIN_SIZE = 8

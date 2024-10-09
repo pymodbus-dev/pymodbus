@@ -26,6 +26,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: System :: Networking",
     "Topic :: Utilities",
 ]
@@ -51,7 +52,7 @@ repl = [
 
 simulator = [
     "aiohttp>=3.8.6;python_version<'3.12'",
-    "aiohttp>=3.10.5;python_version=='3.12'"
+    "aiohttp>=3.10.5;python_version>='3.12'"
 ]
 documentation = [
     "recommonmark>=0.7.1",

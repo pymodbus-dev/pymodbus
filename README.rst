@@ -57,7 +57,7 @@ Common features
 * very lightweight project
 * requires Python >= 3.9
 * thorough test suite, that test all corners of the library
-* automatically tested on Windows, Linux and MacOS combined with python 3.9 - 3.12
+* automatically tested on Windows, Linux and MacOS combined with python 3.9 - 3.13
 * strongly typed API (py.typed present)
 
 The modbus protocol specification: Modbus_Application_Protocol_V1_1b3.pdf can be found on

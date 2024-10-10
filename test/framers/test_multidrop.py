@@ -28,8 +28,7 @@ class TestMultidrop:
         framer.processIncomingPacket(serial_event, callback)
         callback.assert_called_once()
 
-    @pytest.mark.skip
-    def test_ok_2frame(self, framer, callback):  # pragma: no cover
+    def test_ok_2frame(self, framer, callback):
         """Test ok frame."""
         serial_event = self.good_frame + self.good_frame
         framer.processIncomingPacket(serial_event, callback)
@@ -66,8 +65,7 @@ class TestMultidrop:
             framer.processIncomingPacket(serial_event, callback)
         callback.assert_not_called()
 
-    @pytest.mark.skip
-    def test_split_frame(self, framer, callback):  # pragma: no cover
+    def test_split_frame(self, framer, callback):
         """Test split frame."""
         serial_events = [self.good_frame[:5], self.good_frame[5:]]
         for serial_event in serial_events:
@@ -89,9 +87,9 @@ class TestMultidrop:
         callback.assert_called_once()
 
     @pytest.mark.skip
-    def test_split_frame_trailing_data_with_id(self, framer, callback):  # pragma: no cover
+    def test_split_frame_trailing_data_with_id(self, framer, callback):
         """Test split frame."""
-        garbage = b"\x05\x04\x03\x02\x01\x00"
+        garbage = b"ABCDEF"
         serial_events = [garbage + self.good_frame[:5], self.good_frame[5:]]
         for serial_event in serial_events:
             framer.processIncomingPacket(serial_event, callback)

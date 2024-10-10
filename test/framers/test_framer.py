@@ -309,18 +309,24 @@ class TestFramerType:
                  (12, b"\x03\x00\x7c\x00\x02"),
                  (12, b"\x03\x00\x7c\x00\x02"),
             ]),
-            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x02\xff\x83\x02', [(9, b'\x83\x02')],),  # Exception
+            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x02\xff\x83\x02', [  # Exception
+                 (9, b'\x83\x02'),
+            ]),
             (FramerType.RTU, b'\x00\x83\x02\x91\x21', [ # bad crc
-                 (2, b''),
+                 (5, b''),
+                 (0, b''),
             ]),
             (FramerType.RTU, b'\x00\x83\x02\xf0\x91\x31', [ # dummy char in stream, bad crc
-                 (3, b''),
+                 (6, b''),
+                 (0, b''),
             ]),
             (FramerType.RTU, b'\x00\x83\x02\x91\x21\x00\x83\x02\x91\x31', [ # bad crc + good CRC
-                (10, b'\x83\x02'),
+                (2, b''),
+                (8, b'\x83\x02'),
             ]),
             (FramerType.RTU, b'\x00\x83\x02\xf0\x91\x31\x00\x83\x02\x91\x31', [ # dummy char in stream, bad crc  + good CRC
-                 (11, b'\x83\x02'),
+                 (2, b''),
+                 (9, b'\x83\x02'),
             ]),
         ]
     )
@@ -328,6 +334,7 @@ class TestFramerType:
         """Test encode method."""
         for ent in exp:
             used_len, res_data = test_framer.decode(data)
+            data = data[used_len:]
             assert used_len == ent[0]
             assert res_data == ent[1]
 

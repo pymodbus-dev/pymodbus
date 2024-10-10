@@ -10,7 +10,6 @@ __all__ = [
     "pack_bitstring",
     "unpack_bitstring",
     "default",
-    "rtuFrameSize",
 ]
 
 # pylint: disable=missing-type-doc

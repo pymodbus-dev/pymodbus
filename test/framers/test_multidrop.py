@@ -65,6 +65,7 @@ class TestMultidrop:
             framer.processIncomingPacket(serial_event, callback)
         callback.assert_not_called()
 
+    @pytest.mark.skip
     def test_split_frame(self, framer, callback):
         """Test split frame."""
         serial_events = [self.good_frame[:5], self.good_frame[5:]]

@@ -97,7 +97,15 @@ class FramerRTU(FramerBase):
     crc16_table: list[int] = [0]
 
 
-    def specific_decode(self, data: bytes, data_len: int) -> tuple[int, bytes]:
+    def hunt_second_frame(self, data: bytes, data_len: int) -> tuple[int, bytes]:
+        """Hunt for second frame."""
+        for used_len in range(data_len):
+            res_len, res_data = self.specific_decode(data[used_len:], data_len - used_len, no_recur=True)
+            if res_data:
+                return used_len, res_data
+        return data_len, self.EMPTY
+
+    def specific_decode(self, data: bytes, data_len: int, no_recur: bool = False) -> tuple[int, bytes]:
         """Decode ADU."""
         for used_len in range(data_len):
             if data_len - used_len < self.MIN_SIZE:
@@ -112,9 +120,10 @@ class FramerRTU(FramerBase):
                 size = data_len +1
             if data_len < used_len +size:
                 Log.debug("Frame - not ready")
-                if used_len:
-                    continue
-                return used_len, self.EMPTY
+                if no_recur:
+                    return used_len, self.EMPTY
+                res_len, res_data = self.hunt_second_frame(data[used_len:], data_len - used_len)
+                return used_len + res_len, self.EMPTY
             start_crc = used_len + size -2
             crc = data[start_crc : start_crc + 2]
             crc_val = (int(crc[0]) << 8) + int(crc[1])

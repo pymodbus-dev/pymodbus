@@ -3,8 +3,9 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.framer import FramerRTU
+from pymodbus.framer import FramerRTU, FramerAscii
 from pymodbus.server.async_io import ServerDecoder
+from pymodbus.exceptions import ModbusIOException
 
 
 class TestMultidrop:
@@ -100,7 +101,7 @@ class TestMultidrop:
             b"\x02\x10\x07",
             b"\x02\x10\x07\x10",
         ])
-    def test_coincidental_1(self, garbage, framer, callback):
+    def test_coincidental(self, garbage, framer, callback):
         """Test conincidental."""
         serial_events = [garbage, self.good_frame[:5], self.good_frame[5:]]
         for serial_event in serial_events:
@@ -127,6 +128,31 @@ class TestMultidrop:
 
         # We should not respond in this case for identical reasons as test_wrapped_frame
         callback.assert_called_once()
+
+    def test_wrong_dev_id(self, callback):
+        """Test conincidental."""
+        framer = FramerAscii(ServerDecoder(), [87])
+        framer.processIncomingPacket(b':0003007C00027F\r\n', callback)
+        callback.assert_not_called()
+
+    def test_wrong_tid(self, callback):
+        """Test conincidental."""
+        framer = FramerAscii(ServerDecoder(), [])
+        framer.processIncomingPacket(b':1103007C00026E\r\n', callback, tid=117)
+        callback.assert_not_called()
+
+    def test_wrong_class(self, callback):
+        """Test conincidental."""
+
+        def return_none(_data):
+            """Return none."""
+            return None
+        
+        framer = FramerAscii(ServerDecoder(), [])
+        framer.decoder.decode = return_none
+        with pytest.raises(ModbusIOException):
+            framer.processIncomingPacket(b':1103007C00026E\r\n', callback)
+        callback.assert_not_called()
 
     @pytest.mark.skip
     def test_getFrameStart(self, framer):  # pragma: no cover

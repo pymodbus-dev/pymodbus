@@ -10,7 +10,6 @@ __all__ = [
     "pack_bitstring",
     "unpack_bitstring",
     "default",
-    "rtuFrameSize",
 ]
 
 # pylint: disable=missing-type-doc
@@ -148,29 +147,6 @@ def unpack_bitstring(data: bytes) -> list[bool]:
 # --------------------------------------------------------------------------- #
 # Error Detection Functions
 # --------------------------------------------------------------------------- #
-
-
-def rtuFrameSize(data, byte_count_pos):  # pylint: disable=invalid-name
-    """Calculate the size of the frame based on the byte count.
-
-    :param data: The buffer containing the frame.
-    :param byte_count_pos: The index of the byte count in the buffer.
-    :returns: The size of the frame.
-
-    The structure of frames with a byte count field is always the
-    same:
-
-    - first, there are some header fields
-    - then the byte count field
-    - then as many data bytes as indicated by the byte count,
-    - finally the CRC (two bytes).
-
-    To calculate the frame size, it is therefore sufficient to extract
-    the contents of the byte count field, add the position of this
-    field, and finally increment the sum by three (one byte for the
-    byte count field, two for the CRC).
-    """
-    return int(data[byte_count_pos]) + byte_count_pos + 3
 
 
 def hexlify_packets(packet):

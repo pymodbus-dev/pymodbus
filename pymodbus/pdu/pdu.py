@@ -6,7 +6,6 @@ import struct
 
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.logging import Log
-from pymodbus.utilities import rtuFrameSize
 
 
 # --------------------------------------------------------------------------- #
@@ -78,10 +77,15 @@ class ModbusPDU:
         if hasattr(cls, "_rtu_frame_size"):
             return cls._rtu_frame_size
         if hasattr(cls, "_rtu_byte_count_pos"):
-            return rtuFrameSize(buffer, cls._rtu_byte_count_pos)
+            if len(buffer) < cls._rtu_byte_count_pos +1:
+                return 0
+            return int(buffer[cls._rtu_byte_count_pos]) + cls._rtu_byte_count_pos + 3
         raise NotImplementedException(
             f"Cannot determine RTU frame size for {cls.__name__}"
         )
+
+
+
 
 
 class ModbusRequest(ModbusPDU):

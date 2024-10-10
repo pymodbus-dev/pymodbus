@@ -3,7 +3,8 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.framer import FramerRTU
+from pymodbus.exceptions import ModbusIOException
+from pymodbus.framer import FramerAscii, FramerRTU
 from pymodbus.server.async_io import ServerDecoder
 
 
@@ -28,8 +29,7 @@ class TestMultidrop:
         framer.processIncomingPacket(serial_event, callback)
         callback.assert_called_once()
 
-    @pytest.mark.skip
-    def test_ok_2frame(self, framer, callback):  # pragma: no cover
+    def test_ok_2frame(self, framer, callback):
         """Test ok frame."""
         serial_event = self.good_frame + self.good_frame
         framer.processIncomingPacket(serial_event, callback)
@@ -66,8 +66,7 @@ class TestMultidrop:
             framer.processIncomingPacket(serial_event, callback)
         callback.assert_not_called()
 
-    @pytest.mark.skip
-    def test_split_frame(self, framer, callback):  # pragma: no cover
+    def test_split_frame(self, framer, callback):
         """Test split frame."""
         serial_events = [self.good_frame[:5], self.good_frame[5:]]
         for serial_event in serial_events:
@@ -88,37 +87,22 @@ class TestMultidrop:
         framer.processIncomingPacket(serial_event, callback)
         callback.assert_called_once()
 
-    @pytest.mark.skip
-    def test_split_frame_trailing_data_with_id(self, framer, callback):  # pragma: no cover
+    def test_split_frame_trailing_data_with_id(self, framer, callback):
         """Test split frame."""
-        garbage = b"\x05\x04\x03\x02\x01\x00"
+        garbage = b"ABCDEF"
         serial_events = [garbage + self.good_frame[:5], self.good_frame[5:]]
         for serial_event in serial_events:
             framer.processIncomingPacket(serial_event, callback)
         callback.assert_called_once()
 
-    @pytest.mark.skip
-    def test_coincidental_1(self, framer, callback):  # pragma: no cover
+    @pytest.mark.parametrize(
+        ("garbage"), [
+            b"\x02\x90\x07",
+            b"\x02\x10\x07",
+            b"\x02\x10\x07\x10",
+        ])
+    def test_coincidental(self, garbage, framer, callback):
         """Test conincidental."""
-        garbage = b"\x02\x90\x07"
-        serial_events = [garbage, self.good_frame[:5], self.good_frame[5:]]
-        for serial_event in serial_events:
-            framer.processIncomingPacket(serial_event, callback)
-        callback.assert_called_once()
-
-    @pytest.mark.skip
-    def test_coincidental_2(self, framer, callback):  # pragma: no cover
-        """Test conincidental."""
-        garbage = b"\x02\x10\x07"
-        serial_events = [garbage, self.good_frame[:5], self.good_frame[5:]]
-        for serial_event in serial_events:
-            framer.processIncomingPacket(serial_event, callback)
-        callback.assert_called_once()
-
-    @pytest.mark.skip
-    def test_coincidental_3(self, framer, callback):  # pragma: no cover
-        """Test conincidental."""
-        garbage = b"\x02\x10\x07\x10"
         serial_events = [garbage, self.good_frame[:5], self.good_frame[5:]]
         for serial_event in serial_events:
             framer.processIncomingPacket(serial_event, callback)
@@ -144,6 +128,31 @@ class TestMultidrop:
 
         # We should not respond in this case for identical reasons as test_wrapped_frame
         callback.assert_called_once()
+
+    def test_wrong_dev_id(self, callback):
+        """Test conincidental."""
+        framer = FramerAscii(ServerDecoder(), [87])
+        framer.processIncomingPacket(b':0003007C00027F\r\n', callback)
+        callback.assert_not_called()
+
+    def test_wrong_tid(self, callback):
+        """Test conincidental."""
+        framer = FramerAscii(ServerDecoder(), [])
+        framer.processIncomingPacket(b':1103007C00026E\r\n', callback, tid=117)
+        callback.assert_not_called()
+
+    def test_wrong_class(self, callback):
+        """Test conincidental."""
+
+        def return_none(_data):
+            """Return none."""
+            return None
+
+        framer = FramerAscii(ServerDecoder(), [])
+        framer.decoder.decode = return_none
+        with pytest.raises(ModbusIOException):
+            framer.processIncomingPacket(b':1103007C00026E\r\n', callback)
+        callback.assert_not_called()
 
     @pytest.mark.skip
     def test_getFrameStart(self, framer):  # pragma: no cover

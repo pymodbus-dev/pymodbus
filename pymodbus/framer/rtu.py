@@ -97,7 +97,7 @@ class FramerRTU(FramerBase):
     crc16_table: list[int] = [0]
 
 
-    def specific_decode(self, data: bytes, data_len: int, no_recur: bool = False) -> tuple[int, bytes]:
+    def specific_decode(self, data: bytes, data_len: int) -> tuple[int, bytes]:
         """Decode ADU."""
         for used_len in range(data_len):
             if data_len - used_len < self.MIN_SIZE:
@@ -123,7 +123,7 @@ class FramerRTU(FramerBase):
                 Log.debug("Frame check failed, ignoring!!")
                 continue
             return start_crc + 2, data[used_len + 1 : start_crc]
-        return used_len, self.EMPTY
+        return 0, self.EMPTY
 
 
     def encode(self, pdu: bytes, device_id: int, _tid: int) -> bytes:

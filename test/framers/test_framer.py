@@ -365,3 +365,12 @@ class TestFramerType:
         assert data == res_data
         assert dev_id == test_framer.incoming_dev_id
         assert res_len == len(res_msg)
+
+    @pytest.mark.parametrize(("entry"), [FramerType.RTU])
+    def test_specific_decode(self, test_framer):
+        """Test dummy decode."""
+        msg = b''
+        res_len, res_data = test_framer.specific_decode(msg, 0)
+        assert not res_len
+        assert not res_data
+

@@ -106,6 +106,8 @@ class FramerBase:
             used_len, data = self.decode(self.databuffer)
             self.databuffer = self.databuffer[used_len:]
             if not data:
+                if used_len:
+                    continue
                 return
             if self.dev_ids and self.incoming_dev_id not in self.dev_ids:
                 Log.debug("Not a valid slave id - {}, ignoring!!", self.incoming_dev_id)

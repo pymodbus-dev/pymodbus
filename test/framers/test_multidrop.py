@@ -65,7 +65,6 @@ class TestMultidrop:
             framer.processIncomingPacket(serial_event, callback)
         callback.assert_not_called()
 
-    @pytest.mark.skip
     def test_split_frame(self, framer, callback):
         """Test split frame."""
         serial_events = [self.good_frame[:5], self.good_frame[5:]]
@@ -87,7 +86,6 @@ class TestMultidrop:
         framer.processIncomingPacket(serial_event, callback)
         callback.assert_called_once()
 
-    @pytest.mark.skip
     def test_split_frame_trailing_data_with_id(self, framer, callback):
         """Test split frame."""
         garbage = b"ABCDEF"
@@ -96,28 +94,14 @@ class TestMultidrop:
             framer.processIncomingPacket(serial_event, callback)
         callback.assert_called_once()
 
-    @pytest.mark.skip
-    def test_coincidental_1(self, framer, callback):  # pragma: no cover
+    @pytest.mark.parametrize(
+        ("garbage"), [
+            b"\x02\x90\x07",
+            b"\x02\x10\x07",
+            b"\x02\x10\x07\x10",
+        ])
+    def test_coincidental_1(self, garbage, framer, callback):
         """Test conincidental."""
-        garbage = b"\x02\x90\x07"
-        serial_events = [garbage, self.good_frame[:5], self.good_frame[5:]]
-        for serial_event in serial_events:
-            framer.processIncomingPacket(serial_event, callback)
-        callback.assert_called_once()
-
-    @pytest.mark.skip
-    def test_coincidental_2(self, framer, callback):  # pragma: no cover
-        """Test conincidental."""
-        garbage = b"\x02\x10\x07"
-        serial_events = [garbage, self.good_frame[:5], self.good_frame[5:]]
-        for serial_event in serial_events:
-            framer.processIncomingPacket(serial_event, callback)
-        callback.assert_called_once()
-
-    @pytest.mark.skip
-    def test_coincidental_3(self, framer, callback):  # pragma: no cover
-        """Test conincidental."""
-        garbage = b"\x02\x10\x07\x10"
         serial_events = [garbage, self.good_frame[:5], self.good_frame[5:]]
         for serial_event in serial_events:
             framer.processIncomingPacket(serial_event, callback)

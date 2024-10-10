@@ -36,7 +36,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
         :returns: The encoded packet
         """
         packet = struct.pack(">H", self.address)
-        if self.skip_encode:
+        if self.skip_encode or isinstance(self.value, bytes):
             packet += self.value
         else:
             packet += struct.pack(">H", self.value)
@@ -178,7 +178,10 @@ class WriteMultipleRegistersRequest(ModbusRequest):
             return packet + b"".join(self.values)
 
         for value in self.values:
-            packet += struct.pack(">H", value)
+            if isinstance(value, bytes):
+                packet += value
+            else:
+                packet += struct.pack(">H", value)
 
         return packet
 

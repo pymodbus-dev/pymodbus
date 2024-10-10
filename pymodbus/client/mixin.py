@@ -111,7 +111,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(pdu_bit_write.WriteSingleCoilRequest(address, value, slave=slave))
 
-    def write_register(self, address: int, value: bytes, slave: int = 1) -> T:
+    def write_register(self, address: int, value: bytes | int, slave: int = 1) -> T:
         """Write register (code 0x06).
 
         :param address: Address to write to
@@ -322,7 +322,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         )
 
     def write_registers(
-        self, address: int, values: list[bytes], slave: int = 1, skip_encode: bool = False) -> T:
+        self, address: int, values: list[bytes | int], slave: int = 1, skip_encode: bool = False) -> T:
         """Write registers (code 0x10).
 
         :param address: Start address to write to

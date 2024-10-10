@@ -3,9 +3,9 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.framer import FramerRTU, FramerAscii
-from pymodbus.server.async_io import ServerDecoder
 from pymodbus.exceptions import ModbusIOException
+from pymodbus.framer import FramerAscii, FramerRTU
+from pymodbus.server.async_io import ServerDecoder
 
 
 class TestMultidrop:
@@ -147,7 +147,7 @@ class TestMultidrop:
         def return_none(_data):
             """Return none."""
             return None
-        
+
         framer = FramerAscii(ServerDecoder(), [])
         framer.decoder.decode = return_none
         with pytest.raises(ModbusIOException):

@@ -86,9 +86,9 @@ class FramerBase:
         while True:
             if self.databuffer == b'':
                 return
-            used_len, self.incoming_dev_id, self.incoming_tid, data = self.decode(self.databuffer)
+            used_len, self.incoming_dev_id, self.incoming_tid, frame_data = self.decode(self.databuffer)
             self.databuffer = self.databuffer[used_len:]
-            if not data:
+            if not frame_data:
                 if used_len:
                     continue
                 return
@@ -96,7 +96,7 @@ class FramerBase:
                 Log.debug("Not a valid slave id - {}, ignoring!!", self.incoming_dev_id)
                 self.databuffer = b''
                 continue
-            if (result := self.decoder.decode(data)) is None:
+            if (result := self.decoder.decode(frame_data)) is None:
                 self.databuffer = b''
                 raise ModbusIOException("Unable to decode request")
             result.slave_id = self.incoming_dev_id

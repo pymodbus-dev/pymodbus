@@ -106,7 +106,7 @@ class FramerRTU(FramerBase):
                 return used_len, 0, 0, self.EMPTY
             dev_id = int(data[used_len])
             func_code = int(data[used_len + 1])
-            if (self.dev_ids and dev_id not in self.dev_ids) or func_code & 0x7F not in self.decoder.lookup:
+            if func_code & 0x7F not in self.decoder.lookup:
                 continue
             pdu_class = self.decoder.lookupPduClass(func_code)
             if not (size := pdu_class.calculateRtuFrameSize(data[used_len:])):

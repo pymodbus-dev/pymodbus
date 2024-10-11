@@ -83,10 +83,13 @@ class FramerBase:
         """
         self.databuffer += data
         while True:
-            if not (used_len := self._processIncomingFrame(self.databuffer, callback, tid=tid)):
-                break
+            try:
+                if not (used_len := self._processIncomingFrame(self.databuffer, callback, tid=tid)):
+                    break
+            except ModbusIOException as exc:
+                self.databuffer = self.EMPTY
+                raise exc
             self.databuffer = self.databuffer[used_len:]
-
 
     def _processIncomingFrame(self, data: bytes, callback, tid=None) -> int:
         """Process new packet pattern.
@@ -107,7 +110,6 @@ class FramerBase:
                 Log.debug("Not a valid slave id - {}, ignoring!!", self.incoming_dev_id)
                 return used_len
             if (result := self.decoder.decode(frame_data)) is None:
-                self.databuffer = b''
                 raise ModbusIOException("Unable to decode request")
             result.slave_id = self.incoming_dev_id
             result.transaction_id = self.incoming_tid

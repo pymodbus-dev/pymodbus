@@ -105,7 +105,6 @@ class FramerBase:
                 return used_len
             if self.dev_ids and self.incoming_dev_id not in self.dev_ids:
                 Log.debug("Not a valid slave id - {}, ignoring!!", self.incoming_dev_id)
-                self.databuffer = b''
                 return used_len
             if (result := self.decoder.decode(frame_data)) is None:
                 self.databuffer = b''
@@ -113,8 +112,6 @@ class FramerBase:
             result.slave_id = self.incoming_dev_id
             result.transaction_id = self.incoming_tid
             Log.debug("Frame advanced, resetting header!!")
-            if tid and result.transaction_id and tid != result.transaction_id:
-                self.databuffer = b''
-            else:
-                callback(result)  # defer or push to a thread?
+            if not (tid and result.transaction_id and tid != result.transaction_id):
+                callback(result)
             return used_len

@@ -31,6 +31,9 @@ class TestFramer:
         framer = FramerBase(ClientDecoder(), [])
         framer.decode(b'')
         framer.encode(b'', 0, 0)
+        dev_id = 2
+        framer.encode(b'', dev_id, 0)
+        assert dev_id in framer.dev_ids
 
     @pytest.mark.parametrize(("entry"), list(FramerType))
     async def test_framer_init(self, test_framer):
@@ -373,4 +376,3 @@ class TestFramerType:
         res_len, res_data = test_framer.specific_decode(msg, 0)
         assert not res_len
         assert not res_data
-

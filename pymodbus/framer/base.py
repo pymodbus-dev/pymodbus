@@ -69,12 +69,14 @@ class FramerBase:
         return data_len, data
 
 
-    def encode(self, pdu: bytes, _dev_id: int, _tid: int) -> bytes:
+    def encode(self, pdu: bytes, dev_id: int, _tid: int) -> bytes:
         """Encode ADU.
 
         returns:
             modbus ADU (bytes)
         """
+        if dev_id and dev_id not in self.dev_ids:
+            self.dev_ids.append(dev_id)
         return pdu
 
     def buildPacket(self, message: ModbusRequest | ModbusResponse) -> bytes:

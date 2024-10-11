@@ -81,6 +81,16 @@ class FramerBase:
         for complete messages, and once found, will process all that
         exist.
         """
+        self._processIncomingFrame(data, callback, tid=tid)
+
+    def _processIncomingFrame(self, data: bytes, callback, tid=None):
+        """Process new packet pattern.
+
+        This takes in a new request packet, adds it to the current
+        packet stream, and performs framing on it. That is, checks
+        for complete messages, and once found, will process all that
+        exist.
+        """
         Log.debug("Processing: {}", data, ":hex")
         self.databuffer += data
         while True:

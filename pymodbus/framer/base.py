@@ -81,9 +81,14 @@ class FramerBase:
         for complete messages, and once found, will process all that
         exist.
         """
-        self._processIncomingFrame(data, callback, tid=tid)
+        self.databuffer += data
+        while True:
+            if not (used_len := self._processIncomingFrame(self.databuffer, callback, tid=tid)):
+                break
+            self.databuffer = self.databuffer[used_len:]
 
-    def _processIncomingFrame(self, data: bytes, callback, tid=None):
+
+    def _processIncomingFrame(self, data: bytes, callback, tid=None) -> int:
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -92,20 +97,16 @@ class FramerBase:
         exist.
         """
         Log.debug("Processing: {}", data, ":hex")
-        self.databuffer += data
         while True:
-            if self.databuffer == b'':
-                return
+            if not data:
+                return 0
             used_len, self.incoming_dev_id, self.incoming_tid, frame_data = self.decode(self.databuffer)
-            self.databuffer = self.databuffer[used_len:]
             if not frame_data:
-                if used_len:
-                    continue
-                return
+                return used_len
             if self.dev_ids and self.incoming_dev_id not in self.dev_ids:
                 Log.debug("Not a valid slave id - {}, ignoring!!", self.incoming_dev_id)
                 self.databuffer = b''
-                continue
+                return used_len
             if (result := self.decoder.decode(frame_data)) is None:
                 self.databuffer = b''
                 raise ModbusIOException("Unable to decode request")
@@ -116,3 +117,4 @@ class FramerBase:
                 self.databuffer = b''
             else:
                 callback(result)  # defer or push to a thread?
+            return used_len

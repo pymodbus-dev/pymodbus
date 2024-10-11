@@ -26,25 +26,25 @@ class TestMultidrop:
     def test_ok_frame(self, framer, callback):
         """Test ok frame."""
         serial_event = self.good_frame
-        framer.processIncomingPacket(serial_event, callback)
+        framer.processIncomingFrame(serial_event, callback)
         callback.assert_called_once()
 
     def test_ok_2frame(self, framer, callback):
         """Test ok frame."""
         serial_event = self.good_frame + self.good_frame
-        framer.processIncomingPacket(serial_event, callback)
+        framer.processIncomingFrame(serial_event, callback)
         assert callback.call_count == 2
 
     def test_bad_crc(self, framer, callback):
         """Test bad crc."""
         serial_event = b"\x02\x03\x00\x01\x00}\xd4\x19"  # Manually mangled crc
-        framer.processIncomingPacket(serial_event, callback)
+        framer.processIncomingFrame(serial_event, callback)
         callback.assert_not_called()
 
     def test_wrong_id(self, framer, callback):
         """Test frame wrong id."""
         serial_event = b"\x01\x03\x00\x01\x00}\xd4+"  # Frame with good CRC but other id
-        framer.processIncomingPacket(serial_event, callback)
+        framer.processIncomingFrame(serial_event, callback)
         callback.assert_not_called()
 
     def test_big_split_response_frame_from_other_id(self, framer, callback):
@@ -63,28 +63,28 @@ class TestMultidrop:
             b"\x00\x00\x00\x00\x00\x00\x00N,",
         ]
         for serial_event in serial_events:
-            framer.processIncomingPacket(serial_event, callback)
+            framer.processIncomingFrame(serial_event, callback)
         callback.assert_not_called()
 
     def test_split_frame(self, framer, callback):
         """Test split frame."""
         serial_events = [self.good_frame[:5], self.good_frame[5:]]
         for serial_event in serial_events:
-            framer.processIncomingPacket(serial_event, callback)
+            framer.processIncomingFrame(serial_event, callback)
         callback.assert_called_once()
 
     def test_complete_frame_trailing_data_without_id(self, framer, callback):
         """Test trailing data."""
         garbage = b"\x05\x04\x03"  # without id
         serial_event = garbage + self.good_frame
-        framer.processIncomingPacket(serial_event, callback)
+        framer.processIncomingFrame(serial_event, callback)
         callback.assert_called_once()
 
     def test_complete_frame_trailing_data_with_id(self, framer, callback):
         """Test trailing data."""
         garbage = b"\x05\x04\x03\x02\x01\x00"  # with id
         serial_event = garbage + self.good_frame
-        framer.processIncomingPacket(serial_event, callback)
+        framer.processIncomingFrame(serial_event, callback)
         callback.assert_called_once()
 
     def test_split_frame_trailing_data_with_id(self, framer, callback):
@@ -92,7 +92,7 @@ class TestMultidrop:
         garbage = b"ABCDEF"
         serial_events = [garbage + self.good_frame[:5], self.good_frame[5:]]
         for serial_event in serial_events:
-            framer.processIncomingPacket(serial_event, callback)
+            framer.processIncomingFrame(serial_event, callback)
         callback.assert_called_once()
 
     @pytest.mark.parametrize(
@@ -105,14 +105,14 @@ class TestMultidrop:
         """Test conincidental."""
         serial_events = [garbage, self.good_frame[:5], self.good_frame[5:]]
         for serial_event in serial_events:
-            framer.processIncomingPacket(serial_event, callback)
+            framer.processIncomingFrame(serial_event, callback)
         callback.assert_called_once()
 
     def test_wrapped_frame(self, framer, callback):
         """Test wrapped frame."""
         garbage = b"\x05\x04\x03\x02\x01\x00"
         serial_event = garbage + self.good_frame + garbage
-        framer.processIncomingPacket(serial_event, callback)
+        framer.processIncomingFrame(serial_event, callback)
 
         # We probably should not respond in this case; in this case we've likely become desynchronized
         # i.e. this probably represents a case where a command came for us, but we didn't get
@@ -124,7 +124,7 @@ class TestMultidrop:
         """Test trailing data."""
         garbage = b"\x05\x04\x03\x02\x01\x00"
         serial_event = self.good_frame + garbage
-        framer.processIncomingPacket(serial_event, callback)
+        framer.processIncomingFrame(serial_event, callback)
 
         # We should not respond in this case for identical reasons as test_wrapped_frame
         callback.assert_called_once()
@@ -132,13 +132,7 @@ class TestMultidrop:
     def test_wrong_dev_id(self, callback):
         """Test conincidental."""
         framer = FramerAscii(ServerDecoder(), [87])
-        framer.processIncomingPacket(b':0003007C00027F\r\n', callback)
-        callback.assert_not_called()
-
-    def test_wrong_tid(self, callback):
-        """Test conincidental."""
-        framer = FramerAscii(ServerDecoder(), [])
-        framer.processIncomingPacket(b':1103007C00026E\r\n', callback, tid=117)
+        framer.processIncomingFrame(b':0003007C00027F\r\n', callback)
         callback.assert_not_called()
 
     def test_wrong_class(self, callback):
@@ -151,7 +145,7 @@ class TestMultidrop:
         framer = FramerAscii(ServerDecoder(), [])
         framer.decoder.decode = return_none
         with pytest.raises(ModbusIOException):
-            framer.processIncomingPacket(b':1103007C00026E\r\n', callback)
+            framer.processIncomingFrame(b':1103007C00026E\r\n', callback)
         callback.assert_not_called()
 
     @pytest.mark.skip
@@ -166,23 +160,23 @@ class TestMultidrop:
             result = data.function_code.to_bytes(1,'big')+data.encode()
 
         framer_ok = b"\x02\x03\x00\x01\x00\x7d\xd4\x18"
-        framer.processIncomingPacket(framer_ok, test_callback)
+        framer.processIncomingFrame(framer_ok, test_callback)
         assert framer_ok[1:-2] == result
 
         count = 0
         framer_2ok = framer_ok + framer_ok
-        framer.processIncomingPacket(framer_2ok, test_callback)
+        framer.processIncomingFrame(framer_2ok, test_callback)
         assert count == 2
         assert not framer._buffer  # pylint: disable=protected-access
 
         framer._buffer = framer_ok[:2]  # pylint: disable=protected-access
-        framer.processIncomingPacket(b'', test_callback)
+        framer.processIncomingFrame(b'', test_callback)
         assert framer_ok[:2] == framer._buffer  # pylint: disable=protected-access
 
         framer._buffer = framer_ok[:3]  # pylint: disable=protected-access
-        framer.processIncomingPacket(b'', test_callback)
+        framer.processIncomingFrame(b'', test_callback)
         assert framer_ok[:3] == framer._buffer  # pylint: disable=protected-access
 
         framer_ok = b"\xF0\x03\x00\x01\x00}\xd4\x18"
-        framer.processIncomingPacket(framer_ok, test_callback)
+        framer.processIncomingFrame(framer_ok, test_callback)
         assert framer._buffer == framer_ok[-3:]  # pylint: disable=protected-access

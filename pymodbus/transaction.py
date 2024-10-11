@@ -232,7 +232,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                             self._no_response_devices.append(request.slave_id)
                     # No response received and retries not enabled
                     break
-                self.client.framer.processIncomingPacket(
+                self.client.framer.processIncomingFrame(
                     response,
                     self.addTransaction,
                     tid=request.transaction_id,
@@ -292,7 +292,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
         last_exception = None
         try:
             self.client.connect()
-            packet = self.client.framer.buildPacket(request)
+            packet = self.client.framer.buildFrame(request)
             Log.debug("SEND: {}", packet, ":hex")
             size = self._send(packet)
             if (

@@ -123,7 +123,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
         # if broadcast is enabled make sure to
         # process requests to address 0
         Log.debug("Handling data: {}", data, ":hex")
-        self.framer.processIncomingPacket(
+        self.framer.processIncomingFrame(
             data=data,
             callback=lambda x: self.execute(x, *addr),
         )
@@ -152,7 +152,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
                     self._log_exception()
                     self.running = False
             except Exception as exc:  # pylint: disable=broad-except
-                # force TCP socket termination as processIncomingPacket
+                # force TCP socket termination as processIncomingFrame
                 # should handle application layer errors
                 Log.error(
                     'Unknown exception "{}" on stream {} forcing disconnect',
@@ -212,7 +212,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
         if kwargs.get("skip_encoding", False):
             self.send(message, addr=addr)
         elif message.should_respond:
-            pdu = self.framer.buildPacket(message)
+            pdu = self.framer.buildFrame(message)
             self.send(pdu, addr=addr)
         else:
             Log.debug("Skipping sending response!!")

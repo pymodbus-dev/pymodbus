@@ -68,7 +68,7 @@ class ModbusClientProtocol(ModbusProtocol):
 
         returns number of bytes consumed
         """
-        self.framer.processIncomingPacket(data, self._handle_response)
+        self.framer.processIncomingFrame(data, self._handle_response)
         return len(data)
 
     def __str__(self):

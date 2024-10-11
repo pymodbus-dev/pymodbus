@@ -80,7 +80,7 @@ class Decoder:
             print(f"{decoder.decoder.__class__.__name__}")
             print("-" * 80)
             try:
-                decoder.processIncomingPacket(message, self.report)
+                decoder.processIncomingFrame(message, self.report)
             except Exception:  # pylint: disable=broad-except
                 self.check_errors(decoder, message)
 

@@ -101,7 +101,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         :meta private:
         """
         request.transaction_id = self.ctx.transaction.getNextTID()
-        packet = self.ctx.framer.buildPacket(request)
+        packet = self.ctx.framer.buildFrame(request)
 
         count = 0
         while count <= self.retries:

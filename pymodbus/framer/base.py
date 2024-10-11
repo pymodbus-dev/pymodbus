@@ -43,31 +43,16 @@ class FramerBase:
         self.incoming_tid = 0
         self.databuffer = b""
 
-    def decode(self, data: bytes) -> tuple[int, bytes]:
+    def decode(self, _data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU.
 
         returns:
             used_len (int) or 0 to read more
+            dev_id,
+            tid,
             modbus request/response (bytes)
         """
-        if (data_len := len(data)) < self.MIN_SIZE:
-          Log.debug("Very short frame (NO MBAP): {} wait for more data", data, ":hex")
-          return 0, self.EMPTY
-        used_len, res_data = self.specific_decode(data, data_len)
-        if not res_data:
-            self.incoming_dev_id = 0
-            self.incoming_tid = 0
-        return used_len, res_data
-
-    def specific_decode(self, data: bytes, data_len: int) -> tuple[int, bytes]:
-        """Decode ADU.
-
-        returns:
-            used_len (int) or 0 to read more
-            modbus request/response (bytes)
-        """
-        return data_len, data
-
+        return 0, 0, 0, self.EMPTY
 
     def encode(self, pdu: bytes, dev_id: int, _tid: int) -> bytes:
         """Encode ADU.
@@ -79,7 +64,7 @@ class FramerBase:
             self.dev_ids.append(dev_id)
         return pdu
 
-    def buildPacket(self, message: ModbusRequest | ModbusResponse) -> bytes:
+    def buildFrame(self, message: ModbusRequest | ModbusResponse) -> bytes:
         """Create a ready to send modbus packet.
 
         :param message: The populated request/response to send
@@ -88,7 +73,7 @@ class FramerBase:
         packet = self.encode(data, message.slave_id, message.transaction_id)
         return packet
 
-    def processIncomingPacket(self, data: bytes, callback, tid=None):
+    def processIncomingFrame(self, data: bytes, callback, tid=None):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -105,7 +90,7 @@ class FramerBase:
         while True:
             if self.databuffer == b'':
                 return
-            used_len, data = self.decode(self.databuffer)
+            used_len, self.incoming_dev_id, self.incoming_tid, data = self.decode(self.databuffer)
             self.databuffer = self.databuffer[used_len:]
             if not data:
                 if used_len:

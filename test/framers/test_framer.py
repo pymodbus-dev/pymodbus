@@ -204,21 +204,21 @@ class TestFramerType:
             (FramerType.ASCII, True, b':0003007C00027F\r\n', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
             (FramerType.ASCII, False, b':000304008D008EDE\r\n', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
             (FramerType.ASCII, False, b':0083027B\r\n', 0, 0, b'\x83\x02',),  # Exception
-            (FramerType.ASCII, True, b':1103007C00026E\r\n', 17, 17, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.ASCII, False, b':110304008D008ECD\r\n', 17, 17, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.ASCII, False, b':1183026A\r\n', 17, 17, b'\x83\x02',),  # Exception
-            (FramerType.ASCII, True, b':FF03007C000280\r\n', 255, 255, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.ASCII, False, b':FF0304008D008EDF\r\n', 255, 255, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.ASCII, False, b':FF83027C\r\n', 255, 255, b'\x83\x02',),  # Exception
+            (FramerType.ASCII, True, b':1103007C00026E\r\n', 17, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.ASCII, False, b':110304008D008ECD\r\n', 17, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.ASCII, False, b':1183026A\r\n', 17, 0, b'\x83\x02',),  # Exception
+            (FramerType.ASCII, True, b':FF03007C000280\r\n', 255, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.ASCII, False, b':FF0304008D008EDF\r\n', 255, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.ASCII, False, b':FF83027C\r\n', 255, 0, b'\x83\x02',),  # Exception
             (FramerType.RTU, True, b'\x00\x03\x00\x7c\x00\x02\x04\x02', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
             (FramerType.RTU, False, b'\x00\x03\x04\x00\x8d\x00\x8e\xfa\xbc', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
             (FramerType.RTU, False, b'\x00\x83\x02\x91\x31', 0, 0, b'\x83\x02',),  # Exception
-            (FramerType.RTU, True, b'\x11\x03\x00\x7c\x00\x02\x07\x43', 17, 17, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.RTU, False, b'\x11\x03\x04\x00\x8d\x00\x8e\xfb\xbd', 17, 17, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.RTU, False, b'\x11\x83\x02\xc1\x34', 17, 17, b'\x83\x02',),  # Exception
-            (FramerType.RTU, True, b'\xff\x03\x00|\x00\x02\x10\x0d', 255, 255, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.RTU, False, b'\xff\x03\x04\x00\x8d\x00\x8e\xf5\xb3', 255, 255, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.RTU, False, b'\xff\x83\x02\xa1\x01', 255, 255, b'\x83\x02',),  # Exception
+            (FramerType.RTU, True, b'\x11\x03\x00\x7c\x00\x02\x07\x43', 17, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.RTU, False, b'\x11\x03\x04\x00\x8d\x00\x8e\xfb\xbd', 17, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.RTU, False, b'\x11\x83\x02\xc1\x34', 17, 0, b'\x83\x02',),  # Exception
+            (FramerType.RTU, True, b'\xff\x03\x00|\x00\x02\x10\x0d', 255, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.RTU, False, b'\xff\x03\x04\x00\x8d\x00\x8e\xf5\xb3', 255, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.RTU, False, b'\xff\x83\x02\xa1\x01', 255, 0, b'\x83\x02',),  # Exception
             (FramerType.SOCKET, True, b'\x00\x00\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
             (FramerType.SOCKET, False, b'\x00\x00\x00\x00\x00\x07\x00\x03\x04\x00\x8d\x00\x8e', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
             (FramerType.SOCKET, False, b'\x00\x00\x00\x00\x00\x03\x00\x83\x02', 0, 0, b'\x83\x02',),  # Exception
@@ -257,28 +257,28 @@ class TestFramerType:
         if entry == FramerType.RTU:
             return
         if split == "no":
-            used_len, res_data = test_framer.decode(data)
+            used_len, res_dev_id, res_tid, res_data = test_framer.decode(data)
         elif split == "half":
             split_len = int(len(data) / 2)
-            used_len, res_data = test_framer.decode(data[0:split_len])
+            used_len, res_dev_id, res_tid, res_data = test_framer.decode(data[0:split_len])
             assert not used_len
             assert not res_data
-            assert not test_framer.incoming_dev_id
-            assert not test_framer.incoming_tid
-            used_len, res_data = test_framer.decode(data)
+            assert not res_dev_id
+            assert not res_tid
+            used_len, res_dev_id, res_tid, res_data = test_framer.decode(data)
         else:
             last = len(data)
             for i in range(0, last -1):
-                used_len, res_data = test_framer.decode(data[0:i+1])
+                used_len, res_dev_id, res_tid, res_data = test_framer.decode(data[0:i+1])
                 assert not used_len
                 assert not res_data
-                assert not test_framer.incoming_dev_id
-                assert not test_framer.incoming_tid
-            used_len, res_data = test_framer.decode(data)
+                assert not res_dev_id
+                assert not res_tid
+            used_len, res_dev_id, res_tid, res_data = test_framer.decode(data)
         assert used_len == len(data)
         assert res_data == expected
-        assert dev_id == test_framer.incoming_dev_id
-        assert tr_id == test_framer.incoming_tid
+        assert dev_id == res_dev_id
+        assert tr_id == res_tid
 
     @pytest.mark.parametrize(
         ("entry", "data", "exp"),
@@ -336,7 +336,7 @@ class TestFramerType:
     async def test_decode_complicated(self, test_framer, data, exp):
         """Test encode method."""
         for ent in exp:
-            used_len, res_data = test_framer.decode(data)
+            used_len, _, _, res_data = test_framer.decode(data)
             data = data[used_len:]
             assert used_len == ent[0]
             assert res_data == ent[1]
@@ -364,15 +364,15 @@ class TestFramerType:
     def test_roundtrip(self, test_framer, data, dev_id, res_msg):
         """Test encode."""
         msg = test_framer.encode(data, dev_id, 0)
-        res_len, res_data = test_framer.decode(msg)
+        res_len, res_dev_id, _, res_data = test_framer.decode(msg)
         assert data == res_data
-        assert dev_id == test_framer.incoming_dev_id
+        assert dev_id == res_dev_id
         assert res_len == len(res_msg)
 
     @pytest.mark.parametrize(("entry"), [FramerType.RTU])
-    def test_specific_decode(self, test_framer):
+    def test_framer_decode(self, test_framer):
         """Test dummy decode."""
         msg = b''
-        res_len, res_data = test_framer.specific_decode(msg, 0)
+        res_len, _, _, res_data = test_framer.decode(msg)
         assert not res_len
         assert not res_data

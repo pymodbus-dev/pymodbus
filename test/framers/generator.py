@@ -26,20 +26,20 @@ def set_calls():
                 client = framer(ClientDecoder(), [0])
                 request = ReadHoldingRegistersRequest(124, 2, dev_id)
                 request.transaction_id = tid
-                result = client.buildPacket(request)
+                result = client.buildFrame(request)
                 print(f"      request --> {result}")
                 print(f"      request --> {result.hex()}")
                 server = framer(ServerDecoder(), [0])
                 response = ReadHoldingRegistersResponse([141,142])
                 response.slave_id = dev_id
                 response.transaction_id = tid
-                result = server.buildPacket(response)
+                result = server.buildFrame(response)
                 print(f"      response --> {result}")
                 print(f"      response --> {result.hex()}")
                 exception = request.doException(merror.IllegalAddress)
                 exception.transaction_id = tid
                 exception.slave_id = dev_id
-                result = server.buildPacket(exception)
+                result = server.buildFrame(exception)
                 print(f"      exception --> {result}")
                 print(f"      exception --> {result.hex()}")
 

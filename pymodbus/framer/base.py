@@ -11,7 +11,7 @@ from enum import Enum
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.logging import Log
-from pymodbus.pdu import ModbusRequest, ModbusResponse
+from pymodbus.pdu import ModbusPDU, ModbusRequest, ModbusResponse
 
 
 class FramerType(str, Enum):
@@ -54,7 +54,7 @@ class FramerBase:
         """
         return 0, 0, 0, self.EMPTY
 
-    def encode(self, pdu: bytes, dev_id: int, _tid: int) -> bytes:
+    def encode(self, data: bytes, dev_id: int, _tid: int) -> bytes:
         """Encode ADU.
 
         returns:
@@ -62,7 +62,7 @@ class FramerBase:
         """
         if dev_id and dev_id not in self.dev_ids:
             self.dev_ids.append(dev_id)
-        return pdu
+        return data
 
     def buildFrame(self, message: ModbusRequest | ModbusResponse) -> bytes:
         """Create a ready to send modbus packet.
@@ -84,14 +84,18 @@ class FramerBase:
         self.databuffer += data
         while True:
             try:
-                if not (used_len := self._processIncomingFrame(self.databuffer, callback, tid=tid)):
+                used_len, pdu = self._processIncomingFrame(self.databuffer, tid=tid)
+                if not used_len:
                     break
+                if pdu:
+                    callback(pdu)
             except ModbusIOException as exc:
                 self.databuffer = self.EMPTY
                 raise exc
+
             self.databuffer = self.databuffer[used_len:]
 
-    def _processIncomingFrame(self, data: bytes, callback, tid=None) -> int:
+    def _processIncomingFrame(self, data: bytes, tid=None) -> tuple[int, ModbusPDU | None]:
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -102,18 +106,18 @@ class FramerBase:
         Log.debug("Processing: {}", data, ":hex")
         while True:
             if not data:
-                return 0
+                return 0, None
             used_len, self.incoming_dev_id, self.incoming_tid, frame_data = self.decode(self.databuffer)
             if not frame_data:
-                return used_len
+                return used_len, None
             if self.dev_ids and self.incoming_dev_id not in self.dev_ids:
                 Log.debug("Not a valid slave id - {}, ignoring!!", self.incoming_dev_id)
-                return used_len
+                return used_len, None
             if (result := self.decoder.decode(frame_data)) is None:
                 raise ModbusIOException("Unable to decode request")
             result.slave_id = self.incoming_dev_id
             result.transaction_id = self.incoming_tid
             Log.debug("Frame advanced, resetting header!!")
-            if not (tid and result.transaction_id and tid != result.transaction_id):
-                callback(result)
-            return used_len
+            if tid and result.transaction_id and tid != result.transaction_id:
+                return used_len, None
+            return used_len, result

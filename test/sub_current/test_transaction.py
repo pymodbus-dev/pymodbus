@@ -302,46 +302,19 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
 
     def test_rtu_framer_transaction_full(self):
         """Test a full rtu frame transaction."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
-        self._rtu.processIncomingFrame(msg, callback)
-        assert result
+        assert self._rtu.processIncomingFrame(msg)
 
     def test_rtu_framer_transaction_half(self):
         """Test a half completed rtu frame transaction."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg_parts = [b"\x00\x01\x00", b"\x00\x00\x01\xfc\x1b"]
-        self._rtu.processIncomingFrame(msg_parts[0], callback)
-        assert not result
-        self._rtu.processIncomingFrame(msg_parts[1], callback)
-        assert result
+        assert not self._rtu.processIncomingFrame(msg_parts[0])
+        assert self._rtu.processIncomingFrame(msg_parts[1])
 
     def test_rtu_framer_populate(self):
         """Test a rtu frame packet build."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
-        self._rtu.processIncomingFrame(msg, callback)
+        result = self._rtu.processIncomingFrame(msg)
         assert int(msg[0]) == result.slave_id
 
     @mock.patch.object(ModbusRequest, "encode")
@@ -357,103 +330,39 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
 
     def test_rtu_decode_exception(self):
         """Test that the RTU framer can decode errors."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg = b"\x00\x90\x02\x9c\x01"
-        self._rtu.processIncomingFrame(msg, callback)
-        assert result
+        assert self._rtu.processIncomingFrame(msg)
 
     def test_process(self):
         """Test process."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
-        self._rtu.processIncomingFrame(msg, callback)
-        assert result
+        assert self._rtu.processIncomingFrame(msg)
 
     def test_rtu_process_incoming_packets(self):
         """Test rtu process incoming packets."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
-        self._rtu.processIncomingFrame(msg, callback)
-        assert result
+        assert self._rtu.processIncomingFrame(msg)
 
     # ----------------------------------------------------------------------- #
     # ASCII tests
     # ----------------------------------------------------------------------- #
     def test_ascii_framer_transaction_ready(self):
         """Test a ascii frame transaction."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg = b":F7031389000A60\r\n"
-        self._ascii.processIncomingFrame(msg, callback)
-        assert result
+        assert self._ascii.processIncomingFrame(msg)
 
     def test_ascii_framer_transaction_full(self):
         """Test a full ascii frame transaction."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg = b"sss:F7031389000A60\r\n"
-        self._ascii.processIncomingFrame(msg, callback)
-        assert result
+        assert self._ascii.processIncomingFrame(msg)
 
     def test_ascii_framer_transaction_half(self):
         """Test a half completed ascii frame transaction."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg_parts = (b"sss:F7031389", b"000A60\r\n")
-        self._ascii.processIncomingFrame(msg_parts[0], callback)
-        assert not result
-        self._ascii.processIncomingFrame(msg_parts[1], callback)
-        assert result
+        assert not self._ascii.processIncomingFrame(msg_parts[0])
+        assert self._ascii.processIncomingFrame(msg_parts[1])
 
     def test_ascii_process_incoming_packets(self):
         """Test ascii process incoming packet."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg = b":F7031389000A60\r\n"
-        self._ascii.processIncomingFrame(msg, callback)
-        assert result
+        assert self._ascii.processIncomingFrame(msg)

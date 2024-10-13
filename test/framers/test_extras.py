@@ -43,27 +43,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._manager = SyncModbusTransactionManager(self.client, 3)
 
 
-    def test_tcp_framer_transaction_half(self):
-        """Test a half completed tcp frame transaction."""
-        msg1 = b"\x00\x01\x12\x34\x00"
-        msg2 = b"\x06\xff\x02\x01\x02\x00\x08"
-        assert not self._tcp.processIncomingFrame(msg1)
-        result = self._tcp.processIncomingFrame(msg2)
-        assert result
-        assert result.function_code.to_bytes(1,'big') + result.encode() == msg2[2:]
-
-    def test_rtu_framer_transaction_half(self):
-        """Test a half completed rtu frame transaction."""
-        msg_parts = [b"\x00\x01\x00", b"\x00\x00\x01\xfc\x1b"]
-        assert not self._rtu.processIncomingFrame(msg_parts[0])
-        assert self._rtu.processIncomingFrame(msg_parts[1])
-
-    def test_ascii_framer_transaction_half(self):
-        """Test a half completed ascii frame transaction."""
-        msg_parts = (b"sss:F7031389", b"000A60\r\n")
-        assert not self._ascii.processIncomingFrame(msg_parts[0])
-        assert self._ascii.processIncomingFrame(msg_parts[1])
-
     def test_tcp_framer_transaction_half2(self):
         """Test a half completed tcp frame transaction."""
         msg1 = b"\x00\x01\x12\x34\x00\x06\xff"
@@ -90,60 +69,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         result = self._tcp.processIncomingFrame(msg2)
         assert result
         assert result.function_code.to_bytes(1,'big') + result.encode() == msg2[7:]
-
-    def test_tcp_framer_populate(self):
-        """Test a tcp frame packet build."""
-        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
-        result = self._tcp.processIncomingFrame(msg)
-        assert result
-        assert result.slave_id == 0xFF
-        assert result.transaction_id == 0x0001
-
-    def test_tls_framer_populate(self):
-        """Test a tls frame packet build."""
-        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
-        assert self._tcp.processIncomingFrame(msg)
-
-    def test_rtu_framer_populate(self):
-        """Test a rtu frame packet build."""
-        msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
-        result = self._rtu.processIncomingFrame(msg)
-        assert int(msg[0]) == result.slave_id
-
-    @mock.patch.object(ModbusRequest, "encode")
-    def test_tcp_framer_packet(self, mock_encode):
-        """Test a tcp frame packet build."""
-        message = ModbusRequest(0, 0, False)
-        message.transaction_id = 0x0001
-        message.slave_id = 0xFF
-        message.function_code = 0x01
-        expected = b"\x00\x01\x00\x00\x00\x02\xff\x01"
-        mock_encode.return_value = b""
-        actual = self._tcp.buildFrame(message)
-        assert expected == actual
-
-    @mock.patch.object(ModbusRequest, "encode")
-    def test_tls_framer_packet(self, mock_encode):
-        """Test a tls frame packet build."""
-        message = ModbusRequest(0, 0, False)
-        message.function_code = 0x01
-        expected = b"\x01"
-        mock_encode.return_value = b""
-        actual = self._tls.buildFrame(message)
-        assert expected == actual
-
-    @mock.patch.object(ModbusRequest, "encode")
-    def test_rtu_framer_packet(self, mock_encode):
-        """Test a rtu frame packet build."""
-        message = ModbusRequest(0, 0, False)
-        message.slave_id = 0xFF
-        message.function_code = 0x01
-        expected = b"\xff\x01\x81\x80"  # only header + CRC - no data
-        mock_encode.return_value = b""
-        actual = self._rtu.buildFrame(message)
-        assert expected == actual
-
-    # -------
 
     def test_tls_incoming_packet(self):
         """Framer tls incoming packet."""

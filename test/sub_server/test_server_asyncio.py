@@ -220,7 +220,7 @@ class TestAsyncioServer:
         ) as process:
             await self.connect_server()
             process.assert_called_once()
-            assert process.call_args[1]["data"] == BasicClient.data
+            assert process.call_args[0][0] == BasicClient.data
 
     async def test_async_tcp_server_roundtrip(self):
         """Test sending and receiving data on tcp socket."""

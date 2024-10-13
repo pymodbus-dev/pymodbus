@@ -38,8 +38,7 @@ class TestFramer:
     @pytest.mark.parametrize(("entry"), list(FramerType))
     async def test_framer_init(self, test_framer):
         """Test framer type."""
-        test_framer.incomming_dev_id = 1
-        assert test_framer.incomming_dev_id
+        assert test_framer
 
     @pytest.mark.parametrize(
         ("func", "test_compare", "expect"),

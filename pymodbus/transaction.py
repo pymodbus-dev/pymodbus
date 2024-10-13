@@ -24,7 +24,7 @@ from pymodbus.framer import (
     FramerTLS,
 )
 from pymodbus.logging import Log
-from pymodbus.pdu import ModbusRequest
+from pymodbus.pdu import ModbusPDU
 from pymodbus.transport import CommType
 from pymodbus.utilities import ModbusTransactionState, hexlify_packets
 
@@ -45,7 +45,7 @@ class ModbusTransactionManager:
     def __init__(self):
         """Initialize an instance of the ModbusTransactionManager."""
         self.tid = 0
-        self.transactions: dict[int, ModbusRequest] = {}
+        self.transactions: dict[int, ModbusPDU] = {}
 
     def __iter__(self):
         """Iterate over the current managed transactions.
@@ -54,7 +54,7 @@ class ModbusTransactionManager:
         """
         return iter(self.transactions.keys())
 
-    def addTransaction(self, request: ModbusRequest):
+    def addTransaction(self, request: ModbusPDU):
         """Add a transaction to the handler.
 
         This holds the request in case it needs to be resent.
@@ -175,7 +175,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
             return False
         return True
 
-    def execute(self, request: ModbusRequest):  # noqa: C901
+    def execute(self, request: ModbusPDU):  # noqa: C901
         """Start the producer to send the next request to consumer.write(Frame(request))."""
         with self._transaction_lock:
             try:
@@ -232,11 +232,11 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                             self._no_response_devices.append(request.slave_id)
                     # No response received and retries not enabled
                     break
-                self.client.framer.processIncomingPacket(
+                if (pdu := self.client.framer.processIncomingFrame(
                     response,
-                    self.addTransaction,
                     tid=request.transaction_id,
-                )
+                )):
+                    self.addTransaction(pdu)
                 if not (response := self.getTransaction(request.transaction_id)):
                     if len(self.transactions):
                         response = self.getTransaction(tid=0)
@@ -279,7 +279,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     return result, None
         return self._transact(packet, response_length, full=full)
 
-    def _transact(self, request: ModbusRequest, response_length, full=False, broadcast=False):
+    def _transact(self, request: ModbusPDU, response_length, full=False, broadcast=False):
         """Do a Write and Read transaction.
 
         :param packet: packet to be sent
@@ -292,7 +292,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
         last_exception = None
         try:
             self.client.connect()
-            packet = self.client.framer.buildPacket(request)
+            packet = self.client.framer.buildFrame(request)
             Log.debug("SEND: {}", packet, ":hex")
             size = self._send(packet)
             if (

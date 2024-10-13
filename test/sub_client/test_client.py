@@ -387,7 +387,7 @@ class MockTransport:
         """Send a response to a received packet."""
         await asyncio.sleep(0.05)
         resp = await self.req.execute(self.ctx)
-        pkt = self.base.ctx.framer.buildPacket(resp)
+        pkt = self.base.ctx.framer.buildFrame(resp)
         self.base.ctx.data_received(pkt)
 
     def write(self, data, addr=None):

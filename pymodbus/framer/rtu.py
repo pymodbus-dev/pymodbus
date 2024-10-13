@@ -97,39 +97,37 @@ class FramerRTU(FramerBase):
     crc16_table: list[int] = [0]
 
 
-    def specific_decode(self, data: bytes, data_len: int) -> tuple[int, bytes]:
+    def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU."""
+        data_len = len(data)
         for used_len in range(data_len):
             if data_len - used_len < self.MIN_SIZE:
                 Log.debug("Short frame: {} wait for more data", data, ":hex")
-                return used_len, self.EMPTY
-            self.incoming_dev_id = int(data[used_len])
+                return used_len, 0, 0, self.EMPTY
+            dev_id = int(data[used_len])
             func_code = int(data[used_len + 1])
-            if (self.dev_ids and self.incoming_dev_id not in self.dev_ids) or func_code & 0x7F not in self.decoder.lookup:
+            if func_code & 0x7F not in self.decoder.lookup:
                 continue
             pdu_class = self.decoder.lookupPduClass(func_code)
             if not (size := pdu_class.calculateRtuFrameSize(data[used_len:])):
                 size = data_len +1
             if data_len < used_len +size:
                 Log.debug("Frame - not ready")
-                # if no_recur:
-                #    return used_len, self.EMPTY
-                # res_len, res_data = self.hunt_second_frame(data[used_len:], data_len - used_len)
-                return used_len, self.EMPTY
+                return used_len, dev_id, 0, self.EMPTY
             start_crc = used_len + size -2
             crc = data[start_crc : start_crc + 2]
             crc_val = (int(crc[0]) << 8) + int(crc[1])
             if not FramerRTU.check_CRC(data[used_len : start_crc], crc_val):
                 Log.debug("Frame check failed, ignoring!!")
                 continue
-            return start_crc + 2, data[used_len + 1 : start_crc]
-        return 0, self.EMPTY
+            return start_crc + 2, dev_id, 0, data[used_len + 1 : start_crc]
+        return 0, 0, 0, self.EMPTY
 
 
     def encode(self, pdu: bytes, device_id: int, _tid: int) -> bytes:
         """Encode ADU."""
-        packet = device_id.to_bytes(1,'big') + pdu
-        return packet + FramerRTU.compute_CRC(packet).to_bytes(2,'big')
+        frame = device_id.to_bytes(1,'big') + pdu
+        return frame + FramerRTU.compute_CRC(frame).to_bytes(2,'big')
 
     @classmethod
     def check_CRC(cls, data: bytes, check: int) -> bool:

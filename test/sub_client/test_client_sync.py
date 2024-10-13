@@ -88,8 +88,8 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client.socket.mock_prepare_receive(test_msg)
         reply_ok = client.read_input_registers(0x820, 1, 1)
         assert not reply_ok.isError()
-        reply_none = client.read_input_registers(0x40, 10, 1)
-        assert reply_none.isError()
+        reply_ok = client.read_input_registers(0x40, 10, 1)
+        assert not reply_ok.isError()
         client.close()
 
     def test_udp_client_repr(self):

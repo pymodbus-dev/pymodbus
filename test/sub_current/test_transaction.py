@@ -229,38 +229,20 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
 
     def test_tcp_framer_transaction_short(self):
         """Test that we can get back on track after an invalid message."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
-        # msg1 = b"\x99\x99\x99\x99\x00\x01\x00\x17"
         msg1 = b''
         msg2 = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
-        self._tcp.processIncomingFrame(msg1, callback)
-        assert not result
-        self._tcp.processIncomingFrame(msg2, callback)
+        assert not self._tcp.processIncomingFrame(msg1)
+        result = self._tcp.processIncomingFrame(msg2)
         assert result
         assert result.function_code.to_bytes(1,'big') + result.encode() == msg2[7:]
 
     def test_tcp_framer_populate(self):
         """Test a tcp frame packet build."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
-        expected = ModbusRequest(0, 0, False)
-        expected.transaction_id = 0x0001
-        expected.slave_id = 0xFF
         msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
-        self._tcp.processIncomingFrame(msg, callback)
+        result = self._tcp.processIncomingFrame(msg)
+        assert result
+        assert result.slave_id == 0xFF
+        assert result.transaction_id == 0x0001
 
     @mock.patch.object(ModbusRequest, "encode")
     def test_tcp_framer_packet(self, mock_encode):
@@ -279,93 +261,25 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     # ----------------------------------------------------------------------- #
     def test_framer_tls_framer_transaction_ready(self):
         """Test a tls frame transaction."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
-        self._tcp.processIncomingFrame(msg[0:4], callback)
-        assert not result
-        self._tcp.processIncomingFrame(msg[4:], callback)
-        assert result
+        assert not self._tcp.processIncomingFrame(msg[0:4])
+        assert self._tcp.processIncomingFrame(msg[4:])
 
     def test_framer_tls_framer_transaction_full(self):
         """Test a full tls frame transaction."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
-        self._tcp.processIncomingFrame(msg, callback)
-        assert result
-
-    def test_framer_tls_framer_transaction_half(self):
-        """Test a half completed tls frame transaction."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
-        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
-        self._tcp.processIncomingFrame(msg[0:8], callback)
-        assert not result
-        self._tcp.processIncomingFrame(msg[8:], callback)
-        assert result
-
-    def test_framer_tls_framer_transaction_short(self):
-        """Test that we can get back on track after an invalid message."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
-        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
-        self._tcp.processIncomingFrame(msg[0:2], callback)
-        assert not result
-        self._tcp.processIncomingFrame(msg[2:], callback)
-        assert result
+        assert self._tcp.processIncomingFrame(msg)
 
     def test_framer_tls_incoming_packet(self):
         """Framer tls incoming packet."""
         msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
-        msg_result = None
-
-        def mock_callback(result):
-            """Mock callback."""
-            nonlocal msg_result
-
-            msg_result = result.encode()
-
-        self._tls.processIncomingFrame(msg, mock_callback)
-        # assert msg == msg_result
+        result = self._tls.processIncomingFrame(msg)
+        assert result
 
     def test_framer_tls_framer_populate(self):
         """Test a tls frame packet build."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
-        self._tcp.processIncomingFrame(msg, callback)
-        assert result
+        assert self._tcp.processIncomingFrame(msg)
 
     @mock.patch.object(ModbusRequest, "encode")
     def test_framer_tls_framer_packet(self, mock_encode):
@@ -382,19 +296,9 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     # ----------------------------------------------------------------------- #
     def test_rtu_framer_transaction_ready(self):
         """Test if the checks for a complete frame work."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg_parts = [b"\x00\x01\x00", b"\x00\x00\x01\xfc\x1b"]
-        self._rtu.processIncomingFrame(msg_parts[0], callback)
-        assert not result
-        self._rtu.processIncomingFrame(msg_parts[1], callback)
-        assert result
+        assert not self._rtu.processIncomingFrame(msg_parts[0])
+        assert self._rtu.processIncomingFrame(msg_parts[1])
 
     def test_rtu_framer_transaction_full(self):
         """Test a full rtu frame transaction."""

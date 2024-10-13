@@ -23,13 +23,13 @@ def set_calls():
             print(f"  dev_id --> {dev_id}")
             for tid in (0, 3077):
                 print(f"    tid --> {tid}")
-                client = framer(ClientDecoder(), [0])
+                client = framer(ClientDecoder())
                 request = ReadHoldingRegistersRequest(124, 2, dev_id)
                 request.transaction_id = tid
                 result = client.buildFrame(request)
                 print(f"      request --> {result}")
                 print(f"      request --> {result.hex()}")
-                server = framer(ServerDecoder(), [0])
+                server = framer(ServerDecoder())
                 response = ReadHoldingRegistersResponse([141,142])
                 response.slave_id = dev_id
                 response.transaction_id = tid

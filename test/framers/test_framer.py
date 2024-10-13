@@ -19,21 +19,18 @@ from .generator import set_calls
 class TestFramer:
     """Test module."""
 
-    def test_setup(self, entry, is_server, dev_ids):
+    def test_setup(self, entry, is_server):
         """Test conftest."""
         assert entry == FramerType.RTU
         assert not is_server
-        assert dev_ids == [0, 17]
         set_calls()
 
     def test_base(self):
         """Test FramerBase."""
-        framer = FramerBase(ClientDecoder(), [])
+        framer = FramerBase(ClientDecoder())
         framer.decode(b'')
         framer.encode(b'', 0, 0)
-        dev_id = 2
-        framer.encode(b'', dev_id, 0)
-        assert dev_id in framer.dev_ids
+        framer.encode(b'', 2, 0)
 
     @pytest.mark.parametrize(("entry"), list(FramerType))
     async def test_framer_init(self, test_framer):
@@ -192,7 +189,7 @@ class TestFramerType:
         """Test encode method."""
         if frame == FramerTLS and dev_id + tr_id:
             return
-        frame_obj = frame(ClientDecoder(), [0])
+        frame_obj = frame(ClientDecoder())
         expected = frame_expected[inx1 + inx2 + inx3]
         encoded_data = frame_obj.encode(data, dev_id, tr_id)
         assert encoded_data == expected

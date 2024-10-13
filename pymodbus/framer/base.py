@@ -32,13 +32,9 @@ class FramerBase:
     def __init__(
         self,
         decoder: ClientDecoder | ServerDecoder,
-        dev_ids: list[int],
     ) -> None:
         """Initialize a ADU (framer) instance."""
         self.decoder = decoder
-        if 0 in dev_ids:
-            dev_ids = []
-        self.dev_ids = dev_ids
         self.databuffer = b""
 
     def decode(self, _data: bytes) -> tuple[int, int, int, bytes]:
@@ -52,14 +48,12 @@ class FramerBase:
         """
         return 0, 0, 0, self.EMPTY
 
-    def encode(self, data: bytes, dev_id: int, _tid: int) -> bytes:
+    def encode(self, data: bytes, _dev_id: int, _tid: int) -> bytes:
         """Encode ADU.
 
         returns:
             modbus ADU (bytes)
         """
-        if dev_id and dev_id not in self.dev_ids:
-            self.dev_ids.append(dev_id)
         return data
 
     def buildFrame(self, message: ModbusPDU) -> bytes:

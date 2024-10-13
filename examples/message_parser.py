@@ -73,8 +73,8 @@ class Decoder:
         print(f"Decoding Message {value}")
         print("=" * 80)
         decoders = [
-            self.framer(ServerDecoder(), []),
-            self.framer(ClientDecoder(), []),
+            self.framer(ServerDecoder()),
+            self.framer(ClientDecoder()),
         ]
         for decoder in decoders:
             print(f"{decoder.decoder.__class__.__name__}")

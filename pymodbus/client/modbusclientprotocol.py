@@ -35,7 +35,7 @@ class ModbusClientProtocol(ModbusProtocol):
         self.on_connect_callback = on_connect_callback
 
         # Common variables.
-        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(ClientDecoder(), [])
+        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(ClientDecoder())
         self.transaction = ModbusTransactionManager()
 
     def _handle_response(self, reply):

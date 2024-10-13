@@ -16,7 +16,7 @@ class TestMultidrop:
     @pytest.fixture(name="framer")
     def fixture_framer(self):
         """Prepare framer."""
-        return FramerRTU(ServerDecoder(), [2])
+        return FramerRTU(ServerDecoder())
 
     @pytest.fixture(name="callback")
     def fixture_callback(self):
@@ -118,7 +118,7 @@ class TestMultidrop:
             """Return none."""
             return None
 
-        framer = FramerAscii(ServerDecoder(), [])
+        framer = FramerAscii(ServerDecoder())
         framer.decoder.decode = return_none
         with pytest.raises(ModbusIOException):
             framer.processIncomingFrame(b':1103007C00026E\r\n')

@@ -68,14 +68,9 @@ class ModbusServerRequestHandler(ModbusProtocol):
         if self.server.broadcast_enable:
             if 0 not in slaves:
                 slaves.append(0)
-        if 0 in slaves:
-            slaves = []
         try:
             self.running = True
-            self.framer = self.server.framer(
-                self.server.decoder,
-                slaves,
-            )
+            self.framer = self.server.framer(self.server.decoder)
 
             # schedule the connection handler on the event loop
             self.handler_task = asyncio.create_task(self.handle())

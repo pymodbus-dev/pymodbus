@@ -186,7 +186,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
         self.slaves: list[int] = []
 
         # Common variables.
-        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(ClientDecoder(), [0])
+        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(ClientDecoder())
         self.transaction = SyncModbusTransactionManager(
             self,
             self.retries,

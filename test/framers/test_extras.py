@@ -1,5 +1,4 @@
 """Test transaction."""
-from unittest import mock
 
 from pymodbus.factory import ServerDecoder
 from pymodbus.framer import (
@@ -8,16 +7,12 @@ from pymodbus.framer import (
     FramerSocket,
     FramerTLS,
 )
-from pymodbus.pdu import ModbusRequest
-from pymodbus.transaction import (
-    SyncModbusTransactionManager,
-)
 
 
 TEST_MESSAGE = b"\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d"
 
 
-class TestTransaction:  # pylint: disable=too-many-public-methods
+class TestExtas:
     """Unittest for the pymodbus.transaction module."""
 
     client = None
@@ -40,7 +35,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tls = FramerTLS(self.decoder)
         self._rtu = FramerRTU(self.decoder)
         self._ascii = FramerAscii(self.decoder)
-        self._manager = SyncModbusTransactionManager(self.client, 3)
 
 
     def test_tcp_framer_transaction_half2(self):

@@ -4,7 +4,6 @@ from unittest import mock
 import pytest
 
 from pymodbus.factory import ClientDecoder
-from pymodbus.pdu import ModbusRequest
 from pymodbus.framer import (
     FramerAscii,
     FramerBase,
@@ -13,6 +12,7 @@ from pymodbus.framer import (
     FramerTLS,
     FramerType,
 )
+from pymodbus.pdu import ModbusRequest
 
 from .generator import set_calls
 
@@ -402,7 +402,7 @@ class TestFramerType:
     ])
     def test_processIncomingFrame_roundtrip(self, entry, test_framer, msg, dev_id, tid, half):
         """Test a tcp frame transaction."""
-        if half and not entry == FramerType.TLS:
+        if half and entry != FramerType.TLS:
             data_len = int(len(msg) / 2)
             assert not test_framer.processIncomingFrame(msg[:data_len])
             result = test_framer.processIncomingFrame(msg[data_len:])

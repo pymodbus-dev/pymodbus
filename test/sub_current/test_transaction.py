@@ -202,55 +202,28 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
 
     def test_tcp_framer_transaction_half(self):
         """Test a half completed tcp frame transaction."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg1 = b"\x00\x01\x12\x34\x00"
         msg2 = b"\x06\xff\x02\x01\x02\x00\x08"
-        self._tcp.processIncomingFrame(msg1, callback)
-        assert not result
-        self._tcp.processIncomingFrame(msg2, callback)
+        assert not self._tcp.processIncomingFrame(msg1)
+        result = self._tcp.processIncomingFrame(msg2)
         assert result
         assert result.function_code.to_bytes(1,'big') + result.encode() == msg2[2:]
 
     def test_tcp_framer_transaction_half2(self):
         """Test a half completed tcp frame transaction."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg1 = b"\x00\x01\x12\x34\x00\x06\xff"
         msg2 = b"\x02\x01\x02\x00\x08"
-        self._tcp.processIncomingFrame(msg1, callback)
-        assert not result
-        self._tcp.processIncomingFrame(msg2, callback)
+        assert not self._tcp.processIncomingFrame(msg1)
+        result = self._tcp.processIncomingFrame(msg2)
         assert result
         assert result.function_code.to_bytes(1,'big') + result.encode() == msg2
 
     def test_tcp_framer_transaction_half3(self):
         """Test a half completed tcp frame transaction."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg1 = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00"
         msg2 = b"\x08"
-        self._tcp.processIncomingFrame(msg1, callback)
-        assert not result
-        self._tcp.processIncomingFrame(msg2, callback)
+        assert not self._tcp.processIncomingFrame(msg1)
+        result = self._tcp.processIncomingFrame(msg2)
         assert result
         assert result.function_code.to_bytes(1,'big') + result.encode() == msg1[7:] + msg2
 

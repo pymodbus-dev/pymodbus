@@ -1,5 +1,5 @@
 """Test framer."""
-
+from unittest import mock
 
 import pytest
 
@@ -12,6 +12,7 @@ from pymodbus.framer import (
     FramerTLS,
     FramerType,
 )
+from pymodbus.pdu import ModbusRequest
 
 from .generator import set_calls
 
@@ -372,3 +373,69 @@ class TestFramerType:
         res_len, _, _, res_data = test_framer.decode(msg)
         assert not res_len
         assert not res_data
+
+    @pytest.mark.parametrize(("is_server"), [True])
+    async def x_processIncomingFrame(self, test_framer):
+        """Test processIncomingFrame."""
+        msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
+        assert test_framer.processIncomingFrame(msg)
+
+    @pytest.mark.parametrize(("is_server"), [True])
+    @pytest.mark.parametrize(("entry", "msg"), [
+        (FramerType.SOCKET, b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"),
+        (FramerType.TLS, b"\x02\x01\x02\x00\x08"),
+        (FramerType.RTU, b"\x00\x01\x00\x00\x00\x01\xfc\x1b"),
+        (FramerType.ASCII, b":F7031389000A60\r\n"),
+    ])
+    def test_processIncomingFrame(self, test_framer, msg):
+        """Test a tcp frame transaction."""
+        assert test_framer.processIncomingFrame(msg)
+        assert not test_framer.databuffer
+
+    @pytest.mark.parametrize(("is_server"), [True])
+    @pytest.mark.parametrize(("half"), [False, True])
+    @pytest.mark.parametrize(("entry", "msg", "dev_id", "tid"), [
+        (FramerType.SOCKET, b"\x00\x01\x00\x00\x00\x06\xff\x02\x01\x02\x00\x08", 0xff, 1),
+        (FramerType.TLS, b"\x02\x01\x02\x00\x08", 0, 0),
+        (FramerType.RTU, b"\x00\x01\x00\x00\x00\x01\xfc\x1b", 0, 0),
+        (FramerType.ASCII, b":F7031389000A60\r\n", 0xf7, 0),
+    ])
+    def test_processIncomingFrame_roundtrip(self, entry, test_framer, msg, dev_id, tid, half):
+        """Test a tcp frame transaction."""
+        if half and entry != FramerType.TLS:
+            data_len = int(len(msg) / 2)
+            assert not test_framer.processIncomingFrame(msg[:data_len])
+            result = test_framer.processIncomingFrame(msg[data_len:])
+        else:
+            result = test_framer.processIncomingFrame(msg)
+        assert result
+        assert result.slave_id == dev_id
+        assert result.transaction_id == tid
+        assert not test_framer.databuffer
+        expected = test_framer.encode(
+            result.function_code.to_bytes(1,'big') + result.encode(),
+            dev_id, 1)
+        assert msg == expected
+
+    @pytest.mark.parametrize(("is_server"), [True])
+    @pytest.mark.parametrize(("entry", "msg"), [
+        (FramerType.SOCKET, b"\x00\x01\x00\x00\x00\x02\xff\x01"),
+        (FramerType.TLS, b"\x01"),
+        (FramerType.RTU, b"\xff\x01\x81\x80"),
+        (FramerType.ASCII, b":FF0100\r\n"),
+    ])
+    def test_framer_encode(self, test_framer, msg):
+        """Test a tcp frame transaction."""
+        with mock.patch.object(ModbusRequest, "encode") as mock_encode:
+            message = ModbusRequest(0, 0, False)
+            message.transaction_id = 0x0001
+            message.slave_id = 0xFF
+            message.function_code = 0x01
+            mock_encode.return_value = b""
+
+            actual = test_framer.buildFrame(message)
+            assert msg == actual
+
+
+
+#    @pytest.mark.parametrize(("entry"), list(FramerType))

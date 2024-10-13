@@ -33,6 +33,7 @@ class TestMultidrop:
         """Test ok frame."""
         serial_event = self.good_frame + self.good_frame
         framer.processIncomingFrame(serial_event, callback)
+        framer.processIncomingFrame(serial_event, callback)
         assert callback.call_count == 2
 
     def test_bad_crc(self, framer, callback):

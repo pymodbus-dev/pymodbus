@@ -39,8 +39,6 @@ class FramerBase:
         if 0 in dev_ids:
             dev_ids = []
         self.dev_ids = dev_ids
-        self.incoming_dev_id = 0
-        self.incoming_tid = 0
         self.databuffer = b""
 
     def decode(self, _data: bytes) -> tuple[int, int, int, bytes]:
@@ -89,6 +87,8 @@ class FramerBase:
                     break
                 if pdu:
                     callback(pdu)
+                    self.databuffer = self.databuffer[used_len:]
+                    return
             except ModbusIOException as exc:
                 self.databuffer = self.EMPTY
                 raise exc
@@ -107,16 +107,16 @@ class FramerBase:
         while True:
             if not data:
                 return 0, None
-            used_len, self.incoming_dev_id, self.incoming_tid, frame_data = self.decode(self.databuffer)
+            used_len, dev_id, tid, frame_data = self.decode(self.databuffer)
             if not frame_data:
                 return used_len, None
-            if self.dev_ids and self.incoming_dev_id not in self.dev_ids:
-                Log.debug("Not a valid slave id - {}, ignoring!!", self.incoming_dev_id)
+            if self.dev_ids and dev_id not in self.dev_ids:
+                Log.debug("Not a valid slave id - {}, ignoring!!", dev_id)
                 return used_len, None
             if (result := self.decoder.decode(frame_data)) is None:
                 raise ModbusIOException("Unable to decode request")
-            result.slave_id = self.incoming_dev_id
-            result.transaction_id = self.incoming_tid
+            result.slave_id = dev_id
+            result.transaction_id = tid
             Log.debug("Frame advanced, resetting header!!")
             if tid and result.transaction_id and tid != result.transaction_id:
                 return used_len, None

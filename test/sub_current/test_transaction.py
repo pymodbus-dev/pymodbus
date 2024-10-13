@@ -481,7 +481,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
 
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
         self._rtu.processIncomingFrame(msg, callback)
-        assert int(msg[0]) == self._rtu.incoming_dev_id
+        assert int(msg[0]) == result.slave_id
 
     @mock.patch.object(ModbusRequest, "encode")
     def test_rtu_framer_packet(self, mock_encode):

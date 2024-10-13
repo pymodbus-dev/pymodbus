@@ -189,31 +189,15 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     # ----------------------------------------------------------------------- #
     def test_tcp_framer_transaction_ready(self):
         """Test a tcp frame transaction."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
 
         msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
-        self._tcp.processIncomingFrame(msg, callback)
-        self._tcp._buffer = msg  # pylint: disable=protected-access
-        callback(b'')
+        assert self._tcp.processIncomingFrame(msg)
+        self._tcp.databuffer = msg
 
     def test_tcp_framer_transaction_full(self):
         """Test a full tcp frame transaction."""
-        count = 0
-        result = None
-        def callback(data):
-            """Simulate callback."""
-            nonlocal count, result
-            count += 1
-            result = data
-
         msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
-        self._tcp.processIncomingFrame(msg, callback)
+        result = self._tcp.processIncomingFrame(msg)
         assert result.function_code.to_bytes(1,'big') + result.encode() == msg[7:]
 
     def test_tcp_framer_transaction_half(self):

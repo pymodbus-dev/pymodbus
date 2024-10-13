@@ -133,15 +133,8 @@ class TestMultidrop:
         with pytest.raises(ModbusIOException):
             framer.processIncomingFrame(b':1103007C00026E\r\n')
 
-    def test_getFrameStart(self, framer):  # pragma: no cover
+    def test_getFrameStart(self, framer):
         """Test getFrameStart."""
-        result = None
-        count = 0
-        def test_callback(data):
-            """Check callback."""
-            nonlocal result, count
-            count += 1
-
         framer_ok = b"\x02\x03\x00\x01\x00\x7d\xd4\x18"
         result = framer.processIncomingFrame(framer_ok)
         assert framer_ok[1:-2] == result.function_code.to_bytes(1,'big')+result.encode()

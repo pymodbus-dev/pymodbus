@@ -189,7 +189,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     # ----------------------------------------------------------------------- #
     def test_tcp_framer_transaction_ready(self):
         """Test a tcp frame transaction."""
-
         msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
         assert self._tcp.processIncomingFrame(msg)
         self._tcp.databuffer = msg

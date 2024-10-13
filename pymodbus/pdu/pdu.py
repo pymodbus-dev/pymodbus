@@ -40,6 +40,8 @@ class ModbusPDU:
        of encoding it again.
     """
 
+    function_code = -1
+
     def __init__(self, slave, transaction, skip_encode):
         """Initialize the base data for a modbus request.
 

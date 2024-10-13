@@ -11,7 +11,7 @@ from enum import Enum
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.logging import Log
-from pymodbus.pdu import ModbusPDU, ModbusRequest, ModbusResponse
+from pymodbus.pdu import ModbusPDU
 
 
 class FramerType(str, Enum):
@@ -62,7 +62,7 @@ class FramerBase:
             self.dev_ids.append(dev_id)
         return data
 
-    def buildFrame(self, message: ModbusRequest | ModbusResponse) -> bytes:
+    def buildFrame(self, message: ModbusPDU) -> bytes:
         """Create a ready to send modbus packet.
 
         :param message: The populated request/response to send

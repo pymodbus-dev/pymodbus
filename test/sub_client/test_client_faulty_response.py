@@ -1,5 +1,4 @@
 """Test server working as slave on a multidrop RS485 line."""
-from unittest import mock
 
 import pytest
 

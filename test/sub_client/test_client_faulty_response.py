@@ -15,7 +15,7 @@ class TestFaultyResponses:
     @pytest.fixture(name="framer")
     def fixture_framer(self):
         """Prepare framer."""
-        return FramerSocket(ClientDecoder(), [])
+        return FramerSocket(ClientDecoder())
 
     def test_ok_frame(self, framer):
         """Test ok frame."""
@@ -24,7 +24,7 @@ class TestFaultyResponses:
     def test_1917_frame(self):
         """Test invalid frame in issue 1917."""
         recv = b"\x01\x86\x02\x00\x01"
-        framer = FramerRTU(ClientDecoder(), [0])
+        framer = FramerRTU(ClientDecoder())
         assert not framer.processIncomingFrame(recv)
 
     def test_faulty_frame1(self, framer):

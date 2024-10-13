@@ -40,10 +40,10 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Set up the test environment."""
         self.client = None
         self.decoder = ServerDecoder()
-        self._tcp = FramerSocket(self.decoder, [])
-        self._tls = FramerTLS(self.decoder, [])
-        self._rtu = FramerRTU(self.decoder, [])
-        self._ascii = FramerAscii(self.decoder, [])
+        self._tcp = FramerSocket(self.decoder)
+        self._tls = FramerTLS(self.decoder)
+        self._rtu = FramerRTU(self.decoder)
+        self._ascii = FramerAscii(self.decoder)
         self._manager = SyncModbusTransactionManager(self.client, 3)
 
     # ----------------------------------------------------------------------- #

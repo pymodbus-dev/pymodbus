@@ -16,7 +16,7 @@ class TestMultidrop:
     @pytest.fixture(name="framer")
     def fixture_framer(self):
         """Prepare framer."""
-        return FramerRTU(ServerDecoder(), [2])
+        return FramerRTU(ServerDecoder())
 
     @pytest.fixture(name="callback")
     def fixture_callback(self):
@@ -37,11 +37,6 @@ class TestMultidrop:
     def test_bad_crc(self, framer):
         """Test bad crc."""
         serial_event = b"\x02\x03\x00\x01\x00}\xd4\x19"  # Manually mangled crc
-        assert not framer.processIncomingFrame(serial_event)
-
-    def test_wrong_id(self, framer):
-        """Test frame wrong id."""
-        serial_event = b"\x01\x03\x00\x01\x00}\xd4+"  # Frame with good CRC but other id
         assert not framer.processIncomingFrame(serial_event)
 
     def test_big_split_response_frame_from_other_id(self, framer):
@@ -116,11 +111,6 @@ class TestMultidrop:
         # We should not respond in this case for identical reasons as test_wrapped_frame
         assert framer.processIncomingFrame(serial_event)
 
-    def test_wrong_dev_id(self):
-        """Test conincidental."""
-        framer = FramerAscii(ServerDecoder(), [87])
-        assert not framer.processIncomingFrame(b':0003007C00027F\r\n')
-
     def test_wrong_class(self):
         """Test conincidental."""
 
@@ -128,7 +118,7 @@ class TestMultidrop:
             """Return none."""
             return None
 
-        framer = FramerAscii(ServerDecoder(), [])
+        framer = FramerAscii(ServerDecoder())
         framer.decoder.decode = return_none
         with pytest.raises(ModbusIOException):
             framer.processIncomingFrame(b':1103007C00026E\r\n')

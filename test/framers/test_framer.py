@@ -403,7 +403,9 @@ class TestFramerType:
         result = test_framer.processIncomingFrame(msg)
         assert result
         assert not test_framer.databuffer
-        expected = test_framer.encode(result.encode(), dev_id, 1)
+        expected = test_framer.encode(
+            result.function_code.to_bytes(1,'big') + result.encode(),
+            dev_id, 1)
         assert msg == expected
 
 #    @pytest.mark.parametrize(("entry"), list(FramerType))

@@ -108,14 +108,9 @@ class FramerBase:
             used_len, dev_id, tid, frame_data = self.decode(self.databuffer)
             if not frame_data:
                 return used_len, None
-            if self.dev_ids and dev_id not in self.dev_ids:
-                Log.debug("Not a valid slave id - {}, ignoring!!", dev_id)
-                return used_len, None
             if (result := self.decoder.decode(frame_data)) is None:
                 raise ModbusIOException("Unable to decode request")
             result.slave_id = dev_id
             result.transaction_id = tid
             Log.debug("Frame advanced, resetting header!!")
-            # if tid and result.transaction_id and tid != result.transaction_id:
-            #    return used_len, None
             return used_len, result

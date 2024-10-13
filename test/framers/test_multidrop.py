@@ -39,11 +39,6 @@ class TestMultidrop:
         serial_event = b"\x02\x03\x00\x01\x00}\xd4\x19"  # Manually mangled crc
         assert not framer.processIncomingFrame(serial_event)
 
-    def test_wrong_id(self, framer):
-        """Test frame wrong id."""
-        serial_event = b"\x01\x03\x00\x01\x00}\xd4+"  # Frame with good CRC but other id
-        assert not framer.processIncomingFrame(serial_event)
-
     def test_big_split_response_frame_from_other_id(self, framer):
         """Test split response."""
         # This is a single *response* from device id 1 after being queried for 125 holding register values
@@ -115,11 +110,6 @@ class TestMultidrop:
         serial_event = self.good_frame + garbage
         # We should not respond in this case for identical reasons as test_wrapped_frame
         assert framer.processIncomingFrame(serial_event)
-
-    def test_wrong_dev_id(self):
-        """Test conincidental."""
-        framer = FramerAscii(ServerDecoder(), [87])
-        assert not framer.processIncomingFrame(b':0003007C00027F\r\n')
 
     def test_wrong_class(self):
         """Test conincidental."""

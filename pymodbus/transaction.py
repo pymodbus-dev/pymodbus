@@ -232,10 +232,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                             self._no_response_devices.append(request.slave_id)
                     # No response received and retries not enabled
                     break
-                if (pdu := self.client.framer.processIncomingFrame(
-                    response,
-                    tid=request.transaction_id,
-                )):
+                if (pdu := self.client.framer.processIncomingFrame(response)):
                     self.addTransaction(pdu)
                 if not (response := self.getTransaction(request.transaction_id)):
                     if len(self.transactions):

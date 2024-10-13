@@ -71,7 +71,7 @@ class FramerBase:
         frame = self.encode(data, message.slave_id, message.transaction_id)
         return frame
 
-    def processIncomingFrame(self, data: bytes, tid=None) -> ModbusPDU | None:
+    def processIncomingFrame(self, data: bytes) -> ModbusPDU | None:
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -82,7 +82,7 @@ class FramerBase:
         self.databuffer += data
         while True:
             try:
-                used_len, pdu = self._processIncomingFrame(self.databuffer, tid=tid)
+                used_len, pdu = self._processIncomingFrame(self.databuffer)
                 if not used_len:
                     return None
                 if pdu:
@@ -93,7 +93,7 @@ class FramerBase:
                 raise exc
             self.databuffer = self.databuffer[used_len:]
 
-    def _processIncomingFrame(self, data: bytes, tid=None) -> tuple[int, ModbusPDU | None]:
+    def _processIncomingFrame(self, data: bytes) -> tuple[int, ModbusPDU | None]:
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -116,6 +116,6 @@ class FramerBase:
             result.slave_id = dev_id
             result.transaction_id = tid
             Log.debug("Frame advanced, resetting header!!")
-            if tid and result.transaction_id and tid != result.transaction_id:
-                return used_len, None
+            # if tid and result.transaction_id and tid != result.transaction_id:
+            #    return used_len, None
             return used_len, result

@@ -123,10 +123,8 @@ class ModbusServerRequestHandler(ModbusProtocol):
         # if broadcast is enabled make sure to
         # process requests to address 0
         Log.debug("Handling data: {}", data, ":hex")
-        self.framer.processIncomingFrame(
-            data=data,
-            callback=lambda x: self.execute(x, *addr),
-        )
+        if (pdu := self.framer.processIncomingFrame(data)):
+           self.execute(pdu, *addr)
 
     async def handle(self) -> None:
         """Coroutine which represents a single master <=> slave conversation.
@@ -152,7 +150,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
                     self._log_exception()
                     self.running = False
             except Exception as exc:  # pylint: disable=broad-except
-                # force TCP socket termination as processIncomingFrame
+                # force TCP socket termination as framer
                 # should handle application layer errors
                 Log.error(
                     'Unknown exception "{}" on stream {} forcing disconnect',

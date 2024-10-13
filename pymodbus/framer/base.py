@@ -71,7 +71,7 @@ class FramerBase:
         frame = self.encode(data, message.slave_id, message.transaction_id)
         return frame
 
-    def processIncomingFrame(self, data: bytes, callback, tid=None):
+    def processIncomingFrame(self, data: bytes, tid=None) -> ModbusPDU | None:
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -84,15 +84,13 @@ class FramerBase:
             try:
                 used_len, pdu = self._processIncomingFrame(self.databuffer, tid=tid)
                 if not used_len:
-                    break
+                    return None
                 if pdu:
-                    callback(pdu)
                     self.databuffer = self.databuffer[used_len:]
-                    return
+                    return pdu
             except ModbusIOException as exc:
                 self.databuffer = self.EMPTY
                 raise exc
-
             self.databuffer = self.databuffer[used_len:]
 
     def _processIncomingFrame(self, data: bytes, tid=None) -> tuple[int, ModbusPDU | None]:

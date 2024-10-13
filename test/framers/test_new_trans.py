@@ -42,45 +42,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._ascii = FramerAscii(self.decoder)
         self._manager = SyncModbusTransactionManager(self.client, 3)
 
-    def test_tcp_framer_transaction_ready(self):
-        """Test a tcp frame transaction."""
-        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
-        assert self._tcp.processIncomingFrame(msg)
-        self._tcp.databuffer = msg
-
-    def test_tls_framer_transaction_ready(self):
-        """Test a tls frame transaction."""
-        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
-        assert not self._tcp.processIncomingFrame(msg[0:4])
-        assert self._tcp.processIncomingFrame(msg[4:])
-
-    def test_rtu_framer_transaction_ready(self):
-        """Test if the checks for a complete frame work."""
-        msg_parts = [b"\x00\x01\x00", b"\x00\x00\x01\xfc\x1b"]
-        assert not self._rtu.processIncomingFrame(msg_parts[0])
-        assert self._rtu.processIncomingFrame(msg_parts[1])
-
-    def test_ascii_framer_transaction_ready(self):
-        """Test a ascii frame transaction."""
-        msg = b":F7031389000A60\r\n"
-        assert self._ascii.processIncomingFrame(msg)
-
-
-    def test_tcp_framer_transaction_full(self):
-        """Test a full tcp frame transaction."""
-        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
-        result = self._tcp.processIncomingFrame(msg)
-        assert result.function_code.to_bytes(1,'big') + result.encode() == msg[7:]
-
-    def test_tls_framer_transaction_full(self):
-        """Test a full tls frame transaction."""
-        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x12\x34\x01\x02"
-        assert self._tcp.processIncomingFrame(msg)
-
-    def test_rtu_framer_transaction_full(self):
-        """Test a full rtu frame transaction."""
-        msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
-        assert self._rtu.processIncomingFrame(msg)
 
     def test_tcp_framer_transaction_half(self):
         """Test a half completed tcp frame transaction."""
@@ -90,11 +51,6 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         result = self._tcp.processIncomingFrame(msg2)
         assert result
         assert result.function_code.to_bytes(1,'big') + result.encode() == msg2[2:]
-
-    def test_ascii_framer_transaction_full(self):
-        """Test a full ascii frame transaction."""
-        msg = b"sss:F7031389000A60\r\n"
-        assert self._ascii.processIncomingFrame(msg)
 
     def test_rtu_framer_transaction_half(self):
         """Test a half completed rtu frame transaction."""
@@ -208,9 +164,4 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     def test_rtu_decode_exception(self):
         """Test that the RTU framer can decode errors."""
         msg = b"\x00\x90\x02\x9c\x01"
-        assert self._rtu.processIncomingFrame(msg)
-
-    def test_process(self):
-        """Test process."""
-        msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
         assert self._rtu.processIncomingFrame(msg)

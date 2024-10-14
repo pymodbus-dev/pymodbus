@@ -30,7 +30,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
     :param source_address: source address of client,
     :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
-    :param timeout: Timeout for a connection request, in seconds.
+    :param timeout: Timeout for connecting and receiving data, in seconds.
     :param retries: Max number of retries per request.
     :param on_connect_callback: Function that will be called just before a connection attempt.
 
@@ -101,7 +101,7 @@ class ModbusUdpClient(ModbusBaseSyncClient):
     :param source_address: source address of client,
     :param reconnect_delay: Not used in the sync client
     :param reconnect_delay_max: Not used in the sync client
-    :param timeout: Timeout for a connection request, in seconds.
+    :param timeout: Timeout for connecting and receiving data, in seconds.
     :param retries: Max number of retries per request.
 
     .. tip::

@@ -108,9 +108,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
             async with self._lock:
                 req = self.build_response(request)
                 self.ctx.send(packet)
-                if not request.slave_id:
-                    resp = None
-                    break
                 try:
                     resp = await asyncio.wait_for(
                         req, timeout=self.ctx.comm_params.timeout_connect
@@ -124,7 +121,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
                 f"ERROR: No response received after {self.retries} retries"
             )
 
-        return resp  # type: ignore[return-value]
+        return resp
 
     def build_response(self, request: ModbusRequest):
         """Return a deferred response for the current request.

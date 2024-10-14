@@ -287,17 +287,7 @@ class mockSocket:  # pylint: disable=invalid-name
         """Receive."""
         if not self.packets or not size:
             return b""
-        # if not self.buffer:
-        #    self.buffer = self.packets.popleft()
-        # if size >= len(self.buffer):
-        #     retval = self.buffer
-        #     self.buffer = None
-        # else:
-        #     retval = self.buffer[0:size]
-        #    self.buffer = self.buffer[size]
-        self.buffer = self.packets.popleft()
-        retval = self.buffer
-        self.buffer = None
+        retval = self.packets.popleft()
         self.in_waiting -= len(retval)
         return retval
 
@@ -308,6 +298,10 @@ class mockSocket:  # pylint: disable=invalid-name
     def recvfrom(self, size):
         """Receive from."""
         return [self.recv(size)]
+
+    def write(self, msg):
+        """Write."""
+        return self.send(msg)
 
     def send(self, msg):
         """Send."""

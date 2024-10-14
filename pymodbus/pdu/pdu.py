@@ -1,6 +1,7 @@
 """Contains base classes for modbus request/response/error packets."""
 from __future__ import annotations
 
+import asyncio
 import struct
 from abc import abstractmethod
 
@@ -18,11 +19,12 @@ class ModbusPDU:
     _rtu_frame_size: int | None = None
     _rtu_byte_count_pos: int | None = None
 
-    def __init__(self, slave: int, transaction, skip_encode):
+    def __init__(self, slave: int, transaction: int, skip_encode: bool):
         """Initialize the base data for a modbus request."""
         self.transaction_id = transaction
         self.slave_id = slave
         self.skip_encode = skip_encode
+        self.fut: asyncio.Future | None = None
 
     @abstractmethod
     def encode(self):
@@ -46,18 +48,8 @@ class ModbusPDU:
         )
 
 
-
-
-
 class ModbusRequest(ModbusPDU):
     """Base class for a modbus request PDU."""
-
-    function_code = -1
-
-    def __init__(self, slave, transaction, skip_encode):
-        """Proxy to the lower level initializer."""
-        super().__init__(slave, transaction, skip_encode)
-        self.fut = None
 
     @abstractmethod
     def encode(self):

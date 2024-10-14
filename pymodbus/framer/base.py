@@ -91,15 +91,14 @@ class FramerBase:
         exist.
         """
         Log.debug("Processing: {}", data, ":hex")
-        while True:
-            if not data:
-                return 0, None
-            used_len, dev_id, tid, frame_data = self.decode(data)
-            if not frame_data:
-                return used_len, None
-            if (result := self.decoder.decode(frame_data)) is None:
-                raise ModbusIOException("Unable to decode request")
-            result.slave_id = dev_id
-            result.transaction_id = tid
-            Log.debug("Frame advanced, resetting header!!")
-            return used_len, result
+        if not data:
+            return 0, None
+        used_len, dev_id, tid, frame_data = self.decode(data)
+        if not frame_data:
+            return used_len, None
+        if (result := self.decoder.decode(frame_data)) is None:
+            raise ModbusIOException("Unable to decode request")
+        result.slave_id = dev_id
+        result.transaction_id = tid
+        Log.debug("Frame advanced, resetting header!!")
+        return used_len, result

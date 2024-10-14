@@ -422,7 +422,6 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client.socket.timeout = 0
         assert client.recv(0) == b""
 
-    @pytest.mark.skip
     def test_serial_client_recv_split(self):
         """Test the serial client receive method."""
         # FAILS WITH THE CURRENT SYNC IMPLEMENTATION !!!

@@ -14,22 +14,8 @@ from pymodbus.pdu import (
 class TestPdu:
     """Unittest for the pymod.pdu module."""
 
-    bad_requests = (
-        ModbusRequest(0, 0, False),
-        ModbusResponse(0, 0, False),
-    )
     illegal = IllegalFunctionRequest(1, 0, 0, False)
     exception = ExceptionResponse(1, 1, 0, 0, False)
-
-    def test_not_impelmented(self):
-        """Test a base classes for not implemented functions."""
-        for request in self.bad_requests:
-            with pytest.raises(NotImplementedException):
-                request.encode()
-
-        for request in self.bad_requests:
-            with pytest.raises(NotImplementedException):
-                request.decode(None)
 
     async def test_error_methods(self):
         """Test all error methods."""

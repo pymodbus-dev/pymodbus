@@ -3,6 +3,7 @@
 
 # pylint: disable=missing-type-doc
 import struct
+from abc import abstractmethod
 
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.logging import Log
@@ -17,7 +18,7 @@ class ModbusPDU:
     .. attribute:: transaction_id
 
        This value is used to uniquely identify a request
-       response pair.  It can be implemented as a simple counter
+       response pair.
 
     .. attribute:: slave_id
 
@@ -26,10 +27,6 @@ class ModbusPDU:
        for the serial versions, it is used to specify which child to perform
        the requests against. The value 0x00 represents the broadcast address
        (also 0xff).
-
-    .. attribute:: check
-
-       This is used for LRC/CRC in the serial modbus protocols
 
     .. attribute:: skip_encode
 
@@ -43,45 +40,28 @@ class ModbusPDU:
     function_code = -1
 
     def __init__(self, slave, transaction, skip_encode):
-        """Initialize the base data for a modbus request.
-
-        :param slave: Modbus slave slave ID
-
-        """
+        """Initialize the base data for a modbus request."""
         self.transaction_id = transaction
         self.slave_id = slave
         self.skip_encode = skip_encode
-        self.check = 0x0000
 
+    @abstractmethod
     def encode(self):
-        """Encode the message.
+        """Encode the message."""
 
-        :raises: A not implemented exception
-        """
-        raise NotImplementedException()
-
+    @abstractmethod
     def decode(self, data):
-        """Decode data part of the message.
-
-        :param data: is a string object
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException()
+        """Decode data part of the message."""
 
     @classmethod
-    def calculateRtuFrameSize(cls, buffer):
-        """Calculate the size of a PDU.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes in the PDU.
-        :raises NotImplementedException:
-        """
+    def calculateRtuFrameSize(cls, data):
+        """Calculate the size of a PDU."""
         if hasattr(cls, "_rtu_frame_size"):
             return cls._rtu_frame_size
         if hasattr(cls, "_rtu_byte_count_pos"):
-            if len(buffer) < cls._rtu_byte_count_pos +1:
+            if len(data) < cls._rtu_byte_count_pos +1:
                 return 0
-            return int(buffer[cls._rtu_byte_count_pos]) + cls._rtu_byte_count_pos + 3
+            return int(data[cls._rtu_byte_count_pos]) + cls._rtu_byte_count_pos + 3
         raise NotImplementedException(
             f"Cannot determine RTU frame size for {cls.__name__}"
         )
@@ -102,6 +82,14 @@ class ModbusRequest(ModbusPDU):
         """
         super().__init__(slave, transaction, skip_encode)
         self.fut = None
+
+    @abstractmethod
+    def encode(self):
+        """Encode the message."""
+
+    @abstractmethod
+    def decode(self, data):
+        """Decode data part of the message."""
 
     def doException(self, exception):
         """Build an error response based on the function.
@@ -141,6 +129,14 @@ class ModbusResponse(ModbusPDU):
         self.bits = []
         self.registers = []
         self.request = None
+
+    @abstractmethod
+    def encode(self):
+        """Encode the message."""
+
+    @abstractmethod
+    def decode(self, data):
+        """Decode data part of the message."""
 
     def isError(self) -> bool:
         """Check if the error is a success or failure."""

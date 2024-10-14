@@ -374,7 +374,6 @@ class TestFramerType:
         assert not res_len
         assert not res_data
 
-    @pytest.mark.skip
     @pytest.mark.parametrize(("is_server"), [True])
     async def test_processIncomingFrame1(self, test_framer):
         """Test processIncomingFrame."""

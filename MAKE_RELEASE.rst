@@ -17,6 +17,7 @@ Prepare/make release on dev.
         git log --oneline v3.7.3..HEAD > commit.log
         git log --pretty="%an" v3.7.3..HEAD | sort -uf > authors.log
         update AUTHORS.rst and CHANGELOG.rst
+        update roadmap.rst
         cd doc; ./build_html
    * rm -rf build/* dist/*
    * python3 -m build

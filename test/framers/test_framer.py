@@ -376,7 +376,7 @@ class TestFramerType:
 
     @pytest.mark.skip
     @pytest.mark.parametrize(("is_server"), [True])
-    async def test_processIncomingFrame(self, test_framer):
+    async def test_processIncomingFrame1(self, test_framer):
         """Test processIncomingFrame."""
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
         _, pdu = test_framer.processIncomingFrame(msg)
@@ -389,7 +389,7 @@ class TestFramerType:
         (FramerType.RTU, b"\x00\x01\x00\x00\x00\x01\xfc\x1b"),
         (FramerType.ASCII, b":F7031389000A60\r\n"),
     ])
-    def test_processIncomingFrame(self, test_framer, msg):
+    def test_processIncomingFrame2(self, test_framer, msg):
         """Test a tcp frame transaction."""
         used_len, pdu = test_framer.processIncomingFrame(msg)
         assert pdu

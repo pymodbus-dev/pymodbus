@@ -98,7 +98,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         client.framer = self._ascii
         client.framer._buffer = b"deadbeef"  # pylint: disable=protected-access
         client.framer.processIncomingFrame = mock.MagicMock()
-        client.framer.processIncomingFrame.return_value = None
+        client.framer.processIncomingFrame.return_value = 0, None
         client.framer.buildFrame = mock.MagicMock()
         client.framer.buildFrame.return_value = b"deadbeef"
         client.send = mock.MagicMock()

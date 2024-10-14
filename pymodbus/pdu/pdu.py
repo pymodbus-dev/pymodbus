@@ -1,7 +1,5 @@
 """Contains base classes for modbus request/response/error packets."""
 
-
-# pylint: disable=missing-type-doc
 import struct
 from abc import abstractmethod
 
@@ -22,11 +20,8 @@ class ModbusPDU:
 
     .. attribute:: slave_id
 
-       This is used to route the request to the correct child. In
-       the TCP modbus, it is used for routing (or not used at all. However,
-       for the serial versions, it is used to specify which child to perform
-       the requests against. The value 0x00 represents the broadcast address
-       (also 0xff).
+       This is used to route the request to the correct child.
+       The value 0x00 represents the broadcast address.
 
     .. attribute:: skip_encode
 
@@ -76,10 +71,7 @@ class ModbusRequest(ModbusPDU):
     function_code = -1
 
     def __init__(self, slave, transaction, skip_encode):
-        """Proxy to the lower level initializer.
-
-        :param slave: Modbus slave slave ID
-        """
+        """Proxy to the lower level initializer."""
         super().__init__(slave, transaction, skip_encode)
         self.fut = None
 
@@ -92,11 +84,7 @@ class ModbusRequest(ModbusPDU):
         """Decode data part of the message."""
 
     def doException(self, exception):
-        """Build an error response based on the function.
-
-        :param exception: The exception to return
-        :raises: An exception response
-        """
+        """Build an error response based on the function."""
         exc = ExceptionResponse(self.function_code, exception)
         Log.error("Exception response {}", exc)
         return exc
@@ -162,10 +150,7 @@ class ModbusExceptions:  # pylint: disable=too-few-public-methods
 
     @classmethod
     def decode(cls, code):
-        """Give an error code, translate it to a string error name.
-
-        :param code: The code number to translate
-        """
+        """Give an error code, translate it to a string error name."""
         values = {
             v: k
             for k, v in iter(cls.__dict__.items())
@@ -199,17 +184,11 @@ class ExceptionResponse(ModbusResponse):
         return struct.pack(">B", self.exception_code)
 
     def decode(self, data):
-        """Decode a modbus exception response.
-
-        :param data: The packet data to decode
-        """
+        """Decode a modbus exception response."""
         self.exception_code = int(data[0])
 
     def __str__(self):
-        """Build a representation of an exception response.
-
-        :returns: The string representation of an exception response
-        """
+        """Build a representation of an exception response."""
         message = ModbusExceptions.decode(self.exception_code)
         parameters = (self.function_code, self.original_code, message)
         return (

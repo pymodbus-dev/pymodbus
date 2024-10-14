@@ -387,11 +387,13 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     total = expected_response_length + min_size
             else:
                 total = expected_response_length
+            result = self.client.recv(expected_response_length)
+            result = read_min + result
         else:
             read_min = b""
             total = expected_response_length
-        result = self.client.recv(expected_response_length)
-        result = read_min + result
+            result = self.client.recv(expected_response_length)
+            result = read_min + result
         actual = len(result)
         if total is not None and actual != total:
             msg_start = "Incomplete message" if actual else "No response"

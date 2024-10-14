@@ -8,6 +8,7 @@ __all__ = [
 ]
 
 import struct
+import time
 from contextlib import suppress
 from threading import RLock
 from typing import TYPE_CHECKING
@@ -387,11 +388,21 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     total = expected_response_length + min_size
             else:
                 total = expected_response_length
+            retries = 0
+            missing_len = expected_response_length
+            result = read_min
+            while missing_len and retries < self.retries:
+                if retries:
+                    time.sleep(0.1)
+                data = self.client.recv(expected_response_length)
+                result += data
+                missing_len -= len(data)
+                retries += 1
         else:
             read_min = b""
             total = expected_response_length
-        result = self.client.recv(expected_response_length)
-        result = read_min + result
+            result = self.client.recv(expected_response_length)
+            result = read_min + result
         actual = len(result)
         if total is not None and actual != total:
             msg_start = "Incomplete message" if actual else "No response"

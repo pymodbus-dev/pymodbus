@@ -1,4 +1,5 @@
 """Contains base classes for modbus request/response/error packets."""
+from __future__ import annotations
 
 import struct
 from abc import abstractmethod
@@ -11,26 +12,13 @@ from pymodbus.logging import Log
 # Base PDUs
 # --------------------------------------------------------------------------- #
 class ModbusPDU:
-    """Base class for all Modbus messages.
+    """Base class for all Modbus messages."""
 
-    .. attribute:: transaction_id
+    function_code: int = -1
+    _rtu_frame_size: int | None = None
+    _rtu_byte_count_pos: int | None = None
 
-       This value is used to uniquely identify a request
-       response pair.
-
-    .. attribute:: slave_id
-
-       This is used to route the request to the correct child.
-       The value 0x00 represents the broadcast address.
-
-    .. attribute:: skip_encode
-
-       This is used when the message payload has already been encoded.
-    """
-
-    function_code = -1
-
-    def __init__(self, slave, transaction, skip_encode):
+    def __init__(self, slave: int, transaction, skip_encode):
         """Initialize the base data for a modbus request."""
         self.transaction_id = transaction
         self.slave_id = slave
@@ -47,9 +35,9 @@ class ModbusPDU:
     @classmethod
     def calculateRtuFrameSize(cls, data):
         """Calculate the size of a PDU."""
-        if hasattr(cls, "_rtu_frame_size"):
+        if cls._rtu_frame_size:
             return cls._rtu_frame_size
-        if hasattr(cls, "_rtu_byte_count_pos"):
+        if cls._rtu_byte_count_pos:
             if len(data) < cls._rtu_byte_count_pos +1:
                 return 0
             return int(data[cls._rtu_byte_count_pos]) + cls._rtu_byte_count_pos + 3

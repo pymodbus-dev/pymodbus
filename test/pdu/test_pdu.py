@@ -42,7 +42,7 @@ class TestPdu:
             ModbusRequest.calculateRtuFrameSize(b"")
         ModbusRequest._rtu_frame_size = 5  # pylint: disable=protected-access
         assert ModbusRequest.calculateRtuFrameSize(b"") == 5
-        del ModbusRequest._rtu_frame_size
+        ModbusRequest._rtu_frame_size = None  # pylint: disable=protected-access
 
         ModbusRequest._rtu_byte_count_pos = 2  # pylint: disable=protected-access
         assert (
@@ -51,13 +51,13 @@ class TestPdu:
             )
             == 0x05 + 5
         )
-        del ModbusRequest._rtu_byte_count_pos
+        ModbusRequest._rtu_byte_count_pos = None  # pylint: disable=protected-access
 
         with pytest.raises(NotImplementedException):
             ModbusResponse.calculateRtuFrameSize(b"")
         ModbusResponse._rtu_frame_size = 12  # pylint: disable=protected-access
         assert ModbusResponse.calculateRtuFrameSize(b"") == 12
-        del ModbusResponse._rtu_frame_size
+        ModbusResponse._rtu_frame_size = None  # pylint: disable=protected-access
         ModbusResponse._rtu_byte_count_pos = 2  # pylint: disable=protected-access
         assert (
             ModbusResponse.calculateRtuFrameSize(
@@ -65,4 +65,4 @@ class TestPdu:
             )
             == 0x05 + 5
         )
-        del ModbusResponse._rtu_byte_count_pos
+        ModbusResponse._rtu_byte_count_pos = None  # pylint: disable=protected-access

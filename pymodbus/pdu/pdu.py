@@ -26,10 +26,6 @@ class ModbusPDU:
     .. attribute:: skip_encode
 
        This is used when the message payload has already been encoded.
-       Generally this will occur when the PayloadBuilder is being used
-       to create a complicated message. By setting this to True, the
-       request will pass the currently encoded message through instead
-       of encoding it again.
     """
 
     function_code = -1

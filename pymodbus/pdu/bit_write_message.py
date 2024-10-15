@@ -49,7 +49,7 @@ class WriteSingleCoilRequest(ModbusPDU):
         :param address: The variable address to write
         :param value: The value to write at address
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.address = address
         self.value = bool(value)
         self.no_response_expected = no_response_expected
@@ -114,13 +114,13 @@ class WriteSingleCoilResponse(ModbusResponse):
     function_code = 5
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address=None, value=None, slave=1, transaction=0, skip_encode=False, no_response_expected=False):
         """Initialize a new instance.
 
         :param address: The variable address written to
         :param value: The value written at address
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        ModbusResponse.__init__(self, slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.address = address
         self.value = value
 
@@ -174,7 +174,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
         :param address: The starting request address
         :param values: The values to write
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.address = address
         if values is None:
             values = []
@@ -252,13 +252,13 @@ class WriteMultipleCoilsResponse(ModbusResponse):
     function_code = 15
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, count=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address=None, count=None, slave=1, transaction=0, skip_encode=False, no_response_expected=False):
         """Initialize a new instance.
 
         :param address: The starting variable address written to
         :param count: The number of values written
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        ModbusResponse.__init__(self, slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.address = address
         self.count = count
 

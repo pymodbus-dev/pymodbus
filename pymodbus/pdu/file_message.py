@@ -154,12 +154,12 @@ class ReadFileRecordResponse(ModbusResponse):
     function_code = 0x14
     _rtu_byte_count_pos = 2
 
-    def __init__(self, records=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, records=None, slave=1, transaction=0, skip_encode=False, no_response_expected=False):
         """Initialize a new instance.
 
         :param records: The requested file records
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        ModbusResponse.__init__(self, slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.records = records or []
 
     def encode(self):
@@ -215,7 +215,7 @@ class WriteFileRecordRequest(ModbusPDU):
 
         :param records: The file record requests to be read
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.records = records or []
         self.no_response_expected = no_response_expected
 
@@ -275,12 +275,12 @@ class WriteFileRecordResponse(ModbusResponse):
     function_code = 0x15
     _rtu_byte_count_pos = 2
 
-    def __init__(self, records=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, records=None, slave=1, transaction=0, skip_encode=False, no_response_expected=False):
         """Initialize a new instance.
 
         :param records: The file record requests to be read
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        ModbusResponse.__init__(self, slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.records = records or []
 
     def encode(self):
@@ -401,12 +401,12 @@ class ReadFifoQueueResponse(ModbusResponse):
         lo_byte = int(buffer[3])
         return (hi_byte << 16) + lo_byte + 6
 
-    def __init__(self, values=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, values=None, slave=1, transaction=0, skip_encode=False, no_response_expected=False):
         """Initialize a new instance.
 
         :param values: The list of values of the fifo to return
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        ModbusResponse.__init__(self, slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.values = values or []
 
     def encode(self):

@@ -40,17 +40,17 @@ class TestModbusBitMessage:
 
     def test_read_bit_base_class_methods(self):
         """Test basic bit message encoding/decoding."""
-        handle = ReadBitsRequestBase(1, 1, 0, 0, False)
+        handle = ReadBitsRequestBase(1, 1, 0, 0, False, False)
         msg = "ReadBitRequest(1,1)"
         assert msg == str(handle)
-        handle = ReadBitsResponseBase([1, 1], 0, 0, False)
+        handle = ReadBitsResponseBase([1, 1], 0, 0, False, False)
         msg = "ReadBitsResponseBase(2)"
         assert msg == str(handle)
 
     def test_bit_read_base_request_encoding(self):
         """Test basic bit message encoding/decoding."""
         for i in range(20):
-            handle = ReadBitsRequestBase(i, i, 0, 0, False)
+            handle = ReadBitsRequestBase(i, i, 0, 0, False, False)
             result = struct.pack(">HH", i, i)
             assert handle.encode() == result
             handle.decode(result)
@@ -60,7 +60,7 @@ class TestModbusBitMessage:
         """Test basic bit message encoding/decoding."""
         for i in range(20):
             data = [True] * i
-            handle = ReadBitsResponseBase(data, 0, 0, False)
+            handle = ReadBitsResponseBase(data, 0, 0, False, False)
             result = handle.encode()
             handle.decode(result)
             assert handle.bits[:i] == data
@@ -68,7 +68,7 @@ class TestModbusBitMessage:
     def test_bit_read_base_response_helper_methods(self):
         """Test the extra methods on a ReadBitsResponseBase."""
         data = [False] * 8
-        handle = ReadBitsResponseBase(data, 0, 0, False)
+        handle = ReadBitsResponseBase(data, 0, 0, False, False)
         for i in (1, 3, 5):
             handle.setBit(i, True)
         for i in (1, 3, 5):
@@ -79,8 +79,8 @@ class TestModbusBitMessage:
     def test_bit_read_base_requests(self):
         """Test bit read request encoding."""
         messages = {
-            ReadBitsRequestBase(12, 14, 0, 0, False): b"\x00\x0c\x00\x0e",
-            ReadBitsResponseBase([1, 0, 1, 1, 0], 0, 0, False): b"\x01\x0d",
+            ReadBitsRequestBase(12, 14, 0, 0, False, False): b"\x00\x0c\x00\x0e",
+            ReadBitsResponseBase([1, 0, 1, 1, 0], 0, 0, False, False): b"\x01\x0d",
         }
         for request, expected in iter(messages.items()):
             assert request.encode() == expected

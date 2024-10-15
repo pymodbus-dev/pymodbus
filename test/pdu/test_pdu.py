@@ -14,7 +14,7 @@ from pymodbus.pdu import (
 class TestPdu:
     """Unittest for the pymod.pdu module."""
 
-    illegal = IllegalFunctionRequest(1, 0, 0, False)
+    illegal = IllegalFunctionRequest(1, 0, 0, False, False)
     exception = ExceptionResponse(1, 1, 0, 0, False)
 
     async def test_error_methods(self):
@@ -29,7 +29,7 @@ class TestPdu:
 
     def test_request_exception_factory(self):
         """Test all error methods."""
-        request = ModbusPDU(0, 0, False)
+        request = ModbusPDU(0, 0, False, False)
         request.function_code = 1
         errors = {ModbusExceptions.decode(c): c for c in range(1, 20)}
         for error, code in iter(errors.items()):

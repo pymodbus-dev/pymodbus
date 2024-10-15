@@ -9,7 +9,7 @@ import struct
 
 from pymodbus.constants import ModbusStatus
 from pymodbus.device import DeviceInformationFactory, ModbusControlBlock
-from pymodbus.pdu import ModbusRequest, ModbusResponse
+from pymodbus.pdu import ModbusPDU, ModbusResponse
 
 
 _MCB = ModbusControlBlock()
@@ -18,7 +18,7 @@ _MCB = ModbusControlBlock()
 # ---------------------------------------------------------------------------#
 #  TODO Make these only work on serial # pylint: disable=fixme
 # ---------------------------------------------------------------------------#
-class ReadExceptionStatusRequest(ModbusRequest):
+class ReadExceptionStatusRequest(ModbusPDU):
     """This function code is used to read the contents of eight Exception Status outputs in a remote device.
 
     The function provides a simple method for
@@ -32,7 +32,7 @@ class ReadExceptionStatusRequest(ModbusRequest):
 
     def __init__(self, slave=None, transaction=0, skip_encode=0):
         """Initialize a new instance."""
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
 
     def encode(self):
         """Encode the message."""
@@ -113,7 +113,7 @@ class ReadExceptionStatusResponse(ModbusResponse):
 # ---------------------------------------------------------------------------#
 #  TODO Make these only work on serial # pylint: disable=fixme
 # ---------------------------------------------------------------------------#
-class GetCommEventCounterRequest(ModbusRequest):
+class GetCommEventCounterRequest(ModbusPDU):
     """This function code is used to get a status word.
 
     And an event count from the remote device's communication event counter.
@@ -137,7 +137,7 @@ class GetCommEventCounterRequest(ModbusRequest):
 
     def __init__(self, slave=1, transaction=0, skip_encode=False):
         """Initialize a new instance."""
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
 
     def encode(self):
         """Encode the message."""
@@ -221,7 +221,7 @@ class GetCommEventCounterResponse(ModbusResponse):
 # ---------------------------------------------------------------------------#
 #  TODO Make these only work on serial # pylint: disable=fixme
 # ---------------------------------------------------------------------------#
-class GetCommEventLogRequest(ModbusRequest):
+class GetCommEventLogRequest(ModbusPDU):
     """This function code is used to get a status word.
 
     Event count, message count, and a field of event bytes from the remote device.
@@ -248,7 +248,7 @@ class GetCommEventLogRequest(ModbusRequest):
 
     def __init__(self, slave=1, transaction=0, skip_encode=False):
         """Initialize a new instance."""
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
 
     def encode(self):
         """Encode the message."""
@@ -357,7 +357,7 @@ class GetCommEventLogResponse(ModbusResponse):
 # ---------------------------------------------------------------------------#
 #  TODO Make these only work on serial # pylint: disable=fixme
 # ---------------------------------------------------------------------------#
-class ReportSlaveIdRequest(ModbusRequest):
+class ReportSlaveIdRequest(ModbusPDU):
     """This function code is used to read the description of the type.
 
     The current status, and other information specific to a remote device.
@@ -373,7 +373,7 @@ class ReportSlaveIdRequest(ModbusRequest):
         :param slave: Modbus slave slave ID
 
         """
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
 
     def encode(self):
         """Encode the message."""

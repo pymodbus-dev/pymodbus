@@ -15,7 +15,7 @@ import struct
 
 from pymodbus import FramerType
 from pymodbus.client import AsyncModbusTcpClient as ModbusClient
-from pymodbus.pdu import ModbusExceptions, ModbusRequest, ModbusResponse
+from pymodbus.pdu import ModbusExceptions, ModbusPDU, ModbusResponse
 from pymodbus.pdu.bit_read_message import ReadCoilsRequest
 
 
@@ -62,7 +62,7 @@ class CustomModbusResponse(ModbusResponse):
             self.values.append(struct.unpack(">H", data[i : i + 2])[0])
 
 
-class CustomModbusRequest(ModbusRequest):
+class CustomRequest(ModbusPDU):
     """Custom modbus request."""
 
     function_code = 55
@@ -70,7 +70,7 @@ class CustomModbusRequest(ModbusRequest):
 
     def __init__(self, address=None, slave=1, transaction=0, skip_encode=False):
         """Initialize."""
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.address = address
         self.count = 16
 
@@ -127,7 +127,7 @@ async def main(host="localhost", port=5020):
         # new modbus function code.
         client.register(CustomModbusResponse)
         slave=1
-        request = CustomModbusRequest(32, slave=slave)
+        request = CustomRequest(32, slave=slave)
         result = await client.execute(request)
         print(result)
 

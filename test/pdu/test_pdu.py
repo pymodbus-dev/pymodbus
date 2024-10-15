@@ -6,7 +6,7 @@ from pymodbus.pdu import (
     ExceptionResponse,
     IllegalFunctionRequest,
     ModbusExceptions,
-    ModbusRequest,
+    ModbusPDU,
     ModbusResponse,
 )
 
@@ -29,7 +29,7 @@ class TestPdu:
 
     def test_request_exception_factory(self):
         """Test all error methods."""
-        request = ModbusRequest(0, 0, False)
+        request = ModbusPDU(0, 0, False)
         request.function_code = 1
         errors = {ModbusExceptions.decode(c): c for c in range(1, 20)}
         for error, code in iter(errors.items()):
@@ -39,19 +39,19 @@ class TestPdu:
     def test_calculate_rtu_frame_size(self):
         """Test the calculation of Modbus/RTU frame sizes."""
         with pytest.raises(NotImplementedException):
-            ModbusRequest.calculateRtuFrameSize(b"")
-        ModbusRequest._rtu_frame_size = 5  # pylint: disable=protected-access
-        assert ModbusRequest.calculateRtuFrameSize(b"") == 5
-        ModbusRequest._rtu_frame_size = None  # pylint: disable=protected-access
+            ModbusPDU.calculateRtuFrameSize(b"")
+        ModbusPDU._rtu_frame_size = 5  # pylint: disable=protected-access
+        assert ModbusPDU.calculateRtuFrameSize(b"") == 5
+        ModbusPDU._rtu_frame_size = None  # pylint: disable=protected-access
 
-        ModbusRequest._rtu_byte_count_pos = 2  # pylint: disable=protected-access
+        ModbusPDU._rtu_byte_count_pos = 2  # pylint: disable=protected-access
         assert (
-            ModbusRequest.calculateRtuFrameSize(
+            ModbusPDU.calculateRtuFrameSize(
                 b"\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6"
             )
             == 0x05 + 5
         )
-        ModbusRequest._rtu_byte_count_pos = None  # pylint: disable=protected-access
+        ModbusPDU._rtu_byte_count_pos = None  # pylint: disable=protected-access
 
         with pytest.raises(NotImplementedException):
             ModbusResponse.calculateRtuFrameSize(b"")

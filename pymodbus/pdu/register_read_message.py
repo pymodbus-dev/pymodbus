@@ -5,11 +5,11 @@
 import struct
 
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.pdu import ExceptionResponse, ModbusRequest, ModbusResponse
+from pymodbus.pdu import ExceptionResponse, ModbusPDU, ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
 
 
-class ReadRegistersRequestBase(ModbusRequest):
+class ReadRegistersRequestBase(ModbusPDU):
     """Base class for reading a modbus register."""
 
     _rtu_frame_size = 8
@@ -235,7 +235,7 @@ class ReadInputRegistersResponse(ReadRegistersResponseBase):
         super().__init__(values, slave, transaction, skip_encode)
 
 
-class ReadWriteMultipleRegistersRequest(ModbusRequest):
+class ReadWriteMultipleRegistersRequest(ModbusPDU):
     """Read/write multiple registers.
 
     This function code performs a combination of one read operation and one

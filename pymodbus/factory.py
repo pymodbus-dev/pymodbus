@@ -144,11 +144,11 @@ class ServerDecoder:
         :param function: Custom function class to register
         :raises MessageRegisterException:
         """
-        if not issubclass(function, pdu.ModbusRequest):
+        if not issubclass(function, pdu.ModbusPDU):
             raise MessageRegisterException(
                 f'"{function.__class__.__name__}" is Not a valid Modbus Message'
                 ". Class needs to be derived from "
-                "`pymodbus.pdu.ModbusRequest` "
+                "`pymodbus.pdu.ModbusPDU` "
             )
         self.lookup[function.function_code] = function
         if hasattr(function, "sub_function_code"):

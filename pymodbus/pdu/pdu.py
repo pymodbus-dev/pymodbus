@@ -54,19 +54,6 @@ class ModbusPDU:
         )
 
 
-class ModbusRequest(ModbusPDU):
-    """Base class for a modbus request PDU."""
-
-    @abstractmethod
-    def encode(self):
-        """Encode the message."""
-
-    @abstractmethod
-    def decode(self, data):
-        """Decode data part of the message."""
-
-
-
 class ModbusResponse(ModbusPDU):
     """Base class for a modbus response PDU.
 
@@ -174,7 +161,7 @@ class ExceptionResponse(ModbusResponse):
         )
 
 
-class IllegalFunctionRequest(ModbusRequest):
+class IllegalFunctionRequest(ModbusPDU):
     """Define the Modbus slave exception type "Illegal Function".
 
     This exception code is returned if the slave::

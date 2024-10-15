@@ -9,7 +9,7 @@ import struct
 
 from pymodbus.constants import ModbusStatus
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusRequest, ModbusResponse
+from pymodbus.pdu import ModbusPDU, ModbusResponse
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
@@ -22,7 +22,7 @@ _turn_coil_on = struct.pack(">H", ModbusStatus.ON)
 _turn_coil_off = struct.pack(">H", ModbusStatus.OFF)
 
 
-class WriteSingleCoilRequest(ModbusRequest):
+class WriteSingleCoilRequest(ModbusPDU):
     """This function code is used to write a single output to either ON or OFF in a remote device.
 
     The requested ON/OFF state is specified by a constant in the request
@@ -49,7 +49,7 @@ class WriteSingleCoilRequest(ModbusRequest):
         :param address: The variable address to write
         :param value: The value to write at address
         """
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.address = address
         self.value = bool(value)
 
@@ -151,7 +151,7 @@ class WriteSingleCoilResponse(ModbusResponse):
         return f"WriteCoilResponse({self.address}) => {self.value}"
 
 
-class WriteMultipleCoilsRequest(ModbusRequest):
+class WriteMultipleCoilsRequest(ModbusPDU):
     """This function code is used to forcea sequence of coils.
 
     To either ON or OFF in a remote device. The Request PDU specifies the coil
@@ -173,7 +173,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         :param address: The starting request address
         :param values: The values to write
         """
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.address = address
         if values is None:
             values = []

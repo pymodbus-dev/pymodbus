@@ -111,5 +111,5 @@ class ExceptionResponse(ModbusPDU):
         """Build a representation of an exception response."""
         message = ModbusExceptions.decode(self.exception_code)
         return (
-            f"Exception Response({self.function_code & 0x80}, {self.exception_code}, {message})"
+            f"Exception Response({self.function_code}, {self.function_code - 0x80}, {message})"
         )

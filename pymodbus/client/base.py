@@ -125,7 +125,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
                 f"ERROR: No response received after {self.retries} retries"
             )
 
-        return resp
+        return resp  # type: ignore[return-value]
 
     def build_response(self, request: ModbusPDU):
         """Return a deferred response for the current request.

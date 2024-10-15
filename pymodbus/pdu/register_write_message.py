@@ -5,7 +5,7 @@
 import struct
 
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusPDU, ModbusResponse
+from pymodbus.pdu import ModbusPDU
 
 
 class WriteSingleRegisterRequest(ModbusPDU):
@@ -82,7 +82,7 @@ class WriteSingleRegisterRequest(ModbusPDU):
         return f"WriteRegisterRequest {self.address}"
 
 
-class WriteSingleRegisterResponse(ModbusResponse):
+class WriteSingleRegisterResponse(ModbusPDU):
     """The normal response is an echo of the request.
 
     Returned after the register contents have been written.
@@ -233,7 +233,7 @@ class WriteMultipleRegistersRequest(ModbusPDU):
         )
 
 
-class WriteMultipleRegistersResponse(ModbusResponse):
+class WriteMultipleRegistersResponse(ModbusPDU):
     """The normal response returns the function code.
 
     Starting address, and quantity of registers written.
@@ -336,7 +336,7 @@ class MaskWriteRegisterRequest(ModbusPDU):
         return MaskWriteRegisterResponse(self.address, self.and_mask, self.or_mask)
 
 
-class MaskWriteRegisterResponse(ModbusResponse):
+class MaskWriteRegisterResponse(ModbusPDU):
     """The normal response is an echo of the request.
 
     The response is returned after the register has been written.

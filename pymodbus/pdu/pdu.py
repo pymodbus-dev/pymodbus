@@ -88,7 +88,7 @@ class ModbusExceptions:  # pylint: disable=too-few-public-methods
         return values.get(code, None)
 
 
-class ExceptionResponse(ModbusResponse):
+class ExceptionResponse(ModbusPDU):
     """Base class for a modbus exception PDU."""
 
     ExceptionOffset = 0x80

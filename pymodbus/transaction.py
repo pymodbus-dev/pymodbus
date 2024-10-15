@@ -218,7 +218,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     expected_response_length,
                     full=full,
                 )
-                if hasattr(request, "no_response_expected") and request.no_response_expected is True:
+                if request.no_response_expected is True:
                     return "Broadcast write sent - no response expected"
                 while retries > 0:
                     if self._validate_response(response):
@@ -284,7 +284,6 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
     def _transact(self, request: ModbusPDU, response_length, full=False):
         """Do a Write and Read transaction.
 
-        :param packet: packet to be sent
         :param response_length:  Expected response length
         :param full: the target device was notorious for its no response. Dont
             waste time this time by partial querying
@@ -309,8 +308,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
             if self.client.comm_params.handle_local_echo is True:
                 if self._recv(size, full) != packet:
                     return b"", "Wrong local echo"
-            no_response_expected = hasattr(request, "no_response_expected") and request.no_response_expected is True
-            if no_response_expected:
+            if request.no_response_expected is True:
                 if size:
                     Log.debug(
                         'Changing transaction state from "SENDING" '

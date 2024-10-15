@@ -95,7 +95,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
             raise ConnectionException(f"Not connected[{self!s}]")
         return self.async_execute(request)
 
-    async def async_execute(self, request) -> ModbusResponse:
+    async def async_execute(self, request) -> ModbusResponse | None:
         """Execute requests asynchronously.
 
         :meta private:
@@ -108,8 +108,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
             async with self._lock:
                 req = self.build_response(request)
                 self.ctx.send(packet)
-                no_response_expected = hasattr(request, "no_response_expected") and request.no_response_expected is True
-                if no_response_expected:
+                if request.no_response_expected:
                     resp = None
                     break
                 try:
@@ -125,7 +124,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
                 f"ERROR: No response received after {self.retries} retries"
             )
 
-        return resp  # type: ignore[return-value]
+        return resp
 
     def build_response(self, request: ModbusPDU):
         """Return a deferred response for the current request.

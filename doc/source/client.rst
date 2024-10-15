@@ -191,9 +191,9 @@ The logical devices represented by the device is addressed with the :mod:`slave=
 With **Serial**, the comm port is defined when creating the object.
 The physical devices are addressed with the :mod:`slave=` parameter.
 
-:mod:`slave=0` is used as broadcast in order to address all devices. To accommodate non-standard behaviour of devices, all request calls to :mod:`slave=0` will expect and wait for at least one response. If multiple devices on the bus are expected to respond to broadcast requests (for example for the purpose of device detection), the application can get upto 254 responses on a single request, and this is not handled with the normal API calls. If an application is expecting multiple responses to a broadcast request, it must call :mod:`client.execute` and deal with the responses.
+:mod:`slave=0` is used as broadcast (in accordance with the modbus standard). To accommodate non-standard behaviour of devices, all request calls to :mod:`slave=0` will expect and wait for one response. If multiple devices on the bus are expected to respond to broadcast requests (for example for the purpose of device detection), the application can get upto 254 responses on a single request, and this is not handled with the normal API calls. If an application is expecting multiple responses to a broadcast request, it must call :mod:`client.execute` and deal with the responses.
 
-If no response is expected to a broadcast or unicast write request, the :mod:`no_response_expected=True` argument can be used in the normal write API calls. However, these write operations will not return indication of failure or success, and will not respect the turnaround delay after sending a broadcast message, therefore, it is the application's responsibility to allow time for the slaves to process the broadcast request before the next request is made on the bus.
+If no response is expected to a request, the :mod:`no_response_expected=True` argument can be used in the normal API calls. However, these requests will not return indication of failure or success, and will not respect the turnaround delay after sending a broadcast message, therefore, it is the application's responsibility to allow time for the slaves to process the broadcast request before the next request is made on the bus.
 
 
 Client response handling

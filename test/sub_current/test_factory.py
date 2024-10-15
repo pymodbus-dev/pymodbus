@@ -3,7 +3,7 @@ import pytest
 
 from pymodbus.exceptions import MessageRegisterException, ModbusException
 from pymodbus.factory import ClientDecoder, ServerDecoder
-from pymodbus.pdu import ModbusPDU, ModbusResponse
+from pymodbus.pdu import ModbusPDU
 
 
 class TestFactory:
@@ -170,7 +170,7 @@ class TestFactory:
     def test_client_register_custom_response(self):
         """Test client register custom response."""
 
-        class CustomResponse(ModbusResponse):
+        class CustomResponse(ModbusPDU):
             """Custom response."""
 
             function_code = 0xFF

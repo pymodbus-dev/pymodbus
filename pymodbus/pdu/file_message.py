@@ -8,7 +8,7 @@ from __future__ import annotations
 import struct
 
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusPDU, ModbusResponse
+from pymodbus.pdu import ModbusPDU
 
 
 # ---------------------------------------------------------------------------#
@@ -142,7 +142,7 @@ class ReadFileRecordRequest(ModbusPDU):
         return ReadFileRecordResponse(files)
 
 
-class ReadFileRecordResponse(ModbusResponse):
+class ReadFileRecordResponse(ModbusPDU):
     """Read file record response.
 
     The normal response is a series of "sub-responses," one for each
@@ -159,7 +159,7 @@ class ReadFileRecordResponse(ModbusResponse):
 
         :param records: The requested file records
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.records = records or []
 
     def encode(self):
@@ -268,7 +268,7 @@ class WriteFileRecordRequest(ModbusPDU):
         return WriteFileRecordResponse(self.records)
 
 
-class WriteFileRecordResponse(ModbusResponse):
+class WriteFileRecordResponse(ModbusPDU):
     """The normal response is an echo of the request."""
 
     function_code = 0x15
@@ -279,7 +279,7 @@ class WriteFileRecordResponse(ModbusResponse):
 
         :param records: The file record requests to be read
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.records = records or []
 
     def encode(self):
@@ -375,7 +375,7 @@ class ReadFifoQueueRequest(ModbusPDU):
         return ReadFifoQueueResponse(self.values)
 
 
-class ReadFifoQueueResponse(ModbusResponse):
+class ReadFifoQueueResponse(ModbusPDU):
     """Read Fifo queue response.
 
     In a normal response, the byte count shows the quantity of bytes to
@@ -405,7 +405,7 @@ class ReadFifoQueueResponse(ModbusResponse):
 
         :param values: The list of values of the fifo to return
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.values = values or []
 
     def encode(self):

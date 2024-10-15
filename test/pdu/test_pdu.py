@@ -7,7 +7,6 @@ from pymodbus.pdu import (
     IllegalFunctionRequest,
     ModbusExceptions,
     ModbusPDU,
-    ModbusResponse,
 )
 
 
@@ -54,15 +53,15 @@ class TestPdu:
         ModbusPDU._rtu_byte_count_pos = None  # pylint: disable=protected-access
 
         with pytest.raises(NotImplementedException):
-            ModbusResponse.calculateRtuFrameSize(b"")
-        ModbusResponse._rtu_frame_size = 12  # pylint: disable=protected-access
-        assert ModbusResponse.calculateRtuFrameSize(b"") == 12
-        ModbusResponse._rtu_frame_size = None  # pylint: disable=protected-access
-        ModbusResponse._rtu_byte_count_pos = 2  # pylint: disable=protected-access
+            ModbusPDU.calculateRtuFrameSize(b"")
+        ModbusPDU._rtu_frame_size = 12  # pylint: disable=protected-access
+        assert ModbusPDU.calculateRtuFrameSize(b"") == 12
+        ModbusPDU._rtu_frame_size = None  # pylint: disable=protected-access
+        ModbusPDU._rtu_byte_count_pos = 2  # pylint: disable=protected-access
         assert (
-            ModbusResponse.calculateRtuFrameSize(
+            ModbusPDU.calculateRtuFrameSize(
                 b"\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6"
             )
             == 0x05 + 5
         )
-        ModbusResponse._rtu_byte_count_pos = None  # pylint: disable=protected-access
+        ModbusPDU._rtu_byte_count_pos = None  # pylint: disable=protected-access

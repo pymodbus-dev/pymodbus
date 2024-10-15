@@ -5,7 +5,7 @@
 import struct
 
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.pdu import ExceptionResponse, ModbusPDU, ModbusResponse
+from pymodbus.pdu import ExceptionResponse, ModbusPDU
 from pymodbus.pdu import ModbusExceptions as merror
 
 
@@ -54,7 +54,7 @@ class ReadRegistersRequestBase(ModbusPDU):
         return f"{self.__class__.__name__} ({self.address},{self.count})"
 
 
-class ReadRegistersResponseBase(ModbusResponse):
+class ReadRegistersResponseBase(ModbusPDU):
     """Base class for responding to a modbus register read.
 
     The requested registers can be found in the .registers list.

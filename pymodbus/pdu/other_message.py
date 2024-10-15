@@ -9,7 +9,7 @@ import struct
 
 from pymodbus.constants import ModbusStatus
 from pymodbus.device import DeviceInformationFactory, ModbusControlBlock
-from pymodbus.pdu import ModbusPDU, ModbusResponse
+from pymodbus.pdu import ModbusPDU
 
 
 _MCB = ModbusControlBlock()
@@ -60,7 +60,7 @@ class ReadExceptionStatusRequest(ModbusPDU):
         return f"ReadExceptionStatusRequest({self.function_code})"
 
 
-class ReadExceptionStatusResponse(ModbusResponse):
+class ReadExceptionStatusResponse(ModbusPDU):
     """The normal response contains the status of the eight Exception Status outputs.
 
     The outputs are packed into one data byte, with one bit
@@ -77,7 +77,7 @@ class ReadExceptionStatusResponse(ModbusResponse):
 
         :param status: The status response to report
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.status = status if status < 256 else 255
 
     def encode(self):
@@ -165,7 +165,7 @@ class GetCommEventCounterRequest(ModbusPDU):
         return f"GetCommEventCounterRequest({self.function_code})"
 
 
-class GetCommEventCounterResponse(ModbusResponse):
+class GetCommEventCounterResponse(ModbusPDU):
     """Get comm event counter response.
 
     The normal response contains a two-byte status word, and a two-byte
@@ -183,7 +183,7 @@ class GetCommEventCounterResponse(ModbusResponse):
 
         :param count: The current event counter value
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.count = count
         self.status = True  # this means we are ready, not waiting
 
@@ -281,7 +281,7 @@ class GetCommEventLogRequest(ModbusPDU):
         return f"GetCommEventLogRequest({self.function_code})"
 
 
-class GetCommEventLogResponse(ModbusResponse):
+class GetCommEventLogResponse(ModbusPDU):
     """Get Comm event log response.
 
     The normal response contains a two-byte status word field,
@@ -301,7 +301,7 @@ class GetCommEventLogResponse(ModbusResponse):
         :param event_count: The current event count
         :param events: The collection of events to send
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.status = status
         self.message_count = message_count
         self.event_count = event_count
@@ -417,7 +417,7 @@ class ReportSlaveIdRequest(ModbusPDU):
         return f"ReportSlaveIdRequest({self.function_code})"
 
 
-class ReportSlaveIdResponse(ModbusResponse):
+class ReportSlaveIdResponse(ModbusPDU):
     """Show response.
 
     The data contents are specific to each type of device.
@@ -432,7 +432,7 @@ class ReportSlaveIdResponse(ModbusResponse):
         :param identifier: The identifier of the slave
         :param status: The status response to report
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.identifier = identifier
         self.status = status
         self.byte_count = None

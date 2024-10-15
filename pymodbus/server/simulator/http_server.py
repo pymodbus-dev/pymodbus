@@ -756,8 +756,8 @@ class ModbusSimulatorServer:
         skip_encoding = False
         if self.call_response.active == RESPONSE_EMPTY:
             Log.warning("Sending empty response")
-            response.should_respond = False
-        elif self.call_response.active == RESPONSE_NORMAL:
+            return None, False
+        if self.call_response.active == RESPONSE_NORMAL:
             if self.call_response.delay:
                 Log.warning(
                     "Delaying response by {}s for all incoming requests",

@@ -24,6 +24,8 @@ class ModbusPDU:
         self.transaction_id = transaction
         self.slave_id = slave
         self.skip_encode = skip_encode
+        self.bits: list[bool] = []
+        self.registers: list[int] = []
         self.fut: asyncio.Future | None = None
 
     @abstractmethod
@@ -40,6 +42,10 @@ class ModbusPDU:
         Log.error("Exception response {}", exc)
         return exc
 
+    def isError(self) -> bool:
+        """Check if the error is a success or failure."""
+        return self.function_code > 0x80
+
     @classmethod
     def calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
@@ -52,47 +58,6 @@ class ModbusPDU:
         raise NotImplementedException(
             f"Cannot determine RTU frame size for {cls.__name__}"
         )
-
-
-class ModbusResponse(ModbusPDU):
-    """Base class for a modbus response PDU.
-
-    .. attribute:: should_respond
-
-       A flag that indicates if this response returns a result back
-       to the client issuing the request
-
-    .. attribute:: _rtu_frame_size
-
-       Indicates the size of the modbus rtu response used for
-       calculating how much to read.
-    """
-
-    should_respond = True
-    function_code = 0x00
-
-    def __init__(self, slave, transaction, skip_encode):
-        """Proxy the lower level initializer.
-
-        :param slave: Modbus slave slave ID
-
-        """
-        super().__init__(slave, transaction, skip_encode)
-        self.bits = []
-        self.registers = []
-        self.request = None
-
-    @abstractmethod
-    def encode(self):
-        """Encode the message."""
-
-    @abstractmethod
-    def decode(self, data):
-        """Decode data part of the message."""
-
-    def isError(self) -> bool:
-        """Check if the error is a success or failure."""
-        return self.function_code > 0x80
 
 
 # --------------------------------------------------------------------------- #
@@ -123,7 +88,7 @@ class ModbusExceptions:  # pylint: disable=too-few-public-methods
         return values.get(code, None)
 
 
-class ExceptionResponse(ModbusResponse):
+class ExceptionResponse(ModbusPDU):
     """Base class for a modbus exception PDU."""
 
     ExceptionOffset = 0x80

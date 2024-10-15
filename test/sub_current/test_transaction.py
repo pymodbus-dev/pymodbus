@@ -167,7 +167,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test the getting a transaction from the transaction manager."""
         self._manager.reset()
         handle = ModbusPDU(
-            0, self._manager.getNextTID(), False
+            0, self._manager.getNextTID(), False, False
         )
         self._manager.addTransaction(handle)
         result = self._manager.getTransaction(handle.transaction_id)
@@ -177,7 +177,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         """Test deleting a transaction from the dict transaction manager."""
         self._manager.reset()
         handle = ModbusPDU(
-            0, self._manager.getNextTID(), False
+            0, self._manager.getNextTID(), False, False
         )
         self._manager.addTransaction(handle)
         self._manager.delTransaction(handle.transaction_id)

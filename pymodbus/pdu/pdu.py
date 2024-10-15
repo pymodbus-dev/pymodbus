@@ -19,7 +19,7 @@ class ModbusPDU:
     _rtu_frame_size: int = 0
     _rtu_byte_count_pos: int = 0
 
-    def __init__(self, slave: int, transaction: int, skip_encode: bool) -> None:
+    def __init__(self, slave: int, transaction: int, skip_encode: bool, no_response_expected: bool) -> None:
         """Initialize the base data for a modbus request."""
         self.transaction_id = transaction
         self.slave_id = slave
@@ -27,6 +27,7 @@ class ModbusPDU:
         self.bits: list[bool] = []
         self.registers: list[int] = []
         self.fut: asyncio.Future | None = None
+        self.no_response_expected = no_response_expected
 
     @abstractmethod
     def encode(self) -> bytes:
@@ -94,13 +95,18 @@ class ExceptionResponse(ModbusPDU):
     ExceptionOffset = 0x80
     _rtu_frame_size = 5
 
-    def __init__(self, function_code, exception_code=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self,
+                 function_code,
+                 exception_code=None,
+                 slave=1, transaction=0,
+                 skip_encode=False,
+                 no_response_expected=False):
         """Initialize the modbus exception response.
 
         :param function_code: The function to build an exception response for
         :param exception_code: The specific modbus exception to return
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__(slave, transaction, skip_encode, no_response_expected)
         self.original_code = function_code
         self.function_code = function_code | self.ExceptionOffset
         self.exception_code = exception_code
@@ -137,12 +143,12 @@ class IllegalFunctionRequest(ModbusPDU):
 
     ErrorCode = 1
 
-    def __init__(self, function_code, slave, transaction, xskip_encode):
+    def __init__(self, function_code, slave, transaction, xskip_encode, no_response_expected):
         """Initialize a IllegalFunctionRequest.
 
         :param function_code: The function we are erroring on
         """
-        super().__init__(slave, transaction, xskip_encode)
+        super().__init__(slave, transaction, xskip_encode, no_response_expected)
         self.function_code = function_code
 
     def decode(self, _data):

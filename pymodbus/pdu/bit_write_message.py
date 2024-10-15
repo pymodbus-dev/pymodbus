@@ -43,13 +43,13 @@ class WriteSingleCoilRequest(ModbusPDU):
 
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, slave=None, transaction=0, skip_encode=0):
+    def __init__(self, address=None, value=None, slave=None, transaction=0, skip_encode=0, no_response_expected=False):
         """Initialize a new instance.
 
         :param address: The variable address to write
         :param value: The value to write at address
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.address = address
         self.value = bool(value)
 
@@ -113,13 +113,13 @@ class WriteSingleCoilResponse(ModbusPDU):
     function_code = 5
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address=None, value=None, slave=1, transaction=0, skip_encode=False, no_response_expected=False):
         """Initialize a new instance.
 
         :param address: The variable address written to
         :param value: The value written at address
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.address = address
         self.value = value
 
@@ -167,13 +167,13 @@ class WriteMultipleCoilsRequest(ModbusPDU):
     function_code_name = "write_coils"
     _rtu_byte_count_pos = 6
 
-    def __init__(self, address=None, values=None, slave=None, transaction=0, skip_encode=0):
+    def __init__(self, address=None, values=None, slave=None, transaction=0, skip_encode=0, no_response_expected=False):
         """Initialize a new instance.
 
         :param address: The starting request address
         :param values: The values to write
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.address = address
         if values is None:
             values = []
@@ -250,13 +250,13 @@ class WriteMultipleCoilsResponse(ModbusPDU):
     function_code = 15
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, count=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address=None, count=None, slave=1, transaction=0, skip_encode=False, no_response_expected=False):
         """Initialize a new instance.
 
         :param address: The starting variable address written to
         :param count: The number of values written
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.address = address
         self.count = count
 

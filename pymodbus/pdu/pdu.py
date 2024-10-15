@@ -24,6 +24,8 @@ class ModbusPDU:
         self.transaction_id = transaction
         self.slave_id = slave
         self.skip_encode = skip_encode
+        self.bits: list[bool] = []
+        self.registers: list[int] = []
         self.fut: asyncio.Future | None = None
 
     @abstractmethod
@@ -39,6 +41,10 @@ class ModbusPDU:
         exc = ExceptionResponse(self.function_code, exception)
         Log.error("Exception response {}", exc)
         return exc
+
+    def isError(self) -> bool:
+        """Check if the error is a success or failure."""
+        return self.function_code > 0x80
 
     @classmethod
     def calculateRtuFrameSize(cls, data: bytes) -> int:
@@ -57,28 +63,9 @@ class ModbusPDU:
 class ModbusResponse(ModbusPDU):
     """Base class for a modbus response PDU."""
 
-    def __init__(self, slave, transaction, skip_encode):
-        """Proxy the lower level initializer.
-
-        :param slave: Modbus slave slave ID
-
-        """
-        super().__init__(slave, transaction, skip_encode)
-        self.bits = []
-        self.registers = []
-        self.request = None
-
-    @abstractmethod
-    def encode(self):
-        """Encode the message."""
-
     @abstractmethod
     def decode(self, data):
         """Decode data part of the message."""
-
-    def isError(self) -> bool:
-        """Check if the error is a success or failure."""
-        return self.function_code > 0x80
 
 
 # --------------------------------------------------------------------------- #

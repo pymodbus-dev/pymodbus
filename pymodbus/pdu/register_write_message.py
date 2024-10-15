@@ -20,13 +20,13 @@ class WriteSingleRegisterRequest(ModbusPDU):
     function_code_name = "write_register"
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, slave=None, transaction=0, skip_encode=0):
+    def __init__(self, address=None, value=None, slave=None, transaction=0, skip_encode=0, no_response_expected=False):
         """Initialize a new instance.
 
         :param address: The address to start writing add
         :param value: The values to write
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__(slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.address = address
         self.value = value
 
@@ -91,13 +91,13 @@ class WriteSingleRegisterResponse(ModbusPDU):
     function_code = 6
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address=None, value=None, slave=1, transaction=0, skip_encode=False, no_response_expected=False):
         """Initialize a new instance.
 
         :param address: The address to start writing add
         :param value: The values to write
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__(slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.address = address
         self.value = value
 
@@ -152,13 +152,13 @@ class WriteMultipleRegistersRequest(ModbusPDU):
     _rtu_byte_count_pos = 6
     _pdu_length = 5  # func + adress1 + adress2 + outputQuant1 + outputQuant2
 
-    def __init__(self, address=None, values=None, slave=None, transaction=0, skip_encode=0):
+    def __init__(self, address=None, values=None, slave=None, transaction=0, skip_encode=0, no_response_expected=False):
         """Initialize a new instance.
 
         :param address: The address to start writing to
         :param values: The values to write
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__(slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.address = address
         if values is None:
             values = []
@@ -242,13 +242,13 @@ class WriteMultipleRegistersResponse(ModbusPDU):
     function_code = 16
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, count=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address=None, count=None, slave=1, transaction=0, skip_encode=False, no_response_expected=False):
         """Initialize a new instance.
 
         :param address: The address to start writing to
         :param count: The number of registers to write to
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__(slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.address = address
         self.count = count
 
@@ -290,14 +290,22 @@ class MaskWriteRegisterRequest(ModbusPDU):
     function_code_name = "mask_write_register"
     _rtu_frame_size = 10
 
-    def __init__(self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, slave=1, transaction=0, skip_encode=False):
+    def __init__(self,
+                 address=0x0000,
+                 and_mask=0xFFFF,
+                 or_mask=0x0000,
+                 slave=1,
+                 transaction=0,
+                 skip_encode=False,
+                 no_response_expected=False):
         """Initialize a new instance.
 
         :param address: The mask pointer address (0x0000 to 0xffff)
         :param and_mask: The and bitmask to apply to the register address
         :param or_mask: The or bitmask to apply to the register address
+        :param no_response_expected: (optional) The client will not expect a response to the request
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__(slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.address = address
         self.and_mask = and_mask
         self.or_mask = or_mask
@@ -345,14 +353,21 @@ class MaskWriteRegisterResponse(ModbusPDU):
     function_code = 0x16
     _rtu_frame_size = 10
 
-    def __init__(self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, slave=1, transaction=0, skip_encode=False):
+    def __init__(self,
+                 address=0x0000,
+                 and_mask=0xFFFF,
+                 or_mask=0x0000,
+                 slave=1,
+                 transaction=0,
+                 skip_encode=False,
+                 no_response_expected=False):
         """Initialize new instance.
 
         :param address: The mask pointer address (0x0000 to 0xffff)
         :param and_mask: The and bitmask applied to the register address
         :param or_mask: The or bitmask applied to the register address
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__(slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.address = address
         self.and_mask = and_mask
         self.or_mask = or_mask

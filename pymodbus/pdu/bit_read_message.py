@@ -4,11 +4,11 @@
 import struct
 
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusRequest, ModbusResponse
+from pymodbus.pdu import ModbusPDU, ModbusResponse
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
-class ReadBitsRequestBase(ModbusRequest):
+class ReadBitsRequestBase(ModbusPDU):
     """Base class for Messages Requesting bit values."""
 
     _rtu_frame_size = 8
@@ -20,7 +20,7 @@ class ReadBitsRequestBase(ModbusRequest):
         :param count: The number of bits after "address" to read
         :param slave: Modbus slave slave ID
         """
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.address = address
         self.count = count
 

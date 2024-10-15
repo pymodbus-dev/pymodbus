@@ -8,7 +8,7 @@ from __future__ import annotations
 import struct
 
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusRequest, ModbusResponse
+from pymodbus.pdu import ModbusPDU, ModbusResponse
 
 
 # ---------------------------------------------------------------------------#
@@ -61,7 +61,7 @@ class FileRecord:  # pylint: disable=eq-without-hash
 # ---------------------------------------------------------------------------#
 #  File Requests/Responses
 # ---------------------------------------------------------------------------#
-class ReadFileRecordRequest(ModbusRequest):
+class ReadFileRecordRequest(ModbusPDU):
     """Read file record request.
 
     This function code is used to perform a file record read. All request
@@ -94,7 +94,7 @@ class ReadFileRecordRequest(ModbusRequest):
 
         :param records: The file record requests to be read
         """
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.records = records or []
 
     def encode(self):
@@ -197,7 +197,7 @@ class ReadFileRecordResponse(ModbusResponse):
                 self.records.append(record)
 
 
-class WriteFileRecordRequest(ModbusRequest):
+class WriteFileRecordRequest(ModbusPDU):
     """Write file record request.
 
     This function code is used to perform a file record write. All
@@ -215,7 +215,7 @@ class WriteFileRecordRequest(ModbusRequest):
 
         :param records: The file record requests to be read
         """
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.records = records or []
         self.no_response_expected = no_response_expected
 
@@ -322,7 +322,7 @@ class WriteFileRecordResponse(ModbusResponse):
                 self.records.append(record)
 
 
-class ReadFifoQueueRequest(ModbusRequest):
+class ReadFifoQueueRequest(ModbusPDU):
     """Read fifo queue request.
 
     This function code allows to read the contents of a First-In-First-Out
@@ -345,7 +345,7 @@ class ReadFifoQueueRequest(ModbusRequest):
 
         :param address: The fifo pointer address (0x0000 to 0xffff)
         """
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.address = address
         self.values = []  # this should be added to the context
 

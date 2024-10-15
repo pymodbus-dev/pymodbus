@@ -11,7 +11,7 @@ import struct
 from pymodbus.constants import ModbusPlusOperation, ModbusStatus
 from pymodbus.device import ModbusControlBlock
 from pymodbus.exceptions import ModbusException, NotImplementedException
-from pymodbus.pdu import ModbusRequest, ModbusResponse
+from pymodbus.pdu import ModbusPDU, ModbusResponse
 from pymodbus.utilities import pack_bitstring
 
 
@@ -24,7 +24,7 @@ _MCB = ModbusControlBlock()
 # ---------------------------------------------------------------------------#
 #  TODO Make sure all the data is decoded from the response # pylint: disable=fixme
 # ---------------------------------------------------------------------------#
-class DiagnosticStatusRequest(ModbusRequest):
+class DiagnosticStatusRequest(ModbusPDU):
     """This is a base class for all of the diagnostic request functions."""
 
     function_code = 0x08
@@ -33,7 +33,7 @@ class DiagnosticStatusRequest(ModbusRequest):
 
     def __init__(self, slave=1, transaction=0, skip_encode=False):
         """Initialize a diagnostic request."""
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.message = None
 
     def encode(self):

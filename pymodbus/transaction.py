@@ -8,6 +8,7 @@ __all__ = [
 ]
 
 import struct
+import time
 from contextlib import suppress
 from threading import RLock
 from typing import TYPE_CHECKING
@@ -136,6 +137,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
         self.retries = retries
         self._transaction_lock = RLock()
         self._no_response_devices: list[int] = []
+        self.databuffer = b''
         if client:
             self._set_adu_size()
 
@@ -232,17 +234,20 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                             self._no_response_devices.append(request.slave_id)
                     # No response received and retries not enabled
                     break
-                if (pdu := self.client.framer.processIncomingFrame(response)):
+                self.databuffer += response
+                used_len, pdu = self.client.framer.processIncomingFrame(self.databuffer)
+                self.databuffer = self.databuffer[used_len:]
+                if pdu:
                     self.addTransaction(pdu)
-                if not (response := self.getTransaction(request.transaction_id)):
+                if not (result := self.getTransaction(request.transaction_id)):
                     if len(self.transactions):
-                        response = self.getTransaction(tid=0)
+                        result = self.getTransaction(tid=0)
                     else:
                         last_exception = last_exception or (
                             "No Response received from the remote slave"
                             "/Unable to decode response"
                         )
-                        response = ModbusIOException(
+                        result = ModbusIOException(
                             last_exception, request.function_code
                         )
                     self.client.close()
@@ -253,7 +258,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                         '"TRANSACTION_COMPLETE"'
                     )
                     self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
-                return response
+                return result
             except ModbusIOException as exc:
                 # Handle decode errors method
                 Log.error("Modbus IO exception {}", exc)
@@ -387,11 +392,21 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     total = expected_response_length + min_size
             else:
                 total = expected_response_length
+            retries = 0
+            missing_len = expected_response_length
+            result = read_min
+            while missing_len and retries < self.retries:
+                if retries:
+                    time.sleep(0.1)
+                data = self.client.recv(expected_response_length)
+                result += data
+                missing_len -= len(data)
+                retries += 1
         else:
             read_min = b""
             total = expected_response_length
-        result = self.client.recv(expected_response_length)
-        result = read_min + result
+            result = self.client.recv(expected_response_length)
+            result = read_min + result
         actual = len(result)
         if total is not None and actual != total:
             msg_start = "Incomplete message" if actual else "No response"

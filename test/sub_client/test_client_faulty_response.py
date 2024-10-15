@@ -19,17 +19,23 @@ class TestFaultyResponses:
 
     def test_ok_frame(self, framer):
         """Test ok frame."""
-        assert framer.processIncomingFrame(self.good_frame)
+        used_len, pdu = framer.processIncomingFrame(self.good_frame)
+        assert pdu
+        assert used_len == len(self.good_frame)
 
     def test_1917_frame(self):
         """Test invalid frame in issue 1917."""
         recv = b"\x01\x86\x02\x00\x01"
         framer = FramerRTU(ClientDecoder())
-        assert not framer.processIncomingFrame(recv)
+        used_len, pdu = framer.processIncomingFrame(recv)
+        assert not pdu
+        assert used_len
 
     def test_faulty_frame1(self, framer):
         """Test ok frame."""
         faulty_frame = b"\x00\x04\x00\x00\x00\x05\x00\x03\x0a\x00\x04"
         with pytest.raises(ModbusIOException):
             framer.processIncomingFrame(faulty_frame)
-        assert framer.processIncomingFrame(self.good_frame)
+        used_len, pdu = framer.processIncomingFrame(self.good_frame)
+        assert pdu
+        assert used_len == len(self.good_frame)

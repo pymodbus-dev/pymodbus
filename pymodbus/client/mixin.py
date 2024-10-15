@@ -14,7 +14,7 @@ import pymodbus.pdu.other_message as pdu_other_msg
 import pymodbus.pdu.register_read_message as pdu_reg_read
 import pymodbus.pdu.register_write_message as pdu_req_write
 from pymodbus.exceptions import ModbusException
-from pymodbus.pdu import ModbusRequest
+from pymodbus.pdu import ModbusPDU
 
 
 T = TypeVar("T", covariant=False)
@@ -49,7 +49,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     def __init__(self):
         """Initialize."""
 
-    def execute(self, _request: ModbusRequest) -> T:
+    def execute(self, _request: ModbusPDU) -> T:
         """Execute request (code ???).
 
         :raises ModbusException:

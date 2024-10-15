@@ -5,10 +5,10 @@
 import struct
 
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusRequest, ModbusResponse
+from pymodbus.pdu import ModbusPDU, ModbusResponse
 
 
-class WriteSingleRegisterRequest(ModbusRequest):
+class WriteSingleRegisterRequest(ModbusPDU):
     """This function code is used to write a single holding register in a remote device.
 
     The Request PDU specifies the address of the register to
@@ -139,7 +139,7 @@ class WriteSingleRegisterResponse(ModbusResponse):
 # ---------------------------------------------------------------------------#
 #  Write Multiple Registers
 # ---------------------------------------------------------------------------#
-class WriteMultipleRegistersRequest(ModbusRequest):
+class WriteMultipleRegistersRequest(ModbusPDU):
     """This function code is used to write a block.
 
     Of contiguous registers (1 to approx. 120 registers) in a remote device.
@@ -280,7 +280,7 @@ class WriteMultipleRegistersResponse(ModbusResponse):
         )
 
 
-class MaskWriteRegisterRequest(ModbusRequest):
+class MaskWriteRegisterRequest(ModbusPDU):
     """This function code is used to modify the contents.
 
     Of a specified holding register using a combination of an AND mask,

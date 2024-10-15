@@ -19,10 +19,12 @@ The following bullet points are what the maintainers focus on:
     - optimized framer, limited support for multidrop on the server side
     - more typing in the core
     - 100% test coverage fixed for all new parts (currently transport and framer)
+    - better broadcast handling
 - 3.7.5, bug fix release, hopefully with:
-    - Updated PDU, moving client/server decoder into pud.
+    - Updated PDU, moving client/server decoder into pdu.
+    - Simplify PDU classes
 - 3.7.6, bug fix release, with:
-    - ???
+    - Foundation for new transaction
 - 3.8.0, with:
     - new transaction handling
 - 4.0.0, with:

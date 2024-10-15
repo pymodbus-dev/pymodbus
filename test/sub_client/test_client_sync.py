@@ -422,6 +422,21 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client.socket.timeout = 0
         assert client.recv(0) == b""
 
+    def test_serial_client_recv_split(self):
+        """Test the serial client receive method."""
+        client = ModbusSerialClient("/dev/null")
+        with pytest.raises(ConnectionException):
+            client.recv(1024)
+        client.socket = mockSocket(copy_send=False)
+        client.socket.mock_prepare_receive(b'')
+        client.socket.mock_prepare_receive(b'\x11\x03\x06\xAE')
+        client.socket.mock_prepare_receive(b'\x41\x56\x52\x43\x40\x49')
+        client.socket.mock_prepare_receive(b'\xAD')
+        reply_ok = client.read_input_registers(0x820, 3, slave=17)
+        assert not reply_ok.isError()
+        client.close()
+
+
     def test_serial_client_repr(self):
         """Test serial client."""
         client = ModbusSerialClient("/dev/null")

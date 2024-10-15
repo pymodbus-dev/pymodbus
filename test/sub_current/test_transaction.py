@@ -11,7 +11,7 @@ from pymodbus.framer import (
     FramerSocket,
     FramerTLS,
 )
-from pymodbus.pdu import ModbusRequest
+from pymodbus.pdu import ModbusPDU
 from pymodbus.transaction import (
     ModbusTransactionManager,
     SyncModbusTransactionManager,
@@ -98,7 +98,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         client.framer = self._ascii
         client.framer._buffer = b"deadbeef"  # pylint: disable=protected-access
         client.framer.processIncomingFrame = mock.MagicMock()
-        client.framer.processIncomingFrame.return_value = None
+        client.framer.processIncomingFrame.return_value = 0, None
         client.framer.buildFrame = mock.MagicMock()
         client.framer.buildFrame.return_value = b"deadbeef"
         client.send = mock.MagicMock()
@@ -166,7 +166,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     def test_get_transaction_manager_transaction(self):
         """Test the getting a transaction from the transaction manager."""
         self._manager.reset()
-        handle = ModbusRequest(
+        handle = ModbusPDU(
             0, self._manager.getNextTID(), False
         )
         self._manager.addTransaction(handle)
@@ -176,7 +176,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     def test_delete_transaction_manager_transaction(self):
         """Test deleting a transaction from the dict transaction manager."""
         self._manager.reset()
-        handle = ModbusRequest(
+        handle = ModbusPDU(
             0, self._manager.getNextTID(), False
         )
         self._manager.addTransaction(handle)

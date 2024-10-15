@@ -48,6 +48,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
         self.running = False
         self.receive_queue: asyncio.Queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
+        self.databuffer = b''
         self.framer: FramerBase
         self.loop = asyncio.get_running_loop()
 
@@ -117,8 +118,11 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
         # if broadcast is enabled make sure to
         # process requests to address 0
-        Log.debug("Handling data: {}", data, ":hex")
-        if (pdu := self.framer.processIncomingFrame(data)):
+        self.databuffer += data
+        Log.debug("Handling data: {}", self.databuffer, ":hex")
+        used_len, pdu = self.framer.processIncomingFrame(self.databuffer)
+        self.databuffer = self.databuffer[used_len:]
+        if pdu:
            self.execute(pdu, *addr)
 
     async def handle(self) -> None:

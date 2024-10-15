@@ -12,7 +12,7 @@ from pymodbus.framer import (
     FramerTLS,
     FramerType,
 )
-from pymodbus.pdu import ModbusRequest
+from pymodbus.pdu import ModbusPDU
 
 from .generator import set_calls
 
@@ -375,10 +375,11 @@ class TestFramerType:
         assert not res_data
 
     @pytest.mark.parametrize(("is_server"), [True])
-    async def x_processIncomingFrame(self, test_framer):
+    async def test_processIncomingFrame1(self, test_framer):
         """Test processIncomingFrame."""
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
-        assert test_framer.processIncomingFrame(msg)
+        _, pdu = test_framer.processIncomingFrame(msg)
+        assert pdu
 
     @pytest.mark.parametrize(("is_server"), [True])
     @pytest.mark.parametrize(("entry", "msg"), [
@@ -387,10 +388,11 @@ class TestFramerType:
         (FramerType.RTU, b"\x00\x01\x00\x00\x00\x01\xfc\x1b"),
         (FramerType.ASCII, b":F7031389000A60\r\n"),
     ])
-    def test_processIncomingFrame(self, test_framer, msg):
+    def test_processIncomingFrame2(self, test_framer, msg):
         """Test a tcp frame transaction."""
-        assert test_framer.processIncomingFrame(msg)
-        assert not test_framer.databuffer
+        used_len, pdu = test_framer.processIncomingFrame(msg)
+        assert pdu
+        assert used_len == len(msg)
 
     @pytest.mark.parametrize(("is_server"), [True])
     @pytest.mark.parametrize(("half"), [False, True])
@@ -404,10 +406,13 @@ class TestFramerType:
         """Test a tcp frame transaction."""
         if half and entry != FramerType.TLS:
             data_len = int(len(msg) / 2)
-            assert not test_framer.processIncomingFrame(msg[:data_len])
-            result = test_framer.processIncomingFrame(msg[data_len:])
+            used_len, pdu = test_framer.processIncomingFrame(msg[:data_len])
+            assert not pdu
+            assert not used_len
+            used_len, result = test_framer.processIncomingFrame(msg)
         else:
-            result = test_framer.processIncomingFrame(msg)
+            used_len, result = test_framer.processIncomingFrame(msg)
+        assert used_len == len(msg)
         assert result
         assert result.slave_id == dev_id
         assert result.transaction_id == tid
@@ -426,8 +431,8 @@ class TestFramerType:
     ])
     def test_framer_encode(self, test_framer, msg):
         """Test a tcp frame transaction."""
-        with mock.patch.object(ModbusRequest, "encode") as mock_encode:
-            message = ModbusRequest(0, 0, False)
+        with mock.patch.object(ModbusPDU, "encode") as mock_encode:
+            message = ModbusPDU(0, 0, False)
             message.transaction_id = 0x0001
             message.slave_id = 0xFF
             message.function_code = 0x01

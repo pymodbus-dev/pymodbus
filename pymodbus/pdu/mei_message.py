@@ -7,7 +7,7 @@ import struct
 from pymodbus.constants import DeviceInformation, MoreData
 from pymodbus.device import DeviceInformationFactory, ModbusControlBlock
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusRequest, ModbusResponse
+from pymodbus.pdu import ModbusPDU, ModbusResponse
 
 
 _MCB = ModbusControlBlock()
@@ -35,7 +35,7 @@ class _OutOfSpaceException(Exception):
 # ---------------------------------------------------------------------------#
 #  Read Device Information
 # ---------------------------------------------------------------------------#
-class ReadDeviceInformationRequest(ModbusRequest):
+class ReadDeviceInformationRequest(ModbusPDU):
     """Read device information.
 
     This function code allows reading the identification and additional
@@ -58,7 +58,7 @@ class ReadDeviceInformationRequest(ModbusRequest):
         :param read_code: The device information read code
         :param object_id: The object to read from
         """
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.read_code = read_code or DeviceInformation.BASIC
         self.object_id = object_id
 

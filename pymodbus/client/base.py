@@ -12,7 +12,7 @@ from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.factory import ClientDecoder
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from pymodbus.logging import Log
-from pymodbus.pdu import ModbusRequest, ModbusResponse
+from pymodbus.pdu import ModbusPDU, ModbusResponse
 from pymodbus.transaction import SyncModbusTransactionManager
 from pymodbus.transport import CommParams
 from pymodbus.utilities import ModbusTransactionState
@@ -82,7 +82,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
         """Close connection."""
         self.ctx.close()
 
-    def execute(self, request: ModbusRequest):
+    def execute(self, request: ModbusPDU):
         """Execute request and get response (call **sync/async**).
 
         :param request: The request to process
@@ -123,7 +123,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
 
         return resp
 
-    def build_response(self, request: ModbusRequest):
+    def build_response(self, request: ModbusPDU):
         """Return a deferred response for the current request.
 
         :meta private:
@@ -219,7 +219,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusResponse]):
             return 0
         return self.last_frame_end + self.silent_interval
 
-    def execute(self, request: ModbusRequest) -> ModbusResponse:
+    def execute(self, request: ModbusPDU) -> ModbusResponse:
         """Execute request and get response (call **sync/async**).
 
         :param request: The request to process

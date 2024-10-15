@@ -21,7 +21,7 @@ from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.exceptions import ConnectionException, ModbusException, ModbusIOException
-from pymodbus.pdu import ModbusRequest
+from pymodbus.pdu import ModbusPDU
 from pymodbus.transport import CommParams, CommType
 
 
@@ -241,7 +241,7 @@ async def test_client_instanciate(
     client.connect = lambda: False
     client.transport = None
     with pytest.raises(ConnectionException):
-        client.execute(ModbusRequest(0, 0, False))
+        client.execute(ModbusPDU(0, 0, False))
 
 async def test_client_modbusbaseclient():
     """Test modbus base client class."""
@@ -677,13 +677,13 @@ async def test_client_build_response():
         comm_params=CommParams(),
     )
     with pytest.raises(ConnectionException):
-        await client.build_response(ModbusRequest(0, 0, False))
+        await client.build_response(ModbusPDU(0, 0, False))
 
 
 async def test_client_mixin_execute():
     """Test dummy execute for both sync and async."""
     client = ModbusClientMixin()
     with pytest.raises(NotImplementedError):
-        client.execute(ModbusRequest(0, 0, False))
+        client.execute(ModbusPDU(0, 0, False))
     with pytest.raises(NotImplementedError):
-        await client.execute(ModbusRequest(0, 0, False))
+        await client.execute(ModbusPDU(0, 0, False))

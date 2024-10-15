@@ -120,7 +120,12 @@ class ServerDecoder:
         function_code = int(data[0])
         if not (request := self.lookup.get(function_code, lambda: None)()):
             Log.debug("Factory Request[{}]", function_code)
-            request = pdu.IllegalFunctionRequest(function_code, 0, 0, False)
+            request = pdu.ExceptionResponse(
+                function_code,
+                exception_code=pdu.ModbusExceptions.IllegalFunction,
+                slave=0,
+                transaction=0,
+                skip_encode=False)
         else:
             fc_string = "{}: {}".format(  # pylint: disable=consider-using-f-string
                 str(self.lookup[function_code])  # pylint: disable=use-maxsplit-arg

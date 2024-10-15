@@ -15,11 +15,11 @@ from pymodbus.logging import Log
 class ModbusPDU:
     """Base class for all Modbus messages."""
 
-    function_code: int = -1
-    _rtu_frame_size: int | None = None
-    _rtu_byte_count_pos: int | None = None
+    function_code: int = 0
+    _rtu_frame_size: int = 0
+    _rtu_byte_count_pos: int = 0
 
-    def __init__(self, slave: int, transaction: int, skip_encode: bool):
+    def __init__(self, slave: int, transaction: int, skip_encode: bool) -> None:
         """Initialize the base data for a modbus request."""
         self.transaction_id = transaction
         self.slave_id = slave
@@ -27,15 +27,21 @@ class ModbusPDU:
         self.fut: asyncio.Future | None = None
 
     @abstractmethod
-    def encode(self):
+    def encode(self) -> bytes:
         """Encode the message."""
 
     @abstractmethod
-    def decode(self, data):
+    def decode(self, data: bytes) -> None:
         """Decode data part of the message."""
 
+    def doException(self, exception: int) -> ExceptionResponse:
+        """Build an error response based on the function."""
+        exc = ExceptionResponse(self.function_code, exception)
+        Log.error("Exception response {}", exc)
+        return exc
+
     @classmethod
-    def calculateRtuFrameSize(cls, data):
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         if cls._rtu_frame_size:
             return cls._rtu_frame_size
@@ -59,11 +65,6 @@ class ModbusRequest(ModbusPDU):
     def decode(self, data):
         """Decode data part of the message."""
 
-    def doException(self, exception):
-        """Build an error response based on the function."""
-        exc = ExceptionResponse(self.function_code, exception)
-        Log.error("Exception response {}", exc)
-        return exc
 
 
 class ModbusResponse(ModbusPDU):

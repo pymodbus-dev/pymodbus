@@ -193,7 +193,6 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 ):
                     Log.debug("Clearing current Frame: - {}", _buffer)
                     self.client.framer.databuffer = b''
-                broadcast = not request.slave_id
                 expected_response_length = None
                 if not isinstance(self.client.framer, FramerSocket):
                     response_pdu_size = request.get_response_pdu_size()
@@ -217,8 +216,9 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     request,
                     expected_response_length,
                     full=full,
-                    broadcast=broadcast,
                 )
+                if request.no_response_expected is True:
+                    return "Broadcast write sent - no response expected"
                 while retries > 0:
                     if self._validate_response(response):
                         if (
@@ -280,14 +280,12 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     return result, None
         return self._transact(packet, response_length, full=full)
 
-    def _transact(self, request: ModbusPDU, response_length, full=False, broadcast=False):
+    def _transact(self, request: ModbusPDU, response_length, full=False):
         """Do a Write and Read transaction.
 
-        :param packet: packet to be sent
         :param response_length:  Expected response length
         :param full: the target device was notorious for its no response. Dont
             waste time this time by partial querying
-        :param broadcast:
         :return: response
         """
         last_exception = None
@@ -309,7 +307,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
             if self.client.comm_params.handle_local_echo is True:
                 if self._recv(size, full) != packet:
                     return b"", "Wrong local echo"
-            if broadcast:
+            if request.no_response_expected is True:
                 if size:
                     Log.debug(
                         'Changing transaction state from "SENDING" '

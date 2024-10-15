@@ -96,7 +96,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
             raise ConnectionException(f"Not connected[{self!s}]")
         return self.async_execute(request)
 
-    async def async_execute(self, request) -> ModbusPDU:
+    async def async_execute(self, request) -> ModbusPDU | None:
         """Execute requests asynchronously.
 
         :meta private:
@@ -109,6 +109,9 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
             async with self._lock:
                 req = self.build_response(request)
                 self.ctx.send(packet)
+                if request.no_response_expected:
+                    resp = None
+                    break
                 try:
                     resp = await asyncio.wait_for(
                         req, timeout=self.ctx.comm_params.timeout_connect

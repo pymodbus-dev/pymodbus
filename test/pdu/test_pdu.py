@@ -4,7 +4,6 @@ import pytest
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.pdu import (
     ExceptionResponse,
-    IllegalFunctionRequest,
     ModbusExceptions,
     ModbusPDU,
 )
@@ -13,14 +12,10 @@ from pymodbus.pdu import (
 class TestPdu:
     """Unittest for the pymod.pdu module."""
 
-    illegal = IllegalFunctionRequest(1, 0, 0, False)
     exception = ExceptionResponse(1, 1, 0, 0, False)
 
     async def test_error_methods(self):
         """Test all error methods."""
-        self.illegal.decode("12345")
-        await self.illegal.execute(None)
-
         result = self.exception.encode()
         self.exception.decode(result)
         assert result == b"\x01"

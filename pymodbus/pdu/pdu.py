@@ -124,36 +124,3 @@ class ExceptionResponse(ModbusPDU):
             "Exception Response(%d, %d, %s)"  # pylint: disable=consider-using-f-string
             % parameters
         )
-
-
-class IllegalFunctionRequest(ModbusPDU):
-    """Define the Modbus slave exception type "Illegal Function".
-
-    This exception code is returned if the slave::
-
-        - does not implement the function code **or**
-        - is not in a state that allows it to process the function
-    """
-
-    ErrorCode = 1
-
-    def __init__(self, function_code, slave, transaction, xskip_encode):
-        """Initialize a IllegalFunctionRequest.
-
-        :param function_code: The function we are erroring on
-        """
-        super().__init__(slave, transaction, xskip_encode)
-        self.function_code = function_code
-
-    def decode(self, _data):
-        """Decode so this failure will run correctly."""
-
-    def encode(self):
-        """Decode so this failure will run correctly."""
-
-    async def execute(self, _context):
-        """Build an illegal function request error response.
-
-        :returns: The error response packet
-        """
-        return ExceptionResponse(self.function_code, self.ErrorCode)

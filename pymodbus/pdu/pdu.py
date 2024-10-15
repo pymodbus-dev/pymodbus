@@ -55,21 +55,7 @@ class ModbusPDU:
 
 
 class ModbusResponse(ModbusPDU):
-    """Base class for a modbus response PDU.
-
-    .. attribute:: should_respond
-
-       A flag that indicates if this response returns a result back
-       to the client issuing the request
-
-    .. attribute:: _rtu_frame_size
-
-       Indicates the size of the modbus rtu response used for
-       calculating how much to read.
-    """
-
-    should_respond = True
-    function_code = 0x00
+    """Base class for a modbus response PDU."""
 
     def __init__(self, slave, transaction, skip_encode):
         """Proxy the lower level initializer.

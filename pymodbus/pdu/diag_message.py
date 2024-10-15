@@ -394,7 +394,6 @@ class ForceListenOnlyModeResponse(DiagnosticStatusResponse):
     """
 
     sub_function_code = 0x0004
-    should_respond = False
 
     def __init__(self, slave=1, transaction=0, skip_encode=False):
         """Initialize to block a return response."""

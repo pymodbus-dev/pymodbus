@@ -208,11 +208,11 @@ class ModbusServerRequestHandler(ModbusProtocol):
         """Send message."""
         if kwargs.get("skip_encoding", False):
             self.send(message, addr=addr)
-        elif message.should_respond:
+        if not message:
+            Log.debug("Skipping sending response!!")
+        else:
             pdu = self.framer.buildFrame(message)
             self.send(pdu, addr=addr)
-        else:
-            Log.debug("Skipping sending response!!")
 
     async def _recv_(self):
         """Receive data from the network."""

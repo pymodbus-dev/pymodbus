@@ -108,7 +108,8 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusResponse]]):
             async with self._lock:
                 req = self.build_response(request)
                 self.ctx.send(packet)
-                if not request.slave_id:
+                no_response_expected = hasattr(request, "no_response_expected") and request.no_response_expected is True
+                if no_response_expected:
                     resp = None
                     break
                 try:

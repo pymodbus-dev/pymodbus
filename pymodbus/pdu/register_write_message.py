@@ -20,7 +20,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
     function_code_name = "write_register"
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, slave=None, transaction=0, skip_encode=0):
+    def __init__(self, address=None, value=None, slave=None, transaction=0, skip_encode=0, no_response_expected=False):
         """Initialize a new instance.
 
         :param address: The address to start writing add
@@ -29,6 +29,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
         super().__init__(slave, transaction, skip_encode)
         self.address = address
         self.value = value
+        self.no_response_expected = no_response_expected
 
     def encode(self):
         """Encode a write single register packet packet request.
@@ -152,7 +153,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
     _rtu_byte_count_pos = 6
     _pdu_length = 5  # func + adress1 + adress2 + outputQuant1 + outputQuant2
 
-    def __init__(self, address=None, values=None, slave=None, transaction=0, skip_encode=0):
+    def __init__(self, address=None, values=None, slave=None, transaction=0, skip_encode=0, no_response_expected=False):
         """Initialize a new instance.
 
         :param address: The address to start writing to
@@ -167,6 +168,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         self.values = values
         self.count = len(self.values)
         self.byte_count = self.count * 2
+        self.no_response_expected = no_response_expected
 
     def encode(self):
         """Encode a write single register packet packet request.
@@ -290,17 +292,26 @@ class MaskWriteRegisterRequest(ModbusRequest):
     function_code_name = "mask_write_register"
     _rtu_frame_size = 10
 
-    def __init__(self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, slave=1, transaction=0, skip_encode=False):
+    def __init__(self,
+                 address=0x0000,
+                 and_mask=0xFFFF,
+                 or_mask=0x0000,
+                 slave=1,
+                 transaction=0,
+                 skip_encode=False,
+                 no_response_expected=False):
         """Initialize a new instance.
 
         :param address: The mask pointer address (0x0000 to 0xffff)
         :param and_mask: The and bitmask to apply to the register address
         :param or_mask: The or bitmask to apply to the register address
+        :param no_response_expected: (optional) The client will not expect a response to the request
         """
         super().__init__(slave, transaction, skip_encode)
         self.address = address
         self.and_mask = and_mask
         self.or_mask = or_mask
+        self.no_response_expected = no_response_expected
 
     def encode(self):
         """Encode the request packet.

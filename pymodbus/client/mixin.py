@@ -101,25 +101,33 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(pdu_reg_read.ReadInputRegistersRequest(address, count, slave=slave))
 
-    def write_coil(self, address: int, value: bool, slave: int = 1) -> T:
+    def write_coil(self, address: int, value: bool, slave: int = 1, no_response_expected: bool = False) -> T:
         """Write single coil (code 0x05).
 
         :param address: Address to write to
         :param value: Boolean to write
         :param slave: (optional) Modbus slave ID
+        :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
         """
-        return self.execute(pdu_bit_write.WriteSingleCoilRequest(address, value, slave=slave))
+        return self.execute(pdu_bit_write.WriteSingleCoilRequest(address,
+                                                                 value,
+                                                                 slave=slave,
+                                                                 no_response_expected=no_response_expected))
 
-    def write_register(self, address: int, value: bytes | int, slave: int = 1) -> T:
+    def write_register(self, address: int, value: bytes | int, slave: int = 1, no_response_expected: bool = False) -> T:
         """Write register (code 0x06).
 
         :param address: Address to write to
         :param value: Value to write
         :param slave: (optional) Modbus slave ID
+        :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
         """
-        return self.execute(pdu_req_write.WriteSingleRegisterRequest(address, value, slave=slave))
+        return self.execute(pdu_req_write.WriteSingleRegisterRequest(address,
+                                                                     value,
+                                                                     slave=slave,
+                                                                     no_response_expected=no_response_expected))
 
     def read_exception_status(self, slave: int = 1) -> T:
         """Read Exception Status (code 0x07).
@@ -309,30 +317,43 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         address: int,
         values: list[bool] | bool,
         slave: int = 1,
+        no_response_expected: bool = False
     ) -> T:
         """Write coils (code 0x0F).
 
         :param address: Start address to write to
         :param values: List of booleans to write, or a single boolean to write
         :param slave: (optional) Modbus slave ID
+        :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
         """
         return self.execute(
-            pdu_bit_write.WriteMultipleCoilsRequest(address, values, slave)
+            pdu_bit_write.WriteMultipleCoilsRequest(address, values, slave, no_response_expected=no_response_expected)
         )
 
     def write_registers(
-        self, address: int, values: list[bytes | int], slave: int = 1, skip_encode: bool = False) -> T:
+        self,
+        address: int,
+        values: list[bytes | int],
+        slave: int = 1,
+        skip_encode: bool = False,
+        no_response_expected: bool = False
+    ) -> T:
         """Write registers (code 0x10).
 
         :param address: Start address to write to
         :param values: List of values to write
         :param slave: (optional) Modbus slave ID
         :param skip_encode: (optional) do not encode values
+        :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
         """
         return self.execute(
-            pdu_req_write.WriteMultipleRegistersRequest(address, values, slave=slave, skip_encode=skip_encode)
+            pdu_req_write.WriteMultipleRegistersRequest(address,
+                                                        values,
+                                                        slave=slave,
+                                                        skip_encode=skip_encode,
+                                                        no_response_expected=no_response_expected)
         )
 
     def report_slave_id(self, slave: int = 1) -> T:
@@ -352,14 +373,17 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(pdu_file_msg.ReadFileRecordRequest(records, slave=slave))
 
-    def write_file_record(self, records: list[tuple], slave: int = 1) -> T:
+    def write_file_record(self, records: list[tuple], slave: int = 1, no_response_expected: bool = False) -> T:
         """Write file record (code 0x15).
 
         :param records: List of (Reference type, File number, Record Number, Record Length)
         :param slave: (optional) Device id
+        :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
         """
-        return self.execute(pdu_file_msg.WriteFileRecordRequest(records, slave=slave))
+        return self.execute(pdu_file_msg.WriteFileRecordRequest(records,
+                                                                slave=slave,
+                                                                no_response_expected=no_response_expected))
 
     def mask_write_register(
         self,
@@ -367,6 +391,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         and_mask: int = 0xFFFF,
         or_mask: int = 0x0000,
         slave: int = 1,
+        no_response_expected: bool = False
     ) -> T:
         """Mask write register (code 0x16).
 
@@ -374,10 +399,15 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param and_mask: The and bitmask to apply to the register address
         :param or_mask: The or bitmask to apply to the register address
         :param slave: (optional) device id
+        :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
         """
         return self.execute(
-            pdu_req_write.MaskWriteRegisterRequest(address, and_mask, or_mask, slave=slave)
+            pdu_req_write.MaskWriteRegisterRequest(address,
+                                                   and_mask,
+                                                   or_mask,
+                                                   slave=slave,
+                                                   no_response_expected=no_response_expected)
         )
 
     def readwrite_registers(

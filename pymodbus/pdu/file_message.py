@@ -210,13 +210,14 @@ class WriteFileRecordRequest(ModbusRequest):
     function_code_name = "write_file_record"
     _rtu_byte_count_pos = 2
 
-    def __init__(self, records=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, records=None, slave=1, transaction=0, skip_encode=False, no_response_expected=False):
         """Initialize a new instance.
 
         :param records: The file record requests to be read
         """
         ModbusRequest.__init__(self, slave, transaction, skip_encode)
         self.records = records or []
+        self.no_response_expected = no_response_expected
 
     def encode(self):
         """Encode the request packet.

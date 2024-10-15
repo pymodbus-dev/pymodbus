@@ -89,12 +89,12 @@ class ReadFileRecordRequest(ModbusPDU):
     function_code_name = "read_file_record"
     _rtu_byte_count_pos = 2
 
-    def __init__(self, records=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, records=None, slave=1, transaction=0, skip_encode=False, no_response_expected=False):
         """Initialize a new instance.
 
         :param records: The file record requests to be read
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.records = records or []
 
     def encode(self):
@@ -340,12 +340,12 @@ class ReadFifoQueueRequest(ModbusPDU):
     function_code_name = "read_fifo_queue"
     _rtu_frame_size = 6
 
-    def __init__(self, address=0x0000, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address=0x0000, slave=1, transaction=0, skip_encode=False, no_response_expected=False):
         """Initialize a new instance.
 
         :param address: The fifo pointer address (0x0000 to 0xffff)
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode, no_response_expected=no_response_expected)
         self.address = address
         self.values = []  # this should be added to the context
 

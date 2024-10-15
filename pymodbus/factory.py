@@ -121,7 +121,7 @@ class ServerDecoder:
         if not (request := self.lookup.get(function_code, lambda: None)()):
             Log.debug("Factory Request[{}]", function_code)
             request = pdu.ExceptionResponse(
-                self.function_code,
+                function_code,
                 exception_code=pdu.ModbusExceptions.IllegalFunction,
                 slave=0,
                 transaction=0,

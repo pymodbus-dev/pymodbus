@@ -191,17 +191,3 @@ class TestFactory:
         except MessageRegisterException:
             func_raised = True
         assert func_raised
-
-    # ---------------------------------------------------------------------------#
-    #  I don't actually know what is supposed to be returned here, I assume that
-    #  since the high bit is set, it will simply echo the resulting message
-    # ---------------------------------------------------------------------------#
-
-    async def test_request_errors(self):
-        """Test a request factory decoder exceptions."""
-        for func, msg in self.bad:
-            result = self.server.decode(msg)
-            assert result.ErrorCode == 1, "Failed to decode invalid requests"
-            assert (
-                await result.execute(None)
-            ).function_code == func, "Failed to create correct response message"

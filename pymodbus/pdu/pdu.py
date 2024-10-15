@@ -9,9 +9,6 @@ from pymodbus.exceptions import NotImplementedException
 from pymodbus.logging import Log
 
 
-# --------------------------------------------------------------------------- #
-# Base PDUs
-# --------------------------------------------------------------------------- #
 class ModbusPDU:
     """Base class for all Modbus messages."""
 
@@ -60,9 +57,6 @@ class ModbusPDU:
         )
 
 
-# --------------------------------------------------------------------------- #
-# Exception PDUs
-# --------------------------------------------------------------------------- #
 class ModbusExceptions:  # pylint: disable=too-few-public-methods
     """An enumeration of the valid modbus exceptions."""
 
@@ -78,7 +72,7 @@ class ModbusExceptions:  # pylint: disable=too-few-public-methods
     GatewayNoResponse = 0x0B
 
     @classmethod
-    def decode(cls, code):
+    def decode(cls, code: int) -> str | None:
         """Give an error code, translate it to a string error name."""
         values = {
             v: k
@@ -91,36 +85,31 @@ class ModbusExceptions:  # pylint: disable=too-few-public-methods
 class ExceptionResponse(ModbusPDU):
     """Base class for a modbus exception PDU."""
 
-    ExceptionOffset = 0x80
     _rtu_frame_size = 5
 
-    def __init__(self, function_code, exception_code=None, slave=1, transaction=0, skip_encode=False):
-        """Initialize the modbus exception response.
-
-        :param function_code: The function to build an exception response for
-        :param exception_code: The specific modbus exception to return
-        """
+    def __init__(
+            self,
+            function_code: int,
+            exception_code: int = 0,
+            slave: int = 1,
+            transaction: int = 0,
+            skip_encode: bool = False) -> None:
+        """Initialize the modbus exception response."""
         super().__init__(slave, transaction, skip_encode)
-        self.original_code = function_code
-        self.function_code = function_code | self.ExceptionOffset
+        self.function_code = function_code | 0x80
         self.exception_code = exception_code
 
-    def encode(self):
-        """Encode a modbus exception response.
-
-        :returns: The encoded exception packet
-        """
+    def encode(self) -> bytes:
+        """Encode a modbus exception response."""
         return struct.pack(">B", self.exception_code)
 
-    def decode(self, data):
+    def decode(self, data: bytes) -> None:
         """Decode a modbus exception response."""
         self.exception_code = int(data[0])
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Build a representation of an exception response."""
         message = ModbusExceptions.decode(self.exception_code)
-        parameters = (self.function_code, self.original_code, message)
         return (
-            "Exception Response(%d, %d, %s)"  # pylint: disable=consider-using-f-string
-            % parameters
+            f"Exception Response({self.function_code & 0x80}, {self.exception_code}, {message})"
         )

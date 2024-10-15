@@ -274,11 +274,11 @@ class ClientDecoder:
 
     def register(self, function):
         """Register a function and sub function class with the decoder."""
-        if function and not issubclass(function, pdu.ModbusResponse):
+        if function and not issubclass(function, pdu.ModbusPDU):
             raise MessageRegisterException(
                 f'"{function.__class__.__name__}" is Not a valid Modbus Message'
                 ". Class needs to be derived from "
-                "`pymodbus.pdu.ModbusResponse` "
+                "`pymodbus.pdu.ModbusPDU` "
             )
         self.lookup[function.function_code] = function
         if hasattr(function, "sub_function_code"):

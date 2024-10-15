@@ -4,7 +4,6 @@ __all__ = [
     "IllegalFunctionRequest",
     "ModbusExceptions",
     "ModbusPDU",
-    "ModbusResponse",
 ]
 
 from pymodbus.pdu.pdu import (
@@ -12,5 +11,4 @@ from pymodbus.pdu.pdu import (
     IllegalFunctionRequest,
     ModbusExceptions,
     ModbusPDU,
-    ModbusResponse,
 )

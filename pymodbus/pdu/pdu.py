@@ -60,14 +60,6 @@ class ModbusPDU:
         )
 
 
-class ModbusResponse(ModbusPDU):
-    """Base class for a modbus response PDU."""
-
-    @abstractmethod
-    def decode(self, data):
-        """Decode data part of the message."""
-
-
 # --------------------------------------------------------------------------- #
 # Exception PDUs
 # --------------------------------------------------------------------------- #

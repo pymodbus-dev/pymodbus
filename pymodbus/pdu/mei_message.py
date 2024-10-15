@@ -7,7 +7,7 @@ import struct
 from pymodbus.constants import DeviceInformation, MoreData
 from pymodbus.device import DeviceInformationFactory, ModbusControlBlock
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusPDU, ModbusResponse
+from pymodbus.pdu import ModbusPDU
 
 
 _MCB = ModbusControlBlock()
@@ -105,7 +105,7 @@ class ReadDeviceInformationRequest(ModbusPDU):
         )
 
 
-class ReadDeviceInformationResponse(ModbusResponse):
+class ReadDeviceInformationResponse(ModbusPDU):
     """Read device information response."""
 
     function_code = 0x2B
@@ -136,7 +136,7 @@ class ReadDeviceInformationResponse(ModbusResponse):
         :param read_code: The device information read code
         :param information: The requested information request
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.read_code = read_code or DeviceInformation.BASIC
         self.information = information or {}
         self.number_of_objects = 0

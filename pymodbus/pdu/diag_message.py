@@ -11,7 +11,7 @@ import struct
 from pymodbus.constants import ModbusPlusOperation, ModbusStatus
 from pymodbus.device import ModbusControlBlock
 from pymodbus.exceptions import ModbusException, NotImplementedException
-from pymodbus.pdu import ModbusPDU, ModbusResponse
+from pymodbus.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring
 
 
@@ -80,7 +80,7 @@ class DiagnosticStatusRequest(ModbusPDU):
         return 1 + 2 + 2 * len(self.message)
 
 
-class DiagnosticStatusResponse(ModbusResponse):
+class DiagnosticStatusResponse(ModbusPDU):
     """Diagnostic status.
 
     This is a base class for all of the diagnostic response functions
@@ -95,7 +95,7 @@ class DiagnosticStatusResponse(ModbusResponse):
 
     def __init__(self, slave=1, transaction=0, skip_encode=False):
         """Initialize a diagnostic response."""
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.message = None
 
     def encode(self):

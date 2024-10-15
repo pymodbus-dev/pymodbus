@@ -9,7 +9,7 @@ import struct
 
 from pymodbus.constants import ModbusStatus
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusPDU, ModbusResponse
+from pymodbus.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
@@ -104,7 +104,7 @@ class WriteSingleCoilRequest(ModbusPDU):
         return f"WriteCoilRequest({self.address}, {self.value}) => "
 
 
-class WriteSingleCoilResponse(ModbusResponse):
+class WriteSingleCoilResponse(ModbusPDU):
     """The normal response is an echo of the request.
 
     Returned after the coil state has been written.
@@ -119,7 +119,7 @@ class WriteSingleCoilResponse(ModbusResponse):
         :param address: The variable address written to
         :param value: The value written at address
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.address = address
         self.value = value
 
@@ -241,7 +241,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
         return 1 + 2 + 2
 
 
-class WriteMultipleCoilsResponse(ModbusResponse):
+class WriteMultipleCoilsResponse(ModbusPDU):
     """The normal response returns the function code.
 
     Starting address, and quantity of coils forced.
@@ -256,7 +256,7 @@ class WriteMultipleCoilsResponse(ModbusResponse):
         :param address: The starting variable address written to
         :param count: The number of values written
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.address = address
         self.count = count
 

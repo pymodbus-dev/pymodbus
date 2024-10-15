@@ -4,7 +4,7 @@
 import struct
 
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusPDU, ModbusResponse
+from pymodbus.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
@@ -59,7 +59,7 @@ class ReadBitsRequestBase(ModbusPDU):
         return f"ReadBitRequest({self.address},{self.count})"
 
 
-class ReadBitsResponseBase(ModbusResponse):
+class ReadBitsResponseBase(ModbusPDU):
     """Base class for Messages responding to bit-reading values.
 
     The requested bits can be found in the .bits list.
@@ -73,7 +73,7 @@ class ReadBitsResponseBase(ModbusResponse):
         :param values: The requested values to be returned
         :param slave: Modbus slave slave ID
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        ModbusPDU.__init__(self, slave, transaction, skip_encode)
 
         #: A list of booleans representing bit values
         self.bits = values or []

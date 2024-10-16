@@ -65,6 +65,13 @@ class DecodePDU:  # pylint: disable=too-few-public-methods
         inx = 1 if is_server else 0
         self.lookup: dict[int, Callable] = {cl[inx].function_code: cl[inx] for cl in self._pdu_class_table}  # type: ignore[attr-defined]
         self.sub_lookup: dict[int, dict[int, Callable]] = {f: {} for f in self.lookup}
+        for f in self._pdu_sub_class_table:
+            self.sub_lookup[f[inx].function_code][f[inx].sub_function_code] = f[inx]  # type: ignore[attr-defined]
+
+    def lookupPduClass(self, function_code):
+        """Use `function_code` to determine the class of the PDU."""
+        return self.lookup.get(function_code, base.ExceptionResponse)
+
 
 # --------------------------------------------------------------------------- #
 # Server Decoder
@@ -72,32 +79,9 @@ class DecodePDU:  # pylint: disable=too-few-public-methods
 class DecoderRequests(DecodePDU):
     """Decode request Message (Server)."""
 
-    __sub_old_function_table = [
-        diag_msg.ReturnQueryDataRequest,
-        diag_msg.RestartCommunicationsOptionRequest,
-        diag_msg.ReturnDiagnosticRegisterRequest,
-        diag_msg.ChangeAsciiInputDelimiterRequest,
-        diag_msg.ForceListenOnlyModeRequest,
-        diag_msg.ClearCountersRequest,
-        diag_msg.ReturnBusMessageCountRequest,
-        diag_msg.ReturnBusCommunicationErrorCountRequest,
-        diag_msg.ReturnBusExceptionErrorCountRequest,
-        diag_msg.ReturnSlaveMessageCountRequest,
-        diag_msg.ReturnSlaveNoResponseCountRequest,
-        diag_msg.ReturnSlaveNAKCountRequest,
-        diag_msg.ReturnSlaveBusyCountRequest,
-        diag_msg.ReturnSlaveBusCharacterOverrunCountRequest,
-        diag_msg.ReturnIopOverrunCountRequest,
-        diag_msg.ClearOverrunCountRequest,
-        diag_msg.GetClearModbusPlusRequest,
-        mei_msg.ReadDeviceInformationRequest,
-    ]
-
     def __init__(self) -> None:
         """Initialize the client lookup tables."""
         super().__init__(False)
-        for f in self.__sub_old_function_table:
-            self.sub_lookup[f.function_code][f.sub_function_code] = f  # type: ignore[attr-defined]
 
     def decode(self, message):
         """Decode a request packet."""
@@ -106,10 +90,6 @@ class DecoderRequests(DecodePDU):
         except ModbusException as exc:
             Log.warning("Unable to decode request {}", exc)
         return None
-
-    def lookupPduClass(self, function_code):
-        """Use `function_code` to determine the class of the PDU."""
-        return self.lookup.get(function_code, base.ExceptionResponse)
 
     def _helper(self, data: str):
         """Generate the correct request object from a valid request packet."""
@@ -165,36 +145,9 @@ class DecoderResponses(DecodePDU):
     To add more implemented functions, simply add them to the list
     """
 
-    __sub_old_function_table = [
-        diag_msg.ReturnQueryDataResponse,
-        diag_msg.RestartCommunicationsOptionResponse,
-        diag_msg.ReturnDiagnosticRegisterResponse,
-        diag_msg.ChangeAsciiInputDelimiterResponse,
-        diag_msg.ForceListenOnlyModeResponse,
-        diag_msg.ClearCountersResponse,
-        diag_msg.ReturnBusMessageCountResponse,
-        diag_msg.ReturnBusCommunicationErrorCountResponse,
-        diag_msg.ReturnBusExceptionErrorCountResponse,
-        diag_msg.ReturnSlaveMessageCountResponse,
-        diag_msg.ReturnSlaveNoResponseCountResponse,
-        diag_msg.ReturnSlaveNAKCountResponse,
-        diag_msg.ReturnSlaveBusyCountResponse,
-        diag_msg.ReturnSlaveBusCharacterOverrunCountResponse,
-        diag_msg.ReturnIopOverrunCountResponse,
-        diag_msg.ClearOverrunCountResponse,
-        diag_msg.GetClearModbusPlusResponse,
-        mei_msg.ReadDeviceInformationResponse,
-    ]
-
     def __init__(self) -> None:
         """Initialize the client lookup tables."""
         super().__init__(True)
-        for f in self.__sub_old_function_table:
-            self.sub_lookup[f.function_code][f.sub_function_code] = f  # type: ignore[attr-defined]
-
-    def lookupPduClass(self, function_code):
-        """Use `function_code` to determine the class of the PDU."""
-        return self.lookup.get(function_code, base.ExceptionResponse)
 
     def decode(self, message):
         """Decode a response packet."""

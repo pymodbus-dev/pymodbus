@@ -14,15 +14,15 @@ from collections.abc import Callable
 
 from pymodbus.exceptions import MessageRegisterException, ModbusException
 from pymodbus.logging import Log
-from pymodbus.pdu import bit_read_message as bit_r_msg
-from pymodbus.pdu import bit_write_message as bit_w_msg
-from pymodbus.pdu import diag_message as diag_msg
-from pymodbus.pdu import file_message as file_msg
-from pymodbus.pdu import mei_message as mei_msg
-from pymodbus.pdu import other_message as o_msg
-from pymodbus.pdu import pdu
-from pymodbus.pdu import register_read_message as reg_r_msg
-from pymodbus.pdu import register_write_message as reg_w_msg
+import pymodbus.pdu.bit_read_message as bit_r_msg
+import pymodbus.pdu.bit_write_message as bit_w_msg
+import pymodbus.pdu.diag_message as diag_msg
+import pymodbus.pdu.file_message as file_msg
+import pymodbus.pdu.mei_message as mei_msg
+import pymodbus.pdu.other_message as o_msg
+import pymodbus.pdu.pdu as pdu
+import pymodbus.pdu.register_read_message as reg_r_msg
+import pymodbus.pdu.register_write_message as reg_w_msg
 
 
 # --------------------------------------------------------------------------- #

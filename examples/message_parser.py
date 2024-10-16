@@ -12,12 +12,12 @@ import logging
 import textwrap
 
 from pymodbus import pymodbus_apply_logging_config
-from pymodbus.pdu import ClientDecoder, ServerDecoder
 from pymodbus.framer import (
     FramerAscii,
     FramerRTU,
     FramerSocket,
 )
+from pymodbus.pdu import ClientDecoder, ServerDecoder
 
 
 _logger = logging.getLogger(__file__)

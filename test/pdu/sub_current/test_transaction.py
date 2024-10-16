@@ -4,14 +4,13 @@ from unittest import mock
 from pymodbus.exceptions import (
     ModbusIOException,
 )
-from pymodbus.pdu import ServerDecoder
 from pymodbus.framer import (
     FramerAscii,
     FramerRTU,
     FramerSocket,
     FramerTLS,
 )
-from pymodbus.pdu import ModbusPDU
+from pymodbus.pdu import ModbusPDU, ServerDecoder
 from pymodbus.transaction import (
     ModbusTransactionManager,
     SyncModbusTransactionManager,

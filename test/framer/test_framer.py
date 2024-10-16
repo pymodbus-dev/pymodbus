@@ -3,7 +3,6 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.pdu import ClientDecoder
 from pymodbus.framer import (
     FramerAscii,
     FramerBase,
@@ -12,7 +11,7 @@ from pymodbus.framer import (
     FramerTLS,
     FramerType,
 )
-from pymodbus.pdu import ModbusPDU
+from pymodbus.pdu import ClientDecoder, ModbusPDU
 
 from .generator import set_calls
 

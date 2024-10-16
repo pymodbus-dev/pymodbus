@@ -4,8 +4,8 @@ from unittest import mock
 import pytest
 
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.pdu import ClientDecoder, ServerDecoder
 from pymodbus.framer import FramerAscii, FramerRTU
+from pymodbus.pdu import ClientDecoder, ServerDecoder
 
 
 class TestMultidrop:

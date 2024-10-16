@@ -18,7 +18,7 @@ import pymodbus.pdu.diag_message as diag_msg
 import pymodbus.pdu.file_message as file_msg
 import pymodbus.pdu.mei_message as mei_msg
 import pymodbus.pdu.other_message as o_msg
-import pymodbus.pdu.pdu as pdu
+import pymodbus.pdu.pdu as base
 import pymodbus.pdu.register_read_message as reg_r_msg
 import pymodbus.pdu.register_write_message as reg_w_msg
 from pymodbus.exceptions import MessageRegisterException, ModbusException
@@ -107,7 +107,7 @@ class ServerDecoder:
         :param function_code: The function code specified in a frame.
         :returns: The class of the PDU that has a matching `function_code`.
         """
-        return self.lookup.get(function_code, pdu.ExceptionResponse)
+        return self.lookup.get(function_code, base.ExceptionResponse)
 
     def _helper(self, data: str):
         """Generate the correct request object from a valid request packet.
@@ -120,9 +120,9 @@ class ServerDecoder:
         function_code = int(data[0])
         if not (request := self.lookup.get(function_code, lambda: None)()):
             Log.debug("Factory Request[{}]", function_code)
-            request = pdu.ExceptionResponse(
+            request = base.ExceptionResponse(
                 function_code,
-                exception_code=pdu.ModbusExceptions.IllegalFunction,
+                exception_code=base.ModbusExceptions.IllegalFunction,
                 slave=0,
                 transaction=0,
                 skip_encode=False)
@@ -149,7 +149,7 @@ class ServerDecoder:
         :param function: Custom function class to register
         :raises MessageRegisterException:
         """
-        if not issubclass(function, pdu.ModbusPDU):
+        if not issubclass(function, base.ModbusPDU):
             raise MessageRegisterException(
                 f'"{function.__class__.__name__}" is Not a valid Modbus Message'
                 ". Class needs to be derived from "
@@ -229,7 +229,7 @@ class ClientDecoder:
         :param function_code: The function code specified in a frame.
         :returns: The class of the PDU that has a matching `function_code`.
         """
-        return self.lookup.get(function_code, pdu.ExceptionResponse)
+        return self.lookup.get(function_code, base.ExceptionResponse)
 
     def decode(self, message):
         """Decode a response packet.
@@ -265,7 +265,7 @@ class ClientDecoder:
         response = self.lookup.get(function_code, lambda: None)()
         if function_code > 0x80:
             code = function_code & 0x7F  # strip error portion
-            response = pdu.ExceptionResponse(code, pdu.ModbusExceptions.IllegalFunction)
+            response = base.ExceptionResponse(code, base.ModbusExceptions.IllegalFunction)
         if not response:
             raise ModbusException(f"Unknown response {function_code}")
         response.decode(data[1:])
@@ -279,7 +279,7 @@ class ClientDecoder:
 
     def register(self, function):
         """Register a function and sub function class with the decoder."""
-        if function and not issubclass(function, pdu.ModbusPDU):
+        if function and not issubclass(function, base.ModbusPDU):
             raise MessageRegisterException(
                 f'"{function.__class__.__name__}" is Not a valid Modbus Message'
                 ". Class needs to be derived from "

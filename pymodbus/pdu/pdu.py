@@ -43,6 +43,11 @@ class ModbusPDU:
         """Check if the error is a success or failure."""
         return self.function_code > 0x80
 
+    def get_response_pdu_size(self) -> int:
+        """Calculate response pdu size."""
+        return 0
+
+
     @classmethod
     def calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
@@ -55,6 +60,7 @@ class ModbusPDU:
         raise NotImplementedException(
             f"Cannot determine RTU frame size for {cls.__name__}"
         )
+
 
 
 class ModbusExceptions:  # pylint: disable=too-few-public-methods

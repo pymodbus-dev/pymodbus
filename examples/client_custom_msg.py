@@ -26,7 +26,7 @@ from pymodbus.pdu.bit_read_message import ReadCoilsRequest
 # Since the function code is already registered with the decoder factory,
 # this will be decoded as a read coil response. If you implement a new
 # method that is not currently implemented, you must register the request
-# and response with a ClientDecoder factory.
+# and response with a DecoderResponses factory.
 # --------------------------------------------------------------------------- #
 
 

@@ -1,15 +1,4 @@
-"""Modbus Request/Response Decoder Factories.
-
-The following factories make it easy to decode request/response messages.
-To add a new request/response pair to be decodeable by the library, simply
-add them to the respective function lookup table (order doesn't matter, but
-it does help keep things organized).
-
-Regardless of how many functions are added to the lookup, O(1) behavior is
-kept as a result of a pre-computed lookup dictionary.
-"""
-
-# pylint: disable=missing-type-doc
+"""Modbus Request/Response Decoders."""
 from collections.abc import Callable
 
 import pymodbus.pdu.bit_read_message as bit_r_msg
@@ -25,37 +14,51 @@ from pymodbus.exceptions import MessageRegisterException, ModbusException
 from pymodbus.logging import Log
 
 
-# --------------------------------------------------------------------------- #
-# Server Decoder
-# --------------------------------------------------------------------------- #
-class ServerDecoder:
-    """Request Message Factory (Server).
+class DecodePDU:  # pylint: disable=too-few-public-methods
+    """Decode pdu requests/responses (server/client)."""
 
-    To add more implemented functions, simply add them to the list
-    """
+    _pdu_class_table = {
+        reg_r_msg.ReadHoldingRegistersRequest.function_code:
+            (reg_r_msg.ReadHoldingRegistersRequest, reg_r_msg.ReadHoldingRegistersResponse),
+        bit_r_msg.ReadDiscreteInputsRequest.function_code:
+            (bit_r_msg.ReadDiscreteInputsRequest, bit_r_msg.ReadDiscreteInputsResponse),
+        reg_r_msg.ReadInputRegistersRequest.function_code:
+            (reg_r_msg.ReadInputRegistersRequest, reg_r_msg.ReadInputRegistersResponse),
+        bit_r_msg.ReadCoilsRequest.function_code:
+            (bit_r_msg.ReadCoilsRequest, bit_r_msg.ReadCoilsResponse),
+        bit_w_msg.WriteMultipleCoilsRequest.function_code:
+            (bit_w_msg.WriteMultipleCoilsRequest, bit_w_msg.WriteMultipleCoilsResponse),
+        reg_w_msg.WriteMultipleRegistersRequest.function_code:
+            (reg_w_msg.WriteMultipleRegistersRequest, reg_w_msg.WriteMultipleRegistersResponse),
+        reg_w_msg.WriteSingleRegisterRequest.function_code:
+            (reg_w_msg.WriteSingleRegisterRequest, reg_w_msg.WriteSingleRegisterResponse),
+        bit_w_msg.WriteSingleCoilRequest.function_code:
+            (bit_w_msg.WriteSingleCoilRequest, bit_w_msg.WriteSingleCoilResponse),
+        reg_r_msg.ReadWriteMultipleRegistersRequest.function_code:
+            (reg_r_msg.ReadWriteMultipleRegistersRequest, reg_r_msg.ReadWriteMultipleRegistersResponse),
+        diag_msg.DiagnosticStatusRequest.function_code:
+            (diag_msg.DiagnosticStatusRequest, diag_msg.DiagnosticStatusResponse),
+        o_msg.ReadExceptionStatusRequest.function_code:
+            (o_msg.ReadExceptionStatusRequest, o_msg.ReadExceptionStatusResponse),
+        o_msg.GetCommEventCounterRequest.function_code:
+            (o_msg.GetCommEventCounterRequest, o_msg.GetCommEventCounterResponse),
+        o_msg.GetCommEventLogRequest.function_code:
+            (o_msg.GetCommEventLogRequest, o_msg.GetCommEventLogResponse),
+        o_msg.ReportSlaveIdRequest.function_code:
+            (o_msg.ReportSlaveIdRequest, o_msg.ReportSlaveIdResponse),
+        file_msg.ReadFileRecordRequest.function_code:
+            (file_msg.ReadFileRecordRequest, file_msg.ReadFileRecordResponse),
+        file_msg.WriteFileRecordRequest.function_code:
+            (file_msg.WriteFileRecordRequest, file_msg.WriteFileRecordResponse),
+        reg_w_msg.MaskWriteRegisterRequest.function_code:
+            (reg_w_msg.MaskWriteRegisterRequest, reg_w_msg.MaskWriteRegisterResponse),
+        file_msg.ReadFifoQueueRequest.function_code:
+            (file_msg.ReadFifoQueueRequest, file_msg.ReadFifoQueueResponse),
+        mei_msg.ReadDeviceInformationRequest.function_code:
+            (mei_msg.ReadDeviceInformationRequest, mei_msg.ReadDeviceInformationResponse),
+    }
 
-    __function_table = [
-        reg_r_msg.ReadHoldingRegistersRequest,
-        bit_r_msg.ReadDiscreteInputsRequest,
-        reg_r_msg.ReadInputRegistersRequest,
-        bit_r_msg.ReadCoilsRequest,
-        bit_w_msg.WriteMultipleCoilsRequest,
-        reg_w_msg.WriteMultipleRegistersRequest,
-        reg_w_msg.WriteSingleRegisterRequest,
-        bit_w_msg.WriteSingleCoilRequest,
-        reg_r_msg.ReadWriteMultipleRegistersRequest,
-        diag_msg.DiagnosticStatusRequest,
-        o_msg.ReadExceptionStatusRequest,
-        o_msg.GetCommEventCounterRequest,
-        o_msg.GetCommEventLogRequest,
-        o_msg.ReportSlaveIdRequest,
-        file_msg.ReadFileRecordRequest,
-        file_msg.WriteFileRecordRequest,
-        reg_w_msg.MaskWriteRegisterRequest,
-        file_msg.ReadFifoQueueRequest,
-        mei_msg.ReadDeviceInformationRequest,
-    ]
-    __sub_function_table = [
+    _pdu_sub_class_table = [
         diag_msg.ReturnQueryDataRequest,
         diag_msg.RestartCommunicationsOptionRequest,
         diag_msg.ReturnDiagnosticRegisterRequest,
@@ -76,25 +79,47 @@ class ServerDecoder:
         mei_msg.ReadDeviceInformationRequest,
     ]
 
-    @classmethod
-    def getFCdict(cls) -> dict[int, Callable]:
-        """Build function code - class list."""
-        return {f.function_code: f for f in cls.__function_table}  # type: ignore[attr-defined]
+    def __init__(self, is_server: bool):
+        """Initialize function_tables."""
+        inx = 1 if is_server else 0
+        self.lookup: dict[int, Callable] = {f: cl[inx] for f, cl in self._pdu_class_table.items()}
+        self._sub_lookup: dict[int, dict[int, Callable]] = {f: {} for f in self.lookup}
+
+# --------------------------------------------------------------------------- #
+# Server Decoder
+# --------------------------------------------------------------------------- #
+class DecoderRequests(DecodePDU):
+    """Decode request Message (Server)."""
+
+    __sub_old_function_table = [
+        diag_msg.ReturnQueryDataRequest,
+        diag_msg.RestartCommunicationsOptionRequest,
+        diag_msg.ReturnDiagnosticRegisterRequest,
+        diag_msg.ChangeAsciiInputDelimiterRequest,
+        diag_msg.ForceListenOnlyModeRequest,
+        diag_msg.ClearCountersRequest,
+        diag_msg.ReturnBusMessageCountRequest,
+        diag_msg.ReturnBusCommunicationErrorCountRequest,
+        diag_msg.ReturnBusExceptionErrorCountRequest,
+        diag_msg.ReturnSlaveMessageCountRequest,
+        diag_msg.ReturnSlaveNoResponseCountRequest,
+        diag_msg.ReturnSlaveNAKCountRequest,
+        diag_msg.ReturnSlaveBusyCountRequest,
+        diag_msg.ReturnSlaveBusCharacterOverrunCountRequest,
+        diag_msg.ReturnIopOverrunCountRequest,
+        diag_msg.ClearOverrunCountRequest,
+        diag_msg.GetClearModbusPlusRequest,
+        mei_msg.ReadDeviceInformationRequest,
+    ]
 
     def __init__(self) -> None:
         """Initialize the client lookup tables."""
-        functions = {f.function_code for f in self.__function_table}  # type: ignore[attr-defined]
-        self.lookup = self.getFCdict()
-        self.__sub_lookup: dict[int, dict[int, Callable]] = {f: {} for f in functions}
-        for f in self.__sub_function_table:
-            self.__sub_lookup[f.function_code][f.sub_function_code] = f  # type: ignore[attr-defined]
+        super().__init__(False)
+        for f in self.__sub_old_function_table:
+            self._sub_lookup[f.function_code][f.sub_function_code] = f  # type: ignore[attr-defined]
 
     def decode(self, message):
-        """Decode a request packet.
-
-        :param message: The raw modbus request packet
-        :return: The decoded modbus message or None if error
-        """
+        """Decode a request packet."""
         try:
             return self._helper(message)
         except ModbusException as exc:
@@ -102,21 +127,11 @@ class ServerDecoder:
         return None
 
     def lookupPduClass(self, function_code):
-        """Use `function_code` to determine the class of the PDU.
-
-        :param function_code: The function code specified in a frame.
-        :returns: The class of the PDU that has a matching `function_code`.
-        """
+        """Use `function_code` to determine the class of the PDU."""
         return self.lookup.get(function_code, base.ExceptionResponse)
 
     def _helper(self, data: str):
-        """Generate the correct request object from a valid request packet.
-
-        This decodes from a list of the currently implemented request types.
-
-        :param data: The request packet to decode
-        :returns: The decoded request or illegal function request object
-        """
+        """Generate the correct request object from a valid request packet."""
         function_code = int(data[0])
         if not (request := self.lookup.get(function_code, lambda: None)()):
             Log.debug("Factory Request[{}]", function_code)
@@ -137,18 +152,14 @@ class ServerDecoder:
         request.decode(data[1:])
 
         if hasattr(request, "sub_function_code"):
-            lookup = self.__sub_lookup.get(request.function_code, {})
+            lookup = self._sub_lookup.get(request.function_code, {})
             if subtype := lookup.get(request.sub_function_code, None):
                 request.__class__ = subtype
 
         return request
 
     def register(self, function):
-        """Register a function and sub function class with the decoder.
-
-        :param function: Custom function class to register
-        :raises MessageRegisterException:
-        """
+        """Register a function and sub function class with the decoder."""
         if not issubclass(function, base.ModbusPDU):
             raise MessageRegisterException(
                 f'"{function.__class__.__name__}" is Not a valid Modbus Message'
@@ -157,9 +168,9 @@ class ServerDecoder:
             )
         self.lookup[function.function_code] = function
         if hasattr(function, "sub_function_code"):
-            if function.function_code not in self.__sub_lookup:
-                self.__sub_lookup[function.function_code] = {}
-            self.__sub_lookup[function.function_code][
+            if function.function_code not in self._sub_lookup:
+                self._sub_lookup[function.function_code] = {}
+            self._sub_lookup[function.function_code][
                 function.sub_function_code
             ] = function
 
@@ -167,34 +178,13 @@ class ServerDecoder:
 # --------------------------------------------------------------------------- #
 # Client Decoder
 # --------------------------------------------------------------------------- #
-class ClientDecoder:
+class DecoderResponses(DecodePDU):
     """Response Message Factory (Client).
 
     To add more implemented functions, simply add them to the list
     """
 
-    function_table = [
-        reg_r_msg.ReadHoldingRegistersResponse,
-        bit_r_msg.ReadDiscreteInputsResponse,
-        reg_r_msg.ReadInputRegistersResponse,
-        bit_r_msg.ReadCoilsResponse,
-        bit_w_msg.WriteMultipleCoilsResponse,
-        reg_w_msg.WriteMultipleRegistersResponse,
-        reg_w_msg.WriteSingleRegisterResponse,
-        bit_w_msg.WriteSingleCoilResponse,
-        reg_r_msg.ReadWriteMultipleRegistersResponse,
-        diag_msg.DiagnosticStatusResponse,
-        o_msg.ReadExceptionStatusResponse,
-        o_msg.GetCommEventCounterResponse,
-        o_msg.GetCommEventLogResponse,
-        o_msg.ReportSlaveIdResponse,
-        file_msg.ReadFileRecordResponse,
-        file_msg.WriteFileRecordResponse,
-        reg_w_msg.MaskWriteRegisterResponse,
-        file_msg.ReadFifoQueueResponse,
-        mei_msg.ReadDeviceInformationResponse,
-    ]
-    __sub_function_table = [
+    __sub_old_function_table = [
         diag_msg.ReturnQueryDataResponse,
         diag_msg.RestartCommunicationsOptionResponse,
         diag_msg.ReturnDiagnosticRegisterResponse,
@@ -217,26 +207,16 @@ class ClientDecoder:
 
     def __init__(self) -> None:
         """Initialize the client lookup tables."""
-        functions = {f.function_code for f in self.function_table}  # type: ignore[attr-defined]
-        self.lookup = {f.function_code: f for f in self.function_table}  # type: ignore[attr-defined]
-        self.__sub_lookup: dict[int, dict[int, Callable]] = {f: {} for f in functions}
-        for f in self.__sub_function_table:
-            self.__sub_lookup[f.function_code][f.sub_function_code] = f  # type: ignore[attr-defined]
+        super().__init__(True)
+        for f in self.__sub_old_function_table:
+            self._sub_lookup[f.function_code][f.sub_function_code] = f  # type: ignore[attr-defined]
 
     def lookupPduClass(self, function_code):
-        """Use `function_code` to determine the class of the PDU.
-
-        :param function_code: The function code specified in a frame.
-        :returns: The class of the PDU that has a matching `function_code`.
-        """
+        """Use `function_code` to determine the class of the PDU."""
         return self.lookup.get(function_code, base.ExceptionResponse)
 
     def decode(self, message):
-        """Decode a response packet.
-
-        :param message: The raw packet to decode
-        :return: The decoded modbus message or None if error
-        """
+        """Decode a response packet."""
         try:
             return self._helper(message)
         except ModbusException as exc:
@@ -271,7 +251,7 @@ class ClientDecoder:
         response.decode(data[1:])
 
         if hasattr(response, "sub_function_code"):
-            lookup = self.__sub_lookup.get(response.function_code, {})
+            lookup = self._sub_lookup.get(response.function_code, {})
             if subtype := lookup.get(response.sub_function_code, None):
                 response.__class__ = subtype
 
@@ -287,8 +267,8 @@ class ClientDecoder:
             )
         self.lookup[function.function_code] = function
         if hasattr(function, "sub_function_code"):
-            if function.function_code not in self.__sub_lookup:
-                self.__sub_lookup[function.function_code] = {}
-            self.__sub_lookup[function.function_code][
+            if function.function_code not in self._sub_lookup:
+                self._sub_lookup[function.function_code] = {}
+            self._sub_lookup[function.function_code][
                 function.sub_function_code
             ] = function

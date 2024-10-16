@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import pytest
 
-from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType
+from pymodbus.pdu import ClientDecoder, ServerDecoder
 
 
 @pytest.fixture(name="entry")

@@ -9,9 +9,8 @@ from __future__ import annotations
 from enum import Enum
 
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.logging import Log
-from pymodbus.pdu import ModbusPDU
+from pymodbus.pdu import ClientDecoder, ModbusPDU, ServerDecoder
 
 
 class FramerType(str, Enum):

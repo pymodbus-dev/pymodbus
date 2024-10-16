@@ -5,8 +5,8 @@
 import struct
 
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.pdu import ExceptionResponse, ModbusPDU
-from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.pdu.pdu import ExceptionResponse, ModbusPDU
+from pymodbus.pdu.pdu import ModbusExceptions as merror
 
 
 class ReadRegistersRequestBase(ModbusPDU):

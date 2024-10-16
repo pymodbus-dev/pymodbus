@@ -8,8 +8,8 @@ TODO write mask request/response
 import struct
 
 from pymodbus.constants import ModbusStatus
-from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusPDU
+from pymodbus.pdu.pdu import ModbusExceptions as merror
+from pymodbus.pdu.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 

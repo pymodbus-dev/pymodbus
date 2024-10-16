@@ -2,8 +2,8 @@
 import pytest
 
 from pymodbus.exceptions import MessageRegisterException, ModbusException
-from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.pdu import ModbusPDU
+from pymodbus.pdu.decoders import ClientDecoder, ServerDecoder
 
 
 class TestFactory:
@@ -150,10 +150,22 @@ class TestFactory:
 
             function_code = 0xFF
 
-        class NoCustomRequest:  # pylint: disable=too-few-public-methods
+            def encode(self):
+                """Encode."""
+
+            def decode(self, _data):
+                """Decode."""
+
+        class NoCustomRequest:
             """Custom request."""
 
             function_code = 0xFF
+
+            def encode(self):
+                """Encode."""
+
+            def decode(self, _data):
+                """Decode."""
 
         self.server.register(CustomRequest)
         assert self.client.lookupPduClass(CustomRequest.function_code)
@@ -175,10 +187,22 @@ class TestFactory:
 
             function_code = 0xFF
 
-        class NoCustomResponse:  # pylint: disable=too-few-public-methods
+            def encode(self):
+                """Encode."""
+
+            def decode(self, _data):
+                """Decode."""
+
+        class NoCustomResponse:
             """Custom request."""
 
             function_code = 0xFF
+
+            def encode(self):
+                """Encode."""
+
+            def decode(self, _data):
+                """Decode."""
 
         self.client.register(CustomResponse)
         assert self.client.lookupPduClass(CustomResponse.function_code)

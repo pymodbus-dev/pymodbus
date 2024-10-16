@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from pymodbus.factory import ClientDecoder
 from pymodbus.framer import (
     FRAMER_NAME_TO_CLASS,
     FramerBase,
     FramerType,
 )
 from pymodbus.logging import Log
+from pymodbus.pdu import ClientDecoder
 from pymodbus.transaction import ModbusTransactionManager
 from pymodbus.transport import CommParams, ModbusProtocol
 

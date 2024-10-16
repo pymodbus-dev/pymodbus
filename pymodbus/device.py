@@ -233,7 +233,7 @@ class ModbusDeviceIdentification:
 
 
 class DeviceInformationFactory:  # pylint: disable=too-few-public-methods
-    """This is a helper factory.
+    """This is a helper.
 
     That really just hides
     some of the complexity of processing the device information

@@ -9,10 +9,9 @@ from collections.abc import Awaitable, Callable
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.client.modbusclientprotocol import ModbusClientProtocol
 from pymodbus.exceptions import ConnectionException, ModbusIOException
-from pymodbus.factory import ClientDecoder
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from pymodbus.logging import Log
-from pymodbus.pdu import ModbusPDU
+from pymodbus.pdu import ClientDecoder, ModbusPDU
 from pymodbus.transaction import SyncModbusTransactionManager
 from pymodbus.transport import CommParams
 from pymodbus.utilities import ModbusTransactionState

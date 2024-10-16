@@ -9,7 +9,7 @@ import struct
 
 from pymodbus.constants import ModbusStatus
 from pymodbus.device import DeviceInformationFactory, ModbusControlBlock
-from pymodbus.pdu import ModbusPDU
+from pymodbus.pdu.pdu import ModbusPDU
 
 
 _MCB = ModbusControlBlock()

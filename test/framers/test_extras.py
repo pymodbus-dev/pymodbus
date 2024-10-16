@@ -1,6 +1,6 @@
 """Test transaction."""
 
-from pymodbus.factory import ServerDecoder
+from pymodbus.pdu import ServerDecoder
 from pymodbus.framer import (
     FramerAscii,
     FramerRTU,

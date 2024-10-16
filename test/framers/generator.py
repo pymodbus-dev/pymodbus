@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build framer encode responses."""
 
-from pymodbus.factory import ClientDecoder, ServerDecoder
+from pymodbus.pdu import ClientDecoder, ServerDecoder
 from pymodbus.framer import (
     FramerAscii,
     FramerRTU,

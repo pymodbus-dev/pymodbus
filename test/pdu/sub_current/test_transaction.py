@@ -4,7 +4,7 @@ from unittest import mock
 from pymodbus.exceptions import (
     ModbusIOException,
 )
-from pymodbus.factory import ServerDecoder
+from pymodbus.pdu import ServerDecoder
 from pymodbus.framer import (
     FramerAscii,
     FramerRTU,

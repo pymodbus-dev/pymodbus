@@ -3,7 +3,7 @@
 import pytest
 
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.factory import ClientDecoder
+from pymodbus.pdu import ClientDecoder
 from pymodbus.framer import FramerRTU, FramerSocket
 
 

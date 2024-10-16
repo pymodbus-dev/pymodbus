@@ -12,7 +12,7 @@ PyModbus - A Python Modbus Stack
    :target: https://gurubase.io/g/pymodbus
    :alt: PyModbus Guru
 
-Pymodbus is a full Modbus protocol implementation offering client/server with synchronous/asynchronous API a well as simulators.
+Pymodbus is a full Modbus protocol implementation offering client/server with synchronous/asynchronous API and simulators.
 
 Our releases is defined as X.Y.Z, and we have strict rules what to release when:
 

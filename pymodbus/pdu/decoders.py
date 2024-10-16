@@ -18,44 +18,25 @@ class DecodePDU:  # pylint: disable=too-few-public-methods
     """Decode pdu requests/responses (server/client)."""
 
     _pdu_class_table = {
-        reg_r_msg.ReadHoldingRegistersRequest.function_code:
-            (reg_r_msg.ReadHoldingRegistersRequest, reg_r_msg.ReadHoldingRegistersResponse),
-        bit_r_msg.ReadDiscreteInputsRequest.function_code:
-            (bit_r_msg.ReadDiscreteInputsRequest, bit_r_msg.ReadDiscreteInputsResponse),
-        reg_r_msg.ReadInputRegistersRequest.function_code:
-            (reg_r_msg.ReadInputRegistersRequest, reg_r_msg.ReadInputRegistersResponse),
-        bit_r_msg.ReadCoilsRequest.function_code:
-            (bit_r_msg.ReadCoilsRequest, bit_r_msg.ReadCoilsResponse),
-        bit_w_msg.WriteMultipleCoilsRequest.function_code:
-            (bit_w_msg.WriteMultipleCoilsRequest, bit_w_msg.WriteMultipleCoilsResponse),
-        reg_w_msg.WriteMultipleRegistersRequest.function_code:
-            (reg_w_msg.WriteMultipleRegistersRequest, reg_w_msg.WriteMultipleRegistersResponse),
-        reg_w_msg.WriteSingleRegisterRequest.function_code:
-            (reg_w_msg.WriteSingleRegisterRequest, reg_w_msg.WriteSingleRegisterResponse),
-        bit_w_msg.WriteSingleCoilRequest.function_code:
-            (bit_w_msg.WriteSingleCoilRequest, bit_w_msg.WriteSingleCoilResponse),
-        reg_r_msg.ReadWriteMultipleRegistersRequest.function_code:
-            (reg_r_msg.ReadWriteMultipleRegistersRequest, reg_r_msg.ReadWriteMultipleRegistersResponse),
-        diag_msg.DiagnosticStatusRequest.function_code:
-            (diag_msg.DiagnosticStatusRequest, diag_msg.DiagnosticStatusResponse),
-        o_msg.ReadExceptionStatusRequest.function_code:
-            (o_msg.ReadExceptionStatusRequest, o_msg.ReadExceptionStatusResponse),
-        o_msg.GetCommEventCounterRequest.function_code:
-            (o_msg.GetCommEventCounterRequest, o_msg.GetCommEventCounterResponse),
-        o_msg.GetCommEventLogRequest.function_code:
-            (o_msg.GetCommEventLogRequest, o_msg.GetCommEventLogResponse),
-        o_msg.ReportSlaveIdRequest.function_code:
-            (o_msg.ReportSlaveIdRequest, o_msg.ReportSlaveIdResponse),
-        file_msg.ReadFileRecordRequest.function_code:
-            (file_msg.ReadFileRecordRequest, file_msg.ReadFileRecordResponse),
-        file_msg.WriteFileRecordRequest.function_code:
-            (file_msg.WriteFileRecordRequest, file_msg.WriteFileRecordResponse),
-        reg_w_msg.MaskWriteRegisterRequest.function_code:
-            (reg_w_msg.MaskWriteRegisterRequest, reg_w_msg.MaskWriteRegisterResponse),
-        file_msg.ReadFifoQueueRequest.function_code:
-            (file_msg.ReadFifoQueueRequest, file_msg.ReadFifoQueueResponse),
-        mei_msg.ReadDeviceInformationRequest.function_code:
-            (mei_msg.ReadDeviceInformationRequest, mei_msg.ReadDeviceInformationResponse),
+        (reg_r_msg.ReadHoldingRegistersRequest, reg_r_msg.ReadHoldingRegistersResponse),
+        (bit_r_msg.ReadDiscreteInputsRequest, bit_r_msg.ReadDiscreteInputsResponse),
+        (reg_r_msg.ReadInputRegistersRequest, reg_r_msg.ReadInputRegistersResponse),
+        (bit_r_msg.ReadCoilsRequest, bit_r_msg.ReadCoilsResponse),
+        (bit_w_msg.WriteMultipleCoilsRequest, bit_w_msg.WriteMultipleCoilsResponse),
+        (reg_w_msg.WriteMultipleRegistersRequest, reg_w_msg.WriteMultipleRegistersResponse),
+        (reg_w_msg.WriteSingleRegisterRequest, reg_w_msg.WriteSingleRegisterResponse),
+        (bit_w_msg.WriteSingleCoilRequest, bit_w_msg.WriteSingleCoilResponse),
+        (reg_r_msg.ReadWriteMultipleRegistersRequest, reg_r_msg.ReadWriteMultipleRegistersResponse),
+        (diag_msg.DiagnosticStatusRequest, diag_msg.DiagnosticStatusResponse),
+        (o_msg.ReadExceptionStatusRequest, o_msg.ReadExceptionStatusResponse),
+        (o_msg.GetCommEventCounterRequest, o_msg.GetCommEventCounterResponse),
+        (o_msg.GetCommEventLogRequest, o_msg.GetCommEventLogResponse),
+        (o_msg.ReportSlaveIdRequest, o_msg.ReportSlaveIdResponse),
+        (file_msg.ReadFileRecordRequest, file_msg.ReadFileRecordResponse),
+        (file_msg.WriteFileRecordRequest, file_msg.WriteFileRecordResponse),
+        (reg_w_msg.MaskWriteRegisterRequest, reg_w_msg.MaskWriteRegisterResponse),
+        (file_msg.ReadFifoQueueRequest, file_msg.ReadFifoQueueResponse),
+        (mei_msg.ReadDeviceInformationRequest, mei_msg.ReadDeviceInformationResponse),
     }
 
     _pdu_sub_class_table = [
@@ -82,8 +63,8 @@ class DecodePDU:  # pylint: disable=too-few-public-methods
     def __init__(self, is_server: bool):
         """Initialize function_tables."""
         inx = 1 if is_server else 0
-        self.lookup: dict[int, Callable] = {f: cl[inx] for f, cl in self._pdu_class_table.items()}
-        self._sub_lookup: dict[int, dict[int, Callable]] = {f: {} for f in self.lookup}
+        self.lookup: dict[int, Callable] = {cl[inx].function_code: cl[inx] for cl in self._pdu_class_table}  # type: ignore[attr-defined]
+        self.sub_lookup: dict[int, dict[int, Callable]] = {f: {} for f in self.lookup}
 
 # --------------------------------------------------------------------------- #
 # Server Decoder
@@ -116,7 +97,7 @@ class DecoderRequests(DecodePDU):
         """Initialize the client lookup tables."""
         super().__init__(False)
         for f in self.__sub_old_function_table:
-            self._sub_lookup[f.function_code][f.sub_function_code] = f  # type: ignore[attr-defined]
+            self.sub_lookup[f.function_code][f.sub_function_code] = f  # type: ignore[attr-defined]
 
     def decode(self, message):
         """Decode a request packet."""
@@ -152,7 +133,7 @@ class DecoderRequests(DecodePDU):
         request.decode(data[1:])
 
         if hasattr(request, "sub_function_code"):
-            lookup = self._sub_lookup.get(request.function_code, {})
+            lookup = self.sub_lookup.get(request.function_code, {})
             if subtype := lookup.get(request.sub_function_code, None):
                 request.__class__ = subtype
 
@@ -168,9 +149,9 @@ class DecoderRequests(DecodePDU):
             )
         self.lookup[function.function_code] = function
         if hasattr(function, "sub_function_code"):
-            if function.function_code not in self._sub_lookup:
-                self._sub_lookup[function.function_code] = {}
-            self._sub_lookup[function.function_code][
+            if function.function_code not in self.sub_lookup:
+                self.sub_lookup[function.function_code] = {}
+            self.sub_lookup[function.function_code][
                 function.sub_function_code
             ] = function
 
@@ -209,7 +190,7 @@ class DecoderResponses(DecodePDU):
         """Initialize the client lookup tables."""
         super().__init__(True)
         for f in self.__sub_old_function_table:
-            self._sub_lookup[f.function_code][f.sub_function_code] = f  # type: ignore[attr-defined]
+            self.sub_lookup[f.function_code][f.sub_function_code] = f  # type: ignore[attr-defined]
 
     def lookupPduClass(self, function_code):
         """Use `function_code` to determine the class of the PDU."""
@@ -251,7 +232,7 @@ class DecoderResponses(DecodePDU):
         response.decode(data[1:])
 
         if hasattr(response, "sub_function_code"):
-            lookup = self._sub_lookup.get(response.function_code, {})
+            lookup = self.sub_lookup.get(response.function_code, {})
             if subtype := lookup.get(response.sub_function_code, None):
                 response.__class__ = subtype
 
@@ -267,8 +248,8 @@ class DecoderResponses(DecodePDU):
             )
         self.lookup[function.function_code] = function
         if hasattr(function, "sub_function_code"):
-            if function.function_code not in self._sub_lookup:
-                self._sub_lookup[function.function_code] = {}
-            self._sub_lookup[function.function_code][
+            if function.function_code not in self.sub_lookup:
+                self.sub_lookup[function.function_code] = {}
+            self.sub_lookup[function.function_code][
                 function.sub_function_code
             ] = function

@@ -12,8 +12,6 @@ kept as a result of a pre-computed lookup dictionary.
 # pylint: disable=missing-type-doc
 from collections.abc import Callable
 
-from pymodbus.exceptions import MessageRegisterException, ModbusException
-from pymodbus.logging import Log
 import pymodbus.pdu.bit_read_message as bit_r_msg
 import pymodbus.pdu.bit_write_message as bit_w_msg
 import pymodbus.pdu.diag_message as diag_msg
@@ -23,6 +21,8 @@ import pymodbus.pdu.other_message as o_msg
 import pymodbus.pdu.pdu as pdu
 import pymodbus.pdu.register_read_message as reg_r_msg
 import pymodbus.pdu.register_write_message as reg_w_msg
+from pymodbus.exceptions import MessageRegisterException, ModbusException
+from pymodbus.logging import Log
 
 
 # --------------------------------------------------------------------------- #

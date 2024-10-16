@@ -11,7 +11,7 @@ import struct
 from pymodbus.constants import ModbusPlusOperation, ModbusStatus
 from pymodbus.device import ModbusControlBlock
 from pymodbus.exceptions import ModbusException, NotImplementedException
-from pymodbus.pdu import ModbusPDU
+from pymodbus.pdu.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring
 
 

@@ -24,9 +24,8 @@ except ImportError:
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.datastore.simulator import Label
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.factory import ServerDecoder
 from pymodbus.logging import Log
-from pymodbus.pdu import ExceptionResponse
+from pymodbus.pdu import ExceptionResponse, ServerDecoder
 from pymodbus.server.async_io import (
     ModbusSerialServer,
     ModbusTcpServer,

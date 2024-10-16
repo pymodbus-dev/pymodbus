@@ -16,13 +16,18 @@ It is the community that decides how pymodbus evolves NOT the maintainers !
 The following bullet points are what the maintainers focus on:
 
 - 3.7.4, bug fix release, hopefully with:
-    - optimized framer, limited support for multidrop on the server side
-    - more typing in the core
-    - 100% test coverage fixed for all new parts (currently transport and framer)
+    - Available on dev:
+        - optimized framer, limited support for multidrop on the server side
+    - more typing in the core (on dev)
+    - 100% test coverage fixed for all new parts (currently transport and framer) (on dev)
     - better broadcast handling
-- 3.7.5, bug fix release, hopefully with:
-    - Updated PDU, moving client/server decoder into pdu.
+    - Updated PDU, moving client/server decoder into pdu (on dev)
+    - better broadcast handling
     - Simplify PDU classes
+    - better retry handling (only disconnect when really needed)
+- 3.7.5, bug fix release, hopefully with:
+    - 100% test coverage for pdu
+    - better broadcast handling
 - 3.7.6, bug fix release, with:
     - Foundation for new transaction
 - 3.8.0, with:

@@ -10,10 +10,10 @@ from contextlib import suppress
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
-from pymodbus.factory import ServerDecoder
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.pdu import ServerDecoder
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
 
 

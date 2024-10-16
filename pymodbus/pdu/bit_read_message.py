@@ -3,8 +3,8 @@
 # pylint: disable=missing-type-doc
 import struct
 
-from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusPDU
+from pymodbus.pdu.pdu import ModbusExceptions as merror
+from pymodbus.pdu.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 

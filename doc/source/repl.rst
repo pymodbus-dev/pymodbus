@@ -3,7 +3,8 @@ Pymodbus REPL (Read Evaluate Print Loop)
 
 .. raw:: html
 
-    <p style="color: red;"><strong>Warning:</strong> The Pymodbus REPL documentation is not updated.</p>
+    <p style="color: red;"><strong>Warning:</strong> The Pymodbus REPL documentation is not updated,
+    because it lives in a different repo.</p>
 
 Installation
 ------------

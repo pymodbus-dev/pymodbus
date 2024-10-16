@@ -7,8 +7,8 @@ from __future__ import annotations
 # pylint: disable=missing-type-doc
 import struct
 
-from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusPDU
+from pymodbus.pdu.pdu import ModbusExceptions as merror
+from pymodbus.pdu.pdu import ModbusPDU
 
 
 # ---------------------------------------------------------------------------#

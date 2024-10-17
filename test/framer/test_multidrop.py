@@ -5,7 +5,7 @@ import pytest
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer import FramerAscii, FramerRTU
-from pymodbus.pdu import DecoderRequests, DecoderResponses
+from pymodbus.pdu import DecodePDU, DecoderRequests
 
 
 class TestMultidrop:
@@ -50,7 +50,7 @@ class TestMultidrop:
         """Test split response."""
         # This is a single *response* from device id 1 after being queried for 125 holding register values
         # Because the response is so long it spans several serial events
-        framer = FramerRTU(DecoderResponses())
+        framer = FramerRTU(DecodePDU(False))
         serial_events = [
             b'\x01\x03\xfa\x00\x11\x00\x11\x00\x11\x00\x11\x00\x11\x00\x11\x00\x11\x00\x11\x00\x11\x00',
             b'\x11\x00\x11\x00\x11\x00\x11\x00\x11\x00\x11\x00\x11\x00\x11\x00\x11\x00\x11\x00\x11\x00',

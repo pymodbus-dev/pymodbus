@@ -3,13 +3,13 @@ import pytest
 
 from pymodbus.exceptions import MessageRegisterException
 from pymodbus.pdu import ModbusPDU
-from pymodbus.pdu.decoders import DecoderRequests, DecoderResponses
+from pymodbus.pdu.decoders import DecodePDU, DecoderRequests
 
 
 class TestFactory:
     """Unittest for the pymod.exceptions module."""
 
-    client: DecoderResponses
+    client: DecodePDU
     server: DecoderRequests
     request = (
         (0x01, b"\x01\x00\x01\x00\x01"),  # read coils
@@ -93,7 +93,7 @@ class TestFactory:
     @pytest.fixture(autouse=True)
     def _setup(self):
         """Do common setup function."""
-        self.client = DecoderResponses()
+        self.client = DecodePDU(False)
         self.server = DecoderRequests()
 
     def test_exception_lookup(self):

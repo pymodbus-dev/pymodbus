@@ -124,11 +124,3 @@ class DecoderRequests(DecodePDU):
     def __init__(self) -> None:
         """Initialize the client lookup tables."""
         super().__init__(True)
-
-
-class DecoderResponses(DecodePDU):
-    """Decode response Message (Client)."""
-
-    def __init__(self) -> None:
-        """Initialize the client lookup tables."""
-        super().__init__(False)

@@ -14,7 +14,7 @@ from pymodbus.exceptions import MessageRegisterException, ModbusException
 from pymodbus.logging import Log
 
 
-class DecodePDU:  # pylint: disable=too-few-public-methods
+class DecodePDU:
     """Decode pdu requests/responses (server/client)."""
 
     _pdu_class_table = {
@@ -60,7 +60,7 @@ class DecodePDU:  # pylint: disable=too-few-public-methods
         (mei_msg.ReadDeviceInformationRequest, mei_msg.ReadDeviceInformationResponse),
     ]
 
-    def __init__(self, is_server: bool):
+    def __init__(self, is_server: bool) -> None:
         """Initialize function_tables."""
         inx = 1 if is_server else 0
         self.lookup: dict[int, Callable] = {cl[inx].function_code: cl[inx] for cl in self._pdu_class_table}  # type: ignore[attr-defined]
@@ -72,6 +72,34 @@ class DecodePDU:  # pylint: disable=too-few-public-methods
         """Use `function_code` to determine the class of the PDU."""
         return self.lookup.get(function_code, base.ExceptionResponse)
 
+    def decode(self, message):
+        """Decode a frame."""
+        try:
+            return self._helper(message)
+        except ModbusException as exc:
+            Log.warning("Unable to decode frame {}", exc)
+        return None
+
+    def _helper(self, data: str):
+        """Generate the correct object from a valid frame."""
+
+    def register(self, function):
+        """Register a function and sub function class with the decoder."""
+        if not issubclass(function, base.ModbusPDU):
+            raise MessageRegisterException(
+                f'"{function.__class__.__name__}" is Not a valid Modbus Message'
+                ". Class needs to be derived from "
+                "`pymodbus.pdu.ModbusPDU` "
+            )
+        self.lookup[function.function_code] = function
+        if hasattr(function, "sub_function_code"):
+            if function.function_code not in self.sub_lookup:
+                self.sub_lookup[function.function_code] = {}
+            self.sub_lookup[function.function_code][
+                function.sub_function_code
+            ] = function
+
+
 
 # --------------------------------------------------------------------------- #
 # Server Decoder
@@ -82,14 +110,6 @@ class DecoderRequests(DecodePDU):
     def __init__(self) -> None:
         """Initialize the client lookup tables."""
         super().__init__(False)
-
-    def decode(self, message):
-        """Decode a request packet."""
-        try:
-            return self._helper(message)
-        except ModbusException as exc:
-            Log.warning("Unable to decode request {}", exc)
-        return None
 
     def _helper(self, data: str):
         """Generate the correct request object from a valid request packet."""
@@ -119,23 +139,6 @@ class DecoderRequests(DecodePDU):
 
         return request
 
-    def register(self, function):
-        """Register a function and sub function class with the decoder."""
-        if not issubclass(function, base.ModbusPDU):
-            raise MessageRegisterException(
-                f'"{function.__class__.__name__}" is Not a valid Modbus Message'
-                ". Class needs to be derived from "
-                "`pymodbus.pdu.ModbusPDU` "
-            )
-        self.lookup[function.function_code] = function
-        if hasattr(function, "sub_function_code"):
-            if function.function_code not in self.sub_lookup:
-                self.sub_lookup[function.function_code] = {}
-            self.sub_lookup[function.function_code][
-                function.sub_function_code
-            ] = function
-
-
 # --------------------------------------------------------------------------- #
 # Client Decoder
 # --------------------------------------------------------------------------- #
@@ -148,14 +151,6 @@ class DecoderResponses(DecodePDU):
     def __init__(self) -> None:
         """Initialize the client lookup tables."""
         super().__init__(True)
-
-    def decode(self, message):
-        """Decode a response packet."""
-        try:
-            return self._helper(message)
-        except ModbusException as exc:
-            Log.error("Unable to decode response {}", exc)
-        return None
 
     def _helper(self, data: str):
         """Generate the correct response object from a valid response packet.
@@ -190,19 +185,3 @@ class DecoderResponses(DecodePDU):
                 response.__class__ = subtype
 
         return response
-
-    def register(self, function):
-        """Register a function and sub function class with the decoder."""
-        if function and not issubclass(function, base.ModbusPDU):
-            raise MessageRegisterException(
-                f'"{function.__class__.__name__}" is Not a valid Modbus Message'
-                ". Class needs to be derived from "
-                "`pymodbus.pdu.ModbusPDU` "
-            )
-        self.lookup[function.function_code] = function
-        if hasattr(function, "sub_function_code"):
-            if function.function_code not in self.sub_lookup:
-                self.sub_lookup[function.function_code] = {}
-            self.sub_lookup[function.function_code][
-                function.sub_function_code
-            ] = function

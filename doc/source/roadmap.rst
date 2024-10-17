@@ -21,8 +21,7 @@ The following bullet points are what the maintainers focus on:
         - more typing in the core
         - 100% test coverage fixed for all new parts (currently transport and framer)
         - Updated PDU, moving client/server decoder into pdu
-    - better broadcast handling
-    - better broadcast handling
+    - better client no_response handling
     - Simplify PDU classes
     - better retry handling (only disconnect when really needed)
 - 3.7.5, bug fix release, hopefully with:

@@ -17,7 +17,7 @@ from pymodbus.framer import (
     FramerRTU,
     FramerSocket,
 )
-from pymodbus.pdu import ClientDecoder, ServerDecoder
+from pymodbus.pdu import DecoderRequests, DecoderResponses
 
 
 _logger = logging.getLogger(__file__)
@@ -73,8 +73,8 @@ class Decoder:
         print(f"Decoding Message {value}")
         print("=" * 80)
         decoders = [
-            self.framer(ServerDecoder()),
-            self.framer(ClientDecoder()),
+            self.framer(DecoderRequests()),
+            self.framer(DecoderResponses()),
         ]
         for decoder in decoders:
             print(f"{decoder.decoder.__class__.__name__}")

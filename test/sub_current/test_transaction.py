@@ -10,7 +10,7 @@ from pymodbus.framer import (
     FramerSocket,
     FramerTLS,
 )
-from pymodbus.pdu import ModbusPDU, ServerDecoder
+from pymodbus.pdu import DecoderRequests, ModbusPDU
 from pymodbus.transaction import (
     ModbusTransactionManager,
     SyncModbusTransactionManager,
@@ -37,7 +37,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     # ----------------------------------------------------------------------- #
     def setup_method(self):
         """Set up the test environment."""
-        self.decoder = ServerDecoder()
+        self.decoder = DecoderRequests()
         self._tcp = FramerSocket(self.decoder)
         self._tls = FramerTLS(self.decoder)
         self._rtu = FramerRTU(self.decoder)

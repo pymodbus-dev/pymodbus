@@ -196,14 +196,13 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 broadcast = not request.slave_id
                 expected_response_length = None
                 if not isinstance(self.client.framer, FramerSocket):
-                    if hasattr(request, "get_response_pdu_size"):
-                        response_pdu_size = request.get_response_pdu_size()
-                        if isinstance(self.client.framer, FramerAscii):
-                            response_pdu_size *= 2
-                        if response_pdu_size:
-                            expected_response_length = (
-                                self._calculate_response_length(response_pdu_size)
-                            )
+                    response_pdu_size = request.get_response_pdu_size()
+                    if isinstance(self.client.framer, FramerAscii):
+                        response_pdu_size *= 2
+                    if response_pdu_size:
+                        expected_response_length = (
+                            self._calculate_response_length(response_pdu_size)
+                        )
                 if (  # pylint: disable=simplifiable-if-statement
                     request.slave_id in self._no_response_devices
                 ):

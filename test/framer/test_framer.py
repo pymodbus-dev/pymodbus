@@ -11,7 +11,7 @@ from pymodbus.framer import (
     FramerTLS,
     FramerType,
 )
-from pymodbus.pdu import ClientDecoder, ModbusPDU
+from pymodbus.pdu import DecoderResponses, ModbusPDU
 
 from .generator import set_calls
 
@@ -27,7 +27,7 @@ class TestFramer:
 
     def test_base(self):
         """Test FramerBase."""
-        framer = FramerBase(ClientDecoder())
+        framer = FramerBase(DecoderResponses())
         framer.decode(b'')
         framer.encode(b'', 0, 0)
         framer.encode(b'', 2, 0)
@@ -189,7 +189,7 @@ class TestFramerType:
         """Test encode method."""
         if frame == FramerTLS and dev_id + tr_id:
             return
-        frame_obj = frame(ClientDecoder())
+        frame_obj = frame(DecoderResponses())
         expected = frame_expected[inx1 + inx2 + inx3]
         encoded_data = frame_obj.encode(data, dev_id, tr_id)
         assert encoded_data == expected

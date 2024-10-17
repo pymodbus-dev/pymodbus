@@ -7,7 +7,7 @@ from pymodbus.framer import (
     FramerSocket,
     FramerTLS,
 )
-from pymodbus.pdu import ClientDecoder, ServerDecoder
+from pymodbus.pdu import DecoderRequests, DecoderResponses
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.pdu.register_read_message import (
     ReadHoldingRegistersRequest,
@@ -23,13 +23,13 @@ def set_calls():
             print(f"  dev_id --> {dev_id}")
             for tid in (0, 3077):
                 print(f"    tid --> {tid}")
-                client = framer(ClientDecoder())
+                client = framer(DecoderResponses())
                 request = ReadHoldingRegistersRequest(124, 2, dev_id)
                 request.transaction_id = tid
                 result = client.buildFrame(request)
                 print(f"      request --> {result}")
                 print(f"      request --> {result.hex()}")
-                server = framer(ServerDecoder())
+                server = framer(DecoderRequests())
                 response = ReadHoldingRegistersResponse([141,142])
                 response.slave_id = dev_id
                 response.transaction_id = tid

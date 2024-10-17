@@ -9,11 +9,12 @@ from contextlib import suppress
 
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
-from pymodbus.exceptions import NoSuchSlaveException
+from pymodbus.exceptions import ModbusException, NoSuchSlaveException
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from pymodbus.logging import Log
+from pymodbus.pdu import DecoderRequests
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ServerDecoder
+from pymodbus.pdu.pdu import ExceptionResponse
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
 
 
@@ -120,7 +121,16 @@ class ModbusServerRequestHandler(ModbusProtocol):
         # process requests to address 0
         self.databuffer += data
         Log.debug("Handling data: {}", self.databuffer, ":hex")
-        used_len, pdu = self.framer.processIncomingFrame(self.databuffer)
+        try:
+            used_len, pdu = self.framer.processIncomingFrame(self.databuffer)
+        except ModbusException:
+            pdu = ExceptionResponse(
+                40,
+                exception_code=merror.IllegalFunction
+            )
+            self.server_send(pdu, 0)
+            pdu = None
+            used_len = len(self.databuffer)
         self.databuffer = self.databuffer[used_len:]
         if pdu:
            self.execute(pdu, *addr)
@@ -257,7 +267,7 @@ class ModbusBaseServer(ModbusProtocol):
             True,
         )
         self.loop = asyncio.get_running_loop()
-        self.decoder = ServerDecoder()
+        self.decoder = DecoderRequests()
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.ignore_missing_slaves = ignore_missing_slaves

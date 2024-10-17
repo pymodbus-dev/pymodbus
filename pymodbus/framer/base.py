@@ -10,7 +10,7 @@ from enum import Enum
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.logging import Log
-from pymodbus.pdu import ClientDecoder, ModbusPDU, ServerDecoder
+from pymodbus.pdu import DecoderRequests, DecoderResponses, ModbusPDU
 
 
 class FramerType(str, Enum):
@@ -30,7 +30,7 @@ class FramerBase:
 
     def __init__(
         self,
-        decoder: ClientDecoder | ServerDecoder,
+        decoder: DecoderResponses | DecoderRequests,
     ) -> None:
         """Initialize a ADU (framer) instance."""
         self.decoder = decoder

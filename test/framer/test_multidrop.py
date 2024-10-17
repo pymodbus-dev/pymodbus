@@ -5,7 +5,7 @@ import pytest
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer import FramerAscii, FramerRTU
-from pymodbus.pdu import DecodePDU, DecoderRequests
+from pymodbus.pdu import DecodePDU
 
 
 class TestMultidrop:
@@ -16,7 +16,7 @@ class TestMultidrop:
     @pytest.fixture(name="framer")
     def fixture_framer(self):
         """Prepare framer."""
-        return FramerRTU(DecoderRequests())
+        return FramerRTU(DecodePDU(True))
 
     @pytest.fixture(name="callback")
     def fixture_callback(self):
@@ -153,7 +153,7 @@ class TestMultidrop:
             """Return none."""
             return None
 
-        framer = FramerAscii(DecoderRequests())
+        framer = FramerAscii(DecodePDU(True))
         framer.decoder.decode = return_none
         with pytest.raises(ModbusIOException):
             framer.processIncomingFrame(b':1103007C00026E\r\n')

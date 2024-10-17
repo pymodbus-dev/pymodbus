@@ -117,13 +117,7 @@ class DecoderRequests(DecodePDU):
 
     def _helper(self, data: str, function_code):
         """Generate the correct request object from a valid request packet."""
-        if not (request := self.lookup.get(function_code, lambda: None)()):
-            Log.debug("decode PDU failed for function code {}", function_code)
-            request = base.ExceptionResponse(
-                function_code,
-                exception_code=base.ModbusExceptions.IllegalFunction
-            )
-        else:
+        if (request := self.lookup.get(function_code, lambda: None)()):
             fc_string = "{}: {}".format(  # pylint: disable=consider-using-f-string
                 str(self.lookup[function_code])  # pylint: disable=use-maxsplit-arg
                 .split(".")[-1]
@@ -131,6 +125,12 @@ class DecoderRequests(DecodePDU):
                 function_code,
             )
             Log.debug("decode PDU for {}", fc_string)
+        else:
+            Log.debug("decode PDU failed for function code {}", function_code)
+            request = base.ExceptionResponse(
+                function_code,
+                exception_code=base.ModbusExceptions.IllegalFunction
+            )
         request.decode(data[1:])
 
         if hasattr(request, "sub_function_code"):
@@ -155,21 +155,15 @@ class DecoderResponses(DecodePDU):
 
     def _helper(self, data: str, function_code):
         """Generate the correct response object from a valid response packet."""
-        if function_code in self.lookup:
+        if (response := self.lookup.get(function_code, lambda: None)()):
             fc_string = "{}: {}".format(  # pylint: disable=consider-using-f-string
                 str(self.lookup[function_code])  # pylint: disable=use-maxsplit-arg
                 .split(".")[-1]
                 .rstrip('">"'),
                 function_code,
             )
+            Log.debug("Factory Response[{}]", fc_string)
         else:
-            fc_string = str(function_code)
-        Log.debug("Factory Response[{}]", fc_string)
-        response = self.lookup.get(function_code, lambda: None)()
-        if function_code > 0x80:
-            code = function_code & 0x7F  # strip error portion
-            response = base.ExceptionResponse(code, exception_code=base.ModbusExceptions.IllegalFunction)
-        if not response:
             raise ModbusException(f"Unknown response {function_code}")
         response.decode(data[1:])
 

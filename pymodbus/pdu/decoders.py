@@ -116,11 +116,3 @@ class DecodePDU:
         except ModbusException as exc:
             Log.warning("Unable to decode frame {}", exc)
         return None
-
-
-class DecoderRequests(DecodePDU):
-    """Decode request Message (Server)."""
-
-    def __init__(self) -> None:
-        """Initialize the client lookup tables."""
-        super().__init__(True)

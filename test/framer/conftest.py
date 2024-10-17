@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType
-from pymodbus.pdu import DecodePDU, DecoderRequests
+from pymodbus.pdu import DecodePDU
 
 
 @pytest.fixture(name="entry")
@@ -20,12 +20,4 @@ def prepare_is_server():
 @pytest.fixture(name="test_framer")
 async def prepare_test_framer(entry, is_server):
     """Return framer object."""
-    if not is_server:
-        return FRAMER_NAME_TO_CLASS[entry](
-            DecodePDU(False),
-        )
-    return FRAMER_NAME_TO_CLASS[entry](DecoderRequests())
-
-    #return FRAMER_NAME_TO_CLASS[entry](
-    #    (DecoderRequests if is_server else DecodePDU)(False),
-    #)
+    return FRAMER_NAME_TO_CLASS[entry](DecodePDU(is_server))

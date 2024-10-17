@@ -88,7 +88,7 @@ class DecodePDU:
                 custom_class.sub_function_code
             ] = custom_class
 
-    def decode(self, frame):
+    def decode(self, frame: bytes) -> base.ModbusPDU | None:
         """Decode a frame."""
         try:
             if (function_code := int(frame[0])) > 0x80:
@@ -98,7 +98,6 @@ class DecodePDU:
             if not (pdu_type := self.lookup.get(function_code, None)):
                 Log.debug("decode PDU failed for function code {}", function_code)
                 raise ModbusException(f"Unknown response {function_code}")
-
             pdu = pdu_type(0, 0, False)
             Log.debug("decode PDU for {}", function_code)
             pdu.decode(frame[1:])

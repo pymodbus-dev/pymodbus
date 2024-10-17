@@ -91,7 +91,10 @@ class DecodePDU:
     def decode(self, frame):
         """Decode a frame."""
         try:
-            function_code = int(frame[0])
+            if (function_code := int(frame[0])) > 0x80:
+                pdu = base.ExceptionResponse(function_code & 0x7F)
+                pdu.decode(frame[1:])
+                return pdu
             return self._helper(frame, function_code)
         except ModbusException as exc:
             Log.warning("Unable to decode frame {}", exc)
@@ -115,13 +118,11 @@ class DecoderRequests(DecodePDU):
     def _helper(self, data: str, function_code):
         """Generate the correct request object from a valid request packet."""
         if not (request := self.lookup.get(function_code, lambda: None)()):
-            Log.debug("Factory Request[{}]", function_code)
+            Log.debug("decode PDU failed for function code {}", function_code)
             request = base.ExceptionResponse(
                 function_code,
-                exception_code=base.ModbusExceptions.IllegalFunction,
-                slave=0,
-                transaction=0,
-                skip_encode=False)
+                exception_code=base.ModbusExceptions.IllegalFunction
+            )
         else:
             fc_string = "{}: {}".format(  # pylint: disable=consider-using-f-string
                 str(self.lookup[function_code])  # pylint: disable=use-maxsplit-arg
@@ -129,7 +130,7 @@ class DecoderRequests(DecodePDU):
                 .rstrip('">"'),
                 function_code,
             )
-            Log.debug("Factory Request[{}]", fc_string)
+            Log.debug("decode PDU for {}", fc_string)
         request.decode(data[1:])
 
         if hasattr(request, "sub_function_code"):
@@ -167,7 +168,7 @@ class DecoderResponses(DecodePDU):
         response = self.lookup.get(function_code, lambda: None)()
         if function_code > 0x80:
             code = function_code & 0x7F  # strip error portion
-            response = base.ExceptionResponse(code, base.ModbusExceptions.IllegalFunction)
+            response = base.ExceptionResponse(code, exception_code=base.ModbusExceptions.IllegalFunction)
         if not response:
             raise ModbusException(f"Unknown response {function_code}")
         response.decode(data[1:])

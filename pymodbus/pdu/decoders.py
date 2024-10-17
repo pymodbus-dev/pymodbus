@@ -127,10 +127,7 @@ class DecoderRequests(DecodePDU):
             Log.debug("decode PDU for {}", fc_string)
         else:
             Log.debug("decode PDU failed for function code {}", function_code)
-            request = base.ExceptionResponse(
-                function_code,
-                exception_code=base.ModbusExceptions.IllegalFunction
-            )
+            raise ModbusException(f"Unknown response {function_code}")
         request.decode(data[1:])
 
         if hasattr(request, "sub_function_code"):

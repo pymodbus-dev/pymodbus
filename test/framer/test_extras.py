@@ -6,7 +6,7 @@ from pymodbus.framer import (
     FramerSocket,
     FramerTLS,
 )
-from pymodbus.pdu import DecoderRequests
+from pymodbus.pdu import DecodePDU
 
 
 TEST_MESSAGE = b"\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d"
@@ -30,7 +30,7 @@ class TestExtas:
     def setup_method(self):
         """Set up the test environment."""
         self.client = None
-        self.decoder = DecoderRequests()
+        self.decoder = DecodePDU(True)
         self._tcp = FramerSocket(self.decoder)
         self._tls = FramerTLS(self.decoder)
         self._rtu = FramerRTU(self.decoder)

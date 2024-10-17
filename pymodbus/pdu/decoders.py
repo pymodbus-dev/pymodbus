@@ -62,7 +62,7 @@ class DecodePDU:
 
     def __init__(self, is_server: bool) -> None:
         """Initialize function_tables."""
-        inx = 1 if is_server else 0
+        inx = 0 if is_server else 1
         self.lookup: dict[int, Callable] = {cl[inx].function_code: cl[inx] for cl in self._pdu_class_table}  # type: ignore[attr-defined]
         self.sub_lookup: dict[int, dict[int, Callable]] = {f: {} for f in self.lookup}
         for f in self._pdu_sub_class_table:
@@ -116,19 +116,3 @@ class DecodePDU:
         except ModbusException as exc:
             Log.warning("Unable to decode frame {}", exc)
         return None
-
-
-class DecoderRequests(DecodePDU):
-    """Decode request Message (Server)."""
-
-    def __init__(self) -> None:
-        """Initialize the client lookup tables."""
-        super().__init__(False)
-
-
-class DecoderResponses(DecodePDU):
-    """Decode response Message (Client)."""
-
-    def __init__(self) -> None:
-        """Initialize the client lookup tables."""
-        super().__init__(True)

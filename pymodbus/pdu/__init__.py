@@ -1,13 +1,12 @@
 """Framer."""
 __all__ = [
-    "DecoderRequests",
-    "DecoderResponses",
+    "DecodePDU",
     "ExceptionResponse",
     "ModbusExceptions",
     "ModbusPDU",
 ]
 
-from pymodbus.pdu.decoders import DecoderRequests, DecoderResponses
+from pymodbus.pdu.decoders import DecodePDU
 from pymodbus.pdu.pdu import (
     ExceptionResponse,
     ModbusExceptions,

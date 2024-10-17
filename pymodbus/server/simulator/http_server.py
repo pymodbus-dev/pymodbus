@@ -25,7 +25,7 @@ from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.datastore.simulator import Label
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.logging import Log
-from pymodbus.pdu import DecoderRequests, ExceptionResponse
+from pymodbus.pdu import DecodePDU, ExceptionResponse
 from pymodbus.server.async_io import (
     ModbusSerialServer,
     ModbusTcpServer,
@@ -214,7 +214,7 @@ class ModbusSimulatorServer:
         self.refresh_rate = 0
         self.register_filter: list[int] = []
         self.call_list: list[CallTracer] = []
-        self.request_lookup = DecoderRequests().lookup
+        self.request_lookup = DecodePDU(True).lookup
         self.call_monitor = CallTypeMonitor()
         self.call_response = CallTypeResponse()
         app_key = getattr(web, 'AppKey', str)  # fall back to str for aiohttp < 3.9.0

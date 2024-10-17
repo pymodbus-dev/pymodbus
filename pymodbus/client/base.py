@@ -11,7 +11,7 @@ from pymodbus.client.modbusclientprotocol import ModbusClientProtocol
 from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from pymodbus.logging import Log
-from pymodbus.pdu import DecoderResponses, ModbusPDU
+from pymodbus.pdu import DecodePDU, ModbusPDU
 from pymodbus.transaction import SyncModbusTransactionManager
 from pymodbus.transport import CommParams
 from pymodbus.utilities import ModbusTransactionState
@@ -182,7 +182,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         self.slaves: list[int] = []
 
         # Common variables.
-        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(DecoderResponses())
+        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(DecodePDU(False))
         self.transaction = SyncModbusTransactionManager(
             self,
             self.retries,

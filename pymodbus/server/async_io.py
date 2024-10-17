@@ -12,7 +12,7 @@ from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
 from pymodbus.exceptions import ModbusException, NoSuchSlaveException
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from pymodbus.logging import Log
-from pymodbus.pdu import DecoderRequests
+from pymodbus.pdu import DecodePDU
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.pdu.pdu import ExceptionResponse
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
@@ -267,7 +267,7 @@ class ModbusBaseServer(ModbusProtocol):
             True,
         )
         self.loop = asyncio.get_running_loop()
-        self.decoder = DecoderRequests()
+        self.decoder = DecodePDU(True)
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.ignore_missing_slaves = ignore_missing_slaves

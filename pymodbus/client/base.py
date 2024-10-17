@@ -66,7 +66,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         )
         return await self.ctx.connect()
 
-    def register(self, custom_response_class: ModbusPDU) -> None:
+    def register(self, custom_response_class: type[ModbusPDU]) -> None:
         """Register a custom response class with the decoder (call **sync**).
 
         :param custom_response_class: (optional) Modbus response class.
@@ -197,7 +197,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
     # ----------------------------------------------------------------------- #
     # Client external interface
     # ----------------------------------------------------------------------- #
-    def register(self, custom_response_class: ModbusPDU) -> None:
+    def register(self, custom_response_class: type[ModbusPDU]) -> None:
         """Register a custom response class with the decoder.
 
         :param custom_response_class: (optional) Modbus response class.

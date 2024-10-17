@@ -68,25 +68,25 @@ class DecodePDU:
         for f in self._pdu_sub_class_table:
             self.sub_lookup[f[inx].function_code][f[inx].sub_function_code] = f[inx]
 
-    def lookupPduClass(self, function_code: int):
+    def lookupPduClass(self, function_code: int) -> type[base.ModbusPDU]:
         """Use `function_code` to determine the class of the PDU."""
         return self.lookup.get(function_code, base.ExceptionResponse)
 
-    def register(self, function):
+    def register(self, custom_class: type[base.ModbusPDU]) -> None:
         """Register a function and sub function class with the decoder."""
-        if not issubclass(function, base.ModbusPDU):
+        if not issubclass(custom_class, base.ModbusPDU):
             raise MessageRegisterException(
-                f'"{function.__class__.__name__}" is Not a valid Modbus Message'
+                f'"{custom_class.__class__.__name__}" is Not a valid Modbus Message'
                 ". Class needs to be derived from "
                 "`pymodbus.pdu.ModbusPDU` "
             )
-        self.lookup[function.function_code] = function
-        if function.sub_function_code:
-            if function.function_code not in self.sub_lookup:
-                self.sub_lookup[function.function_code] = {}
-            self.sub_lookup[function.function_code][
-                function.sub_function_code
-            ] = function
+        self.lookup[custom_class.function_code] = custom_class
+        if custom_class.sub_function_code:
+            if custom_class.function_code not in self.sub_lookup:
+                self.sub_lookup[custom_class.function_code] = {}
+            self.sub_lookup[custom_class.function_code][
+                custom_class.sub_function_code
+            ] = custom_class
 
     def decode(self, frame):
         """Decode a frame."""

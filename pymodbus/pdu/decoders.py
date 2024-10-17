@@ -1,5 +1,5 @@
 """Modbus Request/Response Decoders."""
-from collections.abc import Callable
+from __future__ import annotations
 
 import pymodbus.pdu.bit_read_message as bit_r_msg
 import pymodbus.pdu.bit_write_message as bit_w_msg
@@ -17,7 +17,7 @@ from pymodbus.logging import Log
 class DecodePDU:
     """Decode pdu requests/responses (server/client)."""
 
-    _pdu_class_table = {
+    _pdu_class_table: set[tuple[type[base.ModbusPDU], type[base.ModbusPDU]]] = {
         (reg_r_msg.ReadHoldingRegistersRequest, reg_r_msg.ReadHoldingRegistersResponse),
         (bit_r_msg.ReadDiscreteInputsRequest, bit_r_msg.ReadDiscreteInputsResponse),
         (reg_r_msg.ReadInputRegistersRequest, reg_r_msg.ReadInputRegistersResponse),
@@ -39,7 +39,7 @@ class DecodePDU:
         (mei_msg.ReadDeviceInformationRequest, mei_msg.ReadDeviceInformationResponse),
     }
 
-    _pdu_sub_class_table = [
+    _pdu_sub_class_table: set[tuple[type[base.ModbusPDU], type[base.ModbusPDU]]]  = {
         (diag_msg.ReturnQueryDataRequest, diag_msg.ReturnQueryDataResponse),
         (diag_msg.RestartCommunicationsOptionRequest, diag_msg.RestartCommunicationsOptionResponse),
         (diag_msg.ReturnDiagnosticRegisterRequest, diag_msg.ReturnDiagnosticRegisterResponse),
@@ -58,13 +58,13 @@ class DecodePDU:
         (diag_msg.ClearOverrunCountRequest, diag_msg.ClearOverrunCountResponse),
         (diag_msg.GetClearModbusPlusRequest, diag_msg.GetClearModbusPlusResponse),
         (mei_msg.ReadDeviceInformationRequest, mei_msg.ReadDeviceInformationResponse),
-    ]
+    }
 
     def __init__(self, is_server: bool) -> None:
         """Initialize function_tables."""
         inx = 0 if is_server else 1
-        self.lookup: dict[int, Callable] = {cl[inx].function_code: cl[inx] for cl in self._pdu_class_table}  # type: ignore[attr-defined]
-        self.sub_lookup: dict[int, dict[int, Callable]] = {f: {} for f in self.lookup}
+        self.lookup = {cl[inx].function_code: cl[inx] for cl in self._pdu_class_table}
+        self.sub_lookup = {f: {} for f in self.lookup}
         for f in self._pdu_sub_class_table:
             self.sub_lookup[f[inx].function_code][f[inx].sub_function_code] = f[inx]  # type: ignore[attr-defined]
 
@@ -92,20 +92,21 @@ class DecodePDU:
         """Decode a frame."""
         try:
             if (function_code := int(frame[0])) > 0x80:
-                pdu = base.ExceptionResponse(function_code & 0x7F)
-                pdu.decode(frame[1:])
-                return pdu
-            if (pdu := self.lookup.get(function_code, lambda: None)()):
-                fc_string = "{}: {}".format(  # pylint: disable=consider-using-f-string
-                    str(self.lookup[function_code])  # pylint: disable=use-maxsplit-arg
-                    .split(".")[-1]
-                    .rstrip('">"'),
-                    function_code,
-                )
-                Log.debug("decode PDU for {}", fc_string)
-            else:
+                pdu_exp = base.ExceptionResponse(function_code & 0x7F)
+                pdu_exp.decode(frame[1:])
+                return pdu_exp
+            if not (pdu_type := self.lookup.get(function_code, None)):
                 Log.debug("decode PDU failed for function code {}", function_code)
                 raise ModbusException(f"Unknown response {function_code}")
+
+            pdu = pdu_type(0, 0, False)
+            fc_string = "{}: {}".format(  # pylint: disable=consider-using-f-string
+                str(self.lookup[function_code])  # pylint: disable=use-maxsplit-arg
+                .split(".")[-1]
+                .rstrip('">"'),
+                function_code,
+            )
+            Log.debug("decode PDU for {}", fc_string)
             pdu.decode(frame[1:])
 
             if hasattr(pdu, "sub_function_code"):

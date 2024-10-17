@@ -117,14 +117,7 @@ class DecodePDU:
             Log.warning("Unable to decode frame {}", exc)
         return None
 
-    def _helper(self, data: str, function_code):
-        """Generate the correct object from a valid frame."""
 
-
-
-# --------------------------------------------------------------------------- #
-# Server Decoder
-# --------------------------------------------------------------------------- #
 class DecoderRequests(DecodePDU):
     """Decode request Message (Server)."""
 
@@ -132,58 +125,10 @@ class DecoderRequests(DecodePDU):
         """Initialize the client lookup tables."""
         super().__init__(False)
 
-    def _helper(self, data: str, function_code):
-        """Generate the correct request object from a valid request packet."""
-        if (request := self.lookup.get(function_code, lambda: None)()):
-            fc_string = "{}: {}".format(  # pylint: disable=consider-using-f-string
-                str(self.lookup[function_code])  # pylint: disable=use-maxsplit-arg
-                .split(".")[-1]
-                .rstrip('">"'),
-                function_code,
-            )
-            Log.debug("decode PDU for {}", fc_string)
-        else:
-            Log.debug("decode PDU failed for function code {}", function_code)
-            raise ModbusException(f"Unknown response {function_code}")
-        request.decode(data[1:])
 
-        if hasattr(request, "sub_function_code"):
-            lookup = self.sub_lookup.get(request.function_code, {})
-            if subtype := lookup.get(request.sub_function_code, None):
-                request.__class__ = subtype
-
-        return request
-
-# --------------------------------------------------------------------------- #
-# Client Decoder
-# --------------------------------------------------------------------------- #
 class DecoderResponses(DecodePDU):
-    """Response Message Factory (Client).
-
-    To add more implemented functions, simply add them to the list
-    """
+    """Decode response Message (Client)."""
 
     def __init__(self) -> None:
         """Initialize the client lookup tables."""
         super().__init__(True)
-
-    def _helper(self, data: str, function_code):
-        """Generate the correct response object from a valid response packet."""
-        if (response := self.lookup.get(function_code, lambda: None)()):
-            fc_string = "{}: {}".format(  # pylint: disable=consider-using-f-string
-                str(self.lookup[function_code])  # pylint: disable=use-maxsplit-arg
-                .split(".")[-1]
-                .rstrip('">"'),
-                function_code,
-            )
-            Log.debug("Factory Response[{}]", fc_string)
-        else:
-            raise ModbusException(f"Unknown response {function_code}")
-        response.decode(data[1:])
-
-        if hasattr(response, "sub_function_code"):
-            lookup = self.sub_lookup.get(response.function_code, {})
-            if subtype := lookup.get(response.sub_function_code, None):
-                response.__class__ = subtype
-
-        return response

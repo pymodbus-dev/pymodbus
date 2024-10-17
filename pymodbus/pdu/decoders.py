@@ -72,17 +72,6 @@ class DecodePDU:
         """Use `function_code` to determine the class of the PDU."""
         return self.lookup.get(function_code, base.ExceptionResponse)
 
-    def decode(self, message):
-        """Decode a frame."""
-        try:
-            return self._helper(message)
-        except ModbusException as exc:
-            Log.warning("Unable to decode frame {}", exc)
-        return None
-
-    def _helper(self, data: str):
-        """Generate the correct object from a valid frame."""
-
     def register(self, function):
         """Register a function and sub function class with the decoder."""
         if not issubclass(function, base.ModbusPDU):
@@ -99,6 +88,18 @@ class DecodePDU:
                 function.sub_function_code
             ] = function
 
+    def decode(self, frame):
+        """Decode a frame."""
+        try:
+            function_code = int(frame[0])
+            return self._helper(frame, function_code)
+        except ModbusException as exc:
+            Log.warning("Unable to decode frame {}", exc)
+        return None
+
+    def _helper(self, data: str, function_code):
+        """Generate the correct object from a valid frame."""
+
 
 
 # --------------------------------------------------------------------------- #
@@ -111,9 +112,8 @@ class DecoderRequests(DecodePDU):
         """Initialize the client lookup tables."""
         super().__init__(False)
 
-    def _helper(self, data: str):
+    def _helper(self, data: str, function_code):
         """Generate the correct request object from a valid request packet."""
-        function_code = int(data[0])
         if not (request := self.lookup.get(function_code, lambda: None)()):
             Log.debug("Factory Request[{}]", function_code)
             request = base.ExceptionResponse(
@@ -152,24 +152,17 @@ class DecoderResponses(DecodePDU):
         """Initialize the client lookup tables."""
         super().__init__(True)
 
-    def _helper(self, data: str):
-        """Generate the correct response object from a valid response packet.
-
-        This decodes from a list of the currently implemented request types.
-
-        :param data: The response packet to decode
-        :returns: The decoded request or an exception response object
-        :raises ModbusException:
-        """
-        fc_string = data[0]
-        function_code = int(fc_string)
-        if function_code in self.lookup:  # pylint: disable=consider-using-assignment-expr
+    def _helper(self, data: str, function_code):
+        """Generate the correct response object from a valid response packet."""
+        if function_code in self.lookup:
             fc_string = "{}: {}".format(  # pylint: disable=consider-using-f-string
                 str(self.lookup[function_code])  # pylint: disable=use-maxsplit-arg
                 .split(".")[-1]
                 .rstrip('">"'),
                 function_code,
             )
+        else:
+            fc_string = str(function_code)
         Log.debug("Factory Response[{}]", fc_string)
         response = self.lookup.get(function_code, lambda: None)()
         if function_code > 0x80:

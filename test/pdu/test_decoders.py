@@ -122,7 +122,7 @@ class TestFactory:
     def test_response_errors(self):
         """Test a response factory decoder exceptions."""
         with pytest.raises(ModbusException):
-            self.client._helper(self.bad[0][1])  # pylint: disable=protected-access
+            self.client._helper(self.bad[0][1], self.bad[0][0])  # pylint: disable=protected-access
         assert (
             self.client.decode(self.bad[1][1]).function_code == self.bad[1][0]
         ), "Failed to decode error PDU"

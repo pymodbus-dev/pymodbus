@@ -9,7 +9,7 @@ from pymodbus.framer import (
     FramerType,
 )
 from pymodbus.logging import Log
-from pymodbus.pdu import DecoderResponses
+from pymodbus.pdu import DecodePDU
 from pymodbus.transaction import ModbusTransactionManager
 from pymodbus.transport import CommParams, ModbusProtocol
 
@@ -35,7 +35,7 @@ class ModbusClientProtocol(ModbusProtocol):
         self.on_connect_callback = on_connect_callback
 
         # Common variables.
-        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(DecoderResponses())
+        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(DecodePDU(False))
         self.transaction = ModbusTransactionManager()
 
     def _handle_response(self, reply):

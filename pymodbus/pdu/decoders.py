@@ -39,7 +39,7 @@ class DecodePDU:
         (mei_msg.ReadDeviceInformationRequest, mei_msg.ReadDeviceInformationResponse),
     }
 
-    _pdu_sub_class_table: set[tuple[type[base.ModbusPDU], type[base.ModbusPDU]]]  = {
+    _pdu_sub_class_table: set[tuple[type[base.ModbusPDU], type[base.ModbusPDU]]] = {
         (diag_msg.ReturnQueryDataRequest, diag_msg.ReturnQueryDataResponse),
         (diag_msg.RestartCommunicationsOptionRequest, diag_msg.RestartCommunicationsOptionResponse),
         (diag_msg.ReturnDiagnosticRegisterRequest, diag_msg.ReturnDiagnosticRegisterResponse),
@@ -63,10 +63,10 @@ class DecodePDU:
     def __init__(self, is_server: bool) -> None:
         """Initialize function_tables."""
         inx = 0 if is_server else 1
-        self.lookup = {cl[inx].function_code: cl[inx] for cl in self._pdu_class_table}
+        self.lookup: dict[int, type[base.ModbusPDU]] = {cl[inx].function_code: cl[inx] for cl in self._pdu_class_table}
         self.sub_lookup: dict[int, dict[int, type[base.ModbusPDU]]] = {f: {} for f in self.lookup}
         for f in self._pdu_sub_class_table:
-            self.sub_lookup[f[inx].function_code][f[inx].sub_function_code] = f[inx]  # type: ignore[attr-defined]
+            self.sub_lookup[f[inx].function_code][f[inx].sub_function_code] = f[inx]
 
     def lookupPduClass(self, function_code: int):
         """Use `function_code` to determine the class of the PDU."""
@@ -81,7 +81,7 @@ class DecodePDU:
                 "`pymodbus.pdu.ModbusPDU` "
             )
         self.lookup[function.function_code] = function
-        if hasattr(function, "sub_function_code"):
+        if function.sub_function_code:
             if function.function_code not in self.sub_lookup:
                 self.sub_lookup[function.function_code] = {}
             self.sub_lookup[function.function_code][

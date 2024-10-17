@@ -13,6 +13,7 @@ class ModbusPDU:
     """Base class for all Modbus messages."""
 
     function_code: int = 0
+    sub_function_code: int = 0
     _rtu_frame_size: int = 0
     _rtu_byte_count_pos: int = 0
 

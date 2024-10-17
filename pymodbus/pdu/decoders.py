@@ -68,7 +68,7 @@ class DecodePDU:
         for f in self._pdu_sub_class_table:
             self.sub_lookup[f[inx].function_code][f[inx].sub_function_code] = f[inx]  # type: ignore[attr-defined]
 
-    def lookupPduClass(self, function_code):
+    def lookupPduClass(self, function_code: int):
         """Use `function_code` to determine the class of the PDU."""
         return self.lookup.get(function_code, base.ExceptionResponse)
 

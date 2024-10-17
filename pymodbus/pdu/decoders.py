@@ -100,13 +100,7 @@ class DecodePDU:
                 raise ModbusException(f"Unknown response {function_code}")
 
             pdu = pdu_type(0, 0, False)
-            fc_string = "{}: {}".format(  # pylint: disable=consider-using-f-string
-                str(self.lookup[function_code])  # pylint: disable=use-maxsplit-arg
-                .split(".")[-1]
-                .rstrip('">"'),
-                function_code,
-            )
-            Log.debug("decode PDU for {}", fc_string)
+            Log.debug("decode PDU for {}", function_code)
             pdu.decode(frame[1:])
 
             if hasattr(pdu, "sub_function_code"):

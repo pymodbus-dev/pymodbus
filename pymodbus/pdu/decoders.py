@@ -64,7 +64,7 @@ class DecodePDU:
         """Initialize function_tables."""
         inx = 0 if is_server else 1
         self.lookup = {cl[inx].function_code: cl[inx] for cl in self._pdu_class_table}
-        self.sub_lookup = {f: {} for f in self.lookup}
+        self.sub_lookup: dict[int, dict[int, type[base.ModbusPDU]]] = {f: {} for f in self.lookup}
         for f in self._pdu_sub_class_table:
             self.sub_lookup[f[inx].function_code][f[inx].sub_function_code] = f[inx]  # type: ignore[attr-defined]
 

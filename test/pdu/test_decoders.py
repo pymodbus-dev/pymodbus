@@ -6,7 +6,7 @@ from pymodbus.pdu import ModbusPDU
 from pymodbus.pdu.decoders import DecodePDU
 
 
-class TestFactory:
+class TestModbusPDU:
     """Unittest for the pymod.exceptions module."""
 
     client: DecodePDU

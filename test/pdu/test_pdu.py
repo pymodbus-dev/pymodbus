@@ -21,6 +21,14 @@ class TestPdu:
         assert result == b"\x01"
         assert self.exception.exception_code == 1
 
+    async def test_get_pdu_size(self):
+        """Test all error methods."""
+        assert not self.exception.get_response_pdu_size()
+
+    async def test_is_error(self):
+        """Test all error methods."""
+        assert self.exception.isError()
+
     def test_request_exception_factory(self):
         """Test all error methods."""
         request = ModbusPDU(0, 0, False)
@@ -45,6 +53,7 @@ class TestPdu:
             )
             == 0x05 + 5
         )
+        assert not ModbusPDU.calculateRtuFrameSize(b"\x11")
         ModbusPDU._rtu_byte_count_pos = None  # pylint: disable=protected-access
 
         with pytest.raises(NotImplementedException):

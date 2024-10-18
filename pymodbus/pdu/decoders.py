@@ -107,6 +107,6 @@ class DecodePDU:
                 if subtype := lookup.get(pdu.sub_function_code, None):
                     pdu.__class__ = subtype
             return pdu
-        except ModbusException as exc:
+        except (ModbusException, ValueError, IndexError) as exc:
             Log.warning("Unable to decode frame {}", exc)
         return None

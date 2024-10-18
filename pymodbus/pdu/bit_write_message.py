@@ -167,7 +167,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
     function_code_name = "write_coils"
     _rtu_byte_count_pos = 6
 
-    def __init__(self, address=None, values=None, slave=None, transaction=0, skip_encode=0):
+    def __init__(self, address=0, values=None, slave=None, transaction=0, skip_encode=0):
         """Initialize a new instance.
 
         :param address: The starting request address

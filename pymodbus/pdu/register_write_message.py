@@ -91,7 +91,7 @@ class WriteSingleRegisterResponse(ModbusPDU):
     function_code = 6
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address=0, value=0, slave=1, transaction=0, skip_encode=False):
         """Initialize a new instance.
 
         :param address: The address to start writing add
@@ -152,7 +152,7 @@ class WriteMultipleRegistersRequest(ModbusPDU):
     _rtu_byte_count_pos = 6
     _pdu_length = 5  # func + adress1 + adress2 + outputQuant1 + outputQuant2
 
-    def __init__(self, address=None, values=None, slave=None, transaction=0, skip_encode=0):
+    def __init__(self, address=0, values=None, slave=None, transaction=0, skip_encode=0):
         """Initialize a new instance.
 
         :param address: The address to start writing to
@@ -242,7 +242,7 @@ class WriteMultipleRegistersResponse(ModbusPDU):
     function_code = 16
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, count=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address=0, count=0, slave=1, transaction=0, skip_encode=False):
         """Initialize a new instance.
 
         :param address: The address to start writing to

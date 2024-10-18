@@ -81,7 +81,7 @@ class DecodePDU:
                 "`pymodbus.pdu.ModbusPDU` "
             )
         self.lookup[custom_class.function_code] = custom_class
-        if custom_class.sub_function_code:
+        if custom_class.sub_function_code >= 0:
             if custom_class.function_code not in self.sub_lookup:
                 self.sub_lookup[custom_class.function_code] = {}
             self.sub_lookup[custom_class.function_code][
@@ -102,7 +102,7 @@ class DecodePDU:
             Log.debug("decode PDU for {}", function_code)
             pdu.decode(frame[1:])
 
-            if hasattr(pdu, "sub_function_code"):
+            if pdu.sub_function_code >= 0:
                 lookup = self.sub_lookup.get(pdu.function_code, {})
                 if subtype := lookup.get(pdu.sub_function_code, None):
                     pdu.__class__ = subtype

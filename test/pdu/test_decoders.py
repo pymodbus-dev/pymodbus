@@ -123,7 +123,7 @@ class TestModbusPDU:
 
     def test_decode_unknown_sub(self):
         """Test for unknown sub code."""
-        assert self.client.decode(b"\x08\x00\x00\x00\x00")
+        assert self.client.decode(b"\x08\x00\xF0\xF0\x00")
 
     @pytest.mark.parametrize(("decoder"), [server, client])
     def test_register_custom_request(self, decoder):
@@ -154,6 +154,8 @@ class TestModbusPDU:
         decoder.register(CustomRequestResponse)
         assert decoder.lookupPduClass(CustomRequestResponse.function_code)
         CustomRequestResponse.sub_function_code = 0xF7
+        decoder.register(CustomRequestResponse)
+        CustomRequestResponse.sub_function_code = 0xF4
         decoder.register(CustomRequestResponse)
         assert self.server.lookupPduClass(CustomRequestResponse.function_code)
         with pytest.raises(MessageRegisterException):

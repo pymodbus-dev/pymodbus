@@ -390,7 +390,7 @@ class ModbusSimulatorServer:
         for function in self.request_lookup.values():
             selected = (
                 "selected"
-                if function.function_code == self.call_monitor.function  #type: ignore[attr-defined]
+                if function.function_code == self.call_monitor.function
                 else ""
             )
             function_codes += f"<option value={function.function_code} {selected}>{function.function_code_name}</option>"  #type: ignore[attr-defined]
@@ -556,9 +556,9 @@ class ModbusSimulatorServer:
         function_codes = []
         for function in self.request_lookup.values():
             function_codes.append({
-                "value": function.function_code,    # type: ignore[attr-defined]
+                "value": function.function_code,
                 "text": function.function_code_name,    # type: ignore[attr-defined]
-                "selected": function.function_code == self.call_monitor.function  # type: ignore[attr-defined]
+                "selected": function.function_code == self.call_monitor.function
             })
 
         simulation_action = "ACTIVE" if self.call_response.active != RESPONSE_INACTIVE else ""

@@ -61,9 +61,7 @@ class DiagnosticStatusRequest(ModbusPDU):
 
         :param data: The data to decode into the function code
         """
-        (
-            self.sub_function_code,  # pylint: disable=attribute-defined-outside-init
-        ) = struct.unpack(">H", data[:2])
+        (self.sub_function_code, ) = struct.unpack(">H", data[:2])
         if self.sub_function_code == ReturnQueryDataRequest.sub_function_code:
             self.message = data[2:]
         else:
@@ -123,9 +121,7 @@ class DiagnosticStatusResponse(ModbusPDU):
 
         :param data: The data to decode into the function code
         """
-        (
-            self.sub_function_code,  # pylint: disable=attribute-defined-outside-init
-        ) = struct.unpack(">H", data[:2])
+        (self.sub_function_code, ) = struct.unpack(">H", data[:2])
         data = data[2:]
         if self.sub_function_code == ReturnQueryDataRequest.sub_function_code:
             self.message = data

@@ -53,6 +53,7 @@ class ReadBitsRequestBase(ModbusPDU):
 
     def __str__(self):
         """Return a string representation of the instance."""
+        return f"ReadBitRequest({self.address},{self.count})"
 
 
 class ReadBitsResponseBase(ModbusPDU):
@@ -116,6 +117,7 @@ class ReadBitsResponseBase(ModbusPDU):
 
     def __str__(self):
         """Return a string representation of the instance."""
+        return f"{self.__class__.__name__}({len(self.bits)})"
 
 
 class ReadCoilsRequest(ReadBitsRequestBase):

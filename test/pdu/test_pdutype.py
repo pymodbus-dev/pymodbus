@@ -15,10 +15,11 @@ class TestPduType:  # pylint: disable=too-few-public-methods
     """Test all PDU types requests/responses."""
 
     requests = [
-        (reg_r_msg.ReadHoldingRegistersRequest, ()),
-        (bit_r_msg.ReadDiscreteInputsRequest, ()),
+        (bit_r_msg.ReadCoilsRequest, {"address": 117, "count": 3}),
+        (bit_r_msg.ReadDiscreteInputsRequest, {"address": 117, "count": 3}),
+
+        (reg_r_msg.ReadHoldingRegistersRequest, {"address": 117, "count": 3}),
         (reg_r_msg.ReadInputRegistersRequest, ()),
-        (bit_r_msg.ReadCoilsRequest, ()),
         (bit_w_msg.WriteMultipleCoilsRequest, ()),
         (reg_w_msg.WriteMultipleRegistersRequest, ()),
         (reg_w_msg.WriteSingleRegisterRequest, ()),
@@ -55,10 +56,11 @@ class TestPduType:  # pylint: disable=too-few-public-methods
     ]
 
     responses = [
+        (bit_r_msg.ReadCoilsResponse, {"values": [3, 17]}),
+        (bit_r_msg.ReadDiscreteInputsResponse, {"values": [3, 17]}),
+
         (reg_r_msg.ReadHoldingRegistersResponse, ()),
-        (bit_r_msg.ReadDiscreteInputsResponse, ()),
         (reg_r_msg.ReadInputRegistersResponse, ()),
-        (bit_r_msg.ReadCoilsResponse, ()),
         (bit_w_msg.WriteMultipleCoilsResponse, ()),
         (reg_w_msg.WriteMultipleRegistersResponse, ()),
         (reg_w_msg.WriteSingleRegisterResponse, ()),

@@ -38,10 +38,10 @@ class TestPduType:
         (diag_msg.ReturnIopOverrunCountRequest, {"data": 0x1010}),
         (diag_msg.ClearOverrunCountRequest, {"data": 0x1010}),
         (diag_msg.GetClearModbusPlusRequest, {"data": 0x1010}),
-
-        (file_msg.ReadFileRecordRequest, {}),
-        (file_msg.WriteFileRecordRequest, {}),
-        (file_msg.ReadFifoQueueRequest, {}),
+        (file_msg.ReadFileRecordRequest, {"records": [117, 119]}),
+        (file_msg.WriteFileRecordRequest, {"records": [b'123', b'456']}),
+        (file_msg.ReadFifoQueueRequest, {"address": 117}),
+        (mei_msg.ReadDeviceInformationRequest, {"read_code": 0x17, "object_id": 0x29}),
 
         (reg_r_msg.ReadHoldingRegistersRequest, {}),
         (reg_r_msg.ReadInputRegistersRequest, {}),
@@ -53,8 +53,6 @@ class TestPduType:
         (o_msg.GetCommEventLogRequest, {}),
         (o_msg.ReportSlaveIdRequest, {}),
         (reg_w_msg.MaskWriteRegisterRequest, {}),
-        (mei_msg.ReadDeviceInformationRequest, {}),
-        (mei_msg.ReadDeviceInformationRequest, {}),
     ]
 
     responses = [
@@ -81,10 +79,10 @@ class TestPduType:
         (diag_msg.ReturnIopOverrunCountResponse, {"data": 0x1010}),
         (diag_msg.ClearOverrunCountResponse, {"data": 0x1010}),
         (diag_msg.GetClearModbusPlusResponse, {"data": 0x1010}),
-
-        (file_msg.ReadFileRecordResponse, {}),
-        (file_msg.WriteFileRecordResponse, {}),
-        (file_msg.ReadFifoQueueResponse, {}),
+        (file_msg.ReadFileRecordResponse, {"records": [b'123', b'456']}),
+        (file_msg.WriteFileRecordResponse, {"records": [b'123', b'456']}),
+        (file_msg.ReadFifoQueueResponse, {"values": [b'123', b'456']}),
+        (mei_msg.ReadDeviceInformationResponse, {"read_code": 0x17, "information": 0x29}),
 
         (reg_r_msg.ReadHoldingRegistersResponse, {}),
         (reg_r_msg.ReadInputRegistersResponse, {}),
@@ -96,8 +94,6 @@ class TestPduType:
         (o_msg.GetCommEventLogResponse, {}),
         (o_msg.ReportSlaveIdResponse, {}),
         (reg_w_msg.MaskWriteRegisterResponse, {}),
-        (mei_msg.ReadDeviceInformationResponse, {}),
-        (mei_msg.ReadDeviceInformationResponse, {}),
     ]
 
 

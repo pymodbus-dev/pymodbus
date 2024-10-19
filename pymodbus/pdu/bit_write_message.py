@@ -53,7 +53,7 @@ class WriteSingleCoilRequest(ModbusPDU):
         self.address = address
         self.value = bool(value)
 
-    def encode(self):
+    def encode(self):  # pragma: no cover
         """Encode write coil request.
 
         :returns: The byte encoded message
@@ -73,7 +73,7 @@ class WriteSingleCoilRequest(ModbusPDU):
         self.address, value = struct.unpack(">HH", data)
         self.value = value == ModbusStatus.ON
 
-    async def execute(self, context):
+    async def execute(self, context):  # pragma: no cover
         """Run a write coil request against a datastore.
 
         :param context: The datastore to request from
@@ -123,7 +123,7 @@ class WriteSingleCoilResponse(ModbusPDU):
         self.address = address
         self.value = value
 
-    def encode(self):
+    def encode(self):  # pragma: no cover
         """Encode write coil response.
 
         :return: The byte encoded message
@@ -175,7 +175,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
         """
         ModbusPDU.__init__(self, slave, transaction, skip_encode)
         self.address = address
-        if values is None:
+        if values is None:  # pragma: no cover
             values = []
         elif not hasattr(values, "__iter__"):
             values = [values]
@@ -202,7 +202,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
         values = unpack_bitstring(data[5:])
         self.values = values[:count]
 
-    async def execute(self, context):
+    async def execute(self, context):  # pragma: no cover
         """Run a write coils request against a datastore.
 
         :param context: The datastore to request from

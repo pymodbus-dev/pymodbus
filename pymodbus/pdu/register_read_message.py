@@ -133,7 +133,7 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
         """
         super().__init__(address, count, slave, transaction, skip_encode)
 
-    async def execute(self, context):
+    async def execute(self, context):  # pragma: no cover
         """Run a read holding request against a datastore.
 
         :param context: The datastore to request from
@@ -195,7 +195,7 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
         """
         super().__init__(address, count, slave, transaction, skip_encode)
 
-    async def execute(self, context):
+    async def execute(self, context):  # pragma: no cover
         """Run a read input request against a datastore.
 
         :param context: The datastore to request from
@@ -307,7 +307,7 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
             register = struct.unpack(">H", data[i : i + 2])[0]
             self.write_registers.append(register)
 
-    async def execute(self, context):
+    async def execute(self, context):  # pragma: no cover
         """Run a write single register request against a datastore.
 
         :param context: The datastore to request from

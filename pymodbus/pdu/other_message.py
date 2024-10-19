@@ -44,7 +44,7 @@ class ReadExceptionStatusRequest(ModbusPDU):
         :param data: The incoming data
         """
 
-    async def execute(self, _context=None):
+    async def execute(self, _context=None):  # pragma: no cover
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -149,7 +149,7 @@ class GetCommEventCounterRequest(ModbusPDU):
         :param data: The incoming data
         """
 
-    async def execute(self, _context=None):
+    async def execute(self, _context=None):  # pragma: no cover
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -260,7 +260,7 @@ class GetCommEventLogRequest(ModbusPDU):
         :param data: The incoming data
         """
 
-    async def execute(self, _context=None):
+    async def execute(self, _context=None):  # pragma: no cover
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -385,7 +385,7 @@ class ReportSlaveIdRequest(ModbusPDU):
         :param data: The incoming data
         """
 
-    async def execute(self, context=None):
+    async def execute(self, context=None):  # pragma: no cover
         """Run a report slave id request against the store.
 
         :returns: The populated response

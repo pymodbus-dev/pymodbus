@@ -115,5 +115,19 @@ class TestPduType:
     @pytest.mark.usefixtures("framer")
     def test_pdu_instance_encode(self, pdutype, kwargs):
         """Test that all PDU types can be created."""
-        res_frame = pdutype(**kwargs).encode()
-        print(str(res_frame))
+        pdutype(**kwargs).encode()
+        # Fix Check frame against test case
+
+    @pytest.mark.parametrize(("pdutype", "kwargs", "framer"), requests + responses)
+    @pytest.mark.usefixtures("framer")
+    def test_pdu_special_methods(self, pdutype, kwargs):
+        """Test that all PDU types can be created."""
+        pdu = pdutype(**kwargs)
+        if hasattr(pdu, "get_response_pdu_size"):
+            pdu.get_response_pdu_size()
+        if hasattr(pdu, "setBit"):
+            pdu.setBit(0)
+        if hasattr(pdu, "resetBit"):
+            pdu.resetBit(0)
+        if hasattr(pdu, "getBit"):
+            pdu.getBit(0)

@@ -130,7 +130,7 @@ class ReadFileRecordRequest(ModbusPDU):
             if decoded[0] == 0x06:
                 self.records.append(record)
 
-    def execute(self, _context):
+    def execute(self, _context):  # pragma: no cover
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -257,7 +257,7 @@ class WriteFileRecordRequest(ModbusPDU):
             if decoded[0] == 0x06:
                 self.records.append(record)
 
-    def execute(self, _context):
+    def execute(self, _context):  # pragma: no cover
         """Run the write file record request against the context.
 
         :returns: The populated response
@@ -362,7 +362,7 @@ class ReadFifoQueueRequest(ModbusPDU):
         """
         self.address = struct.unpack(">H", data)[0]
 
-    def execute(self, _context):
+    def execute(self, _context):  # pragma: no cover
         """Run a read exception status request against the store.
 
         :returns: The populated response

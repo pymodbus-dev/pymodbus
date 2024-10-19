@@ -166,6 +166,14 @@ The line :mod:`result = await client.read_coils(2, 3, slave=1)` is an example of
 
 The last line :mod:`client.close()` closes the connection and render the object inactive.
 
+Retry logic for async clients
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If no response is received to a request (call), it is retried (parameter retries) times, if not successful
+an exception response is returned, BUT the connection is not touched.
+
+If 3 consequitve requests (calls) do not receive a response, the connection is terminated.
+
 Development notes
 ^^^^^^^^^^^^^^^^^
 

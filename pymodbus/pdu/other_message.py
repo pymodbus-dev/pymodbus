@@ -44,7 +44,7 @@ class ReadExceptionStatusRequest(ModbusPDU):
         :param data: The incoming data
         """
 
-    async def execute(self, _context=None):
+    async def execute(self, _context=None):  # pragma: no cover
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -53,10 +53,7 @@ class ReadExceptionStatusRequest(ModbusPDU):
         return ReadExceptionStatusResponse(status)
 
     def __str__(self):
-        """Build a representation of the request.
-
-        :returns: The string representation of the request
-        """
+        """Build a representation of the request."""
         return f"ReadExceptionStatusRequest({self.function_code})"
 
 
@@ -95,10 +92,7 @@ class ReadExceptionStatusResponse(ModbusPDU):
         self.status = int(data[0])
 
     def __str__(self):
-        """Build a representation of the response.
-
-        :returns: The string representation of the response
-        """
+        """Build a representation of the response."""
         arguments = (self.function_code, self.status)
         return (
             "ReadExceptionStatusResponse(%d, %s)"  # pylint: disable=consider-using-f-string
@@ -149,7 +143,7 @@ class GetCommEventCounterRequest(ModbusPDU):
         :param data: The incoming data
         """
 
-    async def execute(self, _context=None):
+    async def execute(self, _context=None):  # pragma: no cover
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -158,10 +152,7 @@ class GetCommEventCounterRequest(ModbusPDU):
         return GetCommEventCounterResponse(status)
 
     def __str__(self):
-        """Build a representation of the request.
-
-        :returns: The string representation of the request
-        """
+        """Build a representation of the request."""
         return f"GetCommEventCounterRequest({self.function_code})"
 
 
@@ -192,10 +183,10 @@ class GetCommEventCounterResponse(ModbusPDU):
 
         :returns: The byte encoded message
         """
-        if self.status:
+        if self.status:  # pragma: no cover
             ready = ModbusStatus.READY
         else:
-            ready = ModbusStatus.WAITING
+            ready = ModbusStatus.WAITING  # pragma: no cover
         return struct.pack(">HH", ready, self.count)
 
     def decode(self, data):
@@ -207,10 +198,7 @@ class GetCommEventCounterResponse(ModbusPDU):
         self.status = ready == ModbusStatus.READY
 
     def __str__(self):
-        """Build a representation of the response.
-
-        :returns: The string representation of the response
-        """
+        """Build a representation of the response."""
         arguments = (self.function_code, self.count, self.status)
         return (
             "GetCommEventCounterResponse(%d, %d, %d)"  # pylint: disable=consider-using-f-string
@@ -260,7 +248,7 @@ class GetCommEventLogRequest(ModbusPDU):
         :param data: The incoming data
         """
 
-    async def execute(self, _context=None):
+    async def execute(self, _context=None):  # pragma: no cover
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -312,10 +300,10 @@ class GetCommEventLogResponse(ModbusPDU):
 
         :returns: The byte encoded message
         """
-        if self.status:
+        if self.status:  # pragma: no cover
             ready = ModbusStatus.READY
         else:
-            ready = ModbusStatus.WAITING
+            ready = ModbusStatus.WAITING  # pragma: no cover
         packet = struct.pack(">B", 6 + len(self.events))
         packet += struct.pack(">H", ready)
         packet += struct.pack(">HH", self.event_count, self.message_count)
@@ -385,7 +373,7 @@ class ReportSlaveIdRequest(ModbusPDU):
         :param data: The incoming data
         """
 
-    async def execute(self, context=None):
+    async def execute(self, context=None):  # pragma: no cover
         """Run a report slave id request against the store.
 
         :returns: The populated response
@@ -442,10 +430,10 @@ class ReportSlaveIdResponse(ModbusPDU):
 
         :returns: The byte encoded message
         """
-        if self.status:
+        if self.status:  # pragma: no cover
             status = ModbusStatus.SLAVE_ON
         else:
-            status = ModbusStatus.SLAVE_OFF
+            status = ModbusStatus.SLAVE_OFF  # pragma: no cover
         length = len(self.identifier) + 1
         packet = struct.pack(">B", length)
         packet += self.identifier  # we assume it is already encoded

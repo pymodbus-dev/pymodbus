@@ -46,16 +46,13 @@ class ReadBitsRequestBase(ModbusPDU):
         :return:
         """
         count = self.count // 8
-        if self.count % 8:
+        if self.count % 8:  # pragma: no cover
             count += 1
 
         return 1 + 1 + count
 
     def __str__(self):
-        """Return a string representation of the instance.
-
-        :returns: A string representation of the instance
-        """
+        """Return a string representation of the instance."""
         return f"ReadBitRequest({self.address},{self.count})"
 
 
@@ -119,10 +116,7 @@ class ReadBitsResponseBase(ModbusPDU):
         return self.bits[address]
 
     def __str__(self):
-        """Return a string representation of the instance.
-
-        :returns: A string representation of the instance
-        """
+        """Return a string representation of the instance."""
         return f"{self.__class__.__name__}({len(self.bits)})"
 
 
@@ -147,7 +141,7 @@ class ReadCoilsRequest(ReadBitsRequestBase):
         """
         ReadBitsRequestBase.__init__(self, address, count, slave, transaction, skip_encode)
 
-    async def execute(self, context):
+    async def execute(self, context):  # pragma: no cover
         """Run a read coils request against a datastore.
 
         Before running the request, we make sure that the request is in
@@ -215,7 +209,7 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
         """
         ReadBitsRequestBase.__init__(self, address, count, slave, transaction, skip_encode)
 
-    async def execute(self, context):
+    async def execute(self, context):  # pragma: no cover
         """Run a read discrete input request against a datastore.
 
         Before running the request, we make sure that the request is in

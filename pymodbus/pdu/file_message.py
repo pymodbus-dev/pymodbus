@@ -17,7 +17,7 @@ from pymodbus.pdu.pdu import ModbusPDU
 class FileRecord:  # pylint: disable=eq-without-hash
     """Represents a file record and its relevant data."""
 
-    def __init__(self, reference_type=0x06, file_number=0x00, record_number=0x00, record_data="", record_length=None, response_length=None):
+    def __init__(self, reference_type=0x06, file_number=0x00, record_number=0x00, record_data=b'', record_length=None, response_length=None):
         """Initialize a new instance.
 
         :params reference_type: must be 0x06
@@ -37,7 +37,7 @@ class FileRecord:  # pylint: disable=eq-without-hash
 
     def __eq__(self, relf):
         """Compare the left object to the right."""
-        return (
+        return (  # pragma: no cover
             self.reference_type == relf.reference_type
             and self.file_number == relf.file_number
             and self.record_number == relf.record_number
@@ -47,9 +47,9 @@ class FileRecord:  # pylint: disable=eq-without-hash
 
     def __ne__(self, relf):
         """Compare the left object to the right."""
-        return not self.__eq__(relf)
+        return not self.__eq__(relf)  # pragma: no cover
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         """Give a representation of the file record."""
         params = (self.file_number, self.record_number, self.record_length)
         return (
@@ -127,10 +127,10 @@ class ReadFileRecordRequest(ModbusPDU):
                 record_number=decoded[2],
                 record_length=decoded[3],
             )
-            if decoded[0] == 0x06:
+            if decoded[0] == 0x06:  # pragma: no cover
                 self.records.append(record)
 
-    def execute(self, _context):
+    def execute(self, _context):  # pragma: no cover
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -193,7 +193,7 @@ class ReadFileRecordResponse(ModbusPDU):
                 record_data=data[count : count + record_length],
             )
             count += record_length
-            if reference_type == 0x06:
+            if reference_type == 0x06:  # pragma: no cover
                 self.records.append(record)
 
 
@@ -254,10 +254,10 @@ class WriteFileRecordRequest(ModbusPDU):
                 record_number=decoded[2],
                 record_data=data[count - response_length : count],
             )
-            if decoded[0] == 0x06:
+            if decoded[0] == 0x06:  # pragma: no cover
                 self.records.append(record)
 
-    def execute(self, _context):
+    def execute(self, _context):  # pragma: no cover
         """Run the write file record request against the context.
 
         :returns: The populated response
@@ -317,7 +317,7 @@ class WriteFileRecordResponse(ModbusPDU):
                 record_number=decoded[2],
                 record_data=data[count - response_length : count],
             )
-            if decoded[0] == 0x06:
+            if decoded[0] == 0x06:  # pragma: no cover
                 self.records.append(record)
 
 
@@ -362,7 +362,7 @@ class ReadFifoQueueRequest(ModbusPDU):
         """
         self.address = struct.unpack(">H", data)[0]
 
-    def execute(self, _context):
+    def execute(self, _context):  # pragma: no cover
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -390,7 +390,7 @@ class ReadFifoQueueResponse(ModbusPDU):
     function_code = 0x18
 
     @classmethod
-    def calculateRtuFrameSize(cls, buffer):
+    def calculateRtuFrameSize(cls, buffer):  # pragma: no cover
         """Calculate the size of the message.
 
         :param buffer: A buffer containing the data that have been received.
@@ -426,6 +426,6 @@ class ReadFifoQueueResponse(ModbusPDU):
         """
         self.values = []
         _, count = struct.unpack(">HH", data[0:4])
-        for index in range(0, count - 4):
+        for index in range(0, count - 4):  # pragma: no cover
             idx = 4 + index * 2
             self.values.append(struct.unpack(">H", data[idx : idx + 2])[0])

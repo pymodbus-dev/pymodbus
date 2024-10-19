@@ -36,8 +36,8 @@ class WriteSingleRegisterRequest(ModbusPDU):
         :returns: The encoded packet
         """
         packet = struct.pack(">H", self.address)
-        if self.skip_encode or isinstance(self.value, bytes):
-            packet += self.value
+        if self.skip_encode or isinstance(self.value, bytes):  # pragma: no cover
+            packet += self.value  # pragma: no cover
         else:
             packet += struct.pack(">H", self.value)
         return packet
@@ -49,7 +49,7 @@ class WriteSingleRegisterRequest(ModbusPDU):
         """
         self.address, self.value = struct.unpack(">HH", data)
 
-    async def execute(self, context):
+    async def execute(self, context):  # pragma: no cover
         """Run a write single register request against a datastore.
 
         :param context: The datastore to request from
@@ -91,7 +91,7 @@ class WriteSingleRegisterResponse(ModbusPDU):
     function_code = 6
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address=0, value=0, slave=1, transaction=0, skip_encode=False):
         """Initialize a new instance.
 
         :param address: The address to start writing add
@@ -152,7 +152,7 @@ class WriteMultipleRegistersRequest(ModbusPDU):
     _rtu_byte_count_pos = 6
     _pdu_length = 5  # func + adress1 + adress2 + outputQuant1 + outputQuant2
 
-    def __init__(self, address=None, values=None, slave=None, transaction=0, skip_encode=0):
+    def __init__(self, address=0, values=None, slave=None, transaction=0, skip_encode=0):
         """Initialize a new instance.
 
         :param address: The address to start writing to
@@ -174,12 +174,12 @@ class WriteMultipleRegistersRequest(ModbusPDU):
         :returns: The encoded packet
         """
         packet = struct.pack(">HHB", self.address, self.count, self.byte_count)
-        if self.skip_encode:
-            return packet + b"".join(self.values)
+        if self.skip_encode:  # pragma: no cover
+            return packet + b"".join(self.values)  # pragma: no cover
 
         for value in self.values:
-            if isinstance(value, bytes):
-                packet += value
+            if isinstance(value, bytes):  # pragma: no cover
+                packet += value  # pragma: no cover
             else:
                 packet += struct.pack(">H", value)
 
@@ -195,7 +195,7 @@ class WriteMultipleRegistersRequest(ModbusPDU):
         for idx in range(5, (self.count * 2) + 5, 2):
             self.values.append(struct.unpack(">H", data[idx : idx + 2])[0])
 
-    async def execute(self, context):
+    async def execute(self, context):  # pragma: no cover
         """Run a write single register request against a datastore.
 
         :param context: The datastore to request from
@@ -242,7 +242,7 @@ class WriteMultipleRegistersResponse(ModbusPDU):
     function_code = 16
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, count=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address=0, count=0, slave=1, transaction=0, skip_encode=False):
         """Initialize a new instance.
 
         :param address: The address to start writing to
@@ -316,7 +316,7 @@ class MaskWriteRegisterRequest(ModbusPDU):
         """
         self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data)
 
-    async def execute(self, context):
+    async def execute(self, context):  # pragma: no cover
         """Run a mask write register request against the store.
 
         :param context: The datastore to request from

@@ -10,7 +10,7 @@ from pymodbus.pdu import (
 
 
 class TestPdu:
-    """Unittest for the pymod.pdu module."""
+    """Test modbus PDU."""
 
     exception = ExceptionResponse(1, 1, 0, 0, False)
 
@@ -21,8 +21,16 @@ class TestPdu:
         assert result == b"\x01"
         assert self.exception.exception_code == 1
 
-    def test_request_exception_factory(self):
-        """Test all error methods."""
+    async def test_get_pdu_size(self):
+        """Test get pdu size."""
+        assert not self.exception.get_response_pdu_size()
+
+    async def test_is_error(self):
+        """Test is_error."""
+        assert self.exception.isError()
+
+    def test_request_exception(self):
+        """Test request exception."""
         request = ModbusPDU(0, 0, False)
         request.function_code = 1
         errors = {ModbusExceptions.decode(c): c for c in range(1, 20)}
@@ -31,7 +39,7 @@ class TestPdu:
             assert str(result) == f"Exception Response(129, 1, {error})"
 
     def test_calculate_rtu_frame_size(self):
-        """Test the calculation of Modbus/RTU frame sizes."""
+        """Test the calculation of Modbus frame sizes."""
         with pytest.raises(NotImplementedException):
             ModbusPDU.calculateRtuFrameSize(b"")
         ModbusPDU._rtu_frame_size = 5  # pylint: disable=protected-access
@@ -45,6 +53,7 @@ class TestPdu:
             )
             == 0x05 + 5
         )
+        assert not ModbusPDU.calculateRtuFrameSize(b"\x11")
         ModbusPDU._rtu_byte_count_pos = None  # pylint: disable=protected-access
 
         with pytest.raises(NotImplementedException):

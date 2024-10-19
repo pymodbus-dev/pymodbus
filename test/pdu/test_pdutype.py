@@ -46,9 +46,9 @@ class TestPduType:
         (o_msg.GetCommEventCounterRequest, {}),
         (o_msg.GetCommEventLogRequest, {}),
         (o_msg.ReportSlaveIdRequest, {}),
+        (reg_r_msg.ReadHoldingRegistersRequest, {"address": 117, "count": 3}),
+        (reg_r_msg.ReadInputRegistersRequest, {"address": 117, "count": 3}),
 
-        (reg_r_msg.ReadHoldingRegistersRequest, {}),
-        (reg_r_msg.ReadInputRegistersRequest, {}),
         (reg_w_msg.WriteMultipleRegistersRequest, {}),
         (reg_w_msg.WriteSingleRegisterRequest, {}),
         (reg_r_msg.ReadWriteMultipleRegistersRequest, {}),
@@ -87,9 +87,9 @@ class TestPduType:
         (o_msg.GetCommEventCounterResponse, {"count": 123}),
         (o_msg.GetCommEventLogResponse, {"status": True, "message_count": 12, "event_count": 7, "events": ["abc", "def"]}),
         (o_msg.ReportSlaveIdResponse, {"identifier": b'\x12', "status": True}),
+        (reg_r_msg.ReadHoldingRegistersResponse, {"values": [3, 17]}),
+        (reg_r_msg.ReadInputRegistersResponse, {"values": [3, 17]}),
 
-        (reg_r_msg.ReadHoldingRegistersResponse, {}),
-        (reg_r_msg.ReadInputRegistersResponse, {}),
         (reg_w_msg.WriteSingleRegisterResponse, {}),
         (reg_w_msg.WriteMultipleRegistersResponse, {}),
         (reg_r_msg.ReadWriteMultipleRegistersResponse, {}),

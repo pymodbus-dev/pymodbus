@@ -97,7 +97,7 @@ class TestPduType:
 
     @pytest.mark.parametrize(("pdutype", "kwargs", "framer"), requests)
     @pytest.mark.usefixtures("kwargs", "framer")
-    def xtest_pdu_instance(self, pdutype):
+    def test_pdu_instance(self, pdutype):
         """Test that all PDU types can be created."""
         pdu = pdutype()
         assert pdu
@@ -105,7 +105,7 @@ class TestPduType:
 
     @pytest.mark.parametrize(("pdutype", "kwargs", "framer"), requests + responses)
     @pytest.mark.usefixtures("framer")
-    def xtest_pdu_instance_args(self, pdutype, kwargs):
+    def test_pdu_instance_args(self, pdutype, kwargs):
         """Test that all PDU types can be created."""
         pdu = pdutype(**kwargs)
         assert pdu

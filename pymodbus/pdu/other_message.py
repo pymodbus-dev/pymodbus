@@ -53,10 +53,7 @@ class ReadExceptionStatusRequest(ModbusPDU):
         return ReadExceptionStatusResponse(status)
 
     def __str__(self):
-        """Build a representation of the request.
-
-        :returns: The string representation of the request
-        """
+        """Build a representation of the request."""
         return f"ReadExceptionStatusRequest({self.function_code})"
 
 
@@ -95,10 +92,7 @@ class ReadExceptionStatusResponse(ModbusPDU):
         self.status = int(data[0])
 
     def __str__(self):
-        """Build a representation of the response.
-
-        :returns: The string representation of the response
-        """
+        """Build a representation of the response."""
         arguments = (self.function_code, self.status)
         return (
             "ReadExceptionStatusResponse(%d, %s)"  # pylint: disable=consider-using-f-string
@@ -158,10 +152,7 @@ class GetCommEventCounterRequest(ModbusPDU):
         return GetCommEventCounterResponse(status)
 
     def __str__(self):
-        """Build a representation of the request.
-
-        :returns: The string representation of the request
-        """
+        """Build a representation of the request."""
         return f"GetCommEventCounterRequest({self.function_code})"
 
 
@@ -192,7 +183,7 @@ class GetCommEventCounterResponse(ModbusPDU):
 
         :returns: The byte encoded message
         """
-        if self.status:
+        if self.status:  # pragma: no cover
             ready = ModbusStatus.READY
         else:
             ready = ModbusStatus.WAITING
@@ -207,10 +198,7 @@ class GetCommEventCounterResponse(ModbusPDU):
         self.status = ready == ModbusStatus.READY
 
     def __str__(self):
-        """Build a representation of the response.
-
-        :returns: The string representation of the response
-        """
+        """Build a representation of the response."""
         arguments = (self.function_code, self.count, self.status)
         return (
             "GetCommEventCounterResponse(%d, %d, %d)"  # pylint: disable=consider-using-f-string

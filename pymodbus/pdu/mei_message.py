@@ -98,8 +98,8 @@ class ReadDeviceInformationRequest(ModbusPDU):
 
         :returns: The string representation of the request
         """
-        params = (self.read_code, self.object_id)  # pragma: no cover
-        return (  # pragma: no cover
+        params = (self.read_code, self.object_id)
+        return (
             "ReadDeviceInformationRequest(%d,%d)"  # pylint: disable=consider-using-f-string
             % params
         )
@@ -210,4 +210,4 @@ class ReadDeviceInformationResponse(ModbusPDU):
 
     def __str__(self):
         """Build a representation of the response."""
-        return f"ReadDeviceInformationResponse({self.read_code})"  # pragma: no cover
+        return f"ReadDeviceInformationResponse({self.read_code})"

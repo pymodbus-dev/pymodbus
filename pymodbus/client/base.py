@@ -11,7 +11,7 @@ from pymodbus.client.modbusclientprotocol import ModbusClientProtocol
 from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from pymodbus.logging import Log
-from pymodbus.pdu import DecodePDU, ModbusPDU
+from pymodbus.pdu import DecodePDU, ExceptionResponse, ModbusPDU
 from pymodbus.transaction import SyncModbusTransactionManager
 from pymodbus.transport import CommParams
 from pymodbus.utilities import ModbusTransactionState
@@ -50,6 +50,8 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         self.last_frame_end: float | None = 0
         self.silent_interval: float = 0
         self._lock = asyncio.Lock()
+        self.accept_no_response_limit = 3
+        self.count_no_responses = 0
 
     @property
     def connected(self) -> bool:
@@ -115,18 +117,19 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
                 except asyncio.exceptions.TimeoutError:
                     count += 1
         if count > self.retries:
-            self.no_message_response_after_retries(self.retries)
+            if self.count_no_responses >= self.accept_no_response_limit:
+                self.ctx.connection_lost(asyncio.TimeoutError("Server not responding"))
+                raise ModbusIOException(
+                    f"ERROR: No response received of the last {self.accept_no_response_limit} request, CLOSING CONNECTION."
+                )
+            self.count_no_responses += 1
+            Log.error(f"No response received after {self.retries} retries, continue with next request")
+            return ExceptionResponse(request.function_code)
 
+        self.count_no_responses = 0
         return resp
 
-    def no_message_response_after_retries(self, retries) -> None:
-        """Take action after a message has not been responded to after retries."""
-        self.ctx.connection_lost(asyncio.TimeoutError("Server not responding"))
-        raise ModbusIOException(
-            f"ERROR: No response received after {retries} retries"
-        )
-
-    def build_response(self, request: ModbusRequest):
+    def build_response(self, request: ModbusPDU):
         """Return a deferred response for the current request.
 
         :meta private:

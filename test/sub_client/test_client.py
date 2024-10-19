@@ -20,8 +20,8 @@ from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.datastore.store import ModbusSequentialDataBlock
-from pymodbus.exceptions import ConnectionException, ModbusException, ModbusIOException
-from pymodbus.pdu import ModbusPDU
+from pymodbus.exceptions import ConnectionException, ModbusException
+from pymodbus.pdu import ExceptionResponse, ModbusPDU
 from pymodbus.transport import CommParams, CommType
 
 
@@ -436,8 +436,9 @@ async def test_client_execute_broadcast():
     transport = MockTransport(base, request)
     base.ctx.connection_made(transport=transport)
 
-    with pytest.raises(ModbusIOException):
-        assert not await base.async_execute(request)
+    # with pytest.raises(ModbusIOException):
+    #    assert not await base.async_execute(request)
+    assert await base.async_execute(request)
 
 async def test_client_protocol_retry():
     """Test the client protocol execute method with retries."""
@@ -477,8 +478,8 @@ async def test_client_protocol_timeout():
     transport = MockTransport(base, request, retries=4)
     base.ctx.connection_made(transport=transport)
 
-    with pytest.raises(ModbusIOException):
-        await base.async_execute(request)
+    pdu = await base.async_execute(request)
+    assert isinstance(pdu, ExceptionResponse)
     assert transport.retries == 1
 
 

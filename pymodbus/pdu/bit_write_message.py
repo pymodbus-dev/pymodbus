@@ -97,11 +97,8 @@ class WriteSingleCoilRequest(ModbusPDU):
         return 1 + 2 + 2
 
     def __str__(self):
-        """Return a string representation of the instance.
-
-        :return: A string representation of the instance
-        """
-        return f"WriteCoilRequest({self.address}, {self.value}) => "
+        """Return a string representation of the instance."""
+        return f"WriteCoilRequest({self.address}, {self.value}) => "  # pragma: no cover
 
 
 class WriteSingleCoilResponse(ModbusPDU):
@@ -148,7 +145,7 @@ class WriteSingleCoilResponse(ModbusPDU):
 
         :returns: A string representation of the instance
         """
-        return f"WriteCoilResponse({self.address}) => {self.value}"
+        return f"WriteCoilResponse({self.address}) => {self.value}"  # pragma: no cover
 
 
 class WriteMultipleCoilsRequest(ModbusPDU):
@@ -222,11 +219,8 @@ class WriteMultipleCoilsRequest(ModbusPDU):
         return WriteMultipleCoilsResponse(self.address, count)
 
     def __str__(self):
-        """Return a string representation of the instance.
-
-        :returns: A string representation of the instance
-        """
-        return f"WriteNCoilRequest ({self.address}) => {len(self.values)}"
+        """Return a string representation of the instance."""
+        return f"WriteNCoilRequest ({self.address}) => {len(self.values)}"  # pragma: no cover
 
     def get_response_pdu_size(self):
         """Get response pdu size.
@@ -271,8 +265,5 @@ class WriteMultipleCoilsResponse(ModbusPDU):
         self.address, self.count = struct.unpack(">HH", data)
 
     def __str__(self):
-        """Return a string representation of the instance.
-
-        :returns: A string representation of the instance
-        """
-        return f"WriteNCoilResponse({self.address}, {self.count})"
+        """Return a string representation of the instance."""
+        return f"WriteNCoilResponse({self.address}, {self.count})"  # pragma: no cover

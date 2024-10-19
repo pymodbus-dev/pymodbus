@@ -169,7 +169,7 @@ The last line :mod:`client.close()` closes the connection and render the object 
 Retry logic for async clients
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If no response is received to a request (call), it is retried (parameter retries) times, if not succesfull
+If no response is received to a request (call), it is retried (parameter retries) times, if not successful
 an exception response is returned, BUT the connection is not touched.
 
 If 3 consequitve requests (calls) do not receive a response, the connection is terminated.

@@ -17,13 +17,13 @@ class TestPduType:  # pylint: disable=too-few-public-methods
     requests = [
         (bit_r_msg.ReadCoilsRequest, {"address": 117, "count": 3}),
         (bit_r_msg.ReadDiscreteInputsRequest, {"address": 117, "count": 3}),
+        (bit_w_msg.WriteSingleCoilRequest, {"address": 117, "value": True}),
+        (bit_w_msg.WriteMultipleCoilsRequest, {"address": 117, "value": [True, False, True]}),
 
-        (reg_r_msg.ReadHoldingRegistersRequest, {"address": 117, "count": 3}),
+        (reg_r_msg.ReadHoldingRegistersRequest, ()),
         (reg_r_msg.ReadInputRegistersRequest, ()),
-        (bit_w_msg.WriteMultipleCoilsRequest, ()),
         (reg_w_msg.WriteMultipleRegistersRequest, ()),
         (reg_w_msg.WriteSingleRegisterRequest, ()),
-        (bit_w_msg.WriteSingleCoilRequest, ()),
         (reg_r_msg.ReadWriteMultipleRegistersRequest, ()),
         (diag_msg.DiagnosticStatusRequest, ()),
         (o_msg.ReadExceptionStatusRequest, ()),
@@ -58,13 +58,13 @@ class TestPduType:  # pylint: disable=too-few-public-methods
     responses = [
         (bit_r_msg.ReadCoilsResponse, {"values": [3, 17]}),
         (bit_r_msg.ReadDiscreteInputsResponse, {"values": [3, 17]}),
+        (bit_w_msg.WriteSingleCoilResponse, {"address": 117, "value": True}),
+        (bit_w_msg.WriteMultipleCoilsResponse, {"address": 117, "count": 3}),
 
         (reg_r_msg.ReadHoldingRegistersResponse, ()),
         (reg_r_msg.ReadInputRegistersResponse, ()),
-        (bit_w_msg.WriteMultipleCoilsResponse, ()),
-        (reg_w_msg.WriteMultipleRegistersResponse, ()),
         (reg_w_msg.WriteSingleRegisterResponse, ()),
-        (bit_w_msg.WriteSingleCoilResponse, ()),
+        (reg_w_msg.WriteMultipleRegistersResponse, ()),
         (reg_r_msg.ReadWriteMultipleRegistersResponse, ()),
         (diag_msg.DiagnosticStatusResponse, ()),
         (o_msg.ReadExceptionStatusResponse, ()),

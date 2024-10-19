@@ -226,11 +226,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
 
         :returns: A string representation of the instance
         """
-        params = (self.address, len(self.values))
-        return (
-            "WriteNCoilRequest (%d) => %d "  # pylint: disable=consider-using-f-string
-            % params
-        )
+        return f"WriteNCoilRequest ({self.address}) => {len(self.values)}"
 
     def get_response_pdu_size(self):
         """Get response pdu size.

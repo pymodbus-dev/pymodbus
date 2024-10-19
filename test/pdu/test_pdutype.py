@@ -42,16 +42,16 @@ class TestPduType:
         (file_msg.WriteFileRecordRequest, {"records": [b'123', b'456']}),
         (file_msg.ReadFifoQueueRequest, {"address": 117}),
         (mei_msg.ReadDeviceInformationRequest, {"read_code": 0x17, "object_id": 0x29}),
+        (o_msg.ReadExceptionStatusRequest, {}),
+        (o_msg.GetCommEventCounterRequest, {}),
+        (o_msg.GetCommEventLogRequest, {}),
+        (o_msg.ReportSlaveIdRequest, {}),
 
         (reg_r_msg.ReadHoldingRegistersRequest, {}),
         (reg_r_msg.ReadInputRegistersRequest, {}),
         (reg_w_msg.WriteMultipleRegistersRequest, {}),
         (reg_w_msg.WriteSingleRegisterRequest, {}),
         (reg_r_msg.ReadWriteMultipleRegistersRequest, {}),
-        (o_msg.ReadExceptionStatusRequest, {}),
-        (o_msg.GetCommEventCounterRequest, {}),
-        (o_msg.GetCommEventLogRequest, {}),
-        (o_msg.ReportSlaveIdRequest, {}),
         (reg_w_msg.MaskWriteRegisterRequest, {}),
     ]
 
@@ -83,16 +83,16 @@ class TestPduType:
         (file_msg.WriteFileRecordResponse, {"records": [b'123', b'456']}),
         (file_msg.ReadFifoQueueResponse, {"values": [b'123', b'456']}),
         (mei_msg.ReadDeviceInformationResponse, {"read_code": 0x17, "information": 0x29}),
+        (o_msg.ReadExceptionStatusResponse, {"status": 0x23}),
+        (o_msg.GetCommEventCounterResponse, {"count": 123}),
+        (o_msg.GetCommEventLogResponse, {"status": True, "message_count": 12, "event_count": 7, "events": ["abc", "def"]}),
+        (o_msg.ReportSlaveIdResponse, {"identifier": b'\x12', "status": True}),
 
         (reg_r_msg.ReadHoldingRegistersResponse, {}),
         (reg_r_msg.ReadInputRegistersResponse, {}),
         (reg_w_msg.WriteSingleRegisterResponse, {}),
         (reg_w_msg.WriteMultipleRegistersResponse, {}),
         (reg_r_msg.ReadWriteMultipleRegistersResponse, {}),
-        (o_msg.ReadExceptionStatusResponse, {}),
-        (o_msg.GetCommEventCounterResponse, {}),
-        (o_msg.GetCommEventLogResponse, {}),
-        (o_msg.ReportSlaveIdResponse, {}),
         (reg_w_msg.MaskWriteRegisterResponse, {}),
     ]
 

@@ -17,7 +17,7 @@ from pymodbus.pdu.pdu import ModbusPDU
 class FileRecord:  # pylint: disable=eq-without-hash
     """Represents a file record and its relevant data."""
 
-    def __init__(self, reference_type=0x06, file_number=0x00, record_number=0x00, record_data="", record_length=None, response_length=None):
+    def __init__(self, reference_type=0x06, file_number=0x00, record_number=0x00, record_data=b'', record_length=None, response_length=None):
         """Initialize a new instance.
 
         :params reference_type: must be 0x06

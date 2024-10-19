@@ -29,6 +29,7 @@ class DiagnosticStatusRequest(ModbusPDU):
 
     function_code = 0x08
     function_code_name = "diagnostic_status"
+    sub_function_code = 9999
     _rtu_frame_size = 8
 
     def __init__(self, slave=1, transaction=0, skip_encode=False):
@@ -89,6 +90,7 @@ class DiagnosticStatusResponse(ModbusPDU):
     """
 
     function_code = 0x08
+    sub_function_code = 9999
     _rtu_frame_size = 8
 
     def __init__(self, slave=1, transaction=0, skip_encode=False):

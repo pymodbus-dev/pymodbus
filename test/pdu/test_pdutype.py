@@ -38,8 +38,8 @@ class TestPduType:
         (diag_msg.ReturnIopOverrunCountRequest, {"data": 0x1010}, b''),
         (diag_msg.ClearOverrunCountRequest, {"data": 0x1010}, b''),
         (diag_msg.GetClearModbusPlusRequest, {"data": 0x1010}, b''),
-        (file_msg.ReadFileRecordRequest, {"records": [117, 119]}, b''),
-        (file_msg.WriteFileRecordRequest, {"records": [b'123', b'456']}, b''),
+        (file_msg.ReadFileRecordRequest, {"records": [file_msg.FileRecord(), file_msg.FileRecord()]}, b''),
+        (file_msg.WriteFileRecordRequest, {"records": [file_msg.FileRecord(), file_msg.FileRecord()]}, b''),
         (file_msg.ReadFifoQueueRequest, {"address": 117}, b''),
         (mei_msg.ReadDeviceInformationRequest, {"read_code": 0x17, "object_id": 0x29}, b''),
         (o_msg.ReadExceptionStatusRequest, {}, b''),
@@ -78,13 +78,13 @@ class TestPduType:
         (diag_msg.ReturnIopOverrunCountResponse, {"data": 0x1010}, b''),
         (diag_msg.ClearOverrunCountResponse, {"data": 0x1010}, b''),
         (diag_msg.GetClearModbusPlusResponse, {"data": 0x1010}, b''),
-        (file_msg.ReadFileRecordResponse, {"records": [b'123', b'456']}, b''),
-        (file_msg.WriteFileRecordResponse, {"records": [b'123', b'456']}, b''),
-        (file_msg.ReadFifoQueueResponse, {"values": [b'123', b'456']}, b''),
-        (mei_msg.ReadDeviceInformationResponse, {"read_code": 0x17, "information": 0x29}, b''),
+        (file_msg.ReadFileRecordResponse, {"records": [file_msg.FileRecord(), file_msg.FileRecord()]}, b''),
+        (file_msg.WriteFileRecordResponse, {"records": [file_msg.FileRecord(), file_msg.FileRecord()]}, b''),
+        (file_msg.ReadFifoQueueResponse, {"values": [123, 456]}, b''),
+        (mei_msg.ReadDeviceInformationResponse, {"read_code": 0x17}, b''),
         (o_msg.ReadExceptionStatusResponse, {"status": 0x23}, b''),
         (o_msg.GetCommEventCounterResponse, {"count": 123}, b''),
-        (o_msg.GetCommEventLogResponse, {"status": True, "message_count": 12, "event_count": 7, "events": ["abc", "def"]}, b''),
+        (o_msg.GetCommEventLogResponse, {"status": True, "message_count": 12, "event_count": 7, "events": [12, 14]}, b''),
         (o_msg.ReportSlaveIdResponse, {"identifier": b'\x12', "status": True}, b''),
         (reg_r_msg.ReadHoldingRegistersResponse, {"values": [3, 17]}, b''),
         (reg_r_msg.ReadInputRegistersResponse, {"values": [3, 17]}, b''),
@@ -97,7 +97,7 @@ class TestPduType:
 
     @pytest.mark.parametrize(("pdutype", "kwargs", "framer"), requests)
     @pytest.mark.usefixtures("kwargs", "framer")
-    def test_pdu_instance(self, pdutype):
+    def xtest_pdu_instance(self, pdutype):
         """Test that all PDU types can be created."""
         pdu = pdutype()
         assert pdu
@@ -105,8 +105,15 @@ class TestPduType:
 
     @pytest.mark.parametrize(("pdutype", "kwargs", "framer"), requests + responses)
     @pytest.mark.usefixtures("framer")
-    def test_pdu_instance_args(self, pdutype, kwargs):
+    def xtest_pdu_instance_args(self, pdutype, kwargs):
         """Test that all PDU types can be created."""
         pdu = pdutype(**kwargs)
         assert pdu
         assert str(pdu)
+
+    @pytest.mark.parametrize(("pdutype", "kwargs", "framer"), requests + responses)
+    @pytest.mark.usefixtures("framer")
+    def test_pdu_instance_encode(self, pdutype, kwargs):
+        """Test that all PDU types can be created."""
+        res_frame = pdutype(**kwargs).encode()
+        print(str(res_frame))

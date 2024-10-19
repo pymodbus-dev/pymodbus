@@ -123,8 +123,7 @@ class TestPduType:
     def test_pdu_special_methods(self, pdutype, kwargs):
         """Test that all PDU types can be created."""
         pdu = pdutype(**kwargs)
-        if hasattr(pdu, "get_response_pdu_size"):
-            pdu.get_response_pdu_size()
+        pdu.get_response_pdu_size()
         if hasattr(pdu, "setBit"):
             pdu.setBit(0)
         if hasattr(pdu, "resetBit"):

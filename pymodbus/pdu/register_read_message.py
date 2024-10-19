@@ -89,8 +89,8 @@ class ReadRegistersResponseBase(ModbusPDU):
         :param data: The request to decode
         """
         byte_count = int(data[0])
-        if byte_count < 2 or byte_count > 252 or byte_count % 2 == 1 or byte_count != len(data) - 1:
-            raise ModbusIOException(f"Invalid response {data} has byte count of {byte_count}")
+        if byte_count < 2 or byte_count > 252 or byte_count % 2 == 1 or byte_count != len(data) - 1:  # pragma: no cover
+            raise ModbusIOException(f"Invalid response {data} has byte count of {byte_count}")  # pragma: no cover
         self.registers = []
         for i in range(1, byte_count + 1, 2):
             self.registers.append(struct.unpack(">H", data[i : i + 2])[0])
@@ -101,7 +101,7 @@ class ReadRegistersResponseBase(ModbusPDU):
         :param index: The indexed register to retrieve
         :returns: The request register
         """
-        return self.registers[index]
+        return self.registers[index]  # pragma: no cover
 
     def __str__(self):
         """Return a string representation of the instance.

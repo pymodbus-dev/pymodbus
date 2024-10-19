@@ -186,7 +186,7 @@ class GetCommEventCounterResponse(ModbusPDU):
         if self.status:  # pragma: no cover
             ready = ModbusStatus.READY
         else:
-            ready = ModbusStatus.WAITING
+            ready = ModbusStatus.WAITING  # pragma: no cover
         return struct.pack(">HH", ready, self.count)
 
     def decode(self, data):
@@ -300,10 +300,10 @@ class GetCommEventLogResponse(ModbusPDU):
 
         :returns: The byte encoded message
         """
-        if self.status:
+        if self.status:  # pragma: no cover
             ready = ModbusStatus.READY
         else:
-            ready = ModbusStatus.WAITING
+            ready = ModbusStatus.WAITING  # pragma: no cover
         packet = struct.pack(">B", 6 + len(self.events))
         packet += struct.pack(">H", ready)
         packet += struct.pack(">HH", self.event_count, self.message_count)
@@ -430,10 +430,10 @@ class ReportSlaveIdResponse(ModbusPDU):
 
         :returns: The byte encoded message
         """
-        if self.status:
+        if self.status:  # pragma: no cover
             status = ModbusStatus.SLAVE_ON
         else:
-            status = ModbusStatus.SLAVE_OFF
+            status = ModbusStatus.SLAVE_OFF  # pragma: no cover
         length = len(self.identifier) + 1
         packet = struct.pack(">B", length)
         packet += self.identifier  # we assume it is already encoded

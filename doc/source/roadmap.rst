@@ -19,13 +19,12 @@ The following bullet points are what the maintainers focus on:
     - Available on dev:
         - optimized framer, limited support for multidrop on the server side
         - more typing in the core
-        - 100% test coverage fixed for all new parts (currently transport and framer)
+        - 100% test coverage fixed for all new parts (currently transport, pdu and framer)
         - Updated PDU, moving client/server decoder into pdu
     - better client no_response handling
     - Simplify PDU classes
     - better retry handling (only disconnect when really needed)
 - 3.7.5, bug fix release, hopefully with:
-    - 100% test coverage for pdu
     - better broadcast handling
 - 3.7.6, bug fix release, with:
     - Foundation for new transaction

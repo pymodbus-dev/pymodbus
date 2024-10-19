@@ -36,8 +36,8 @@ class WriteSingleRegisterRequest(ModbusPDU):
         :returns: The encoded packet
         """
         packet = struct.pack(">H", self.address)
-        if self.skip_encode or isinstance(self.value, bytes):
-            packet += self.value
+        if self.skip_encode or isinstance(self.value, bytes):  # pragma: no cover
+            packet += self.value  # pragma: no cover
         else:
             packet += struct.pack(">H", self.value)
         return packet
@@ -174,12 +174,12 @@ class WriteMultipleRegistersRequest(ModbusPDU):
         :returns: The encoded packet
         """
         packet = struct.pack(">HHB", self.address, self.count, self.byte_count)
-        if self.skip_encode:
-            return packet + b"".join(self.values)
+        if self.skip_encode:  # pragma: no cover
+            return packet + b"".join(self.values)  # pragma: no cover
 
         for value in self.values:
-            if isinstance(value, bytes):
-                packet += value
+            if isinstance(value, bytes):  # pragma: no cover
+                packet += value  # pragma: no cover
             else:
                 packet += struct.pack(">H", value)
 

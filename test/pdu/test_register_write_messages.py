@@ -9,7 +9,8 @@ from pymodbus.pdu.register_write_message import (
     WriteSingleRegisterRequest,
     WriteSingleRegisterResponse,
 )
-from test.conftest import MockContext, MockLastValuesContext
+
+from ..conftest import MockContext, MockLastValuesContext
 
 
 # ---------------------------------------------------------------------------#

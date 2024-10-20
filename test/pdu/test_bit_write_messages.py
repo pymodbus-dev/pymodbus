@@ -13,7 +13,8 @@ from pymodbus.pdu.bit_write_message import (
     WriteSingleCoilRequest,
     WriteSingleCoilResponse,
 )
-from test.conftest import FakeList, MockContext
+
+from ..conftest import FakeList, MockContext
 
 
 # ---------------------------------------------------------------------------#

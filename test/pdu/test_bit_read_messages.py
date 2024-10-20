@@ -15,7 +15,8 @@ from pymodbus.pdu.bit_read_message import (
     ReadCoilsRequest,
     ReadDiscreteInputsRequest,
 )
-from test.conftest import MockContext
+
+from ..conftest import MockContext
 
 
 res = [True] * 21

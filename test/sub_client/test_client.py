@@ -432,13 +432,26 @@ async def test_client_execute_broadcast():
             host="127.0.0.1",
         ),
     )
-    request = pdu_bit_read.ReadCoilsRequest(1, 1)
+    request = pdu_bit_read.ReadCoilsRequest(1, 1, slave=0)
     transport = MockTransport(base, request)
     base.ctx.connection_made(transport=transport)
-
-    # with pytest.raises(ModbusIOException):
-    #    assert not await base.async_execute(request)
     assert await base.async_execute(False, request)
+
+
+async def test_client_execute_broadcast_no():
+    """Test the client protocol execute method."""
+    base = ModbusBaseClient(
+        FramerType.SOCKET,
+        3,
+        None,
+        comm_params=CommParams(
+            host="127.0.0.1",
+        ),
+    )
+    request = pdu_bit_read.ReadCoilsRequest(1, 1, slave=0)
+    transport = MockTransport(base, request)
+    base.ctx.connection_made(transport=transport)
+    assert not await base.async_execute(True, request)
 
 async def test_client_protocol_retry():
     """Test the client protocol execute method with retries."""

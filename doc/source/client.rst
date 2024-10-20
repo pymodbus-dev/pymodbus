@@ -199,9 +199,12 @@ The logical devices represented by the device is addressed with the :mod:`slave=
 With **Serial**, the comm port is defined when creating the object.
 The physical devices are addressed with the :mod:`slave=` parameter.
 
-:mod:`slave=0` is used as broadcast (in accordance with the modbus standard). To accommodate non-standard behaviour of devices, all request calls to :mod:`slave=0` will expect and wait for one response. If multiple devices on the bus are expected to respond to broadcast requests (for example for the purpose of device detection), the application can get upto 254 responses on a single request, and this is not handled with the normal API calls. If an application is expecting multiple responses to a broadcast request, it must call :mod:`client.execute` and deal with the responses.
+:mod:`slave=0` is defined as broadcast in the modbus standard, but pymodbus treats is a normal device.
 
-If no response is expected to a request, the :mod:`no_response_expected=True` argument can be used in the normal API calls. However, these requests will not return indication of failure or success, and will not respect the turnaround delay after sending a broadcast message, therefore, it is the application's responsibility to allow time for the slaves to process the broadcast request before the next request is made on the bus.
+If an application is expecting multiple responses to a broadcast request, it must call :mod:`client.execute` and deal with the responses.
+
+If no response is expected to a request, the :mod:`no_response_expected=True` argument can be used
+in the normal API calls, this will cause the call to return imidiatble with :mod:`None`
 
 
 Client response handling
@@ -230,6 +233,7 @@ And in case of read retrieve the data depending on type of request
 - :mod:`rr.bits` is set for coils / input_register requests
 - :mod:`rr.registers` is set for other requests
 
+Remark if using :mod:`no_response_expected=True` rr will always be None.
 
 Client interface classes
 ------------------------

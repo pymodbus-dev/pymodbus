@@ -177,7 +177,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
             return False
         return True
 
-    def execute(self, request: ModbusPDU):  # noqa: C901
+    def execute(self, no_response_expected: bool, request: ModbusPDU):  # noqa: C901
         """Start the producer to send the next request to consumer.write(Frame(request))."""
         with self._transaction_lock:
             try:
@@ -193,7 +193,6 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 ):
                     Log.debug("Clearing current Frame: - {}", _buffer)
                     self.client.framer.databuffer = b''
-                broadcast = not request.slave_id
                 expected_response_length = None
                 if not isinstance(self.client.framer, FramerSocket):
                     response_pdu_size = request.get_response_pdu_size()
@@ -214,11 +213,13 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     if not expected_response_length:
                         expected_response_length = 1024
                 response, last_exception = self._transact(
+                    no_response_expected,
                     request,
                     expected_response_length,
                     full=full,
-                    broadcast=broadcast,
                 )
+                if no_response_expected:
+                    return None
                 while retries > 0:
                     if self._validate_response(response):
                         if (
@@ -265,7 +266,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 self.client.close()
                 return exc
 
-    def _retry_transaction(self, retries, reason, packet, response_length, full=False):
+    def _retry_transaction(self, no_response_expected, retries, reason, packet, response_length, full=False):
         """Retry transaction."""
         Log.debug("Retry on {} response - {}", reason, retries)
         Log.debug('Changing transaction state from "WAITING_FOR_REPLY" to "RETRYING"')
@@ -278,18 +279,10 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 if response_length == in_waiting:
                     result = self._recv(response_length, full)
                     return result, None
-        return self._transact(packet, response_length, full=full)
+        return self._transact(no_response_expected, packet, response_length, full=full)
 
-    def _transact(self, request: ModbusPDU, response_length, full=False, broadcast=False):
-        """Do a Write and Read transaction.
-
-        :param packet: packet to be sent
-        :param response_length:  Expected response length
-        :param full: the target device was notorious for its no response. Dont
-            waste time this time by partial querying
-        :param broadcast:
-        :return: response
-        """
+    def _transact(self, no_response_expected: bool, request: ModbusPDU, response_length, full=False):
+        """Do a Write and Read transaction."""
         last_exception = None
         try:
             self.client.connect()
@@ -309,7 +302,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
             if self.client.comm_params.handle_local_echo is True:
                 if self._recv(size, full) != packet:
                     return b"", "Wrong local echo"
-            if broadcast:
+            if no_response_expected:
                 if size:
                     Log.debug(
                         'Changing transaction state from "SENDING" '

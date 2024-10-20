@@ -534,7 +534,7 @@ class ReturnSlaveMessageCountRequest(DiagnosticStatusSimpleRequest):
     """Return slave message count.
 
     The response data field returns the quantity of messages addressed to the
-    remote device, or broadcast, that the remote device has processed since
+    remote device, that the remote device has processed since
     its last restart, clear counters operation, or power-up
     """
 
@@ -553,7 +553,7 @@ class ReturnSlaveMessageCountResponse(DiagnosticStatusSimpleResponse):
     """Return slave message count.
 
     The response data field returns the quantity of messages addressed to the
-    remote device, or broadcast, that the remote device has processed since
+    remote device, that the remote device has processed since
     its last restart, clear counters operation, or power-up
     """
 
@@ -567,7 +567,7 @@ class ReturnSlaveNoResponseCountRequest(DiagnosticStatusSimpleRequest):
     """Return slave no response.
 
     The response data field returns the quantity of messages addressed to the
-    remote device, or broadcast, that the remote device has processed since
+    remote device, that the remote device has processed since
     its last restart, clear counters operation, or power-up
     """
 
@@ -586,7 +586,7 @@ class ReturnSlaveNoResponseCountResponse(DiagnosticStatusSimpleResponse):
     """Return slave no response.
 
     The response data field returns the quantity of messages addressed to the
-    remote device, or broadcast, that the remote device has processed since
+    remote device, that the remote device has processed since
     its last restart, clear counters operation, or power-up
     """
 

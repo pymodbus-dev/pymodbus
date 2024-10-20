@@ -83,20 +83,16 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         """Close connection."""
         self.ctx.close()
 
-    def execute(self, request: ModbusPDU):
+    def execute(self, no_response_expected: bool, request: ModbusPDU):
         """Execute request and get response (call **sync/async**).
-
-        :param request: The request to process
-        :returns: The result of the request execution
-        :raises ConnectionException: Check exception text.
 
         :meta private:
         """
         if not self.ctx.transport:
             raise ConnectionException(f"Not connected[{self!s}]")
-        return self.async_execute(request)
+        return self.async_execute(no_response_expected, request)
 
-    async def async_execute(self, request) -> ModbusPDU | None:
+    async def async_execute(self, no_response_expected: bool, request) -> ModbusPDU | None:
         """Execute requests asynchronously.
 
         :meta private:
@@ -109,7 +105,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
             async with self._lock:
                 req = self.build_response(request)
                 self.ctx.send(packet)
-                if request.no_response_expected:
+                if no_response_expected:
                     resp = None
                     break
                 try:
@@ -228,9 +224,10 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
             return 0
         return self.last_frame_end + self.silent_interval
 
-    def execute(self, request: ModbusPDU) -> ModbusPDU:
+    def execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
         """Execute request and get response (call **sync/async**).
 
+        :param no_response_expected: The client will not expect a response to the request
         :param request: The request to process
         :returns: The result of the request execution
         :raises ConnectionException: Check exception text.
@@ -239,7 +236,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         """
         if not self.connect():
             raise ConnectionException(f"Failed to connect[{self!s}]")
-        return self.transaction.execute(request)
+        return self.transaction.execute(no_response_expected, request)
 
     # ----------------------------------------------------------------------- #
     # Internal methods

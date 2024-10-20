@@ -113,7 +113,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert trans.retries == 3
 
         mock_get_transaction.return_value = b"response"
-        response = trans.execute(request)
+        response = trans.execute(False, request)
         assert response == b"response"
         # No response
         mock_recv.reset_mock(
@@ -121,14 +121,14 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         )
         trans.transactions = {}
         mock_get_transaction.return_value = None
-        response = trans.execute(request)
+        response = trans.execute(False, request)
         assert isinstance(response, ModbusIOException)
 
         # No response with retries
         mock_recv.reset_mock(
             side_effect=iter([b"", b"abcdef"])
         )
-        response = trans.execute(request)
+        response = trans.execute(False, request)
         assert isinstance(response, ModbusIOException)
 
         # wrong handle_local_echo
@@ -136,14 +136,14 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
             side_effect=iter([b"abcdef", b"deadbe", b"123456"])
         )
         client.comm_params.handle_local_echo = True
-        assert trans.execute(request).message == "[Input/Output] Wrong local echo"
+        assert trans.execute(False, request).message == "[Input/Output] Wrong local echo"
         client.comm_params.handle_local_echo = False
 
         # retry on invalid response
         mock_recv.reset_mock(
             side_effect=iter([b"", b"abcdef", b"deadbe", b"123456"])
         )
-        response = trans.execute(request)
+        response = trans.execute(False, request)
         assert isinstance(response, ModbusIOException)
 
         # Unable to decode response
@@ -153,7 +153,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         client.framer.processIncomingFrame.side_effect = mock.MagicMock(
             side_effect=ModbusIOException()
         )
-        assert isinstance(trans.execute(request), ModbusIOException)
+        assert isinstance(trans.execute(False, request), ModbusIOException)
 
     def test_transaction_manager_tid(self):
         """Test the transaction manager TID."""
@@ -165,9 +165,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     def test_get_transaction_manager_transaction(self):
         """Test the getting a transaction from the transaction manager."""
         self._manager.reset()
-        handle = ModbusPDU(
-            0, self._manager.getNextTID(), False, False
-        )
+        handle = ModbusPDU(0, self._manager.getNextTID(), False)
         self._manager.addTransaction(handle)
         result = self._manager.getTransaction(handle.transaction_id)
         assert handle is result
@@ -175,9 +173,7 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     def test_delete_transaction_manager_transaction(self):
         """Test deleting a transaction from the dict transaction manager."""
         self._manager.reset()
-        handle = ModbusPDU(
-            0, self._manager.getNextTID(), False, False
-        )
+        handle = ModbusPDU(0, self._manager.getNextTID(), False)
         self._manager.addTransaction(handle)
         self._manager.delTransaction(handle.transaction_id)
         assert not self._manager.getTransaction(handle.transaction_id)

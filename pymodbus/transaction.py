@@ -186,7 +186,10 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     ModbusTransactionState.to_string(self.client.state),
                 )
                 retries = self.retries
-                request.transaction_id = self.getNextTID()
+                if isinstance(self.client.framer, FramerSocket):
+                    request.transaction_id = self.getNextTID()
+                else:
+                    request.transaction_id = 0
                 Log.debug("Running transaction {}", request.transaction_id)
                 if _buffer := hexlify_packets(
                     self.client.framer.databuffer
@@ -241,7 +244,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     self.addTransaction(pdu)
                 if not (result := self.getTransaction(request.transaction_id)):
                     if len(self.transactions):
-                        result = self.getTransaction(tid=0)
+                        result = self.getTransaction(0)
                     else:
                         last_exception = last_exception or (
                             "No Response received from the remote slave"
@@ -250,7 +253,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                         result = ModbusIOException(
                             last_exception, request.function_code
                         )
-                    self.client.close()
+                        self.client.close()
                 if hasattr(self.client, "state"):
                     Log.debug(
                         "Changing transaction state from "

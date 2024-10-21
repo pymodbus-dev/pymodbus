@@ -188,10 +188,10 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 # if broadcasting then execute on all slave contexts,
                 # note response will be ignored
                 for slave_id in self.server.context.slaves():
-                    response = await request.execute(self.server.context[slave_id])
+                    response = await request.update_datastore(self.server.context[slave_id])
             else:
                 context = self.server.context[request.slave_id]
-                response = await request.execute(context)
+                response = await request.update_datastore(context)
 
         except NoSuchSlaveException:
             Log.error("requested slave does not exist: {}", request.slave_id)

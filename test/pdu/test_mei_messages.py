@@ -53,7 +53,7 @@ class TestMeiMessage:
         control.Identity.update({0x81: ["Test", "Repeated"]})
 
         handle = ReadDeviceInformationRequest()
-        result = await handle.execute(context)
+        result = await handle.update_datastore(context)
         assert isinstance(result, ReadDeviceInformationResponse)
         assert result.information[0x00] == "Company"
         assert result.information[0x01] == "Product"
@@ -64,20 +64,20 @@ class TestMeiMessage:
         handle = ReadDeviceInformationRequest(
             read_code=DeviceInformation.EXTENDED, object_id=0x80
         )
-        result = await handle.execute(context)
+        result = await handle.update_datastore(context)
         assert result.information[0x81] == ["Test", "Repeated"]
 
     async def test_read_device_information_request_error(self):
         """Test basic bit message encoding/decoding."""
         handle = ReadDeviceInformationRequest()
         handle.read_code = -1
-        assert (await handle.execute(None)).function_code == 0xAB
+        assert (await handle.update_datastore(None)).function_code == 0xAB
         handle.read_code = 0x05
-        assert (await handle.execute(None)).function_code == 0xAB
+        assert (await handle.update_datastore(None)).function_code == 0xAB
         handle.object_id = -1
-        assert (await handle.execute(None)).function_code == 0xAB
+        assert (await handle.update_datastore(None)).function_code == 0xAB
         handle.object_id = 0x100
-        assert (await handle.execute(None)).function_code == 0xAB
+        assert (await handle.update_datastore(None)).function_code == 0xAB
 
     def test_read_device_information_encode(self):
         """Test that the read fifo queue response can encode."""

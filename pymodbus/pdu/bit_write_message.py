@@ -73,7 +73,7 @@ class WriteSingleCoilRequest(ModbusPDU):
         self.address, value = struct.unpack(">HH", data)
         self.value = value == ModbusStatus.ON
 
-    async def execute(self, context):  # pragma: no cover
+    async def update_datastore(self, context):  # pragma: no cover
         """Run a write coil request against a datastore.
 
         :param context: The datastore to request from
@@ -199,7 +199,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
         values = unpack_bitstring(data[5:])
         self.values = values[:count]
 
-    async def execute(self, context):  # pragma: no cover
+    async def update_datastore(self, context):  # pragma: no cover
         """Run a write coils request against a datastore.
 
         :param context: The datastore to request from

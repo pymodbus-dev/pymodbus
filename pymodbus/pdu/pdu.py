@@ -22,9 +22,9 @@ class ModbusPDU:
         self.transaction_id: int
         self.slave_id: int
         self.skip_encode: bool
-        self.bits: list[bool] = []
-        self.registers: list[int] = []
-        self.fut: asyncio.Future | None = None
+        self.bits: list[bool]
+        self.registers: list[int]
+        self.fut: asyncio.Future
 
     def setData(self, slave: int, transaction: int, skip_encode: bool) -> None:
         """Set data common for all PDU."""

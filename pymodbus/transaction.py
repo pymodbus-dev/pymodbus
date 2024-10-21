@@ -186,7 +186,10 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     ModbusTransactionState.to_string(self.client.state),
                 )
                 retries = self.retries
-                request.transaction_id = self.getNextTID()
+                if isinstance(self.client.framer, FramerSocket):
+                    request.transaction_id = self.getNextTID()
+                else:
+                    request.transaction_id = 0
                 Log.debug("Running transaction {}", request.transaction_id)
                 if _buffer := hexlify_packets(
                     self.client.framer.databuffer
@@ -239,7 +242,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 self.databuffer = self.databuffer[used_len:]
                 if pdu:
                     self.addTransaction(pdu)
-                if not (result := self.getTransaction(0)):
+                if not (result := self.getTransaction(request.transaction_id)):
                     if len(self.transactions):
                         result = self.getTransaction(0)
                     else:

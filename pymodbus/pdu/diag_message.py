@@ -86,7 +86,7 @@ class DiagnosticStatusResponse(ModbusPDU):
 
     It works by performing all of the encoding and decoding of variable
     data and lets the higher classes define what extra data to append
-    and how to execute a request
+    and how to update_datastore a request
     """
 
     function_code = 0x08
@@ -145,7 +145,7 @@ class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
     2 bytes of data.
 
     If a function inherits this, they only need to implement
-    the execute method
+    the update_datastore method
     """
 
     def __init__(self, data=0x0000, slave=1, transaction=0, skip_encode=False):
@@ -159,9 +159,9 @@ class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
         DiagnosticStatusRequest.__init__(self, slave=slave, transaction=transaction, skip_encode=skip_encode)
         self.message = data
 
-    async def execute(self, *args):  # pragma: no cover
+    async def update_datastore(self, *args):  # pragma: no cover
         """Raise if not implemented."""
-        raise NotImplementedException("Diagnostic Message Has No Execute Method")
+        raise NotImplementedException("Diagnostic Message Has No update_datastore Method")
 
 
 class DiagnosticStatusSimpleResponse(DiagnosticStatusResponse):
@@ -205,8 +205,8 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
             raise ModbusException(f"message({type(message)}) must be bytes")
         self.message = message
 
-    async def execute(self, *_args):  # pragma: no cover
-        """Execute the loopback request (builds the response).
+    async def update_datastore(self, *_args):  # pragma: no cover
+        """update_datastore the loopback request (builds the response).
 
         :returns: The populated loopback response message
         """
@@ -245,7 +245,7 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
     currently in Listen Only Mode, no response is returned. This function is
     the only one that brings the port out of Listen Only Mode. If the port is
     not currently in Listen Only Mode, a normal response is returned. This
-    occurs before the restart is executed.
+    occurs before the restart is update_datastored.
     """
 
     sub_function_code = 0x0001
@@ -261,7 +261,7 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
         else:
             self.message = [ModbusStatus.OFF]  # pragma: no cover
 
-    async def execute(self, *_args):  # pragma: no cover
+    async def update_datastore(self, *_args):  # pragma: no cover
         """Clear event log and restart.
 
         :returns: The initialized response message
@@ -278,7 +278,7 @@ class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
     currently in Listen Only Mode, no response is returned. This function is
     the only one that brings the port out of Listen Only Mode. If the port is
     not currently in Listen Only Mode, a normal response is returned. This
-    occurs before the restart is executed.
+    occurs before the restart is update_datastored.
     """
 
     sub_function_code = 0x0001
@@ -303,8 +303,8 @@ class ReturnDiagnosticRegisterRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0002
 
-    async def execute(self, *args):  # pragma: no cover
-        """Execute the diagnostic request on the given device.
+    async def update_datastore(self, *args):  # pragma: no cover
+        """update_datastore the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -337,8 +337,8 @@ class ChangeAsciiInputDelimiterRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0003
 
-    async def execute(self, *args):  # pragma: no cover
-        """Execute the diagnostic request on the given device.
+    async def update_datastore(self, *args):  # pragma: no cover
+        """update_datastore the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -372,8 +372,8 @@ class ForceListenOnlyModeRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0004
 
-    async def execute(self, *args):  # pragma: no cover
-        """Execute the diagnostic request on the given device.
+    async def update_datastore(self, *args):  # pragma: no cover
+        """update_datastore the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -410,8 +410,8 @@ class ClearCountersRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x000A
 
-    async def execute(self, *args):  # pragma: no cover
-        """Execute the diagnostic request on the given device.
+    async def update_datastore(self, *args):  # pragma: no cover
+        """update_datastore the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -441,8 +441,8 @@ class ReturnBusMessageCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x000B
 
-    async def execute(self, *args):  # pragma: no cover
-        """Execute the diagnostic request on the given device.
+    async def update_datastore(self, *args):  # pragma: no cover
+        """update_datastore the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -474,8 +474,8 @@ class ReturnBusCommunicationErrorCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x000C
 
-    async def execute(self, *args):  # pragma: no cover
-        """Execute the diagnostic request on the given device.
+    async def update_datastore(self, *args):  # pragma: no cover
+        """update_datastore the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -507,8 +507,8 @@ class ReturnBusExceptionErrorCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x000D
 
-    async def execute(self, *args):  # pragma: no cover
-        """Execute the diagnostic request on the given device.
+    async def update_datastore(self, *args):  # pragma: no cover
+        """update_datastore the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -540,8 +540,8 @@ class ReturnSlaveMessageCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x000E
 
-    async def execute(self, *args):  # pragma: no cover
-        """Execute the diagnostic request on the given device.
+    async def update_datastore(self, *args):  # pragma: no cover
+        """update_datastore the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -573,8 +573,8 @@ class ReturnSlaveNoResponseCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x000F
 
-    async def execute(self, *args):  # pragma: no cover
-        """Execute the diagnostic request on the given device.
+    async def update_datastore(self, *args):  # pragma: no cover
+        """update_datastore the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -607,8 +607,8 @@ class ReturnSlaveNAKCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0010
 
-    async def execute(self, *args):  # pragma: no cover
-        """Execute the diagnostic request on the given device.
+    async def update_datastore(self, *args):  # pragma: no cover
+        """update_datastore the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -641,8 +641,8 @@ class ReturnSlaveBusyCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0011
 
-    async def execute(self, *args):  # pragma: no cover
-        """Execute the diagnostic request on the given device.
+    async def update_datastore(self, *args):  # pragma: no cover
+        """update_datastore the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -676,8 +676,8 @@ class ReturnSlaveBusCharacterOverrunCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0012
 
-    async def execute(self, *args):  # pragma: no cover
-        """Execute the diagnostic request on the given device.
+    async def update_datastore(self, *args):  # pragma: no cover
+        """update_datastore the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -709,8 +709,8 @@ class ReturnIopOverrunCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0013
 
-    async def execute(self, *args):  # pragma: no cover
-        """Execute the diagnostic request on the given device.
+    async def update_datastore(self, *args):  # pragma: no cover
+        """update_datastore the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -742,8 +742,8 @@ class ClearOverrunCountRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0014
 
-    async def execute(self, *args):  # pragma: no cover
-        """Execute the diagnostic request on the given device.
+    async def update_datastore(self, *args):  # pragma: no cover
+        """update_datastore the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -794,8 +794,8 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
             data = 0
         return 1 + 2 + 2 + 2 + data
 
-    async def execute(self, *args):  # pragma: no cover
-        """Execute the diagnostic request on the given device.
+    async def update_datastore(self, *args):  # pragma: no cover
+        """update_datastore the diagnostic request on the given device.
 
         :returns: The initialized response message
         """

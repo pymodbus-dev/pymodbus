@@ -141,7 +141,7 @@ class ReadCoilsRequest(ReadBitsRequestBase):
         """
         ReadBitsRequestBase.__init__(self, address, count, slave, transaction, skip_encode)
 
-    async def execute(self, context):  # pragma: no cover
+    async def update_datastore(self, context):  # pragma: no cover
         """Run a read coils request against a datastore.
 
         Before running the request, we make sure that the request is in
@@ -209,7 +209,7 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
         """
         ReadBitsRequestBase.__init__(self, address, count, slave, transaction, skip_encode)
 
-    async def execute(self, context):  # pragma: no cover
+    async def update_datastore(self, context):  # pragma: no cover
         """Run a read discrete input request against a datastore.
 
         Before running the request, we make sure that the request is in

@@ -113,6 +113,19 @@ class TestPduType:
 
     @pytest.mark.parametrize(("pdutype", "kwargs", "framer"), requests + responses)
     @pytest.mark.usefixtures("framer")
+    def test_pdu_instance_extras(self, pdutype, kwargs):
+        """Test that all PDU types can be created."""
+        tid = 9112
+        slave_id = 63
+        pdu = pdutype(transaction=tid, slave=slave_id, **kwargs)
+        assert pdu
+        assert str(pdu)
+        assert pdu.slave_id == slave_id
+        assert pdu.transaction_id == tid
+        assert pdu.function_code > 0
+
+    @pytest.mark.parametrize(("pdutype", "kwargs", "framer"), requests + responses)
+    @pytest.mark.usefixtures("framer")
     def test_pdu_instance_encode(self, pdutype, kwargs):
         """Test that all PDU types can be created."""
         pdutype(**kwargs).encode()

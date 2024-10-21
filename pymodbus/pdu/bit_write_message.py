@@ -49,7 +49,8 @@ class WriteSingleCoilRequest(ModbusPDU):
         :param address: The variable address to write
         :param value: The value to write at address
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.value = bool(value)
 
@@ -116,7 +117,8 @@ class WriteSingleCoilResponse(ModbusPDU):
         :param address: The variable address written to
         :param value: The value written at address
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.value = value
 
@@ -170,7 +172,8 @@ class WriteMultipleCoilsRequest(ModbusPDU):
         :param address: The starting request address
         :param values: The values to write
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         if values is None:  # pragma: no cover
             values = []
@@ -246,7 +249,8 @@ class WriteMultipleCoilsResponse(ModbusPDU):
         :param address: The starting variable address written to
         :param count: The number of values written
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.count = count
 

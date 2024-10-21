@@ -21,7 +21,8 @@ class ReadRegistersRequestBase(ModbusPDU):
         :param count: The number of registers to read
         :param slave: Modbus slave slave ID
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.count = count
 
@@ -68,7 +69,8 @@ class ReadRegistersResponseBase(ModbusPDU):
         :param values: The values to write to
         :param slave: Modbus slave slave ID
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
 
         #: A list of register values
         self.registers = values or []
@@ -263,7 +265,8 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         :param write_address: The address to start writing to
         :param write_registers: The registers to write to the specified address
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.read_address = read_address
         self.read_count = read_count
         self.write_address = write_address

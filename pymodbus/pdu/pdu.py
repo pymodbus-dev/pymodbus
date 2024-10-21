@@ -17,22 +17,20 @@ class ModbusPDU:
     _rtu_frame_size: int = 0
     _rtu_byte_count_pos: int = 0
 
-    def __init__(self, slave: int, transaction: int, skip_encode: bool) -> None:
+    def __init__(self) -> None:
         """Initialize the base data for a modbus request."""
-        self.transaction_id = transaction
-        self.slave_id = slave
-        self.skip_encode = skip_encode
+        self.transaction_id: int
+        self.slave_id: int
+        self.skip_encode: bool
         self.bits: list[bool] = []
         self.registers: list[int] = []
         self.fut: asyncio.Future | None = None
 
-    @abstractmethod
-    def encode(self) -> bytes:
-        """Encode the message."""
-
-    @abstractmethod
-    def decode(self, data: bytes) -> None:
-        """Decode data part of the message."""
+    def setData(self, slave: int, transaction: int, skip_encode: bool) -> None:
+        """Set data common for all PDU."""
+        self.transaction_id = transaction
+        self.slave_id = slave
+        self.skip_encode = skip_encode
 
     def doException(self, exception: int) -> ExceptionResponse:
         """Build an error response based on the function."""
@@ -48,6 +46,14 @@ class ModbusPDU:
         """Calculate response pdu size."""
         return 0
 
+    @abstractmethod
+    def encode(self) -> bytes:
+        """Encode the message."""
+
+    @abstractmethod
+    def decode(self, data: bytes) -> None:
+        """Decode data part of the message."""
+
 
     @classmethod
     def calculateRtuFrameSize(cls, data: bytes) -> int:
@@ -61,7 +67,6 @@ class ModbusPDU:
         raise NotImplementedException(
             f"Cannot determine RTU frame size for {cls.__name__}"
         )
-
 
 
 class ModbusExceptions:  # pylint: disable=too-few-public-methods
@@ -102,7 +107,8 @@ class ExceptionResponse(ModbusPDU):
             transaction: int = 0,
             skip_encode: bool = False) -> None:
         """Initialize the modbus exception response."""
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.function_code = function_code | 0x80
         self.exception_code = exception_code
 

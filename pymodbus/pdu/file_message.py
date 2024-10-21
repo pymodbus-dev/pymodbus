@@ -94,7 +94,8 @@ class ReadFileRecordRequest(ModbusPDU):
 
         :param records: The file record requests to be read
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.records = records or []
 
     def encode(self):
@@ -159,7 +160,8 @@ class ReadFileRecordResponse(ModbusPDU):
 
         :param records: The requested file records
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.records = records or []
 
     def encode(self):
@@ -215,7 +217,8 @@ class WriteFileRecordRequest(ModbusPDU):
 
         :param records: The file record requests to be read
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.records = records or []
 
     def encode(self):
@@ -279,7 +282,8 @@ class WriteFileRecordResponse(ModbusPDU):
 
         :param records: The file record requests to be read
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.records = records or []
 
     def encode(self):
@@ -344,7 +348,8 @@ class ReadFifoQueueRequest(ModbusPDU):
 
         :param address: The fifo pointer address (0x0000 to 0xffff)
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.values = []  # this should be added to the context
 
@@ -405,7 +410,8 @@ class ReadFifoQueueResponse(ModbusPDU):
 
         :param values: The list of values of the fifo to return
         """
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.values = values or []
 
     def encode(self):

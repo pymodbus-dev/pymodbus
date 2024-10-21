@@ -38,7 +38,8 @@ class CustomModbusPDU(ModbusPDU):
 
     def __init__(self, values=None, slave=1, transaction=0, skip_encode=False):
         """Initialize."""
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.values = values or []
 
     def encode(self):
@@ -70,7 +71,8 @@ class CustomRequest(ModbusPDU):
 
     def __init__(self, address=None, slave=1, transaction=0, skip_encode=False):
         """Initialize."""
-        ModbusPDU.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.count = 16
 

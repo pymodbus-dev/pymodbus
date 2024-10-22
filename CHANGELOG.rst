@@ -7,6 +7,40 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.7.4
+-------------
+* Clean PDU init. (#2399)
+* Wrong close, when transaction do not match. (#2401)
+* Remove unmaintained (not working) example contributions. (#2400)
+* All pdu (incl. function code) tests to pdu directory. (#2397)
+* Add `no_response_expected` argument to requests (#2385)
+* Resubmit: Don't close/reopen tcp connection on single modbus message timeout (#2350)
+* 100% test coverage for PDU. (#2394)
+* Type DecodePDU. (#2392)
+* Update to use DecodePDU. (#2391)
+* Client/Server decoder renamed and moved to pdu. (#2390)
+* Move client/server decoder to pdu. (#2388)
+* Introducing PyModbus Guru on Gurubase.io (#2387)
+* Remove IllegalFunctionRequest. (#2384)
+* remove ModbusResponse. (#2383)
+* Add typing to pdu base classes. (#2380)
+* Updated roadmap.
+* remove databuffer from framer. (#2379)
+* Improve retries for sync client. (#2377)
+* Move process test to framer tests (#2376)
+* Framer do not check ids (#2375)
+* Remove callback from framer. (#2374)
+* Auto fill device ids for clients. (#2372)
+* Reenable multidrop tests. (#2370)
+* write_register/s accept bytes or int. (#2369)
+* roadmap corrections.
+* Added roadmap (not written in stone). (#2367)
+* Update README to show python 3.13.
+* Test on Python 3.13 (#2366)
+* Use @abstractmethod (#2365)
+* Corrected smaller documentation bugs. (#2364)
+* README as landing page in readthedocs. (#2363)
+
 Version 3.7.3
 -------------
 * 100% test coverage of framers (#2359)
@@ -43,7 +77,6 @@ Version 3.7.3
 * Complete pull request #2310 (#2312)
 * fixed type hints for write_register and write_registers (#2309)
 * Remove _header from framers. (#2305)
-
 
 Version 3.7.2
 -------------

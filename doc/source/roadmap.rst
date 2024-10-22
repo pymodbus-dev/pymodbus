@@ -15,23 +15,18 @@ It is the community that decides how pymodbus evolves NOT the maintainers !
 
 The following bullet points are what the maintainers focus on:
 
-- 3.7.4, bug fix release, hopefully with:
-    - Available on dev:
-        - optimized framer, limited support for multidrop on the server side
-        - more typing in the core
-        - 100% test coverage fixed for all new parts (currently transport, pdu and framer)
-        - Updated PDU, moving client/server decoder into pdu
-    - better client no_response handling
-    - Simplify PDU classes
-    - better retry handling (only disconnect when really needed)
 - 3.7.5, bug fix release, hopefully with:
-    - better broadcast handling
+    - Simplify PDU classes
+    - Simplify transaction manager (central control point)
+    - Remove ModbusControlBlock
 - 3.7.6, bug fix release, with:
-    - Foundation for new transaction
+    - Not planned
 - 3.8.0, with:
     - new transaction handling
+    - transaction 100% coverage
+    - skip_encode, zero_mode parameters removed
 - 4.0.0, with:
-    - client async, but with sync/async API
+    - client async with sync/async API
     - Only one datastore, but with different API`s
     - Simulator standard in server
     - GUI client, to analyze devices

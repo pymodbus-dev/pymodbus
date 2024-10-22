@@ -3,12 +3,12 @@
 # pylint: disable=missing-type-doc
 import struct
 
-from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusRequest, ModbusResponse
+from pymodbus.pdu.pdu import ModbusExceptions as merror
+from pymodbus.pdu.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
-class ReadBitsRequestBase(ModbusRequest):
+class ReadBitsRequestBase(ModbusPDU):
     """Base class for Messages Requesting bit values."""
 
     _rtu_frame_size = 8
@@ -20,7 +20,8 @@ class ReadBitsRequestBase(ModbusRequest):
         :param count: The number of bits after "address" to read
         :param slave: Modbus slave slave ID
         """
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.count = count
 
@@ -46,20 +47,17 @@ class ReadBitsRequestBase(ModbusRequest):
         :return:
         """
         count = self.count // 8
-        if self.count % 8:
+        if self.count % 8:  # pragma: no cover
             count += 1
 
         return 1 + 1 + count
 
     def __str__(self):
-        """Return a string representation of the instance.
-
-        :returns: A string representation of the instance
-        """
+        """Return a string representation of the instance."""
         return f"ReadBitRequest({self.address},{self.count})"
 
 
-class ReadBitsResponseBase(ModbusResponse):
+class ReadBitsResponseBase(ModbusPDU):
     """Base class for Messages responding to bit-reading values.
 
     The requested bits can be found in the .bits list.
@@ -73,7 +71,8 @@ class ReadBitsResponseBase(ModbusResponse):
         :param values: The requested values to be returned
         :param slave: Modbus slave slave ID
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
 
         #: A list of booleans representing bit values
         self.bits = values or []
@@ -119,10 +118,7 @@ class ReadBitsResponseBase(ModbusResponse):
         return self.bits[address]
 
     def __str__(self):
-        """Return a string representation of the instance.
-
-        :returns: A string representation of the instance
-        """
+        """Return a string representation of the instance."""
         return f"{self.__class__.__name__}({len(self.bits)})"
 
 
@@ -147,7 +143,7 @@ class ReadCoilsRequest(ReadBitsRequestBase):
         """
         ReadBitsRequestBase.__init__(self, address, count, slave, transaction, skip_encode)
 
-    async def execute(self, context):
+    async def update_datastore(self, context):  # pragma: no cover
         """Run a read coils request against a datastore.
 
         Before running the request, we make sure that the request is in
@@ -215,7 +211,7 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
         """
         ReadBitsRequestBase.__init__(self, address, count, slave, transaction, skip_encode)
 
-    async def execute(self, context):
+    async def update_datastore(self, context):  # pragma: no cover
         """Run a read discrete input request against a datastore.
 
         Before running the request, we make sure that the request is in

@@ -21,11 +21,6 @@ Extra functions
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: pymodbus.factory
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 .. automodule:: pymodbus.payload
     :members:
     :undoc-members:
@@ -44,6 +39,11 @@ Extra functions
 
 PDU classes
 ===========
+
+.. automodule:: pymodbus.pdu.decoders
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 .. automodule:: pymodbus.pdu.bit_read_message
     :members:

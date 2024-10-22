@@ -9,11 +9,12 @@ from contextlib import suppress
 
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
-from pymodbus.exceptions import NoSuchSlaveException
-from pymodbus.factory import ServerDecoder
+from pymodbus.exceptions import ModbusException, NoSuchSlaveException
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from pymodbus.logging import Log
+from pymodbus.pdu import DecodePDU
 from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.pdu.pdu import ExceptionResponse
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
 
 
@@ -48,6 +49,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
         self.running = False
         self.receive_queue: asyncio.Queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
+        self.databuffer = b''
         self.framer: FramerBase
         self.loop = asyncio.get_running_loop()
 
@@ -68,14 +70,9 @@ class ModbusServerRequestHandler(ModbusProtocol):
         if self.server.broadcast_enable:
             if 0 not in slaves:
                 slaves.append(0)
-        if 0 in slaves:
-            slaves = []
         try:
             self.running = True
-            self.framer = self.server.framer(
-                self.server.decoder,
-                slaves,
-            )
+            self.framer = self.server.framer(self.server.decoder)
 
             # schedule the connection handler on the event loop
             self.handler_task = asyncio.create_task(self.handle())
@@ -122,11 +119,21 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
         # if broadcast is enabled make sure to
         # process requests to address 0
-        Log.debug("Handling data: {}", data, ":hex")
-        self.framer.processIncomingPacket(
-            data=data,
-            callback=lambda x: self.execute(x, *addr),
-        )
+        self.databuffer += data
+        Log.debug("Handling data: {}", self.databuffer, ":hex")
+        try:
+            used_len, pdu = self.framer.processIncomingFrame(self.databuffer)
+        except ModbusException:
+            pdu = ExceptionResponse(
+                40,
+                exception_code=merror.IllegalFunction
+            )
+            self.server_send(pdu, 0)
+            pdu = None
+            used_len = len(self.databuffer)
+        self.databuffer = self.databuffer[used_len:]
+        if pdu:
+           self.execute(pdu, *addr)
 
     async def handle(self) -> None:
         """Coroutine which represents a single master <=> slave conversation.
@@ -152,7 +159,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
                     self._log_exception()
                     self.running = False
             except Exception as exc:  # pylint: disable=broad-except
-                # force TCP socket termination as processIncomingPacket
+                # force TCP socket termination as framer
                 # should handle application layer errors
                 Log.error(
                     'Unknown exception "{}" on stream {} forcing disconnect',
@@ -181,10 +188,10 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 # if broadcasting then execute on all slave contexts,
                 # note response will be ignored
                 for slave_id in self.server.context.slaves():
-                    response = await request.execute(self.server.context[slave_id])
+                    response = await request.update_datastore(self.server.context[slave_id])
             else:
                 context = self.server.context[request.slave_id]
-                response = await request.execute(context)
+                response = await request.update_datastore(context)
 
         except NoSuchSlaveException:
             Log.error("requested slave does not exist: {}", request.slave_id)
@@ -211,11 +218,11 @@ class ModbusServerRequestHandler(ModbusProtocol):
         """Send message."""
         if kwargs.get("skip_encoding", False):
             self.send(message, addr=addr)
-        elif message.should_respond:
-            pdu = self.framer.buildPacket(message)
-            self.send(pdu, addr=addr)
-        else:
+        if not message:
             Log.debug("Skipping sending response!!")
+        else:
+            pdu = self.framer.buildFrame(message)
+            self.send(pdu, addr=addr)
 
     async def _recv_(self):
         """Receive data from the network."""
@@ -260,7 +267,7 @@ class ModbusBaseServer(ModbusProtocol):
             True,
         )
         self.loop = asyncio.get_running_loop()
-        self.decoder = ServerDecoder()
+        self.decoder = DecodePDU(True)
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.ignore_missing_slaves = ignore_missing_slaves

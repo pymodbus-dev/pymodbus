@@ -20,8 +20,8 @@ from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.datastore.store import ModbusSequentialDataBlock
-from pymodbus.exceptions import ConnectionException, ModbusException, ModbusIOException
-from pymodbus.pdu import ModbusRequest
+from pymodbus.exceptions import ConnectionException, ModbusException
+from pymodbus.pdu import ExceptionResponse, ModbusPDU
 from pymodbus.transport import CommParams, CommType
 
 
@@ -104,7 +104,7 @@ def test_client_mixin(arglist, method, arg, pdu_request):
     """Test mixin responses."""
     pdu_to_call = None
 
-    def fake_execute(_self, request):
+    def fake_execute(_self, _no_response_expected, request):
         """Set PDU request."""
         nonlocal pdu_to_call
         pdu_to_call = request
@@ -240,8 +240,10 @@ async def test_client_instanciate(
     # a unsuccessful connect
     client.connect = lambda: False
     client.transport = None
+    pdu = ModbusPDU()
+    pdu.setData(0, 0, False)
     with pytest.raises(ConnectionException):
-        client.execute(ModbusRequest(0, 0, False))
+        client.execute(False, pdu)
 
 async def test_client_modbusbaseclient():
     """Test modbus base client class."""
@@ -386,8 +388,8 @@ class MockTransport:
     async def delayed_resp(self):
         """Send a response to a received packet."""
         await asyncio.sleep(0.05)
-        resp = await self.req.execute(self.ctx)
-        pkt = self.base.ctx.framer.buildPacket(resp)
+        resp = await self.req.update_datastore(self.ctx)
+        pkt = self.base.ctx.framer.buildFrame(resp)
         self.base.ctx.data_received(pkt)
 
     def write(self, data, addr=None):
@@ -418,7 +420,7 @@ async def test_client_protocol_execute():
     transport = MockTransport(base, request)
     base.ctx.connection_made(transport=transport)
 
-    response = await base.async_execute(request)
+    response = await base.async_execute(False, request)
     assert not response.isError()
     assert isinstance(response, pdu_bit_read.ReadCoilsResponse)
 
@@ -432,12 +434,26 @@ async def test_client_execute_broadcast():
             host="127.0.0.1",
         ),
     )
-    request = pdu_bit_read.ReadCoilsRequest(1, 1)
+    request = pdu_bit_read.ReadCoilsRequest(1, 1, slave=0)
     transport = MockTransport(base, request)
     base.ctx.connection_made(transport=transport)
+    assert await base.async_execute(False, request)
 
-    with pytest.raises(ModbusIOException):
-        assert not await base.async_execute(request)
+
+async def test_client_execute_broadcast_no():
+    """Test the client protocol execute method."""
+    base = ModbusBaseClient(
+        FramerType.SOCKET,
+        3,
+        None,
+        comm_params=CommParams(
+            host="127.0.0.1",
+        ),
+    )
+    request = pdu_bit_read.ReadCoilsRequest(1, 1, slave=0)
+    transport = MockTransport(base, request)
+    base.ctx.connection_made(transport=transport)
+    assert not await base.async_execute(True, request)
 
 async def test_client_protocol_retry():
     """Test the client protocol execute method with retries."""
@@ -454,7 +470,7 @@ async def test_client_protocol_retry():
     transport = MockTransport(base, request, retries=2)
     base.ctx.connection_made(transport=transport)
 
-    response = await base.async_execute(request)
+    response = await base.async_execute(False, request)
     assert transport.retries == 0
     assert not response.isError()
     assert isinstance(response, pdu_bit_read.ReadCoilsResponse)
@@ -477,8 +493,8 @@ async def test_client_protocol_timeout():
     transport = MockTransport(base, request, retries=4)
     base.ctx.connection_made(transport=transport)
 
-    with pytest.raises(ModbusIOException):
-        await base.async_execute(request)
+    pdu = await base.async_execute(False, request)
+    assert isinstance(pdu, ExceptionResponse)
     assert transport.retries == 1
 
 
@@ -676,14 +692,18 @@ async def test_client_build_response():
         None,
         comm_params=CommParams(),
     )
+    pdu = ModbusPDU()
+    pdu.setData(0, 0, False)
     with pytest.raises(ConnectionException):
-        await client.build_response(ModbusRequest(0, 0, False))
+        await client.build_response(pdu)
 
 
 async def test_client_mixin_execute():
     """Test dummy execute for both sync and async."""
     client = ModbusClientMixin()
+    pdu = ModbusPDU()
+    pdu.setData(0, 0, False)
     with pytest.raises(NotImplementedError):
-        client.execute(ModbusRequest(0, 0, False))
+        client.execute(False, pdu)
     with pytest.raises(NotImplementedError):
-        await client.execute(ModbusRequest(0, 0, False))
+        await client.execute(False, pdu)

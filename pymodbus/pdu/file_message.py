@@ -7,8 +7,8 @@ from __future__ import annotations
 # pylint: disable=missing-type-doc
 import struct
 
-from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusRequest, ModbusResponse
+from pymodbus.pdu.pdu import ModbusExceptions as merror
+from pymodbus.pdu.pdu import ModbusPDU
 
 
 # ---------------------------------------------------------------------------#
@@ -17,7 +17,7 @@ from pymodbus.pdu import ModbusRequest, ModbusResponse
 class FileRecord:  # pylint: disable=eq-without-hash
     """Represents a file record and its relevant data."""
 
-    def __init__(self, reference_type=0x06, file_number=0x00, record_number=0x00, record_data="", record_length=None, response_length=None):
+    def __init__(self, reference_type=0x06, file_number=0x00, record_number=0x00, record_data=b'', record_length=None, response_length=None):
         """Initialize a new instance.
 
         :params reference_type: must be 0x06
@@ -37,7 +37,7 @@ class FileRecord:  # pylint: disable=eq-without-hash
 
     def __eq__(self, relf):
         """Compare the left object to the right."""
-        return (
+        return (  # pragma: no cover
             self.reference_type == relf.reference_type
             and self.file_number == relf.file_number
             and self.record_number == relf.record_number
@@ -47,9 +47,9 @@ class FileRecord:  # pylint: disable=eq-without-hash
 
     def __ne__(self, relf):
         """Compare the left object to the right."""
-        return not self.__eq__(relf)
+        return not self.__eq__(relf)  # pragma: no cover
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         """Give a representation of the file record."""
         params = (self.file_number, self.record_number, self.record_length)
         return (
@@ -61,7 +61,7 @@ class FileRecord:  # pylint: disable=eq-without-hash
 # ---------------------------------------------------------------------------#
 #  File Requests/Responses
 # ---------------------------------------------------------------------------#
-class ReadFileRecordRequest(ModbusRequest):
+class ReadFileRecordRequest(ModbusPDU):
     """Read file record request.
 
     This function code is used to perform a file record read. All request
@@ -94,7 +94,8 @@ class ReadFileRecordRequest(ModbusRequest):
 
         :param records: The file record requests to be read
         """
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.records = records or []
 
     def encode(self):
@@ -127,10 +128,10 @@ class ReadFileRecordRequest(ModbusRequest):
                 record_number=decoded[2],
                 record_length=decoded[3],
             )
-            if decoded[0] == 0x06:
+            if decoded[0] == 0x06:  # pragma: no cover
                 self.records.append(record)
 
-    def execute(self, _context):
+    def update_datastore(self, _context):  # pragma: no cover
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -142,7 +143,7 @@ class ReadFileRecordRequest(ModbusRequest):
         return ReadFileRecordResponse(files)
 
 
-class ReadFileRecordResponse(ModbusResponse):
+class ReadFileRecordResponse(ModbusPDU):
     """Read file record response.
 
     The normal response is a series of "sub-responses," one for each
@@ -159,7 +160,8 @@ class ReadFileRecordResponse(ModbusResponse):
 
         :param records: The requested file records
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.records = records or []
 
     def encode(self):
@@ -193,11 +195,11 @@ class ReadFileRecordResponse(ModbusResponse):
                 record_data=data[count : count + record_length],
             )
             count += record_length
-            if reference_type == 0x06:
+            if reference_type == 0x06:  # pragma: no cover
                 self.records.append(record)
 
 
-class WriteFileRecordRequest(ModbusRequest):
+class WriteFileRecordRequest(ModbusPDU):
     """Write file record request.
 
     This function code is used to perform a file record write. All
@@ -215,7 +217,8 @@ class WriteFileRecordRequest(ModbusRequest):
 
         :param records: The file record requests to be read
         """
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.records = records or []
 
     def encode(self):
@@ -254,10 +257,10 @@ class WriteFileRecordRequest(ModbusRequest):
                 record_number=decoded[2],
                 record_data=data[count - response_length : count],
             )
-            if decoded[0] == 0x06:
+            if decoded[0] == 0x06:  # pragma: no cover
                 self.records.append(record)
 
-    def execute(self, _context):
+    def update_datastore(self, _context):  # pragma: no cover
         """Run the write file record request against the context.
 
         :returns: The populated response
@@ -268,7 +271,7 @@ class WriteFileRecordRequest(ModbusRequest):
         return WriteFileRecordResponse(self.records)
 
 
-class WriteFileRecordResponse(ModbusResponse):
+class WriteFileRecordResponse(ModbusPDU):
     """The normal response is an echo of the request."""
 
     function_code = 0x15
@@ -279,7 +282,8 @@ class WriteFileRecordResponse(ModbusResponse):
 
         :param records: The file record requests to be read
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.records = records or []
 
     def encode(self):
@@ -317,11 +321,11 @@ class WriteFileRecordResponse(ModbusResponse):
                 record_number=decoded[2],
                 record_data=data[count - response_length : count],
             )
-            if decoded[0] == 0x06:
+            if decoded[0] == 0x06:  # pragma: no cover
                 self.records.append(record)
 
 
-class ReadFifoQueueRequest(ModbusRequest):
+class ReadFifoQueueRequest(ModbusPDU):
     """Read fifo queue request.
 
     This function code allows to read the contents of a First-In-First-Out
@@ -344,7 +348,8 @@ class ReadFifoQueueRequest(ModbusRequest):
 
         :param address: The fifo pointer address (0x0000 to 0xffff)
         """
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.values = []  # this should be added to the context
 
@@ -362,7 +367,7 @@ class ReadFifoQueueRequest(ModbusRequest):
         """
         self.address = struct.unpack(">H", data)[0]
 
-    def execute(self, _context):
+    def update_datastore(self, _context):  # pragma: no cover
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -375,7 +380,7 @@ class ReadFifoQueueRequest(ModbusRequest):
         return ReadFifoQueueResponse(self.values)
 
 
-class ReadFifoQueueResponse(ModbusResponse):
+class ReadFifoQueueResponse(ModbusPDU):
     """Read Fifo queue response.
 
     In a normal response, the byte count shows the quantity of bytes to
@@ -390,7 +395,7 @@ class ReadFifoQueueResponse(ModbusResponse):
     function_code = 0x18
 
     @classmethod
-    def calculateRtuFrameSize(cls, buffer):
+    def calculateRtuFrameSize(cls, buffer):  # pragma: no cover
         """Calculate the size of the message.
 
         :param buffer: A buffer containing the data that have been received.
@@ -405,7 +410,8 @@ class ReadFifoQueueResponse(ModbusResponse):
 
         :param values: The list of values of the fifo to return
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.values = values or []
 
     def encode(self):
@@ -426,6 +432,6 @@ class ReadFifoQueueResponse(ModbusResponse):
         """
         self.values = []
         _, count = struct.unpack(">HH", data[0:4])
-        for index in range(0, count - 4):
+        for index in range(0, count - 4):  # pragma: no cover
             idx = 4 + index * 2
             self.values.append(struct.unpack(">H", data[idx : idx + 2])[0])

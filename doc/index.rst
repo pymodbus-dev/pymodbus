@@ -8,7 +8,6 @@ Please select a topic in the left hand column.
    :caption: Contents:
    :hidden:
 
-   source/readme
    source/api_changes
    source/client
    source/server
@@ -17,5 +16,7 @@ Please select a topic in the left hand column.
    source/examples
    source/authors
    source/changelog
-   source/api_changes
    source/internals
+   source/roadmap
+   
+.. include:: ../README.rst

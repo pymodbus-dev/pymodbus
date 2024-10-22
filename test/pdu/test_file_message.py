@@ -45,15 +45,15 @@ class TestBitMessage:
         """Test basic bit message encoding/decoding."""
         context = MockContext()
         handle = ReadFifoQueueRequest(0x1234)
-        result = handle.execute(context)
+        result = handle.update_datastore(context)
         assert isinstance(result, ReadFifoQueueResponse)
 
         handle.address = -1
-        result = handle.execute(context)
+        result = handle.update_datastore(context)
         assert ModbusExceptions.IllegalValue == result.exception_code
 
         handle.values = [0x00] * 33
-        result = handle.execute(context)
+        result = handle.update_datastore(context)
         assert ModbusExceptions.IllegalValue == result.exception_code
 
     def test_read_fifo_queue_request_error(self):
@@ -61,7 +61,7 @@ class TestBitMessage:
         context = MockContext()
         handle = ReadFifoQueueRequest(0x1234)
         handle.values = [0x00] * 32
-        result = handle.execute(context)
+        result = handle.update_datastore(context)
         assert result.function_code == 0x98
 
     def test_read_fifo_queue_response_encode(self):
@@ -148,10 +148,10 @@ class TestBitMessage:
         size = handle.calculateRtuFrameSize(request)
         assert size == 0x0E + 5
 
-    def test_read_file_record_request_execute(self):
+    def test_read_file_record_request_update_datastore(self):
         """Test basic bit message encoding/decoding."""
         handle = ReadFileRecordRequest()
-        result = handle.execute(None)
+        result = handle.update_datastore(None)
         assert isinstance(result, ReadFileRecordResponse)
 
     # -----------------------------------------------------------------------#
@@ -221,10 +221,10 @@ class TestBitMessage:
         size = handle.calculateRtuFrameSize(request)
         assert size == 0x0D + 5
 
-    def test_write_file_record_request_execute(self):
+    def test_write_file_record_request_update_datastore(self):
         """Test basic bit message encoding/decoding."""
         handle = WriteFileRecordRequest()
-        result = handle.execute(None)
+        result = handle.update_datastore(None)
         assert isinstance(result, WriteFileRecordResponse)
 
     # -----------------------------------------------------------------------#

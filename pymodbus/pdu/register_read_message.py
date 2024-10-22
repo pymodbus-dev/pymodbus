@@ -5,11 +5,11 @@
 import struct
 
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.pdu import ExceptionResponse, ModbusRequest, ModbusResponse
-from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.pdu.pdu import ExceptionResponse, ModbusPDU
+from pymodbus.pdu.pdu import ModbusExceptions as merror
 
 
-class ReadRegistersRequestBase(ModbusRequest):
+class ReadRegistersRequestBase(ModbusPDU):
     """Base class for reading a modbus register."""
 
     _rtu_frame_size = 8
@@ -21,7 +21,8 @@ class ReadRegistersRequestBase(ModbusRequest):
         :param count: The number of registers to read
         :param slave: Modbus slave slave ID
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.count = count
 
@@ -54,7 +55,7 @@ class ReadRegistersRequestBase(ModbusRequest):
         return f"{self.__class__.__name__} ({self.address},{self.count})"
 
 
-class ReadRegistersResponseBase(ModbusResponse):
+class ReadRegistersResponseBase(ModbusPDU):
     """Base class for responding to a modbus register read.
 
     The requested registers can be found in the .registers list.
@@ -68,7 +69,8 @@ class ReadRegistersResponseBase(ModbusResponse):
         :param values: The values to write to
         :param slave: Modbus slave slave ID
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
 
         #: A list of register values
         self.registers = values or []
@@ -89,8 +91,8 @@ class ReadRegistersResponseBase(ModbusResponse):
         :param data: The request to decode
         """
         byte_count = int(data[0])
-        if byte_count < 2 or byte_count > 252 or byte_count % 2 == 1 or byte_count != len(data) - 1:
-            raise ModbusIOException(f"Invalid response {data} has byte count of {byte_count}")
+        if byte_count < 2 or byte_count > 252 or byte_count % 2 == 1 or byte_count != len(data) - 1:  # pragma: no cover
+            raise ModbusIOException(f"Invalid response {data} has byte count of {byte_count}")  # pragma: no cover
         self.registers = []
         for i in range(1, byte_count + 1, 2):
             self.registers.append(struct.unpack(">H", data[i : i + 2])[0])
@@ -101,7 +103,7 @@ class ReadRegistersResponseBase(ModbusResponse):
         :param index: The indexed register to retrieve
         :returns: The request register
         """
-        return self.registers[index]
+        return self.registers[index]  # pragma: no cover
 
     def __str__(self):
         """Return a string representation of the instance.
@@ -133,7 +135,7 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
         """
         super().__init__(address, count, slave, transaction, skip_encode)
 
-    async def execute(self, context):
+    async def update_datastore(self, context):  # pragma: no cover
         """Run a read holding request against a datastore.
 
         :param context: The datastore to request from
@@ -195,7 +197,7 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
         """
         super().__init__(address, count, slave, transaction, skip_encode)
 
-    async def execute(self, context):
+    async def update_datastore(self, context):  # pragma: no cover
         """Run a read input request against a datastore.
 
         :param context: The datastore to request from
@@ -235,7 +237,7 @@ class ReadInputRegistersResponse(ReadRegistersResponseBase):
         super().__init__(values, slave, transaction, skip_encode)
 
 
-class ReadWriteMultipleRegistersRequest(ModbusRequest):
+class ReadWriteMultipleRegistersRequest(ModbusPDU):
     """Read/write multiple registers.
 
     This function code performs a combination of one read operation and one
@@ -263,7 +265,8 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
         :param write_address: The address to start writing to
         :param write_registers: The registers to write to the specified address
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.read_address = read_address
         self.read_count = read_count
         self.write_address = write_address
@@ -307,7 +310,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
             register = struct.unpack(">H", data[i : i + 2])[0]
             self.write_registers.append(register)
 
-    async def execute(self, context):
+    async def update_datastore(self, context):  # pragma: no cover
         """Run a write single register request against a datastore.
 
         :param context: The datastore to request from

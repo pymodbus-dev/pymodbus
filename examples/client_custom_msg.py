@@ -15,7 +15,7 @@ import struct
 
 from pymodbus import FramerType
 from pymodbus.client import AsyncModbusTcpClient as ModbusClient
-from pymodbus.pdu import ModbusExceptions, ModbusRequest, ModbusResponse
+from pymodbus.pdu import ModbusExceptions, ModbusPDU
 from pymodbus.pdu.bit_read_message import ReadCoilsRequest
 
 
@@ -26,11 +26,11 @@ from pymodbus.pdu.bit_read_message import ReadCoilsRequest
 # Since the function code is already registered with the decoder factory,
 # this will be decoded as a read coil response. If you implement a new
 # method that is not currently implemented, you must register the request
-# and response with a ClientDecoder factory.
+# and response with the active DecodePDU object.
 # --------------------------------------------------------------------------- #
 
 
-class CustomModbusResponse(ModbusResponse):
+class CustomModbusPDU(ModbusPDU):
     """Custom modbus response."""
 
     function_code = 55
@@ -38,7 +38,8 @@ class CustomModbusResponse(ModbusResponse):
 
     def __init__(self, values=None, slave=1, transaction=0, skip_encode=False):
         """Initialize."""
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.values = values or []
 
     def encode(self):
@@ -62,7 +63,7 @@ class CustomModbusResponse(ModbusResponse):
             self.values.append(struct.unpack(">H", data[i : i + 2])[0])
 
 
-class CustomModbusRequest(ModbusRequest):
+class CustomRequest(ModbusPDU):
     """Custom modbus request."""
 
     function_code = 55
@@ -70,7 +71,8 @@ class CustomModbusRequest(ModbusRequest):
 
     def __init__(self, address=None, slave=1, transaction=0, skip_encode=False):
         """Initialize."""
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.count = 16
 
@@ -89,7 +91,7 @@ class CustomModbusRequest(ModbusRequest):
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(ModbusExceptions.IllegalAddress)
         values = context.getValues(self.function_code, self.address, self.count)
-        return CustomModbusResponse(values)
+        return CustomModbusPDU(values)
 
 
 # --------------------------------------------------------------------------- #
@@ -122,18 +124,18 @@ async def main(host="localhost", port=5020):
         await client.connect()
 
         # create a response object to control it works
-        CustomModbusResponse()
+        CustomModbusPDU()
 
         # new modbus function code.
-        client.register(CustomModbusResponse)
+        client.register(CustomModbusPDU)
         slave=1
-        request = CustomModbusRequest(32, slave=slave)
-        result = await client.execute(request)
+        request = CustomRequest(32, slave=slave)
+        result = await client.execute(False, request)
         print(result)
 
         # inherited request
         request = Read16CoilsRequest(32, slave)
-        result = await client.execute(request)
+        result = await client.execute(False, request)
         print(result)
 
 

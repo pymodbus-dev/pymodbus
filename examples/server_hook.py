@@ -43,7 +43,6 @@ class Manipulator:
             self.message_count = 3
         else:
             print("---> RESPONSE: NONE")
-            response.should_respond = False
             self.message_count -= 1
         return response, False
 

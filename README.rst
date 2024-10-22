@@ -8,8 +8,11 @@ PyModbus - A Python Modbus Stack
 .. image:: https://pepy.tech/badge/pymodbus
    :target: https://pepy.tech/project/pymodbus
    :alt: Downloads
+.. image:: https://img.shields.io/badge/Gurubase-Ask%20PyModbus%20Guru-006BFF
+   :target: https://gurubase.io/g/pymodbus
+   :alt: PyModbus Guru
 
-Pymodbus is a full Modbus protocol implementation offering client/server with synchronous/asynchronous API a well as simulators.
+Pymodbus is a full Modbus protocol implementation offering client/server with synchronous/asynchronous API and simulators.
 
 Our releases is defined as X.Y.Z, and we have strict rules what to release when:
 
@@ -23,7 +26,7 @@ Upgrade examples:
 - 3.6.1 -> 3.7.0: Smaller changes to the pymodbus calls might be needed
 - 2.5.4 -> 3.0.0: Major changes in the application might be needed
 
-Current release is `3.7.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.7.3>`_.
+Current release is `3.7.4 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.7.4>`_.
 
 Bleeding edge (not released) is `dev <https://github.com/pymodbus-dev/pymodbus/tree/dev>`_.
 
@@ -57,7 +60,7 @@ Common features
 * very lightweight project
 * requires Python >= 3.9
 * thorough test suite, that test all corners of the library
-* automatically tested on Windows, Linux and MacOS combined with python 3.9 - 3.12
+* automatically tested on Windows, Linux and MacOS combined with python 3.9 - 3.13
 * strongly typed API (py.typed present)
 
 The modbus protocol specification: Modbus_Application_Protocol_V1_1b3.pdf can be found on

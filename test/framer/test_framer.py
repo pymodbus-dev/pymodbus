@@ -1,9 +1,8 @@
 """Test framer."""
-
+from unittest import mock
 
 import pytest
 
-from pymodbus.factory import ClientDecoder
 from pymodbus.framer import (
     FramerAscii,
     FramerBase,
@@ -12,6 +11,7 @@ from pymodbus.framer import (
     FramerTLS,
     FramerType,
 )
+from pymodbus.pdu import DecodePDU, ModbusPDU
 
 from .generator import set_calls
 
@@ -19,24 +19,23 @@ from .generator import set_calls
 class TestFramer:
     """Test module."""
 
-    def test_setup(self, entry, is_server, dev_ids):
+    def test_setup(self, entry, is_server):
         """Test conftest."""
         assert entry == FramerType.RTU
         assert not is_server
-        assert dev_ids == [0, 17]
         set_calls()
 
     def test_base(self):
         """Test FramerBase."""
-        framer = FramerBase(ClientDecoder(), [])
+        framer = FramerBase(DecodePDU(False))
         framer.decode(b'')
         framer.encode(b'', 0, 0)
+        framer.encode(b'', 2, 0)
 
     @pytest.mark.parametrize(("entry"), list(FramerType))
     async def test_framer_init(self, test_framer):
         """Test framer type."""
-        test_framer.incomming_dev_id = 1
-        assert test_framer.incomming_dev_id
+        assert test_framer
 
     @pytest.mark.parametrize(
         ("func", "test_compare", "expect"),
@@ -190,7 +189,7 @@ class TestFramerType:
         """Test encode method."""
         if frame == FramerTLS and dev_id + tr_id:
             return
-        frame_obj = frame(ClientDecoder(), [0])
+        frame_obj = frame(DecodePDU(False))
         expected = frame_expected[inx1 + inx2 + inx3]
         encoded_data = frame_obj.encode(data, dev_id, tr_id)
         assert encoded_data == expected
@@ -201,21 +200,21 @@ class TestFramerType:
             (FramerType.ASCII, True, b':0003007C00027F\r\n', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
             (FramerType.ASCII, False, b':000304008D008EDE\r\n', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
             (FramerType.ASCII, False, b':0083027B\r\n', 0, 0, b'\x83\x02',),  # Exception
-            (FramerType.ASCII, True, b':1103007C00026E\r\n', 17, 17, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.ASCII, False, b':110304008D008ECD\r\n', 17, 17, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.ASCII, False, b':1183026A\r\n', 17, 17, b'\x83\x02',),  # Exception
-            (FramerType.ASCII, True, b':FF03007C000280\r\n', 255, 255, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.ASCII, False, b':FF0304008D008EDF\r\n', 255, 255, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.ASCII, False, b':FF83027C\r\n', 255, 255, b'\x83\x02',),  # Exception
+            (FramerType.ASCII, True, b':1103007C00026E\r\n', 17, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.ASCII, False, b':110304008D008ECD\r\n', 17, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.ASCII, False, b':1183026A\r\n', 17, 0, b'\x83\x02',),  # Exception
+            (FramerType.ASCII, True, b':FF03007C000280\r\n', 255, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.ASCII, False, b':FF0304008D008EDF\r\n', 255, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.ASCII, False, b':FF83027C\r\n', 255, 0, b'\x83\x02',),  # Exception
             (FramerType.RTU, True, b'\x00\x03\x00\x7c\x00\x02\x04\x02', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
             (FramerType.RTU, False, b'\x00\x03\x04\x00\x8d\x00\x8e\xfa\xbc', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
             (FramerType.RTU, False, b'\x00\x83\x02\x91\x31', 0, 0, b'\x83\x02',),  # Exception
-            (FramerType.RTU, True, b'\x11\x03\x00\x7c\x00\x02\x07\x43', 17, 17, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.RTU, False, b'\x11\x03\x04\x00\x8d\x00\x8e\xfb\xbd', 17, 17, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.RTU, False, b'\x11\x83\x02\xc1\x34', 17, 17, b'\x83\x02',),  # Exception
-            (FramerType.RTU, True, b'\xff\x03\x00|\x00\x02\x10\x0d', 255, 255, b"\x03\x00\x7c\x00\x02",),  # Request
-            (FramerType.RTU, False, b'\xff\x03\x04\x00\x8d\x00\x8e\xf5\xb3', 255, 255, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
-            (FramerType.RTU, False, b'\xff\x83\x02\xa1\x01', 255, 255, b'\x83\x02',),  # Exception
+            (FramerType.RTU, True, b'\x11\x03\x00\x7c\x00\x02\x07\x43', 17, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.RTU, False, b'\x11\x03\x04\x00\x8d\x00\x8e\xfb\xbd', 17, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.RTU, False, b'\x11\x83\x02\xc1\x34', 17, 0, b'\x83\x02',),  # Exception
+            (FramerType.RTU, True, b'\xff\x03\x00|\x00\x02\x10\x0d', 255, 0, b"\x03\x00\x7c\x00\x02",),  # Request
+            (FramerType.RTU, False, b'\xff\x03\x04\x00\x8d\x00\x8e\xf5\xb3', 255, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
+            (FramerType.RTU, False, b'\xff\x83\x02\xa1\x01', 255, 0, b'\x83\x02',),  # Exception
             (FramerType.SOCKET, True, b'\x00\x00\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02', 0, 0, b"\x03\x00\x7c\x00\x02",),  # Request
             (FramerType.SOCKET, False, b'\x00\x00\x00\x00\x00\x07\x00\x03\x04\x00\x8d\x00\x8e', 0, 0, b"\x03\x04\x00\x8d\x00\x8e",),  # Response
             (FramerType.SOCKET, False, b'\x00\x00\x00\x00\x00\x03\x00\x83\x02', 0, 0, b'\x83\x02',),  # Exception
@@ -254,28 +253,28 @@ class TestFramerType:
         if entry == FramerType.RTU:
             return
         if split == "no":
-            used_len, res_data = test_framer.decode(data)
+            used_len, res_dev_id, res_tid, res_data = test_framer.decode(data)
         elif split == "half":
             split_len = int(len(data) / 2)
-            used_len, res_data = test_framer.decode(data[0:split_len])
+            used_len, res_dev_id, res_tid, res_data = test_framer.decode(data[0:split_len])
             assert not used_len
             assert not res_data
-            assert not test_framer.incoming_dev_id
-            assert not test_framer.incoming_tid
-            used_len, res_data = test_framer.decode(data)
+            assert not res_dev_id
+            assert not res_tid
+            used_len, res_dev_id, res_tid, res_data = test_framer.decode(data)
         else:
             last = len(data)
             for i in range(0, last -1):
-                used_len, res_data = test_framer.decode(data[0:i+1])
+                used_len, res_dev_id, res_tid, res_data = test_framer.decode(data[0:i+1])
                 assert not used_len
                 assert not res_data
-                assert not test_framer.incoming_dev_id
-                assert not test_framer.incoming_tid
-            used_len, res_data = test_framer.decode(data)
+                assert not res_dev_id
+                assert not res_tid
+            used_len, res_dev_id, res_tid, res_data = test_framer.decode(data)
         assert used_len == len(data)
         assert res_data == expected
-        assert dev_id == test_framer.incoming_dev_id
-        assert tr_id == test_framer.incoming_tid
+        assert dev_id == res_dev_id
+        assert tr_id == res_tid
 
     @pytest.mark.parametrize(
         ("entry", "data", "exp"),
@@ -309,25 +308,32 @@ class TestFramerType:
                  (12, b"\x03\x00\x7c\x00\x02"),
                  (12, b"\x03\x00\x7c\x00\x02"),
             ]),
-            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x02\xff\x83\x02', [(9, b'\x83\x02')],),  # Exception
+            (FramerType.SOCKET, b'\x0c\x05\x00\x00\x00\x02\xff\x83\x02', [  # Exception
+                 (9, b'\x83\x02'),
+            ]),
             (FramerType.RTU, b'\x00\x83\x02\x91\x21', [ # bad crc
-                 (2, b''),
+                 (1, b''),
+                 (0, b''),
             ]),
             (FramerType.RTU, b'\x00\x83\x02\xf0\x91\x31', [ # dummy char in stream, bad crc
-                 (3, b''),
+                 (1, b''),
+                 (0, b''),
             ]),
             (FramerType.RTU, b'\x00\x83\x02\x91\x21\x00\x83\x02\x91\x31', [ # bad crc + good CRC
-                (10, b'\x83\x02'),
+                (1, b''),
+                (0, b''),
             ]),
             (FramerType.RTU, b'\x00\x83\x02\xf0\x91\x31\x00\x83\x02\x91\x31', [ # dummy char in stream, bad crc  + good CRC
-                 (11, b'\x83\x02'),
+                 (1, b''),
+                 (0, b''),
             ]),
         ]
     )
     async def test_decode_complicated(self, test_framer, data, exp):
         """Test encode method."""
         for ent in exp:
-            used_len, res_data = test_framer.decode(data)
+            used_len, _, _, res_data = test_framer.decode(data)
+            data = data[used_len:]
             assert used_len == ent[0]
             assert res_data == ent[1]
 
@@ -354,7 +360,87 @@ class TestFramerType:
     def test_roundtrip(self, test_framer, data, dev_id, res_msg):
         """Test encode."""
         msg = test_framer.encode(data, dev_id, 0)
-        res_len, res_data = test_framer.decode(msg)
+        res_len, res_dev_id, _, res_data = test_framer.decode(msg)
         assert data == res_data
-        assert dev_id == test_framer.incoming_dev_id
+        assert dev_id == res_dev_id
         assert res_len == len(res_msg)
+
+    @pytest.mark.parametrize(("entry"), [FramerType.RTU])
+    def test_framer_decode(self, test_framer):
+        """Test dummy decode."""
+        msg = b''
+        res_len, _, _, res_data = test_framer.decode(msg)
+        assert not res_len
+        assert not res_data
+
+    @pytest.mark.parametrize(("is_server"), [True])
+    async def test_processIncomingFrame1(self, test_framer):
+        """Test processIncomingFrame."""
+        msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
+        _, pdu = test_framer.processIncomingFrame(msg)
+        assert pdu
+
+    @pytest.mark.parametrize(("is_server"), [True])
+    @pytest.mark.parametrize(("entry", "msg"), [
+        (FramerType.SOCKET, b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"),
+        (FramerType.TLS, b"\x02\x01\x02\x00\x08"),
+        (FramerType.RTU, b"\x00\x01\x00\x00\x00\x01\xfc\x1b"),
+        (FramerType.ASCII, b":F7031389000A60\r\n"),
+    ])
+    def test_processIncomingFrame2(self, test_framer, msg):
+        """Test a tcp frame transaction."""
+        used_len, pdu = test_framer.processIncomingFrame(msg)
+        assert pdu
+        assert used_len == len(msg)
+
+    @pytest.mark.parametrize(("is_server"), [True])
+    @pytest.mark.parametrize(("half"), [False, True])
+    @pytest.mark.parametrize(("entry", "msg", "dev_id", "tid"), [
+        (FramerType.SOCKET, b"\x00\x01\x00\x00\x00\x06\xff\x02\x01\x02\x00\x08", 0xff, 1),
+        (FramerType.TLS, b"\x02\x01\x02\x00\x08", 0, 0),
+        (FramerType.RTU, b"\x00\x01\x00\x00\x00\x01\xfc\x1b", 0, 0),
+        (FramerType.ASCII, b":F7031389000A60\r\n", 0xf7, 0),
+    ])
+    def test_processIncomingFrame_roundtrip(self, entry, test_framer, msg, dev_id, tid, half):
+        """Test a tcp frame transaction."""
+        if half and entry != FramerType.TLS:
+            data_len = int(len(msg) / 2)
+            used_len, pdu = test_framer.processIncomingFrame(msg[:data_len])
+            assert not pdu
+            assert not used_len
+            used_len, result = test_framer.processIncomingFrame(msg)
+        else:
+            used_len, result = test_framer.processIncomingFrame(msg)
+        assert used_len == len(msg)
+        assert result
+        assert result.slave_id == dev_id
+        assert result.transaction_id == tid
+        assert not test_framer.databuffer
+        expected = test_framer.encode(
+            result.function_code.to_bytes(1,'big') + result.encode(),
+            dev_id, 1)
+        assert msg == expected
+
+    @pytest.mark.parametrize(("is_server"), [True])
+    @pytest.mark.parametrize(("entry", "msg"), [
+        (FramerType.SOCKET, b"\x00\x01\x00\x00\x00\x02\xff\x01"),
+        (FramerType.TLS, b"\x01"),
+        (FramerType.RTU, b"\xff\x01\x81\x80"),
+        (FramerType.ASCII, b":FF0100\r\n"),
+    ])
+    def test_framer_encode(self, test_framer, msg):
+        """Test a tcp frame transaction."""
+        with mock.patch.object(ModbusPDU, "encode") as mock_encode:
+            message = ModbusPDU()
+            message.setData(0, 0, False)
+            message.transaction_id = 0x0001
+            message.slave_id = 0xFF
+            message.function_code = 0x01
+            mock_encode.return_value = b""
+
+            actual = test_framer.buildFrame(message)
+            assert msg == actual
+
+
+
+#    @pytest.mark.parametrize(("entry"), list(FramerType))

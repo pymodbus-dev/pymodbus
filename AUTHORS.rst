@@ -10,6 +10,7 @@ Pymodbus version 3 family
 -------------------------
 Thanks to
 
+- ahcm-dev
 - AKJ7
 - Alex
 - Alex Ruddick
@@ -58,13 +59,12 @@ Thanks to
 - julian
 - Justin Standring
 - Kenny Johansson
-- Martyy
-- Matthias Straka
+- Kürşat Aktaş
 - laund
 - Logan Gunthorpe
 - Marko Luther
-- Logan Gunthorpe
-- Marko Luther
+- Martyy
+- Máté Szabó
 - Matthias Straka
 - Matthias Urlichs
 - Michel F

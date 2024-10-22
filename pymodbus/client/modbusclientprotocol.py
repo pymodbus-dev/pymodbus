@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from pymodbus.factory import ClientDecoder
 from pymodbus.framer import (
     FRAMER_NAME_TO_CLASS,
     FramerBase,
     FramerType,
 )
 from pymodbus.logging import Log
+from pymodbus.pdu import DecodePDU
 from pymodbus.transaction import ModbusTransactionManager
 from pymodbus.transport import CommParams, ModbusProtocol
 
@@ -35,7 +35,7 @@ class ModbusClientProtocol(ModbusProtocol):
         self.on_connect_callback = on_connect_callback
 
         # Common variables.
-        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(ClientDecoder(), [])
+        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(DecodePDU(False))
         self.transaction = ModbusTransactionManager()
 
     def _handle_response(self, reply):
@@ -68,8 +68,10 @@ class ModbusClientProtocol(ModbusProtocol):
 
         returns number of bytes consumed
         """
-        self.framer.processIncomingPacket(data, self._handle_response)
-        return len(data)
+        used_len, pdu = self.framer.processIncomingFrame(data)
+        if pdu:
+            self._handle_response(pdu)
+        return used_len
 
     def __str__(self):
         """Build a string representation of the connection.

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Build framer encode responses."""
 
-from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.framer import (
     FramerAscii,
     FramerRTU,
     FramerSocket,
     FramerTLS,
 )
+from pymodbus.pdu import DecodePDU
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.pdu.register_read_message import (
     ReadHoldingRegistersRequest,
@@ -23,23 +23,23 @@ def set_calls():
             print(f"  dev_id --> {dev_id}")
             for tid in (0, 3077):
                 print(f"    tid --> {tid}")
-                client = framer(ClientDecoder(), [0])
+                client = framer(DecodePDU(False))
                 request = ReadHoldingRegistersRequest(124, 2, dev_id)
                 request.transaction_id = tid
-                result = client.buildPacket(request)
+                result = client.buildFrame(request)
                 print(f"      request --> {result}")
                 print(f"      request --> {result.hex()}")
-                server = framer(ServerDecoder(), [0])
+                server = framer(DecodePDU(True))
                 response = ReadHoldingRegistersResponse([141,142])
                 response.slave_id = dev_id
                 response.transaction_id = tid
-                result = server.buildPacket(response)
+                result = server.buildFrame(response)
                 print(f"      response --> {result}")
                 print(f"      response --> {result.hex()}")
                 exception = request.doException(merror.IllegalAddress)
                 exception.transaction_id = tid
                 exception.slave_id = dev_id
-                result = server.buildPacket(exception)
+                result = server.buildFrame(exception)
                 print(f"      exception --> {result}")
                 print(f"      exception --> {result.hex()}")
 

@@ -15,6 +15,7 @@ from pymodbus.logging import Log
 class FramerAscii(FramerBase):
     r"""Modbus ASCII Frame Controller.
 
+    Layout::
         [ Start ][ Dev id ][ Function ][ Data ][ LRC ][ End ]
           1c       2c        2c          N*2c    1c     2c
 
@@ -32,44 +33,45 @@ class FramerAscii(FramerBase):
     MIN_SIZE = 10
 
 
-    def specific_decode(self, data: bytes, data_len: int) -> tuple[int, bytes]:
+    def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU."""
         used_len = 0
+        data_len = len(data)
         while True:
             if data_len - used_len < self.MIN_SIZE:
-                return used_len, self.EMPTY
+                Log.debug("Short frame: {} wait for more data", data, ":hex")
+                return used_len, 0, 0, self.EMPTY
             buffer = data[used_len:]
             if buffer[0:1] != self.START:
                 if (i := buffer.find(self.START)) == -1:
                     Log.debug("No frame start in data: {}, wait for data", data, ":hex")
-                    return data_len, self.EMPTY
+                    return data_len, 0, 0, self.EMPTY
                 used_len += i
                 continue
             if (end := buffer.find(self.END)) == -1:
                 Log.debug("Incomplete frame: {} wait for more data", data, ":hex")
-                return used_len, self.EMPTY
-            self.incoming_dev_id = int(buffer[1:3], 16)
-            self.incoming_tid = self.incoming_dev_id
+                return used_len, 0, 0, self.EMPTY
+            dev_id = int(buffer[1:3], 16)
             lrc = int(buffer[end - 2: end], 16)
             msg = a2b_hex(buffer[1 : end - 2])
             used_len += end + 2
             if not self.check_LRC(msg, lrc):
                 Log.debug("LRC wrong in frame: {} skipping", data, ":hex")
                 continue
-            return used_len, msg[1:]
+            return used_len, dev_id, 0, msg[1:]
 
     def encode(self, data: bytes, device_id: int, _tid: int) -> bytes:
         """Encode ADU."""
         dev_id = device_id.to_bytes(1,'big')
         checksum = self.compute_LRC(dev_id + data)
-        packet = (
+        frame = (
             self.START +
             f"{device_id:02x}".encode() +
             b2a_hex(data) +
             f"{checksum:02x}".encode() +
             self.END
         ).upper()
-        return packet
+        return frame
 
     @classmethod
     def compute_LRC(cls, data: bytes) -> int:

@@ -9,7 +9,7 @@ import struct
 
 from pymodbus.constants import ModbusStatus
 from pymodbus.device import DeviceInformationFactory, ModbusControlBlock
-from pymodbus.pdu import ModbusRequest, ModbusResponse
+from pymodbus.pdu.pdu import ModbusPDU
 
 
 _MCB = ModbusControlBlock()
@@ -18,7 +18,7 @@ _MCB = ModbusControlBlock()
 # ---------------------------------------------------------------------------#
 #  TODO Make these only work on serial # pylint: disable=fixme
 # ---------------------------------------------------------------------------#
-class ReadExceptionStatusRequest(ModbusRequest):
+class ReadExceptionStatusRequest(ModbusPDU):
     """This function code is used to read the contents of eight Exception Status outputs in a remote device.
 
     The function provides a simple method for
@@ -32,7 +32,8 @@ class ReadExceptionStatusRequest(ModbusRequest):
 
     def __init__(self, slave=None, transaction=0, skip_encode=0):
         """Initialize a new instance."""
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
 
     def encode(self):
         """Encode the message."""
@@ -44,7 +45,7 @@ class ReadExceptionStatusRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    async def execute(self, _context=None):
+    async def update_datastore(self, _context=None):  # pragma: no cover
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -53,14 +54,11 @@ class ReadExceptionStatusRequest(ModbusRequest):
         return ReadExceptionStatusResponse(status)
 
     def __str__(self):
-        """Build a representation of the request.
-
-        :returns: The string representation of the request
-        """
+        """Build a representation of the request."""
         return f"ReadExceptionStatusRequest({self.function_code})"
 
 
-class ReadExceptionStatusResponse(ModbusResponse):
+class ReadExceptionStatusResponse(ModbusPDU):
     """The normal response contains the status of the eight Exception Status outputs.
 
     The outputs are packed into one data byte, with one bit
@@ -77,7 +75,8 @@ class ReadExceptionStatusResponse(ModbusResponse):
 
         :param status: The status response to report
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.status = status if status < 256 else 255
 
     def encode(self):
@@ -95,10 +94,7 @@ class ReadExceptionStatusResponse(ModbusResponse):
         self.status = int(data[0])
 
     def __str__(self):
-        """Build a representation of the response.
-
-        :returns: The string representation of the response
-        """
+        """Build a representation of the response."""
         arguments = (self.function_code, self.status)
         return (
             "ReadExceptionStatusResponse(%d, %s)"  # pylint: disable=consider-using-f-string
@@ -113,7 +109,7 @@ class ReadExceptionStatusResponse(ModbusResponse):
 # ---------------------------------------------------------------------------#
 #  TODO Make these only work on serial # pylint: disable=fixme
 # ---------------------------------------------------------------------------#
-class GetCommEventCounterRequest(ModbusRequest):
+class GetCommEventCounterRequest(ModbusPDU):
     """This function code is used to get a status word.
 
     And an event count from the remote device's communication event counter.
@@ -137,7 +133,8 @@ class GetCommEventCounterRequest(ModbusRequest):
 
     def __init__(self, slave=1, transaction=0, skip_encode=False):
         """Initialize a new instance."""
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
 
     def encode(self):
         """Encode the message."""
@@ -149,7 +146,7 @@ class GetCommEventCounterRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    async def execute(self, _context=None):
+    async def update_datastore(self, _context=None):  # pragma: no cover
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -158,14 +155,11 @@ class GetCommEventCounterRequest(ModbusRequest):
         return GetCommEventCounterResponse(status)
 
     def __str__(self):
-        """Build a representation of the request.
-
-        :returns: The string representation of the request
-        """
+        """Build a representation of the request."""
         return f"GetCommEventCounterRequest({self.function_code})"
 
 
-class GetCommEventCounterResponse(ModbusResponse):
+class GetCommEventCounterResponse(ModbusPDU):
     """Get comm event counter response.
 
     The normal response contains a two-byte status word, and a two-byte
@@ -183,7 +177,8 @@ class GetCommEventCounterResponse(ModbusResponse):
 
         :param count: The current event counter value
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.count = count
         self.status = True  # this means we are ready, not waiting
 
@@ -192,10 +187,10 @@ class GetCommEventCounterResponse(ModbusResponse):
 
         :returns: The byte encoded message
         """
-        if self.status:
+        if self.status:  # pragma: no cover
             ready = ModbusStatus.READY
         else:
-            ready = ModbusStatus.WAITING
+            ready = ModbusStatus.WAITING  # pragma: no cover
         return struct.pack(">HH", ready, self.count)
 
     def decode(self, data):
@@ -207,10 +202,7 @@ class GetCommEventCounterResponse(ModbusResponse):
         self.status = ready == ModbusStatus.READY
 
     def __str__(self):
-        """Build a representation of the response.
-
-        :returns: The string representation of the response
-        """
+        """Build a representation of the response."""
         arguments = (self.function_code, self.count, self.status)
         return (
             "GetCommEventCounterResponse(%d, %d, %d)"  # pylint: disable=consider-using-f-string
@@ -221,7 +213,7 @@ class GetCommEventCounterResponse(ModbusResponse):
 # ---------------------------------------------------------------------------#
 #  TODO Make these only work on serial # pylint: disable=fixme
 # ---------------------------------------------------------------------------#
-class GetCommEventLogRequest(ModbusRequest):
+class GetCommEventLogRequest(ModbusPDU):
     """This function code is used to get a status word.
 
     Event count, message count, and a field of event bytes from the remote device.
@@ -248,7 +240,8 @@ class GetCommEventLogRequest(ModbusRequest):
 
     def __init__(self, slave=1, transaction=0, skip_encode=False):
         """Initialize a new instance."""
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
 
     def encode(self):
         """Encode the message."""
@@ -260,7 +253,7 @@ class GetCommEventLogRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    async def execute(self, _context=None):
+    async def update_datastore(self, _context=None):  # pragma: no cover
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -281,7 +274,7 @@ class GetCommEventLogRequest(ModbusRequest):
         return f"GetCommEventLogRequest({self.function_code})"
 
 
-class GetCommEventLogResponse(ModbusResponse):
+class GetCommEventLogResponse(ModbusPDU):
     """Get Comm event log response.
 
     The normal response contains a two-byte status word field,
@@ -301,7 +294,8 @@ class GetCommEventLogResponse(ModbusResponse):
         :param event_count: The current event count
         :param events: The collection of events to send
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.status = status
         self.message_count = message_count
         self.event_count = event_count
@@ -312,10 +306,10 @@ class GetCommEventLogResponse(ModbusResponse):
 
         :returns: The byte encoded message
         """
-        if self.status:
+        if self.status:  # pragma: no cover
             ready = ModbusStatus.READY
         else:
-            ready = ModbusStatus.WAITING
+            ready = ModbusStatus.WAITING  # pragma: no cover
         packet = struct.pack(">B", 6 + len(self.events))
         packet += struct.pack(">H", ready)
         packet += struct.pack(">HH", self.event_count, self.message_count)
@@ -357,7 +351,7 @@ class GetCommEventLogResponse(ModbusResponse):
 # ---------------------------------------------------------------------------#
 #  TODO Make these only work on serial # pylint: disable=fixme
 # ---------------------------------------------------------------------------#
-class ReportSlaveIdRequest(ModbusRequest):
+class ReportSlaveIdRequest(ModbusPDU):
     """This function code is used to read the description of the type.
 
     The current status, and other information specific to a remote device.
@@ -373,7 +367,8 @@ class ReportSlaveIdRequest(ModbusRequest):
         :param slave: Modbus slave slave ID
 
         """
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
 
     def encode(self):
         """Encode the message."""
@@ -385,7 +380,7 @@ class ReportSlaveIdRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    async def execute(self, context=None):
+    async def update_datastore(self, context=None):  # pragma: no cover
         """Run a report slave id request against the store.
 
         :returns: The populated response
@@ -417,7 +412,7 @@ class ReportSlaveIdRequest(ModbusRequest):
         return f"ReportSlaveIdRequest({self.function_code})"
 
 
-class ReportSlaveIdResponse(ModbusResponse):
+class ReportSlaveIdResponse(ModbusPDU):
     """Show response.
 
     The data contents are specific to each type of device.
@@ -432,7 +427,8 @@ class ReportSlaveIdResponse(ModbusResponse):
         :param identifier: The identifier of the slave
         :param status: The status response to report
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.identifier = identifier
         self.status = status
         self.byte_count = None
@@ -442,10 +438,10 @@ class ReportSlaveIdResponse(ModbusResponse):
 
         :returns: The byte encoded message
         """
-        if self.status:
+        if self.status:  # pragma: no cover
             status = ModbusStatus.SLAVE_ON
         else:
-            status = ModbusStatus.SLAVE_OFF
+            status = ModbusStatus.SLAVE_OFF  # pragma: no cover
         length = len(self.identifier) + 1
         packet = struct.pack(">B", length)
         packet += self.identifier  # we assume it is already encoded

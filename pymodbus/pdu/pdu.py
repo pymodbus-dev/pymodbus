@@ -1,149 +1,74 @@
 """Contains base classes for modbus request/response/error packets."""
+from __future__ import annotations
 
-
-# pylint: disable=missing-type-doc
+import asyncio
 import struct
+from abc import abstractmethod
 
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.logging import Log
-from pymodbus.utilities import rtuFrameSize
 
 
-# --------------------------------------------------------------------------- #
-# Base PDUs
-# --------------------------------------------------------------------------- #
 class ModbusPDU:
-    """Base class for all Modbus messages.
+    """Base class for all Modbus messages."""
 
-    .. attribute:: transaction_id
+    function_code: int = 0
+    sub_function_code: int = -1
+    _rtu_frame_size: int = 0
+    _rtu_byte_count_pos: int = 0
 
-       This value is used to uniquely identify a request
-       response pair.  It can be implemented as a simple counter
+    def __init__(self) -> None:
+        """Initialize the base data for a modbus request."""
+        self.transaction_id: int
+        self.slave_id: int
+        self.skip_encode: bool
+        self.bits: list[bool]
+        self.registers: list[int]
+        self.fut: asyncio.Future
 
-    .. attribute:: slave_id
-
-       This is used to route the request to the correct child. In
-       the TCP modbus, it is used for routing (or not used at all. However,
-       for the serial versions, it is used to specify which child to perform
-       the requests against. The value 0x00 represents the broadcast address
-       (also 0xff).
-
-    .. attribute:: check
-
-       This is used for LRC/CRC in the serial modbus protocols
-
-    .. attribute:: skip_encode
-
-       This is used when the message payload has already been encoded.
-       Generally this will occur when the PayloadBuilder is being used
-       to create a complicated message. By setting this to True, the
-       request will pass the currently encoded message through instead
-       of encoding it again.
-    """
-
-    def __init__(self, slave, transaction, skip_encode):
-        """Initialize the base data for a modbus request.
-
-        :param slave: Modbus slave slave ID
-
-        """
+    def setData(self, slave: int, transaction: int, skip_encode: bool) -> None:
+        """Set data common for all PDU."""
         self.transaction_id = transaction
         self.slave_id = slave
         self.skip_encode = skip_encode
-        self.check = 0x0000
 
-    def encode(self):
-        """Encode the message.
-
-        :raises: A not implemented exception
-        """
-        raise NotImplementedException()
-
-    def decode(self, data):
-        """Decode data part of the message.
-
-        :param data: is a string object
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException()
-
-    @classmethod
-    def calculateRtuFrameSize(cls, buffer):
-        """Calculate the size of a PDU.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes in the PDU.
-        :raises NotImplementedException:
-        """
-        if hasattr(cls, "_rtu_frame_size"):
-            return cls._rtu_frame_size
-        if hasattr(cls, "_rtu_byte_count_pos"):
-            return rtuFrameSize(buffer, cls._rtu_byte_count_pos)
-        raise NotImplementedException(
-            f"Cannot determine RTU frame size for {cls.__name__}"
-        )
-
-
-class ModbusRequest(ModbusPDU):
-    """Base class for a modbus request PDU."""
-
-    function_code = -1
-
-    def __init__(self, slave, transaction, skip_encode):
-        """Proxy to the lower level initializer.
-
-        :param slave: Modbus slave slave ID
-        """
-        super().__init__(slave, transaction, skip_encode)
-        self.fut = None
-
-    def doException(self, exception):
-        """Build an error response based on the function.
-
-        :param exception: The exception to return
-        :raises: An exception response
-        """
+    def doException(self, exception: int) -> ExceptionResponse:
+        """Build an error response based on the function."""
         exc = ExceptionResponse(self.function_code, exception)
         Log.error("Exception response {}", exc)
         return exc
-
-
-class ModbusResponse(ModbusPDU):
-    """Base class for a modbus response PDU.
-
-    .. attribute:: should_respond
-
-       A flag that indicates if this response returns a result back
-       to the client issuing the request
-
-    .. attribute:: _rtu_frame_size
-
-       Indicates the size of the modbus rtu response used for
-       calculating how much to read.
-    """
-
-    should_respond = True
-    function_code = 0x00
-
-    def __init__(self, slave, transaction, skip_encode):
-        """Proxy the lower level initializer.
-
-        :param slave: Modbus slave slave ID
-
-        """
-        super().__init__(slave, transaction, skip_encode)
-        self.bits = []
-        self.registers = []
-        self.request = None
 
     def isError(self) -> bool:
         """Check if the error is a success or failure."""
         return self.function_code > 0x80
 
+    def get_response_pdu_size(self) -> int:
+        """Calculate response pdu size."""
+        return 0
 
-# --------------------------------------------------------------------------- #
-# Exception PDUs
-# --------------------------------------------------------------------------- #
+    @abstractmethod
+    def encode(self) -> bytes:
+        """Encode the message."""
+
+    @abstractmethod
+    def decode(self, data: bytes) -> None:
+        """Decode data part of the message."""
+
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        if cls._rtu_frame_size:
+            return cls._rtu_frame_size
+        if cls._rtu_byte_count_pos:
+            if len(data) < cls._rtu_byte_count_pos +1:
+                return 0
+            return int(data[cls._rtu_byte_count_pos]) + cls._rtu_byte_count_pos + 3
+        raise NotImplementedException(
+            f"Cannot determine RTU frame size for {cls.__name__}"
+        )
+
+
 class ModbusExceptions:  # pylint: disable=too-few-public-methods
     """An enumeration of the valid modbus exceptions."""
 
@@ -159,11 +84,8 @@ class ModbusExceptions:  # pylint: disable=too-few-public-methods
     GatewayNoResponse = 0x0B
 
     @classmethod
-    def decode(cls, code):
-        """Give an error code, translate it to a string error name.
-
-        :param code: The code number to translate
-        """
+    def decode(cls, code: int) -> str | None:
+        """Give an error code, translate it to a string error name."""
         values = {
             v: k
             for k, v in iter(cls.__dict__.items())
@@ -172,78 +94,35 @@ class ModbusExceptions:  # pylint: disable=too-few-public-methods
         return values.get(code, None)
 
 
-class ExceptionResponse(ModbusResponse):
+class ExceptionResponse(ModbusPDU):
     """Base class for a modbus exception PDU."""
 
-    ExceptionOffset = 0x80
     _rtu_frame_size = 5
 
-    def __init__(self, function_code, exception_code=None, slave=1, transaction=0, skip_encode=False):
-        """Initialize the modbus exception response.
-
-        :param function_code: The function to build an exception response for
-        :param exception_code: The specific modbus exception to return
-        """
-        super().__init__(slave, transaction, skip_encode)
-        self.original_code = function_code
-        self.function_code = function_code | self.ExceptionOffset
+    def __init__(
+            self,
+            function_code: int,
+            exception_code: int = 0,
+            slave: int = 1,
+            transaction: int = 0,
+            skip_encode: bool = False) -> None:
+        """Initialize the modbus exception response."""
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
+        self.function_code = function_code | 0x80
         self.exception_code = exception_code
 
-    def encode(self):
-        """Encode a modbus exception response.
-
-        :returns: The encoded exception packet
-        """
+    def encode(self) -> bytes:
+        """Encode a modbus exception response."""
         return struct.pack(">B", self.exception_code)
 
-    def decode(self, data):
-        """Decode a modbus exception response.
-
-        :param data: The packet data to decode
-        """
+    def decode(self, data: bytes) -> None:
+        """Decode a modbus exception response."""
         self.exception_code = int(data[0])
 
-    def __str__(self):
-        """Build a representation of an exception response.
-
-        :returns: The string representation of an exception response
-        """
+    def __str__(self) -> str:
+        """Build a representation of an exception response."""
         message = ModbusExceptions.decode(self.exception_code)
-        parameters = (self.function_code, self.original_code, message)
         return (
-            "Exception Response(%d, %d, %s)"  # pylint: disable=consider-using-f-string
-            % parameters
+            f"Exception Response({self.function_code}, {self.function_code - 0x80}, {message})"
         )
-
-
-class IllegalFunctionRequest(ModbusRequest):
-    """Define the Modbus slave exception type "Illegal Function".
-
-    This exception code is returned if the slave::
-
-        - does not implement the function code **or**
-        - is not in a state that allows it to process the function
-    """
-
-    ErrorCode = 1
-
-    def __init__(self, function_code, slave, transaction, xskip_encode):
-        """Initialize a IllegalFunctionRequest.
-
-        :param function_code: The function we are erroring on
-        """
-        super().__init__(slave, transaction, xskip_encode)
-        self.function_code = function_code
-
-    def decode(self, _data):
-        """Decode so this failure will run correctly."""
-
-    def encode(self):
-        """Decode so this failure will run correctly."""
-
-    async def execute(self, _context):
-        """Build an illegal function request error response.
-
-        :returns: The error response packet
-        """
-        return ExceptionResponse(self.function_code, self.ErrorCode)

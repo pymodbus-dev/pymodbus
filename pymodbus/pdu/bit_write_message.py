@@ -8,8 +8,8 @@ TODO write mask request/response
 import struct
 
 from pymodbus.constants import ModbusStatus
-from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusRequest, ModbusResponse
+from pymodbus.pdu.pdu import ModbusExceptions as merror
+from pymodbus.pdu.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
@@ -22,7 +22,7 @@ _turn_coil_on = struct.pack(">H", ModbusStatus.ON)
 _turn_coil_off = struct.pack(">H", ModbusStatus.OFF)
 
 
-class WriteSingleCoilRequest(ModbusRequest):
+class WriteSingleCoilRequest(ModbusPDU):
     """This function code is used to write a single output to either ON or OFF in a remote device.
 
     The requested ON/OFF state is specified by a constant in the request
@@ -49,7 +49,8 @@ class WriteSingleCoilRequest(ModbusRequest):
         :param address: The variable address to write
         :param value: The value to write at address
         """
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.value = bool(value)
 
@@ -59,10 +60,10 @@ class WriteSingleCoilRequest(ModbusRequest):
         :returns: The byte encoded message
         """
         result = struct.pack(">H", self.address)
-        if self.value:
+        if self.value:  # pragma: no cover
             result += _turn_coil_on
         else:
-            result += _turn_coil_off
+            result += _turn_coil_off  # pragma: no cover
         return result
 
     def decode(self, data):
@@ -73,7 +74,7 @@ class WriteSingleCoilRequest(ModbusRequest):
         self.address, value = struct.unpack(">HH", data)
         self.value = value == ModbusStatus.ON
 
-    async def execute(self, context):
+    async def update_datastore(self, context):  # pragma: no cover
         """Run a write coil request against a datastore.
 
         :param context: The datastore to request from
@@ -97,14 +98,11 @@ class WriteSingleCoilRequest(ModbusRequest):
         return 1 + 2 + 2
 
     def __str__(self):
-        """Return a string representation of the instance.
-
-        :return: A string representation of the instance
-        """
+        """Return a string representation of the instance."""
         return f"WriteCoilRequest({self.address}, {self.value}) => "
 
 
-class WriteSingleCoilResponse(ModbusResponse):
+class WriteSingleCoilResponse(ModbusPDU):
     """The normal response is an echo of the request.
 
     Returned after the coil state has been written.
@@ -119,7 +117,8 @@ class WriteSingleCoilResponse(ModbusResponse):
         :param address: The variable address written to
         :param value: The value written at address
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.value = value
 
@@ -129,10 +128,10 @@ class WriteSingleCoilResponse(ModbusResponse):
         :return: The byte encoded message
         """
         result = struct.pack(">H", self.address)
-        if self.value:
+        if self.value:  # pragma: no cover
             result += _turn_coil_on
         else:
-            result += _turn_coil_off
+            result += _turn_coil_off  # pragma: no cover
         return result
 
     def decode(self, data):
@@ -151,7 +150,7 @@ class WriteSingleCoilResponse(ModbusResponse):
         return f"WriteCoilResponse({self.address}) => {self.value}"
 
 
-class WriteMultipleCoilsRequest(ModbusRequest):
+class WriteMultipleCoilsRequest(ModbusPDU):
     """This function code is used to forcea sequence of coils.
 
     To either ON or OFF in a remote device. The Request PDU specifies the coil
@@ -167,15 +166,16 @@ class WriteMultipleCoilsRequest(ModbusRequest):
     function_code_name = "write_coils"
     _rtu_byte_count_pos = 6
 
-    def __init__(self, address=None, values=None, slave=None, transaction=0, skip_encode=0):
+    def __init__(self, address=0, values=None, slave=None, transaction=0, skip_encode=0):
         """Initialize a new instance.
 
         :param address: The starting request address
         :param values: The values to write
         """
-        ModbusRequest.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
-        if values is None:
+        if values is None:  # pragma: no cover
             values = []
         elif not hasattr(values, "__iter__"):
             values = [values]
@@ -202,7 +202,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         values = unpack_bitstring(data[5:])
         self.values = values[:count]
 
-    async def execute(self, context):
+    async def update_datastore(self, context):  # pragma: no cover
         """Run a write coils request against a datastore.
 
         :param context: The datastore to request from
@@ -222,15 +222,8 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         return WriteMultipleCoilsResponse(self.address, count)
 
     def __str__(self):
-        """Return a string representation of the instance.
-
-        :returns: A string representation of the instance
-        """
-        params = (self.address, len(self.values))
-        return (
-            "WriteNCoilRequest (%d) => %d "  # pylint: disable=consider-using-f-string
-            % params
-        )
+        """Return a string representation of the instance."""
+        return f"WriteNCoilRequest ({self.address}) => {len(self.values)}"
 
     def get_response_pdu_size(self):
         """Get response pdu size.
@@ -241,7 +234,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         return 1 + 2 + 2
 
 
-class WriteMultipleCoilsResponse(ModbusResponse):
+class WriteMultipleCoilsResponse(ModbusPDU):
     """The normal response returns the function code.
 
     Starting address, and quantity of coils forced.
@@ -256,7 +249,8 @@ class WriteMultipleCoilsResponse(ModbusResponse):
         :param address: The starting variable address written to
         :param count: The number of values written
         """
-        ModbusResponse.__init__(self, slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.count = count
 
@@ -275,8 +269,5 @@ class WriteMultipleCoilsResponse(ModbusResponse):
         self.address, self.count = struct.unpack(">HH", data)
 
     def __str__(self):
-        """Return a string representation of the instance.
-
-        :returns: A string representation of the instance
-        """
+        """Return a string representation of the instance."""
         return f"WriteNCoilResponse({self.address}, {self.count})"

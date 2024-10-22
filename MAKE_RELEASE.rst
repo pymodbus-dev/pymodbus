@@ -14,9 +14,10 @@ Prepare/make release on dev.
    * Control / Update API_changes.rst
    * Update CHANGELOG.rst
       * Add commits from last release, but selectively !
-        git log --oneline v3.7.3..HEAD > commit.log
-        git log --pretty="%an" v3.7.3..HEAD | sort -uf > authors.log
+        git log --oneline v3.7.4..HEAD > commit.log
+        git log --pretty="%an" v3.7.4..HEAD | sort -uf > authors.log
         update AUTHORS.rst and CHANGELOG.rst
+        update roadmap.rst
         cd doc; ./build_html
    * rm -rf build/* dist/*
    * python3 -m build

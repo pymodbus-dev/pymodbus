@@ -4,11 +4,11 @@
 # pylint: disable=missing-type-doc
 import struct
 
-from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusRequest, ModbusResponse
+from pymodbus.pdu.pdu import ModbusExceptions as merror
+from pymodbus.pdu.pdu import ModbusPDU
 
 
-class WriteSingleRegisterRequest(ModbusRequest):
+class WriteSingleRegisterRequest(ModbusPDU):
     """This function code is used to write a single holding register in a remote device.
 
     The Request PDU specifies the address of the register to
@@ -26,7 +26,8 @@ class WriteSingleRegisterRequest(ModbusRequest):
         :param address: The address to start writing add
         :param value: The values to write
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.value = value
 
@@ -36,8 +37,8 @@ class WriteSingleRegisterRequest(ModbusRequest):
         :returns: The encoded packet
         """
         packet = struct.pack(">H", self.address)
-        if self.skip_encode:
-            packet += self.value
+        if self.skip_encode or isinstance(self.value, bytes):  # pragma: no cover
+            packet += self.value  # pragma: no cover
         else:
             packet += struct.pack(">H", self.value)
         return packet
@@ -49,7 +50,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
         """
         self.address, self.value = struct.unpack(">HH", data)
 
-    async def execute(self, context):
+    async def update_datastore(self, context):  # pragma: no cover
         """Run a write single register request against a datastore.
 
         :param context: The datastore to request from
@@ -82,7 +83,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
         return f"WriteRegisterRequest {self.address}"
 
 
-class WriteSingleRegisterResponse(ModbusResponse):
+class WriteSingleRegisterResponse(ModbusPDU):
     """The normal response is an echo of the request.
 
     Returned after the register contents have been written.
@@ -91,13 +92,14 @@ class WriteSingleRegisterResponse(ModbusResponse):
     function_code = 6
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address=0, value=0, slave=1, transaction=0, skip_encode=False):
         """Initialize a new instance.
 
         :param address: The address to start writing add
         :param value: The values to write
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.value = value
 
@@ -138,7 +140,7 @@ class WriteSingleRegisterResponse(ModbusResponse):
 # ---------------------------------------------------------------------------#
 #  Write Multiple Registers
 # ---------------------------------------------------------------------------#
-class WriteMultipleRegistersRequest(ModbusRequest):
+class WriteMultipleRegistersRequest(ModbusPDU):
     """This function code is used to write a block.
 
     Of contiguous registers (1 to approx. 120 registers) in a remote device.
@@ -152,13 +154,14 @@ class WriteMultipleRegistersRequest(ModbusRequest):
     _rtu_byte_count_pos = 6
     _pdu_length = 5  # func + adress1 + adress2 + outputQuant1 + outputQuant2
 
-    def __init__(self, address=None, values=None, slave=None, transaction=0, skip_encode=0):
+    def __init__(self, address=0, values=None, slave=None, transaction=0, skip_encode=0):
         """Initialize a new instance.
 
         :param address: The address to start writing to
         :param values: The values to write
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         if values is None:
             values = []
@@ -174,11 +177,14 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         :returns: The encoded packet
         """
         packet = struct.pack(">HHB", self.address, self.count, self.byte_count)
-        if self.skip_encode:
-            return packet + b"".join(self.values)
+        if self.skip_encode:  # pragma: no cover
+            return packet + b"".join(self.values)  # pragma: no cover
 
         for value in self.values:
-            packet += struct.pack(">H", value)
+            if isinstance(value, bytes):  # pragma: no cover
+                packet += value  # pragma: no cover
+            else:
+                packet += struct.pack(">H", value)
 
         return packet
 
@@ -192,7 +198,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         for idx in range(5, (self.count * 2) + 5, 2):
             self.values.append(struct.unpack(">H", data[idx : idx + 2])[0])
 
-    async def execute(self, context):
+    async def update_datastore(self, context):  # pragma: no cover
         """Run a write single register request against a datastore.
 
         :param context: The datastore to request from
@@ -230,7 +236,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         )
 
 
-class WriteMultipleRegistersResponse(ModbusResponse):
+class WriteMultipleRegistersResponse(ModbusPDU):
     """The normal response returns the function code.
 
     Starting address, and quantity of registers written.
@@ -239,13 +245,14 @@ class WriteMultipleRegistersResponse(ModbusResponse):
     function_code = 16
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, count=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address=0, count=0, slave=1, transaction=0, skip_encode=False):
         """Initialize a new instance.
 
         :param address: The address to start writing to
         :param count: The number of registers to write to
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.count = count
 
@@ -275,7 +282,7 @@ class WriteMultipleRegistersResponse(ModbusResponse):
         )
 
 
-class MaskWriteRegisterRequest(ModbusRequest):
+class MaskWriteRegisterRequest(ModbusPDU):
     """This function code is used to modify the contents.
 
     Of a specified holding register using a combination of an AND mask,
@@ -294,7 +301,8 @@ class MaskWriteRegisterRequest(ModbusRequest):
         :param and_mask: The and bitmask to apply to the register address
         :param or_mask: The or bitmask to apply to the register address
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.and_mask = and_mask
         self.or_mask = or_mask
@@ -313,7 +321,7 @@ class MaskWriteRegisterRequest(ModbusRequest):
         """
         self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data)
 
-    async def execute(self, context):
+    async def update_datastore(self, context):  # pragma: no cover
         """Run a mask write register request against the store.
 
         :param context: The datastore to request from
@@ -333,7 +341,7 @@ class MaskWriteRegisterRequest(ModbusRequest):
         return MaskWriteRegisterResponse(self.address, self.and_mask, self.or_mask)
 
 
-class MaskWriteRegisterResponse(ModbusResponse):
+class MaskWriteRegisterResponse(ModbusPDU):
     """The normal response is an echo of the request.
 
     The response is returned after the register has been written.
@@ -349,7 +357,8 @@ class MaskWriteRegisterResponse(ModbusResponse):
         :param and_mask: The and bitmask applied to the register address
         :param or_mask: The or bitmask applied to the register address
         """
-        super().__init__(slave, transaction, skip_encode)
+        super().__init__()
+        super().setData(slave, transaction, skip_encode)
         self.address = address
         self.and_mask = and_mask
         self.or_mask = or_mask

@@ -30,7 +30,7 @@ Current release is `3.7.4 <https://github.com/pymodbus-dev/pymodbus/releases/tag
 
 Bleeding edge (not released) is `dev <https://github.com/pymodbus-dev/pymodbus/tree/dev>`_.
 
-Waiting for v3.8.0 (not released) is `wait_next_API <https://github.com/pymodbus-dev/pymodbus/tree/wait_next_API>`_. This contains
+Waiting for v3.8.0 (not released) is `wait_next_api <https://github.com/pymodbus-dev/pymodbus/tree/wait_next_api>`_. This contains
 dev + merged pull requests that have API changes, and thus have to wait.
 
 All changes are described in `release notes <https://pymodbus.readthedocs.io/en/latest/source/changelog.html>`_

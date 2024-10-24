@@ -112,7 +112,7 @@ class FramerRTU(FramerBase):
             if data_len < used_len +size:
                 Log.debug("Frame - not ready")
                 return used_len, dev_id, 0, self.EMPTY
-            for test_len in range(data_len, used_len + size - 1):
+            for test_len in range(data_len, used_len + size - 1, -1):
                 start_crc = test_len -2
                 crc = data[start_crc : start_crc + 2]
                 crc_val = (int(crc[0]) << 8) + int(crc[1])

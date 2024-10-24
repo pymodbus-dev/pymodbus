@@ -136,7 +136,6 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
         self.client: ModbusBaseSyncClient = client
         self.retries = retries
         self._transaction_lock = RLock()
-        self._no_response_devices: list[int] = []
         self.databuffer = b''
         if client:
             self._set_adu_size()
@@ -185,17 +184,16 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                     "Current transaction state - {}",
                     ModbusTransactionState.to_string(self.client.state),
                 )
-                retries = self.retries
                 if isinstance(self.client.framer, FramerSocket):
                     request.transaction_id = self.getNextTID()
                 else:
                     request.transaction_id = 0
                 Log.debug("Running transaction {}", request.transaction_id)
                 if _buffer := hexlify_packets(
-                    self.client.framer.databuffer
+                    self.databuffer
                 ):
                     Log.debug("Clearing current Frame: - {}", _buffer)
-                    self.client.framer.databuffer = b''
+                    self.databuffer = b''
                 expected_response_length = None
                 if not isinstance(self.client.framer, FramerSocket):
                     response_pdu_size = request.get_response_pdu_size()
@@ -205,12 +203,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                         expected_response_length = (
                             self._calculate_response_length(response_pdu_size)
                         )
-                if (  # pylint: disable=simplifiable-if-statement
-                    request.slave_id in self._no_response_devices
-                ):
-                    full = True
-                else:
-                    full = False
+                full = False
                 if self.client.comm_params.comm_type == CommType.UDP:
                     full = True
                     if not expected_response_length:
@@ -223,20 +216,6 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 )
                 if no_response_expected:
                     return None
-                while retries > 0:
-                    if self._validate_response(response):
-                        if (
-                            request.slave_id in self._no_response_devices
-                            and response
-                        ):
-                            self._no_response_devices.remove(request.slave_id)
-                            Log.debug("Got response!!!")
-                        break
-                    if not response:
-                        if request.slave_id not in self._no_response_devices:
-                            self._no_response_devices.append(request.slave_id)
-                    # No response received and retries not enabled
-                    break
                 self.databuffer += response
                 used_len, pdu = self.client.framer.processIncomingFrame(self.databuffer)
                 self.databuffer = self.databuffer[used_len:]

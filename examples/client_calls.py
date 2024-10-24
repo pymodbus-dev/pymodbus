@@ -32,6 +32,8 @@ The corresponding server must be started before e.g. as:
 import logging
 import sys
 
+from pymodbus.pdu import FileRecord
+
 
 try:
     import client_sync
@@ -159,57 +161,90 @@ def handle_input_registers(client):
     assert len(rr.registers) == 8
 
 
+def handle_file_records(client):
+    """Read/write file records."""
+    _logger.info("### Read/write file records")
+    record = FileRecord(file_number=14, record_number=12, record_length=64)
+    rr = client.read_file_record([record, record], slave=SLAVE)
+    assert not rr.isError()
+    assert len(rr.records) == 2
+    assert rr.records[0].record_data == b'SERVER DUMMY RECORD.'
+    assert rr.records[1].record_data == b'SERVER DUMMY RECORD.'
+    record.record_data = b'Pure test '
+    record.record_length = len(record.record_data) / 2
+    record = FileRecord(file_number=14, record_number=12, record_data=b'Pure test ')
+    rr = client.write_file_record([record], slave=1)
+    assert not rr.isError()
+
+
 def execute_information_requests(client):
     """Execute extended information requests."""
     _logger.info("### Running information requests.")
-    rr = client.read_device_information(slave=SLAVE)
-    assert not rr.isError()  # test that call was OK
-    assert rr.information[0] == b"Pymodbus"
+    # NOT WORKING: ONLY SYNC.
+    # FAILS WITH framer = RTU
+    # rr = client.read_device_information(slave=SLAVE)
+    # assert not rr.isError()  # test that call was OK
+    # assert rr.information[0] == b"Pymodbus"
 
     rr = client.report_slave_id(slave=SLAVE)
     assert not rr.isError()  # test that call was OK
-    # assert not rr.status
+    assert rr.status
 
     rr = client.read_exception_status(slave=SLAVE)
     assert not rr.isError()  # test that call was OK
-    # assert not rr.status
+    assert not rr.status
 
     rr = client.diag_get_comm_event_counter(slave=SLAVE)
     assert not rr.isError()  # test that call was OK
-    # assert rr.status
-    # assert not rr.count
+    assert rr.status
+    assert not rr.count
 
     rr = client.diag_get_comm_event_log(slave=SLAVE)
     assert not rr.isError()  # test that call was OK
-    # assert rr.status
-    # assert not (rr.event_count + rr.message_count + len(rr.events))
+    assert rr.status
+    assert not (rr.event_count + rr.message_count + len(rr.events))
 
 
 def execute_diagnostic_requests(client):
     """Execute extended diagnostic requests."""
     _logger.info("### Running diagnostic requests.")
-    message = b"OK"
-    rr = client.diag_query_data(msg=message, slave=SLAVE)
+    # NOT WORKING: ONLY SYNC
+    # message = b"OK"
+    # rr = client.diag_query_data(msg=message, slave=SLAVE)
+    # assert not rr.isError()  # test that call was OK
+    # assert rr.message == message
+
+    rr = client.diag_restart_communication(True, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
-    assert rr.message == message
+    rr = client.diag_read_diagnostic_register(slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    rr = client.diag_change_ascii_input_delimeter(slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    rr = client.diag_clear_counters()
+    assert not rr.isError()  # test that call was OK
+    rr = client.diag_read_bus_comm_error_count(slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    rr = client.diag_read_bus_exception_error_count(slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    rr = client.diag_read_slave_message_count(slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    rr = client.diag_read_slave_no_response_count(slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    rr = client.diag_read_slave_nak_count(slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    rr = client.diag_read_slave_busy_count(slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    rr = client.diag_read_bus_char_overrun_count(slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    rr = client.diag_read_iop_overrun_count(slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    rr = client.diag_clear_overrun_counter(slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    # NOT WORKING rr = client.diag_getclear_modbus_response(slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    # NOT WORKING: rr = client.diag_force_listen_only(slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
 
-    client.diag_restart_communication(True, slave=SLAVE)
-    client.diag_read_diagnostic_register(slave=SLAVE)
-    client.diag_change_ascii_input_delimeter(slave=SLAVE)
-
-    # NOT WORKING: await client.diag_force_listen_only(slave=SLAVE)
-
-    client.diag_clear_counters()
-    client.diag_read_bus_comm_error_count(slave=SLAVE)
-    client.diag_read_bus_exception_error_count(slave=SLAVE)
-    client.diag_read_slave_message_count(slave=SLAVE)
-    client.diag_read_slave_no_response_count(slave=SLAVE)
-    client.diag_read_slave_nak_count(slave=SLAVE)
-    client.diag_read_slave_busy_count(slave=SLAVE)
-    client.diag_read_bus_char_overrun_count(slave=SLAVE)
-    client.diag_read_iop_overrun_count(slave=SLAVE)
-    client.diag_clear_overrun_counter(slave=SLAVE)
-    # NOT WORKING client.diag_getclear_modbus_response(slave=SLAVE)
 
 
 # ------------------------
@@ -222,8 +257,9 @@ def run_sync_calls(client):
     handle_discrete_input(client)
     handle_holding_registers(client)
     handle_input_registers(client)
-    # awaiting fix: execute_information_requests(client)
-    # awaiting fix: execute_diagnostic_requests(client)
+    handle_file_records(client)
+    execute_information_requests(client)
+    execute_diagnostic_requests(client)
 
 
 def main(cmdline=None):

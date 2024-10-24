@@ -41,27 +41,27 @@ class TestBitMessage:
         handle.decode(b"\x12\x34")
         assert handle.address == 0x1234
 
-    def test_read_fifo_queue_request(self):
+    async def test_read_fifo_queue_request(self):
         """Test basic bit message encoding/decoding."""
         context = MockContext()
         handle = ReadFifoQueueRequest(0x1234)
-        result = handle.update_datastore(context)
+        result = await handle.update_datastore(context)
         assert isinstance(result, ReadFifoQueueResponse)
 
         handle.address = -1
-        result = handle.update_datastore(context)
+        result = await handle.update_datastore(context)
         assert ModbusExceptions.IllegalValue == result.exception_code
 
         handle.values = [0x00] * 33
-        result = handle.update_datastore(context)
+        result = await handle.update_datastore(context)
         assert ModbusExceptions.IllegalValue == result.exception_code
 
-    def test_read_fifo_queue_request_error(self):
+    async def test_read_fifo_queue_request_error(self):
         """Test basic bit message encoding/decoding."""
         context = MockContext()
         handle = ReadFifoQueueRequest(0x1234)
         handle.values = [0x00] * 32
-        result = handle.update_datastore(context)
+        result = await handle.update_datastore(context)
         assert result.function_code == 0x98
 
     def test_read_fifo_queue_response_encode(self):
@@ -94,7 +94,6 @@ class TestBitMessage:
             file_number=0x01, record_number=0x02, record_data=b"\x00\x01\x02\x04"
         )
         assert record.record_length == 0x02
-        assert record.response_length == 0x05
 
     def test_file_record_compare(self):
         """Test file record comparison operations."""
@@ -148,10 +147,10 @@ class TestBitMessage:
         size = handle.calculateRtuFrameSize(request)
         assert size == 0x0E + 5
 
-    def test_read_file_record_request_update_datastore(self):
+    async def test_read_file_record_request_update_datastore(self):
         """Test basic bit message encoding/decoding."""
         handle = ReadFileRecordRequest()
-        result = handle.update_datastore(None)
+        result = await handle.update_datastore(None)
         assert isinstance(result, ReadFileRecordResponse)
 
     # -----------------------------------------------------------------------#
@@ -221,10 +220,10 @@ class TestBitMessage:
         size = handle.calculateRtuFrameSize(request)
         assert size == 0x0D + 5
 
-    def test_write_file_record_request_update_datastore(self):
+    async def test_write_file_record_request_update_datastore(self):
         """Test basic bit message encoding/decoding."""
         handle = WriteFileRecordRequest()
-        result = handle.update_datastore(None)
+        result = await handle.update_datastore(None)
         assert isinstance(result, WriteFileRecordResponse)
 
     # -----------------------------------------------------------------------#

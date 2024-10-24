@@ -367,22 +367,21 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_other_msg.ReportSlaveIdRequest(slave=slave))
 
-    def read_file_record(self, records: list[tuple], slave: int = 1, no_response_expected: bool = False) -> T:
+    def read_file_record(self, records: list[pdu_file_msg.FileRecord], slave: int = 1, no_response_expected: bool = False) -> T:
         """Read file record (code 0x14).
 
-        :param records: List of (Reference type, File number, Record Number, Record Length)
+        :param records: List of FileRecord (Reference type, File number, Record Number)
         :param slave: device id
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
         """
         return self.execute(no_response_expected, pdu_file_msg.ReadFileRecordRequest(records, slave=slave))
 
-    def write_file_record(self, records: list[tuple], slave: int = 1, no_response_expected: bool = False) -> T:
+    def write_file_record(self, records: list[pdu_file_msg.FileRecord], slave: int = 1, no_response_expected: bool = False) -> T:
         """Write file record (code 0x15).
 
-        :param records: List of (Reference type, File number, Record Number, Record Length)
+        :param records: List of File_record (Reference type, File number, Record Number, Record Length, Record Data)
         :param slave: (optional) Device id
-        :param no_response_expected: (optional) The client will not expect a response to the request
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
         """

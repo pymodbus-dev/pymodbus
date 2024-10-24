@@ -124,7 +124,6 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
     """
 
     function_code = 3
-    function_code_name = "read_holding_registers"
 
     def __init__(self, address=None, count=None, slave=1, transaction=0, skip_encode=0):
         """Initialize a new instance of the request.
@@ -186,7 +185,6 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
     """
 
     function_code = 4
-    function_code_name = "read_input_registers"
 
     def __init__(self, address=None, count=None, slave=1, transaction=0, skip_encode=0):
         """Initialize a new instance of the request.
@@ -254,7 +252,6 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
     """
 
     function_code = 23
-    function_code_name = "read_write_multiple_registers"
     _rtu_byte_count_pos = 10
 
     def __init__(self, read_address=0x00, read_count=0, write_address=0x00, write_registers=None, slave=1, transaction=0, skip_encode=False):

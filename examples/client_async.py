@@ -40,7 +40,6 @@ except ImportError:
     sys.exit(-1)
 
 import pymodbus.client as modbusClient
-from pymodbus import ModbusException
 
 
 _logger = logging.getLogger(__file__)
@@ -124,15 +123,11 @@ async def run_async_client(client, modbus_calls=None):
 
 async def run_a_few_calls(client):
     """Test connection works."""
-    try:
-        rr = await client.read_coils(32, 1, slave=1)
-        assert len(rr.bits) == 8
-        rr = await client.read_holding_registers(4, 2, slave=1)
-        assert rr.registers[0] == 17
-        assert rr.registers[1] == 17
-    except ModbusException:
-        pass
-
+    rr = await client.read_coils(32, 1, slave=1)
+    assert len(rr.bits) == 8
+    rr = await client.read_holding_registers(4, 2, slave=1)
+    assert rr.registers[0] == 17
+    assert rr.registers[1] == 17
 
 async def main(cmdline=None):
     """Combine setup and run."""

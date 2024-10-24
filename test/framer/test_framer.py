@@ -415,7 +415,6 @@ class TestFramerType:
         assert result
         assert result.slave_id == dev_id
         assert result.transaction_id == tid
-        assert not test_framer.databuffer
         expected = test_framer.encode(
             result.function_code.to_bytes(1,'big') + result.encode(),
             dev_id, 1)

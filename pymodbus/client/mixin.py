@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import struct
+from collections.abc import Sequence
 from enum import Enum
 from typing import Generic, TypeVar
 
@@ -341,7 +342,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     def write_registers(
         self,
         address: int,
-        values: list[bytes | int],
+        values: Sequence[bytes | int],
         slave: int = 1,
         skip_encode: bool = False,
         no_response_expected: bool = False

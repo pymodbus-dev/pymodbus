@@ -25,7 +25,7 @@ from pymodbus.framer import (
     FramerTLS,
 )
 from pymodbus.logging import Log
-from pymodbus.pdu import ModbusPDU
+from pymodbus.pdu import ExceptionResponse, ModbusPDU
 from pymodbus.transport import CommType
 from pymodbus.utilities import ModbusTransactionState, hexlify_packets
 
@@ -430,6 +430,6 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
         :raises IndexError: If not enough data to read byte count
         :return: Total frame size
         """
-        func_code = int(data[1])
-        pdu_class = self.client.framer.decoder.lookupPduClass(func_code)
+        if not (pdu_class := self.client.framer.decoder.lookupPduClass(data)):
+            pdu_class = ExceptionResponse
         return pdu_class.calculateRtuFrameSize(data)

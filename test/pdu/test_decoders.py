@@ -94,8 +94,11 @@ class TestModbusPDU:
     @pytest.mark.parametrize(("code", "frame"), list(responses) + list(exceptions))
     def test_client_lookup(self, code, frame):
         """Test lookup for responses."""
-        assert frame
-        assert self.client.lookupPduClass(code)
+        data = b'\x01' + frame
+        pdu = self.client.lookupPduClass(data)
+        assert pdu
+        if not code & 0x80:
+            assert pdu.function_code == code
 
     @pytest.mark.parametrize(("code", "frame"), list(requests))
     def test_server_lookup(self, code, frame):

@@ -27,7 +27,6 @@ class ReadExceptionStatusRequest(ModbusPDU):
     """
 
     function_code = 0x07
-    function_code_name = "read_exception_status"
     _rtu_frame_size = 4
 
     def __init__(self, slave=None, transaction=0, skip_encode=0):
@@ -128,7 +127,6 @@ class GetCommEventCounterRequest(ModbusPDU):
     """
 
     function_code = 0x0B
-    function_code_name = "get_event_counter"
     _rtu_frame_size = 4
 
     def __init__(self, slave=1, transaction=0, skip_encode=False):
@@ -235,7 +233,6 @@ class GetCommEventLogRequest(ModbusPDU):
     """
 
     function_code = 0x0C
-    function_code_name = "get_event_log"
     _rtu_frame_size = 4
 
     def __init__(self, slave=1, transaction=0, skip_encode=False):
@@ -358,7 +355,6 @@ class ReportSlaveIdRequest(ModbusPDU):
     """
 
     function_code = 0x11
-    function_code_name = "report_slave_id"
     _rtu_frame_size = 4
 
     def __init__(self, slave=1, transaction=0, skip_encode=False):

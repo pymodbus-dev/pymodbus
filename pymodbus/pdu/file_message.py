@@ -88,7 +88,6 @@ class ReadFileRecordRequest(ModbusPDU):
     """
 
     function_code = 0x14
-    function_code_name = "read_file_record"
     _rtu_byte_count_pos = 2
 
     def __init__(self, records: list[FileRecord] = [],  slave=1, transaction=0, skip_encode=False):  # pylint: disable=dangerous-default-value
@@ -207,7 +206,6 @@ class WriteFileRecordRequest(ModbusPDU):
     """
 
     function_code = 0x15
-    function_code_name = "write_file_record"
     _rtu_byte_count_pos = 2
 
     def __init__(self, records: list[FileRecord] = [], slave=1, transaction=0, skip_encode=False):  # pylint: disable=dangerous-default-value
@@ -333,7 +331,6 @@ class ReadFifoQueueRequest(ModbusPDU):
     """
 
     function_code = 0x18
-    function_code_name = "read_fifo_queue"
     _rtu_frame_size = 6
 
     def __init__(self, address=0x0000, slave=1, transaction=0, skip_encode=False):

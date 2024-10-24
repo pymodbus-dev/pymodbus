@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import struct
 from enum import Enum
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Sequence
 
 import pymodbus.pdu.bit_read_message as pdu_bit_read
 import pymodbus.pdu.bit_write_message as pdu_bit_write
@@ -341,7 +341,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     def write_registers(
         self,
         address: int,
-        values: list[bytes | int],
+        values: Sequence[bytes | int],
         slave: int = 1,
         skip_encode: bool = False,
         no_response_expected: bool = False

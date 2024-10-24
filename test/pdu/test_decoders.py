@@ -94,14 +94,20 @@ class TestModbusPDU:
     @pytest.mark.parametrize(("code", "frame"), list(responses) + list(exceptions))
     def test_client_lookup(self, code, frame):
         """Test lookup for responses."""
-        assert frame
-        assert self.client.lookupPduClass(code)
+        data = b'\x01' + frame
+        pdu = self.client.lookupPduClass(data)
+        assert pdu
+        if not code & 0x80:
+            assert pdu.function_code == code
 
     @pytest.mark.parametrize(("code", "frame"), list(requests))
     def test_server_lookup(self, code, frame):
         """Test lookup for requests."""
-        assert frame
-        assert self.server.lookupPduClass(code)
+        data = b'\x01' + frame
+        pdu = self.client.lookupPduClass(data)
+        assert pdu
+        if not code & 0x80:
+            assert pdu.function_code == code
 
     @pytest.mark.parametrize(("code", "frame"), list(responses) + list(exceptions))
     def test_client_decode(self, code, frame):
@@ -132,10 +138,11 @@ class TestModbusPDU:
         class CustomRequestResponse(ModbusPDU):
             """Custom request."""
 
-            function_code = 0xF0
+            function_code = 0x70
 
             def encode(self):
                 """Encode."""
+                return self.function_code.to_bytes(1, 'big') + b'123'
 
             def decode(self, _data):
                 """Decode."""
@@ -143,7 +150,7 @@ class TestModbusPDU:
         class NoCustomRequestResponse:
             """Custom request."""
 
-            function_code = 0xF0
+            function_code = 0x70
 
             def encode(self):
                 """Encode."""
@@ -152,11 +159,13 @@ class TestModbusPDU:
                 """Decode."""
 
         decoder.register(CustomRequestResponse)
-        assert decoder.lookupPduClass(CustomRequestResponse.function_code)
+        data = b'\x01' + CustomRequestResponse().encode()
+        assert decoder.lookupPduClass(data)
         CustomRequestResponse.sub_function_code = 0xF7
         decoder.register(CustomRequestResponse)
         CustomRequestResponse.sub_function_code = 0xF4
         decoder.register(CustomRequestResponse)
-        assert self.server.lookupPduClass(CustomRequestResponse.function_code)
+        data = b'\x01' + CustomRequestResponse().encode()
+        assert self.server.lookupPduClass(data)
         with pytest.raises(MessageRegisterException):
             decoder.register(NoCustomRequestResponse)

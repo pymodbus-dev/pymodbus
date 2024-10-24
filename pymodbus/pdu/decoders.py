@@ -64,13 +64,25 @@ class DecodePDU:
         """Initialize function_tables."""
         inx = 0 if is_server else 1
         self.lookup: dict[int, type[base.ModbusPDU]] = {cl[inx].function_code: cl[inx] for cl in self._pdu_class_table}
-        self.sub_lookup: dict[int, dict[int, type[base.ModbusPDU]]] = {f: {} for f in self.lookup}
+        self.sub_lookup: dict[int, dict[int, type[base.ModbusPDU]]] = {}
         for f in self._pdu_sub_class_table:
-            self.sub_lookup[f[inx].function_code][f[inx].sub_function_code] = f[inx]
+            if (function_code := f[inx].function_code) not in self.sub_lookup:
+                self.sub_lookup[function_code] = {f[inx].sub_function_code: f[inx]}
+            else:
+                self.sub_lookup[function_code][f[inx].sub_function_code] = f[inx]
 
-    def lookupPduClass(self, function_code: int) -> type[base.ModbusPDU]:
+    def lookupPduClass(self, data: bytes) -> type[base.ModbusPDU] | None:
         """Use `function_code` to determine the class of the PDU."""
-        return self.lookup.get(function_code, base.ExceptionResponse)
+        func_code = int(data[1])
+        if func_code & 0x80:
+            return base.ExceptionResponse
+        if func_code == 0x2B:  # mei message, sub_function_code is 1 byte
+            sub_func_code = int(data[2])
+            return self.sub_lookup[func_code].get(sub_func_code, None)
+        if func_code == 0x08:  # diag message,  sub_function_code is 2 bytes
+            sub_func_code = int(data[3])
+            return self.sub_lookup[func_code].get(sub_func_code, None)
+        return self.lookup.get(func_code, None)
 
     def register(self, custom_class: type[base.ModbusPDU]) -> None:
         """Register a function and sub function class with the decoder."""

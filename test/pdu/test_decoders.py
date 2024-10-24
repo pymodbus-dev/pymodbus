@@ -142,7 +142,7 @@ class TestModbusPDU:
 
             def encode(self):
                 """Encode."""
-                return self.function_code.to_bytes(1) + b'123'
+                return self.function_code.to_bytes(1, 'big') + b'123'
 
             def decode(self, _data):
                 """Decode."""

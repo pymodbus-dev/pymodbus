@@ -32,6 +32,8 @@ The corresponding server must be started before e.g. as:
 import logging
 import sys
 
+from pymodbus.pdu import FileRecord
+
 
 try:
     import client_sync
@@ -159,10 +161,20 @@ def handle_input_registers(client):
     assert len(rr.registers) == 8
 
 
-def handle_file_records(_client):
+def handle_file_records(client):
     """Read/write file records."""
     _logger.info("### Read/write file records")
-    # NOT WORKING:
+    record = FileRecord(file_number=14, record_number=12, record_length=64)
+    rr = client.read_file_record([record, record], slave=SLAVE)
+    assert not rr.isError()
+    assert len(rr.records) == 2
+    assert rr.records[0].record_data == b'SERVER DUMMY RECORD.'
+    assert rr.records[1].record_data == b'SERVER DUMMY RECORD.'
+    record.record_data = b'Pure test '
+    record.record_length = len(record.record_data) / 2
+    record = FileRecord(file_number=14, record_number=12, record_data=b'Pure test ')
+    rr = client.write_file_record([record], slave=1)
+    assert not rr.isError()
 
 
 def execute_information_requests(client):

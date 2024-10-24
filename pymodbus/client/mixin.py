@@ -3,7 +3,8 @@ from __future__ import annotations
 
 import struct
 from enum import Enum
-from typing import Generic, TypeVar, Sequence
+from typing import Generic, TypeVar
+from collections.abc import Sequence
 
 import pymodbus.pdu.bit_read_message as pdu_bit_read
 import pymodbus.pdu.bit_write_message as pdu_bit_write

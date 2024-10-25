@@ -43,6 +43,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
             timeout_connect=0.0,
             host=owner.comm_params.source_address[0],
             port=owner.comm_params.source_address[1],
+            handle_local_echo=owner.comm_params.handle_local_echo,
         )
         super().__init__(params, True)
         self.server = owner
@@ -542,6 +543,7 @@ class ModbusSerialServer(ModbusBaseServer):
                 parity=kwargs.get("parity", "N"),
                 baudrate=kwargs.get("baudrate", 19200),
                 stopbits=kwargs.get("stopbits", 1),
+                handle_local_echo=kwargs.get("handle_local_echo", False)
             ),
             context=context,
             ignore_missing_slaves=kwargs.get("ignore_missing_slaves", False),

@@ -32,7 +32,7 @@ class ReadExceptionStatusRequest(ModbusPDU):
     def __init__(self, slave=None, transaction=0, skip_encode=0):
         """Initialize a new instance."""
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
 
     def encode(self):
         """Encode the message."""
@@ -44,7 +44,7 @@ class ReadExceptionStatusRequest(ModbusPDU):
         :param data: The incoming data
         """
 
-    async def update_datastore(self, _context=None):  # pragma: no cover
+    async def update_datastore(self, _context=None):
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -75,7 +75,7 @@ class ReadExceptionStatusResponse(ModbusPDU):
         :param status: The status response to report
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.status = status if status < 256 else 255
 
     def encode(self):
@@ -132,7 +132,7 @@ class GetCommEventCounterRequest(ModbusPDU):
     def __init__(self, slave=1, transaction=0, skip_encode=False):
         """Initialize a new instance."""
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
 
     def encode(self):
         """Encode the message."""
@@ -144,7 +144,7 @@ class GetCommEventCounterRequest(ModbusPDU):
         :param data: The incoming data
         """
 
-    async def update_datastore(self, _context=None):  # pragma: no cover
+    async def update_datastore(self, _context=None):
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -176,7 +176,7 @@ class GetCommEventCounterResponse(ModbusPDU):
         :param count: The current event counter value
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.count = count
         self.status = True  # this means we are ready, not waiting
 
@@ -185,10 +185,10 @@ class GetCommEventCounterResponse(ModbusPDU):
 
         :returns: The byte encoded message
         """
-        if self.status:  # pragma: no cover
+        if self.status:
             ready = ModbusStatus.READY
         else:
-            ready = ModbusStatus.WAITING  # pragma: no cover
+            ready = ModbusStatus.WAITING
         return struct.pack(">HH", ready, self.count)
 
     def decode(self, data):
@@ -238,7 +238,7 @@ class GetCommEventLogRequest(ModbusPDU):
     def __init__(self, slave=1, transaction=0, skip_encode=False):
         """Initialize a new instance."""
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
 
     def encode(self):
         """Encode the message."""
@@ -250,7 +250,7 @@ class GetCommEventLogRequest(ModbusPDU):
         :param data: The incoming data
         """
 
-    async def update_datastore(self, _context=None):  # pragma: no cover
+    async def update_datastore(self, _context=None):
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -292,7 +292,7 @@ class GetCommEventLogResponse(ModbusPDU):
         :param events: The collection of events to send
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.status = status
         self.message_count = message_count
         self.event_count = event_count
@@ -303,10 +303,10 @@ class GetCommEventLogResponse(ModbusPDU):
 
         :returns: The byte encoded message
         """
-        if self.status:  # pragma: no cover
+        if self.status:
             ready = ModbusStatus.READY
         else:
-            ready = ModbusStatus.WAITING  # pragma: no cover
+            ready = ModbusStatus.WAITING
         packet = struct.pack(">B", 6 + len(self.events))
         packet += struct.pack(">H", ready)
         packet += struct.pack(">HH", self.event_count, self.message_count)
@@ -364,7 +364,7 @@ class ReportSlaveIdRequest(ModbusPDU):
 
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
 
     def encode(self):
         """Encode the message."""
@@ -376,7 +376,7 @@ class ReportSlaveIdRequest(ModbusPDU):
         :param data: The incoming data
         """
 
-    async def update_datastore(self, context=None):  # pragma: no cover
+    async def update_datastore(self, context=None):
         """Run a report slave id request against the store.
 
         :returns: The populated response
@@ -424,7 +424,7 @@ class ReportSlaveIdResponse(ModbusPDU):
         :param status: The status response to report
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.identifier = identifier
         self.status = status
         self.byte_count = None
@@ -434,10 +434,10 @@ class ReportSlaveIdResponse(ModbusPDU):
 
         :returns: The byte encoded message
         """
-        if self.status:  # pragma: no cover
+        if self.status:
             status = ModbusStatus.SLAVE_ON
         else:
-            status = ModbusStatus.SLAVE_OFF  # pragma: no cover
+            status = ModbusStatus.SLAVE_OFF
         length = len(self.identifier) + 1
         packet = struct.pack(">B", length)
         packet += self.identifier  # we assume it is already encoded

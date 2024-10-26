@@ -80,10 +80,9 @@ class TestTransportSerial:
         assert protocol
         transport.close()
 
+    @pytest.mark.skipif(SerialTransport.force_poll, reason="Serial poll not supported")
     async def test_force_poll(self):
         """Test external methods."""
-        if SerialTransport.force_poll:  # pragma: no cover
-            return
         SerialTransport.force_poll = True
         transport, protocol = await create_serial_connection(
             asyncio.get_running_loop(), mock.Mock, "dummy"
@@ -94,10 +93,9 @@ class TestTransportSerial:
         transport.close()
         SerialTransport.force_poll = False
 
+    @pytest.mark.skipif(SerialTransport.force_poll, reason="Serial poll not supported")
     async def test_write_force_poll(self):
         """Test write with poll."""
-        if SerialTransport.force_poll:  # pragma: no cover
-            return
         SerialTransport.force_poll = True
         transport, protocol = await create_serial_connection(
             asyncio.get_running_loop(), mock.Mock, "dummy"

@@ -40,7 +40,7 @@ class FileRecord:  # pylint: disable=eq-without-hash
 
     def __eq__(self, relf):
         """Compare the left object to the right."""
-        return (  # pragma: no cover
+        return (
             self.file_number == relf.file_number
             and self.record_number == relf.record_number
             and self.record_length == relf.record_length
@@ -49,9 +49,9 @@ class FileRecord:  # pylint: disable=eq-without-hash
 
     def __ne__(self, relf):
         """Compare the left object to the right."""
-        return not self.__eq__(relf)  # pragma: no cover
+        return not self.__eq__(relf)
 
-    def __repr__(self):  # pragma: no cover
+    def __repr__(self):
         """Give a representation of the file record."""
         params = (self.file_number, self.record_number, self.record_length)
         return (
@@ -96,7 +96,7 @@ class ReadFileRecordRequest(ModbusPDU):
         :param records: The file record requests to be read
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.records = records
 
     def encode(self):
@@ -131,7 +131,11 @@ class ReadFileRecordRequest(ModbusPDU):
             )
             self.records.append(record)
 
-    async def update_datastore(self, _context):  # pragma: no cover
+    def get_response_pdu_size(self):
+        """Get response pdu size."""
+        return 0 # 1 + 7 * len(self.records)
+
+    async def update_datastore(self, _context):
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -160,7 +164,7 @@ class ReadFileRecordResponse(ModbusPDU):
         :param records: The requested file records
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.records = records
 
     def encode(self):
@@ -214,7 +218,7 @@ class WriteFileRecordRequest(ModbusPDU):
         :param records: The file record requests to be read
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.records = records
 
     def encode(self):
@@ -255,7 +259,11 @@ class WriteFileRecordRequest(ModbusPDU):
             record.record_length = decoded[3]
             self.records.append(record)
 
-    async def update_datastore(self, _context):  # pragma: no cover
+    def get_response_pdu_size(self):
+        """Get response pdu size."""
+        return 0 # 1 + 7 * len(self.records)
+
+    async def update_datastore(self, _context):
         """Run the write file record request against the context.
 
         :returns: The populated response
@@ -275,7 +283,7 @@ class WriteFileRecordResponse(ModbusPDU):
         :param records: The file record requests to be read
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.records = records
 
     def encode(self):
@@ -339,7 +347,7 @@ class ReadFifoQueueRequest(ModbusPDU):
         :param address: The fifo pointer address (0x0000 to 0xffff)
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.address = address
         self.values = []  # this should be added to the context
 
@@ -357,7 +365,11 @@ class ReadFifoQueueRequest(ModbusPDU):
         """
         self.address = struct.unpack(">H", data)[0]
 
-    async def update_datastore(self, _context):  # pragma: no cover
+    def get_response_pdu_size(self):
+        """Get response pdu size."""
+        return 0 # 1 + 7 * len(self.records)
+
+    async def update_datastore(self, _context):
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -385,7 +397,7 @@ class ReadFifoQueueResponse(ModbusPDU):
     function_code = 0x18
 
     @classmethod
-    def calculateRtuFrameSize(cls, buffer):  # pragma: no cover
+    def calculateRtuFrameSize(cls, buffer):
         """Calculate the size of the message.
 
         :param buffer: A buffer containing the data that have been received.
@@ -401,7 +413,7 @@ class ReadFifoQueueResponse(ModbusPDU):
         :param values: The list of values of the fifo to return
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.values = values or []
 
     def encode(self):
@@ -422,6 +434,6 @@ class ReadFifoQueueResponse(ModbusPDU):
         """
         self.values = []
         _, count = struct.unpack(">HH", data[0:4])
-        for index in range(0, count - 4):  # pragma: no cover
+        for index in range(0, count - 4):
             idx = 4 + index * 2
             self.values.append(struct.unpack(">H", data[idx : idx + 2])[0])

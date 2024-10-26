@@ -106,8 +106,7 @@ class TestModbusPDU:
         data = b'\x01' + frame
         pdu = self.client.lookupPduClass(data)
         assert pdu
-        if not code & 0x80:
-            assert pdu.function_code == code
+        assert pdu.function_code == code
 
     @pytest.mark.parametrize(("code", "frame"), list(responses) + list(exceptions))
     def test_client_decode(self, code, frame):

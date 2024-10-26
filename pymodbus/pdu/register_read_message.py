@@ -22,7 +22,7 @@ class ReadRegistersRequestBase(ModbusPDU):
         :param slave: Modbus slave slave ID
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.address = address
         self.count = count
 
@@ -70,7 +70,7 @@ class ReadRegistersResponseBase(ModbusPDU):
         :param slave: Modbus slave slave ID
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
 
         #: A list of register values
         self.registers = values or []
@@ -91,8 +91,8 @@ class ReadRegistersResponseBase(ModbusPDU):
         :param data: The request to decode
         """
         byte_count = int(data[0])
-        if byte_count < 2 or byte_count > 252 or byte_count % 2 == 1 or byte_count != len(data) - 1:  # pragma: no cover
-            raise ModbusIOException(f"Invalid response {data} has byte count of {byte_count}")  # pragma: no cover
+        if byte_count < 2 or byte_count > 252 or byte_count % 2 == 1 or byte_count != len(data) - 1:
+            raise ModbusIOException(f"Invalid response {data} has byte count of {byte_count}")
         self.registers = []
         for i in range(1, byte_count + 1, 2):
             self.registers.append(struct.unpack(">H", data[i : i + 2])[0])
@@ -103,7 +103,7 @@ class ReadRegistersResponseBase(ModbusPDU):
         :param index: The indexed register to retrieve
         :returns: The request register
         """
-        return self.registers[index]  # pragma: no cover
+        return self.registers[index]
 
     def __str__(self):
         """Return a string representation of the instance.
@@ -134,7 +134,7 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
         """
         super().__init__(address, count, slave, transaction, skip_encode)
 
-    async def update_datastore(self, context):  # pragma: no cover
+    async def update_datastore(self, context):
         """Run a read holding request against a datastore.
 
         :param context: The datastore to request from
@@ -195,7 +195,7 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
         """
         super().__init__(address, count, slave, transaction, skip_encode)
 
-    async def update_datastore(self, context):  # pragma: no cover
+    async def update_datastore(self, context):
         """Run a read input request against a datastore.
 
         :param context: The datastore to request from
@@ -263,7 +263,7 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         :param write_registers: The registers to write to the specified address
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.read_address = read_address
         self.read_count = read_count
         self.write_address = write_address
@@ -307,7 +307,7 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
             register = struct.unpack(">H", data[i : i + 2])[0]
             self.write_registers.append(register)
 
-    async def update_datastore(self, context):  # pragma: no cover
+    async def update_datastore(self, context):
         """Run a write single register request against a datastore.
 
         :param context: The datastore to request from

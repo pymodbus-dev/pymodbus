@@ -26,7 +26,7 @@ class ModbusPDU:
         self.registers: list[int]
         self.fut: asyncio.Future
 
-    def setData(self, slave: int, transaction: int, skip_encode: bool) -> None:
+    def setBaseData(self, slave: int, transaction: int, skip_encode: bool) -> None:
         """Set data common for all PDU."""
         self.transaction_id = transaction
         self.slave_id = slave
@@ -108,7 +108,7 @@ class ExceptionResponse(ModbusPDU):
             skip_encode: bool = False) -> None:
         """Initialize the modbus exception response."""
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.function_code = function_code | 0x80
         self.exception_code = exception_code
 

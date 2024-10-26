@@ -1,5 +1,4 @@
 """Test server working as slave on a multidrop RS485 line."""
-from unittest import mock
 
 import pytest
 
@@ -17,11 +16,6 @@ class TestMultidrop:
     def fixture_framer(self):
         """Prepare framer."""
         return FramerRTU(DecodePDU(True))
-
-    @pytest.fixture(name="callback")
-    def fixture_callback(self):
-        """Prepare dummy callback."""
-        return mock.Mock()
 
     def test_ok_frame(self, framer):
         """Test ok frame."""

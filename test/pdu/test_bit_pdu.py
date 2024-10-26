@@ -13,8 +13,6 @@ from pymodbus.pdu.bit_read_message import (
     ReadBitsResponseBase,
     ReadCoilsRequest,
     ReadDiscreteInputsRequest,
-)
-from pymodbus.pdu.bit_write_message import (
     WriteMultipleCoilsRequest,
     WriteMultipleCoilsResponse,
     WriteSingleCoilRequest,
@@ -97,7 +95,7 @@ class TestModbusBitMessage:
             pdu_len = request.get_response_pdu_size()
             assert pdu_len == expected
 
-class TestModbusBitMessage:
+class TestModbusBitWriteMessage:
     """Modbus bit write message tests."""
 
     def test_bit_write_base_requests(self):
@@ -113,7 +111,7 @@ class TestModbusBitMessage:
         for request, expected in iter(messages.items()):
             assert request.encode() == expected
 
-    def test_bit_write_message_get_response_pdu(self):
+    def test_write_message_get_response_pdu(self):
         """Test bit write message."""
         requests = {WriteSingleCoilRequest(1, 0xABCD): 5}
         for request, expected in iter(requests.items()):

@@ -7,7 +7,6 @@ from enum import Enum
 from typing import Generic, TypeVar
 
 import pymodbus.pdu.bit_read_message as pdu_bit_read
-import pymodbus.pdu.bit_write_message as pdu_bit_write
 import pymodbus.pdu.diag_message as pdu_diag
 import pymodbus.pdu.file_message as pdu_file_msg
 import pymodbus.pdu.mei_message as pdu_mei
@@ -127,7 +126,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
         """
-        return self.execute(no_response_expected, pdu_bit_write.WriteSingleCoilRequest(address, value, slave=slave))
+        return self.execute(no_response_expected, pdu_bit_read.WriteSingleCoilRequest(address, value, slave=slave))
 
     def write_register(self, address: int, value: bytes | int, slave: int = 1, no_response_expected: bool = False) -> T:
         """Write register (code 0x06).
@@ -337,7 +336,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
         """
-        return self.execute(no_response_expected, pdu_bit_write.WriteMultipleCoilsRequest(address, values=values, slave=slave))
+        return self.execute(no_response_expected, pdu_bit_read.WriteMultipleCoilsRequest(address, values=values, slave=slave))
 
     def write_registers(
         self,

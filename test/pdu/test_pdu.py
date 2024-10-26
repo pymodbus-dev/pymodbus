@@ -2,7 +2,6 @@
 import pytest
 
 import pymodbus.pdu.bit_read_message as bit_r_msg
-import pymodbus.pdu.bit_write_message as bit_w_msg
 import pymodbus.pdu.diag_message as diag_msg
 import pymodbus.pdu.file_message as file_msg
 import pymodbus.pdu.mei_message as mei_msg
@@ -86,8 +85,8 @@ class TestPdu:
     requests = [
         (bit_r_msg.ReadCoilsRequest, (), {"address": 117, "count": 3}, b'\x01\x00\x75\x00\x03'),
         (bit_r_msg.ReadDiscreteInputsRequest, (), {"address": 117, "count": 3}, b'\x02\x00\x75\x00\x03'),
-        (bit_w_msg.WriteSingleCoilRequest, (), {"address": 117, "value": True}, b'\x05\x00\x75\xff\x00'),
-        (bit_w_msg.WriteMultipleCoilsRequest, (), {"address": 117, "values": [True, False, True]}, b'\x0f\x00\x75\x00\x03\x01\x05'),
+        (bit_r_msg.WriteSingleCoilRequest, (), {"address": 117, "value": True}, b'\x05\x00\x75\xff\x00'),
+        (bit_r_msg.WriteMultipleCoilsRequest, (), {"address": 117, "values": [True, False, True]}, b'\x0f\x00\x75\x00\x03\x01\x05'),
         (diag_msg.DiagnosticStatusRequest, (), {}, b'\x08\x27\x0f'),
         (diag_msg.DiagnosticStatusSimpleRequest, (), {"data": 0x1010}, b'\x08\x27\x0f\x10\x10'),
         (diag_msg.ReturnQueryDataRequest, (), {"message": b'\x10\x01'}, b'\x08\x00\x00\x10\x01'),
@@ -126,8 +125,8 @@ class TestPdu:
     responses = [
         (bit_r_msg.ReadCoilsResponse, (), {"values": [3, 17]}, b'\x01\x01\x03'),
         (bit_r_msg.ReadDiscreteInputsResponse, (), {"values": [3, 17]}, b'\x02\x01\x03'),
-        (bit_w_msg.WriteSingleCoilResponse, (), {"address": 117, "value": True}, b'\x05\x00\x75\xff\x00'),
-        (bit_w_msg.WriteMultipleCoilsResponse, (), {"address": 117, "count": 3}, b'\x0f\x00\x75\x00\x03'),
+        (bit_r_msg.WriteSingleCoilResponse, (), {"address": 117, "value": True}, b'\x05\x00\x75\xff\x00'),
+        (bit_r_msg.WriteMultipleCoilsResponse, (), {"address": 117, "count": 3}, b'\x0f\x00\x75\x00\x03'),
         (diag_msg.DiagnosticStatusResponse, (), {}, b'\x08\x27\x0f'),
         (diag_msg.DiagnosticStatusSimpleResponse, (), {"data": 0x1010}, b'\x08\x27\x0f\x10\x10'),
         (diag_msg.ReturnQueryDataResponse, (), {"message": b'AB'}, b'\x08\x00\x00\x41\x42'),

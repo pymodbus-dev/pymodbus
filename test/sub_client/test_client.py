@@ -8,7 +8,6 @@ import pytest
 
 import pymodbus.client as lib_client
 import pymodbus.pdu.bit_read_message as pdu_bit_read
-import pymodbus.pdu.bit_write_message as pdu_bit_write
 import pymodbus.pdu.diag_message as pdu_diag
 import pymodbus.pdu.file_message as pdu_file_msg
 import pymodbus.pdu.other_message as pdu_other_msg
@@ -50,7 +49,7 @@ BASE_PORT = 6500
         ("read_discrete_inputs", 1, pdu_bit_read.ReadDiscreteInputsRequest),
         ("read_holding_registers", 1, pdu_reg_read.ReadHoldingRegistersRequest),
         ("read_input_registers", 1, pdu_reg_read.ReadInputRegistersRequest),
-        ("write_coil", 2, pdu_bit_write.WriteSingleCoilRequest),
+        ("write_coil", 2, pdu_bit_read.WriteSingleCoilRequest),
         ("write_register", 2, pdu_req_write.WriteSingleRegisterRequest),
         ("read_exception_status", 0, pdu_other_msg.ReadExceptionStatusRequest),
         ("diag_query_data", 3, pdu_diag.ReturnQueryDataRequest),
@@ -90,7 +89,7 @@ BASE_PORT = 6500
         ("diag_read_iop_overrun_count", 0, pdu_diag.ReturnIopOverrunCountRequest),
         ("diag_clear_overrun_counter", 0, pdu_diag.ClearOverrunCountRequest),
         ("diag_getclear_modbus_response", 0, pdu_diag.GetClearModbusPlusRequest),
-        ("write_coils", 5, pdu_bit_write.WriteMultipleCoilsRequest),
+        ("write_coils", 5, pdu_bit_read.WriteMultipleCoilsRequest),
         ("write_registers", 6, pdu_req_write.WriteMultipleRegistersRequest),
         ("readwrite_registers", 1, pdu_reg_read.ReadWriteMultipleRegistersRequest),
         ("mask_write_register", 1, pdu_req_write.MaskWriteRegisterRequest),

@@ -1,8 +1,6 @@
 """Test diag messages."""
-import pytest
 
 from pymodbus.constants import ModbusPlusOperation
-from pymodbus.exceptions import NotImplementedException
 from pymodbus.pdu.diag_message import (
     ChangeAsciiInputDelimiterRequest,
     ChangeAsciiInputDelimiterResponse,
@@ -141,8 +139,6 @@ class TestDataStore:
         """Testing diagnostic request messages encoding."""
         request = DiagnosticStatusSimpleRequest(b"\x12\x34")
         request.sub_function_code = 0x1234
-        with pytest.raises(NotImplementedException):
-            await request.update_datastore()
         assert request.encode() == b"\x12\x34\x12\x34"
         DiagnosticStatusSimpleResponse()
 

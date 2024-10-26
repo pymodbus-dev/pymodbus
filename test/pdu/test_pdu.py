@@ -16,6 +16,8 @@ from pymodbus.pdu import (
     ModbusPDU,
 )
 
+from ..conftest import MockContext
+
 
 class TestPdu:
     """Test modbus PDU."""
@@ -54,7 +56,6 @@ class TestPdu:
         ModbusPDU._rtu_frame_size = 5  # pylint: disable=protected-access
         assert ModbusPDU.calculateRtuFrameSize(b"") == 5
         ModbusPDU._rtu_frame_size = None  # pylint: disable=protected-access
-
         ModbusPDU._rtu_byte_count_pos = 2  # pylint: disable=protected-access
         assert (
             ModbusPDU.calculateRtuFrameSize(
@@ -64,7 +65,6 @@ class TestPdu:
         )
         assert not ModbusPDU.calculateRtuFrameSize(b"\x11")
         ModbusPDU._rtu_byte_count_pos = None  # pylint: disable=protected-access
-
         with pytest.raises(NotImplementedException):
             ModbusPDU.calculateRtuFrameSize(b"")
         ModbusPDU._rtu_frame_size = 12  # pylint: disable=protected-access
@@ -213,15 +213,19 @@ class TestPdu:
         pdu.get_response_pdu_size()
         #FIX size > 0 !!
 
-    @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests)
+    @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests + responses)
     def test_pdu_decode(self, pdutype, args, kwargs, frame):
         """Test that all PDU types can be created."""
         pdu = pdutype(*args, **kwargs)
         pdu.decode(frame[1:])
 
-    # ------------------------
-    # Test PDU types specifics
-    # ------------------------
-
+    @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests)
+    @pytest.mark.usefixtures("frame")
+    async def test_pdu_datastore(self, pdutype, args, kwargs):
+        """Test that all PDU types can be created."""
+        pdu = pdutype(*args, **kwargs)
+        context = MockContext()
+        context.validate = lambda a, b, c: True
+        assert await pdu.update_datastore(context)
 
 

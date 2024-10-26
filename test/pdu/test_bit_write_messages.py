@@ -17,11 +17,6 @@ from pymodbus.pdu.bit_write_message import (
 from ..conftest import FakeList, MockContext
 
 
-# ---------------------------------------------------------------------------#
-#  Fixture
-# ---------------------------------------------------------------------------#
-
-
 class TestModbusBitMessage:
     """Modbus bit write message tests."""
 

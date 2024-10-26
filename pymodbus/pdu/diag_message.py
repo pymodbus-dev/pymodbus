@@ -10,7 +10,7 @@ import struct
 
 from pymodbus.constants import ModbusPlusOperation, ModbusStatus
 from pymodbus.device import ModbusControlBlock
-from pymodbus.exceptions import ModbusException, NotImplementedException
+from pymodbus.exceptions import ModbusException
 from pymodbus.pdu.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring
 
@@ -68,7 +68,6 @@ class DiagnosticStatusRequest(ModbusPDU):
         elif len(data) > 2:
             (self.message,) = struct.unpack(">H", data[2:])
 
-
     def get_response_pdu_size(self):
         """Get response pdu size.
 
@@ -78,6 +77,10 @@ class DiagnosticStatusRequest(ModbusPDU):
         if not isinstance(self.message, list):
             self.message = [self.message]
         return 1 + 2 + 2 * len(self.message)
+
+    async def update_datastore(self, *args):
+        """Implement dummy."""
+        return DiagnosticStatusResponse(args)
 
 
 class DiagnosticStatusResponse(ModbusPDU):
@@ -160,10 +163,6 @@ class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
         """
         DiagnosticStatusRequest.__init__(self, slave=slave, transaction=transaction, skip_encode=skip_encode)
         self.message = data
-
-    async def update_datastore(self, *args):
-        """Raise if not implemented."""
-        raise NotImplementedException("Diagnostic Message Has No update_datastore Method")
 
 
 class DiagnosticStatusSimpleResponse(DiagnosticStatusResponse):

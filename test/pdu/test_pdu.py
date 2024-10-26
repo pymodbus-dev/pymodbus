@@ -213,6 +213,12 @@ class TestPdu:
         pdu.get_response_pdu_size()
         #FIX size > 0 !!
 
+    @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests)
+    def test_pdu_decode(self, pdutype, args, kwargs, frame):
+        """Test that all PDU types can be created."""
+        pdu = pdutype(*args, **kwargs)
+        pdu.decode(frame[1:])
+
     # ------------------------
     # Test PDU types specifics
     # ------------------------

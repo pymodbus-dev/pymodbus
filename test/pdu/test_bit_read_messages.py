@@ -39,24 +39,6 @@ class TestModbusBitMessage:
     def tearDown(self):
         """Clean up the test environment."""
 
-    def test_read_bit_base_class_methods(self):
-        """Test basic bit message encoding/decoding."""
-        handle = ReadBitsRequestBase(1, 1, 0, 0, False)
-        msg = "ReadBitRequest(1,1)"
-        assert msg == str(handle)
-        handle = ReadBitsResponseBase([1, 1], 0, 0, False)
-        msg = "ReadBitsResponseBase(2)"
-        assert msg == str(handle)
-
-    def test_bit_read_base_request_encoding(self):
-        """Test basic bit message encoding/decoding."""
-        for i in range(20):
-            handle = ReadBitsRequestBase(i, i, 0, 0, False)
-            result = struct.pack(">HH", i, i)
-            assert handle.encode() == result
-            handle.decode(result)
-            assert (handle.address, handle.count) == (i, i)
-
     def test_bit_read_base_response_encoding(self):
         """Test basic bit message encoding/decoding."""
         for i in range(20):

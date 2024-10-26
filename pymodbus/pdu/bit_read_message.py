@@ -47,7 +47,7 @@ class ReadBitsRequestBase(ModbusPDU):
         :return:
         """
         count = self.count // 8
-        if self.count % 8:  # pragma: no cover
+        if self.count % 8:
             count += 1
 
         return 1 + 1 + count
@@ -142,7 +142,7 @@ class ReadCoilsRequest(ReadBitsRequestBase):
         """
         ReadBitsRequestBase.__init__(self, address, count, slave, transaction, skip_encode)
 
-    async def update_datastore(self, context):  # pragma: no cover
+    async def update_datastore(self, context):
         """Run a read coils request against a datastore.
 
         Before running the request, we make sure that the request is in
@@ -209,7 +209,7 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
         """
         ReadBitsRequestBase.__init__(self, address, count, slave, transaction, skip_encode)
 
-    async def update_datastore(self, context):  # pragma: no cover
+    async def update_datastore(self, context):
         """Run a read discrete input request against a datastore.
 
         Before running the request, we make sure that the request is in

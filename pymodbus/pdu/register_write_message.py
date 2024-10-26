@@ -36,8 +36,8 @@ class WriteSingleRegisterRequest(ModbusPDU):
         :returns: The encoded packet
         """
         packet = struct.pack(">H", self.address)
-        if self.skip_encode or isinstance(self.value, bytes):  # pragma: no cover
-            packet += self.value  # pragma: no cover
+        if self.skip_encode or isinstance(self.value, bytes):
+            packet += self.value
         else:
             packet += struct.pack(">H", self.value)
         return packet
@@ -49,7 +49,7 @@ class WriteSingleRegisterRequest(ModbusPDU):
         """
         self.address, self.value = struct.unpack(">HH", data)
 
-    async def update_datastore(self, context):  # pragma: no cover
+    async def update_datastore(self, context):
         """Run a write single register request against a datastore.
 
         :param context: The datastore to request from
@@ -175,12 +175,12 @@ class WriteMultipleRegistersRequest(ModbusPDU):
         :returns: The encoded packet
         """
         packet = struct.pack(">HHB", self.address, self.count, self.byte_count)
-        if self.skip_encode:  # pragma: no cover
-            return packet + b"".join(self.values)  # pragma: no cover
+        if self.skip_encode:
+            return packet + b"".join(self.values)
 
         for value in self.values:
-            if isinstance(value, bytes):  # pragma: no cover
-                packet += value  # pragma: no cover
+            if isinstance(value, bytes):
+                packet += value
             else:
                 packet += struct.pack(">H", value)
 
@@ -196,7 +196,7 @@ class WriteMultipleRegistersRequest(ModbusPDU):
         for idx in range(5, (self.count * 2) + 5, 2):
             self.values.append(struct.unpack(">H", data[idx : idx + 2])[0])
 
-    async def update_datastore(self, context):  # pragma: no cover
+    async def update_datastore(self, context):
         """Run a write single register request against a datastore.
 
         :param context: The datastore to request from
@@ -318,7 +318,7 @@ class MaskWriteRegisterRequest(ModbusPDU):
         """
         self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data)
 
-    async def update_datastore(self, context):  # pragma: no cover
+    async def update_datastore(self, context):
         """Run a mask write register request against the store.
 
         :param context: The datastore to request from

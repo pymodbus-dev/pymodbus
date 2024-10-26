@@ -27,7 +27,7 @@ class _OutOfSpaceException(Exception):
     #
     # See Page 5/50 of MODBUS Application Protocol Specification V1.1b3.
 
-    def __init__(self, oid):  # pragma: no cover
+    def __init__(self, oid):
         self.oid = oid
         super().__init__()
 
@@ -80,7 +80,7 @@ class ReadDeviceInformationRequest(ModbusPDU):
         params = struct.unpack(">BBB", data)
         self.sub_function_code, self.read_code, self.object_id = params
 
-    async def update_datastore(self, _context):  # pragma: no cover
+    async def update_datastore(self, _context):
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -112,7 +112,7 @@ class ReadDeviceInformationResponse(ModbusPDU):
     sub_function_code = 0x0E
 
     @classmethod
-    def calculateRtuFrameSize(cls, buffer):  # pragma: no cover
+    def calculateRtuFrameSize(cls, buffer):
         """Calculate the size of the message.
 
         :param buffer: A buffer containing the data that have been received.
@@ -146,7 +146,7 @@ class ReadDeviceInformationResponse(ModbusPDU):
         self.more_follows = MoreData.NOTHING
         self.space_left = 253 - 6
 
-    def _encode_object(self, object_id, data):  # pragma: no cover
+    def _encode_object(self, object_id, data):
         """Encode object."""
         self.space_left -= 2 + len(data)
         if self.space_left <= 0:
@@ -168,14 +168,14 @@ class ReadDeviceInformationResponse(ModbusPDU):
             ">BBB", self.sub_function_code, self.read_code, self.conformity
         )
         objects = b""
-        try:  # pragma: no cover
+        try:
             for object_id, data in iter(self.information.items()):
                 if isinstance(data, list):
                     for item in data:
                         objects += self._encode_object(object_id, item)
                 else:
                     objects += self._encode_object(object_id, data)
-        except _OutOfSpaceException as exc:  # pragma: no cover
+        except _OutOfSpaceException as exc:
             self.next_object_id = exc.oid
             self.more_follows = MoreData.KEEP_READING
 
@@ -199,12 +199,12 @@ class ReadDeviceInformationResponse(ModbusPDU):
         while count < len(data):
             object_id, object_length = struct.unpack(">BB", data[count : count + 2])
             count += object_length + 2
-            if object_id not in self.information:  # pragma: no cover
+            if object_id not in self.information:
                 self.information[object_id] = data[count - object_length : count]
-            elif isinstance(self.information[object_id], list):  # pragma: no cover
+            elif isinstance(self.information[object_id], list):
                 self.information[object_id].append(data[count - object_length : count])
             else:
-                self.information[object_id] = [  # pragma: no cover
+                self.information[object_id] = [
                     self.information[object_id],
                     data[count - object_length : count],
                 ]

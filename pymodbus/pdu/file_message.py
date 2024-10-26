@@ -40,7 +40,7 @@ class FileRecord:  # pylint: disable=eq-without-hash
 
     def __eq__(self, relf):
         """Compare the left object to the right."""
-        return (  # pragma: no cover
+        return (
             self.file_number == relf.file_number
             and self.record_number == relf.record_number
             and self.record_length == relf.record_length
@@ -49,9 +49,9 @@ class FileRecord:  # pylint: disable=eq-without-hash
 
     def __ne__(self, relf):
         """Compare the left object to the right."""
-        return not self.__eq__(relf)  # pragma: no cover
+        return not self.__eq__(relf)
 
-    def __repr__(self):  # pragma: no cover
+    def __repr__(self):
         """Give a representation of the file record."""
         params = (self.file_number, self.record_number, self.record_length)
         return (
@@ -131,7 +131,7 @@ class ReadFileRecordRequest(ModbusPDU):
             )
             self.records.append(record)
 
-    async def update_datastore(self, _context):  # pragma: no cover
+    async def update_datastore(self, _context):
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -255,7 +255,7 @@ class WriteFileRecordRequest(ModbusPDU):
             record.record_length = decoded[3]
             self.records.append(record)
 
-    async def update_datastore(self, _context):  # pragma: no cover
+    async def update_datastore(self, _context):
         """Run the write file record request against the context.
 
         :returns: The populated response
@@ -357,7 +357,7 @@ class ReadFifoQueueRequest(ModbusPDU):
         """
         self.address = struct.unpack(">H", data)[0]
 
-    async def update_datastore(self, _context):  # pragma: no cover
+    async def update_datastore(self, _context):
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -385,7 +385,7 @@ class ReadFifoQueueResponse(ModbusPDU):
     function_code = 0x18
 
     @classmethod
-    def calculateRtuFrameSize(cls, buffer):  # pragma: no cover
+    def calculateRtuFrameSize(cls, buffer):
         """Calculate the size of the message.
 
         :param buffer: A buffer containing the data that have been received.
@@ -422,6 +422,6 @@ class ReadFifoQueueResponse(ModbusPDU):
         """
         self.values = []
         _, count = struct.unpack(">HH", data[0:4])
-        for index in range(0, count - 4):  # pragma: no cover
+        for index in range(0, count - 4):
             idx = 4 + index * 2
             self.values.append(struct.unpack(">H", data[idx : idx + 2])[0])

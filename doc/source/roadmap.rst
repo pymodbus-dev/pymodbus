@@ -15,13 +15,12 @@ It is the community that decides how pymodbus evolves NOT the maintainers !
 
 The following bullet points are what the maintainers focus on:
 
-- 3.7.5, bug fix release, hopefully with:
+- 3.7.X, bug fix release, hopefully with:
+    - Not planned
+- 3.8.0, with:
     - Simplify PDU classes
     - Simplify transaction manager (central control point)
     - Remove ModbusControlBlock
-- 3.7.6, bug fix release, with:
-    - Not planned
-- 3.8.0, with:
     - new transaction handling
     - transaction 100% coverage
     - skip_encode, zero_mode parameters removed

@@ -1,7 +1,7 @@
 """Modbus Request/Response Decoders."""
 from __future__ import annotations
 
-import pymodbus.pdu.bit_read_message as bit_r_msg
+import pymodbus.pdu.bit_message as bit_msg
 import pymodbus.pdu.diag_message as diag_msg
 import pymodbus.pdu.file_message as file_msg
 import pymodbus.pdu.mei_message as mei_msg
@@ -18,13 +18,13 @@ class DecodePDU:
 
     _pdu_class_table: set[tuple[type[base.ModbusPDU], type[base.ModbusPDU]]] = {
         (reg_r_msg.ReadHoldingRegistersRequest, reg_r_msg.ReadHoldingRegistersResponse),
-        (bit_r_msg.ReadDiscreteInputsRequest, bit_r_msg.ReadDiscreteInputsResponse),
+        (bit_msg.ReadDiscreteInputsRequest, bit_msg.ReadDiscreteInputsResponse),
         (reg_r_msg.ReadInputRegistersRequest, reg_r_msg.ReadInputRegistersResponse),
-        (bit_r_msg.ReadCoilsRequest, bit_r_msg.ReadCoilsResponse),
-        (bit_r_msg.WriteMultipleCoilsRequest, bit_r_msg.WriteMultipleCoilsResponse),
+        (bit_msg.ReadCoilsRequest, bit_msg.ReadCoilsResponse),
+        (bit_msg.WriteMultipleCoilsRequest, bit_msg.WriteMultipleCoilsResponse),
         (reg_w_msg.WriteMultipleRegistersRequest, reg_w_msg.WriteMultipleRegistersResponse),
         (reg_w_msg.WriteSingleRegisterRequest, reg_w_msg.WriteSingleRegisterResponse),
-        (bit_r_msg.WriteSingleCoilRequest, bit_r_msg.WriteSingleCoilResponse),
+        (bit_msg.WriteSingleCoilRequest, bit_msg.WriteSingleCoilResponse),
         (reg_r_msg.ReadWriteMultipleRegistersRequest, reg_r_msg.ReadWriteMultipleRegistersResponse),
         (diag_msg.DiagnosticStatusRequest, diag_msg.DiagnosticStatusResponse),
         (o_msg.ReadExceptionStatusRequest, o_msg.ReadExceptionStatusResponse),

@@ -45,7 +45,7 @@ PDU classes
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: pymodbus.pdu.bit_read_message
+.. automodule:: pymodbus.pdu.bit_message
     :members:
     :undoc-members:
     :show-inheritance:

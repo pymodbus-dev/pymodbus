@@ -7,7 +7,7 @@ from unittest import mock
 import pytest
 
 import pymodbus.client as lib_client
-import pymodbus.pdu.bit_read_message as pdu_bit_read
+import pymodbus.pdu.bit_message as pdu_bit
 import pymodbus.pdu.diag_message as pdu_diag
 import pymodbus.pdu.file_message as pdu_file_msg
 import pymodbus.pdu.other_message as pdu_other_msg
@@ -45,11 +45,11 @@ BASE_PORT = 6500
 @pytest.mark.parametrize(
     ("method", "arg", "pdu_request"),
     [
-        ("read_coils", 1, pdu_bit_read.ReadCoilsRequest),
-        ("read_discrete_inputs", 1, pdu_bit_read.ReadDiscreteInputsRequest),
+        ("read_coils", 1, pdu_bit.ReadCoilsRequest),
+        ("read_discrete_inputs", 1, pdu_bit.ReadDiscreteInputsRequest),
         ("read_holding_registers", 1, pdu_reg_read.ReadHoldingRegistersRequest),
         ("read_input_registers", 1, pdu_reg_read.ReadInputRegistersRequest),
-        ("write_coil", 2, pdu_bit_read.WriteSingleCoilRequest),
+        ("write_coil", 2, pdu_bit.WriteSingleCoilRequest),
         ("write_register", 2, pdu_req_write.WriteSingleRegisterRequest),
         ("read_exception_status", 0, pdu_other_msg.ReadExceptionStatusRequest),
         ("diag_query_data", 3, pdu_diag.ReturnQueryDataRequest),
@@ -89,7 +89,7 @@ BASE_PORT = 6500
         ("diag_read_iop_overrun_count", 0, pdu_diag.ReturnIopOverrunCountRequest),
         ("diag_clear_overrun_counter", 0, pdu_diag.ClearOverrunCountRequest),
         ("diag_getclear_modbus_response", 0, pdu_diag.GetClearModbusPlusRequest),
-        ("write_coils", 5, pdu_bit_read.WriteMultipleCoilsRequest),
+        ("write_coils", 5, pdu_bit.WriteMultipleCoilsRequest),
         ("write_registers", 6, pdu_req_write.WriteMultipleRegistersRequest),
         ("readwrite_registers", 1, pdu_reg_read.ReadWriteMultipleRegistersRequest),
         ("mask_write_register", 1, pdu_req_write.MaskWriteRegisterRequest),
@@ -256,7 +256,7 @@ async def test_client_modbusbaseclient():
             comm_type=CommType.TCP,
         ),
     )
-    client.register(pdu_bit_read.ReadCoilsResponse)
+    client.register(pdu_bit.ReadCoilsResponse)
     assert str(client)
     client.close()
 
@@ -322,7 +322,7 @@ async def test_client_protocol_receiver():
     response = base.build_response(0x00)  # pylint: disable=protected-access
     base.ctx.data_received(data)
     result = response.result()
-    assert isinstance(result, pdu_bit_read.ReadCoilsResponse)
+    assert isinstance(result, pdu_bit.ReadCoilsResponse)
 
     base.transport = None
     with pytest.raises(ConnectionException):
@@ -362,7 +362,7 @@ async def test_client_protocol_handler():
     )
     transport = mock.MagicMock()
     base.ctx.connection_made(transport=transport)
-    reply = pdu_bit_read.ReadCoilsRequest(1, 1)
+    reply = pdu_bit.ReadCoilsRequest(1, 1)
     reply.transaction_id = 0x00
     base.ctx._handle_response(None)  # pylint: disable=protected-access
     base.ctx._handle_response(reply)  # pylint: disable=protected-access
@@ -415,13 +415,13 @@ async def test_client_protocol_execute():
             timeout_connect=3,
         ),
     )
-    request = pdu_bit_read.ReadCoilsRequest(1, 1)
+    request = pdu_bit.ReadCoilsRequest(1, 1)
     transport = MockTransport(base, request)
     base.ctx.connection_made(transport=transport)
 
     response = await base.async_execute(False, request)
     assert not response.isError()
-    assert isinstance(response, pdu_bit_read.ReadCoilsResponse)
+    assert isinstance(response, pdu_bit.ReadCoilsResponse)
 
 async def test_client_execute_broadcast():
     """Test the client protocol execute method."""
@@ -433,7 +433,7 @@ async def test_client_execute_broadcast():
             host="127.0.0.1",
         ),
     )
-    request = pdu_bit_read.ReadCoilsRequest(1, 1, slave=0)
+    request = pdu_bit.ReadCoilsRequest(1, 1, slave=0)
     transport = MockTransport(base, request)
     base.ctx.connection_made(transport=transport)
     assert await base.async_execute(False, request)
@@ -449,7 +449,7 @@ async def test_client_execute_broadcast_no():
             host="127.0.0.1",
         ),
     )
-    request = pdu_bit_read.ReadCoilsRequest(1, 1, slave=0)
+    request = pdu_bit.ReadCoilsRequest(1, 1, slave=0)
     transport = MockTransport(base, request)
     base.ctx.connection_made(transport=transport)
     assert not await base.async_execute(True, request)
@@ -465,14 +465,14 @@ async def test_client_protocol_retry():
             timeout_connect=0.1,
         ),
     )
-    request = pdu_bit_read.ReadCoilsRequest(1, 1)
+    request = pdu_bit.ReadCoilsRequest(1, 1)
     transport = MockTransport(base, request, retries=2)
     base.ctx.connection_made(transport=transport)
 
     response = await base.async_execute(False, request)
     assert transport.retries == 0
     assert not response.isError()
-    assert isinstance(response, pdu_bit_read.ReadCoilsResponse)
+    assert isinstance(response, pdu_bit.ReadCoilsResponse)
 
 
 async def test_client_protocol_timeout():
@@ -488,7 +488,7 @@ async def test_client_protocol_timeout():
     )
     # Avoid creating do_reconnect() task
     base.ctx.connection_lost = mock.MagicMock()
-    request = pdu_bit_read.ReadCoilsRequest(1, 1)
+    request = pdu_bit.ReadCoilsRequest(1, 1)
     transport = MockTransport(base, request, retries=4)
     base.ctx.connection_made(transport=transport)
 

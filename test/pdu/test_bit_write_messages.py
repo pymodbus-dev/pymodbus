@@ -20,16 +20,6 @@ from ..conftest import FakeList, MockContext
 class TestModbusBitMessage:
     """Modbus bit write message tests."""
 
-    # -----------------------------------------------------------------------#
-    #  Setup/TearDown
-    # -----------------------------------------------------------------------#
-
-    def setUp(self):
-        """Initialize the test environment and builds request/result encoding pairs."""
-
-    def tearDown(self):
-        """Clean up the test environment."""
-
     def test_bit_write_base_requests(self):
         """Test bit write base."""
         messages = {

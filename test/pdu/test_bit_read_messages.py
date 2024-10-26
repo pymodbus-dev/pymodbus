@@ -25,16 +25,6 @@ res.extend([False] * 3)
 class TestModbusBitMessage:
     """Modbus bit read message tests."""
 
-    # -----------------------------------------------------------------------#
-    #  Setup/TearDown
-    # -----------------------------------------------------------------------#
-
-    def setUp(self):
-        """Initialize the test environment and builds request/result encoding pairs."""
-
-    def tearDown(self):
-        """Clean up the test environment."""
-
     def test_bit_read_base_response_encoding(self):
         """Test basic bit message encoding/decoding."""
         for i in range(20):

@@ -88,15 +88,15 @@ class ReadFileRecordRequest(ModbusPDU):
     """
 
     function_code = 0x14
-    _rtu_byte_count_pos = 2
+    rtu_byte_count_pos = 2
 
-    def __init__(self, records: list[FileRecord] = [],  slave=1, transaction=0, skip_encode=False):  # pylint: disable=dangerous-default-value
+    def __init__(self, records: list[FileRecord] = [],  slave=1, transaction=0):  # pylint: disable=dangerous-default-value
         """Initialize a new instance.
 
         :param records: The file record requests to be read
         """
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
         self.records = records
 
     def encode(self):
@@ -156,15 +156,15 @@ class ReadFileRecordResponse(ModbusPDU):
     """
 
     function_code = 0x14
-    _rtu_byte_count_pos = 2
+    rtu_byte_count_pos = 2
 
-    def __init__(self, records: list[FileRecord] = [], slave=1, transaction=0, skip_encode=False):  # pylint: disable=dangerous-default-value
+    def __init__(self, records: list[FileRecord] = [], slave=1, transaction=0):  # pylint: disable=dangerous-default-value
         """Initialize a new instance.
 
         :param records: The requested file records
         """
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
         self.records = records
 
     def encode(self):
@@ -210,15 +210,15 @@ class WriteFileRecordRequest(ModbusPDU):
     """
 
     function_code = 0x15
-    _rtu_byte_count_pos = 2
+    rtu_byte_count_pos = 2
 
-    def __init__(self, records: list[FileRecord] = [], slave=1, transaction=0, skip_encode=False):  # pylint: disable=dangerous-default-value
+    def __init__(self, records: list[FileRecord] = [], slave=1, transaction=0):  # pylint: disable=dangerous-default-value
         """Initialize a new instance.
 
         :param records: The file record requests to be read
         """
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
         self.records = records
 
     def encode(self):
@@ -275,15 +275,15 @@ class WriteFileRecordResponse(ModbusPDU):
     """The normal response is an echo of the request."""
 
     function_code = 0x15
-    _rtu_byte_count_pos = 2
+    rtu_byte_count_pos = 2
 
-    def __init__(self, records: list[FileRecord] = [], slave=1, transaction=0, skip_encode=False):  # pylint: disable=dangerous-default-value
+    def __init__(self, records: list[FileRecord] = [], slave=1, transaction=0):  # pylint: disable=dangerous-default-value
         """Initialize a new instance.
 
         :param records: The file record requests to be read
         """
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
         self.records = records
 
     def encode(self):
@@ -339,15 +339,15 @@ class ReadFifoQueueRequest(ModbusPDU):
     """
 
     function_code = 0x18
-    _rtu_frame_size = 6
+    rtu_frame_size = 6
 
-    def __init__(self, address=0x0000, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address=0x0000, slave=1, transaction=0):
         """Initialize a new instance.
 
         :param address: The fifo pointer address (0x0000 to 0xffff)
         """
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
         self.address = address
         self.values = []  # this should be added to the context
 
@@ -407,13 +407,13 @@ class ReadFifoQueueResponse(ModbusPDU):
         lo_byte = int(buffer[3])
         return (hi_byte << 16) + lo_byte + 6
 
-    def __init__(self, values=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, values=None, slave=1, transaction=0):
         """Initialize a new instance.
 
         :param values: The list of values of the fifo to return
         """
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
         self.values = values or []
 
     def encode(self):

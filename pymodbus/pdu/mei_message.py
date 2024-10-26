@@ -49,16 +49,16 @@ class ReadDeviceInformationRequest(ModbusPDU):
 
     function_code = 0x2B
     sub_function_code = 0x0E
-    _rtu_frame_size = 7
+    rtu_frame_size = 7
 
-    def __init__(self, read_code=None, object_id=0x00, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, read_code=None, object_id=0x00, slave=1, transaction=0):
         """Initialize a new instance.
 
         :param read_code: The device information read code
         :param object_id: The object to read from
         """
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
         self.read_code = read_code or DeviceInformation.BASIC
         self.object_id = object_id
 
@@ -130,14 +130,14 @@ class ReadDeviceInformationResponse(ModbusPDU):
         except struct.error as exc:
             raise IndexError from exc
 
-    def __init__(self, read_code=None, information=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, read_code=None, information=None, slave=1, transaction=0):
         """Initialize a new instance.
 
         :param read_code: The device information read code
         :param information: The requested information request
         """
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
         self.read_code = read_code or DeviceInformation.BASIC
         self.information = information or {}
         self.number_of_objects = 0

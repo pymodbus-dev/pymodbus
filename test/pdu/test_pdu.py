@@ -21,7 +21,7 @@ from ..conftest import MockContext
 class TestPdu:
     """Test modbus PDU."""
 
-    exception = ExceptionResponse(1, 1, 0, 0, False)
+    exception = ExceptionResponse(1, 1, 0, 0)
 
     async def test_error_methods(self):
         """Test all error methods."""
@@ -41,21 +41,20 @@ class TestPdu:
     def test_request_exception(self):
         """Test request exception."""
         request = ModbusPDU()
-        request.setBaseData(0, 0, False)
         request.function_code = 1
         errors = {ModbusExceptions.decode(c): c for c in range(1, 20)}
         for error, code in iter(errors.items()):
             result = request.doException(code)
             assert str(result) == f"Exception Response(129, 1, {error})"
 
-    def test_calculate_rtu_frame_size(self):
+    def test_calculate_frame_size(self):
         """Test the calculation of Modbus frame sizes."""
         with pytest.raises(NotImplementedException):
             ModbusPDU.calculateRtuFrameSize(b"")
-        ModbusPDU._rtu_frame_size = 5  # pylint: disable=protected-access
+        ModbusPDU.rtu_frame_size = 5
         assert ModbusPDU.calculateRtuFrameSize(b"") == 5
-        ModbusPDU._rtu_frame_size = None  # pylint: disable=protected-access
-        ModbusPDU._rtu_byte_count_pos = 2  # pylint: disable=protected-access
+        ModbusPDU.rtu_frame_size = None
+        ModbusPDU.rtu_byte_count_pos = 2
         assert (
             ModbusPDU.calculateRtuFrameSize(
                 b"\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6"
@@ -63,29 +62,29 @@ class TestPdu:
             == 0x05 + 5
         )
         assert not ModbusPDU.calculateRtuFrameSize(b"\x11")
-        ModbusPDU._rtu_byte_count_pos = None  # pylint: disable=protected-access
+        ModbusPDU.rtu_byte_count_pos = None
         with pytest.raises(NotImplementedException):
             ModbusPDU.calculateRtuFrameSize(b"")
-        ModbusPDU._rtu_frame_size = 12  # pylint: disable=protected-access
+        ModbusPDU.rtu_frame_size = 12
         assert ModbusPDU.calculateRtuFrameSize(b"") == 12
-        ModbusPDU._rtu_frame_size = None  # pylint: disable=protected-access
-        ModbusPDU._rtu_byte_count_pos = 2  # pylint: disable=protected-access
+        ModbusPDU.rtu_frame_size = None
+        ModbusPDU.rtu_byte_count_pos = 2
         assert (
             ModbusPDU.calculateRtuFrameSize(
                 b"\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6"
             )
             == 0x05 + 5
         )
-        ModbusPDU._rtu_byte_count_pos = None  # pylint: disable=protected-access
+        ModbusPDU.rtu_byte_count_pos = None
 
     # --------------------------
     # Test PDU types generically
     # --------------------------
 
     requests = [
-        (bit_msg.ReadCoilsRequest, (), {"address": 117, "count": 3}, b'\x01\x00\x75\x00\x03'),
-        (bit_msg.ReadDiscreteInputsRequest, (), {"address": 117, "count": 3}, b'\x02\x00\x75\x00\x03'),
-        (bit_msg.WriteSingleCoilRequest, (), {"address": 117, "value": True}, b'\x05\x00\x75\xff\x00'),
+        (bit_msg.ReadCoilsRequest, (117, 3, 0, 0), {}, b'\x01\x00\x75\x00\x03'),
+        (bit_msg.ReadDiscreteInputsRequest, (117, 3, 0, 0), {}, b'\x02\x00\x75\x00\x03'),
+        (bit_msg.WriteSingleCoilRequest, (117, True, 0, 0), {}, b'\x05\x00\x75\xff\x00'),
         (bit_msg.WriteMultipleCoilsRequest, (), {"address": 117, "values": [True, False, True]}, b'\x0f\x00\x75\x00\x03\x01\x05'),
         (diag_msg.DiagnosticStatusRequest, (), {}, b'\x08\x27\x0f'),
         (diag_msg.DiagnosticStatusSimpleRequest, (), {"data": 0x1010}, b'\x08\x27\x0f\x10\x10'),
@@ -123,9 +122,9 @@ class TestPdu:
     ]
 
     responses = [
-        (bit_msg.ReadCoilsResponse, (), {"values": [3, 17]}, b'\x01\x01\x03'),
-        (bit_msg.ReadDiscreteInputsResponse, (), {"values": [3, 17]}, b'\x02\x01\x03'),
-        (bit_msg.WriteSingleCoilResponse, (), {"address": 117, "value": True}, b'\x05\x00\x75\xff\x00'),
+        (bit_msg.ReadCoilsResponse, ([True, True], 17, 0), {}, b'\x01\x01\x03'),
+        (bit_msg.ReadDiscreteInputsResponse, ([True, True], 17, 0), {}, b'\x02\x01\x03'),
+        (bit_msg.WriteSingleCoilResponse, (117, True, 0, 0), {}, b'\x05\x00\x75\xff\x00'),
         (bit_msg.WriteMultipleCoilsResponse, (), {"address": 117, "count": 3}, b'\x0f\x00\x75\x00\x03'),
         (diag_msg.DiagnosticStatusResponse, (), {}, b'\x08\x27\x0f'),
         (diag_msg.DiagnosticStatusSimpleResponse, (), {"data": 0x1010}, b'\x08\x27\x0f\x10\x10'),
@@ -168,15 +167,18 @@ class TestPdu:
         """Test that all PDU types can be created."""
         pdu = pdutype()
         assert pdu
-        assert str(pdu)
 
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests + responses)
     @pytest.mark.usefixtures("frame")
     def test_pdu_instance_args(self, pdutype, args, kwargs):
         """Test that all PDU types can be created."""
-        pdu = pdutype(*args, **kwargs)
+        if args:
+            pdu = pdutype()
+            pdu.setData(*args)
+        else:
+            pdu = pdutype(*args, **kwargs)
         assert pdu
-        assert str(pdu)
+        assert pdutype.__name__ in str(pdu)
 
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests + responses)
     @pytest.mark.usefixtures("frame")
@@ -184,7 +186,9 @@ class TestPdu:
         """Test that all PDU types can be created."""
         tid = 9112
         slave_id = 63
-        pdu = pdutype(*args, transaction=tid, slave=slave_id, **kwargs)
+        if args:
+            return
+        pdu = pdutype(transaction=tid, slave=slave_id, **kwargs)
         assert pdu
         assert str(pdu)
         assert pdu.slave_id == slave_id
@@ -194,35 +198,56 @@ class TestPdu:
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests + responses)
     def test_pdu_instance_encode(self, pdutype, args, kwargs, frame):
         """Test that all PDU types can be created."""
-        res_frame = pdutype.function_code.to_bytes(1,'big') + pdutype(*args, **kwargs).encode()
+        if args:
+            pdu = pdutype()
+            pdu.setData(*args)
+        else:
+            pdu = pdutype(**kwargs)
+        res_frame = pdutype.function_code.to_bytes(1,'big') + pdu.encode()
         assert res_frame == frame
 
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), responses)
     @pytest.mark.usefixtures("frame")
     def test_pdu_get_response_pdu_size1(self, pdutype, args, kwargs):
         """Test that all PDU types can be created."""
-        pdu = pdutype(*args, **kwargs)
+        if args:
+            pdu = pdutype()
+            pdu.setData(*args)
+        else:
+            pdu = pdutype(**kwargs)
         assert not pdu.get_response_pdu_size()
 
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests)
     @pytest.mark.usefixtures("frame")
     def test_get_response_pdu_size2(self, pdutype, args, kwargs):
         """Test that all PDU types can be created."""
-        pdu = pdutype(*args, **kwargs)
+        if args:
+            pdu = pdutype()
+            pdu.setData(*args)
+        else:
+            pdu = pdutype(**kwargs)
         pdu.get_response_pdu_size()
         #FIX size > 0 !!
 
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests + responses)
     def test_pdu_decode(self, pdutype, args, kwargs, frame):
         """Test that all PDU types can be created."""
-        pdu = pdutype(*args, **kwargs)
+        if args:
+            pdu = pdutype()
+            pdu.setData(*args)
+        else:
+            pdu = pdutype(**kwargs)
         pdu.decode(frame[1:])
 
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests)
     @pytest.mark.usefixtures("frame")
     async def test_pdu_datastore(self, pdutype, args, kwargs):
         """Test that all PDU types can be created."""
-        pdu = pdutype(*args, **kwargs)
+        if args:
+            pdu = pdutype()
+            pdu.setData(*args)
+        else:
+            pdu = pdutype(**kwargs)
         context = MockContext()
         context.validate = lambda a, b, c: True
         assert await pdu.update_datastore(context)

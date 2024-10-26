@@ -12,9 +12,9 @@ from pymodbus.pdu.pdu import ModbusExceptions as merror
 class ReadRegistersRequestBase(ModbusPDU):
     """Base class for reading a modbus register."""
 
-    _rtu_frame_size = 8
+    rtu_frame_size = 8
 
-    def __init__(self, address, count, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address, count, slave=1, transaction=0):
         """Initialize a new instance.
 
         :param address: The address to start the read from
@@ -22,7 +22,7 @@ class ReadRegistersRequestBase(ModbusPDU):
         :param slave: Modbus slave slave ID
         """
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
         self.address = address
         self.count = count
 
@@ -61,16 +61,16 @@ class ReadRegistersResponseBase(ModbusPDU):
     The requested registers can be found in the .registers list.
     """
 
-    _rtu_byte_count_pos = 2
+    rtu_byte_count_pos = 2
 
-    def __init__(self, values, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, values, slave=1, transaction=0):
         """Initialize a new instance.
 
         :param values: The values to write to
         :param slave: Modbus slave slave ID
         """
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
 
         #: A list of register values
         self.registers = values or []
@@ -125,14 +125,14 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
 
     function_code = 3
 
-    def __init__(self, address=None, count=None, slave=1, transaction=0, skip_encode=0):
+    def __init__(self, address=None, count=None, slave=1, transaction=0):
         """Initialize a new instance of the request.
 
         :param address: The starting address to read from
         :param count: The number of registers to read from address
         :param slave: Modbus slave slave ID
         """
-        super().__init__(address, count, slave, transaction, skip_encode)
+        super().__init__(address, count, slave, transaction)
 
     async def update_datastore(self, context):
         """Run a read holding request against a datastore.
@@ -166,12 +166,12 @@ class ReadHoldingRegistersResponse(ReadRegistersResponseBase):
 
     function_code = 3
 
-    def __init__(self, values=None, slave=None, transaction=0, skip_encode=0):
+    def __init__(self, values=None, slave=None, transaction=0):
         """Initialize a new response instance.
 
         :param values: The resulting register values
         """
-        super().__init__(values, slave, transaction, skip_encode)
+        super().__init__(values, slave, transaction)
 
 
 class ReadInputRegistersRequest(ReadRegistersRequestBase):
@@ -186,14 +186,14 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
 
     function_code = 4
 
-    def __init__(self, address=None, count=None, slave=1, transaction=0, skip_encode=0):
+    def __init__(self, address=None, count=None, slave=1, transaction=0):
         """Initialize a new instance of the request.
 
         :param address: The starting address to read from
         :param count: The number of registers to read from address
         :param slave: Modbus slave slave ID
         """
-        super().__init__(address, count, slave, transaction, skip_encode)
+        super().__init__(address, count, slave, transaction)
 
     async def update_datastore(self, context):
         """Run a read input request against a datastore.
@@ -227,12 +227,12 @@ class ReadInputRegistersResponse(ReadRegistersResponseBase):
 
     function_code = 4
 
-    def __init__(self, values=None, slave=None, transaction=0, skip_encode=0):
+    def __init__(self, values=None, slave=None, transaction=0):
         """Initialize a new response instance.
 
         :param values: The resulting register values
         """
-        super().__init__(values, slave, transaction, skip_encode)
+        super().__init__(values, slave, transaction)
 
 
 class ReadWriteMultipleRegistersRequest(ModbusPDU):
@@ -252,9 +252,9 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
     """
 
     function_code = 23
-    _rtu_byte_count_pos = 10
+    rtu_byte_count_pos = 10
 
-    def __init__(self, read_address=0x00, read_count=0, write_address=0x00, write_registers=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, read_address=0x00, read_count=0, write_address=0x00, write_registers=None, slave=1, transaction=0):
         """Initialize a new request message.
 
         :param read_address: The address to start reading from
@@ -263,7 +263,7 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         :param write_registers: The registers to write to the specified address
         """
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
         self.read_address = read_address
         self.read_count = read_count
         self.write_address = write_address
@@ -348,15 +348,8 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
 
         :returns: A string representation of the instance
         """
-        params = (
-            self.read_address,
-            self.read_count,
-            self.write_address,
-            self.write_count,
-        )
         return (
-            "ReadWriteNRegisterRequest R(%d,%d) W(%d,%d)"  # pylint: disable=consider-using-f-string
-            % params
+            f"{self.__class__.__name__} R({self.read_address},{self.read_count}) W({self.write_address},{self.write_count})"
         )
 
 

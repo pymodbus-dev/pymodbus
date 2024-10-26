@@ -11,7 +11,7 @@ from pymodbus.pdu.register_read_message import (
     ReadWriteMultipleRegistersResponse,
 )
 
-from ..conftest import FakeList, MockContext
+from ..conftest import MockContext
 
 
 TEST_MESSAGE = b"\x06\x00\x0a\x00\x0b\x00\x0c"
@@ -92,7 +92,6 @@ class TestReadRegisterMessages:
 
         will break on counts that are out of range
         """
-        mock = FakeList(0x800)
         requests = [
             ReadHoldingRegistersRequest(1, 0x800),
             ReadInputRegistersRequest(1, 0x800),
@@ -100,7 +99,7 @@ class TestReadRegisterMessages:
                 read_address=1, read_count=0x800, write_address=1, write_registers=5
             ),
             ReadWriteMultipleRegistersRequest(
-                read_address=1, read_count=5, write_address=1, write_registers=mock
+                read_address=1, read_count=5, write_address=1, write_registers=[]
             ),
         ]
         for request in requests:

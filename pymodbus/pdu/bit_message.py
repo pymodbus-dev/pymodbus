@@ -2,8 +2,10 @@
 
 # pylint: disable=missing-type-doc
 import struct
+from typing import cast
 
 from pymodbus.constants import ModbusStatus
+from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.pdu.pdu import ModbusExceptions as merror
 from pymodbus.pdu.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
@@ -13,90 +15,84 @@ _turn_coil_on = struct.pack(">H", ModbusStatus.ON)
 _turn_coil_off = struct.pack(">H", ModbusStatus.OFF)
 
 
-class ReadBitsRequestBase(ModbusPDU):
-    """Base class for Messages Requesting bit values."""
+class ReadCoilsRequest(ModbusPDU):
+    """ReadCoilsRequest."""
 
-    _rtu_frame_size = 8
+    rtu_frame_size = 8
+    function_code = 1
 
-    def __init__(self, address, count, slave, transaction, skip_encode):
-        """Initialize the read request data.
-
-        :param address: The start address to read from
-        :param count: The number of bits after "address" to read
-        :param slave: Modbus slave slave ID
-        """
+    def __init__(self) -> None:
+        """Initialize the read request."""
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        self.address: int = 0
+        self.count: int = 0
+
+    def setData(self, address: int, count: int, slave_id: int, transaction_id: int) -> None:
+        """Set data."""
+        super().setBaseData(slave_id, transaction_id)
         self.address = address
         self.count = count
 
-    def encode(self):
-        """Encode a request pdu.
-
-        :returns: The encoded pdu
-        """
+    def encode(self) -> bytes:
+        """Encode a request pdu."""
         return struct.pack(">HH", self.address, self.count)
 
-    def decode(self, data):
-        """Decode a request pdu.
-
-        :param data: The packet data to decode
-        """
+    def decode(self, data: bytes) -> None:
+        """Decode a request pdu."""
         self.address, self.count = struct.unpack(">HH", data)
 
-    def get_response_pdu_size(self):
+    def get_response_pdu_size(self) -> int:
         """Get response pdu size.
 
         Func_code (1 byte) + Byte Count(1 byte) + Quantity of Coils (n Bytes)/8,
         if the remainder is different of 0 then N = N+1
-        :return:
         """
-        count = self.count // 8
-        if self.count % 8:
-            count += 1
+        return 1 + 1 + (self.count + 7) // 8
 
-        return 1 + 1 + count
+    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
+        """Run request against a datastore."""
+        if not (1 <= self.count <= 0x7D0):
+            return self.doException(merror.IllegalValue)
+        if not context.validate(self.function_code, self.address, self.count):
+            return self.doException(merror.IllegalAddress)
+        values = cast(list[bool], await context.async_getValues(
+            self.function_code, self.address, self.count
+        ))
+        response = (ReadCoilsResponse if self.function_code == 1 else ReadDiscreteInputsResponse)()
+        response.setData(values, self.slave_id, self.transaction_id)
+        return response
 
-    def __str__(self):
+
+    def __str__(self) -> str:
         """Return a string representation of the instance."""
-        return f"ReadBitRequest({self.address},{self.count})"
+        return f"{self.__class__.__name__}({self.address},{self.count})"
 
 
-class ReadBitsResponseBase(ModbusPDU):
-    """Base class for Messages responding to bit-reading values.
+class ReadDiscreteInputsRequest(ReadCoilsRequest):
+    """ReadDiscreteInputsRequest."""
 
-    The requested bits can be found in the .bits list.
-    """
+    function_code = 2
 
-    _rtu_byte_count_pos = 2
 
-    def __init__(self, values, slave, transaction, skip_encode):
-        """Initialize a new instance.
+class ReadCoilsResponse(ModbusPDU):
+    """ReadCoilsResponse."""
 
-        :param values: The requested values to be returned
-        :param slave: Modbus slave slave ID
-        """
-        super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+    function_code = 1
+    rtu_byte_count_pos = 2
 
-        #: A list of booleans representing bit values
-        self.bits = values or []
+    def setData(self, values: list[bool], slave_id: int, transaction_id: int) -> None:
+        """Set data."""
+        super().setBaseData(slave_id, transaction_id)
+        self.bits = values
 
-    def encode(self):
-        """Encode response pdu.
-
-        :returns: The encoded packet message
-        """
+    def encode(self) -> bytes:
+        """Encode response pdu."""
         result = pack_bitstring(self.bits)
-        packet = struct.pack(">B", len(result)) + result
+        packet = struct.pack(">B", len(result)) + pack_bitstring(self.bits)
         return packet
 
     def decode(self, data):
-        """Decode response pdu.
-
-        :param data: The packet data to decode
-        """
-        self.byte_count = int(data[0])  # pylint: disable=attribute-defined-outside-init
+        """Decode response pdu."""
         self.bits = unpack_bitstring(data[1:])
 
     def __str__(self):
@@ -104,268 +100,68 @@ class ReadBitsResponseBase(ModbusPDU):
         return f"{self.__class__.__name__}({len(self.bits)})"
 
 
-class ReadCoilsRequest(ReadBitsRequestBase):
-    """This function code is used to read from 1 to 2000(0x7d0) contiguous status of coils in a remote device.
-
-    The Request PDU specifies the starting
-    address, ie the address of the first coil specified, and the number of
-    coils. In the PDU Coils are addressed starting at zero. Therefore coils
-    numbered 1-16 are addressed as 0-15.
-    """
-
-    function_code = 1
-
-    def __init__(self, address=None, count=None, slave=1, transaction=0, skip_encode=False):
-        """Initialize a new instance.
-
-        :param address: The address to start reading from
-        :param count: The number of bits to read
-        :param slave: Modbus slave slave ID
-        """
-        ReadBitsRequestBase.__init__(self, address, count, slave, transaction, skip_encode)
-
-    async def update_datastore(self, context):
-        """Run a read coils request against a datastore.
-
-        Before running the request, we make sure that the request is in
-        the max valid range (0x001-0x7d0). Next we make sure that the
-        request is valid against the current datastore.
-
-        :param context: The datastore to request from
-        :returns: An initialized :py:class:`~pymodbus.register_read_message.ReadCoilsResponse`, or an :py:class:`~pymodbus.pdu.ExceptionResponse` if an error occurred
-        """
-        if not (1 <= self.count <= 0x7D0):
-            return self.doException(merror.IllegalValue)
-        if not context.validate(self.function_code, self.address, self.count):
-            return self.doException(merror.IllegalAddress)
-        values = await context.async_getValues(
-            self.function_code, self.address, self.count
-        )
-        return ReadCoilsResponse(values)
-
-
-class ReadCoilsResponse(ReadBitsResponseBase):
-    """The coils in the response message are packed as one coil per bit of the data field.
-
-    Status is indicated as 1= ON and 0= OFF. The LSB of the
-    first data byte contains the output addressed in the query. The other
-    coils follow toward the high order end of this byte, and from low order
-    to high order in subsequent bytes.
-
-    If the returned output quantity is not a multiple of eight, the
-    remaining bits in the final data byte will be padded with zeros
-    (toward the high order end of the byte). The Byte Count field specifies
-    the quantity of complete bytes of data.
-
-    The requested coils can be found in boolean form in the .bits list.
-    """
-
-    function_code = 1
-
-    def __init__(self, values=None, slave=1, transaction=0, skip_encode=False):
-        """Initialize a new instance.
-
-        :param values: The request values to respond with
-        :param slave: Modbus slave slave ID
-        """
-        ReadBitsResponseBase.__init__(self, values, slave, transaction, skip_encode)
-
-
-class ReadDiscreteInputsRequest(ReadBitsRequestBase):
-    """This function code is used to read from 1 to 2000(0x7d0).
-
-    Contiguous status of discrete inputs in a remote device. The Request PDU specifies the
-    starting address, ie the address of the first input specified, and the
-    number of inputs. In the PDU Discrete Inputs are addressed starting at
-    zero. Therefore Discrete inputs numbered 1-16 are addressed as 0-15.
-    """
+class ReadDiscreteInputsResponse(ReadCoilsResponse):
+    """ReadDiscreteInputsResponse."""
 
     function_code = 2
 
-    def __init__(self, address=None, count=None, slave=1, transaction=0, skip_encode=False):
-        """Initialize a new instance.
 
-        :param address: The address to start reading from
-        :param count: The number of bits to read
-        :param slave: Modbus slave slave ID
-        """
-        ReadBitsRequestBase.__init__(self, address, count, slave, transaction, skip_encode)
-
-    async def update_datastore(self, context):
-        """Run a read discrete input request against a datastore.
-
-        Before running the request, we make sure that the request is in
-        the max valid range (0x001-0x7d0). Next we make sure that the
-        request is valid against the current datastore.
-
-        :param context: The datastore to request from
-        :returns: An initialized :py:class:`~pymodbus.register_read_message.ReadDiscreteInputsResponse`, or an :py:class:`~pymodbus.pdu.ExceptionResponse` if an error occurred
-        """
-        if not (1 <= self.count <= 0x7D0):
-            return self.doException(merror.IllegalValue)
-        if not context.validate(self.function_code, self.address, self.count):
-            return self.doException(merror.IllegalAddress)
-        values = await context.async_getValues(
-            self.function_code, self.address, self.count
-        )
-        return ReadDiscreteInputsResponse(values)
-
-
-class ReadDiscreteInputsResponse(ReadBitsResponseBase):
-    """The discrete inputs in the response message are packed as one input per bit of the data field.
-
-    Status is indicated as 1= ON; 0= OFF. The LSB of
-    the first data byte contains the input addressed in the query. The other
-    inputs follow toward the high order end of this byte, and from low order
-    to high order in subsequent bytes.
-
-    If the returned input quantity is not a multiple of eight, the
-    remaining bits in the final data byte will be padded with zeros
-    (toward the high order end of the byte). The Byte Count field specifies
-    the quantity of complete bytes of data.
-
-    The requested coils can be found in boolean form in the .bits list.
-    """
-
-    function_code = 2
-
-    def __init__(self, values=None, slave=1, transaction=0, skip_encode=False):
-        """Initialize a new instance.
-
-        :param values: The request values to respond with
-        :param slave: Modbus slave slave ID
-        """
-        ReadBitsResponseBase.__init__(self, values, slave, transaction, skip_encode)
-
-
-class WriteSingleCoilRequest(ModbusPDU):
-    """This function code is used to write a single output to either ON or OFF in a remote device.
-
-    The requested ON/OFF state is specified by a constant in the request
-    data field. A value of FF 00 hex requests the output to be ON. A value
-    of 00 00 requests it to be OFF. All other values are illegal and will
-    not affect the output.
-
-    The Request PDU specifies the address of the coil to be forced. Coils
-    are addressed starting at zero. Therefore coil numbered 1 is addressed
-    as 0. The requested ON/OFF state is specified by a constant in the Coil
-    Value field. A value of 0XFF00 requests the coil to be ON. A value of
-    0X0000 requests the coil to be off. All other values are illegal and
-    will not affect the coil.
-    """
+class WriteSingleCoilResponse(ModbusPDU):
+    """WriteSingleCoilResponse."""
 
     function_code = 5
+    rtu_frame_size = 8
 
-    _rtu_frame_size = 8
-
-    def __init__(self, address=None, value=None, slave=None, transaction=0, skip_encode=0):
-        """Initialize a new instance.
-
-        :param address: The variable address to write
-        :param value: The value to write at address
-        """
+    def __init__(self) -> None:
+        """Instancitate object."""
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        self.address: int = 0
+        self.value: bool = False
+
+    def setData(self, address: int, value: bool, slave_id: int, transaction_id: int) -> None:
+        """Set data."""
+        super().setBaseData(slave_id, transaction_id)
         self.address = address
-        self.value = bool(value)
+        self.value = value
 
-    def encode(self):
-        """Encode write coil request.
+    def encode(self) -> bytes:
+        """Encode write coil request."""
+        val = ModbusStatus.ON if self.value else ModbusStatus.OFF
+        return struct.pack(">HH", self.address, val)
 
-        :returns: The byte encoded message
-        """
-        result = struct.pack(">H", self.address)
-        if self.value:
-            result += _turn_coil_on
-        else:
-            result += _turn_coil_off
-        return result
-
-    def decode(self, data):
-        """Decode a write coil request.
-
-        :param data: The packet data to decode
-        """
+    def decode(self, data: bytes) -> None:
+        """Decode a write coil request."""
         self.address, value = struct.unpack(">HH", data)
         self.value = value == ModbusStatus.ON
 
-    async def update_datastore(self, context):
-        """Run a write coil request against a datastore.
+    def __str__(self) -> str:
+        """Return a string representation of the instance."""
+        return f"{self.__class__.__name__}({self.address}) => {self.value}"
 
-        :param context: The datastore to request from
-        :returns: The populated response or exception message
-        """
-        # if self.value not in [ModbusStatus.Off, ModbusStatus.On]:
-        #    return self.doException(merror.IllegalValue)
+
+class WriteSingleCoilRequest(WriteSingleCoilResponse):
+    """WriteSingleCoilRequest."""
+
+    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
+        """Run a request against a datastore."""
         if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.IllegalAddress)
 
         await context.async_setValues(self.function_code, self.address, [self.value])
-        values = await context.async_getValues(self.function_code, self.address, 1)
-        return WriteSingleCoilResponse(self.address, values[0])
+        values = cast(list[bool], await context.async_getValues(self.function_code, self.address, 1))
+        pdu = WriteSingleCoilResponse()
+        pdu.setData(self.address, values[0], self.slave_id, self.transaction_id)
+        return pdu
 
-    def get_response_pdu_size(self):
+    def get_response_pdu_size(self) -> int:
         """Get response pdu size.
 
         Func_code (1 byte) + Output Address (2 byte) + Output Value  (2 Bytes)
-        :return:
         """
         return 1 + 2 + 2
 
-    def __str__(self):
-        """Return a string representation of the instance."""
-        return f"WriteCoilRequest({self.address}, {self.value}) => "
 
-
-class WriteSingleCoilResponse(ModbusPDU):
-    """The normal response is an echo of the request.
-
-    Returned after the coil state has been written.
-    """
-
-    function_code = 5
-    _rtu_frame_size = 8
-
-    def __init__(self, address=None, value=None, slave=1, transaction=0, skip_encode=False):
-        """Initialize a new instance.
-
-        :param address: The variable address written to
-        :param value: The value written at address
-        """
-        super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
-        self.address = address
-        self.value = value
-
-    def encode(self):
-        """Encode write coil response.
-
-        :return: The byte encoded message
-        """
-        result = struct.pack(">H", self.address)
-        if self.value:
-            result += _turn_coil_on
-        else:
-            result += _turn_coil_off
-        return result
-
-    def decode(self, data):
-        """Decode a write coil response.
-
-        :param data: The packet data to decode
-        """
-        self.address, value = struct.unpack(">HH", data)
-        self.value = value == ModbusStatus.ON
-
-    def __str__(self):
-        """Return a string representation of the instance.
-
-        :returns: A string representation of the instance
-        """
-        return f"WriteCoilResponse({self.address}) => {self.value}"
-
-
-class WriteMultipleCoilsRequest(ModbusPDU):
+class WriteMultipleCoilsRequest(WriteSingleCoilRequest):
     """This function code is used to forcea sequence of coils.
 
     To either ON or OFF in a remote device. The Request PDU specifies the coil
@@ -378,21 +174,24 @@ class WriteMultipleCoilsRequest(ModbusPDU):
     """
 
     function_code = 15
-    _rtu_byte_count_pos = 6
+    rtu_byte_count_pos = 6
 
-    def __init__(self, address=0, values=None, slave=None, transaction=0, skip_encode=0):
+    def __init__(self, address=0, values=None, slave=None, transaction=0):
         """Initialize a new instance.
 
         :param address: The starting request address
         :param values: The values to write
         """
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
         self.address = address
         if values is None:
             values = []
         elif not hasattr(values, "__iter__"):
             values = [values]
+        for value in values:
+            if value and not isinstance(value, bool):
+                raise TypeError("NO BOOL")
         self.values = values
         self.byte_count = (len(self.values) + 7) // 8
 
@@ -437,7 +236,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
 
     def __str__(self):
         """Return a string representation of the instance."""
-        return f"WriteNCoilRequest ({self.address}) => {len(self.values)}"
+        return f"{self.__class__.__name__}({self.address}) => {len(self.values)}"
 
     def get_response_pdu_size(self):
         """Get response pdu size.
@@ -455,16 +254,16 @@ class WriteMultipleCoilsResponse(ModbusPDU):
     """
 
     function_code = 15
-    _rtu_frame_size = 8
+    rtu_frame_size = 8
 
-    def __init__(self, address=None, count=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address=None, count=None, slave=1, transaction=0):
         """Initialize a new instance.
 
         :param address: The starting variable address written to
         :param count: The number of values written
         """
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
         self.address = address
         self.count = count
 
@@ -484,4 +283,4 @@ class WriteMultipleCoilsResponse(ModbusPDU):
 
     def __str__(self):
         """Return a string representation of the instance."""
-        return f"WriteNCoilResponse({self.address}, {self.count})"
+        return f"{self.__class__.__name__}({self.address}, {self.count})"

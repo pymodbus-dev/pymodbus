@@ -29,12 +29,12 @@ class DiagnosticStatusRequest(ModbusPDU):
 
     function_code = 0x08
     sub_function_code = 9999
-    _rtu_frame_size = 8
+    rtu_frame_size = 8
 
-    def __init__(self, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, slave=1, transaction=0):
         """Initialize a diagnostic request."""
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
         self.message = None
 
     def encode(self):
@@ -95,12 +95,12 @@ class DiagnosticStatusResponse(ModbusPDU):
 
     function_code = 0x08
     sub_function_code = 9999
-    _rtu_frame_size = 8
+    rtu_frame_size = 8
 
-    def __init__(self, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, slave=1, transaction=0):
         """Initialize a diagnostic response."""
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
         self.message = None
 
     def encode(self):
@@ -153,7 +153,7 @@ class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
     the update_datastore method
     """
 
-    def __init__(self, data=0x0000, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, data=0x0000, slave=1, transaction=0):
         """Initialize a simple diagnostic request.
 
         The data defaults to 0x0000 if not provided as over half
@@ -161,7 +161,7 @@ class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
 
         :param data: The data to send along with the request
         """
-        DiagnosticStatusRequest.__init__(self, slave=slave, transaction=transaction, skip_encode=skip_encode)
+        DiagnosticStatusRequest.__init__(self, slave=slave, transaction=transaction)
         self.message = data
 
 
@@ -174,12 +174,12 @@ class DiagnosticStatusSimpleResponse(DiagnosticStatusResponse):
     2 bytes of data.
     """
 
-    def __init__(self, data=0x0000, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, data=0x0000, slave=1, transaction=0):
         """Return a simple diagnostic response.
 
         :param data: The resulting data to return to the client
         """
-        DiagnosticStatusResponse.__init__(self, slave=slave, transaction=transaction, skip_encode=skip_encode)
+        DiagnosticStatusResponse.__init__(self, slave=slave, transaction=transaction)
         self.message = data
 
 
@@ -196,12 +196,12 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
 
     sub_function_code = 0x0000
 
-    def __init__(self, message=b"\x00\x00", slave=1, transaction=0, skip_encode=False):
+    def __init__(self, message=b"\x00\x00", slave=1, transaction=0):
         """Initialize a new instance of the request.
 
         :param message: The message to send to loopback
         """
-        DiagnosticStatusRequest.__init__(self, slave=slave, transaction=transaction, skip_encode=skip_encode)
+        DiagnosticStatusRequest.__init__(self, slave=slave, transaction=transaction)
         if not isinstance(message, bytes):
             raise ModbusException(f"message({type(message)}) must be bytes")
         self.message = message
@@ -224,12 +224,12 @@ class ReturnQueryDataResponse(DiagnosticStatusResponse):
 
     sub_function_code = 0x0000
 
-    def __init__(self, message=b"\x00\x00", slave=1, transaction=0, skip_encode=False):
+    def __init__(self, message=b"\x00\x00", slave=1, transaction=0):
         """Initialize a new instance of the response.
 
         :param message: The message to loopback
         """
-        DiagnosticStatusResponse.__init__(self, slave=slave, transaction=transaction, skip_encode=skip_encode)
+        DiagnosticStatusResponse.__init__(self, slave=slave, transaction=transaction)
         if not isinstance(message, bytes):
             raise ModbusException(f"message({type(message)}) must be bytes")
         self.message = message
@@ -251,12 +251,12 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
 
     sub_function_code = 0x0001
 
-    def __init__(self, toggle=False, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, toggle=False, slave=1, transaction=0):
         """Initialize a new request.
 
         :param toggle: Set to True to toggle, False otherwise
         """
-        DiagnosticStatusRequest.__init__(self, slave=slave, transaction=transaction, skip_encode=skip_encode)
+        DiagnosticStatusRequest.__init__(self, slave=slave, transaction=transaction)
         if toggle:
             self.message = [ModbusStatus.ON]
         else:
@@ -284,12 +284,12 @@ class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
 
     sub_function_code = 0x0001
 
-    def __init__(self, toggle=False, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, toggle=False, slave=1, transaction=0):
         """Initialize a new response.
 
         :param toggle: Set to True if we toggled, False otherwise
         """
-        DiagnosticStatusResponse.__init__(self, slave=slave, transaction=transaction, skip_encode=skip_encode)
+        DiagnosticStatusResponse.__init__(self, slave=slave, transaction=transaction)
         if toggle:
             self.message = [ModbusStatus.ON]
         else:
@@ -394,9 +394,9 @@ class ForceListenOnlyModeResponse(DiagnosticStatusResponse):
 
     sub_function_code = 0x0004
 
-    def __init__(self, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, slave=1, transaction=0):
         """Initialize to block a return response."""
-        DiagnosticStatusResponse.__init__(self, slave=slave, transaction=transaction, skip_encode=skip_encode)
+        DiagnosticStatusResponse.__init__(self, slave=slave, transaction=transaction)
         self.message = []
 
 
@@ -776,9 +776,9 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0015
 
-    def __init__(self, data=0, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, data=0, slave=1, transaction=0):
         """Initialize."""
-        super().__init__(slave=slave, transaction=transaction, skip_encode=skip_encode)
+        super().__init__(slave=slave, transaction=transaction)
         self.message=data
 
     def get_response_pdu_size(self):

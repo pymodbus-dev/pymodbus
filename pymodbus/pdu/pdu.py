@@ -14,23 +14,21 @@ class ModbusPDU:
 
     function_code: int = 0
     sub_function_code: int = -1
-    _rtu_frame_size: int = 0
-    _rtu_byte_count_pos: int = 0
+    rtu_frame_size: int = 0
+    rtu_byte_count_pos: int = 0
 
     def __init__(self) -> None:
         """Initialize the base data for a modbus request."""
-        self.transaction_id: int
-        self.slave_id: int
-        self.skip_encode: bool
-        self.bits: list[bool]
-        self.registers: list[int]
+        self.transaction_id: int = 0
+        self.slave_id: int = 0
+        self.bits: list[bool] = []
+        self.registers: list[int] = []
         self.fut: asyncio.Future
 
-    def setBaseData(self, slave: int, transaction: int, skip_encode: bool) -> None:
+    def setBaseData(self, slave_id: int, transaction_id: int) -> None:
         """Set data common for all PDU."""
-        self.transaction_id = transaction
-        self.slave_id = slave
-        self.skip_encode = skip_encode
+        self.transaction_id = transaction_id
+        self.slave_id = slave_id
 
     def doException(self, exception: int) -> ExceptionResponse:
         """Build an error response based on the function."""
@@ -58,12 +56,12 @@ class ModbusPDU:
     @classmethod
     def calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
-        if cls._rtu_frame_size:
-            return cls._rtu_frame_size
-        if cls._rtu_byte_count_pos:
-            if len(data) < cls._rtu_byte_count_pos +1:
+        if cls.rtu_frame_size:
+            return cls.rtu_frame_size
+        if cls.rtu_byte_count_pos:
+            if len(data) < cls.rtu_byte_count_pos +1:
                 return 0
-            return int(data[cls._rtu_byte_count_pos]) + cls._rtu_byte_count_pos + 3
+            return int(data[cls.rtu_byte_count_pos]) + cls.rtu_byte_count_pos + 3
         raise NotImplementedException(
             f"Cannot determine RTU frame size for {cls.__name__}"
         )
@@ -97,18 +95,17 @@ class ModbusExceptions:  # pylint: disable=too-few-public-methods
 class ExceptionResponse(ModbusPDU):
     """Base class for a modbus exception PDU."""
 
-    _rtu_frame_size = 5
+    rtu_frame_size = 5
 
     def __init__(
             self,
             function_code: int,
             exception_code: int = 0,
             slave: int = 1,
-            transaction: int = 0,
-            skip_encode: bool = False) -> None:
+            transaction: int = 0) -> None:
         """Initialize the modbus exception response."""
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
         self.function_code = function_code | 0x80
         self.exception_code = exception_code
 

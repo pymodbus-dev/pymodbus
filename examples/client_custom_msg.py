@@ -34,12 +34,12 @@ class CustomModbusPDU(ModbusPDU):
     """Custom modbus response."""
 
     function_code = 55
-    _rtu_byte_count_pos = 2
+    rtu_byte_count_pos = 2
 
-    def __init__(self, values=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, values=None, slave=1, transaction=0):
         """Initialize."""
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
         self.values = values or []
 
     def encode(self):
@@ -67,12 +67,12 @@ class CustomRequest(ModbusPDU):
     """Custom modbus request."""
 
     function_code = 55
-    _rtu_frame_size = 8
+    rtu_frame_size = 8
 
-    def __init__(self, address=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address=None, slave=1, transaction=0):
         """Initialize."""
         super().__init__()
-        super().setBaseData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction)
         self.address = address
         self.count = 16
 
@@ -102,12 +102,13 @@ class CustomRequest(ModbusPDU):
 class Read16CoilsRequest(ReadCoilsRequest):
     """Read 16 coils in one request."""
 
-    def __init__(self, address, count=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address, slave=1, transaction=0):
         """Initialize a new instance.
 
         :param address: The address to start reading from
         """
-        ReadCoilsRequest.__init__(self, address, count=16, slave=slave, transaction=transaction, skip_encode=skip_encode)
+        super().__init__()
+        self.setData(address, 16, slave, transaction)
 
 
 # --------------------------------------------------------------------------- #

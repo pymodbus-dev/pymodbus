@@ -49,7 +49,9 @@ class TestRemoteDataStore:
     def test_remote_slave_get_values(self):
         """Test getting values from a remote slave context."""
         client = mock.MagicMock()
-        client.read_coils = lambda a, b: ReadCoilsResponse([1] * 10)
+        pdu = ReadCoilsResponse()
+        pdu.setData([True] * 10, 0, 0)
+        client.read_coils = lambda a, b: pdu
         client.read_input_registers = lambda a, b: ReadInputRegistersResponse([10] * 10)
         client.read_holding_registers = lambda a, b: ExceptionResponse(0x15)
 
@@ -69,7 +71,9 @@ class TestRemoteDataStore:
     async def test_remote_slave_async_get_values(self):
         """Test getting values from a remote slave context."""
         client = mock.MagicMock()
-        client.read_coils = mock.MagicMock(return_value=ReadCoilsResponse([1] * 10))
+        pdu = ReadCoilsResponse()
+        pdu.setData([True] * 10, 0, 0)
+        client.read_coils = mock.MagicMock(return_value=pdu)
         client.read_input_registers = mock.MagicMock(
             return_value=ReadInputRegistersResponse([10] * 10)
         )

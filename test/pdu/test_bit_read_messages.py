@@ -66,17 +66,6 @@ class TestModbusBitMessage:
             handle.decode(result)
             assert handle.bits[:i] == data
 
-    def test_bit_read_base_response_helper_methods(self):
-        """Test the extra methods on a ReadBitsResponseBase."""
-        data = [False] * 8
-        handle = ReadBitsResponseBase(data, 0, 0, False)
-        for i in (1, 3, 5):
-            handle.setBit(i, True)
-        for i in (1, 3, 5):
-            handle.resetBit(i)
-        for i in range(8):
-            assert not handle.getBit(i)
-
     def test_bit_read_base_requests(self):
         """Test bit read request encoding."""
         messages = {

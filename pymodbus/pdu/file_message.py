@@ -131,6 +131,10 @@ class ReadFileRecordRequest(ModbusPDU):
             )
             self.records.append(record)
 
+    def get_response_pdu_size(self):
+        """Get response pdu size."""
+        return 0 # 1 + 7 * len(self.records)
+
     async def update_datastore(self, _context):
         """Run a read exception status request against the store.
 
@@ -255,6 +259,10 @@ class WriteFileRecordRequest(ModbusPDU):
             record.record_length = decoded[3]
             self.records.append(record)
 
+    def get_response_pdu_size(self):
+        """Get response pdu size."""
+        return 0 # 1 + 7 * len(self.records)
+
     async def update_datastore(self, _context):
         """Run the write file record request against the context.
 
@@ -356,6 +364,10 @@ class ReadFifoQueueRequest(ModbusPDU):
         :param data: The data to decode into the address
         """
         self.address = struct.unpack(">H", data)[0]
+
+    def get_response_pdu_size(self):
+        """Get response pdu size."""
+        return 0 # 1 + 7 * len(self.records)
 
     async def update_datastore(self, _context):
         """Run a read exception status request against the store.

@@ -32,7 +32,7 @@ class ReadExceptionStatusRequest(ModbusPDU):
     def __init__(self, slave=None, transaction=0, skip_encode=0):
         """Initialize a new instance."""
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
 
     def encode(self):
         """Encode the message."""
@@ -75,7 +75,7 @@ class ReadExceptionStatusResponse(ModbusPDU):
         :param status: The status response to report
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.status = status if status < 256 else 255
 
     def encode(self):
@@ -132,7 +132,7 @@ class GetCommEventCounterRequest(ModbusPDU):
     def __init__(self, slave=1, transaction=0, skip_encode=False):
         """Initialize a new instance."""
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
 
     def encode(self):
         """Encode the message."""
@@ -176,7 +176,7 @@ class GetCommEventCounterResponse(ModbusPDU):
         :param count: The current event counter value
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.count = count
         self.status = True  # this means we are ready, not waiting
 
@@ -238,7 +238,7 @@ class GetCommEventLogRequest(ModbusPDU):
     def __init__(self, slave=1, transaction=0, skip_encode=False):
         """Initialize a new instance."""
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
 
     def encode(self):
         """Encode the message."""
@@ -292,7 +292,7 @@ class GetCommEventLogResponse(ModbusPDU):
         :param events: The collection of events to send
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.status = status
         self.message_count = message_count
         self.event_count = event_count
@@ -364,7 +364,7 @@ class ReportSlaveIdRequest(ModbusPDU):
 
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
 
     def encode(self):
         """Encode the message."""
@@ -424,7 +424,7 @@ class ReportSlaveIdResponse(ModbusPDU):
         :param status: The status response to report
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.identifier = identifier
         self.status = status
         self.byte_count = None

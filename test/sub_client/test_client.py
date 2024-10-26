@@ -241,7 +241,7 @@ async def test_client_instanciate(
     client.connect = lambda: False
     client.transport = None
     pdu = ModbusPDU()
-    pdu.setData(0, 0, False)
+    pdu.setBaseData(0, 0, False)
     with pytest.raises(ConnectionException):
         client.execute(False, pdu)
 
@@ -693,7 +693,7 @@ async def test_client_build_response():
         comm_params=CommParams(),
     )
     pdu = ModbusPDU()
-    pdu.setData(0, 0, False)
+    pdu.setBaseData(0, 0, False)
     with pytest.raises(ConnectionException):
         await client.build_response(pdu)
 
@@ -702,7 +702,7 @@ async def test_client_mixin_execute():
     """Test dummy execute for both sync and async."""
     client = ModbusClientMixin()
     pdu = ModbusPDU()
-    pdu.setData(0, 0, False)
+    pdu.setBaseData(0, 0, False)
     with pytest.raises(NotImplementedError):
         client.execute(False, pdu)
     with pytest.raises(NotImplementedError):

@@ -26,7 +26,7 @@ class WriteSingleRegisterRequest(ModbusPDU):
         :param value: The values to write
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.address = address
         self.value = value
 
@@ -98,7 +98,7 @@ class WriteSingleRegisterResponse(ModbusPDU):
         :param value: The values to write
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.address = address
         self.value = value
 
@@ -159,7 +159,7 @@ class WriteMultipleRegistersRequest(ModbusPDU):
         :param values: The values to write
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.address = address
         if values is None:
             values = []
@@ -250,7 +250,7 @@ class WriteMultipleRegistersResponse(ModbusPDU):
         :param count: The number of registers to write to
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.address = address
         self.count = count
 
@@ -299,7 +299,7 @@ class MaskWriteRegisterRequest(ModbusPDU):
         :param or_mask: The or bitmask to apply to the register address
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.address = address
         self.and_mask = and_mask
         self.or_mask = or_mask
@@ -355,7 +355,7 @@ class MaskWriteRegisterResponse(ModbusPDU):
         :param or_mask: The or bitmask applied to the register address
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.address = address
         self.and_mask = and_mask
         self.or_mask = or_mask

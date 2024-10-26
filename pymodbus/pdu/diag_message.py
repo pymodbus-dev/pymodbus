@@ -34,7 +34,7 @@ class DiagnosticStatusRequest(ModbusPDU):
     def __init__(self, slave=1, transaction=0, skip_encode=False):
         """Initialize a diagnostic request."""
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.message = None
 
     def encode(self):
@@ -96,7 +96,7 @@ class DiagnosticStatusResponse(ModbusPDU):
     def __init__(self, slave=1, transaction=0, skip_encode=False):
         """Initialize a diagnostic response."""
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.message = None
 
     def encode(self):

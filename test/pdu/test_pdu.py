@@ -32,7 +32,7 @@ class TestPdu:
     def test_request_exception(self):
         """Test request exception."""
         request = ModbusPDU()
-        request.setData(0, 0, False)
+        request.setBaseData(0, 0, False)
         request.function_code = 1
         errors = {ModbusExceptions.decode(c): c for c in range(1, 20)}
         for error, code in iter(errors.items()):

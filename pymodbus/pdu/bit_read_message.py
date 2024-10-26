@@ -21,7 +21,7 @@ class ReadBitsRequestBase(ModbusPDU):
         :param slave: Modbus slave slave ID
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
         self.address = address
         self.count = count
 
@@ -72,7 +72,7 @@ class ReadBitsResponseBase(ModbusPDU):
         :param slave: Modbus slave slave ID
         """
         super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().setBaseData(slave, transaction, skip_encode)
 
         #: A list of booleans representing bit values
         self.bits = values or []

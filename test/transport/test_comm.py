@@ -172,12 +172,9 @@ class TestTransportComm:
             (CommType.SERIAL, "socket://localhost:7300"),
         ],
     )
+    @pytest.mark.skipif(SerialTransport.force_poll, reason="Serial poll not supported")
     async def test_serial_poll(self, client, server, use_port):
         """Test connection and data exchange."""
-        if SerialTransport.force_poll:  # pragma: no cover
-            client.close()
-            server.close()
-            return
         Log.debug("test_serial_poll {}", use_port)
         assert await server.listen()
         SerialTransport.force_poll = True

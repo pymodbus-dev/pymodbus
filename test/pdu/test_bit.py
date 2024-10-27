@@ -117,9 +117,6 @@ class TestModbusBitMessage:
             pdu_len = request.get_response_pdu_size()
             assert pdu_len == expected
 
-class TestModbusBitWriteMessage:
-    """Modbus bit write message tests."""
-
     def test_bit_write_base_requests(self):
         """Test bit write base."""
         pdu1 = bit_msg.WriteSingleCoilRequest()

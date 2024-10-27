@@ -11,8 +11,6 @@ from pymodbus.pdu.register_read_message import (
     ReadWriteMultipleRegistersResponse,
 )
 
-from ..conftest import MockContext
-
 
 TEST_MESSAGE = b"\x06\x00\x0a\x00\x0b\x00\x0c"
 
@@ -106,12 +104,12 @@ class TestReadRegisterMessages:
             result = await request.update_datastore(None)
             assert ModbusExceptions.IllegalValue == result.exception_code
 
-    async def test_register_read_requests_validate_errors(self):
+    async def test_register_read_requests_validate_errors(self, mock_context):
         """This tests that the register request messages.
 
         will break on counts that are out of range
         """
-        context = MockContext()
+        context = mock_context()
         requests = [
             ReadHoldingRegistersRequest(-1, 5),
             ReadInputRegistersRequest(-1, 5),
@@ -122,12 +120,12 @@ class TestReadRegisterMessages:
             result = await request.update_datastore(context)
             assert ModbusExceptions.IllegalAddress == result.exception_code
 
-    async def test_register_read_requests_update_datastore(self):
+    async def test_register_read_requests_update_datastore(self, mock_context):
         """This tests that the register request messages.
 
         will break on counts that are out of range
         """
-        context = MockContext(True)
+        context = mock_context(True)
         requests = [
             ReadHoldingRegistersRequest(-1, 5),
             ReadInputRegistersRequest(-1, 5),
@@ -136,18 +134,18 @@ class TestReadRegisterMessages:
             response = await request.update_datastore(context)
             assert request.function_code == response.function_code
 
-    async def test_read_write_multiple_registers_request(self):
+    async def test_read_write_multiple_registers_request(self, mock_context):
         """Test read/write multiple registers."""
-        context = MockContext(True)
+        context = mock_context(True)
         request = ReadWriteMultipleRegistersRequest(
             read_address=1, read_count=10, write_address=1, write_registers=[0x00]
         )
         response = await request.update_datastore(context)
         assert request.function_code == response.function_code
 
-    async def test_read_write_multiple_registers_validate(self):
+    async def test_read_write_multiple_registers_validate(self, mock_context):
         """Test read/write multiple registers."""
-        context = MockContext()
+        context = mock_context()
         context.validate = lambda f, a, c: a == 1
         request = ReadWriteMultipleRegistersRequest(
             read_address=1, read_count=10, write_address=2, write_registers=[0x00]

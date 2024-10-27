@@ -15,8 +15,6 @@ from pymodbus.pdu import (
     ModbusPDU,
 )
 
-from ..conftest import MockContext
-
 
 class TestPdu:
     """Test modbus PDU."""
@@ -241,13 +239,13 @@ class TestPdu:
 
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests)
     @pytest.mark.usefixtures("frame")
-    async def test_pdu_datastore(self, pdutype, args, kwargs):
+    async def test_pdu_datastore(self, pdutype, args, kwargs, mock_context):
         """Test that all PDU types can be created."""
         if args:
             pdu = pdutype()
             pdu.setData(*args)
         else:
             pdu = pdutype(**kwargs)
-        context = MockContext()
+        context = mock_context()
         context.validate = lambda a, b, c: True
         assert await pdu.update_datastore(context)

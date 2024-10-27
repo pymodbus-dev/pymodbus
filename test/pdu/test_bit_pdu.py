@@ -130,13 +130,17 @@ class TestModbusBitWriteMessage:
         pdu3.setData(1, [True] * 5, 0, 0)
         pdu4 = bit_msg.WriteMultipleCoilsRequest()
         pdu4.setData(1, [True], 0, 0)
+        pdu5 = bit_msg.WriteMultipleCoilsResponse()
+        pdu5.setData(1, 5, 0, 0)
+        pdu6 = bit_msg.WriteMultipleCoilsResponse()
+        pdu6.setData(1, 1, 0, 0)
         messages = {
             pdu1: b"\x00\x01\xff\x00",
             pdu2: b"\x00\x01\xff\x00",
             pdu3: b"\x00\x01\x00\x05\x01\x1f",
-            bit_msg.WriteMultipleCoilsResponse(1, 5): b"\x00\x01\x00\x05",
+            pdu5: b"\x00\x01\x00\x05",
             pdu4: b"\x00\x01\x00\x01\x01\x01",
-            bit_msg.WriteMultipleCoilsResponse(1, 1): b"\x00\x01\x00\x01",
+            pdu6: b"\x00\x01\x00\x01",
         }
         for request, expected in iter(messages.items()):
             assert request.encode() == expected
@@ -232,11 +236,13 @@ class TestModbusBitWriteMessage:
         pdu2.setData(1, True, 0, 0)
         pdu3 = bit_msg.WriteMultipleCoilsRequest()
         pdu3.setData(1, [True] * 5, 0, 0)
+        pdu4 = bit_msg.WriteMultipleCoilsResponse()
+        pdu4.setData(1, 5, 0, 0)
         requests = [
             pdu1,
             pdu2,
             pdu3,
-            bit_msg.WriteMultipleCoilsResponse(1, 5),
+            pdu4,
         ]
         for request in requests:
             result = str(request)

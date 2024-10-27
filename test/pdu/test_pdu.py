@@ -125,7 +125,7 @@ class TestPdu:
         (bit_msg.ReadCoilsResponse, ([True, True], 17, 0), {}, b'\x01\x01\x03'),
         (bit_msg.ReadDiscreteInputsResponse, ([True, True], 17, 0), {}, b'\x02\x01\x03'),
         (bit_msg.WriteSingleCoilResponse, (117, True, 0, 0), {}, b'\x05\x00\x75\xff\x00'),
-        (bit_msg.WriteMultipleCoilsResponse, (), {"address": 117, "count": 3}, b'\x0f\x00\x75\x00\x03'),
+        (bit_msg.WriteMultipleCoilsResponse, (117, 3, 0, 0), {}, b'\x0f\x00\x75\x00\x03'),
         (diag_msg.DiagnosticStatusResponse, (), {}, b'\x08\x27\x0f'),
         (diag_msg.DiagnosticStatusSimpleResponse, (), {"data": 0x1010}, b'\x08\x27\x0f\x10\x10'),
         (diag_msg.ReturnQueryDataResponse, (), {"message": b'AB'}, b'\x08\x00\x00\x41\x42'),
@@ -251,5 +251,3 @@ class TestPdu:
         context = MockContext()
         context.validate = lambda a, b, c: True
         assert await pdu.update_datastore(context)
-
-

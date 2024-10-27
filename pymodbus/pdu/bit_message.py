@@ -1,6 +1,5 @@
 """Bit Reading Request/Response messages."""
 
-# pylint: disable=missing-type-doc
 import struct
 from typing import cast
 
@@ -9,10 +8,6 @@ from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.pdu.pdu import ModbusExceptions as merror
 from pymodbus.pdu.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
-
-
-_turn_coil_on = struct.pack(">H", ModbusStatus.ON)
-_turn_coil_off = struct.pack(">H", ModbusStatus.OFF)
 
 
 class ReadCoilsRequest(ModbusPDU):
@@ -204,7 +199,9 @@ class WriteMultipleCoilsRequest(ModbusPDU):
         await context.async_setValues(
             self.function_code, self.address, self.values
         )
-        return WriteMultipleCoilsResponse(self.address, count)
+        pdu = WriteMultipleCoilsResponse()
+        pdu.setData(self.address, count, self.slave_id, self.transaction_id)
+        return pdu
 
     def __str__(self) -> str:
         """Return a string representation of the instance."""
@@ -220,39 +217,31 @@ class WriteMultipleCoilsRequest(ModbusPDU):
 
 
 class WriteMultipleCoilsResponse(ModbusPDU):
-    """The normal response returns the function code.
-
-    Starting address, and quantity of coils forced.
-    """
+    """WriteMultipleCoilsResponse."""
 
     function_code = 15
     rtu_frame_size = 8
 
-    def __init__(self, address=None, count=None, slave=1, transaction=0):
-        """Initialize a new instance.
-
-        :param address: The starting variable address written to
-        :param count: The number of values written
-        """
+    def __init__(self) -> None:
+        """Initialize a new instance."""
         super().__init__()
-        super().setBaseData(slave, transaction)
+        self.address: int = 0
+        self.count: int = 0
+
+    def setData(self, address: int, count: int, slave_id: int, transaction_id: int) -> None:
+        """Set data."""
+        super().setBaseData(slave_id, transaction_id)
         self.address = address
         self.count = count
 
-    def encode(self):
-        """Encode write coils response.
-
-        :returns: The byte encoded message
-        """
+    def encode(self) -> bytes:
+        """Encode write coils response."""
         return struct.pack(">HH", self.address, self.count)
 
-    def decode(self, data):
-        """Decode a write coils response.
-
-        :param data: The packet data to decode
-        """
+    def decode(self, data: bytes) -> None:
+        """Decode a write coils response."""
         self.address, self.count = struct.unpack(">HH", data)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string representation of the instance."""
         return f"{self.__class__.__name__}({self.address}, {self.count})"

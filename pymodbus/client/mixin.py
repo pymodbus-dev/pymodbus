@@ -342,7 +342,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     def write_coils(
         self,
         address: int,
-        values: list[bool] | bool,
+        values: list[bool],
         slave: int = 1,
         no_response_expected: bool = False
     ) -> T:
@@ -354,9 +354,13 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
 
+        write ON/OFF to multiple coils in a remote device.
+
         Coils are addressed as 0-N (Note some device manuals uses 1-N, assuming 1==0).
         """
-        return self.execute(no_response_expected, pdu_bit.WriteMultipleCoilsRequest(address, values=values, slave=slave))
+        pdu = pdu_bit.WriteMultipleCoilsRequest()
+        pdu.setData(address, values, slave, 0)
+        return self.execute(no_response_expected, pdu)
 
     def write_registers(
         self,

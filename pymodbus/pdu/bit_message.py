@@ -161,39 +161,23 @@ class WriteSingleCoilRequest(WriteSingleCoilResponse):
         return 1 + 2 + 2
 
 
-class WriteMultipleCoilsRequest(WriteSingleCoilRequest):
-    """This function code is used to forcea sequence of coils.
-
-    To either ON or OFF in a remote device. The Request PDU specifies the coil
-    references to be forced. Coils are addressed starting at zero. Therefore
-    coil numbered 1 is addressed as 0.
-
-    The requested ON/OFF states are specified by contents of the request
-    data field. A logical "1" in a bit position of the field requests the
-    corresponding output to be ON. A logical "0" requests it to be OFF."
-    """
+class WriteMultipleCoilsRequest(ModbusPDU):
+    """WriteMultipleCoilsRequest."""
 
     function_code = 15
     rtu_byte_count_pos = 6
 
-    def __init__(self, address=0, values=None, slave=None, transaction=0):
-        """Initialize a new instance.
-
-        :param address: The starting request address
-        :param values: The values to write
-        """
+    def __init__(self) -> None:
+        """Initialize a new instance."""
         super().__init__()
-        super().setBaseData(slave, transaction)
+        self.address: int = 0
+        self.values: list[bool] = []
+
+    def setData(self, address: int, values: list[bool], slave_id: int, transaction_id: int) -> None:
+        """Set data."""
+        super().setBaseData(slave_id, transaction_id)
         self.address = address
-        if values is None:
-            values = []
-        elif not hasattr(values, "__iter__"):
-            values = [values]
-        for value in values:
-            if value and not isinstance(value, bool):
-                raise TypeError("NO BOOL")
         self.values = values
-        self.byte_count = (len(self.values) + 7) // 8
 
     def encode(self):
         """Encode write coils request.
@@ -201,8 +185,8 @@ class WriteMultipleCoilsRequest(WriteSingleCoilRequest):
         :returns: The byte encoded message
         """
         count = len(self.values)
-        self.byte_count = (count + 7) // 8
-        packet = struct.pack(">HHB", self.address, count, self.byte_count)
+        byte_count = (count + 7) // 8
+        packet = struct.pack(">HHB", self.address, count, byte_count)
         packet += pack_bitstring(self.values)
         return packet
 
@@ -211,7 +195,7 @@ class WriteMultipleCoilsRequest(WriteSingleCoilRequest):
 
         :param data: The packet data to decode
         """
-        self.address, count, self.byte_count = struct.unpack(">HHB", data[0:5])
+        self.address, count, _ = struct.unpack(">HHB", data[0:5])
         values = unpack_bitstring(data[5:])
         self.values = values[:count]
 
@@ -223,8 +207,6 @@ class WriteMultipleCoilsRequest(WriteSingleCoilRequest):
         """
         count = len(self.values)
         if not 1 <= count <= 0x07B0:
-            return self.doException(merror.IllegalValue)
-        if self.byte_count != (count + 7) // 8:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, count):
             return self.doException(merror.IllegalAddress)

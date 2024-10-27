@@ -85,7 +85,7 @@ class TestPdu:
         (bit_msg.ReadCoilsRequest, (117, 3, 0, 0), {}, b'\x01\x00\x75\x00\x03'),
         (bit_msg.ReadDiscreteInputsRequest, (117, 3, 0, 0), {}, b'\x02\x00\x75\x00\x03'),
         (bit_msg.WriteSingleCoilRequest, (117, True, 0, 0), {}, b'\x05\x00\x75\xff\x00'),
-        (bit_msg.WriteMultipleCoilsRequest, (), {"address": 117, "values": [True, False, True]}, b'\x0f\x00\x75\x00\x03\x01\x05'),
+        (bit_msg.WriteMultipleCoilsRequest, (117, [True, False, True], 0, 0), {}, b'\x0f\x00\x75\x00\x03\x01\x05'),
         (diag_msg.DiagnosticStatusRequest, (), {}, b'\x08\x27\x0f'),
         (diag_msg.DiagnosticStatusSimpleRequest, (), {"data": 0x1010}, b'\x08\x27\x0f\x10\x10'),
         (diag_msg.ReturnQueryDataRequest, (), {"message": b'\x10\x01'}, b'\x08\x00\x00\x10\x01'),

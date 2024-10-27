@@ -1,11 +1,4 @@
-"""Bit Message Test Fixture.
-
-This fixture tests the functionality of all the
-bit based request/response messages:
-
-* Read/Write Discretes
-* Read Coils
-"""
+"""Bit Message Test Fixture."""
 
 import pymodbus.pdu.bit_message as bit_msg
 from pymodbus.pdu import ModbusExceptions
@@ -16,125 +9,88 @@ class TestModbusBitMessage:
 
     def test_bit_read_base_response_encoding(self):
         """Test basic bit message encoding/decoding."""
-        for i in range(20):
+        pdu =  bit_msg.ReadCoilsResponse()
+        for i in range(1, 20):
             data = [True] * i
-            pdu =  bit_msg.ReadCoilsResponse()
             pdu.setData(data, 0, 0)
-            result = pdu.encode()
-            pdu.decode(result)
-            assert pdu.bits[:i] == data
+            pdu.decode(pdu.encode())
+            if i % 8:
+                data.extend([False] * (8 - (i % 8)))
+            assert pdu.bits == data
 
     def test_bit_read_base_requests(self):
         """Test bit read request encoding."""
-        pdu = bit_msg.ReadCoilsResponse()
-        pdu.setData([1, 0, 1, 1, 0], 0, 0)
-        messages = {
-            bit_msg.ReadCoilsRequest(): b"\x00\x0c\x00\x0e",
-            pdu: b"\x01\x0d",
-        }
-        first = True
-        for request, expected in iter(messages.items()):
-            if first:
-                request.setData(12, 14, 0, 0)
-                first = False
-            assert request.encode() == expected
+        for pdu, args, expected in (
+            (bit_msg.ReadCoilsRequest, (12, 14, 0, 0), b"\x00\x0c\x00\x0e"),
+            (bit_msg.ReadCoilsResponse, ([True, False, True, True, False], 0, 0), b"\x01\x0d"),
+        ):
+            pdu_obj = pdu()
+            pdu_obj.setData(*args)
+            assert pdu_obj.encode() == expected
 
     async def test_bit_read_update_datastore_value_errors(self, mock_context):
         """Test bit read request encoding."""
         context = mock_context()
-        pdu1 = bit_msg.ReadCoilsRequest()
-        pdu1.setData(1, 0x800, 0, 0)
-        pdu2 = bit_msg.ReadDiscreteInputsRequest()
-        pdu2.setData(1, 0x800, 0, 0)
-        requests = [
-            pdu1,
-            pdu2,
-        ]
-        for request in requests:
-            result = await request.update_datastore(context)
+        for pdu, args in (
+            (bit_msg.ReadCoilsRequest, (1, 0x800, 0, 0)),
+            (bit_msg.ReadDiscreteInputsRequest, (1, 0x800, 0, 0)),
+        ):
+            pdu_obj = pdu()
+            pdu_obj.setData(*args)
+            result = await pdu_obj.update_datastore(context)
             assert ModbusExceptions.IllegalValue == result.exception_code
 
     async def test_bit_read_update_datastore_address_errors(self, mock_context):
         """Test bit read request encoding."""
         context = mock_context()
-        pdu1 = bit_msg.ReadCoilsRequest()
-        pdu1.setData(1, 5, 0, 0)
-        pdu2 = bit_msg.ReadDiscreteInputsRequest()
-        pdu2.setData(1, 5, 0, 0)
-        requests = [
-            pdu1,
-            pdu2,
-        ]
-        for request in requests:
-            result = await request.update_datastore(context)
+        for pdu, args in (
+            (bit_msg.ReadCoilsRequest, (1, 5, 0, 0)),
+            (bit_msg.ReadDiscreteInputsRequest, (1, 5, 0, 0)),
+        ):
+            pdu_obj = pdu()
+            pdu_obj.setData(*args)
+            result = await pdu_obj.update_datastore(context)
             assert ModbusExceptions.IllegalAddress == result.exception_code
 
     async def test_bit_read_update_datastore_success(self, mock_context):
         """Test bit read request encoding."""
         context = mock_context()
         context.validate = lambda a, b, c: True
-        pdu1 = bit_msg.ReadCoilsRequest()
-        pdu1.setData(1, 5, 0, 0)
-        pdu2 = bit_msg.ReadDiscreteInputsRequest()
-        pdu2.setData(1, 5, 0, 0)
-        requests = [
-            pdu1,
-            pdu2,
-        ]
-        for request in requests:
-            result = await request.update_datastore(context)
+        for pdu, args in (
+            (bit_msg.ReadCoilsRequest, (1, 5, 0, 0)),
+            (bit_msg.ReadDiscreteInputsRequest, (1, 5, 0, 0)),
+        ):
+            pdu_obj = pdu()
+            pdu_obj.setData(*args)
+            result = await pdu_obj.update_datastore(context)
             assert result.bits == [True] * 5
 
     def test_bit_read_get_response_pdu(self):
         """Test bit read message get response pdu."""
-        pdu1 = bit_msg.ReadCoilsRequest()
-        pdu1.setData(1, 5, 0, 0)
-        pdu2 = bit_msg.ReadCoilsRequest()
-        pdu2.setData(1, 8, 0, 0)
-        pdu3 = bit_msg.ReadCoilsRequest()
-        pdu3.setData(0, 16, 0, 0)
-        pdu4 = bit_msg.ReadDiscreteInputsRequest()
-        pdu4.setData(1, 21, 0, 0)
-        pdu5 = bit_msg.ReadDiscreteInputsRequest()
-        pdu5.setData(1, 24, 0, 0)
-        pdu6 = bit_msg.ReadDiscreteInputsRequest()
-        pdu6.setData(1, 1900, 0, 0)
-        requests = {
-            pdu1: 3,
-            pdu2: 3,
-            pdu3: 4,
-            pdu4: 5,
-            pdu5: 5,
-            pdu6: 240,
-        }
-        for request, expected in iter(requests.items()):
-            pdu_len = request.get_response_pdu_size()
-            assert pdu_len == expected
+        for pdu, args, expected in (
+            (bit_msg.ReadCoilsRequest, (1, 5, 0, 0), 3),
+            (bit_msg.ReadCoilsRequest, (1, 8, 0, 0), 3),
+            (bit_msg.ReadCoilsRequest, (1, 16, 0, 0), 4),
+            (bit_msg.ReadDiscreteInputsRequest, (1, 21, 0, 0), 5),
+            (bit_msg.ReadDiscreteInputsRequest, (1, 24, 0, 0), 5),
+            (bit_msg.ReadDiscreteInputsRequest, (1, 1900, 0, 0), 240),
+        ):
+            pdu_obj = pdu()
+            pdu_obj.setData(*args)
+            assert pdu_obj.get_response_pdu_size() == expected
 
     def test_bit_write_base_requests(self):
         """Test bit write base."""
-        pdu1 = bit_msg.WriteSingleCoilRequest()
-        pdu1.setData(1, True, 0, 0)
-        pdu2 = bit_msg.WriteSingleCoilResponse()
-        pdu2.setData(1, True, 0, 0)
-        pdu3 = bit_msg.WriteMultipleCoilsRequest()
-        pdu3.setData(1, [True] * 5, 0, 0)
-        pdu4 = bit_msg.WriteMultipleCoilsRequest()
-        pdu4.setData(1, [True], 0, 0)
-        pdu5 = bit_msg.WriteMultipleCoilsResponse()
-        pdu5.setData(1, 5, 0, 0)
-        pdu6 = bit_msg.WriteMultipleCoilsResponse()
-        pdu6.setData(1, 1, 0, 0)
-        messages = {
-            pdu1: b"\x00\x01\xff\x00",
-            pdu2: b"\x00\x01\xff\x00",
-            pdu3: b"\x00\x01\x00\x05\x01\x1f",
-            pdu5: b"\x00\x01\x00\x05",
-            pdu4: b"\x00\x01\x00\x01\x01\x01",
-            pdu6: b"\x00\x01\x00\x01",
-        }
-        for request, expected in iter(messages.items()):
-            assert request.encode() == expected
+        for pdu, args, expected in (
+            (bit_msg.WriteSingleCoilRequest, (1, True, 0, 0), b"\x00\x01\xff\x00"),
+            (bit_msg.WriteMultipleCoilsRequest, (1, [True] * 5, 0, 0), b"\x00\x01\x00\x05\x01\x1f"),
+            (bit_msg.WriteMultipleCoilsRequest, (1, [True], 0, 0), b"\x00\x01\x00\x01\x01\x01"),
+            (bit_msg.WriteMultipleCoilsResponse, (1, 5, 0, 0), b"\x00\x01\x00\x05"),
+            (bit_msg.WriteMultipleCoilsResponse, (1, 1, 0, 0), b"\x00\x01\x00\x01"),
+        ):
+            pdu_obj = pdu()
+            pdu_obj.setData(*args)
+            assert pdu_obj.encode() == expected
 
     def test_write_message_get_response_pdu(self):
         """Test bit write message."""

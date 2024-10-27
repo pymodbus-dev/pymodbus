@@ -266,7 +266,7 @@ class TestAsyncioServer:
         BasicClient.data = TEST_DATA
         await self.start_server()
         with mock.patch(
-            "pymodbus.pdu.register_read_message.ReadHoldingRegistersRequest.update_datastore",
+            "pymodbus.pdu.register_message.ReadHoldingRegistersRequest.update_datastore",
             side_effect=NoSuchSlaveException,
         ):
             await self.connect_server()

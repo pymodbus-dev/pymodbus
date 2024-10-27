@@ -57,8 +57,7 @@ class ReadDeviceInformationRequest(ModbusPDU):
         :param read_code: The device information read code
         :param object_id: The object to read from
         """
-        super().__init__()
-        super().setBaseData(slave, transaction)
+        super().__init__(transaction_id=transaction, slave_id=slave)
         self.read_code = read_code or DeviceInformation.BASIC
         self.object_id = object_id
 
@@ -136,8 +135,7 @@ class ReadDeviceInformationResponse(ModbusPDU):
         :param read_code: The device information read code
         :param information: The requested information request
         """
-        super().__init__()
-        super().setBaseData(slave, transaction)
+        super().__init__(transaction_id=transaction, slave_id=slave)
         self.read_code = read_code or DeviceInformation.BASIC
         self.information = information or {}
         self.number_of_objects = 0

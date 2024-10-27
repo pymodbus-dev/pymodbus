@@ -38,8 +38,7 @@ class CustomModbusPDU(ModbusPDU):
 
     def __init__(self, values=None, slave=1, transaction=0):
         """Initialize."""
-        super().__init__()
-        super().setBaseData(slave, transaction)
+        super().__init__(slave_id=slave, transaction_id=transaction)
         self.values = values or []
 
     def encode(self):
@@ -71,8 +70,7 @@ class CustomRequest(ModbusPDU):
 
     def __init__(self, address=None, slave=1, transaction=0):
         """Initialize."""
-        super().__init__()
-        super().setBaseData(slave, transaction)
+        super().__init__(slave_id=slave, transaction_id=transaction)
         self.address = address
         self.count = 16
 
@@ -107,8 +105,7 @@ class Read16CoilsRequest(ReadCoilsRequest):
 
         :param address: The address to start reading from
         """
-        super().__init__()
-        self.setData(address, 16, slave, transaction)
+        super().__init__(address=address, count=16, slave_id=slave, transaction_id=transaction)
 
 
 # --------------------------------------------------------------------------- #

@@ -1,11 +1,6 @@
-"""Diagnostic Record Read/Write.
+"""Diagnostic Record Read/Write."""
+from __future__ import annotations
 
-These need to be tied into a the current server context
-or linked to the appropriate data
-"""
-
-
-# pylint: disable=missing-type-doc
 import struct
 
 from pymodbus.constants import ModbusPlusOperation, ModbusStatus
@@ -18,50 +13,42 @@ from pymodbus.utilities import pack_bitstring
 _MCB = ModbusControlBlock()
 
 
-# ---------------------------------------------------------------------------#
-#  Diagnostic Function Codes Base Classes
-#  diagnostic 08, 00-18,20
-# ---------------------------------------------------------------------------#
-#  TODO Make sure all the data is decoded from the response # pylint: disable=fixme
-# ---------------------------------------------------------------------------#
 class DiagnosticStatusRequest(ModbusPDU):
-    """This is a base class for all of the diagnostic request functions."""
+    """DiagnosticStatusRequest."""
 
     function_code = 0x08
-    sub_function_code = 9999
+    sub_function_code: int = 9999
     rtu_frame_size = 8
 
     def __init__(self, slave=1, transaction=0):
         """Initialize a diagnostic request."""
-        super().__init__()
-        super().setBaseData(slave, transaction)
+        super().__init__(transaction_id=transaction, slave_id=slave)
         self.message = None
 
+
     def encode(self):
-        """Encode a diagnostic response.
-
-        we encode the data set in self.message
-
-        :returns: The encoded packet
-        """
+        """Encode a diagnostic response."""
         packet = struct.pack(">H", self.sub_function_code)
         if self.message is not None:
-            if isinstance(self.message, str):
-                packet += self.message.encode()
-            elif isinstance(self.message, bytes):
+            if isinstance(self.message, bytes):
                 packet += self.message
-            elif isinstance(self.message, (list, tuple)):
+                return packet
+            if isinstance(self.message, int):
+                packet += struct.pack(">H", self.message)
+                return packet
+
+            if isinstance(self.message, (list, tuple)):
+                if len(self.message) > 1:
+                    raise RuntimeError("!!! self.message multiple entries !!!")
+
                 for piece in self.message:
                     packet += struct.pack(">H", piece)
-            elif isinstance(self.message, int):
-                packet += struct.pack(">H", self.message)
+                return packet
+            raise RuntimeError(f"UNKNOWN DIAG message type: {type(self.message)}")
         return packet
 
     def decode(self, data):
-        """Decode a diagnostic request.
-
-        :param data: The data to decode into the function code
-        """
+        """Decode a diagnostic request."""
         (self.sub_function_code, ) = struct.unpack(">H", data[:2])
         if self.sub_function_code == ReturnQueryDataRequest.sub_function_code:
             self.message = data[2:]
@@ -72,11 +59,8 @@ class DiagnosticStatusRequest(ModbusPDU):
         """Get response pdu size.
 
         Func_code (1 byte) + Sub function code (2 byte) + Data (2 * N bytes)
-        :return:
         """
-        if not isinstance(self.message, list):
-            self.message = [self.message]
-        return 1 + 2 + 2 * len(self.message)
+        return 1 + 2 + 2
 
     async def update_datastore(self, *args):
         """Implement dummy."""
@@ -99,17 +83,11 @@ class DiagnosticStatusResponse(ModbusPDU):
 
     def __init__(self, slave=1, transaction=0):
         """Initialize a diagnostic response."""
-        super().__init__()
-        super().setBaseData(slave, transaction)
+        super().__init__(transaction_id=transaction, slave_id=slave)
         self.message = None
 
     def encode(self):
-        """Encode diagnostic response.
-
-        we encode the data set in self.message
-
-        :returns: The encoded packet
-        """
+        """Encode diagnostic response."""
         packet = struct.pack(">H", self.sub_function_code)
         if self.message is not None:
             if isinstance(self.message, str):
@@ -124,10 +102,7 @@ class DiagnosticStatusResponse(ModbusPDU):
         return packet
 
     def decode(self, data):
-        """Decode diagnostic response.
-
-        :param data: The data to decode into the function code
-        """
+        """Decode diagnostic response."""
         (self.sub_function_code, ) = struct.unpack(">H", data[:2])
         data = data[2:]
         if self.sub_function_code == ReturnQueryDataRequest.sub_function_code:
@@ -141,51 +116,6 @@ class DiagnosticStatusResponse(ModbusPDU):
             self.message = data
 
 
-class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
-    """Return diagnostic status.
-
-    A large majority of the diagnostic functions are simple
-    status request functions.  They work by sending 0x0000
-    as data and their function code and they are returned
-    2 bytes of data.
-
-    If a function inherits this, they only need to implement
-    the update_datastore method
-    """
-
-    def __init__(self, data=0x0000, slave=1, transaction=0):
-        """Initialize a simple diagnostic request.
-
-        The data defaults to 0x0000 if not provided as over half
-        of the functions require it.
-
-        :param data: The data to send along with the request
-        """
-        DiagnosticStatusRequest.__init__(self, slave=slave, transaction=transaction)
-        self.message = data
-
-
-class DiagnosticStatusSimpleResponse(DiagnosticStatusResponse):
-    """Diagnostic status.
-
-    A large majority of the diagnostic functions are simple
-    status request functions.  They work by sending 0x0000
-    as data and their function code and they are returned
-    2 bytes of data.
-    """
-
-    def __init__(self, data=0x0000, slave=1, transaction=0):
-        """Return a simple diagnostic response.
-
-        :param data: The resulting data to return to the client
-        """
-        DiagnosticStatusResponse.__init__(self, slave=slave, transaction=transaction)
-        self.message = data
-
-
-# ---------------------------------------------------------------------------#
-#  Diagnostic Sub Code 00
-# ---------------------------------------------------------------------------#
 class ReturnQueryDataRequest(DiagnosticStatusRequest):
     """Return query data.
 
@@ -235,9 +165,6 @@ class ReturnQueryDataResponse(DiagnosticStatusResponse):
         self.message = message
 
 
-# ---------------------------------------------------------------------------#
-#  Diagnostic Sub Code 01
-# ---------------------------------------------------------------------------#
 class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
     """Restart communication.
 
@@ -296,9 +223,53 @@ class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
             self.message = [ModbusStatus.OFF]
 
 
-# ---------------------------------------------------------------------------#
-#  Diagnostic Sub Code 02
-# ---------------------------------------------------------------------------#
+
+
+
+
+
+class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
+    """Return diagnostic status.
+
+    A large majority of the diagnostic functions are simple
+    status request functions.  They work by sending 0x0000
+    as data and their function code and they are returned
+    2 bytes of data.
+
+    If a function inherits this, they only need to implement
+    the update_datastore method
+    """
+
+    def __init__(self, data=0x0000, slave=1, transaction=0):
+        """Initialize a simple diagnostic request.
+
+        The data defaults to 0x0000 if not provided as over half
+        of the functions require it.
+
+        :param data: The data to send along with the request
+        """
+        DiagnosticStatusRequest.__init__(self, slave=slave, transaction=transaction)
+        self.message = data
+
+
+class DiagnosticStatusSimpleResponse(DiagnosticStatusResponse):
+    """Diagnostic status.
+
+    A large majority of the diagnostic functions are simple
+    status request functions.  They work by sending 0x0000
+    as data and their function code and they are returned
+    2 bytes of data.
+    """
+
+    def __init__(self, data=0x0000, slave=1, transaction=0):
+        """Return a simple diagnostic response.
+
+        :param data: The resulting data to return to the client
+        """
+        DiagnosticStatusResponse.__init__(self, slave=slave, transaction=transaction)
+        self.message = data
+
+
 class ReturnDiagnosticRegisterRequest(DiagnosticStatusSimpleRequest):
     """The contents of the remote device's 16-bit diagnostic register are returned in the response."""
 
@@ -324,9 +295,6 @@ class ReturnDiagnosticRegisterResponse(DiagnosticStatusSimpleResponse):
     sub_function_code = 0x0002
 
 
-# ---------------------------------------------------------------------------#
-#  Diagnostic Sub Code 03
-# ---------------------------------------------------------------------------#
 class ChangeAsciiInputDelimiterRequest(DiagnosticStatusSimpleRequest):
     """Change ascii input delimiter.
 
@@ -360,9 +328,6 @@ class ChangeAsciiInputDelimiterResponse(DiagnosticStatusSimpleResponse):
     sub_function_code = 0x0003
 
 
-# ---------------------------------------------------------------------------#
-#  Diagnostic Sub Code 04
-# ---------------------------------------------------------------------------#
 class ForceListenOnlyModeRequest(DiagnosticStatusSimpleRequest):
     """Forces the addressed remote device to its Listen Only Mode for MODBUS communications.
 
@@ -400,9 +365,6 @@ class ForceListenOnlyModeResponse(DiagnosticStatusResponse):
         self.message = []
 
 
-# ---------------------------------------------------------------------------#
-#  Diagnostic Sub Code 10
-# ---------------------------------------------------------------------------#
 class ClearCountersRequest(DiagnosticStatusSimpleRequest):
     """Clear ll counters and the diagnostic register.
 
@@ -429,9 +391,6 @@ class ClearCountersResponse(DiagnosticStatusSimpleResponse):
     sub_function_code = 0x000A
 
 
-# ---------------------------------------------------------------------------#
-#  Diagnostic Sub Code 11
-# ---------------------------------------------------------------------------#
 class ReturnBusMessageCountRequest(DiagnosticStatusSimpleRequest):
     """Return bus message count.
 
@@ -462,9 +421,6 @@ class ReturnBusMessageCountResponse(DiagnosticStatusSimpleResponse):
     sub_function_code = 0x000B
 
 
-# ---------------------------------------------------------------------------#
-#  Diagnostic Sub Code 12
-# ---------------------------------------------------------------------------#
 class ReturnBusCommunicationErrorCountRequest(DiagnosticStatusSimpleRequest):
     """Return bus comm. count.
 
@@ -495,9 +451,6 @@ class ReturnBusCommunicationErrorCountResponse(DiagnosticStatusSimpleResponse):
     sub_function_code = 0x000C
 
 
-# ---------------------------------------------------------------------------#
-#  Diagnostic Sub Code 13
-# ---------------------------------------------------------------------------#
 class ReturnBusExceptionErrorCountRequest(DiagnosticStatusSimpleRequest):
     """Return bus exception.
 
@@ -528,9 +481,6 @@ class ReturnBusExceptionErrorCountResponse(DiagnosticStatusSimpleResponse):
     sub_function_code = 0x000D
 
 
-# ---------------------------------------------------------------------------#
-#  Diagnostic Sub Code 14
-# ---------------------------------------------------------------------------#
 class ReturnSlaveMessageCountRequest(DiagnosticStatusSimpleRequest):
     """Return slave message count.
 
@@ -561,9 +511,6 @@ class ReturnSlaveMessageCountResponse(DiagnosticStatusSimpleResponse):
     sub_function_code = 0x000E
 
 
-# ---------------------------------------------------------------------------#
-#  Diagnostic Sub Code 15
-# ---------------------------------------------------------------------------#
 class ReturnSlaveNoResponseCountRequest(DiagnosticStatusSimpleRequest):
     """Return slave no response.
 
@@ -594,9 +541,6 @@ class ReturnSlaveNoResponseCountResponse(DiagnosticStatusSimpleResponse):
     sub_function_code = 0x000F
 
 
-# ---------------------------------------------------------------------------#
-#  Diagnostic Sub Code 16
-# ---------------------------------------------------------------------------#
 class ReturnSlaveNAKCountRequest(DiagnosticStatusSimpleRequest):
     """Return slave NAK count.
 
@@ -629,9 +573,6 @@ class ReturnSlaveNAKCountResponse(DiagnosticStatusSimpleResponse):
     sub_function_code = 0x0010
 
 
-# ---------------------------------------------------------------------------#
-#  Diagnostic Sub Code 17
-# ---------------------------------------------------------------------------#
 class ReturnSlaveBusyCountRequest(DiagnosticStatusSimpleRequest):
     """Return slave busy count.
 
@@ -662,9 +603,6 @@ class ReturnSlaveBusyCountResponse(DiagnosticStatusSimpleResponse):
     sub_function_code = 0x0011
 
 
-# ---------------------------------------------------------------------------#
-#  Diagnostic Sub Code 18
-# ---------------------------------------------------------------------------#
 class ReturnSlaveBusCharacterOverrunCountRequest(DiagnosticStatusSimpleRequest):
     """Return slave character overrun.
 
@@ -697,9 +635,6 @@ class ReturnSlaveBusCharacterOverrunCountResponse(DiagnosticStatusSimpleResponse
     sub_function_code = 0x0012
 
 
-# ---------------------------------------------------------------------------#
-#  Diagnostic Sub Code 19
-# ---------------------------------------------------------------------------#
 class ReturnIopOverrunCountRequest(DiagnosticStatusSimpleRequest):
     """Return IopOverrun.
 
@@ -731,9 +666,6 @@ class ReturnIopOverrunCountResponse(DiagnosticStatusSimpleResponse):
     sub_function_code = 0x0013
 
 
-# ---------------------------------------------------------------------------#
-#  Diagnostic Sub Code 20
-# ---------------------------------------------------------------------------#
 class ClearOverrunCountRequest(DiagnosticStatusSimpleRequest):
     """Clear the overrun error counter and reset the error flag.
 
@@ -758,9 +690,6 @@ class ClearOverrunCountResponse(DiagnosticStatusSimpleResponse):
     sub_function_code = 0x0014
 
 
-# ---------------------------------------------------------------------------#
-#  Diagnostic Sub Code 21
-# ---------------------------------------------------------------------------#
 class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
     """Get/Clear modbus plus request.
 

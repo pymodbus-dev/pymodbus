@@ -6,8 +6,7 @@ import pymodbus.pdu.diag_message as diag_msg
 import pymodbus.pdu.file_message as file_msg
 import pymodbus.pdu.mei_message as mei_msg
 import pymodbus.pdu.other_message as o_msg
-import pymodbus.pdu.register_read_message as reg_r_msg
-import pymodbus.pdu.register_write_message as reg_w_msg
+import pymodbus.pdu.register_message as reg_msg
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.pdu import (
     ExceptionResponse,
@@ -40,7 +39,7 @@ class TestPdu:
         """Test request exception."""
         request = ModbusPDU()
         request.function_code = 1
-        errors = {ModbusExceptions.decode(c): c for c in range(1, 20)}
+        errors = {data.name: data.value for data in ModbusExceptions}
         for error, code in iter(errors.items()):
             result = request.doException(code)
             assert str(result) == f"Exception Response(129, 1, {error})"
@@ -80,10 +79,10 @@ class TestPdu:
     # --------------------------
 
     requests = [
-        (bit_msg.ReadCoilsRequest, (117, 3, 0, 0), {}, b'\x01\x00\x75\x00\x03'),
-        (bit_msg.ReadDiscreteInputsRequest, (117, 3, 0, 0), {}, b'\x02\x00\x75\x00\x03'),
-        (bit_msg.WriteSingleCoilRequest, (117, True, 0, 0), {}, b'\x05\x00\x75\xff\x00'),
-        (bit_msg.WriteMultipleCoilsRequest, (117, [True, False, True], 0, 0), {}, b'\x0f\x00\x75\x00\x03\x01\x05'),
+        (bit_msg.ReadCoilsRequest, (), {"address": 117, "count": 3}, b'\x01\x00\x75\x00\x03'),
+        (bit_msg.ReadDiscreteInputsRequest, (), {"address": 117, "count": 3}, b'\x02\x00\x75\x00\x03'),
+        (bit_msg.WriteSingleCoilRequest, (), {"address": 117, "bits": [True]}, b'\x05\x00\x75\xff\x00'),
+        (bit_msg.WriteMultipleCoilsRequest, (), {"address": 117, "bits": [True, False, True]}, b'\x0f\x00\x75\x00\x03\x01\x05'),
         (diag_msg.DiagnosticStatusRequest, (), {}, b'\x08\x27\x0f'),
         (diag_msg.DiagnosticStatusSimpleRequest, (), {"data": 0x1010}, b'\x08\x27\x0f\x10\x10'),
         (diag_msg.ReturnQueryDataRequest, (), {"message": b'\x10\x01'}, b'\x08\x00\x00\x10\x01'),
@@ -111,19 +110,19 @@ class TestPdu:
         (o_msg.GetCommEventCounterRequest, (), {}, b'\x0b'),
         (o_msg.GetCommEventLogRequest, (), {}, b'\x0c'),
         (o_msg.ReportSlaveIdRequest, (), {}, b'\x11'),
-        (reg_r_msg.ReadHoldingRegistersRequest, (), {"address": 117, "count": 3}, b'\x03\x00\x75\x00\x03'),
-        (reg_r_msg.ReadInputRegistersRequest, (), {"address": 117, "count": 3}, b'\x04\x00\x75\x00\x03'),
-        (reg_r_msg.ReadWriteMultipleRegistersRequest, (), {"read_address": 17, "read_count": 2, "write_address": 25, "write_registers": [111, 112]}, b'\x17\x00\x11\x00\x02\x00\x19\x00\x02\x04\x00\x6f\x00\x70'),
-        (reg_w_msg.WriteMultipleRegistersRequest, (), {"address": 117, "values": [111, 121, 131]}, b'\x10\x00\x75\x00\x03\x06\x00\x6f\x00\x79\x00\x83'),
-        (reg_w_msg.WriteSingleRegisterRequest, (), {"address": 117, "value": 112}, b'\x06\x00\x75\x00\x70'),
-        (reg_w_msg.MaskWriteRegisterRequest, (), {"address": 0x0104, "and_mask": 0xE1D2, "or_mask": 0x1234}, b'\x16\x01\x04\xe1\xd2\x12\x34'),
+        (reg_msg.ReadHoldingRegistersRequest, (), {"address": 117, "count": 3}, b'\x03\x00\x75\x00\x03'),
+        (reg_msg.ReadInputRegistersRequest, (), {"address": 117, "count": 3}, b'\x04\x00\x75\x00\x03'),
+        (reg_msg.ReadWriteMultipleRegistersRequest, (), {"read_address": 17, "read_count": 2, "write_address": 25, "write_registers": [111, 112]}, b'\x17\x00\x11\x00\x02\x00\x19\x00\x02\x04\x00\x6f\x00\x70'),
+        (reg_msg.WriteMultipleRegistersRequest, (), {"address": 117, "values": [111, 121, 131]}, b'\x10\x00\x75\x00\x03\x06\x00\x6f\x00\x79\x00\x83'),
+        (reg_msg.WriteSingleRegisterRequest, (), {"address": 117, "value": 112}, b'\x06\x00\x75\x00\x70'),
+        (reg_msg.MaskWriteRegisterRequest, (), {"address": 0x0104, "and_mask": 0xE1D2, "or_mask": 0x1234}, b'\x16\x01\x04\xe1\xd2\x12\x34'),
     ]
 
     responses = [
-        (bit_msg.ReadCoilsResponse, ([True, True], 17, 0), {}, b'\x01\x01\x03'),
-        (bit_msg.ReadDiscreteInputsResponse, ([True, True], 17, 0), {}, b'\x02\x01\x03'),
-        (bit_msg.WriteSingleCoilResponse, (117, True, 0, 0), {}, b'\x05\x00\x75\xff\x00'),
-        (bit_msg.WriteMultipleCoilsResponse, (117, 3, 0, 0), {}, b'\x0f\x00\x75\x00\x03'),
+        (bit_msg.ReadCoilsResponse, (), {"bits": [True, True], "address": 17}, b'\x01\x01\x03'),
+        (bit_msg.ReadDiscreteInputsResponse, (), {"bits": [True, True], "address": 17}, b'\x02\x01\x03'),
+        (bit_msg.WriteSingleCoilResponse, (), {"address": 117, "bits": [True]}, b'\x05\x00\x75\xff\x00'),
+        (bit_msg.WriteMultipleCoilsResponse, (), {"address": 117, "count": 3}, b'\x0f\x00\x75\x00\x03'),
         (diag_msg.DiagnosticStatusResponse, (), {}, b'\x08\x27\x0f'),
         (diag_msg.DiagnosticStatusSimpleResponse, (), {"data": 0x1010}, b'\x08\x27\x0f\x10\x10'),
         (diag_msg.ReturnQueryDataResponse, (), {"message": b'AB'}, b'\x08\x00\x00\x41\x42'),
@@ -151,12 +150,12 @@ class TestPdu:
         (o_msg.GetCommEventCounterResponse, (), {"count": 123}, b'\x0b\x00\x00\x00\x7b'),
         (o_msg.GetCommEventLogResponse, (), {"status": True, "message_count": 12, "event_count": 7, "events": [12, 14]}, b'\x0c\x08\x00\x00\x00\x07\x00\x0c\x0c\x0e'),
         (o_msg.ReportSlaveIdResponse, (), {"identifier": b'\x12', "status": True}, b'\x11\x02\x12\xff'),
-        (reg_r_msg.ReadHoldingRegistersResponse, (), {"values": [3, 17]}, b'\x03\x04\x00\x03\x00\x11'),
-        (reg_r_msg.ReadInputRegistersResponse, (), {"values": [3, 17]}, b'\x04\x04\x00\x03\x00\x11'),
-        (reg_r_msg.ReadWriteMultipleRegistersResponse, (), {"values": [1, 2]}, b'\x17\x04\x00\x01\x00\x02'),
-        (reg_w_msg.WriteSingleRegisterResponse, (), {"address": 117, "value": 112}, b'\x06\x00\x75\x00\x70'),
-        (reg_w_msg.WriteMultipleRegistersResponse, (), {"address": 117, "count": 3}, b'\x10\x00\x75\x00\x03'),
-        (reg_w_msg.MaskWriteRegisterResponse, (), {"address": 0x0104, "and_mask": 0xE1D2, "or_mask": 0x1234}, b'\x16\x01\x04\xe1\xd2\x12\x34'),
+        (reg_msg.ReadHoldingRegistersResponse, (), {"registers": [3, 17]}, b'\x03\x04\x00\x03\x00\x11'),
+        (reg_msg.ReadInputRegistersResponse, (), {"registers": [3, 17]}, b'\x04\x04\x00\x03\x00\x11'),
+        (reg_msg.ReadWriteMultipleRegistersResponse, (), {"registers": [1, 2]}, b'\x17\x04\x00\x01\x00\x02'),
+        (reg_msg.WriteSingleRegisterResponse, (), {"address": 117, "value": 112}, b'\x06\x00\x75\x00\x70'),
+        (reg_msg.WriteMultipleRegistersResponse, (), {"address": 117, "count": 3}, b'\x10\x00\x75\x00\x03'),
+        (reg_msg.MaskWriteRegisterResponse, (), {"address": 0x0104, "and_mask": 0xE1D2, "or_mask": 0x1234}, b'\x16\x01\x04\xe1\xd2\x12\x34'),
     ]
 
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests)
@@ -186,7 +185,10 @@ class TestPdu:
         slave_id = 63
         if args:
             return
-        pdu = pdutype(transaction=tid, slave=slave_id, **kwargs)
+        try:
+            pdu = pdutype(transaction=tid, slave=slave_id, **kwargs)
+        except TypeError:
+            pdu = pdutype(transaction_id=tid, slave_id=slave_id, **kwargs)
         assert pdu
         assert str(pdu)
         assert pdu.slave_id == slave_id

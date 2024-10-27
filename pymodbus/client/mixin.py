@@ -11,8 +11,7 @@ import pymodbus.pdu.diag_message as pdu_diag
 import pymodbus.pdu.file_message as pdu_file_msg
 import pymodbus.pdu.mei_message as pdu_mei
 import pymodbus.pdu.other_message as pdu_other_msg
-import pymodbus.pdu.register_read_message as pdu_reg_read
-import pymodbus.pdu.register_write_message as pdu_req_write
+import pymodbus.pdu.register_message as pdu_reg
 from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ModbusPDU
 
@@ -74,9 +73,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
         Coils are addressed as 0-N (Note some device manuals uses 1-N, assuming 1==0).
         """
-        pdu = pdu_bit.ReadCoilsRequest()
-        pdu.setData(address, count, slave, 0)
-        return self.execute(no_response_expected, pdu)
+        return self.execute(no_response_expected, pdu_bit.ReadCoilsRequest(address=address, count=count, slave_id=slave))
 
     def read_discrete_inputs(self,
                              address: int,
@@ -95,8 +92,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
         Discrete Inputs are addressed as 0-N (Note some device manuals uses 1-N, assuming 1==0).
         """
-        pdu = pdu_bit.ReadDiscreteInputsRequest()
-        pdu.setData(address, count, slave, 0)
+        pdu = pdu_bit.ReadDiscreteInputsRequest(address=address, count=count, slave_id=slave)
         return self.execute(no_response_expected, pdu)
 
     def read_holding_registers(self,
@@ -107,12 +103,19 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """Read holding registers (code 0x03).
 
         :param address: Start address to read from
-        :param count: (optional) Number of coils to read
+        :param count: (optional) Number of registers to read
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        This function is used to read the contents of a contiguous block
+        of holding registers in a remote device. The Request specifies the
+        starting register address and the number of registers.
+
+        Registers are addressed starting at zero.
+        Therefore devices that specify 1-16 are addressed as 0-15.
         """
-        return self.execute(no_response_expected, pdu_reg_read.ReadHoldingRegistersRequest(address=address, count=count, slave=slave))
+        return self.execute(no_response_expected, pdu_reg.ReadHoldingRegistersRequest(address=address, count=count, slave_id=slave))
 
     def read_input_registers(self,
                              address: int,
@@ -126,8 +129,15 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        This function is used to read from 1 to approx. 125 contiguous
+        input registers in a remote device. The Request specifies the
+        starting register address and the number of registers.
+
+        Registers are addressed starting at zero.
+        Therefore devices that specify 1-16 are addressed as 0-15.
         """
-        return self.execute(no_response_expected, pdu_reg_read.ReadInputRegistersRequest(address, count, slave=slave))
+        return self.execute(no_response_expected, pdu_reg.ReadInputRegistersRequest(address=address, count=count, slave_id=slave))
 
     def write_coil(self, address: int, value: bool, slave: int = 1, no_response_expected: bool = False) -> T:
         """Write single coil (code 0x05).
@@ -142,8 +152,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
         Coils are addressed as 0-N (Note some device manuals uses 1-N, assuming 1==0).
         """
-        pdu = pdu_bit.WriteSingleCoilRequest()
-        pdu.setData(address, value, slave, 0)
+        pdu = pdu_bit.WriteSingleCoilRequest(address=address, bits=[value], slave_id=slave)
         return self.execute(no_response_expected, pdu)
 
     def write_register(self, address: int, value: bytes | int, slave: int = 1, no_response_expected: bool = False) -> T:
@@ -154,8 +163,15 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        This function is used to write a single holding register in a remote device.
+
+        The Request specifies the address of the register to be written.
+
+        Registers are addressed starting at zero. Therefore register
+        numbered 1 is addressed as 0.
         """
-        return self.execute(no_response_expected, pdu_req_write.WriteSingleRegisterRequest(address, value, slave=slave))
+        return self.execute(no_response_expected, pdu_reg.WriteSingleRegisterRequest(address, value, slave=slave))
 
     def read_exception_status(self, slave: int = 1, no_response_expected: bool = False) -> T:
         """Read Exception Status (code 0x07).
@@ -358,8 +374,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
         Coils are addressed as 0-N (Note some device manuals uses 1-N, assuming 1==0).
         """
-        pdu = pdu_bit.WriteMultipleCoilsRequest()
-        pdu.setData(address, values, slave, 0)
+        pdu = pdu_bit.WriteMultipleCoilsRequest(address=address, bits=values, slave_id=slave)
         return self.execute(no_response_expected, pdu)
 
     def write_registers(
@@ -376,8 +391,11 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        This function is used to write a block of contiguous registers
+        (1 to approx. 120 registers) in a remote device.
         """
-        return self.execute(no_response_expected, pdu_req_write.WriteMultipleRegistersRequest(address, values,slave=slave))
+        return self.execute(no_response_expected, pdu_reg.WriteMultipleRegistersRequest(address, values,slave=slave))
 
     def report_slave_id(self, slave: int = 1, no_response_expected: bool = False) -> T:
         """Report slave ID (code 0x11).
@@ -424,8 +442,13 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) device id
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        This function is used to modify the contents of a specified holding register
+        using a combination of an AND mask, an OR mask, and the register's current contents.
+
+        The function can be used to set or clear individual bits in the register.
         """
-        return self.execute(no_response_expected, pdu_req_write.MaskWriteRegisterRequest(address, and_mask, or_mask, slave=slave))
+        return self.execute(no_response_expected, pdu_reg.MaskWriteRegisterRequest(address, and_mask, or_mask, slave=slave))
 
     def readwrite_registers(
         self,
@@ -433,7 +456,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         read_count: int = 0,
         write_address: int = 0,
         address: int | None = None,
-        values: list[int] | int = 0,
+        values: list[int] | None = None,
         slave: int = 1,
         no_response_expected: bool = False
     ) -> T:
@@ -447,11 +470,20 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        This function performs a combination of one read operation and one
+        write operation in a single MODBUS transaction. The write
+        operation is performed before the read.
+
+        Holding registers are addressed starting at zero. Therefore holding
+        registers 1-16 are addressed in the PDU as 0-15.
         """
+        if not values:
+            values = []
         if address:
             read_address = address
             write_address = address
-        return self.execute(no_response_expected, pdu_reg_read.ReadWriteMultipleRegistersRequest( read_address=read_address, read_count=read_count, write_address=write_address, write_registers=values,slave=slave))
+        return self.execute(no_response_expected, pdu_reg.ReadWriteMultipleRegistersRequest( read_address=read_address, read_count=read_count, write_address=write_address, write_registers=values,slave=slave))
 
     def read_fifo_queue(self, address: int = 0x0000, slave: int = 1, no_response_expected: bool = False) -> T:
         """Read FIFO queue (code 0x18).

@@ -179,32 +179,22 @@ class WriteMultipleCoilsRequest(ModbusPDU):
         self.address = address
         self.values = values
 
-    def encode(self):
-        """Encode write coils request.
-
-        :returns: The byte encoded message
-        """
+    def encode(self) -> bytes:
+        """Encode write coils request."""
         count = len(self.values)
         byte_count = (count + 7) // 8
         packet = struct.pack(">HHB", self.address, count, byte_count)
         packet += pack_bitstring(self.values)
         return packet
 
-    def decode(self, data):
-        """Decode a write coils request.
-
-        :param data: The packet data to decode
-        """
+    def decode(self, data: bytes) -> None:
+        """Decode a write coils request."""
         self.address, count, _ = struct.unpack(">HHB", data[0:5])
         values = unpack_bitstring(data[5:])
         self.values = values[:count]
 
-    async def update_datastore(self, context):
-        """Run a write coils request against a datastore.
-
-        :param context: The datastore to request from
-        :returns: The populated response or exception message
-        """
+    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
+        """Run a request against a datastore."""
         count = len(self.values)
         if not 1 <= count <= 0x07B0:
             return self.doException(merror.IllegalValue)
@@ -216,11 +206,11 @@ class WriteMultipleCoilsRequest(ModbusPDU):
         )
         return WriteMultipleCoilsResponse(self.address, count)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string representation of the instance."""
         return f"{self.__class__.__name__}({self.address}) => {len(self.values)}"
 
-    def get_response_pdu_size(self):
+    def get_response_pdu_size(self) -> int:
         """Get response pdu size.
 
         Func_code (1 byte) + Output Address (2 byte) + Quantity of Outputs  (2 Bytes)

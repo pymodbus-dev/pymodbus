@@ -129,7 +129,7 @@ class TestModbusBitWriteMessage:
         pdu3 = bit_msg.WriteMultipleCoilsRequest()
         pdu3.setData(1, [True] * 5, 0, 0)
         pdu4 = bit_msg.WriteMultipleCoilsRequest()
-        pdu4.setData(1, True, 0, 0)
+        pdu4.setData(1, [True], 0, 0)
         messages = {
             pdu1: b"\x00\x01\xff\x00",
             pdu2: b"\x00\x01\xff\x00",
@@ -155,7 +155,6 @@ class TestModbusBitWriteMessage:
         request = bit_msg.WriteMultipleCoilsRequest()
         request.setData(1, [True] * 5, 0, 0)
         request.decode(b"\x00\x01\x00\x05\x01\x1f")
-        assert request.byte_count == 1
         assert request.address == 1
         assert request.values == [True] * 5
         assert request.get_response_pdu_size() == 5
@@ -163,7 +162,6 @@ class TestModbusBitWriteMessage:
         request = bit_msg.WriteMultipleCoilsRequest()
         request.setData(1, [True], 0, 0)
         request.decode(b"\x00\x01\x00\x01\x01\x01")
-        assert request.byte_count == 1
         assert request.address == 1
         assert request.values == [True]
         assert request.get_response_pdu_size() == 5
@@ -172,7 +170,7 @@ class TestModbusBitWriteMessage:
         """Test write invalid multiple coils."""
         request = bit_msg.WriteMultipleCoilsRequest()
         request.setData(1, None, 0, 0)
-        assert request.values == []
+        assert not request.values
 
     def test_write_single_coil_request_encode(self):
         """Test write single coil."""
@@ -204,13 +202,6 @@ class TestModbusBitWriteMessage:
         # too many values
         request = bit_msg.WriteMultipleCoilsRequest()
         request.setData(2, [], 0, 0)
-        result = await request.update_datastore(context)
-        assert result.exception_code == ModbusExceptions.IllegalValue
-
-        # bad byte count
-        request = bit_msg.WriteMultipleCoilsRequest()
-        request.setData(2, [False] * 4, 0, 0)
-        request.byte_count = 0x00
         result = await request.update_datastore(context)
         assert result.exception_code == ModbusExceptions.IllegalValue
 
@@ -254,5 +245,5 @@ class TestModbusBitWriteMessage:
     def test_pass_falsy_value_in_write_multiple_coils_request(self):
         """Test pass falsy value to write multiple coils."""
         request = bit_msg.WriteMultipleCoilsRequest()
-        request.setData(1, 0, 0, 0)
+        request.setData(1, [0], 0, 0)
         assert request.values == [0]

@@ -20,11 +20,13 @@ The following bullet points are what the maintainers focus on:
 - 3.8.0, with:
     - on dev:
         - skip_encode, zero_mode parameters removed
+        - Simplify PDU bit classes
     - Simplify PDU classes
     - Simplify transaction manager (central control point)
     - Remove ModbusControlBlock
     - new transaction handling
     - transaction 100% coverage
+    - client 100% coverage
 - 4.0.0, with:
     - client async with sync/async API
     - Only one datastore, but with different API`s

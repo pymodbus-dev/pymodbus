@@ -16,7 +16,6 @@ from pymodbus.pdu.file_message import (
     WriteFileRecordRequest,
     WriteFileRecordResponse,
 )
-from test.conftest import MockContext  # pylint: disable=wrong-import-order
 
 
 TEST_MESSAGE = b"\x00\n\x00\x08\x00\x01\x00\x02\x00\x03\x00\x04"
@@ -36,9 +35,9 @@ class TestBitMessage:
         handle.decode(b"\x12\x34")
         assert handle.address == 0x1234
 
-    async def test_read_fifo_queue_request(self):
+    async def test_read_fifo_queue_request(self, mock_context):
         """Test basic bit message encoding/decoding."""
-        context = MockContext()
+        context = mock_context()
         handle = ReadFifoQueueRequest(0x1234)
         result = await handle.update_datastore(context)
         assert isinstance(result, ReadFifoQueueResponse)
@@ -51,9 +50,9 @@ class TestBitMessage:
         result = await handle.update_datastore(context)
         assert ModbusExceptions.IllegalValue == result.exception_code
 
-    async def test_read_fifo_queue_request_error(self):
+    async def test_read_fifo_queue_request_error(self, mock_context):
         """Test basic bit message encoding/decoding."""
-        context = MockContext()
+        context = mock_context()
         handle = ReadFifoQueueRequest(0x1234)
         handle.values = [0x00] * 32
         result = await handle.update_datastore(context)

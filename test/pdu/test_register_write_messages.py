@@ -10,7 +10,7 @@ from pymodbus.pdu.register_write_message import (
     WriteSingleRegisterResponse,
 )
 
-from ..conftest import MockContext, MockLastValuesContext
+from ..conftest import MockLastValuesContext
 
 
 # ---------------------------------------------------------------------------#
@@ -78,9 +78,9 @@ class TestWriteRegisterMessages:
         for request in iter(self.write.keys()):
             assert str(request)
 
-    async def test_write_single_register_request(self):
+    async def test_write_single_register_request(self, mock_context):
         """Test write single register request."""
-        context = MockContext()
+        context = mock_context()
         request = WriteSingleRegisterRequest(0x00, 0xF0000)
         result = await request.update_datastore(context)
         assert result.exception_code == ModbusExceptions.IllegalValue
@@ -93,9 +93,9 @@ class TestWriteRegisterMessages:
         result = await request.update_datastore(context)
         assert result.function_code == request.function_code
 
-    async def test_write_multiple_register_request(self):
+    async def test_write_multiple_register_request(self, mock_context):
         """Test write multiple register request."""
-        context = MockContext()
+        context = mock_context()
         request = WriteMultipleRegistersRequest(0x00, [0x00] * 10)
         result = await request.update_datastore(context)
         assert result.exception_code == ModbusExceptions.IllegalAddress
@@ -154,9 +154,9 @@ class TestWriteRegisterMessages:
         assert isinstance(result, MaskWriteRegisterResponse)
         assert context.last_values == [0x0AF5]
 
-    async def test_mask_write_register_request_invalid_update_datastore(self):
+    async def test_mask_write_register_request_invalid_update_datastore(self, mock_context):
         """Test write register request update_datastore with invalid data."""
-        context = MockContext(valid=False, default=0x0000)
+        context = mock_context(valid=False, default=0x0000)
         handle = MaskWriteRegisterRequest(0x0000, -1, 0x1010)
         result = await handle.update_datastore(context)
         assert ModbusExceptions.IllegalValue == result.exception_code

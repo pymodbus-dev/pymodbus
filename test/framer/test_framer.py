@@ -20,7 +20,7 @@ class TestFramer:
     """Test module."""
 
     def test_setup(self, entry, is_server):
-        """Test conftest."""
+        """Test setup."""
         assert entry == FramerType.RTU
         assert not is_server
         set_calls()

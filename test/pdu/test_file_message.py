@@ -73,7 +73,7 @@ class TestBitMessage:
         handle.decode(message)
         assert handle.values == [1, 2, 3, 4]
 
-    def test_rtu_frame_size(self):
+    def test_frame_size(self):
         """Test that the read fifo queue response can decode."""
         message = TEST_MESSAGE
         result = ReadFifoQueueResponse.calculateRtuFrameSize(message)
@@ -133,7 +133,7 @@ class TestBitMessage:
         handle.decode(request)
         assert handle.records[0] == record
 
-    def test_read_file_record_request_rtu_frame_size(self):
+    def test_read_file_record_request_frame_size(self):
         """Test basic bit message encoding/decoding."""
         request = (
             b"\x00\x00\x0e\x06\x00\x04\x00\x01\x00\x02\x06\x00\x03\x00\x09\x00\x02"
@@ -174,7 +174,7 @@ class TestBitMessage:
         assert handle.records[0] == record1
         assert handle.records[1] == record2
 
-    def test_read_file_record_response_rtu_frame_size(self):
+    def test_read_file_record_response_frame_size(self):
         """Test basic bit message encoding/decoding."""
         request = b"\x00\x00\x0c\x05\x06\x0d\xfe\x00\x20\x05\x05\x06\x33\xcd\x00\x40"
         handle = ReadFileRecordResponse()
@@ -208,7 +208,7 @@ class TestBitMessage:
         handle.decode(request)
         assert handle.records[0] == record
 
-    def test_write_file_record_request_rtu_frame_size(self):
+    def test_write_file_record_request_frame_size(self):
         """Test write file record request rtu frame size calculation."""
         request = b"\x00\x00\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = WriteFileRecordRequest()
@@ -248,7 +248,7 @@ class TestBitMessage:
         handle.decode(request)
         assert handle.records[0] == record
 
-    def test_write_file_record_response_rtu_frame_size(self):
+    def test_write_file_record_response_frame_size(self):
         """Test write file record response rtu frame size calculation."""
         request = b"\x00\x00\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = WriteFileRecordResponse()

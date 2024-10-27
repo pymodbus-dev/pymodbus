@@ -49,12 +49,6 @@ class TestWriteRegisterMessages:
             ): b"\x00\x01\x00\x03\x06\x00\x0a\x00\x0b\x00\x0c",
             WriteMultipleRegistersRequest(1, 0xD): b"\x00\x01\x00\x01\x02\x00\x0D",
             WriteMultipleRegistersResponse(1, 5): b"\x00\x01\x00\x05",
-            WriteSingleRegisterRequest(
-                1, self.payload[0], skip_encode=True
-            ): b"\x00\x01\x12\x34",
-            WriteMultipleRegistersRequest(
-                1, self.payload, skip_encode=True
-            ): b"\x00\x01\x00\x01\x02\x12\x34",
         }
 
     def test_register_write_requests_encode(self):

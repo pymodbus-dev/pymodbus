@@ -431,7 +431,6 @@ class TestFramerType:
         """Test a tcp frame transaction."""
         with mock.patch.object(ModbusPDU, "encode") as mock_encode:
             message = ModbusPDU()
-            message.setBaseData(0, 0, False)
             message.transaction_id = 0x0001
             message.slave_id = 0xFF
             message.function_code = 0x01

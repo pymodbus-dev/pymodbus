@@ -90,9 +90,6 @@ async def run_payload_calls(client):
         # We can write registers
         rr = await client.write_registers(address, registers, slave=slave)
         assert not rr.isError()
-        # Or we can write an encoded binary string
-        rr = await client.write_registers(address, payload, skip_encode=True, slave=1)
-        assert not rr.isError()
 
         # ----------------------------------------------------------------------- #
         # If you need to decode a collection of registers in a weird layout, the

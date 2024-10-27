@@ -110,7 +110,6 @@ class DecodePDU:
                 Log.debug("decode PDU failed for function code {}", function_code)
                 raise ModbusException(f"Unknown response {function_code}")
             pdu = pdu_type()
-            pdu.setBaseData(0, 0, False)
             pdu.decode(frame[1:])
             Log.debug("decoded PDU function_code({} sub {}) -> {} ", pdu.function_code, pdu.sub_function_code, str(pdu))
 

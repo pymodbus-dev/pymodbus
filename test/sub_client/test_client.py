@@ -240,7 +240,6 @@ async def test_client_instanciate(
     client.connect = lambda: False
     client.transport = None
     pdu = ModbusPDU()
-    pdu.setBaseData(0, 0, False)
     with pytest.raises(ConnectionException):
         client.execute(False, pdu)
 
@@ -362,7 +361,8 @@ async def test_client_protocol_handler():
     )
     transport = mock.MagicMock()
     base.ctx.connection_made(transport=transport)
-    reply = pdu_bit.ReadCoilsRequest(1, 1)
+    reply = pdu_bit.ReadCoilsRequest()
+    reply.setData(1, 1, 0, 0)
     reply.transaction_id = 0x00
     base.ctx._handle_response(None)  # pylint: disable=protected-access
     base.ctx._handle_response(reply)  # pylint: disable=protected-access
@@ -415,7 +415,8 @@ async def test_client_protocol_execute():
             timeout_connect=3,
         ),
     )
-    request = pdu_bit.ReadCoilsRequest(1, 1)
+    request = pdu_bit.ReadCoilsRequest()
+    request.setData(1, 1, 0, 0)
     transport = MockTransport(base, request)
     base.ctx.connection_made(transport=transport)
 
@@ -433,7 +434,8 @@ async def test_client_execute_broadcast():
             host="127.0.0.1",
         ),
     )
-    request = pdu_bit.ReadCoilsRequest(1, 1, slave=0)
+    request = pdu_bit.ReadCoilsRequest()
+    request.setData(1, 1, 0, 0)
     transport = MockTransport(base, request)
     base.ctx.connection_made(transport=transport)
     assert await base.async_execute(False, request)
@@ -449,7 +451,8 @@ async def test_client_execute_broadcast_no():
             host="127.0.0.1",
         ),
     )
-    request = pdu_bit.ReadCoilsRequest(1, 1, slave=0)
+    request = pdu_bit.ReadCoilsRequest()
+    request.setData(1, 1, 0, 0)
     transport = MockTransport(base, request)
     base.ctx.connection_made(transport=transport)
     assert not await base.async_execute(True, request)
@@ -465,7 +468,8 @@ async def test_client_protocol_retry():
             timeout_connect=0.1,
         ),
     )
-    request = pdu_bit.ReadCoilsRequest(1, 1)
+    request = pdu_bit.ReadCoilsRequest()
+    request.setData(1, 1, 0, 0)
     transport = MockTransport(base, request, retries=2)
     base.ctx.connection_made(transport=transport)
 
@@ -488,7 +492,8 @@ async def test_client_protocol_timeout():
     )
     # Avoid creating do_reconnect() task
     base.ctx.connection_lost = mock.MagicMock()
-    request = pdu_bit.ReadCoilsRequest(1, 1)
+    request = pdu_bit.ReadCoilsRequest()
+    request.setData(1, 1, 0, 0)
     transport = MockTransport(base, request, retries=4)
     base.ctx.connection_made(transport=transport)
 
@@ -692,7 +697,6 @@ async def test_client_build_response():
         comm_params=CommParams(),
     )
     pdu = ModbusPDU()
-    pdu.setBaseData(0, 0, False)
     with pytest.raises(ConnectionException):
         await client.build_response(pdu)
 
@@ -701,7 +705,6 @@ async def test_client_mixin_execute():
     """Test dummy execute for both sync and async."""
     client = ModbusClientMixin()
     pdu = ModbusPDU()
-    pdu.setBaseData(0, 0, False)
     with pytest.raises(NotImplementedError):
         client.execute(False, pdu)
     with pytest.raises(NotImplementedError):

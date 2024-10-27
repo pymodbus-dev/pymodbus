@@ -247,21 +247,6 @@ class MockLastValuesContext(ModbusBaseSlaveContext):
         self.last_values = values
 
 
-class FakeList:
-    """Todo, replace with magic mock."""
-
-    def __init__(self, size):
-        """Initialize."""
-        self.size = size
-
-    def __len__(self):
-        """Get length."""
-        return self.size
-
-    def __iter__(self):
-        """Iterate."""
-
-
 class mockSocket:  # pylint: disable=invalid-name
     """Mock socket."""
 

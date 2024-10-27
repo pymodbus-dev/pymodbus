@@ -145,7 +145,7 @@ class TestMeiMessage:
         assert handle.information[0x02] == TEST_VERSION
         assert handle.information[0x81] == [b"Test", b"Repeated", b"Another"]
 
-    def test_rtu_frame_size(self):
+    def test_frame_size(self):
         """Test that the read device information response can decode."""
         message = (
             b"\x04\x2B\x0E\x01\x81\x00\x01\x01\x00\x06\x66\x6F\x6F\x62\x61\x72\xD7\x3B"

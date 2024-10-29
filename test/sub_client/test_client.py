@@ -167,9 +167,9 @@ def test_client_mixin(arglist, method, arg, pdu_request):
             "tls": {
                 "pos_arg": "192.168.1.2",
                 "opt_args": {
-                    "port": 211,
-                    "framer": FramerType.ASCII,
-                    "source_address": ("195.6.7.8", 1025),
+                    "port": 802,
+                    "framer": FramerType.TLS,
+                    "source_address": None,
                     "sslctx": None,
                 },
                 "defaults": {

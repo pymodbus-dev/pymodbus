@@ -77,6 +77,8 @@ class AsyncModbusUdpClient(ModbusBaseClient):
             reconnect_delay_max=reconnect_delay_max,
             timeout_connect=timeout,
         )
+        if framer not in [FramerType.SOCKET, FramerType.RTU, FramerType.ASCII]:
+            raise TypeError("Only FramerType SOCKET/RTU/ASCII allowed.")
         ModbusBaseClient.__init__(
             self,
             framer,
@@ -139,6 +141,8 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         retries: int = 3,
     ) -> None:
         """Initialize Modbus UDP Client."""
+        if framer not in [FramerType.SOCKET, FramerType.RTU, FramerType.ASCII]:
+            raise TypeError("Only FramerType SOCKET/RTU/ASCII allowed.")
         self.comm_params = CommParams(
             comm_type=CommType.UDP,
             host=host,

@@ -17,7 +17,6 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import (
     FramerAscii,
     FramerRTU,
-    FramerSocket,
     FramerTLS,
 )
 from test.conftest import mockSocket
@@ -312,10 +311,6 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         assert isinstance(
             ModbusSerialClient("/dev/null", framer=FramerType.RTU).framer,
             FramerRTU,
-        )
-        assert isinstance(
-            ModbusSerialClient("/dev/null", framer=FramerType.SOCKET).framer,
-            FramerSocket,
         )
 
     def test_sync_serial_rtu_client_timeouts(self):

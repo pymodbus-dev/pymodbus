@@ -66,6 +66,8 @@ class AsyncModbusTcpClient(ModbusBaseClient):
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
         if not hasattr(self,"comm_params"):
+            if framer not in [FramerType.SOCKET, FramerType.RTU, FramerType.ASCII]:
+                raise TypeError("Only FramerType SOCKET/RTU/ASCII allowed.")
             self.comm_params = CommParams(
                 comm_type=CommType.TCP,
                 host=host,
@@ -138,6 +140,8 @@ class ModbusTcpClient(ModbusBaseSyncClient):
     ) -> None:
         """Initialize Modbus TCP Client."""
         if not hasattr(self,"comm_params"):
+            if framer not in [FramerType.SOCKET, FramerType.RTU, FramerType.ASCII]:
+                raise TypeError("Only FramerType SOCKET/RTU/ASCII allowed.")
             self.comm_params = CommParams(
                 comm_type=CommType.TCP,
                 host=host,

@@ -65,6 +65,8 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         on_connect_callback: Callable[[bool], None] | None = None,
     ):
         """Initialize Asyncio Modbus TLS Client."""
+        if framer not in [FramerType.TLS]:
+            raise TypeError("Only FramerType TLS allowed.")
         self.comm_params = CommParams(
             comm_type=CommType.TLS,
             host=host,
@@ -159,6 +161,8 @@ class ModbusTlsClient(ModbusTcpClient):
         retries: int = 3,
     ):
         """Initialize Modbus TLS Client."""
+        if framer not in [FramerType.TLS]:
+            raise TypeError("Only FramerType TLS allowed.")
         self.comm_params = CommParams(
             comm_type=CommType.TLS,
             host=host,

@@ -101,8 +101,8 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         packet = self.ctx.framer.buildFrame(request)
 
         count = 0
-        while count <= self.retries:
-            async with self._lock:
+        async with self._lock:
+            while count <= self.retries:
                 req = self.build_response(request)
                 self.ctx.send(packet)
                 if no_response_expected:

@@ -50,7 +50,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         self.last_frame_end: float | None = 0
         self.silent_interval: float = 0
         self._lock = asyncio.Lock()
-        self.accept_no_response_limit = 3
+        self.accept_no_response_limit = retries + 3
         self.count_no_responses = 0
 
     @property

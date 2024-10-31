@@ -27,10 +27,15 @@ class ModbusPDU:
             registers = None,
         ) -> None:
         """Initialize the base data for a modbus request."""
+        if not registers:
+            registers = []
+        for i, value in enumerate(registers):
+            if isinstance(value, bytes):
+                registers[i] = int.from_bytes(value)
         self.transaction_id: int = transaction_id
         self.slave_id: int = slave_id
         self.address: int = address
-        self.count: int = count
+        self.count: int = count if count else len(registers)
         self.bits: list[bool] = bits if bits else []
         self.registers: list[int] = registers if registers else []
         self.fut: asyncio.Future

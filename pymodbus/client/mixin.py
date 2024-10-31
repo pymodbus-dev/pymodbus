@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import struct
-from collections.abc import Sequence
 from enum import Enum
 from typing import Generic, TypeVar
 
@@ -171,7 +170,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         Registers are addressed starting at zero. Therefore register
         numbered 1 is addressed as 0.
         """
-        return self.execute(no_response_expected, pdu_reg.WriteSingleRegisterRequest(address, value, slave=slave))
+        return self.execute(no_response_expected, pdu_reg.WriteSingleRegisterRequest(address=address, registers=[value], slave_id=slave))
 
     def read_exception_status(self, slave: int = 1, no_response_expected: bool = False) -> T:
         """Read Exception Status (code 0x07).
@@ -380,7 +379,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     def write_registers(
         self,
         address: int,
-        values: Sequence[bytes | int],
+        values: list[bytes] | list[int],
         slave: int = 1,
         no_response_expected: bool = False
     ) -> T:
@@ -395,7 +394,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         This function is used to write a block of contiguous registers
         (1 to approx. 120 registers) in a remote device.
         """
-        return self.execute(no_response_expected, pdu_reg.WriteMultipleRegistersRequest(address, values,slave=slave))
+        return self.execute(no_response_expected, pdu_reg.WriteMultipleRegistersRequest(address=address, registers=values,slave_id=slave))
 
     def report_slave_id(self, slave: int = 1, no_response_expected: bool = False) -> T:
         """Report slave ID (code 0x11).
@@ -448,7 +447,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
         The function can be used to set or clear individual bits in the register.
         """
-        return self.execute(no_response_expected, pdu_reg.MaskWriteRegisterRequest(address, and_mask, or_mask, slave=slave))
+        return self.execute(no_response_expected, pdu_reg.MaskWriteRegisterRequest(address=address, and_mask=and_mask, or_mask=or_mask, slave_id=slave))
 
     def readwrite_registers(
         self,
@@ -483,7 +482,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         if address:
             read_address = address
             write_address = address
-        return self.execute(no_response_expected, pdu_reg.ReadWriteMultipleRegistersRequest( read_address=read_address, read_count=read_count, write_address=write_address, write_registers=values,slave=slave))
+        return self.execute(no_response_expected, pdu_reg.ReadWriteMultipleRegistersRequest( read_address=read_address, read_count=read_count, write_address=write_address, write_registers=values,slave_id=slave))
 
     def read_fifo_queue(self, address: int = 0x0000, slave: int = 1, no_response_expected: bool = False) -> T:
         """Read FIFO queue (code 0x18).

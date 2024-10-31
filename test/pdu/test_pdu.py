@@ -113,8 +113,8 @@ class TestPdu:
         (reg_msg.ReadHoldingRegistersRequest, (), {"address": 117, "count": 3}, b'\x03\x00\x75\x00\x03'),
         (reg_msg.ReadInputRegistersRequest, (), {"address": 117, "count": 3}, b'\x04\x00\x75\x00\x03'),
         (reg_msg.ReadWriteMultipleRegistersRequest, (), {"read_address": 17, "read_count": 2, "write_address": 25, "write_registers": [111, 112]}, b'\x17\x00\x11\x00\x02\x00\x19\x00\x02\x04\x00\x6f\x00\x70'),
-        (reg_msg.WriteMultipleRegistersRequest, (), {"address": 117, "values": [111, 121, 131]}, b'\x10\x00\x75\x00\x03\x06\x00\x6f\x00\x79\x00\x83'),
-        (reg_msg.WriteSingleRegisterRequest, (), {"address": 117, "value": 112}, b'\x06\x00\x75\x00\x70'),
+        (reg_msg.WriteMultipleRegistersRequest, (), {"address": 117, "registers": [111, 121, 131]}, b'\x10\x00\x75\x00\x03\x06\x00\x6f\x00\x79\x00\x83'),
+        (reg_msg.WriteSingleRegisterRequest, (), {"address": 117, "registers": [112]}, b'\x06\x00\x75\x00\x70'),
         (reg_msg.MaskWriteRegisterRequest, (), {"address": 0x0104, "and_mask": 0xE1D2, "or_mask": 0x1234}, b'\x16\x01\x04\xe1\xd2\x12\x34'),
     ]
 
@@ -153,7 +153,7 @@ class TestPdu:
         (reg_msg.ReadHoldingRegistersResponse, (), {"registers": [3, 17]}, b'\x03\x04\x00\x03\x00\x11'),
         (reg_msg.ReadInputRegistersResponse, (), {"registers": [3, 17]}, b'\x04\x04\x00\x03\x00\x11'),
         (reg_msg.ReadWriteMultipleRegistersResponse, (), {"registers": [1, 2]}, b'\x17\x04\x00\x01\x00\x02'),
-        (reg_msg.WriteSingleRegisterResponse, (), {"address": 117, "value": 112}, b'\x06\x00\x75\x00\x70'),
+        (reg_msg.WriteSingleRegisterResponse, (), {"address": 117, "registers": [112]}, b'\x06\x00\x75\x00\x70'),
         (reg_msg.WriteMultipleRegistersResponse, (), {"address": 117, "count": 3}, b'\x10\x00\x75\x00\x03'),
         (reg_msg.MaskWriteRegisterResponse, (), {"address": 0x0104, "and_mask": 0xE1D2, "or_mask": 0x1234}, b'\x16\x01\x04\xe1\xd2\x12\x34'),
     ]

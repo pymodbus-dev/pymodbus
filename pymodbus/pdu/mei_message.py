@@ -1,10 +1,10 @@
 """Encapsulated Interface (MEI) Transport Messages."""
+from __future__ import annotations
 
-
-# pylint: disable=missing-type-doc
 import struct
 
 from pymodbus.constants import DeviceInformation, MoreData
+from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.device import DeviceInformationFactory, ModbusControlBlock
 from pymodbus.pdu.pdu import ModbusExceptions as merror
 from pymodbus.pdu.pdu import ModbusPDU
@@ -27,96 +27,57 @@ class _OutOfSpaceException(Exception):
     #
     # See Page 5/50 of MODBUS Application Protocol Specification V1.1b3.
 
-    def __init__(self, oid):
+    def __init__(self, oid: int) -> None:
         self.oid = oid
         super().__init__()
+        self.oid = oid
 
 
-# ---------------------------------------------------------------------------#
-#  Read Device Information
-# ---------------------------------------------------------------------------#
 class ReadDeviceInformationRequest(ModbusPDU):
-    """Read device information.
-
-    This function code allows reading the identification and additional
-    information relative to the physical and functional description of a
-    remote device, only.
-
-    The Read Device Identification interface is modeled as an address space
-    composed of a set of addressable data elements. The data elements are
-    called objects and an object Id identifies them.
-    """
+    """ReadDeviceInformationRequest."""
 
     function_code = 0x2B
     sub_function_code = 0x0E
     rtu_frame_size = 7
 
-    def __init__(self, read_code=None, object_id=0x00, slave=1, transaction=0):
-        """Initialize a new instance.
-
-        :param read_code: The device information read code
-        :param object_id: The object to read from
-        """
-        super().__init__(transaction_id=transaction, slave_id=slave)
+    def __init__(self, read_code=None, object_id=0x00, slave_id=1, transaction_id=0) -> None:
+        """Initialize a new instance."""
+        super().__init__(transaction_id=transaction_id, slave_id=slave_id)
         self.read_code = read_code or DeviceInformation.BASIC
         self.object_id = object_id
 
-    def encode(self):
-        """Encode the request packet.
-
-        :returns: The byte encoded packet
-        """
+    def encode(self) -> bytes:
+        """Encode the request packet."""
         packet = struct.pack(
             ">BBB", self.sub_function_code, self.read_code, self.object_id
         )
         return packet
 
-    def decode(self, data):
-        """Decode data part of the message.
-
-        :param data: The incoming data
-        """
+    def decode(self, data: bytes) -> None:
+        """Decode data part of the message."""
         params = struct.unpack(">BBB", data)
         self.sub_function_code, self.read_code, self.object_id = params
 
-    async def update_datastore(self, _context):
-        """Run a read exception status request against the store.
-
-        :returns: The populated response
-        """
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """Run a read exception status request against the store."""
         if not 0x00 <= self.object_id <= 0xFF:
             return self.doException(merror.IllegalValue)
         if not 0x00 <= self.read_code <= 0x04:
             return self.doException(merror.IllegalValue)
 
         information = DeviceInformationFactory.get(_MCB, self.read_code, self.object_id)
-        return ReadDeviceInformationResponse(self.read_code, information)
-
-    def __str__(self):
-        """Build a representation of the request.
-
-        :returns: The string representation of the request
-        """
-        params = (self.read_code, self.object_id)
-        return (
-            "ReadDeviceInformationRequest(%d,%d)"  # pylint: disable=consider-using-f-string
-            % params
-        )
+        return ReadDeviceInformationResponse(read_code=self.read_code, information=information, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
 class ReadDeviceInformationResponse(ModbusPDU):
-    """Read device information response."""
+    """ReadDeviceInformationResponse."""
 
     function_code = 0x2B
     sub_function_code = 0x0E
 
     @classmethod
-    def calculateRtuFrameSize(cls, buffer):
-        """Calculate the size of the message.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes in the response.
-        """
+    def calculateRtuFrameSize(cls, buffer: bytes) -> int:
+        """Calculate the size of the message."""
         size = 8  # skip the header information
         count = int(buffer[7])
 
@@ -129,13 +90,9 @@ class ReadDeviceInformationResponse(ModbusPDU):
         except struct.error as exc:
             raise IndexError from exc
 
-    def __init__(self, read_code=None, information=None, slave=1, transaction=0):
-        """Initialize a new instance.
-
-        :param read_code: The device information read code
-        :param information: The requested information request
-        """
-        super().__init__(transaction_id=transaction, slave_id=slave)
+    def __init__(self, read_code=None, information=None, slave_id=1, transaction_id=0) -> None:
+        """Initialize a new instance."""
+        super().__init__(transaction_id=transaction_id, slave_id=slave_id)
         self.read_code = read_code or DeviceInformation.BASIC
         self.information = information or {}
         self.number_of_objects = 0
@@ -144,24 +101,21 @@ class ReadDeviceInformationResponse(ModbusPDU):
         self.more_follows = MoreData.NOTHING
         self.space_left = 253 - 6
 
-    def _encode_object(self, object_id, data):
+    def _encode_object(self, object_id: int, data: bytes | ModbusPDU) -> bytes:
         """Encode object."""
-        self.space_left -= 2 + len(data)
+        if not isinstance(data, bytes):
+            data = data.encode()
+        data_len = len(data)
+        self.space_left -= 2 + data_len
         if self.space_left <= 0:
             raise _OutOfSpaceException(object_id)
-        encoded_obj = struct.pack(">BB", object_id, len(data))
-        if isinstance(data, bytes):
-            encoded_obj += data
-        else:
-            encoded_obj += data.encode()
+        encoded_obj = struct.pack(">BB", object_id, data_len)
+        encoded_obj += data
         self.number_of_objects += 1
         return encoded_obj
 
-    def encode(self):
-        """Encode the response.
-
-        :returns: The byte encoded message
-        """
+    def encode(self) -> bytes:
+        """Encode the response."""
         packet = struct.pack(
             ">BBB", self.sub_function_code, self.read_code, self.conformity
         )
@@ -183,11 +137,8 @@ class ReadDeviceInformationResponse(ModbusPDU):
         packet += objects
         return packet
 
-    def decode(self, data):
-        """Decode a the response.
-
-        :param data: The packet data to decode
-        """
+    def decode(self, data: bytes) -> None:
+        """Decode a the response."""
         params = struct.unpack(">BBBBBB", data[0:6])
         self.sub_function_code, self.read_code = params[0:2]
         self.conformity, self.more_follows = params[2:4]
@@ -206,7 +157,3 @@ class ReadDeviceInformationResponse(ModbusPDU):
                     self.information[object_id],
                     data[count - object_length : count],
                 ]
-
-    def __str__(self):
-        """Build a representation of the response."""
-        return f"ReadDeviceInformationResponse({self.read_code})"

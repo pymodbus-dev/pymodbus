@@ -547,8 +547,16 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Device id
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        This function allows reading the identification and additional
+        information relative to the physical and functional description of a
+        remote device, only.
+
+        The Read Device Identification interface is modeled as an address space
+        composed of a set of addressable data elements. The data elements are
+        called objects and an object Id identifies them.
         """
-        return self.execute(no_response_expected, pdu_mei.ReadDeviceInformationRequest(read_code, object_id, slave=slave))
+        return self.execute(no_response_expected, pdu_mei.ReadDeviceInformationRequest(read_code, object_id, slave_id=slave))
 
     # ------------------
     # Converter methods

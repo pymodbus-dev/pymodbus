@@ -178,8 +178,14 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        This function is used to read the contents of eight Exception Status outputs in a remote device.
+
+        The function provides a simple method for
+        accessing this information, because the Exception Output references are
+        known (no output reference is needed in the function).
         """
-        return self.execute(no_response_expected, pdu_other_msg.ReadExceptionStatusRequest(slave=slave))
+        return self.execute(no_response_expected, pdu_other_msg.ReadExceptionStatusRequest(slave_id=slave))
 
     def diag_query_data(self, msg: bytes, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose query data (code 0x08 sub 0x00).
@@ -342,8 +348,21 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        This function is used to get a status word and an event count from the remote device.
+
+        By fetching the current count before and after a series of messages, a
+        client can determine whether the messages were handled normally by the
+        remote device.
+
+        The device's event counter is incremented once for each successful
+        message completion. It is not incremented for exception responses,
+        poll commands, or fetch event counter commands.
+
+        The event counter can be reset by means of the Diagnostics function
+        Restart Communications or Clear Counters and Diagnostic Register.
         """
-        return self.execute(no_response_expected, pdu_other_msg.GetCommEventCounterRequest(slave=slave))
+        return self.execute(no_response_expected, pdu_other_msg.GetCommEventCounterRequest(slave_id=slave))
 
     def diag_get_comm_event_log(self, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose get event counter (code 0x0C).
@@ -351,8 +370,26 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        This function is used to get a status word.
+
+        Event count, message count, and a field of event bytes from the remote device.
+
+        The status word and event counts are identical to that returned by
+        the Get Communications Event Counter function.
+
+        The message counter contains the quantity of messages processed by the
+        remote device since its last restart, clear counters operation, or
+        power-up. This count is identical to that returned by the Diagnostic
+        function Return Bus Message Count.
+
+        The event bytes field contains 0-64 bytes, with each byte corresponding
+        to the status of one MODBUS send or receive operation for the remote
+        device. The remote device enters the events into the field in
+        chronological order. Byte 0 is the most recent event. Each new byte
+        flushes the oldest byte from the field.
         """
-        return self.execute(no_response_expected, pdu_other_msg.GetCommEventLogRequest(slave=slave))
+        return self.execute(no_response_expected, pdu_other_msg.GetCommEventLogRequest(slave_id=slave))
 
     def write_coils(
         self,
@@ -402,8 +439,11 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        This function is used to read the description of the type, the current status
+        and other information specific to a remote device.
         """
-        return self.execute(no_response_expected, pdu_other_msg.ReportSlaveIdRequest(slave=slave))
+        return self.execute(no_response_expected, pdu_other_msg.ReportSlaveIdRequest(slave_id=slave))
 
     def read_file_record(self, records: list[pdu_file_msg.FileRecord], slave: int = 1, no_response_expected: bool = False) -> T:
         """Read file record (code 0x14).

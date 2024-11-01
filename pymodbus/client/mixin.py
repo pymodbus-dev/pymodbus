@@ -452,8 +452,28 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: device id
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        This function is used to perform a file record read. All request
+        data lengths are provided in terms of number of bytes and all record
+        lengths are provided in terms of registers.
+
+        A file is an organization of records. Each file contains 10000 records,
+        addressed 0000 to 9999 decimal or 0x0000 to 0x270f. For example, record
+        12 is addressed as 12. The function can read multiple groups of
+        references. The groups can be separating (non-contiguous), but the
+        references within each group must be sequential. Each group is defined
+        in a separate "sub-request" field that contains seven bytes::
+
+            The reference type: 1 byte
+            The file number: 2 bytes
+            The starting record number within the file: 2 bytes
+            The length of the record to be read: 2 bytes
+
+        The quantity of registers to be read, combined with all other fields
+        in the expected response, must not exceed the allowable length of the
+        MODBUS PDU: 235 bytes.
         """
-        return self.execute(no_response_expected, pdu_file_msg.ReadFileRecordRequest(records, slave=slave))
+        return self.execute(no_response_expected, pdu_file_msg.ReadFileRecordRequest(records, slave_id=slave))
 
     def write_file_record(self, records: list[pdu_file_msg.FileRecord], slave: int = 1, no_response_expected: bool = False) -> T:
         """Write file record (code 0x15).
@@ -462,8 +482,13 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Device id
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        This function is used to perform a file record write. All
+        request data lengths are provided in terms of number of bytes
+        and all record lengths are provided in terms of the number of 16
+        bit words.
         """
-        return self.execute(no_response_expected, pdu_file_msg.WriteFileRecordRequest(records,slave=slave))
+        return self.execute(no_response_expected, pdu_file_msg.WriteFileRecordRequest(records=records, slave_id=slave))
 
     def mask_write_register(
         self,
@@ -531,8 +556,18 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) device id
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        This function allows to read the contents of a First-In-First-Out
+        (FIFO) queue of register in a remote device. The function returns a
+        count of the registers in the queue, followed by the queued data.
+        Up to 32 registers can be read: the count, plus up to 31 queued data
+        registers.
+
+        The queue count register is returned first, followed by the queued data
+        registers.  The function reads the queue contents, but does not clear
+        them.
         """
-        return self.execute(no_response_expected, pdu_file_msg.ReadFifoQueueRequest(address, slave=slave))
+        return self.execute(no_response_expected, pdu_file_msg.ReadFifoQueueRequest(address, slave_id=slave))
 
     # code 0x2B sub 0x0D: CANopen General Reference Request and Response, NOT IMPLEMENTED
 

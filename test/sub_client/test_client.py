@@ -11,8 +11,7 @@ import pymodbus.pdu.bit_message as pdu_bit
 import pymodbus.pdu.diag_message as pdu_diag
 import pymodbus.pdu.file_message as pdu_file_msg
 import pymodbus.pdu.other_message as pdu_other_msg
-import pymodbus.pdu.register_read_message as pdu_reg_read
-import pymodbus.pdu.register_write_message as pdu_req_write
+import pymodbus.pdu.register_message as pdu_reg
 from examples.helper import get_certificate
 from pymodbus import FramerType
 from pymodbus.client.base import ModbusBaseClient
@@ -47,10 +46,10 @@ BASE_PORT = 6500
     [
         ("read_coils", 1, pdu_bit.ReadCoilsRequest),
         ("read_discrete_inputs", 1, pdu_bit.ReadDiscreteInputsRequest),
-        ("read_holding_registers", 1, pdu_reg_read.ReadHoldingRegistersRequest),
-        ("read_input_registers", 1, pdu_reg_read.ReadInputRegistersRequest),
+        ("read_holding_registers", 1, pdu_reg.ReadHoldingRegistersRequest),
+        ("read_input_registers", 1, pdu_reg.ReadInputRegistersRequest),
         ("write_coil", 2, pdu_bit.WriteSingleCoilRequest),
-        ("write_register", 2, pdu_req_write.WriteSingleRegisterRequest),
+        ("write_register", 2, pdu_reg.WriteSingleRegisterRequest),
         ("read_exception_status", 0, pdu_other_msg.ReadExceptionStatusRequest),
         ("diag_query_data", 3, pdu_diag.ReturnQueryDataRequest),
         ("diag_restart_communication", 4, pdu_diag.RestartCommunicationsOptionRequest),
@@ -90,9 +89,9 @@ BASE_PORT = 6500
         ("diag_clear_overrun_counter", 0, pdu_diag.ClearOverrunCountRequest),
         ("diag_getclear_modbus_response", 0, pdu_diag.GetClearModbusPlusRequest),
         ("write_coils", 5, pdu_bit.WriteMultipleCoilsRequest),
-        ("write_registers", 6, pdu_req_write.WriteMultipleRegistersRequest),
-        ("readwrite_registers", 1, pdu_reg_read.ReadWriteMultipleRegistersRequest),
-        ("mask_write_register", 1, pdu_req_write.MaskWriteRegisterRequest),
+        ("write_registers", 6, pdu_reg.WriteMultipleRegistersRequest),
+        ("readwrite_registers", 1, pdu_reg.ReadWriteMultipleRegistersRequest),
+        ("mask_write_register", 1, pdu_reg.MaskWriteRegisterRequest),
         ("report_slave_id", 0, pdu_other_msg.ReportSlaveIdRequest),
         ("read_file_record", 7, pdu_file_msg.ReadFileRecordRequest),
         ("write_file_record", 7, pdu_file_msg.WriteFileRecordRequest),
@@ -361,8 +360,7 @@ async def test_client_protocol_handler():
     )
     transport = mock.MagicMock()
     base.ctx.connection_made(transport=transport)
-    reply = pdu_bit.ReadCoilsRequest()
-    reply.setData(1, 1, 0, 0)
+    reply = pdu_bit.ReadCoilsRequest(address=1, count=1)
     reply.transaction_id = 0x00
     base.ctx._handle_response(None)  # pylint: disable=protected-access
     base.ctx._handle_response(reply)  # pylint: disable=protected-access
@@ -415,8 +413,7 @@ async def test_client_protocol_execute():
             timeout_connect=3,
         ),
     )
-    request = pdu_bit.ReadCoilsRequest()
-    request.setData(1, 1, 0, 0)
+    request = pdu_bit.ReadCoilsRequest(address=1, count=1)
     transport = MockTransport(base, request)
     base.ctx.connection_made(transport=transport)
 
@@ -434,8 +431,7 @@ async def test_client_execute_broadcast():
             host="127.0.0.1",
         ),
     )
-    request = pdu_bit.ReadCoilsRequest()
-    request.setData(1, 1, 0, 0)
+    request = pdu_bit.ReadCoilsRequest(address=1, count=1)
     transport = MockTransport(base, request)
     base.ctx.connection_made(transport=transport)
     assert await base.async_execute(False, request)
@@ -451,8 +447,7 @@ async def test_client_execute_broadcast_no():
             host="127.0.0.1",
         ),
     )
-    request = pdu_bit.ReadCoilsRequest()
-    request.setData(1, 1, 0, 0)
+    request = pdu_bit.ReadCoilsRequest(address=1, count=1)
     transport = MockTransport(base, request)
     base.ctx.connection_made(transport=transport)
     assert not await base.async_execute(True, request)
@@ -468,8 +463,7 @@ async def test_client_protocol_retry():
             timeout_connect=0.1,
         ),
     )
-    request = pdu_bit.ReadCoilsRequest()
-    request.setData(1, 1, 0, 0)
+    request = pdu_bit.ReadCoilsRequest(address=1, count=1)
     transport = MockTransport(base, request, retries=2)
     base.ctx.connection_made(transport=transport)
 
@@ -492,8 +486,7 @@ async def test_client_protocol_timeout():
     )
     # Avoid creating do_reconnect() task
     base.ctx.connection_lost = mock.MagicMock()
-    request = pdu_bit.ReadCoilsRequest()
-    request.setData(1, 1, 0, 0)
+    request = pdu_bit.ReadCoilsRequest(address=1, count=1)
     transport = MockTransport(base, request, retries=4)
     base.ctx.connection_made(transport=transport)
 

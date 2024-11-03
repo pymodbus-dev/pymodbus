@@ -7,8 +7,7 @@ import pymodbus.pdu.file_message as file_msg
 import pymodbus.pdu.mei_message as mei_msg
 import pymodbus.pdu.other_message as o_msg
 import pymodbus.pdu.pdu as base
-import pymodbus.pdu.register_read_message as reg_r_msg
-import pymodbus.pdu.register_write_message as reg_w_msg
+import pymodbus.pdu.register_message as reg_msg
 from pymodbus.exceptions import MessageRegisterException, ModbusException
 from pymodbus.logging import Log
 
@@ -17,15 +16,15 @@ class DecodePDU:
     """Decode pdu requests/responses (server/client)."""
 
     _pdu_class_table: set[tuple[type[base.ModbusPDU], type[base.ModbusPDU]]] = {
-        (reg_r_msg.ReadHoldingRegistersRequest, reg_r_msg.ReadHoldingRegistersResponse),
+        (reg_msg.ReadHoldingRegistersRequest, reg_msg.ReadHoldingRegistersResponse),
         (bit_msg.ReadDiscreteInputsRequest, bit_msg.ReadDiscreteInputsResponse),
-        (reg_r_msg.ReadInputRegistersRequest, reg_r_msg.ReadInputRegistersResponse),
+        (reg_msg.ReadInputRegistersRequest, reg_msg.ReadInputRegistersResponse),
         (bit_msg.ReadCoilsRequest, bit_msg.ReadCoilsResponse),
         (bit_msg.WriteMultipleCoilsRequest, bit_msg.WriteMultipleCoilsResponse),
-        (reg_w_msg.WriteMultipleRegistersRequest, reg_w_msg.WriteMultipleRegistersResponse),
-        (reg_w_msg.WriteSingleRegisterRequest, reg_w_msg.WriteSingleRegisterResponse),
+        (reg_msg.WriteMultipleRegistersRequest, reg_msg.WriteMultipleRegistersResponse),
+        (reg_msg.WriteSingleRegisterRequest, reg_msg.WriteSingleRegisterResponse),
         (bit_msg.WriteSingleCoilRequest, bit_msg.WriteSingleCoilResponse),
-        (reg_r_msg.ReadWriteMultipleRegistersRequest, reg_r_msg.ReadWriteMultipleRegistersResponse),
+        (reg_msg.ReadWriteMultipleRegistersRequest, reg_msg.ReadWriteMultipleRegistersResponse),
         (diag_msg.DiagnosticStatusRequest, diag_msg.DiagnosticStatusResponse),
         (o_msg.ReadExceptionStatusRequest, o_msg.ReadExceptionStatusResponse),
         (o_msg.GetCommEventCounterRequest, o_msg.GetCommEventCounterResponse),
@@ -33,7 +32,7 @@ class DecodePDU:
         (o_msg.ReportSlaveIdRequest, o_msg.ReportSlaveIdResponse),
         (file_msg.ReadFileRecordRequest, file_msg.ReadFileRecordResponse),
         (file_msg.WriteFileRecordRequest, file_msg.WriteFileRecordResponse),
-        (reg_w_msg.MaskWriteRegisterRequest, reg_w_msg.MaskWriteRegisterResponse),
+        (reg_msg.MaskWriteRegisterRequest, reg_msg.MaskWriteRegisterResponse),
         (file_msg.ReadFifoQueueRequest, file_msg.ReadFifoQueueResponse),
         (mei_msg.ReadDeviceInformationRequest, mei_msg.ReadDeviceInformationResponse),
     }

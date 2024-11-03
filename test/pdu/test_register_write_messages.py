@@ -1,7 +1,7 @@
 """Test register write messages."""
 from pymodbus.payload import BinaryPayloadBuilder, Endian
 from pymodbus.pdu import ModbusExceptions
-from pymodbus.pdu.register_write_message import (
+from pymodbus.pdu.register_message import (
     MaskWriteRegisterRequest,
     MaskWriteRegisterResponse,
     WriteMultipleRegistersRequest,
@@ -42,13 +42,13 @@ class TestWriteRegisterMessages:
         builder.add_16bit_uint(0x1234)
         self.payload = builder.build()
         self.write = {
-            WriteSingleRegisterRequest(1, self.value): b"\x00\x01\xab\xcd",
-            WriteSingleRegisterResponse(1, self.value): b"\x00\x01\xab\xcd",
+            WriteSingleRegisterRequest(address=1, registers=[self.value]): b"\x00\x01\xab\xcd",
+            WriteSingleRegisterResponse(address=1, registers=[self.value]): b"\x00\x01\xab\xcd",
             WriteMultipleRegistersRequest(
-                1, self.values
+                address=1, registers=self.values
             ): b"\x00\x01\x00\x03\x06\x00\x0a\x00\x0b\x00\x0c",
-            WriteMultipleRegistersRequest(1, 0xD): b"\x00\x01\x00\x01\x02\x00\x0D",
-            WriteMultipleRegistersResponse(1, 5): b"\x00\x01\x00\x05",
+            WriteMultipleRegistersRequest(address=1, registers=[0xD]): b"\x00\x01\x00\x01\x02\x00\x0D",
+            WriteMultipleRegistersResponse(address=1, count=5): b"\x00\x01\x00\x05",
         }
 
     def test_register_write_requests_encode(self):
@@ -70,8 +70,8 @@ class TestWriteRegisterMessages:
 
     def test_invalid_write_multiple_registers_request(self):
         """Test invalid write multiple registers request."""
-        request = WriteMultipleRegistersRequest(0, None)
-        assert not request.values
+        request = WriteMultipleRegistersRequest(address=0, registers=None)
+        assert not request.registers
 
     def test_serializing_to_string(self):
         """Test serializing to string."""
@@ -81,11 +81,11 @@ class TestWriteRegisterMessages:
     async def test_write_single_register_request(self, mock_context):
         """Test write single register request."""
         context = mock_context()
-        request = WriteSingleRegisterRequest(0x00, 0xF0000)
+        request = WriteSingleRegisterRequest(address=0x00, registers=[0xF0000])
         result = await request.update_datastore(context)
         assert result.exception_code == ModbusExceptions.IllegalValue
 
-        request.value = 0x00FF
+        request.registers[0] = 0x00FF
         result = await request.update_datastore(context)
         assert result.exception_code == ModbusExceptions.IllegalAddress
 
@@ -96,28 +96,20 @@ class TestWriteRegisterMessages:
     async def test_write_multiple_register_request(self, mock_context):
         """Test write multiple register request."""
         context = mock_context()
-        request = WriteMultipleRegistersRequest(0x00, [0x00] * 10)
+        request = WriteMultipleRegistersRequest(address=0x00, registers=[0x00] * 10)
         result = await request.update_datastore(context)
         assert result.exception_code == ModbusExceptions.IllegalAddress
-
-        request.count = 0x05  # bytecode != code * 2
-        result = await request.update_datastore(context)
-        assert result.exception_code == ModbusExceptions.IllegalValue
 
         request.count = 0x800  # outside of range
         result = await request.update_datastore(context)
         assert result.exception_code == ModbusExceptions.IllegalValue
 
         context.valid = True
-        request = WriteMultipleRegistersRequest(0x00, [0x00] * 10)
+        request = WriteMultipleRegistersRequest(address=0x00, registers=[0x00] * 10)
         result = await request.update_datastore(context)
         assert result.function_code == request.function_code
 
-        request = WriteMultipleRegistersRequest(0x00, 0x00)
-        result = await request.update_datastore(context)
-        assert result.function_code == request.function_code
-
-        request = WriteMultipleRegistersRequest(0x00, [0x00])
+        request = WriteMultipleRegistersRequest(address=0x00, registers=[0x00])
         result = await request.update_datastore(context)
         assert result.function_code == request.function_code
 

@@ -1,6 +1,6 @@
 """Test register read messages."""
 from pymodbus.pdu import ModbusExceptions
-from pymodbus.pdu.register_read_message import (
+from pymodbus.pdu.register_message import (
     ReadHoldingRegistersRequest,
     ReadHoldingRegistersResponse,
     ReadInputRegistersRequest,
@@ -42,9 +42,9 @@ class TestReadRegisterMessages:
         }
         self.values = [0xA, 0xB, 0xC]
         self.request_read = {
-            ReadRegistersRequestBase(1, 5): b"\x00\x01\x00\x05",
-            ReadHoldingRegistersRequest(1, 5): b"\x00\x01\x00\x05",
-            ReadInputRegistersRequest(1, 5): b"\x00\x01\x00\x05",
+            ReadRegistersRequestBase(address=1, count=5): b"\x00\x01\x00\x05",
+            ReadHoldingRegistersRequest(address=1, count=5): b"\x00\x01\x00\x05",
+            ReadInputRegistersRequest(address=1, count=5): b"\x00\x01\x00\x05",
             ReadWriteMultipleRegistersRequest(
                 write_registers=[0x00] * 5,
                 **arguments,
@@ -52,22 +52,16 @@ class TestReadRegisterMessages:
             b"\x05\x0a\x00\x00\x00\x00\x00"
             b"\x00\x00\x00\x00\x00",
             ReadWriteMultipleRegistersRequest(
-                write_registers=0xAB,
+                write_registers=[0xAB],
                 **arguments,
             ): b"\x00\x01\x00\x05\x00\x01\x00" b"\x01\x02\x00\xAB",
         }
         self.response_read = {
-            ReadRegistersResponseBase(self.values): TEST_MESSAGE,
-            ReadHoldingRegistersResponse(self.values): TEST_MESSAGE,
-            ReadInputRegistersResponse(self.values): TEST_MESSAGE,
-            ReadWriteMultipleRegistersResponse(self.values): TEST_MESSAGE,
+            ReadRegistersResponseBase(registers=self.values): TEST_MESSAGE,
+            ReadHoldingRegistersResponse(registers=self.values): TEST_MESSAGE,
+            ReadInputRegistersResponse(registers=self.values): TEST_MESSAGE,
+            ReadWriteMultipleRegistersResponse(registers=self.values): TEST_MESSAGE,
         }
-
-    def test_read_register_response_base(self):
-        """Test read register response."""
-        response = ReadRegistersResponseBase(list(range(10)))
-        for index in range(10):
-            assert response.getRegister(index) == index
 
     def test_register_read_requests(self):
         """Test register read requests."""
@@ -91,10 +85,10 @@ class TestReadRegisterMessages:
         will break on counts that are out of range
         """
         requests = [
-            ReadHoldingRegistersRequest(1, 0x800),
-            ReadInputRegistersRequest(1, 0x800),
+            ReadHoldingRegistersRequest(address=1, count=0x800),
+            ReadInputRegistersRequest(address=1, count=0x800),
             ReadWriteMultipleRegistersRequest(
-                read_address=1, read_count=0x800, write_address=1, write_registers=5
+                read_address=1, read_count=0x800, write_address=1, write_registers=[5]
             ),
             ReadWriteMultipleRegistersRequest(
                 read_address=1, read_count=5, write_address=1, write_registers=[]
@@ -111,8 +105,8 @@ class TestReadRegisterMessages:
         """
         context = mock_context()
         requests = [
-            ReadHoldingRegistersRequest(-1, 5),
-            ReadInputRegistersRequest(-1, 5),
+            ReadHoldingRegistersRequest(address=-1, count=5),
+            ReadInputRegistersRequest(address=-1, count=5),
             # ReadWriteMultipleRegistersRequest(-1,5,1,5),
             # ReadWriteMultipleRegistersRequest(1,5,-1,5),
         ]
@@ -127,8 +121,8 @@ class TestReadRegisterMessages:
         """
         context = mock_context(True)
         requests = [
-            ReadHoldingRegistersRequest(-1, 5),
-            ReadInputRegistersRequest(-1, 5),
+            ReadHoldingRegistersRequest(address=-1, count=5),
+            ReadInputRegistersRequest(address=-1, count=5),
         ]
         for request in requests:
             response = await request.update_datastore(context)

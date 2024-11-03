@@ -1,12 +1,9 @@
-"""File Record Read/Write Messages.
-
-Currently none of these messages are implemented
-"""
+"""File Record Read/Write Messages."""
 from __future__ import annotations
 
-# pylint: disable=missing-type-doc
 import struct
 
+from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.exceptions import ModbusException
 from pymodbus.pdu.pdu import ModbusExceptions as merror
 from pymodbus.pdu.pdu import ModbusPDU
@@ -15,17 +12,11 @@ from pymodbus.pdu.pdu import ModbusPDU
 # ---------------------------------------------------------------------------#
 #  File Record Types
 # ---------------------------------------------------------------------------#
-class FileRecord:  # pylint: disable=eq-without-hash
+class FileRecord:  # pylint: disable=too-few-public-methods
     """Represents a file record and its relevant data."""
 
-    def __init__(self, file_number=0x00, record_number=0x00, record_data=b'', record_length=0):
-        """Initialize a new instance.
-
-        :params file_number: Indicates which file number we are reading
-        :params record_number: Indicates which record in the file
-        :params record_data: The actual data of the record OR
-        :params record_length: The length in registers of the record
-        """
+    def __init__(self, file_number=0x00, record_number=0x00, record_data=b'', record_length=0) -> None:
+        """Initialize a new instance."""
         if record_data:
             if record_length:
                 raise ModbusException("Use either record_data= or record_length=")
@@ -38,72 +29,20 @@ class FileRecord:  # pylint: disable=eq-without-hash
         self.record_data = record_data
         self.record_length = record_length
 
-    def __eq__(self, relf):
-        """Compare the left object to the right."""
-        return (
-            self.file_number == relf.file_number
-            and self.record_number == relf.record_number
-            and self.record_length == relf.record_length
-            and self.record_data == relf.record_data
-        )
 
-    def __ne__(self, relf):
-        """Compare the left object to the right."""
-        return not self.__eq__(relf)
-
-    def __repr__(self):
-        """Give a representation of the file record."""
-        params = (self.file_number, self.record_number, self.record_length)
-        return (
-            "FileRecord(file=%d, record=%d, length=%d)"  # pylint: disable=consider-using-f-string
-            % params
-        )
-
-
-# ---------------------------------------------------------------------------#
-#  File Requests/Responses
-# ---------------------------------------------------------------------------#
 class ReadFileRecordRequest(ModbusPDU):
-    """Read file record request.
-
-    This function code is used to perform a file record read. All request
-    data lengths are provided in terms of number of bytes and all record
-    lengths are provided in terms of registers.
-
-    A file is an organization of records. Each file contains 10000 records,
-    addressed 0000 to 9999 decimal or 0x0000 to 0x270f. For example, record
-    12 is addressed as 12. The function can read multiple groups of
-    references. The groups can be separating (non-contiguous), but the
-    references within each group must be sequential. Each group is defined
-    in a separate "sub-request" field that contains seven bytes::
-
-        The reference type: 1 byte
-        The file number: 2 bytes
-        The starting record number within the file: 2 bytes
-        The length of the record to be read: 2 bytes
-
-    The quantity of registers to be read, combined with all other fields
-    in the expected response, must not exceed the allowable length of the
-    MODBUS PDU: 235 bytes.
-    """
+    """ReadFileRecordRequest."""
 
     function_code = 0x14
     rtu_byte_count_pos = 2
 
-    def __init__(self, records: list[FileRecord] = [],  slave=1, transaction=0):  # pylint: disable=dangerous-default-value
-        """Initialize a new instance.
+    def __init__(self, records=None,  slave_id=1, transaction_id=0) -> None:
+        """Initialize a new instance."""
+        super().__init__(transaction_id=transaction_id, slave_id=slave_id)
+        self.records: list[FileRecord] = records if records else []
 
-        :param records: The file record requests to be read
-        """
-        super().__init__()
-        super().setBaseData(slave, transaction)
-        self.records = records
-
-    def encode(self):
-        """Encode the request packet.
-
-        :returns: The byte encoded packet
-        """
+    def encode(self) -> bytes:
+        """Encode the request packet."""
         packet = struct.pack("B", len(self.records) * 7)
         for record in self.records:
             packet += struct.pack(
@@ -115,11 +54,8 @@ class ReadFileRecordRequest(ModbusPDU):
             )
         return packet
 
-    def decode(self, data):
-        """Decode the incoming request.
-
-        :param data: The data to decode into the address
-        """
+    def decode(self, data: bytes) -> None:
+        """Decode the incoming request."""
         self.records = []
         byte_count = int(data[0])
         for count in range(1, byte_count, 7):
@@ -131,47 +67,31 @@ class ReadFileRecordRequest(ModbusPDU):
             )
             self.records.append(record)
 
-    def get_response_pdu_size(self):
+    def get_response_pdu_size(self) -> int:
         """Get response pdu size."""
         return 0 # 1 + 7 * len(self.records)
 
-    async def update_datastore(self, _context):
-        """Run a read exception status request against the store.
-
-        :returns: The populated response
-        """
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """Run a read exception status request against the store."""
         for record in self.records:
             record.record_data = b'SERVER DUMMY RECORD.'
             record.record_length = len(record.record_data) // 2
-        return ReadFileRecordResponse(self.records)
+        return ReadFileRecordResponse(records=self.records,slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
 class ReadFileRecordResponse(ModbusPDU):
-    """Read file record response.
-
-    The normal response is a series of "sub-responses," one for each
-    "sub-request." The byte count field is the total combined count of
-    bytes in all "sub-responses." In addition, each "sub-response"
-    contains a field that shows its own byte count.
-    """
+    """ReadFileRecordResponse."""
 
     function_code = 0x14
     rtu_byte_count_pos = 2
 
-    def __init__(self, records: list[FileRecord] = [], slave=1, transaction=0):  # pylint: disable=dangerous-default-value
-        """Initialize a new instance.
+    def __init__(self, records= None, slave_id=1, transaction_id=0) -> None:
+        """Initialize a new instance."""
+        super().__init__(transaction_id=transaction_id, slave_id=slave_id)
+        self.records: list[FileRecord] = records if records else []
 
-        :param records: The requested file records
-        """
-        super().__init__()
-        super().setBaseData(slave, transaction)
-        self.records = records
-
-    def encode(self):
-        """Encode the response.
-
-        :returns: The byte encoded message
-        """
+    def encode(self) -> bytes:
+        """Encode the response."""
         total = sum(len(record.record_data) + 1 + 1 for record in self.records)
         packet = struct.pack("B", total)
         for record in self.records:
@@ -179,11 +99,8 @@ class ReadFileRecordResponse(ModbusPDU):
             packet += record.record_data
         return packet
 
-    def decode(self, data):
-        """Decode the response.
-
-        :param data: The packet data to decode
-        """
+    def decode(self, data: bytes) -> None:
+        """Decode the response."""
         count, self.records = 1, []
         byte_count = int(data[0])
         while count < byte_count:
@@ -201,31 +118,18 @@ class ReadFileRecordResponse(ModbusPDU):
 
 
 class WriteFileRecordRequest(ModbusPDU):
-    """Write file record request.
-
-    This function code is used to perform a file record write. All
-    request data lengths are provided in terms of number of bytes
-    and all record lengths are provided in terms of the number of 16
-    bit words.
-    """
+    """WriteFileRecordRequest."""
 
     function_code = 0x15
     rtu_byte_count_pos = 2
 
-    def __init__(self, records: list[FileRecord] = [], slave=1, transaction=0):  # pylint: disable=dangerous-default-value
-        """Initialize a new instance.
+    def __init__(self, records=None, slave_id=1, transaction_id=0) -> None:
+        """Initialize a new instance."""
+        super().__init__(transaction_id=transaction_id, slave_id=slave_id)
+        self.records: list[FileRecord] = records if records else []
 
-        :param records: The file record requests to be read
-        """
-        super().__init__()
-        super().setBaseData(slave, transaction)
-        self.records = records
-
-    def encode(self):
-        """Encode the request packet.
-
-        :returns: The byte encoded packet
-        """
+    def encode(self) -> bytes:
+        """Encode the request packet."""
         total_length = sum((record.record_length * 2) + 7 for record in self.records)
         packet = struct.pack("B", total_length)
 
@@ -240,11 +144,8 @@ class WriteFileRecordRequest(ModbusPDU):
             packet += record.record_data
         return packet
 
-    def decode(self, data):
-        """Decode the incoming request.
-
-        :param data: The data to decode into the address
-        """
+    def decode(self, data: bytes) -> None:
+        """Decode the incoming request."""
         byte_count = int(data[0])
         count, self.records = 1, []
         while count < byte_count:
@@ -259,16 +160,13 @@ class WriteFileRecordRequest(ModbusPDU):
             record.record_length = decoded[3]
             self.records.append(record)
 
-    def get_response_pdu_size(self):
+    def get_response_pdu_size(self) -> int:
         """Get response pdu size."""
         return 0 # 1 + 7 * len(self.records)
 
-    async def update_datastore(self, _context):
-        """Run the write file record request against the context.
-
-        :returns: The populated response
-        """
-        return WriteFileRecordResponse(self.records)
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """Run the write file record request against the context."""
+        return WriteFileRecordResponse(records=self.records, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
 class WriteFileRecordResponse(ModbusPDU):
@@ -277,20 +175,13 @@ class WriteFileRecordResponse(ModbusPDU):
     function_code = 0x15
     rtu_byte_count_pos = 2
 
-    def __init__(self, records: list[FileRecord] = [], slave=1, transaction=0):  # pylint: disable=dangerous-default-value
-        """Initialize a new instance.
+    def __init__(self, records=None, slave_id=1, transaction_id=0) -> None:
+        """Initialize a new instance."""
+        super().__init__(transaction_id=transaction_id, slave_id=slave_id)
+        self.records: list[FileRecord] = records if records else []
 
-        :param records: The file record requests to be read
-        """
-        super().__init__()
-        super().setBaseData(slave, transaction)
-        self.records = records
-
-    def encode(self):
-        """Encode the response.
-
-        :returns: The byte encoded message
-        """
+    def encode(self) -> bytes:
+        """Encode the response."""
         total_length = sum((record.record_length * 2) + 7 for record in self.records)
         packet = struct.pack("B", total_length)
         for record in self.records:
@@ -304,11 +195,8 @@ class WriteFileRecordResponse(ModbusPDU):
             packet += record.record_data
         return packet
 
-    def decode(self, data):
-        """Decode the incoming request.
-
-        :param data: The data to decode into the address
-        """
+    def decode(self, data: bytes) -> None:
+        """Decode the incoming request."""
         count, self.records = 1, []
         byte_count = int(data[0])
         while count < byte_count:
@@ -325,113 +213,65 @@ class WriteFileRecordResponse(ModbusPDU):
 
 
 class ReadFifoQueueRequest(ModbusPDU):
-    """Read fifo queue request.
-
-    This function code allows to read the contents of a First-In-First-Out
-    (FIFO) queue of register in a remote device. The function returns a
-    count of the registers in the queue, followed by the queued data.
-    Up to 32 registers can be read: the count, plus up to 31 queued data
-    registers.
-
-    The queue count register is returned first, followed by the queued data
-    registers.  The function reads the queue contents, but does not clear
-    them.
-    """
+    """ReadFifoQueueRequest."""
 
     function_code = 0x18
     rtu_frame_size = 6
 
-    def __init__(self, address=0x0000, slave=1, transaction=0):
-        """Initialize a new instance.
-
-        :param address: The fifo pointer address (0x0000 to 0xffff)
-        """
-        super().__init__()
-        super().setBaseData(slave, transaction)
+    def __init__(self, address=0x0000, slave_id=1, transaction_id=0) -> None:
+        """Initialize a new instance."""
+        super().__init__(transaction_id=transaction_id, slave_id=slave_id)
         self.address = address
-        self.values = []  # this should be added to the context
+        self.values: list[int] = []  # this should be added to the context
 
-    def encode(self):
-        """Encode the request packet.
-
-        :returns: The byte encoded packet
-        """
+    def encode(self) -> bytes:
+        """Encode the request packet."""
         return struct.pack(">H", self.address)
 
-    def decode(self, data):
-        """Decode the incoming request.
-
-        :param data: The data to decode into the address
-        """
+    def decode(self, data: bytes) -> None:
+        """Decode the incoming request."""
         self.address = struct.unpack(">H", data)[0]
 
-    def get_response_pdu_size(self):
+    def get_response_pdu_size(self) -> int:
         """Get response pdu size."""
         return 0 # 1 + 7 * len(self.records)
 
-    async def update_datastore(self, _context):
-        """Run a read exception status request against the store.
-
-        :returns: The populated response
-        """
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """Run a read exception status request against the store."""
         if not 0x0000 <= self.address <= 0xFFFF:
             return self.doException(merror.IllegalValue)
         if len(self.values) > 31:
             return self.doException(merror.IllegalValue)
-        # TODO pull the values from some context # pylint: disable=fixme
-        return ReadFifoQueueResponse(self.values)
+        return ReadFifoQueueResponse(values=self.values, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
 class ReadFifoQueueResponse(ModbusPDU):
-    """Read Fifo queue response.
-
-    In a normal response, the byte count shows the quantity of bytes to
-    follow, including the queue count bytes and value register bytes
-    (but not including the error check field).  The queue count is the
-    quantity of data registers in the queue (not including the count register).
-
-    If the queue count exceeds 31, an exception response is returned with an
-    error code of 03 (Illegal Data Value).
-    """
+    """ReadFifoQueueResponse."""
 
     function_code = 0x18
 
     @classmethod
-    def calculateRtuFrameSize(cls, buffer):
-        """Calculate the size of the message.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes in the response.
-        """
+    def calculateRtuFrameSize(cls, buffer: bytes) -> int:
+        """Calculate the size of the message."""
         hi_byte = int(buffer[2])
         lo_byte = int(buffer[3])
         return (hi_byte << 16) + lo_byte + 6
 
-    def __init__(self, values=None, slave=1, transaction=0):
-        """Initialize a new instance.
-
-        :param values: The list of values of the fifo to return
-        """
-        super().__init__()
-        super().setBaseData(slave, transaction)
+    def __init__(self, values=None, slave_id=1, transaction_id=0) -> None:
+        """Initialize a new instance."""
+        super().__init__(transaction_id=transaction_id, slave_id=slave_id)
         self.values = values or []
 
-    def encode(self):
-        """Encode the response.
-
-        :returns: The byte encoded message
-        """
+    def encode(self) -> bytes:
+        """Encode the response."""
         length = len(self.values) * 2
         packet = struct.pack(">HH", 2 + length, length)
         for value in self.values:
             packet += struct.pack(">H", value)
         return packet
 
-    def decode(self, data):
-        """Decode a the response.
-
-        :param data: The packet data to decode
-        """
+    def decode(self, data: bytes) -> None:
+        """Decode a the response."""
         self.values = []
         _, count = struct.unpack(">HH", data[0:4])
         for index in range(0, count - 4):

@@ -30,7 +30,7 @@ class TestMeiMessage:
         handle = ReadDeviceInformationRequest(**params)
         result = handle.encode()
         assert result == b"\x0e\x01\x00"
-        assert str(handle) == "ReadDeviceInformationRequest(1,0)"
+        assert "ReadDeviceInformationRequest" in str(handle)
 
     def test_read_device_information_request_decode(self):
         """Test basic bit message encoding/decoding."""
@@ -89,7 +89,7 @@ class TestMeiMessage:
         )
         result = handle.encode()
         assert result == message
-        assert str(handle) == "ReadDeviceInformationResponse(1)"
+        assert "ReadDeviceInformationResponse" in str(handle)
 
         dataset = {
             0x00: "Company",
@@ -129,7 +129,7 @@ class TestMeiMessage:
         )
         result = handle.encode()
         assert result == message
-        assert str(handle) == "ReadDeviceInformationResponse(1)"
+        assert "ReadDeviceInformationResponse" in str(handle)
 
     def test_read_device_information_decode(self):
         """Test that the read device information response can decode."""

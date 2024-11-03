@@ -65,7 +65,7 @@ from pymodbus.transport.serialtransport import create_serial_connection
 NULLMODEM_HOST = "__pymodbus_nullmodem"
 
 
-class CommType(Enum):
+class CommType(int, Enum):
     """Type of transport."""
 
     TCP = 1

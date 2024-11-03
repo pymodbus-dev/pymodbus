@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import struct
 from abc import abstractmethod
+from enum import Enum
 
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.logging import Log
@@ -17,18 +18,29 @@ class ModbusPDU:
     rtu_frame_size: int = 0
     rtu_byte_count_pos: int = 0
 
-    def __init__(self) -> None:
+    def __init__(self,
+            slave_id = 0,
+            transaction_id = 0,
+            address = 0,
+            count = 0,
+            bits = None,
+            registers = None,
+            status = 1,
+        ) -> None:
         """Initialize the base data for a modbus request."""
-        self.transaction_id: int = 0
-        self.slave_id: int = 0
-        self.bits: list[bool] = []
-        self.registers: list[int] = []
+        if not registers:
+            registers = []
+        for i, value in enumerate(registers):
+            if isinstance(value, bytes):
+                registers[i] = int.from_bytes(value, byteorder="big")
+        self.transaction_id: int = transaction_id
+        self.slave_id: int = slave_id
+        self.address: int = address
+        self.count: int = count if count else len(registers)
+        self.bits: list[bool] = bits if bits else []
+        self.registers: list[int] = registers if registers else []
+        self.status: int = status
         self.fut: asyncio.Future
-
-    def setBaseData(self, slave_id: int, transaction_id: int) -> None:
-        """Set data common for all PDU."""
-        self.transaction_id = transaction_id
-        self.slave_id = slave_id
 
     def doException(self, exception: int) -> ExceptionResponse:
         """Build an error response based on the function."""
@@ -67,29 +79,19 @@ class ModbusPDU:
         )
 
 
-class ModbusExceptions:  # pylint: disable=too-few-public-methods
+class ModbusExceptions(int, Enum):
     """An enumeration of the valid modbus exceptions."""
 
-    IllegalFunction = 0x01
-    IllegalAddress = 0x02
-    IllegalValue = 0x03
-    SlaveFailure = 0x04
-    Acknowledge = 0x05
-    SlaveBusy = 0x06
-    NegativeAcknowledge = 0x07
-    MemoryParityError = 0x08
-    GatewayPathUnavailable = 0x0A
-    GatewayNoResponse = 0x0B
-
-    @classmethod
-    def decode(cls, code: int) -> str | None:
-        """Give an error code, translate it to a string error name."""
-        values = {
-            v: k
-            for k, v in iter(cls.__dict__.items())
-            if not k.startswith("__") and not callable(v)
-        }
-        return values.get(code, None)
+    IllegalFunction = 0x01  # pylint: disable=invalid-name
+    IllegalAddress = 0x02  # pylint: disable=invalid-name
+    IllegalValue = 0x03  # pylint: disable=invalid-name
+    SlaveFailure = 0x04  # pylint: disable=invalid-name
+    Acknowledge = 0x05  # pylint: disable=invalid-name
+    SlaveBusy = 0x06  # pylint: disable=invalid-name
+    NegativeAcknowledge = 0x07  # pylint: disable=invalid-name
+    MemoryParityError = 0x08  # pylint: disable=invalid-name
+    GatewayPathUnavailable = 0x0A  # pylint: disable=invalid-name
+    GatewayNoResponse = 0x0B  # pylint: disable=invalid-name
 
 
 class ExceptionResponse(ModbusPDU):
@@ -104,8 +106,7 @@ class ExceptionResponse(ModbusPDU):
             slave: int = 1,
             transaction: int = 0) -> None:
         """Initialize the modbus exception response."""
-        super().__init__()
-        super().setBaseData(slave, transaction)
+        super().__init__(transaction_id=transaction, slave_id=slave)
         self.function_code = function_code | 0x80
         self.exception_code = exception_code
 
@@ -119,7 +120,8 @@ class ExceptionResponse(ModbusPDU):
 
     def __str__(self) -> str:
         """Build a representation of an exception response."""
-        message = ModbusExceptions.decode(self.exception_code)
+        names = {data.value: data.name for data in ModbusExceptions}
+        message = names[self.exception_code]
         return (
             f"Exception Response({self.function_code}, {self.function_code - 0x80}, {message})"
         )

@@ -62,7 +62,7 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a read holding request against a datastore."""
         if not (1 <= self.count <= 0x7D):
-            return self.doException(merror.IllegalValue)
+            return self.doException(merror.ILLEGAL_VALUE)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.ILLEGAL_ADDRESS)
         values = cast(list[int], await context.async_getValues(
@@ -85,7 +85,7 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
     async def update_datastore(self, context) -> ModbusPDU:
         """Run a read input request against a datastore."""
         if not (1 <= self.count <= 0x7D):
-            return self.doException(merror.IllegalValue)
+            return self.doException(merror.ILLEGAL_VALUE)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.ILLEGAL_ADDRESS)
         values = await context.async_getValues(
@@ -153,11 +153,11 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a write single register request against a datastore."""
         if not (1 <= self.read_count <= 0x07D):
-            return self.doException(merror.IllegalValue)
+            return self.doException(merror.ILLEGAL_VALUE)
         if not 1 <= self.write_count <= 0x079:
-            return self.doException(merror.IllegalValue)
+            return self.doException(merror.ILLEGAL_VALUE)
         if self.write_byte_count != self.write_count * 2:
-            return self.doException(merror.IllegalValue)
+            return self.doException(merror.ILLEGAL_VALUE)
         if not context.validate(
             self.function_code, self.write_address, self.write_count
         ):
@@ -208,7 +208,7 @@ class WriteSingleRegisterRequest(WriteSingleRegisterResponse):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a write single register request against a datastore."""
         if not 0 <= self.registers[0] <= 0xFFFF:
-            return self.doException(merror.IllegalValue)
+            return self.doException(merror.ILLEGAL_VALUE)
         if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.ILLEGAL_ADDRESS)
 
@@ -250,7 +250,7 @@ class WriteMultipleRegistersRequest(ModbusPDU):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a write single register request against a datastore."""
         if not 1 <= self.count <= 0x07B:
-            return self.doException(merror.IllegalValue)
+            return self.doException(merror.ILLEGAL_VALUE)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.ILLEGAL_ADDRESS)
 
@@ -305,9 +305,9 @@ class MaskWriteRegisterRequest(ModbusPDU):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a mask write register request against the store."""
         if not 0x0000 <= self.and_mask <= 0xFFFF:
-            return self.doException(merror.IllegalValue)
+            return self.doException(merror.ILLEGAL_VALUE)
         if not 0x0000 <= self.or_mask <= 0xFFFF:
-            return self.doException(merror.IllegalValue)
+            return self.doException(merror.ILLEGAL_VALUE)
         if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.ILLEGAL_ADDRESS)
         values = (await context.async_getValues(self.function_code, self.address, 1))[0]

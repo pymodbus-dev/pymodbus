@@ -126,7 +126,7 @@
             },
             {
                 "value": 3,
-                "text": "IllegalValue",
+                "text": "ILLEGAL_VALUE",
                 "selected": false
             },
             {

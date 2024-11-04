@@ -86,7 +86,7 @@ class ModbusExceptions(int, Enum):
 
     ILLEGAL_FUNCTION = 0x01
     ILLEGAL_ADDRESS = 0x02
-    IllegalValue = 0x03  # pylint: disable=invalid-name
+    ILLEGAL_VALUE = 0x03  # pylint: disable=invalid-name
     SlaveFailure = 0x04  # pylint: disable=invalid-name
     Acknowledge = 0x05  # pylint: disable=invalid-name
     SlaveBusy = 0x06  # pylint: disable=invalid-name

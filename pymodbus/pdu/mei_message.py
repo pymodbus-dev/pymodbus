@@ -61,9 +61,9 @@ class ReadDeviceInformationRequest(ModbusPDU):
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
         """Run a read exception status request against the store."""
         if not 0x00 <= self.object_id <= 0xFF:
-            return self.doException(merror.IllegalValue)
+            return self.doException(merror.ILLEGAL_VALUE)
         if not 0x00 <= self.read_code <= 0x04:
-            return self.doException(merror.IllegalValue)
+            return self.doException(merror.ILLEGAL_VALUE)
 
         information = DeviceInformationFactory.get(_MCB, self.read_code, self.object_id)
         return ReadDeviceInformationResponse(read_code=self.read_code, information=information, slave_id=self.slave_id, transaction_id=self.transaction_id)

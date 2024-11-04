@@ -366,7 +366,7 @@ class ModbusSimulatorServer:
         for i, txt in (
             (1, "ILLEGAL_FUNCTION"),
             (2, "ILLEGAL_ADDRESS"),
-            (3, "IllegalValue"),
+            (3, "ILLEGAL_VALUE"),
             (4, "SlaveFailure"),
             (5, "Acknowledge"),
             (6, "SlaveBusy"),
@@ -528,7 +528,7 @@ class ModbusSimulatorServer:
         for i, txt in (
             (1, "ILLEGAL_FUNCTION"),
             (2, "ILLEGAL_ADDRESS"),
-            (3, "IllegalValue"),
+            (3, "ILLEGAL_VALUE"),
             (4, "SlaveFailure"),
             (5, "Acknowledge"),
             (6, "SlaveBusy"),

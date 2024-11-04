@@ -239,9 +239,9 @@ class ReadFifoQueueRequest(ModbusPDU):
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
         """Run a read exception status request against the store."""
         if not 0x0000 <= self.address <= 0xFFFF:
-            return self.doException(merror.IllegalValue)
+            return self.doException(merror.ILLEGAL_VALUE)
         if len(self.values) > 31:
-            return self.doException(merror.IllegalValue)
+            return self.doException(merror.ILLEGAL_VALUE)
         return ReadFifoQueueResponse(values=self.values, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 

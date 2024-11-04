@@ -96,7 +96,7 @@ class TestReadRegisterMessages:
         ]
         for request in requests:
             result = await request.update_datastore(None)
-            assert ModbusExceptions.IllegalValue == result.exception_code
+            assert result.exception_code == ModbusExceptions.ILLEGAL_VALUE
 
     async def test_register_read_requests_validate_errors(self, mock_context):
         """This tests that the register request messages.
@@ -153,7 +153,7 @@ class TestReadRegisterMessages:
 
         request.write_byte_count = 0x100
         response = await request.update_datastore(context)
-        assert response.exception_code == ModbusExceptions.IllegalValue
+        assert response.exception_code == ModbusExceptions.ILLEGAL_VALUE
 
     def test_read_write_multiple_registers_request_decode(self):
         """Test read/write multiple registers."""

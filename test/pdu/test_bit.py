@@ -33,7 +33,7 @@ class TestModbusBitMessage:
             (bit_msg.ReadDiscreteInputsRequest(address=1, count=0x800)),
         ):
             result = await pdu.update_datastore(context)
-            assert ModbusExceptions.IllegalValue == result.exception_code
+            assert result.exception_code == ModbusExceptions.ILLEGAL_VALUE
 
     async def test_bit_read_update_datastore_address_errors(self, mock_context):
         """Test bit read request encoding."""
@@ -43,7 +43,7 @@ class TestModbusBitMessage:
             (bit_msg.ReadDiscreteInputsRequest(address=1, count=0x800)),
         ):
             result = await pdu.update_datastore(context)
-            assert ModbusExceptions.IllegalValue == result.exception_code
+            assert result.exception_code == ModbusExceptions.ILLEGAL_VALUE
 
     async def test_bit_read_update_datastore_success(self, mock_context):
         """Test bit read request encoding."""
@@ -127,7 +127,7 @@ class TestModbusBitMessage:
         # too many values
         request = bit_msg.WriteMultipleCoilsRequest(address=2, bits=[])
         result = await request.update_datastore(context)
-        assert result.exception_code == ModbusExceptions.IllegalValue
+        assert result.exception_code == ModbusExceptions.ILLEGAL_VALUE
 
         # does not validate
         context.valid = False

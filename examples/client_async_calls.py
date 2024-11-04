@@ -272,6 +272,7 @@ async def run_async_calls(client):
     await async_handle_coils(client)
     await async_handle_discrete_input(client)
     await async_handle_holding_registers(client)
+    await async_write_registers_mypy(client)
     await async_handle_input_registers(client)
     await async_handle_file_records(client)
     await async_execute_information_requests(client)

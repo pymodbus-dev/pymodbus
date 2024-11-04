@@ -70,7 +70,7 @@ class Decoder:
         """Attempt to decode the supplied message."""
         value = message if self.encode else c.encode(message, "hex_codec")
         print("=" * 80)
-        print(f"Decoding Message {value}")
+        print(f"Decoding Message {value!r}")
         print("=" * 80)
         decoders = [
             self.framer(DecodePDU(True)),

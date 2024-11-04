@@ -127,13 +127,13 @@ async def main(host="localhost", port=5020):
         # new modbus function code.
         client.register(CustomModbusPDU)
         slave=1
-        request = CustomRequest(32, slave=slave)
-        result = await client.execute(False, request)
+        request1 = CustomRequest(32, slave=slave)
+        result = await client.execute(False, request1)
         print(result)
 
         # inherited request
-        request = Read16CoilsRequest(32, slave)
-        result = await client.execute(False, request)
+        request2 = Read16CoilsRequest(32, slave)
+        result = await client.execute(False, request2)
         print(result)
 
 

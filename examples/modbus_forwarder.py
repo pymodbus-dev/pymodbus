@@ -16,6 +16,8 @@ Both server and client are tcp based, but it can be easily modified to any serve
 
 **WARNING** This example is a simple solution, that do only forward read requests.
 """
+from __future__ import annotations
+
 import asyncio
 import logging
 import sys
@@ -58,6 +60,7 @@ async def run_forwarder(args):
     # in RemoteSlaveContext
     # For e.g to forward the requests to slave with slave address 1 use
     # store = RemoteSlaveContext(client, slave=1)
+    store: dict | RemoteSlaveContext
     if args.slaves:
         store = {}
         for i in args.slaves:

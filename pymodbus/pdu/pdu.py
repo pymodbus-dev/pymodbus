@@ -84,8 +84,8 @@ class ModbusPDU:
 class ModbusExceptions(int, Enum):
     """An enumeration of the valid modbus exceptions."""
 
-    IllegalFunction = 0x01  # pylint: disable=invalid-name
-    IllegalAddress = 0x02  # pylint: disable=invalid-name
+    ILLEGAL_FUNCTION = 0x01
+    ILLEGAL_ADDRESS = 0x02
     IllegalValue = 0x03  # pylint: disable=invalid-name
     SlaveFailure = 0x04  # pylint: disable=invalid-name
     Acknowledge = 0x05  # pylint: disable=invalid-name

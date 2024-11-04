@@ -64,7 +64,7 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
         if not (1 <= self.count <= 0x7D):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
-            return self.doException(merror.IllegalAddress)
+            return self.doException(merror.ILLEGAL_ADDRESS)
         values = cast(list[int], await context.async_getValues(
             self.function_code, self.address, self.count
         ))
@@ -87,7 +87,7 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
         if not (1 <= self.count <= 0x7D):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
-            return self.doException(merror.IllegalAddress)
+            return self.doException(merror.ILLEGAL_ADDRESS)
         values = await context.async_getValues(
             self.function_code, self.address, self.count
         )
@@ -161,9 +161,9 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         if not context.validate(
             self.function_code, self.write_address, self.write_count
         ):
-            return self.doException(merror.IllegalAddress)
+            return self.doException(merror.ILLEGAL_ADDRESS)
         if not context.validate(self.function_code, self.read_address, self.read_count):
-            return self.doException(merror.IllegalAddress)
+            return self.doException(merror.ILLEGAL_ADDRESS)
         await context.async_setValues(
             self.function_code, self.write_address, self.write_registers
         )
@@ -210,7 +210,7 @@ class WriteSingleRegisterRequest(WriteSingleRegisterResponse):
         if not 0 <= self.registers[0] <= 0xFFFF:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, 1):
-            return self.doException(merror.IllegalAddress)
+            return self.doException(merror.ILLEGAL_ADDRESS)
 
         await context.async_setValues(
             self.function_code, self.address, self.registers
@@ -252,7 +252,7 @@ class WriteMultipleRegistersRequest(ModbusPDU):
         if not 1 <= self.count <= 0x07B:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
-            return self.doException(merror.IllegalAddress)
+            return self.doException(merror.ILLEGAL_ADDRESS)
 
         await context.async_setValues(
             self.function_code, self.address, self.registers
@@ -309,7 +309,7 @@ class MaskWriteRegisterRequest(ModbusPDU):
         if not 0x0000 <= self.or_mask <= 0xFFFF:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, 1):
-            return self.doException(merror.IllegalAddress)
+            return self.doException(merror.ILLEGAL_ADDRESS)
         values = (await context.async_getValues(self.function_code, self.address, 1))[0]
         values = (values & self.and_mask) | (self.or_mask & ~self.and_mask)
         await context.async_setValues(

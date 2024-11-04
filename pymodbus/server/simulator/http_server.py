@@ -364,8 +364,8 @@ class ModbusSimulatorServer:
 
         function_error = ""
         for i, txt in (
-            (1, "IllegalFunction"),
-            (2, "IllegalAddress"),
+            (1, "ILLEGAL_FUNCTION"),
+            (2, "ILLEGAL_ADDRESS"),
             (3, "IllegalValue"),
             (4, "SlaveFailure"),
             (5, "Acknowledge"),
@@ -526,8 +526,8 @@ class ModbusSimulatorServer:
 
         function_error = []
         for i, txt in (
-            (1, "IllegalFunction"),
-            (2, "IllegalAddress"),
+            (1, "ILLEGAL_FUNCTION"),
+            (2, "ILLEGAL_ADDRESS"),
             (3, "IllegalValue"),
             (4, "SlaveFailure"),
             (5, "Acknowledge"),

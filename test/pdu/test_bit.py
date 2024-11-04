@@ -110,7 +110,7 @@ class TestModbusBitMessage:
         context = mock_context(False, default=True)
         request = bit_msg.WriteSingleCoilRequest(address=2, bits=[True])
         result = await request.update_datastore(context)
-        assert result.exception_code == ModbusExceptions.IllegalAddress
+        assert result.exception_code == ModbusExceptions.ILLEGAL_ADDRESS
 
         context.valid = True
         result = await request.update_datastore(context)
@@ -133,7 +133,7 @@ class TestModbusBitMessage:
         context.valid = False
         request = bit_msg.WriteMultipleCoilsRequest(address=2, bits=[False] * 4)
         result = await request.update_datastore(context)
-        assert result.exception_code == ModbusExceptions.IllegalAddress
+        assert result.exception_code == ModbusExceptions.ILLEGAL_ADDRESS
 
         # validated request
         context.valid = True

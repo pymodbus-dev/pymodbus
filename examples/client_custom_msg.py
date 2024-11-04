@@ -87,7 +87,7 @@ class CustomRequest(ModbusPDU):
         if not 1 <= self.count <= 0x7D0:
             return self.doException(ModbusExceptions.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
-            return self.doException(ModbusExceptions.IllegalAddress)
+            return self.doException(ModbusExceptions.ILLEGAL_ADDRESS)
         values = context.getValues(self.function_code, self.address, self.count)
         return CustomModbusPDU(values)
 

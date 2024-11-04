@@ -37,7 +37,7 @@ class ReadCoilsRequest(ModbusPDU):
         if not (1 <= self.count <= 0x7D0):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
-            return self.doException(merror.IllegalAddress)
+            return self.doException(merror.ILLEGAL_ADDRESS)
         values = cast(list[bool], await context.async_getValues(
             self.function_code, self.address, self.count
         ))
@@ -98,7 +98,7 @@ class WriteSingleCoilRequest(WriteSingleCoilResponse):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a request against a datastore."""
         if not context.validate(self.function_code, self.address, 1):
-            return self.doException(merror.IllegalAddress)
+            return self.doException(merror.ILLEGAL_ADDRESS)
 
         await context.async_setValues(self.function_code, self.address, self.bits)
         values = cast(list[bool], await context.async_getValues(self.function_code, self.address, 1))
@@ -138,7 +138,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
         if not 1 <= count <= 0x07B0:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, count):
-            return self.doException(merror.IllegalAddress)
+            return self.doException(merror.ILLEGAL_ADDRESS)
 
         await context.async_setValues(
             self.function_code, self.address, self.bits

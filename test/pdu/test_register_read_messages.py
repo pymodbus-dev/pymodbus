@@ -112,7 +112,7 @@ class TestReadRegisterMessages:
         ]
         for request in requests:
             result = await request.update_datastore(context)
-            assert ModbusExceptions.IllegalAddress == result.exception_code
+            assert result.exception_code == ModbusExceptions.ILLEGAL_ADDRESS
 
     async def test_register_read_requests_update_datastore(self, mock_context):
         """This tests that the register request messages.
@@ -145,11 +145,11 @@ class TestReadRegisterMessages:
             read_address=1, read_count=10, write_address=2, write_registers=[0x00]
         )
         response = await request.update_datastore(context)
-        assert response.exception_code == ModbusExceptions.IllegalAddress
+        assert response.exception_code == ModbusExceptions.ILLEGAL_ADDRESS
 
         context.validate = lambda f, a, c: a == 2
         response = await request.update_datastore(context)
-        assert response.exception_code == ModbusExceptions.IllegalAddress
+        assert response.exception_code == ModbusExceptions.ILLEGAL_ADDRESS
 
         request.write_byte_count = 0x100
         response = await request.update_datastore(context)

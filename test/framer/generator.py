@@ -36,7 +36,7 @@ def set_calls():
                 result = server.buildFrame(response)
                 print(f"      response --> {result}")
                 print(f"      response --> {result.hex()}")
-                exception = request.doException(merror.IllegalAddress)
+                exception = request.doException(merror.ILLEGAL_ADDRESS)
                 exception.transaction_id = tid
                 exception.slave_id = dev_id
                 result = server.buildFrame(exception)

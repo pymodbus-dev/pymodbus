@@ -87,7 +87,7 @@ class TestWriteRegisterMessages:
 
         request.registers[0] = 0x00FF
         result = await request.update_datastore(context)
-        assert result.exception_code == ModbusExceptions.IllegalAddress
+        assert result.exception_code == ModbusExceptions.ILLEGAL_ADDRESS
 
         context.valid = True
         result = await request.update_datastore(context)
@@ -98,7 +98,7 @@ class TestWriteRegisterMessages:
         context = mock_context()
         request = WriteMultipleRegistersRequest(address=0x00, registers=[0x00] * 10)
         result = await request.update_datastore(context)
-        assert result.exception_code == ModbusExceptions.IllegalAddress
+        assert result.exception_code == ModbusExceptions.ILLEGAL_ADDRESS
 
         request.count = 0x800  # outside of range
         result = await request.update_datastore(context)
@@ -159,7 +159,7 @@ class TestWriteRegisterMessages:
 
         handle = MaskWriteRegisterRequest(0x0000, 0x0101, 0x1010)
         result = await handle.update_datastore(context)
-        assert ModbusExceptions.IllegalAddress == result.exception_code
+        assert result.exception_code == ModbusExceptions.ILLEGAL_ADDRESS
 
         # -----------------------------------------------------------------------#
         # Mask Write Register Response

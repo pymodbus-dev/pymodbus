@@ -116,12 +116,12 @@
         "function_error": [
             {
                 "value": 1,
-                "text": "IllegalFunction",
+                "text": "ILLEGAL_FUNCTION",
                 "selected": false
             },
             {
                 "value": 2,
-                "text": "IllegalAddress",
+                "text": "ILLEGAL_ADDRESS",
                 "selected": false
             },
             {

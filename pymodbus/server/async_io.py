@@ -127,7 +127,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
         except ModbusException:
             pdu = ExceptionResponse(
                 40,
-                exception_code=merror.IllegalFunction
+                exception_code=merror.ILLEGAL_FUNCTION
             )
             self.server_send(pdu, 0)
             pdu = None

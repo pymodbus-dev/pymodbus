@@ -1,6 +1,5 @@
 """Register Reading Request/Response."""
 import struct
-from typing import cast
 
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.exceptions import ModbusIOException
@@ -308,7 +307,7 @@ class MaskWriteRegisterRequest(ModbusPDU):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.IllegalAddress)
-        values = cast(int, (await context.async_getValues(self.function_code, self.address, 1))[0])
+        values = (await context.async_getValues(self.function_code, self.address, 1))[0]
         values = (values & self.and_mask) | (self.or_mask & ~self.and_mask)
         await context.async_setValues(
             self.function_code, self.address, [values]

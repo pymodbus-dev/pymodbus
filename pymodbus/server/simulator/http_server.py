@@ -364,15 +364,15 @@ class ModbusSimulatorServer:
 
         function_error = ""
         for i, txt in (
-            (1, "IllegalFunction"),
-            (2, "IllegalAddress"),
-            (3, "IllegalValue"),
-            (4, "SlaveFailure"),
-            (5, "Acknowledge"),
-            (6, "SlaveBusy"),
-            (7, "MemoryParityError"),
-            (10, "GatewayPathUnavailable"),
-            (11, "GatewayNoResponse"),
+            (1, "ILLEGAL_FUNCTION"),
+            (2, "ILLEGAL_ADDRESS"),
+            (3, "ILLEGAL_VALUE"),
+            (4, "SLAVE_FAILURE"),
+            (5, "ACKNOWLEDGE"),
+            (6, "SLAVE_BUSY"),
+            (7, "MEMORY_PARITY_ERROR"),
+            (10, "GATEWAY_PATH_UNAVIABLE"),
+            (11, "GATEWAY_NO_RESPONSE"),
         ):
             selected = "selected" if i == self.call_response.error_response else ""
             function_error += f"<option value={i} {selected}>{txt}</option>"
@@ -526,15 +526,15 @@ class ModbusSimulatorServer:
 
         function_error = []
         for i, txt in (
-            (1, "IllegalFunction"),
-            (2, "IllegalAddress"),
-            (3, "IllegalValue"),
-            (4, "SlaveFailure"),
-            (5, "Acknowledge"),
-            (6, "SlaveBusy"),
-            (7, "MemoryParityError"),
-            (10, "GatewayPathUnavailable"),
-            (11, "GatewayNoResponse"),
+            (1, "ILLEGAL_FUNCTION"),
+            (2, "ILLEGAL_ADDRESS"),
+            (3, "ILLEGAL_VALUE"),
+            (4, "SLAVE_FAILURE"),
+            (5, "ACKNOWLEDGE"),
+            (6, "SLAVE_BUSY"),
+            (7, "MEMORY_PARITY_ERROR"),
+            (10, "GATEWAY_PATH_UNAVIABLE"),
+            (11, "GATEWAY_NO_RESPONSE"),
         ):
             function_error.append({
                 "value": i,

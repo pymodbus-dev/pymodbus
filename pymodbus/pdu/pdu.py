@@ -4,7 +4,9 @@ from __future__ import annotations
 import asyncio
 import struct
 from abc import abstractmethod
+from collections.abc import Sequence
 from enum import Enum
+from typing import cast
 
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.logging import Log
@@ -19,26 +21,26 @@ class ModbusPDU:
     rtu_byte_count_pos: int = 0
 
     def __init__(self,
-            slave_id = 0,
-            transaction_id = 0,
-            address = 0,
-            count = 0,
-            bits = None,
-            registers = None,
-            status = 1,
+            slave_id: int = 0,
+            transaction_id: int = 0,
+            address: int = 0,
+            count: int = 0,
+            bits: list[bool] | None = None,
+            registers: Sequence[int | bytes] | None = None,
+            status: int = 1,
         ) -> None:
         """Initialize the base data for a modbus request."""
+        self.slave_id: int = slave_id
+        self.transaction_id: int = transaction_id
+        self.address: int = address
+        self.bits: list[bool] = bits if bits else []
         if not registers:
             registers = []
+        self.registers: list[int] = cast(list[int], registers)
         for i, value in enumerate(registers):
             if isinstance(value, bytes):
-                registers[i] = int.from_bytes(value, byteorder="big")
-        self.transaction_id: int = transaction_id
-        self.slave_id: int = slave_id
-        self.address: int = address
+                self.registers[i] = int.from_bytes(value, byteorder="big")
         self.count: int = count if count else len(registers)
-        self.bits: list[bool] = bits if bits else []
-        self.registers: list[int] = registers if registers else []
         self.status: int = status
         self.fut: asyncio.Future
 
@@ -82,16 +84,16 @@ class ModbusPDU:
 class ModbusExceptions(int, Enum):
     """An enumeration of the valid modbus exceptions."""
 
-    IllegalFunction = 0x01  # pylint: disable=invalid-name
-    IllegalAddress = 0x02  # pylint: disable=invalid-name
-    IllegalValue = 0x03  # pylint: disable=invalid-name
-    SlaveFailure = 0x04  # pylint: disable=invalid-name
-    Acknowledge = 0x05  # pylint: disable=invalid-name
-    SlaveBusy = 0x06  # pylint: disable=invalid-name
-    NegativeAcknowledge = 0x07  # pylint: disable=invalid-name
-    MemoryParityError = 0x08  # pylint: disable=invalid-name
-    GatewayPathUnavailable = 0x0A  # pylint: disable=invalid-name
-    GatewayNoResponse = 0x0B  # pylint: disable=invalid-name
+    ILLEGAL_FUNCTION = 0x01
+    ILLEGAL_ADDRESS = 0x02
+    ILLEGAL_VALUE = 0x03
+    SLAVE_FAILURE = 0x04
+    ACKNOWLEDGE = 0x05
+    SLAVE_BUSY = 0x06
+    NEGATIVE_ACKNOWLEDGE = 0x07
+    MEMORY_PARITY_ERROR = 0x08
+    GATEWAY_PATH_UNAVIABLE = 0x0A
+    GATEWAY_NO_RESPONSE = 0x0B
 
 
 class ExceptionResponse(ModbusPDU):

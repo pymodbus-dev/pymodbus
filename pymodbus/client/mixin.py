@@ -416,7 +416,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     def write_registers(
         self,
         address: int,
-        values: list[bytes] | list[int],
+        values: list[bytes | int],
         slave: int = 1,
         no_response_expected: bool = False
     ) -> T:

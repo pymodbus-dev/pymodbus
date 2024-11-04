@@ -44,11 +44,11 @@ class TestBitMessage:
 
         handle.address = -1
         result = await handle.update_datastore(context)
-        assert ModbusExceptions.IllegalValue == result.exception_code
+        assert result.exception_code == ModbusExceptions.ILLEGAL_VALUE
 
         handle.values = [0x00] * 33
         result = await handle.update_datastore(context)
-        assert ModbusExceptions.IllegalValue == result.exception_code
+        assert result.exception_code == ModbusExceptions.ILLEGAL_VALUE
 
     async def test_read_fifo_queue_request_error(self, mock_context):
         """Test basic bit message encoding/decoding."""

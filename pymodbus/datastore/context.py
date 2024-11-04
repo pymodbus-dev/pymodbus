@@ -32,7 +32,7 @@ class ModbusBaseSlaveContext:
         """
         return self._fx_mapper[fx]
 
-    async def async_getValues(self, fc_as_hex: int, address: int, count: int = 1) -> list[int | bool | None]:
+    async def async_getValues(self, fc_as_hex: int, address: int, count: int = 1) -> Sequence[int | bool]:
         """Get `count` values from datastore.
 
         :param fc_as_hex: The function we are working with
@@ -51,7 +51,7 @@ class ModbusBaseSlaveContext:
         """
         self.setValues(fc_as_hex, address, values)
 
-    def getValues(self, fc_as_hex: int, address: int, count: int = 1) -> list[int | bool | None]:
+    def getValues(self, fc_as_hex: int, address: int, count: int = 1) -> Sequence[int | bool]:
         """Get `count` values from datastore.
 
         :param fc_as_hex: The function we are working with

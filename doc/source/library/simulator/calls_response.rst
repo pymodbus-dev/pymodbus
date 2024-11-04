@@ -116,47 +116,47 @@
         "function_error": [
             {
                 "value": 1,
-                "text": "IllegalFunction",
+                "text": "ILLEGAL_FUNCTION",
                 "selected": false
             },
             {
                 "value": 2,
-                "text": "IllegalAddress",
+                "text": "ILLEGAL_ADDRESS",
                 "selected": false
             },
             {
                 "value": 3,
-                "text": "IllegalValue",
+                "text": "ILLEGAL_VALUE",
                 "selected": false
             },
             {
                 "value": 4,
-                "text": "SlaveFailure",
+                "text": "SLAVE_FAILURE",
                 "selected": false
             },
             {
                 "value": 5,
-                "text": "Acknowledge",
+                "text": "ACKNOWLEDGE",
                 "selected": false
             },
             {
                 "value": 6,
-                "text": "SlaveBusy",
+                "text": "SLAVE_BUSY",
                 "selected": false
             },
             {
                 "value": 7,
-                "text": "MemoryParityError",
+                "text": "MEMORY_PARITY_ERROR",
                 "selected": false
             },
             {
                 "value": 10,
-                "text": "GatewayPathUnavailable",
+                "text": "GATEWAY_PATH_UNAVIABLE",
                 "selected": false
             },
             {
                 "value": 11,
-                "text": "GatewayNoResponse",
+                "text": "GATEWAY_NO_RESPONSE",
                 "selected": false
             }
         ],

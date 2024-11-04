@@ -12,7 +12,7 @@ from collections import OrderedDict
 
 
 try:
-    import client_async
+    from examples import client_async
 except ImportError:
     print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
@@ -64,7 +64,7 @@ async def run_payload_calls(client):
         # Normally just do:  builder = BinaryPayloadBuilder()
         my_string = "abcdefgh"
         builder.add_string(my_string)
-        builder.add_bits([0, 1, 0, 1, 1, 0, 1, 0])
+        builder.add_bits([False, True, False, True, True, False, True, False])
         builder.add_8bit_int(-0x12)
         builder.add_8bit_uint(0x12)
         builder.add_16bit_int(-0x5678)

@@ -36,7 +36,7 @@ from pymodbus.pdu import FileRecord
 
 
 try:
-    import client_sync
+    from examples import client_sync
 except ImportError:
     print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\

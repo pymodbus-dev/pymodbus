@@ -35,10 +35,12 @@ The corresponding client can be started as:
 import asyncio
 import logging
 import sys
+from collections.abc import Callable
+from typing import Any
 
 
 try:
-    import helper
+    from examples import helper
 except ImportError:
     print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
@@ -70,7 +72,7 @@ def setup_server(description=None, context=None, cmdline=None):
     args = helper.get_commandline(server=True, description=description, cmdline=cmdline)
     if context:
         args.context = context
-    datablock = None
+    datablock: Callable[[], Any]
     if not args.context:
         _logger.info("### Create datastore")
         # The datastores only respond to the addresses that are initialized

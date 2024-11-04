@@ -4,6 +4,8 @@
 This is an example of using the builtin request/response tracer to
 manipulate the messages to/from the modbus server
 """
+from __future__ import annotations
+
 import asyncio
 import logging
 
@@ -20,7 +22,7 @@ class Manipulator:
     """A Class to run the server."""
 
     message_count: int = 1
-    server: ModbusTcpServer = None
+    server: ModbusTcpServer
 
     def server_request_tracer(self, request, *_addr):
         """Trace requests.

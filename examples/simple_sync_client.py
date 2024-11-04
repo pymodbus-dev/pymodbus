@@ -28,6 +28,7 @@ def run_sync_simple_client(comm, host, port, framer=FramerType.SOCKET):
     pymodbus_apply_logging_config("DEBUG")
 
     print("get client")
+    client: ModbusClient.ModbusBaseSyncClient
     if comm == "tcp":
         client = ModbusClient.ModbusTcpClient(
             host,

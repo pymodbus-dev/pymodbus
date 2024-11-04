@@ -186,6 +186,7 @@ overgeneral-exceptions = "builtins.Exception"
 bad-functions = "map,input"
 
 [tool.mypy]
+exclude = '/contrib/'
 strict_optional = true
 show_error_codes = true
 local_partial_types = true

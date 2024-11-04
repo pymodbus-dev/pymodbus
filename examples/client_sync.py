@@ -30,12 +30,14 @@ The corresponding server must be started before e.g. as:
     python3 server_sync.py
 
 """
+from __future__ import annotations
+
 import logging
 import sys
 
 
 try:
-    import helper
+    from examples import helper
 except ImportError:
     print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
@@ -58,7 +60,7 @@ def setup_sync_client(description=None, cmdline=None):
         cmdline=cmdline,
     )
     _logger.info("### Create client object")
-    client = None
+    client: modbusClient.ModbusBaseSyncClient | None = None
     if args.comm == "tcp":
         client = modbusClient.ModbusTcpClient(
             args.host,

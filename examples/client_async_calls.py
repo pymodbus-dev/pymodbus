@@ -157,6 +157,20 @@ async def async_handle_holding_registers(client):
     assert not rr.isError()  # test that call was OK
     assert rr.registers == arguments["values"]
 
+async def async_write_registers_mypy(client):
+    """Read/write holding registers."""
+    regs1: list[int] = [10] * 8
+    await client.write_registers(1, regs1, slave=SLAVE)
+    rr = await client.read_holding_registers(1, len(regs1), slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    assert rr.registers == regs1
+
+    regs2: list[bytes] = [b'\x01\x02', b'\x03\x04']
+    await client.write_registers(1, regs2, slave=SLAVE)
+    rr = await client.read_holding_registers(1, len(regs2), slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    assert rr.registers == regs2
+
 
 async def async_handle_input_registers(client):
     """Read input registers."""

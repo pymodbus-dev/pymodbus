@@ -26,6 +26,7 @@ async def run_async_simple_client(comm, host, port, framer=FramerType.SOCKET):
     pymodbus_apply_logging_config("DEBUG")
 
     print("get client")
+    client: ModbusClient.ModbusBaseClient
     if comm == "tcp":
         client = ModbusClient.AsyncModbusTcpClient(
             host,

@@ -35,7 +35,7 @@ import sys
 
 
 try:
-    import helper
+    import examples.helper as helper
 except ImportError:
     print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
@@ -58,7 +58,7 @@ def setup_sync_client(description=None, cmdline=None):
         cmdline=cmdline,
     )
     _logger.info("### Create client object")
-    client = None
+    client: modbusClient.ModbusBaseSyncClient | None = None
     if args.comm == "tcp":
         client = modbusClient.ModbusTcpClient(
             args.host,

@@ -26,13 +26,15 @@ usage::
 The corresponding server must be started before e.g. as:
     python3 server_sync.py
 """
+from __future__ import annotations
+
 import asyncio
 import logging
 import sys
 
 
 try:
-    import helper
+    import examples.helper as helper
 except ImportError:
     print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
@@ -52,7 +54,7 @@ def setup_async_client(description=None, cmdline=None):
         server=False, description=description, cmdline=cmdline
     )
     _logger.info("### Create client object")
-    client = None
+    client: modbusClient.ModbusBaseClient | None = None
     if args.comm == "tcp":
         client = modbusClient.AsyncModbusTcpClient(
             args.host,

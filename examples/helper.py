@@ -4,6 +4,8 @@ Contains common functions get get_command_line() to avoid duplicating
 code that are not relevant for the code as such, like e.g.
 get_command_line
 """
+from __future__ import annotations
+
 import argparse
 import logging
 import os
@@ -95,7 +97,7 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
     args = parser.parse_args(cmdline)
 
     # set defaults
-    comm_defaults = {
+    comm_defaults: dict[str, list[int | str]] = {
         "tcp": ["socket", 5020],
         "udp": ["socket", 5020],
         "serial": ["rtu", "/dev/ptyp0"],

@@ -36,6 +36,7 @@ import asyncio
 import logging
 import sys
 
+from typing import Callable, Any
 
 try:
     from examples import helper
@@ -70,7 +71,7 @@ def setup_server(description=None, context=None, cmdline=None):
     args = helper.get_commandline(server=True, description=description, cmdline=cmdline)
     if context:
         args.context = context
-    datablock = None
+    datablock: Callable[[], Any]
     if not args.context:
         _logger.info("### Create datastore")
         # The datastores only respond to the addresses that are initialized

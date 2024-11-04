@@ -90,10 +90,10 @@ class ModbusExceptions(int, Enum):
     SLAVE_FAILURE = 0x04
     ACKNOWLEDGE = 0x05
     SLAVE_BUSY = 0x06
-    NegativeACKNOWLEDGE = 0x07  # pylint: disable=invalid-name
-    MemoryParityError = 0x08  # pylint: disable=invalid-name
-    GatewayPathUnavailable = 0x0A  # pylint: disable=invalid-name
-    GatewayNoResponse = 0x0B  # pylint: disable=invalid-name
+    NEGATIVE_ACKNOWLEDGE = 0x07
+    MEMORY_PARITY_ERROR = 0x08
+    GATEWAY_PATH_UNAVIABLE = 0x0A
+    GATEWAY_NO_RESPONSE = 0x0B
 
 
 class ExceptionResponse(ModbusPDU):

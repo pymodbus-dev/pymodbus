@@ -370,9 +370,9 @@ class ModbusSimulatorServer:
             (4, "SLAVE_FAILURE"),
             (5, "ACKNOWLEDGE"),
             (6, "SLAVE_BUSY"),
-            (7, "MemoryParityError"),
-            (10, "GatewayPathUnavailable"),
-            (11, "GatewayNoResponse"),
+            (7, "MEMORY_PARITY_ERROR"),
+            (10, "GATEWAY_PATH_UNAVIABLE"),
+            (11, "GATEWAY_NO_RESPONSE"),
         ):
             selected = "selected" if i == self.call_response.error_response else ""
             function_error += f"<option value={i} {selected}>{txt}</option>"
@@ -532,9 +532,9 @@ class ModbusSimulatorServer:
             (4, "SLAVE_FAILURE"),
             (5, "ACKNOWLEDGE"),
             (6, "SLAVE_BUSY"),
-            (7, "MemoryParityError"),
-            (10, "GatewayPathUnavailable"),
-            (11, "GatewayNoResponse"),
+            (7, "MEMORY_PARITY_ERROR"),
+            (10, "GATEWAY_PATH_UNAVIABLE"),
+            (11, "GATEWAY_NO_RESPONSE"),
         ):
             function_error.append({
                 "value": i,

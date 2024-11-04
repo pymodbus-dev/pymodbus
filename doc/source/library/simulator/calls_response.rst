@@ -146,17 +146,17 @@
             },
             {
                 "value": 7,
-                "text": "MemoryParityError",
+                "text": "MEMORY_PARITY_ERROR",
                 "selected": false
             },
             {
                 "value": 10,
-                "text": "GatewayPathUnavailable",
+                "text": "GATEWAY_PATH_UNAVIABLE",
                 "selected": false
             },
             {
                 "value": 11,
-                "text": "GatewayNoResponse",
+                "text": "GATEWAY_NO_RESPONSE",
                 "selected": false
             }
         ],

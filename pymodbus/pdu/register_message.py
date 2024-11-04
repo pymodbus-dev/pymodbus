@@ -1,5 +1,8 @@
 """Register Reading Request/Response."""
+from __future__ import annotations
+
 import struct
+from typing import cast
 
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.exceptions import ModbusIOException
@@ -62,9 +65,9 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
-        values = await context.async_getValues(
+        values = cast(list[int], await context.async_getValues(
             self.function_code, self.address, self.count
-        )
+        ))
         return ReadHoldingRegistersResponse(registers=values, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 

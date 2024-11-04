@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 # pylint: disable=missing-type-doc
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.exceptions import NoSuchSlaveException
@@ -30,7 +32,7 @@ class ModbusBaseSlaveContext:
         """
         return self._fx_mapper[fx]
 
-    async def async_getValues(self, fc_as_hex: int, address: int, count: int = 1) -> list[int] | list[bool]:
+    async def async_getValues(self, fc_as_hex: int, address: int, count: int = 1) -> Sequence[int | bool]:
         """Get `count` values from datastore.
 
         :param fc_as_hex: The function we are working with
@@ -40,7 +42,7 @@ class ModbusBaseSlaveContext:
         """
         return self.getValues(fc_as_hex, address, count)
 
-    async def async_setValues(self, fc_as_hex: int, address: int, values: list[int] | list[bool]) -> None:
+    async def async_setValues(self, fc_as_hex: int, address: int, values: Sequence[int | bool]) -> None:
         """Set the datastore with the supplied values.
 
         :param fc_as_hex: The function we are working with
@@ -49,7 +51,7 @@ class ModbusBaseSlaveContext:
         """
         self.setValues(fc_as_hex, address, values)
 
-    def getValues(self, fc_as_hex: int, address: int, count: int = 1) -> list[int] | list[bool]:
+    def getValues(self, fc_as_hex: int, address: int, count: int = 1) -> Sequence[int | bool]:
         """Get `count` values from datastore.
 
         :param fc_as_hex: The function we are working with
@@ -60,7 +62,7 @@ class ModbusBaseSlaveContext:
         Log.error("getValues({},{},{}) not implemented!", fc_as_hex, address, count)
         return []
 
-    def setValues(self, fc_as_hex: int, address: int, values: list[int] | list[bool]) -> None:
+    def setValues(self, fc_as_hex: int, address: int, values: Sequence[int | bool]) -> None:
         """Set the datastore with the supplied values.
 
         :param fc_as_hex: The function we are working with

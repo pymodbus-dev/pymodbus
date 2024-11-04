@@ -4,7 +4,9 @@ from __future__ import annotations
 import asyncio
 import struct
 from abc import abstractmethod
+from collections.abc import Sequence
 from enum import Enum
+from typing import cast
 
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.logging import Log
@@ -24,7 +26,7 @@ class ModbusPDU:
             address: int = 0,
             count: int = 0,
             bits: list[bool] | None = None,
-            registers = None,
+            registers: Sequence[int | bytes] | None = None,
             status: int = 1,
         ) -> None:
         """Initialize the base data for a modbus request."""
@@ -32,14 +34,13 @@ class ModbusPDU:
         self.transaction_id: int = transaction_id
         self.address: int = address
         self.bits: list[bool] = bits if bits else []
-
         if not registers:
             registers = []
+        self.registers: list[int] = cast(list[int], registers)
         for i, value in enumerate(registers):
             if isinstance(value, bytes):
-                registers[i] = int.from_bytes(value, byteorder="big")
+                self.registers[i] = int.from_bytes(value, byteorder="big")
         self.count: int = count if count else len(registers)
-        self.registers: list[int] = registers if registers else []
         self.status: int = status
         self.fut: asyncio.Future
 

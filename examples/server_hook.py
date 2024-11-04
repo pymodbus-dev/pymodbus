@@ -22,7 +22,7 @@ class Manipulator:
     """A Class to run the server."""
 
     message_count: int = 1
-    server: ModbusTcpServer | None = None
+    server: ModbusTcpServer
 
     def server_request_tracer(self, request, *_addr):
         """Trace requests.

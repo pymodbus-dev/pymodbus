@@ -101,8 +101,8 @@ def setup_updating_server(cmdline=None):
 
     # Continuing, use a sequential block without gaps.
     datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
-    context = ModbusSlaveContext(di=datablock, co=datablock, hr=datablock, ir=datablock)
-    context = ModbusServerContext(slaves=context, single=True)
+    slavecontext = ModbusSlaveContext(di=datablock, co=datablock, hr=datablock, ir=datablock)
+    context = ModbusServerContext(slaves=slavecontext, single=True)
     return server_async.setup_server(
         description="Run asynchronous server.", context=context, cmdline=cmdline
     )

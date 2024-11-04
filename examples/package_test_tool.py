@@ -67,7 +67,7 @@ class TransportStub(ModbusProtocol):
         self,
         params: CommParams,
         is_server: bool,
-        handler: Callable[[ModbusProtocol, bytes, bytes], int],
+        handler: Callable[[bytes], bytes],
     ) -> None:
         """Initialize a stub instance."""
         self.stub_handle_data = handler

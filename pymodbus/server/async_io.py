@@ -205,7 +205,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 exc,
                 traceback.format_exc(),
             )
-            response = request.doException(merror.SlaveFailure)
+            response = request.doException(merror.SLAVE_FAILURE)
         # no response when broadcasting
         if not broadcast:
             response.transaction_id = request.transaction_id

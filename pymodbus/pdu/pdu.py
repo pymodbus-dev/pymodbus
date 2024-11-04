@@ -86,11 +86,11 @@ class ModbusExceptions(int, Enum):
 
     ILLEGAL_FUNCTION = 0x01
     ILLEGAL_ADDRESS = 0x02
-    ILLEGAL_VALUE = 0x03  # pylint: disable=invalid-name
-    SlaveFailure = 0x04  # pylint: disable=invalid-name
-    Acknowledge = 0x05  # pylint: disable=invalid-name
-    SlaveBusy = 0x06  # pylint: disable=invalid-name
-    NegativeAcknowledge = 0x07  # pylint: disable=invalid-name
+    ILLEGAL_VALUE = 0x03
+    SLAVE_FAILURE = 0x04
+    ACKNOWLEDGE = 0x05
+    SLAVE_BUSY = 0x06
+    NegativeACKNOWLEDGE = 0x07  # pylint: disable=invalid-name
     MemoryParityError = 0x08  # pylint: disable=invalid-name
     GatewayPathUnavailable = 0x0A  # pylint: disable=invalid-name
     GatewayNoResponse = 0x0B  # pylint: disable=invalid-name

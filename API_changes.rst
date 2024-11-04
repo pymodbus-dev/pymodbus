@@ -6,6 +6,7 @@ API changes 3.8.0
 -----------------
 - ModbusSlaveContext, remove zero_mode parameter.
 - Remove skip_encode parameter.
+- rename ModbusExceptions enums to legal constants.
 
 
 API changes 3.7.0

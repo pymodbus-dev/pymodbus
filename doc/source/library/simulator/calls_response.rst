@@ -131,17 +131,17 @@
             },
             {
                 "value": 4,
-                "text": "SlaveFailure",
+                "text": "SLAVE_FAILURE",
                 "selected": false
             },
             {
                 "value": 5,
-                "text": "Acknowledge",
+                "text": "ACKNOWLEDGE",
                 "selected": false
             },
             {
                 "value": 6,
-                "text": "SlaveBusy",
+                "text": "SLAVE_BUSY",
                 "selected": false
             },
             {

@@ -540,7 +540,7 @@ class ReturnSlaveNAKCountRequest(DiagnosticStatusSimpleRequest):
     """Return slave NAK count.
 
     The response data field returns the quantity of messages addressed to the
-    remote device for which it returned a Negative Acknowledge (NAK) exception
+    remote device for which it returned a Negative ACKNOWLEDGE (NAK) exception
     response, since its last restart, clear counters operation, or power-up.
     Exception responses are described and listed in section 7 .
     """
@@ -560,7 +560,7 @@ class ReturnSlaveNAKCountResponse(DiagnosticStatusSimpleResponse):
     """Return slave NAK.
 
     The response data field returns the quantity of messages addressed to the
-    remote device for which it returned a Negative Acknowledge (NAK) exception
+    remote device for which it returned a Negative ACKNOWLEDGE (NAK) exception
     response, since its last restart, clear counters operation, or power-up.
     Exception responses are described and listed in section 7.
     """
@@ -583,7 +583,7 @@ class ReturnSlaveBusyCountRequest(DiagnosticStatusSimpleRequest):
 
         :returns: The initialized response message
         """
-        count = _MCB.Counter.SlaveBusy
+        count = _MCB.Counter.SLAVE_BUSY
         return ReturnSlaveBusyCountResponse(count)
 
 

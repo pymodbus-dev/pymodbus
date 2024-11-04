@@ -34,7 +34,7 @@ import sys
 
 
 try:
-    import examples.helper as helper
+    from examples import helper
 except ImportError:
     print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\

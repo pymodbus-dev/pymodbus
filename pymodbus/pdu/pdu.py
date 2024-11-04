@@ -19,13 +19,13 @@ class ModbusPDU:
     rtu_byte_count_pos: int = 0
 
     def __init__(self,
-            slave_id = 0,
-            transaction_id = 0,
-            address = 0,
-            count = 0,
+            slave_id: int = 0,
+            transaction_id: int = 0,
+            address: int = 0,
+            count: int = 0,
             bits = None,
             registers = None,
-            status = 1,
+            status: int = 1,
         ) -> None:
         """Initialize the base data for a modbus request."""
         if not registers:

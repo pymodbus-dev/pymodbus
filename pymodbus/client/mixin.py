@@ -11,6 +11,7 @@ import pymodbus.pdu.file_message as pdu_file_msg
 import pymodbus.pdu.mei_message as pdu_mei
 import pymodbus.pdu.other_message as pdu_other_msg
 import pymodbus.pdu.register_message as pdu_reg
+from pymodbus.constants import ModbusStatus
 from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ModbusPDU
 
@@ -197,6 +198,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The data passed in the request data field is to be returned (looped back)
+        in the response. The entire response message should be identical to the
+        request.
         """
         return self.execute(no_response_expected, pdu_diag.ReturnQueryDataRequest(msg, slave_id=slave))
 
@@ -207,8 +212,16 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The remote device serial line port must be initialized and restarted, and
+        all of its communications event counters are cleared. If the port is
+        currently in Listen Only Mode, no response is returned. This function is
+        the only one that brings the port out of Listen Only Mode. If the port is
+        not currently in Listen Only Mode, a normal response is returned. This
+        occurs before the restart is update_datastored.
         """
-        return self.execute(no_response_expected, pdu_diag.RestartCommunicationsOptionRequest(toggle, slave_id=slave))
+        msg = ModbusStatus.ON if toggle else ModbusStatus.OFF
+        return self.execute(no_response_expected, pdu_diag.RestartCommunicationsOptionRequest(message=msg, slave_id=slave))
 
     def diag_read_diagnostic_register(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose read diagnostic register (code 0x08 sub 0x02).
@@ -216,17 +229,25 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The contents of the remote device's 16-bit diagnostic register are returned in the response.
         """
         return self.execute(no_response_expected, pdu_diag.ReturnDiagnosticRegisterRequest(slave_id=slave))
 
-    def diag_change_ascii_input_delimeter(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_change_ascii_input_delimeter(self, *, delimiter: int = 0x0a, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose change ASCII input delimiter (code 0x08 sub 0x03).
 
+        :param delimiter: char to replace LF
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The character passed in the request becomes the end of
+        message delimiter for future messages (replacing the default LF
+        character). This function is useful in cases of a Line Feed is not
+        required at the end of ASCII messages.
         """
-        return self.execute(no_response_expected, pdu_diag.ChangeAsciiInputDelimiterRequest(slave_id=slave))
+        return self.execute(no_response_expected, pdu_diag.ChangeAsciiInputDelimiterRequest(message=delimiter, slave_id=slave))
 
     def diag_force_listen_only(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose force listen only (code 0x08 sub 0x04).
@@ -234,6 +255,12 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        Forces the addressed remote device to its Listen Only Mode for MODBUS communications.
+
+        This isolates it from the other devices on the network,
+        allowing them to continue communicating without interruption from the
+        addressed remote device. No response is returned.
         """
         return self.execute(no_response_expected, pdu_diag.ForceListenOnlyModeRequest(slave_id=slave))
 
@@ -243,6 +270,8 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        Clear ll counters and the diagnostic register. Also, counters are cleared upon power-up
         """
         return self.execute(no_response_expected, pdu_diag.ClearCountersRequest(slave_id=slave))
 

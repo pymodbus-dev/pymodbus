@@ -33,26 +33,47 @@ class ModbusPDU:
         self.slave_id: int = slave_id
         self.transaction_id: int = transaction_id
         self.address: int = address
-        self.bits: list[bool] = bits if bits else []
+        self.bits: list[bool] = bits or []
         if not registers:
             registers = []
         self.registers: list[int] = cast(list[int], registers)
         for i, value in enumerate(registers):
             if isinstance(value, bytes):
                 self.registers[i] = int.from_bytes(value, byteorder="big")
-        self.count: int = count if count else len(registers)
+        self.count: int = count or len(registers)
         self.status: int = status
         self.fut: asyncio.Future
-
-    def doException(self, exception: int) -> ExceptionResponse:
-        """Build an error response based on the function."""
-        exc = ExceptionResponse(self.function_code, exception)
-        Log.error("Exception response {}", exc)
-        return exc
 
     def isError(self) -> bool:
         """Check if the error is a success or failure."""
         return self.function_code > 0x80
+
+    def validateCount(self, max_count: int, count: int = -1) -> None:
+        """Validate API supplied count."""
+        if count == -1:
+            count = self.count
+        if not 1 <= count <= max_count:
+            raise ValueError(f"1 < count {count} < {max_count} !")
+
+    def validateAddress(self, address: int = -1) -> None:
+        """Validate API supplied address."""
+        if address == -1:
+            address = self.address
+        if not 0 <= address <= 65535:
+            raise ValueError(f"9 < address {address} < 65535 !")
+
+    def __str__(self) -> str:
+        """Build a representation of an exception response."""
+        return (
+            f"{self.__class__.__name__}("
+            f"slave_id={self.slave_id}, "
+            f"transaction_id={self.transaction_id}, "
+            f"address={self.address}, "
+            f"count={self.count}, "
+            f"bits={self.bits!s}, "
+            f"registers={self.registers!s}, "
+            f"status={self.status!s})"
+        )
 
     def get_response_pdu_size(self) -> int:
         """Calculate response pdu size."""
@@ -65,7 +86,6 @@ class ModbusPDU:
     @abstractmethod
     def decode(self, data: bytes) -> None:
         """Decode data part of the message."""
-
 
     @classmethod
     def calculateRtuFrameSize(cls, data: bytes) -> int:
@@ -111,6 +131,7 @@ class ExceptionResponse(ModbusPDU):
         super().__init__(transaction_id=transaction, slave_id=slave)
         self.function_code = function_code | 0x80
         self.exception_code = exception_code
+        Log.error(f"Exception response {self.function_code} / {self.exception_code}")
 
     def encode(self) -> bytes:
         """Encode a modbus exception response."""
@@ -119,11 +140,3 @@ class ExceptionResponse(ModbusPDU):
     def decode(self, data: bytes) -> None:
         """Decode a modbus exception response."""
         self.exception_code = int(data[0])
-
-    def __str__(self) -> str:
-        """Build a representation of an exception response."""
-        names = {data.value: data.name for data in ModbusExceptions}
-        message = names[self.exception_code]
-        return (
-            f"Exception Response({self.function_code}, {self.function_code - 0x80}, {message})"
-        )

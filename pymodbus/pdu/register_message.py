@@ -6,18 +6,20 @@ from typing import cast
 
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.exceptions import ModbusIOException
+from pymodbus.pdu.pdu import ExceptionResponse, ModbusPDU
 from pymodbus.pdu.pdu import ModbusExceptions as merror
-from pymodbus.pdu.pdu import ModbusPDU
-from pymodbus.utilities import hexlify_packets
 
 
-class ReadRegistersRequestBase(ModbusPDU):
-    """ReadRegistersRequestBase."""
+class ReadHoldingRegistersRequest(ModbusPDU):
+    """ReadHoldingRegistersRequest."""
 
+    function_code = 3
     rtu_frame_size = 8
 
     def encode(self) -> bytes:
         """Encode the request packet."""
+        self.validateAddress()
+        self.validateCount(125)
         return struct.pack(">HH", self.address, self.count)
 
     def decode(self, data: bytes) -> None:
@@ -31,10 +33,21 @@ class ReadRegistersRequestBase(ModbusPDU):
         """
         return 1 + 1 + 2 * self.count
 
+    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
+        """Run a read holding request against a datastore."""
+        if not context.validate(self.function_code, self.address, self.count):
+            return ExceptionResponse(self.function_code, merror.ILLEGAL_ADDRESS)
+        values = cast(list[int], await context.async_getValues(
+            self.function_code, self.address, self.count
+        ))
+        response_class = (ReadHoldingRegistersResponse if self.function_code == 3 else ReadInputRegistersResponse)
+        return response_class(registers=values, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
-class ReadRegistersResponseBase(ModbusPDU):
-    """ReadRegistersResponseBase."""
 
+class ReadHoldingRegistersResponse(ModbusPDU):
+    """ReadHoldingRegistersResponse."""
+
+    function_code = 3
     rtu_byte_count_pos = 2
 
     def encode(self) -> bytes:
@@ -46,55 +59,20 @@ class ReadRegistersResponseBase(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode a register response packet."""
-        byte_count = int(data[0])
-        if byte_count < 2 or byte_count > 252 or byte_count % 2 == 1 or byte_count != len(data) - 1:
-            raise ModbusIOException(f"Invalid response {hexlify_packets(data)} has byte count of {byte_count}")
         self.registers = []
-        for i in range(1, byte_count + 1, 2):
+        if (data_len := int(data[0])) >= len(data):
+            raise ModbusIOException(f"byte_count {data_len} > length of packet {len(data)}")
+        for i in range(1, data_len, 2):
             self.registers.append(struct.unpack(">H", data[i : i + 2])[0])
 
 
-class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
-    """ReadHoldingRegistersRequest."""
-
-    function_code = 3
-
-    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
-        """Run a read holding request against a datastore."""
-        if not (1 <= self.count <= 0x7D):
-            return self.doException(merror.ILLEGAL_VALUE)
-        if not context.validate(self.function_code, self.address, self.count):
-            return self.doException(merror.ILLEGAL_ADDRESS)
-        values = cast(list[int], await context.async_getValues(
-            self.function_code, self.address, self.count
-        ))
-        return ReadHoldingRegistersResponse(registers=values, slave_id=self.slave_id, transaction_id=self.transaction_id)
-
-
-class ReadHoldingRegistersResponse(ReadRegistersResponseBase):
-    """ReadHoldingRegistersResponse."""
-
-    function_code = 3
-
-
-class ReadInputRegistersRequest(ReadRegistersRequestBase):
+class ReadInputRegistersRequest(ReadHoldingRegistersRequest):
     """ReadInputRegistersRequest."""
 
     function_code = 4
 
-    async def update_datastore(self, context) -> ModbusPDU:
-        """Run a read input request against a datastore."""
-        if not (1 <= self.count <= 0x7D):
-            return self.doException(merror.ILLEGAL_VALUE)
-        if not context.validate(self.function_code, self.address, self.count):
-            return self.doException(merror.ILLEGAL_ADDRESS)
-        values = await context.async_getValues(
-            self.function_code, self.address, self.count
-        )
-        return ReadInputRegistersResponse(registers=values, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
-
-class ReadInputRegistersResponse(ReadRegistersResponseBase):
+class ReadInputRegistersResponse(ReadHoldingRegistersResponse):
     """ReadInputRegistersResponse."""
 
     function_code = 4
@@ -106,14 +84,16 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
     function_code = 23
     rtu_byte_count_pos = 10
 
-    def __init__(self,  # pylint: disable=dangerous-default-value
+    def __init__(self,
             read_address: int = 0x00,
             read_count: int = 0,
             write_address: int = 0x00,
-            write_registers: list[int] = [],
+            write_registers: list[int] | None = None,
             slave_id: int = 1,
-            transaction_id: int = 0):
+            transaction_id: int = 0) -> None:
         """Initialize a new request message."""
+        if not write_registers:
+            write_registers = []
         super().__init__(transaction_id=transaction_id, slave_id=slave_id)
         self.read_address = read_address
         self.read_count = read_count
@@ -124,6 +104,10 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
 
     def encode(self) -> bytes:
         """Encode the request packet."""
+        self.validateAddress(address=self.read_address)
+        self.validateAddress(address=self.write_address)
+        self.validateCount(125, count=self.read_count)
+        self.validateCount(121, count=self.write_count)
         result = struct.pack(
             ">HHHHB",
             self.read_address,
@@ -153,17 +137,15 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a write single register request against a datastore."""
         if not (1 <= self.read_count <= 0x07D):
-            return self.doException(merror.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, merror.ILLEGAL_VALUE)
         if not 1 <= self.write_count <= 0x079:
-            return self.doException(merror.ILLEGAL_VALUE)
-        if self.write_byte_count != self.write_count * 2:
-            return self.doException(merror.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, merror.ILLEGAL_VALUE)
         if not context.validate(
             self.function_code, self.write_address, self.write_count
         ):
-            return self.doException(merror.ILLEGAL_ADDRESS)
+            return ExceptionResponse(self.function_code, merror.ILLEGAL_ADDRESS)
         if not context.validate(self.function_code, self.read_address, self.read_count):
-            return self.doException(merror.ILLEGAL_ADDRESS)
+            return ExceptionResponse(self.function_code, merror.ILLEGAL_ADDRESS)
         await context.async_setValues(
             self.function_code, self.write_address, self.write_registers
         )
@@ -208,9 +190,9 @@ class WriteSingleRegisterRequest(WriteSingleRegisterResponse):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a write single register request against a datastore."""
         if not 0 <= self.registers[0] <= 0xFFFF:
-            return self.doException(merror.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, merror.ILLEGAL_VALUE)
         if not context.validate(self.function_code, self.address, 1):
-            return self.doException(merror.ILLEGAL_ADDRESS)
+            return ExceptionResponse(self.function_code, merror.ILLEGAL_ADDRESS)
 
         await context.async_setValues(
             self.function_code, self.address, self.registers
@@ -250,9 +232,9 @@ class WriteMultipleRegistersRequest(ModbusPDU):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a write single register request against a datastore."""
         if not 1 <= self.count <= 0x07B:
-            return self.doException(merror.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, merror.ILLEGAL_VALUE)
         if not context.validate(self.function_code, self.address, self.count):
-            return self.doException(merror.ILLEGAL_ADDRESS)
+            return ExceptionResponse(self.function_code, merror.ILLEGAL_ADDRESS)
 
         await context.async_setValues(
             self.function_code, self.address, self.registers
@@ -305,11 +287,11 @@ class MaskWriteRegisterRequest(ModbusPDU):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a mask write register request against the store."""
         if not 0x0000 <= self.and_mask <= 0xFFFF:
-            return self.doException(merror.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, merror.ILLEGAL_VALUE)
         if not 0x0000 <= self.or_mask <= 0xFFFF:
-            return self.doException(merror.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, merror.ILLEGAL_VALUE)
         if not context.validate(self.function_code, self.address, 1):
-            return self.doException(merror.ILLEGAL_ADDRESS)
+            return ExceptionResponse(self.function_code, merror.ILLEGAL_ADDRESS)
         values = (await context.async_getValues(self.function_code, self.address, 1))[0]
         values = (values & self.and_mask) | (self.or_mask & ~self.and_mask)
         await context.async_setValues(
@@ -332,6 +314,7 @@ class MaskWriteRegisterResponse(ModbusPDU):
 
     def encode(self) -> bytes:
         """Encode the response."""
+        self.validateAddress()
         return struct.pack(">HHH", self.address, self.and_mask, self.or_mask)
 
     def decode(self, data: bytes) -> None:

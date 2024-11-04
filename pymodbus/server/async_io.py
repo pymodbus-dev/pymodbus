@@ -198,14 +198,14 @@ class ModbusServerRequestHandler(ModbusProtocol):
             Log.error("requested slave does not exist: {}", request.slave_id)
             if self.server.ignore_missing_slaves:
                 return  # the client will simply timeout waiting for a response
-            response = request.doException(merror.GATEWAY_NO_RESPONSE)
+            response = ExceptionResponse(0x00, merror.GATEWAY_NO_RESPONSE)
         except Exception as exc:  # pylint: disable=broad-except
             Log.error(
                 "Datastore unable to fulfill request: {}; {}",
                 exc,
                 traceback.format_exc(),
             )
-            response = request.doException(merror.SLAVE_FAILURE)
+            response = ExceptionResponse(0x00, merror.SLAVE_FAILURE)
         # no response when broadcasting
         if not broadcast:
             response.transaction_id = request.transaction_id

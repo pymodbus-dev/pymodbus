@@ -6,8 +6,8 @@ import struct
 from pymodbus.constants import DeviceInformation, MoreData
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.device import DeviceInformationFactory, ModbusControlBlock
+from pymodbus.pdu.pdu import ExceptionResponse, ModbusPDU
 from pymodbus.pdu.pdu import ModbusExceptions as merror
-from pymodbus.pdu.pdu import ModbusPDU
 
 
 _MCB = ModbusControlBlock()
@@ -18,12 +18,7 @@ class _OutOfSpaceException(Exception):
 
     # This exception exists here as a simple, local way to manage response
     # length control for the only MODBUS command which requires it under
-    # standard, non-error conditions. It and the structures associated with
-    # it should ideally be refactored and applied to all responses, however,
-    # since a Client can make requests which result in disallowed conditions,
-    # such as, for instance, requesting a register read of more registers
-    # than will fit in a single PDU. As per the specification, the PDU is
-    # restricted to 253 bytes, irrespective of the transport used.
+    # standard, non-error conditions.
     #
     # See Page 5/50 of MODBUS Application Protocol Specification V1.1b3.
 
@@ -40,7 +35,7 @@ class ReadDeviceInformationRequest(ModbusPDU):
     sub_function_code = 0x0E
     rtu_frame_size = 7
 
-    def __init__(self, read_code=None, object_id=0x00, slave_id=1, transaction_id=0) -> None:
+    def __init__(self, read_code: int | None = None, object_id: int = 0, slave_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, slave_id=slave_id)
         self.read_code = read_code or DeviceInformation.BASIC
@@ -55,15 +50,14 @@ class ReadDeviceInformationRequest(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode data part of the message."""
-        params = struct.unpack(">BBB", data)
-        self.sub_function_code, self.read_code, self.object_id = params
+        self.sub_function_code, self.read_code, self.object_id = struct.unpack(">BBB", data)
 
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
         """Run a read exception status request against the store."""
         if not 0x00 <= self.object_id <= 0xFF:
-            return self.doException(merror.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, merror.ILLEGAL_VALUE)
         if not 0x00 <= self.read_code <= 0x04:
-            return self.doException(merror.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, merror.ILLEGAL_VALUE)
 
         information = DeviceInformationFactory.get(_MCB, self.read_code, self.object_id)
         return ReadDeviceInformationResponse(read_code=self.read_code, information=information, slave_id=self.slave_id, transaction_id=self.transaction_id)
@@ -94,7 +88,7 @@ class ReadDeviceInformationResponse(ModbusPDU):
         except struct.error as exc:
             raise IndexError from exc
 
-    def __init__(self, read_code=None, information=None, slave_id=1, transaction_id=0) -> None:
+    def __init__(self, read_code: int | None = None, information: dict | None = None, slave_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, slave_id=slave_id)
         self.read_code = read_code or DeviceInformation.BASIC

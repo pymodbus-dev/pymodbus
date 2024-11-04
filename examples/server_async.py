@@ -35,8 +35,9 @@ The corresponding client can be started as:
 import asyncio
 import logging
 import sys
+from collections.abc import Callable
+from typing import Any
 
-from typing import Callable, Any
 
 try:
     from examples import helper

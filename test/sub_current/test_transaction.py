@@ -42,52 +42,13 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         self._tls = FramerTLS(self.decoder)
         self._rtu = FramerRTU(self.decoder)
         self._ascii = FramerAscii(self.decoder)
-        self._manager = SyncModbusTransactionManager(None, 3)
+        client = mock.MagicMock()
+        client.framer = self._rtu
+        self._manager = SyncModbusTransactionManager(client, 3)
 
     # ----------------------------------------------------------------------- #
     # Modbus transaction manager
     # ----------------------------------------------------------------------- #
-
-    def test_calculate_expected_response_length(self):
-        """Test calculate expected response length."""
-        self._manager.client = mock.MagicMock()
-        self._manager.client.framer = mock.MagicMock()
-        self._manager._set_adu_size()  # pylint: disable=protected-access
-        assert not self._manager._calculate_response_length(  # pylint: disable=protected-access
-            0
-        )
-        self._manager.base_adu_size = 10
-        assert (
-            self._manager._calculate_response_length(5)  # pylint: disable=protected-access
-            == 15
-        )
-
-    def test_calculate_exception_length(self):
-        """Test calculate exception length."""
-        for framer, exception_length in (
-            ("ascii", 11),
-            ("rtu", 5),
-            ("tcp", 9),
-            ("tls", 2),
-            ("dummy", None),
-        ):
-            self._manager.client = mock.MagicMock()
-            if framer == "ascii":
-                self._manager.client.framer = self._ascii
-            elif framer == "rtu":
-                self._manager.client.framer = self._rtu
-            elif framer == "tcp":
-                self._manager.client.framer = self._tcp
-            elif framer == "tls":
-                self._manager.client.framer = self._tls
-            else:
-                self._manager.client.framer = mock.MagicMock()
-
-            self._manager._set_adu_size()  # pylint: disable=protected-access
-            assert (
-                self._manager._calculate_exception_length()  # pylint: disable=protected-access
-                == exception_length
-            )
 
     @mock.patch.object(SyncModbusTransactionManager, "_recv")
     @mock.patch.object(ModbusTransactionManager, "getTransaction")

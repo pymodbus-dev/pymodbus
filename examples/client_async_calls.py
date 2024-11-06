@@ -201,7 +201,7 @@ async def async_handle_file_records(client):
 async def async_execute_information_requests(client):
     """Execute extended information requests."""
     _logger.info("### Running information requests.")
-    rr = await client.read_device_information(slave=SLAVE, read_code=1, object_id=0)
+    rr = await client.read_device_information(slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.information[0] == b"Pymodbus"
 

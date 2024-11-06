@@ -38,7 +38,7 @@ from pymodbus.pdu import FileRecord
 
 
 try:
-    import client_async  # type: ignore[import-not-found]
+    from examples import client_async
 except ImportError:
     print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\

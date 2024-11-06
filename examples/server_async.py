@@ -40,7 +40,7 @@ from typing import Any
 
 
 try:
-    import helper  # type: ignore[import-not-found]
+    from examples import helper
 except ImportError:
     print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\

@@ -180,11 +180,9 @@ def handle_file_records(client):
 def execute_information_requests(client):
     """Execute extended information requests."""
     _logger.info("### Running information requests.")
-    # NOT WORKING: ONLY SYNC.
-    # FAILS WITH framer = RTU
-    # rr = client.read_device_information(slave=SLAVE)
-    # assert not rr.isError()  # test that call was OK
-    # assert rr.information[0] == b"Pymodbus"
+    rr = client.read_device_information(slave=SLAVE, read_code=1, object_id=0)
+    assert not rr.isError()  # test that call was OK
+    assert rr.information[0] == b"Pymodbus"
 
     rr = client.report_slave_id(slave=SLAVE)
     assert not rr.isError()  # test that call was OK

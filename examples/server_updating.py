@@ -37,7 +37,7 @@ import sys
 
 
 try:
-    from examples import server_async
+    import server_async  # type: ignore[import-not-found]
 except ImportError:
     print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\

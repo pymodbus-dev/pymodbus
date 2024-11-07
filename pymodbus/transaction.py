@@ -123,6 +123,23 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
         self._transaction_lock = RLock()
         self.databuffer = b''
 
+    def send_request(self, request: ModbusPDU) -> bool:
+        """Build and send request."""
+        self.client.connect()
+        packet = self.client.framer.buildFrame(request)
+        Log.debug("SEND: {}", packet, ":hex")
+        if (size := self.client.send(packet)) != len(packet):
+            Log.error(f"Only sent {size} of {len(packet)} bytes")
+            return False
+        if self.client.comm_params.handle_local_echo and self.client.recv(size) != packet:
+            Log.error("Wrong local echo")
+            return False
+        return True
+
+    def receive_response(self, function_code: int) -> ModbusPDU | None:
+        """Receive until PDU is correct or timeout."""
+        return ModbusIOException("DUMMY", function_code)
+
     def execute(self, no_response_expected: bool, request: ModbusPDU):  # noqa: C901
         """Start the producer to send the next request to consumer.write(Frame(request))."""
         with self._transaction_lock:

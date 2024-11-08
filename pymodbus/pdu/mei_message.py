@@ -79,10 +79,14 @@ class ReadDeviceInformationResponse(ModbusPDU):
     def calculateRtuFrameSize(cls, buffer: bytes) -> int:
         """Calculate the size of the message."""
         size = 8  # skip the header information
+        if (data_len := len(buffer)) < size:
+            return 999
         count = int(buffer[7])
 
         try:
             while count > 0:
+                if data_len < size+2:
+                    return 998
                 _, object_length = struct.unpack(">BB", buffer[size : size + 2])
                 size += object_length + 2
                 count -= 1

@@ -206,7 +206,7 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         if not self.socket:
             raise ConnectionException(str(self))
         if size is None:
-            size = 0
+            size = 4096
         data = self.socket.recvfrom(size)[0]
         self.last_frame_end = round(time.time(), 6)
         return data

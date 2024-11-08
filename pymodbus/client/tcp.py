@@ -241,14 +241,16 @@ class ModbusTcpClient(ModbusBaseSyncClient):
             time_ = time.time()
 
             # If size isn't specified continue to read until timeout expires.
-            if size:
-                recv_size = size - data_length
-
+            if not size:
+                break
             # Timeout is reduced also if some data has been received in order
             # to avoid infinite loops when there isn't an expected response
             # size and the slave sends noisy data continuously.
             if time_ > end:
                 break
+
+            recv_size = size - data_length
+
         self.last_frame_end = round(time.time(), 6)
         return b"".join(data)
 

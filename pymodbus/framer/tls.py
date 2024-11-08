@@ -8,9 +8,15 @@ class FramerTLS(FramerBase):
     """Modbus TLS frame type.
 
     Layout::
-      [ Function Code] [ Data ]
-        1b               Nb
+
+        [         MBAP Header         ] [ Function Code] [ Data ]
+        [ tid ][ pid ][ length ][ uid ]
+          2b     2b     2b        1b           1b           Nb
+
+    length = uid + function code + data
     """
+
+    MIN_SIZE = 8
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode MDAP+PDU."""

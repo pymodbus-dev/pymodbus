@@ -136,28 +136,50 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
             return False
         return True
 
-    def receive_response(self, function_code: int) -> ModbusPDU | None:
+    def receive_response(self) -> ModbusPDU | None:
         """Receive until PDU is correct or timeout."""
-        return ModbusIOException("DUMMY", function_code)
+        return None
 
     def execute(self, no_response_expected: bool, request: ModbusPDU):  # noqa: C901
         """Start the producer to send the next request to consumer.write(Frame(request))."""
         with self._transaction_lock:
+            Log.debug(
+                "Current transaction state - {}",
+                ModbusTransactionState.to_string(self.client.state),
+            )
+            if isinstance(self.client.framer, FramerSocket):
+                request.transaction_id = self.getNextTID()
+            else:
+                request.transaction_id = 0
+            Log.debug("Running transaction {}", request.transaction_id)
+            if _buffer := hexlify_packets(
+                self.databuffer
+            ):
+                Log.debug("Clearing current Frame: - {}", _buffer)
+                self.databuffer = b''
+
+            retry = self.retries + 1
+            while retry > 0:
+                if not self.send_request(request):
+                    Log.debug('Changing transaction state from SENDING to "RETRYING"')
+                    Log.error('SEND failed, retrying')
+                    self.client.state = ModbusTransactionState.RETRYING
+                    retry -= 1
+                    continue
+                if no_response_expected:
+                    Log.debug(
+                        'Changing transaction state from "SENDING" '
+                        'to "TRANSACTION_COMPLETE" (no response expected)'
+                    )
+                    self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
+                    return None
+
+                break
+
+            if not retry:
+                return ModbusIOException("SEND failed", request.function_code)
+
             try:
-                Log.debug(
-                    "Current transaction state - {}",
-                    ModbusTransactionState.to_string(self.client.state),
-                )
-                if isinstance(self.client.framer, FramerSocket):
-                    request.transaction_id = self.getNextTID()
-                else:
-                    request.transaction_id = 0
-                Log.debug("Running transaction {}", request.transaction_id)
-                if _buffer := hexlify_packets(
-                    self.databuffer
-                ):
-                    Log.debug("Clearing current Frame: - {}", _buffer)
-                    self.databuffer = b''
                 expected_response_length = None
                 if not isinstance(self.client.framer, FramerSocket):
                     response_pdu_size = request.get_response_pdu_size()
@@ -165,11 +187,7 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                         response_pdu_size *= 2
                     if response_pdu_size:
                         expected_response_length = self.client.framer.MIN_SIZE + response_pdu_size -1
-                response, last_exception = self._transact(
-                    no_response_expected,
-                    request,
-                    expected_response_length,
-                )
+                response, last_exception = self._transact(expected_response_length)
                 if no_response_expected:
                     return None
                 self.databuffer += response
@@ -204,38 +222,9 @@ class SyncModbusTransactionManager(ModbusTransactionManager):
                 self.client.close()
                 return exc
 
-    def _retry_transaction(self, no_response_expected, retries, reason, packet, response_length):
-        """Retry transaction."""
-        Log.debug("Retry on {} response - {}", reason, retries)
-        Log.debug('Changing transaction state from "WAITING_FOR_REPLY" to "RETRYING"')
-        self.client.state = ModbusTransactionState.RETRYING
-        self.client.connect()
-        if hasattr(self.client, "_in_waiting"):
-            if (
-                in_waiting := self.client._in_waiting()  # pylint: disable=protected-access
-            ):
-                if response_length == in_waiting:
-                    result = self._recv(response_length)
-                    return result, None
-        return self._transact(no_response_expected, packet, response_length)
-
-    def _transact(self, no_response_expected: bool, request: ModbusPDU, response_length):
+    def _transact(self, response_length):
         """Do a Write and Read transaction."""
         try:
-            self.client.connect()
-            packet = self.client.framer.buildFrame(request)
-            Log.debug("SEND: {}", packet, ":hex")
-            if (size := self.client.send(packet)) != len(packet):
-                return b"", f"Only sent {size} of {len(packet)} bytes"
-            if self.client.comm_params.handle_local_echo and self.client.recv(size) != packet:
-                return b"", "Wrong local echo"
-            if no_response_expected:
-                Log.debug(
-                    'Changing transaction state from "SENDING" '
-                    'to "TRANSACTION_COMPLETE" (no response expected)'
-                )
-                self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
-                return b"", None
             state = '"RETRYING"' if self.client.state == ModbusTransactionState.RETRYING else '"SENDING"'
             Log.debug(f'Changing transaction state from {state} to "WAITING FOR REPLY"')
             self.client.state = ModbusTransactionState.WAITING_FOR_REPLY

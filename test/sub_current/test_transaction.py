@@ -1,6 +1,7 @@
 """Test transaction."""
 from unittest import mock
 
+from pymodbus.client import ModbusTcpClient
 from pymodbus.exceptions import (
     ModbusIOException,
 )
@@ -54,7 +55,8 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     @mock.patch.object(ModbusTransactionManager, "getTransaction")
     def test_execute(self, mock_get_transaction, mock_recv):
         """Test execute."""
-        client = mock.MagicMock()
+        client = ModbusTcpClient("localhost")
+        client.recv = mock.Mock()
         client.framer = self._ascii
         client.framer._buffer = b"deadbeef"  # pylint: disable=protected-access
         client.framer.processIncomingFrame = mock.MagicMock()
@@ -93,11 +95,11 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         assert isinstance(response, ModbusIOException)
 
         # wrong handle_local_echo
-        mock_recv.reset_mock(
+        client.recv.reset_mock(
             side_effect=iter([b"abcdef", b"deadbe", b"123456"])
         )
         client.comm_params.handle_local_echo = True
-        assert trans.execute(False, request).message == "[Input/Output] Wrong local echo"
+        assert trans.execute(False, request).message == "[Input/Output] SEND failed"
         client.comm_params.handle_local_echo = False
 
         # retry on invalid response

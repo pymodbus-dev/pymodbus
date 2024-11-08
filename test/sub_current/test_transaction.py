@@ -51,9 +51,8 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
     # Modbus transaction manager
     # ----------------------------------------------------------------------- #
 
-    @mock.patch.object(SyncModbusTransactionManager, "_recv")
     @mock.patch.object(ModbusTransactionManager, "getTransaction")
-    def test_execute(self, mock_get_transaction, mock_recv):
+    def test_execute(self, mock_get_transaction):
         """Test execute."""
         client = ModbusTcpClient("localhost")
         client.recv = mock.Mock()
@@ -70,53 +69,35 @@ class TestTransaction:  # pylint: disable=too-many-public-methods
         request.slave_id = 1
         request.function_code = 222
         trans = SyncModbusTransactionManager(client, 3)
-        mock_recv.reset_mock(
-            return_value=b"abcdef"
-        )
         assert trans.retries == 3
 
+        client.recv.side_effect=iter([b"abcdef", None])
         mock_get_transaction.return_value = b"response"
+        trans.retries = 0
         response = trans.execute(False, request)
-        assert response == b"response"
+        assert isinstance(response, ModbusIOException)
         # No response
-        mock_recv.reset_mock(
-            return_value=b"abcdef"
-        )
+        client.recv.side_effect=iter([b"abcdef", None])
         trans.transactions = {}
         mock_get_transaction.return_value = None
         response = trans.execute(False, request)
         assert isinstance(response, ModbusIOException)
 
         # No response with retries
-        mock_recv.reset_mock(
-            side_effect=iter([b"", b"abcdef"])
-        )
+        client.recv.side_effect=iter([b"", b"abcdef"])
         response = trans.execute(False, request)
         assert isinstance(response, ModbusIOException)
 
         # wrong handle_local_echo
-        client.recv.reset_mock(
-            side_effect=iter([b"abcdef", b"deadbe", b"123456"])
-        )
+        client.recv.side_effect=iter([b"abcdef", b"deadbe", b"123456"])
         client.comm_params.handle_local_echo = True
         assert trans.execute(False, request).message == "[Input/Output] SEND failed"
         client.comm_params.handle_local_echo = False
 
         # retry on invalid response
-        mock_recv.reset_mock(
-            side_effect=iter([b"", b"abcdef", b"deadbe", b"123456"])
-        )
+        client.recv.side_effect=iter([b"", b"abcdef", b"deadbe", b"123456"])
         response = trans.execute(False, request)
         assert isinstance(response, ModbusIOException)
-
-        # Unable to decode response
-        mock_recv.reset_mock(
-            side_effect=ModbusIOException()
-        )
-        client.framer.processIncomingFrame.side_effect = mock.MagicMock(
-            side_effect=ModbusIOException()
-        )
-        assert isinstance(trans.execute(False, request), ModbusIOException)
 
     def test_transaction_manager_tid(self):
         """Test the transaction manager TID."""

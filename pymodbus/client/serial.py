@@ -63,6 +63,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         port: str,
+        *,
         framer: FramerType = FramerType.RTU,
         baudrate: int = 19200,
         bytesize: int = 8,
@@ -152,6 +153,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         port: str,
+        *,
         framer: FramerType = FramerType.RTU,
         baudrate: int = 19200,
         bytesize: int = 8,

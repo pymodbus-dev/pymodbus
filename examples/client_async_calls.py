@@ -59,7 +59,7 @@ SLAVE = 0x01
 async def async_template_call(client):
     """Show complete modbus call, async version."""
     try:
-        rr = await client.read_coils(1, 1, slave=SLAVE)
+        rr = await client.read_coils(1, count=1, slave=SLAVE)
     except ModbusException as exc:
         txt = f"ERROR: exception in pymodbus {exc}"
         _logger.error(txt)
@@ -80,30 +80,30 @@ async def async_template_call(client):
 async def async_handle_coils(client):
     """Read/Write coils."""
     _logger.info("### Reading Coil different number of bits (return 8 bits multiples)")
-    rr = await client.read_coils(1, 1, slave=SLAVE)
+    rr = await client.read_coils(1, count=1, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 8
 
-    rr = await client.read_coils(1, 5, slave=SLAVE)
+    rr = await client.read_coils(1, count=5, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 8
 
-    rr = await client.read_coils(1, 12, slave=SLAVE)
+    rr = await client.read_coils(1, count=12, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 16
 
-    rr = await client.read_coils(1, 17, slave=SLAVE)
+    rr = await client.read_coils(1, count=17, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 24
 
     _logger.info("### Write false/true to coils and read to verify")
     await client.write_coil(0, True, slave=SLAVE)
-    rr = await client.read_coils(0, 1, slave=SLAVE)
+    rr = await client.read_coils(0, count=1, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.bits[0]  # test the expected value
 
     await client.write_coils(1, [True] * 21, slave=SLAVE)
-    rr = await client.read_coils(1, 21, slave=SLAVE)
+    rr = await client.read_coils(1, count=21, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     resp = [True] * 21
     # If the returned output quantity is not a multiple of eight,
@@ -114,7 +114,7 @@ async def async_handle_coils(client):
 
     _logger.info("### Write False to address 1-8 coils")
     await client.write_coils(1, [False] * 8, slave=SLAVE)
-    rr = await client.read_coils(1, 8, slave=SLAVE)
+    rr = await client.read_coils(1, count=8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.bits == [False] * 8  # test the expected value
 

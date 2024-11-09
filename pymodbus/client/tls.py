@@ -53,6 +53,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         host: str,
+        *,
         sslctx: ssl.SSLContext = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT),
         framer: FramerType = FramerType.TLS,
         port: int = 802,
@@ -150,6 +151,7 @@ class ModbusTlsClient(ModbusTcpClient):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         host: str,
+        *,
         sslctx: ssl.SSLContext = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT),
         framer: FramerType = FramerType.TLS,
         port: int = 802,

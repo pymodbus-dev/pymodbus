@@ -59,7 +59,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         raise NotImplementedError("execute of ModbusClientMixin needs to be overridden")
 
-    def read_coils(self, address: int, count: int = 1, slave: int = 1, no_response_expected: bool = False) -> T:
+    def read_coils(self, address: int, *, count: int = 1, slave: int = 1, no_response_expected: bool = False) -> T:
         """Read coils (code 0x01).
 
         :param address: Start address to read from

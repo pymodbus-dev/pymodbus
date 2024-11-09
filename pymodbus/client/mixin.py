@@ -157,7 +157,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         pdu = pdu_bit.WriteSingleCoilRequest(address=address, bits=[value], slave_id=slave)
         return self.execute(no_response_expected, pdu)
 
-    def write_register(self, address: int, value: bytes | int, slave: int = 1, no_response_expected: bool = False) -> T:
+    def write_register(self, address: int, value: bytes | int, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Write register (code 0x06).
 
         :param address: Address to write to
@@ -175,7 +175,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_reg.WriteSingleRegisterRequest(address=address, registers=[value], slave_id=slave))
 
-    def read_exception_status(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def read_exception_status(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Read Exception Status (code 0x07).
 
         :param slave: (optional) Modbus slave ID
@@ -190,7 +190,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_other_msg.ReadExceptionStatusRequest(slave_id=slave))
 
-    def diag_query_data(self, msg: bytes, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_query_data(self, msg: bytes, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose query data (code 0x08 sub 0x00).
 
         :param msg: Message to be returned
@@ -200,7 +200,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnQueryDataRequest(msg, slave_id=slave))
 
-    def diag_restart_communication(self, toggle: bool, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_restart_communication(self, toggle: bool, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose restart communication (code 0x08 sub 0x01).
 
         :param toggle: True if toggled.
@@ -210,7 +210,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.RestartCommunicationsOptionRequest(toggle, slave_id=slave))
 
-    def diag_read_diagnostic_register(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_diagnostic_register(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose read diagnostic register (code 0x08 sub 0x02).
 
         :param slave: (optional) Modbus slave ID
@@ -219,7 +219,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnDiagnosticRegisterRequest(slave_id=slave))
 
-    def diag_change_ascii_input_delimeter(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_change_ascii_input_delimeter(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose change ASCII input delimiter (code 0x08 sub 0x03).
 
         :param slave: (optional) Modbus slave ID
@@ -228,7 +228,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ChangeAsciiInputDelimiterRequest(slave_id=slave))
 
-    def diag_force_listen_only(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_force_listen_only(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose force listen only (code 0x08 sub 0x04).
 
         :param slave: (optional) Modbus slave ID
@@ -237,7 +237,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ForceListenOnlyModeRequest(slave_id=slave))
 
-    def diag_clear_counters(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_clear_counters(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose clear counters (code 0x08 sub 0x0A).
 
         :param slave: (optional) Modbus slave ID
@@ -246,7 +246,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ClearCountersRequest(slave_id=slave))
 
-    def diag_read_bus_message_count(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_bus_message_count(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose read bus message count (code 0x08 sub 0x0B).
 
         :param slave: (optional) Modbus slave ID
@@ -255,7 +255,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnBusMessageCountRequest(slave_id=slave))
 
-    def diag_read_bus_comm_error_count(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_bus_comm_error_count(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose read Bus Communication Error Count (code 0x08 sub 0x0C).
 
         :param slave: (optional) Modbus slave ID
@@ -264,7 +264,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnBusCommunicationErrorCountRequest(slave_id=slave))
 
-    def diag_read_bus_exception_error_count(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_bus_exception_error_count(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose read Bus Exception Error Count (code 0x08 sub 0x0D).
 
         :param slave: (optional) Modbus slave ID
@@ -273,7 +273,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnBusExceptionErrorCountRequest(slave_id=slave))
 
-    def diag_read_slave_message_count(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_slave_message_count(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose read Slave Message Count (code 0x08 sub 0x0E).
 
         :param slave: (optional) Modbus slave ID
@@ -282,7 +282,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnSlaveMessageCountRequest(slave_id=slave))
 
-    def diag_read_slave_no_response_count(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_slave_no_response_count(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose read Slave No Response Count (code 0x08 sub 0x0F).
 
         :param slave: (optional) Modbus slave ID
@@ -291,7 +291,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnSlaveNoResponseCountRequest(slave_id=slave))
 
-    def diag_read_slave_nak_count(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_slave_nak_count(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose read Slave NAK Count (code 0x08 sub 0x10).
 
         :param slave: (optional) Modbus slave ID
@@ -300,7 +300,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnSlaveNAKCountRequest(slave_id=slave))
 
-    def diag_read_slave_busy_count(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_slave_busy_count(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose read Slave Busy Count (code 0x08 sub 0x11).
 
         :param slave: (optional) Modbus slave ID
@@ -309,7 +309,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnSlaveBusyCountRequest(slave_id=slave))
 
-    def diag_read_bus_char_overrun_count(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_bus_char_overrun_count(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose read Bus Character Overrun Count (code 0x08 sub 0x12).
 
         :param slave: (optional) Modbus slave ID
@@ -318,7 +318,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnSlaveBusCharacterOverrunCountRequest(slave_id=slave))
 
-    def diag_read_iop_overrun_count(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_iop_overrun_count(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose read Iop overrun count (code 0x08 sub 0x13).
 
         :param slave: (optional) Modbus slave ID
@@ -327,7 +327,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnIopOverrunCountRequest(slave_id=slave))
 
-    def diag_clear_overrun_counter(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_clear_overrun_counter(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose Clear Overrun Counter and Flag (code 0x08 sub 0x14).
 
         :param slave: (optional) Modbus slave ID
@@ -336,7 +336,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ClearOverrunCountRequest(slave_id=slave))
 
-    def diag_getclear_modbus_response(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_getclear_modbus_response(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose Get/Clear modbus plus (code 0x08 sub 0x15).
 
         :param slave: (optional) Modbus slave ID
@@ -345,7 +345,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.GetClearModbusPlusRequest(slave_id=slave))
 
-    def diag_get_comm_event_counter(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_get_comm_event_counter(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose get event counter (code 0x0B).
 
         :param slave: (optional) Modbus slave ID
@@ -367,7 +367,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_other_msg.GetCommEventCounterRequest(slave_id=slave))
 
-    def diag_get_comm_event_log(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_get_comm_event_log(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose get event counter (code 0x0C).
 
         :param slave: (optional) Modbus slave ID
@@ -398,6 +398,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         self,
         address: int,
         values: list[bool],
+        *,
         slave: int = 1,
         no_response_expected: bool = False
     ) -> T:
@@ -420,6 +421,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         self,
         address: int,
         values: list[bytes | int],
+        *,
         slave: int = 1,
         no_response_expected: bool = False
     ) -> T:
@@ -436,7 +438,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_reg.WriteMultipleRegistersRequest(address=address, registers=values,slave_id=slave))
 
-    def report_slave_id(self, slave: int = 1, no_response_expected: bool = False) -> T:
+    def report_slave_id(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Report slave ID (code 0x11).
 
         :param slave: (optional) Modbus slave ID
@@ -448,7 +450,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_other_msg.ReportSlaveIdRequest(slave_id=slave))
 
-    def read_file_record(self, records: list[pdu_file_msg.FileRecord], slave: int = 1, no_response_expected: bool = False) -> T:
+    def read_file_record(self, records: list[pdu_file_msg.FileRecord], *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Read file record (code 0x14).
 
         :param records: List of FileRecord (Reference type, File number, Record Number)
@@ -478,7 +480,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_file_msg.ReadFileRecordRequest(records, slave_id=slave))
 
-    def write_file_record(self, records: list[pdu_file_msg.FileRecord], slave: int = 1, no_response_expected: bool = False) -> T:
+    def write_file_record(self, records: list[pdu_file_msg.FileRecord], *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Write file record (code 0x15).
 
         :param records: List of File_record (Reference type, File number, Record Number, Record Length, Record Data)
@@ -495,6 +497,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
     def mask_write_register(
         self,
+        *,
         address: int = 0x0000,
         and_mask: int = 0xFFFF,
         or_mask: int = 0x0000,
@@ -519,6 +522,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
     def readwrite_registers(
         self,
+        *,
         read_address: int = 0,
         read_count: int = 0,
         write_address: int = 0,
@@ -552,7 +556,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
             write_address = address
         return self.execute(no_response_expected, pdu_reg.ReadWriteMultipleRegistersRequest( read_address=read_address, read_count=read_count, write_address=write_address, write_registers=values,slave_id=slave))
 
-    def read_fifo_queue(self, address: int = 0x0000, slave: int = 1, no_response_expected: bool = False) -> T:
+    def read_fifo_queue(self, *, address: int = 0x0000, slave: int = 1, no_response_expected: bool = False) -> T:
         """Read FIFO queue (code 0x18).
 
         :param address: The address to start reading from
@@ -574,7 +578,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
     # code 0x2B sub 0x0D: CANopen General Reference Request and Response, NOT IMPLEMENTED
 
-    def read_device_information(self, read_code: int | None = None,
+    def read_device_information(self, *, read_code: int | None = None,
                                 object_id: int = 0x00,
                                 slave: int = 1,
                                 no_response_expected: bool = False) -> T:

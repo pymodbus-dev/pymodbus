@@ -125,9 +125,9 @@ async def run_async_client(client, modbus_calls=None):
 
 async def run_a_few_calls(client):
     """Test connection works."""
-    rr = await client.read_coils(32, 1, slave=1)
+    rr = await client.read_coils(32, count=1, slave=1)
     assert len(rr.bits) == 8
-    rr = await client.read_holding_registers(4, 2, slave=1)
+    rr = await client.read_holding_registers(4, count=2, slave=1)
     assert rr.registers[0] == 17
     assert rr.registers[1] == 17
 

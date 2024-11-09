@@ -69,7 +69,7 @@ async def run_async_simple_client(comm, host, port, framer=FramerType.SOCKET):
     print("get and verify data")
     try:
         # See all calls in client_calls.py
-        rr = await client.read_coils(1, 1, slave=1)
+        rr = await client.read_coils(1, count=1, slave=1)
     except ModbusException as exc:
         print(f"Received ModbusException({exc}) from library")
         client.close()

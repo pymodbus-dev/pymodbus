@@ -636,7 +636,7 @@ class TestSimulator:
         """Test simulator server end to end."""
         client = AsyncModbusTcpClient(NULLMODEM_HOST, port=use_port)
         assert await client.connect()
-        result = await client.read_holding_registers(16, 1)
+        result = await client.read_holding_registers(16, count=1)
         assert result.registers[0] == 3124
         client.close()
 
@@ -644,16 +644,16 @@ class TestSimulator:
         """Test simulator server end to end."""
         client = AsyncModbusTcpClient(NULLMODEM_HOST, port=use_port)
         assert await client.connect()
-        result = await client.read_holding_registers(43, 2)
+        result = await client.read_holding_registers(43, count=2)
         assert result.registers[0] == int.from_bytes(bytes("St", "utf-8"), "big")
         assert result.registers[1] == int.from_bytes(bytes("r ", "utf-8"), "big")
-        result = await client.read_holding_registers(43, 6)
+        result = await client.read_holding_registers(43, count=6)
         assert result.registers[0] == int.from_bytes(bytes("St", "utf-8"), "big")
         assert result.registers[1] == int.from_bytes(bytes("r ", "utf-8"), "big")
         assert result.registers[2] == int.from_bytes(bytes("St", "utf-8"), "big")
         assert result.registers[3] == int.from_bytes(bytes("rx", "utf-8"), "big")
         assert result.registers[4] == int.from_bytes(bytes("yz", "utf-8"), "big")
         assert result.registers[5] == int.from_bytes(bytes("12", "utf-8"), "big")
-        result = await client.read_holding_registers(21, 23)
+        result = await client.read_holding_registers(21, count=23)
         assert len(result.registers) == 23
         client.close()

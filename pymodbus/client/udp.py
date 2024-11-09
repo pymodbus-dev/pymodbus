@@ -56,6 +56,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         host: str,
+        *,
         framer: FramerType = FramerType.SOCKET,
         port: int = 502,
         name: str = "comm",
@@ -131,6 +132,7 @@ class ModbusUdpClient(ModbusBaseSyncClient):
     def __init__(
         self,
         host: str,
+        *,
         framer: FramerType = FramerType.SOCKET,
         port: int = 502,
         name: str = "comm",

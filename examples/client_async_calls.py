@@ -59,7 +59,7 @@ SLAVE = 0x01
 async def async_template_call(client):
     """Show complete modbus call, async version."""
     try:
-        rr = await client.read_coils(1, 1, slave=SLAVE)
+        rr = await client.read_coils(1, count=1, slave=SLAVE)
     except ModbusException as exc:
         txt = f"ERROR: exception in pymodbus {exc}"
         _logger.error(txt)
@@ -80,30 +80,30 @@ async def async_template_call(client):
 async def async_handle_coils(client):
     """Read/Write coils."""
     _logger.info("### Reading Coil different number of bits (return 8 bits multiples)")
-    rr = await client.read_coils(1, 1, slave=SLAVE)
+    rr = await client.read_coils(1, count=1, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 8
 
-    rr = await client.read_coils(1, 5, slave=SLAVE)
+    rr = await client.read_coils(1, count=5, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 8
 
-    rr = await client.read_coils(1, 12, slave=SLAVE)
+    rr = await client.read_coils(1, count=12, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 16
 
-    rr = await client.read_coils(1, 17, slave=SLAVE)
+    rr = await client.read_coils(1, count=17, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 24
 
     _logger.info("### Write false/true to coils and read to verify")
     await client.write_coil(0, True, slave=SLAVE)
-    rr = await client.read_coils(0, 1, slave=SLAVE)
+    rr = await client.read_coils(0, count=1, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.bits[0]  # test the expected value
 
     await client.write_coils(1, [True] * 21, slave=SLAVE)
-    rr = await client.read_coils(1, 21, slave=SLAVE)
+    rr = await client.read_coils(1, count=21, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     resp = [True] * 21
     # If the returned output quantity is not a multiple of eight,
@@ -114,7 +114,7 @@ async def async_handle_coils(client):
 
     _logger.info("### Write False to address 1-8 coils")
     await client.write_coils(1, [False] * 8, slave=SLAVE)
-    rr = await client.read_coils(1, 8, slave=SLAVE)
+    rr = await client.read_coils(1, count=8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.bits == [False] * 8  # test the expected value
 
@@ -122,7 +122,7 @@ async def async_handle_coils(client):
 async def async_handle_discrete_input(client):
     """Read discrete inputs."""
     _logger.info("### Reading discrete input, Read address:0-7")
-    rr = await client.read_discrete_inputs(0, 8, slave=SLAVE)
+    rr = await client.read_discrete_inputs(0, count=8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 8
 
@@ -131,17 +131,17 @@ async def async_handle_holding_registers(client):
     """Read/write holding registers."""
     _logger.info("### write holding register and read holding registers")
     await client.write_register(1, 10, slave=SLAVE)
-    rr = await client.read_holding_registers(1, 1, slave=SLAVE)
+    rr = await client.read_holding_registers(1, count=1, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers[0] == 10
 
     await client.write_registers(1, [10] * 8, slave=SLAVE)
-    rr = await client.read_holding_registers(1, 8, slave=SLAVE)
+    rr = await client.read_holding_registers(1, count=8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == [10] * 8
 
     await client.write_registers(1, [10], slave=SLAVE)
-    rr = await client.read_holding_registers(1, 1, slave=SLAVE)
+    rr = await client.read_holding_registers(1, count=1, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == [10]
 
@@ -153,7 +153,7 @@ async def async_handle_holding_registers(client):
         "values": [256, 128, 100, 50, 25, 10, 5, 1],
     }
     await client.readwrite_registers(slave=SLAVE, **arguments)
-    rr = await client.read_holding_registers(1, 8, slave=SLAVE)
+    rr = await client.read_holding_registers(1, count=8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == arguments["values"]
 
@@ -161,13 +161,13 @@ async def async_write_registers_mypy(client):
     """Read/write holding registers."""
     regs1: list[int] = [10] * 8
     await client.write_registers(1, regs1, slave=SLAVE)
-    rr = await client.read_holding_registers(1, len(regs1), slave=SLAVE)
+    rr = await client.read_holding_registers(1, count=len(regs1), slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == regs1
 
     regs2: list[bytes] = [b'\x01\x02', b'\x03\x04']
     await client.write_registers(1, regs2, slave=SLAVE)
-    rr = await client.read_holding_registers(1, len(regs2), slave=SLAVE)
+    rr = await client.read_holding_registers(1, count=len(regs2), slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == regs2
 
@@ -175,7 +175,7 @@ async def async_write_registers_mypy(client):
 async def async_handle_input_registers(client):
     """Read input registers."""
     _logger.info("### read input registers")
-    rr = await client.read_input_registers(1, 8, slave=SLAVE)
+    rr = await client.read_input_registers(1, count=8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.registers) == 8
 

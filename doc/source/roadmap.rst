@@ -21,8 +21,8 @@ The following bullet points are what the maintainers focus on:
     - on dev:
         - skip_encode, zero_mode parameters removed
         - Simplify PDU bit classes
-    - Simplify PDU classes
-    - Simplify transaction manager (central control point)
+        - Simplify PDU classes
+        - Simplify transaction manager (central control point)
     - Remove ModbusControlBlock
     - new transaction handling
     - transaction 100% coverage

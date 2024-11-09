@@ -76,6 +76,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
     def read_discrete_inputs(self,
                              address: int,
+                             *,
                              count: int = 1,
                              slave: int = 1,
                              no_response_expected: bool = False) -> T:
@@ -96,6 +97,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
     def read_holding_registers(self,
                                address: int,
+                               *,
                                count: int = 1,
                                slave: int = 1,
                                no_response_expected: bool = False) -> T:
@@ -118,6 +120,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
     def read_input_registers(self,
                              address: int,
+                             *,
                              count: int = 1,
                              slave: int = 1,
                              no_response_expected: bool = False) -> T:
@@ -138,7 +141,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_reg.ReadInputRegistersRequest(address=address, count=count, slave_id=slave))
 
-    def write_coil(self, address: int, value: bool, slave: int = 1, no_response_expected: bool = False) -> T:
+    def write_coil(self, address: int, value: bool, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Write single coil (code 0x05).
 
         :param address: Address to write to

@@ -97,7 +97,7 @@ async def run_payload_calls(client):
         # ----------------------------------------------------------------------- #
         print("Reading Registers:")
         count = len(payload)
-        rr = await client.read_holding_registers(address, count, slave=slave)
+        rr = await client.read_holding_registers(address, count=count, slave=slave)
         assert not rr.isError()
         print(rr.registers)
         print("\n")

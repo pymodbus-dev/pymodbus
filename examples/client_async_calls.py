@@ -122,7 +122,7 @@ async def async_handle_coils(client):
 async def async_handle_discrete_input(client):
     """Read discrete inputs."""
     _logger.info("### Reading discrete input, Read address:0-7")
-    rr = await client.read_discrete_inputs(0, 8, slave=SLAVE)
+    rr = await client.read_discrete_inputs(0, count=8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 8
 
@@ -131,17 +131,17 @@ async def async_handle_holding_registers(client):
     """Read/write holding registers."""
     _logger.info("### write holding register and read holding registers")
     await client.write_register(1, 10, slave=SLAVE)
-    rr = await client.read_holding_registers(1, 1, slave=SLAVE)
+    rr = await client.read_holding_registers(1, count=1, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers[0] == 10
 
     await client.write_registers(1, [10] * 8, slave=SLAVE)
-    rr = await client.read_holding_registers(1, 8, slave=SLAVE)
+    rr = await client.read_holding_registers(1, count=8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == [10] * 8
 
     await client.write_registers(1, [10], slave=SLAVE)
-    rr = await client.read_holding_registers(1, 1, slave=SLAVE)
+    rr = await client.read_holding_registers(1, count=1, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == [10]
 
@@ -153,7 +153,7 @@ async def async_handle_holding_registers(client):
         "values": [256, 128, 100, 50, 25, 10, 5, 1],
     }
     await client.readwrite_registers(slave=SLAVE, **arguments)
-    rr = await client.read_holding_registers(1, 8, slave=SLAVE)
+    rr = await client.read_holding_registers(1, count=8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == arguments["values"]
 
@@ -161,13 +161,13 @@ async def async_write_registers_mypy(client):
     """Read/write holding registers."""
     regs1: list[int] = [10] * 8
     await client.write_registers(1, regs1, slave=SLAVE)
-    rr = await client.read_holding_registers(1, len(regs1), slave=SLAVE)
+    rr = await client.read_holding_registers(1, count=len(regs1), slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == regs1
 
     regs2: list[bytes] = [b'\x01\x02', b'\x03\x04']
     await client.write_registers(1, regs2, slave=SLAVE)
-    rr = await client.read_holding_registers(1, len(regs2), slave=SLAVE)
+    rr = await client.read_holding_registers(1, count=len(regs2), slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == regs2
 
@@ -175,7 +175,7 @@ async def async_write_registers_mypy(client):
 async def async_handle_input_registers(client):
     """Read input registers."""
     _logger.info("### read input registers")
-    rr = await client.read_input_registers(1, 8, slave=SLAVE)
+    rr = await client.read_input_registers(1, count=8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.registers) == 8
 

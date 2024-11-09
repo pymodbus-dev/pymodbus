@@ -122,7 +122,7 @@ def handle_coils(client):
 def handle_discrete_input(client):
     """Read discrete inputs."""
     _logger.info("### Reading discrete input, Read address:0-7")
-    rr = client.read_discrete_inputs(0, 8, slave=SLAVE)
+    rr = client.read_discrete_inputs(0, count=8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 8
 
@@ -131,12 +131,12 @@ def handle_holding_registers(client):
     """Read/write holding registers."""
     _logger.info("### write holding register and read holding registers")
     client.write_register(1, 10, slave=SLAVE)
-    rr = client.read_holding_registers(1, 1, slave=SLAVE)
+    rr = client.read_holding_registers(1, count=1, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers[0] == 10
 
     client.write_registers(1, [10] * 8, slave=SLAVE)
-    rr = client.read_holding_registers(1, 8, slave=SLAVE)
+    rr = client.read_holding_registers(1, count=8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == [10] * 8
 
@@ -148,7 +148,7 @@ def handle_holding_registers(client):
         "values": [256, 128, 100, 50, 25, 10, 5, 1],
     }
     client.readwrite_registers(slave=SLAVE, **arguments)
-    rr = client.read_holding_registers(1, 8, slave=SLAVE)
+    rr = client.read_holding_registers(1, count=8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == arguments["values"]
 
@@ -156,7 +156,7 @@ def handle_holding_registers(client):
 def handle_input_registers(client):
     """Read input registers."""
     _logger.info("### read input registers")
-    rr = client.read_input_registers(1, 8, slave=SLAVE)
+    rr = client.read_input_registers(1, count=8, slave=SLAVE)
     assert not rr.isError()  # test that call was OK
     assert len(rr.registers) == 8
 

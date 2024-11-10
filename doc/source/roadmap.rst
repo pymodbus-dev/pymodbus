@@ -25,6 +25,7 @@ The following bullet points are what the maintainers focus on:
         - Simplify transaction manager (central control point)
     - Remove ModbusControlBlock
     - new transaction handling
+    - pdu 100% coverage
     - transaction 100% coverage
     - client 100% coverage
 - 4.0.0, with:

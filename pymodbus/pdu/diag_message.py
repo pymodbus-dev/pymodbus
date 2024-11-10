@@ -355,24 +355,15 @@ class GetClearModbusPlusRequest(DiagnosticBase):
     sub_function_code = 0x0015
 
     def get_response_pdu_size(self):
-        """Return a series of 54 16-bit words (108 bytes) in the data field of the response.
+        """Return size of the respaonse.
 
-        This function differs from the usual two-byte length of the data field.
-        The data contains the statistics for the Modbus Plus peer processor in the slave device.
         Func_code (1 byte) + Sub function code (2 byte) + Operation (2 byte) + Data (108 bytes)
-        :return:
         """
-        if self.message == ModbusPlusOperation.GET_STATISTICS:
-            data = 2 + 108  # byte count(2) + data (54*2)
-        else:
-            data = 0
+        data = 2 + 108 if self.message == ModbusPlusOperation.GET_STATISTICS else 0
         return 1 + 2 + 2 + 2 + data
 
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+        """update_datastore the diagnostic request on the given device."""
         message: int | list | None = None  # the clear operation does not return info
         if self.message == ModbusPlusOperation.CLEAR_STATISTICS:
             _MCB.Plus.reset()
@@ -383,22 +374,13 @@ class GetClearModbusPlusRequest(DiagnosticBase):
         return GetClearModbusPlusResponse(message=message, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
     def encode(self):
-        """Encode a diagnostic response.
-
-        we encode the data set in self.message
-
-        :returns: The encoded packet
-        """
+        """Encode a diagnostic response."""
         packet = struct.pack(">H", self.sub_function_code)
         packet += struct.pack(">H", self.message)
         return packet
 
 
 class GetClearModbusPlusResponse(DiagnosticBase):
-    """Return a series of 54 16-bit words (108 bytes) in the data field of the response.
-
-    This function differs from the usual two-byte length of the data field.
-    The data contains the statistics for the Modbus Plus peer processor in the slave device.
-    """
+    """GetClearModbusPlusResponse."""
 
     sub_function_code = 0x0015

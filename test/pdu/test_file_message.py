@@ -6,6 +6,8 @@ bit based request/response messages:
 * Read/Write Discretes
 * Read Coils
 """
+import pytest
+
 from pymodbus.pdu.file_message import (
     FileRecord,
     ReadFifoQueueRequest,
@@ -15,6 +17,7 @@ from pymodbus.pdu.file_message import (
     WriteFileRecordRequest,
     WriteFileRecordResponse,
 )
+from pymodbus.exceptions import ModbusException
 
 
 TEST_MESSAGE = b"\x00\n\x00\x08\x00\x01\x00\x02\x00\x03\x00\x04"
@@ -71,6 +74,13 @@ class TestBitMessage:
             file_number=0x01, record_number=0x02, record_data=b"\x00\x01\x02\x04"
         )
         assert record.record_length == 0x02
+
+    def test_file_record_errors(self):
+        """Test file record length generation."""
+        with pytest.raises(ModbusException):
+            FileRecord(record_length=12, record_data=b"\x00\x01\x02\x04")
+        with pytest.raises(ModbusException):
+            FileRecord(record_length=11)
 
     def test_read_file_record_request_encode(self):
         """Test basic bit message encoding/decoding."""

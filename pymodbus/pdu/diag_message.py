@@ -242,74 +242,41 @@ class ReturnSlaveMessageCountRequest(DiagnosticBase):
 
 
 class ReturnSlaveMessageCountResponse(DiagnosticBase):
-    """Return slave message count.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device, that the remote device has processed since
-    its last restart, clear counters operation, or power-up
-    """
+    """ReturnSlaveMessageCountResponse."""
 
     sub_function_code = 0x000E
 
 
 class ReturnSlaveNoResponseCountRequest(DiagnosticBase):
-    """Return slave no response.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device, that the remote device has processed since
-    its last restart, clear counters operation, or power-up
-    """
+    """ReturnSlaveNoResponseCountRequest."""
 
     sub_function_code = 0x000F
 
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.SlaveNoResponse
-        return ReturnSlaveNoResponseCountResponse(count)
+        return ReturnSlaveNoResponseCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
 class ReturnSlaveNoResponseCountResponse(DiagnosticBase):
-    """Return slave no response.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device, that the remote device has processed since
-    its last restart, clear counters operation, or power-up
-    """
+    """ReturnSlaveNoResponseCountResponse."""
 
     sub_function_code = 0x000F
 
 
 class ReturnSlaveNAKCountRequest(DiagnosticBase):
-    """Return slave NAK count.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device for which it returned a Negative ACKNOWLEDGE (NAK) exception
-    response, since its last restart, clear counters operation, or power-up.
-    Exception responses are described and listed in section 7 .
-    """
+    """ReturnSlaveNAKCountRequest."""
 
     sub_function_code = 0x0010
 
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.SlaveNAK
-        return ReturnSlaveNAKCountResponse(count)
+        return ReturnSlaveNAKCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
 class ReturnSlaveNAKCountResponse(DiagnosticBase):
-    """Return slave NAK.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device for which it returned a Negative ACKNOWLEDGE (NAK) exception
-    response, since its last restart, clear counters operation, or power-up.
-    Exception responses are described and listed in section 7.
-    """
+    """ReturnSlaveNAKCountResponse."""
 
     sub_function_code = 0x0010
 

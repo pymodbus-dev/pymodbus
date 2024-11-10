@@ -360,6 +360,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The response data field returns the quantity of messages addressed to the
+        remote device for which it returned a Slave Device Busy exception response,
+        since its last restart, clear counters operation, or power-up.
         """
         return self.execute(no_response_expected, pdu_diag.ReturnSlaveBusyCountRequest(slave_id=slave))
 
@@ -369,6 +373,12 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The response data field returns the quantity of messages addressed to the
+        remote device that it could not handle due to a character overrun condition,
+        since its last restart, clear counters operation, or power-up. A character
+        overrun is caused by data characters arriving at the port faster than they
+        can be stored, or by the loss of a character due to a hardware malfunction.
         """
         return self.execute(no_response_expected, pdu_diag.ReturnSlaveBusCharacterOverrunCountRequest(slave_id=slave))
 
@@ -378,6 +388,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        An IOP overrun is caused by data characters arriving at the port
+        faster than they can be stored, or by the loss of a character due
+        to a hardware malfunction.  This function is specific to the 884.
         """
         return self.execute(no_response_expected, pdu_diag.ReturnIopOverrunCountRequest(slave_id=slave))
 

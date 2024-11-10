@@ -282,94 +282,52 @@ class ReturnSlaveNAKCountResponse(DiagnosticBase):
 
 
 class ReturnSlaveBusyCountRequest(DiagnosticBase):
-    """Return slave busy count.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device for which it returned a Slave Device Busy exception response,
-    since its last restart, clear counters operation, or power-up.
-    """
+    """ReturnSlaveBusyCountRequest."""
 
     sub_function_code = 0x0011
 
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.SLAVE_BUSY
-        return ReturnSlaveBusyCountResponse(count)
+        return ReturnSlaveBusyCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
 class ReturnSlaveBusyCountResponse(DiagnosticBase):
-    """Return slave busy count.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device for which it returned a Slave Device Busy exception response,
-    since its last restart, clear counters operation, or power-up.
-    """
+    """ReturnSlaveBusyCountResponse."""
 
     sub_function_code = 0x0011
 
 
 class ReturnSlaveBusCharacterOverrunCountRequest(DiagnosticBase):
-    """Return slave character overrun.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device that it could not handle due to a character overrun condition,
-    since its last restart, clear counters operation, or power-up. A character
-    overrun is caused by data characters arriving at the port faster than they
-    can be stored, or by the loss of a character due to a hardware malfunction.
-    """
+    """ReturnSlaveBusCharacterOverrunCountRequest."""
 
     sub_function_code = 0x0012
 
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.BusCharacterOverrun
-        return ReturnSlaveBusCharacterOverrunCountResponse(count)
+        return ReturnSlaveBusCharacterOverrunCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
 class ReturnSlaveBusCharacterOverrunCountResponse(DiagnosticBase):
-    """Return the quantity of messages addressed to the remote device unhandled due to a character overrun.
-
-    Since its last restart, clear counters operation, or power-up. A character
-    overrun is caused by data characters arriving at the port faster than they
-    can be stored, or by the loss of a character due to a hardware malfunction.
-    """
+    """ReturnSlaveBusCharacterOverrunCountResponse."""
 
     sub_function_code = 0x0012
 
 
 class ReturnIopOverrunCountRequest(DiagnosticBase):
-    """Return IopOverrun.
-
-    An IOP overrun is caused by data characters arriving at the port
-    faster than they can be stored, or by the loss of a character due
-    to a hardware malfunction.  This function is specific to the 884.
-    """
+    """ReturnIopOverrunCountRequest."""
 
     sub_function_code = 0x0013
 
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.BusCharacterOverrun
-        return ReturnIopOverrunCountResponse(count)
+        return ReturnIopOverrunCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
 class ReturnIopOverrunCountResponse(DiagnosticBase):
-    """Return Iop overrun count.
-
-    The response data field returns the quantity of messages
-    addressed to the slave that it could not handle due to an 884
-    IOP overrun condition, since its last restart, clear counters
-    operation, or power-up.
-    """
+    """ReturnIopOverrunCountResponse."""
 
     sub_function_code = 0x0013
 

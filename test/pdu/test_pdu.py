@@ -181,39 +181,39 @@ class TestPdu:
         assert pdu.function_code > 0
 
     def test_pdu_register_as_byte(self):
-        """Test validata functions."""
-        registers =[b'ab', b'cd'] 
+        """Test validate functions."""
+        registers =[b'ab', b'cd']
         req = reg_msg.ReadHoldingRegistersRequest(address=117, registers=registers, count=3)
         assert len(req.registers) == 2
         assert req.registers[0] == 24930
         assert req.registers[1] == 25444
 
     def test_pdu_validate_address(self):
-        """Test validata functions."""
+        """Test validate functions."""
         req = reg_msg.ReadHoldingRegistersRequest(address=10, count=3)
-        with pytest.raises(ValueError):
-            req.address = -1
+        req.address = -1
+        with pytest.raises(ValueError):  # noqa: PT011
             req.validateAddress()
-        with pytest.raises(ValueError):
-            req.address = 66000
+        req.address = 66000
+        with pytest.raises(ValueError):  # noqa: PT011
             req.validateAddress()
 
     def test_pdu_validate_count(self):
-        """Test validata functions."""
+        """Test validate functions."""
         req = reg_msg.ReadHoldingRegistersRequest(address=2, count=0)
-        with pytest.raises(ValueError):
-            req.count = 0
+        req.count = 0
+        with pytest.raises(ValueError):  # noqa: PT011
             req.validateCount(100)
-        with pytest.raises(ValueError):
-            req.count = 101
+        req.count = 101
+        with pytest.raises(ValueError):  # noqa: PT011
             req.validateCount(100)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa: PT011
             req.validateCount(100, count=0)
 
 
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests + responses)
     @pytest.mark.usefixtures("args")
-    def test_pdu_instance_encode(self, pdutype, args, kwargs, frame):
+    def test_pdu_instance_encode(self, pdutype, kwargs, frame):
         """Test that all PDU types can be created."""
         pdu = pdutype(**kwargs)
         res_frame = pdutype.function_code.to_bytes(1,'big') + pdu.encode()
@@ -230,6 +230,7 @@ class TestPdu:
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests + responses)
     @pytest.mark.usefixtures("args")
     def test_pdu_decode(self, pdutype, kwargs, frame):
+        """Test pdu decode."""
         pdu = pdutype(**kwargs)
         pdu.decode(frame[1:])
 

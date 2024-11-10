@@ -1,4 +1,7 @@
 """Test register read messages."""
+import pytest
+
+from pymodbus.exceptions import ModbusIOException
 from pymodbus.pdu import ModbusExceptions
 from pymodbus.pdu.register_message import (
     ReadHoldingRegistersRequest,
@@ -74,6 +77,12 @@ class TestReadRegisterMessages:
         for response, packet in self.response_read.items():
             response.decode(packet)
             assert response.registers == self.values
+
+    def test_register_read_response_decode_error(self):
+        """Test register read response."""
+        reg = ReadHoldingRegistersResponse(count = 5)
+        with pytest.raises(ModbusIOException):
+            reg.decode(b'\x14\x00\x03\x00\x11')
 
     async def test_register_read_requests_count_errors(self):
         """This tests that the register request messages.

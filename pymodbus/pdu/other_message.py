@@ -159,24 +159,19 @@ class ReportSlaveIdRequest(ModbusPDU):
     def decode(self, _data: bytes) -> None:
         """Decode data part of the message."""
 
-    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
         """Run a report slave id request against the store."""
-        report_slave_id_data = None
-        if context:
-            report_slave_id_data = getattr(context, "reportSlaveIdData", None)
-        if not report_slave_id_data:
-            information = DeviceInformationFactory.get(_MCB)
-            id_data = []
-            for v_item in information.values():
-                if isinstance(v_item, bytes):
-                    id_data.append(v_item)
-                else:
-                    id_data.append(v_item.encode())
+        information = DeviceInformationFactory.get(_MCB)
+        id_data = []
+        for v_item in information.values():
+            if isinstance(v_item, bytes):
+                id_data.append(v_item)
+            else:
+                id_data.append(v_item.encode())
 
-            identifier = b"-".join(id_data)
-            identifier = identifier or b"Pymodbus"
-            report_slave_id_data = identifier
-        return ReportSlaveIdResponse(identifier=report_slave_id_data, slave_id=self.slave_id, transaction_id=self.transaction_id)
+        identifier = b"-".join(id_data)
+        identifier = identifier or b"Pymodbus"
+        return ReportSlaveIdResponse(identifier=identifier, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
 class ReportSlaveIdResponse(ModbusPDU):

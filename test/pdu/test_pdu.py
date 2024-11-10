@@ -7,10 +7,10 @@ import pymodbus.pdu.file_message as file_msg
 import pymodbus.pdu.mei_message as mei_msg
 import pymodbus.pdu.other_message as o_msg
 import pymodbus.pdu.register_message as reg_msg
+from pymodbus.constants import ModbusStatus
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.pdu import (
     ExceptionResponse,
-    ModbusExceptions,
     ModbusPDU,
 )
 
@@ -34,15 +34,6 @@ class TestPdu:
     async def test_is_error(self):
         """Test is_error."""
         assert self.exception.isError()
-
-    def test_request_exception(self):
-        """Test request exception."""
-        request = ModbusPDU()
-        request.function_code = 1
-        errors = {data.name: data.value for data in ModbusExceptions}
-        for error, code in iter(errors.items()):
-            result = request.doException(code)
-            assert str(result) == f"Exception Response(129, 1, {error})"
 
     def test_calculate_frame_size(self):
         """Test the calculation of Modbus frame sizes."""
@@ -83,25 +74,25 @@ class TestPdu:
         (bit_msg.ReadDiscreteInputsRequest, (), {"address": 117, "count": 3}, b'\x02\x00\x75\x00\x03'),
         (bit_msg.WriteSingleCoilRequest, (), {"address": 117, "bits": [True]}, b'\x05\x00\x75\xff\x00'),
         (bit_msg.WriteMultipleCoilsRequest, (), {"address": 117, "bits": [True, False, True]}, b'\x0f\x00\x75\x00\x03\x01\x05'),
-        (diag_msg.DiagnosticStatusRequest, (), {}, b'\x08\x27\x0f'),
-        (diag_msg.DiagnosticStatusSimpleRequest, (), {"data": 0x1010}, b'\x08\x27\x0f\x10\x10'),
+        (diag_msg.DiagnosticBase, (), {"message": None}, b'\x08\x27\x0f'),
+        (diag_msg.DiagnosticBase, (), {"message": 0x1010}, b'\x08\x27\x0f\x10\x10'),
         (diag_msg.ReturnQueryDataRequest, (), {"message": b'\x10\x01'}, b'\x08\x00\x00\x10\x01'),
-        (diag_msg.RestartCommunicationsOptionRequest, (), {"toggle": True}, b'\x08\x00\x01\xff\x00'),
-        (diag_msg.ReturnDiagnosticRegisterRequest, (), {"data": 0x1010}, b'\x08\x00\x02\x10\x10'),
-        (diag_msg.ChangeAsciiInputDelimiterRequest, (), {"data": 0x1010}, b'\x08\x00\x03\x10\x10'),
+        (diag_msg.RestartCommunicationsOptionRequest, (), {"message": ModbusStatus.ON}, b'\x08\x00\x01\xff\x00'),
+        (diag_msg.ReturnDiagnosticRegisterRequest, (), {"message": 0x1010}, b'\x08\x00\x02\x10\x10'),
+        (diag_msg.ChangeAsciiInputDelimiterRequest, (), {"message": 0x1010}, b'\x08\x00\x03\x10\x10'),
         (diag_msg.ForceListenOnlyModeRequest, (), {}, b'\x08\x00\x04\x00\x00'),
-        (diag_msg.ClearCountersRequest, (), {"data": 0x1010}, b'\x08\x00\n\x10\x10'),
-        (diag_msg.ReturnBusMessageCountRequest, (), {"data": 0x1010}, b'\x08\x00\x0b\x10\x10'),
-        (diag_msg.ReturnBusCommunicationErrorCountRequest, (), {"data": 0x1010}, b'\x08\x00\x0c\x10\x10'),
-        (diag_msg.ReturnBusExceptionErrorCountRequest, (), {"data": 0x1010}, b'\x08\x00\x0d\x10\x10'),
-        (diag_msg.ReturnSlaveMessageCountRequest, (), {"data": 0x1010}, b'\x08\x00\x0e\x10\x10'),
-        (diag_msg.ReturnSlaveNoResponseCountRequest, (), {"data": 0x1010}, b'\x08\x00\x0f\x10\x10'),
-        (diag_msg.ReturnSlaveNAKCountRequest, (), {"data": 0x1010}, b'\x08\x00\x10\x10\x10'),
-        (diag_msg.ReturnSlaveBusyCountRequest, (), {"data": 0x1010}, b'\x08\x00\x11\x10\x10'),
-        (diag_msg.ReturnSlaveBusCharacterOverrunCountRequest, (), {"data": 0x1010}, b'\x08\x00\x12\x10\x10'),
-        (diag_msg.ReturnIopOverrunCountRequest, (), {"data": 0x1010}, b'\x08\x00\x13\x10\x10'),
-        (diag_msg.ClearOverrunCountRequest, (), {"data": 0x1010}, b'\x08\x00\x14\x10\x10'),
-        (diag_msg.GetClearModbusPlusRequest, (), {"data": 0x1010}, b'\x08\x00\x15\x10\x10'),
+        (diag_msg.ClearCountersRequest, (), {"message": 0x1010}, b'\x08\x00\n\x10\x10'),
+        (diag_msg.ReturnBusMessageCountRequest, (), {"message": 0x1010}, b'\x08\x00\x0b\x10\x10'),
+        (diag_msg.ReturnBusCommunicationErrorCountRequest, (), {"message": 0x1010}, b'\x08\x00\x0c\x10\x10'),
+        (diag_msg.ReturnBusExceptionErrorCountRequest, (), {"message": 0x1010}, b'\x08\x00\x0d\x10\x10'),
+        (diag_msg.ReturnSlaveMessageCountRequest, (), {"message": 0x1010}, b'\x08\x00\x0e\x10\x10'),
+        (diag_msg.ReturnSlaveNoResponseCountRequest, (), {"message": 0x1010}, b'\x08\x00\x0f\x10\x10'),
+        (diag_msg.ReturnSlaveNAKCountRequest, (), {"message": 0x1010}, b'\x08\x00\x10\x10\x10'),
+        (diag_msg.ReturnSlaveBusyCountRequest, (), {"message": 0x1010}, b'\x08\x00\x11\x10\x10'),
+        (diag_msg.ReturnSlaveBusCharacterOverrunCountRequest, (), {"message": 0x1010}, b'\x08\x00\x12\x10\x10'),
+        (diag_msg.ReturnIopOverrunCountRequest, (), {"message": 0x1010}, b'\x08\x00\x13\x10\x10'),
+        (diag_msg.ClearOverrunCountRequest, (), {"message": 0x1010}, b'\x08\x00\x14\x10\x10'),
+        (diag_msg.GetClearModbusPlusRequest, (), {"message": 0x1010}, b'\x08\x00\x15\x10\x10'),
         (file_msg.ReadFileRecordRequest, (), {"records": [file_msg.FileRecord(), file_msg.FileRecord()]}, b'\x14\x0e\x06\x00\x00\x00\x00\x00\x00\x06\x00\x00\x00\x00\x00\x00'),
         (file_msg.WriteFileRecordRequest, (), {"records": [file_msg.FileRecord(), file_msg.FileRecord()]}, b'\x15\x0e\x06\x00\x00\x00\x00\x00\x00\x06\x00\x00\x00\x00\x00\x00'),
         (file_msg.ReadFifoQueueRequest, (), {"address": 117}, b'\x18\x00\x75'),
@@ -123,25 +114,25 @@ class TestPdu:
         (bit_msg.ReadDiscreteInputsResponse, (), {"bits": [True, True], "address": 17}, b'\x02\x01\x03'),
         (bit_msg.WriteSingleCoilResponse, (), {"address": 117, "bits": [True]}, b'\x05\x00\x75\xff\x00'),
         (bit_msg.WriteMultipleCoilsResponse, (), {"address": 117, "count": 3}, b'\x0f\x00\x75\x00\x03'),
-        (diag_msg.DiagnosticStatusResponse, (), {}, b'\x08\x27\x0f'),
-        (diag_msg.DiagnosticStatusSimpleResponse, (), {"data": 0x1010}, b'\x08\x27\x0f\x10\x10'),
+        (diag_msg.DiagnosticBase, (), {"message": None}, b'\x08\x27\x0f'),
+        (diag_msg.DiagnosticBase, (), {"message": 0x1010}, b'\x08\x27\x0f\x10\x10'),
         (diag_msg.ReturnQueryDataResponse, (), {"message": b'AB'}, b'\x08\x00\x00\x41\x42'),
-        (diag_msg.RestartCommunicationsOptionResponse, (), {"toggle": True}, b'\x08\x00\x01\xff\x00'),
-        (diag_msg.ReturnDiagnosticRegisterResponse, (), {"data": 0x1010}, b'\x08\x00\x02\x10\x10'),
-        (diag_msg.ChangeAsciiInputDelimiterResponse, (), {"data": 0x1010}, b'\x08\x00\x03\x10\x10'),
+        (diag_msg.RestartCommunicationsOptionResponse, (), {"message": ModbusStatus.ON}, b'\x08\x00\x01\xff\x00'),
+        (diag_msg.ReturnDiagnosticRegisterResponse, (), {"message": 0x1010}, b'\x08\x00\x02\x10\x10'),
+        (diag_msg.ChangeAsciiInputDelimiterResponse, (), {"message": 0x1010}, b'\x08\x00\x03\x10\x10'),
         (diag_msg.ForceListenOnlyModeResponse, (), {}, b'\x08\x00\x04'),
-        (diag_msg.ClearCountersResponse, (), {"data": 0x1010}, b'\x08\x00\n\x10\x10'),
-        (diag_msg.ReturnBusMessageCountResponse, (), {"data": 0x1010}, b'\x08\x00\x0b\x10\x10'),
-        (diag_msg.ReturnBusCommunicationErrorCountResponse, (), {"data": 0x1010}, b'\x08\x00\x0c\x10\x10'),
-        (diag_msg.ReturnBusExceptionErrorCountResponse, (), {"data": 0x1010}, b'\x08\x00\x0d\x10\x10'),
-        (diag_msg.ReturnSlaveMessageCountResponse, (), {"data": 0x1010}, b'\x08\x00\x0e\x10\x10'),
-        (diag_msg.ReturnSlaveNoResponseCountResponse, (), {"data": 0x1010}, b'\x08\x00\x0f\x10\x10'),
-        (diag_msg.ReturnSlaveNAKCountResponse, (), {"data": 0x1010}, b'\x08\x00\x10\x10\x10'),
-        (diag_msg.ReturnSlaveBusyCountResponse, (), {"data": 0x1010}, b'\x08\x00\x11\x10\x10'),
-        (diag_msg.ReturnSlaveBusCharacterOverrunCountResponse, (), {"data": 0x1010}, b'\x08\x00\x12\x10\x10'),
-        (diag_msg.ReturnIopOverrunCountResponse, (), {"data": 0x1010}, b'\x08\x00\x13\x10\x10'),
-        (diag_msg.ClearOverrunCountResponse, (), {"data": 0x1010}, b'\x08\x00\x14\x10\x10'),
-        (diag_msg.GetClearModbusPlusResponse, (), {"data": 0x1010}, b'\x08\x00\x15\x10\x10'),
+        (diag_msg.ClearCountersResponse, (), {"message": 0x1010}, b'\x08\x00\n\x10\x10'),
+        (diag_msg.ReturnBusMessageCountResponse, (), {"message": 0x1010}, b'\x08\x00\x0b\x10\x10'),
+        (diag_msg.ReturnBusCommunicationErrorCountResponse, (), {"message": 0x1010}, b'\x08\x00\x0c\x10\x10'),
+        (diag_msg.ReturnBusExceptionErrorCountResponse, (), {"message": 0x1010}, b'\x08\x00\x0d\x10\x10'),
+        (diag_msg.ReturnSlaveMessageCountResponse, (), {"message": 0x1010}, b'\x08\x00\x0e\x10\x10'),
+        (diag_msg.ReturnSlaveNoResponseCountResponse, (), {"message": 0x1010}, b'\x08\x00\x0f\x10\x10'),
+        (diag_msg.ReturnSlaveNAKCountResponse, (), {"message": 0x1010}, b'\x08\x00\x10\x10\x10'),
+        (diag_msg.ReturnSlaveBusyCountResponse, (), {"message": 0x1010}, b'\x08\x00\x11\x10\x10'),
+        (diag_msg.ReturnSlaveBusCharacterOverrunCountResponse, (), {"message": 0x1010}, b'\x08\x00\x12\x10\x10'),
+        (diag_msg.ReturnIopOverrunCountResponse, (), {"message": 0x1010}, b'\x08\x00\x13\x10\x10'),
+        (diag_msg.ClearOverrunCountResponse, (), {"message": 0x1010}, b'\x08\x00\x14\x10\x10'),
+        (diag_msg.GetClearModbusPlusResponse, (), {"message": 0x1010}, b'\x08\x00\x15\x10\x10'),
         (file_msg.ReadFileRecordResponse, (), {"records": [file_msg.FileRecord(), file_msg.FileRecord()]}, b'\x14\x04\x01\x06\x01\x06'),
         (file_msg.WriteFileRecordResponse, (), {"records": [file_msg.FileRecord(), file_msg.FileRecord()]}, b'\x15\x0e\x06\x00\x00\x00\x00\x00\x00\x06\x00\x00\x00\x00\x00\x00'),
         (file_msg.ReadFifoQueueResponse, (), {"values": [123, 456]}, b'\x18\x00\x06\x00\x04\x00{\x01\xc8'),
@@ -205,17 +196,6 @@ class TestPdu:
             pdu = pdutype(**kwargs)
         res_frame = pdutype.function_code.to_bytes(1,'big') + pdu.encode()
         assert res_frame == frame
-
-    @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), responses)
-    @pytest.mark.usefixtures("frame")
-    def test_pdu_get_response_pdu_size1(self, pdutype, args, kwargs):
-        """Test that all PDU types can be created."""
-        if args:
-            pdu = pdutype()
-            pdu.setData(*args)
-        else:
-            pdu = pdutype(**kwargs)
-        assert not pdu.get_response_pdu_size()
 
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests)
     @pytest.mark.usefixtures("frame")

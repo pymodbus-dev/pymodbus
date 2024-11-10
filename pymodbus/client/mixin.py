@@ -11,6 +11,7 @@ import pymodbus.pdu.file_message as pdu_file_msg
 import pymodbus.pdu.mei_message as pdu_mei
 import pymodbus.pdu.other_message as pdu_other_msg
 import pymodbus.pdu.register_message as pdu_reg
+from pymodbus.constants import ModbusStatus
 from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ModbusPDU
 
@@ -197,6 +198,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The data passed in the request data field is to be returned (looped back)
+        in the response. The entire response message should be identical to the
+        request.
         """
         return self.execute(no_response_expected, pdu_diag.ReturnQueryDataRequest(msg, slave_id=slave))
 
@@ -207,8 +212,16 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The remote device serial line port must be initialized and restarted, and
+        all of its communications event counters are cleared. If the port is
+        currently in Listen Only Mode, no response is returned. This function is
+        the only one that brings the port out of Listen Only Mode. If the port is
+        not currently in Listen Only Mode, a normal response is returned. This
+        occurs before the restart is update_datastored.
         """
-        return self.execute(no_response_expected, pdu_diag.RestartCommunicationsOptionRequest(toggle, slave_id=slave))
+        msg = ModbusStatus.ON if toggle else ModbusStatus.OFF
+        return self.execute(no_response_expected, pdu_diag.RestartCommunicationsOptionRequest(message=msg, slave_id=slave))
 
     def diag_read_diagnostic_register(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose read diagnostic register (code 0x08 sub 0x02).
@@ -216,17 +229,25 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The contents of the remote device's 16-bit diagnostic register are returned in the response.
         """
         return self.execute(no_response_expected, pdu_diag.ReturnDiagnosticRegisterRequest(slave_id=slave))
 
-    def diag_change_ascii_input_delimeter(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_change_ascii_input_delimeter(self, *, delimiter: int = 0x0a, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose change ASCII input delimiter (code 0x08 sub 0x03).
 
+        :param delimiter: char to replace LF
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The character passed in the request becomes the end of
+        message delimiter for future messages (replacing the default LF
+        character). This function is useful in cases of a Line Feed is not
+        required at the end of ASCII messages.
         """
-        return self.execute(no_response_expected, pdu_diag.ChangeAsciiInputDelimiterRequest(slave_id=slave))
+        return self.execute(no_response_expected, pdu_diag.ChangeAsciiInputDelimiterRequest(message=delimiter, slave_id=slave))
 
     def diag_force_listen_only(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose force listen only (code 0x08 sub 0x04).
@@ -234,6 +255,12 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        Forces the addressed remote device to its Listen Only Mode for MODBUS communications.
+
+        This isolates it from the other devices on the network,
+        allowing them to continue communicating without interruption from the
+        addressed remote device. No response is returned.
         """
         return self.execute(no_response_expected, pdu_diag.ForceListenOnlyModeRequest(slave_id=slave))
 
@@ -243,6 +270,8 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        Clear ll counters and the diagnostic register. Also, counters are cleared upon power-up
         """
         return self.execute(no_response_expected, pdu_diag.ClearCountersRequest(slave_id=slave))
 
@@ -252,6 +281,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The response data field returns the quantity of messages that the
+        remote device has detected on the communications systems since its last
+        restart, clear counters operation, or power-up
         """
         return self.execute(no_response_expected, pdu_diag.ReturnBusMessageCountRequest(slave_id=slave))
 
@@ -261,6 +294,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The response data field returns the quantity of CRC errors encountered
+        by the remote device since its last restart, clear counter operation, or
+        power-up
         """
         return self.execute(no_response_expected, pdu_diag.ReturnBusCommunicationErrorCountRequest(slave_id=slave))
 
@@ -270,6 +307,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The response data field returns the quantity of modbus exception
+        responses returned by the remote device since its last restart,
+        clear counters operation, or power-up
         """
         return self.execute(no_response_expected, pdu_diag.ReturnBusExceptionErrorCountRequest(slave_id=slave))
 
@@ -279,6 +320,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The response data field returns the quantity of messages addressed to the
+        remote device, that the remote device has processed since
+        its last restart, clear counters operation, or power-up
         """
         return self.execute(no_response_expected, pdu_diag.ReturnSlaveMessageCountRequest(slave_id=slave))
 
@@ -288,6 +333,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The response data field returns the quantity of messages addressed to the
+        remote device, that the remote device has processed since
+        its last restart, clear counters operation, or power-up.
         """
         return self.execute(no_response_expected, pdu_diag.ReturnSlaveNoResponseCountRequest(slave_id=slave))
 
@@ -297,6 +346,11 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The response data field returns the quantity of messages addressed to the
+        remote device for which it returned a Negative ACKNOWLEDGE (NAK) exception
+        response, since its last restart, clear counters operation, or power-up.
+        Exception responses are described and listed in section 7 .
         """
         return self.execute(no_response_expected, pdu_diag.ReturnSlaveNAKCountRequest(slave_id=slave))
 
@@ -306,6 +360,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The response data field returns the quantity of messages addressed to the
+        remote device for which it returned a Slave Device Busy exception response,
+        since its last restart, clear counters operation, or power-up.
         """
         return self.execute(no_response_expected, pdu_diag.ReturnSlaveBusyCountRequest(slave_id=slave))
 
@@ -315,6 +373,12 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The response data field returns the quantity of messages addressed to the
+        remote device that it could not handle due to a character overrun condition,
+        since its last restart, clear counters operation, or power-up. A character
+        overrun is caused by data characters arriving at the port faster than they
+        can be stored, or by the loss of a character due to a hardware malfunction.
         """
         return self.execute(no_response_expected, pdu_diag.ReturnSlaveBusCharacterOverrunCountRequest(slave_id=slave))
 
@@ -324,6 +388,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        An IOP overrun is caused by data characters arriving at the port
+        faster than they can be stored, or by the loss of a character due
+        to a hardware malfunction.  This function is specific to the 884.
         """
         return self.execute(no_response_expected, pdu_diag.ReturnIopOverrunCountRequest(slave_id=slave))
 
@@ -333,17 +401,30 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        An error flag should be cleared, but nothing else in the
+        specification mentions is, so it is ignored.
         """
         return self.execute(no_response_expected, pdu_diag.ClearOverrunCountRequest(slave_id=slave))
 
-    def diag_getclear_modbus_response(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_getclear_modbus_response(self, *, data: int = 0, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose Get/Clear modbus plus (code 0x08 sub 0x15).
 
+        :param data: "Get Statistics" or "Clear Statistics"
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        In addition to the Function code (08) and Subfunction code
+        (00 15 hex) in the query, a two-byte Operation field is used
+        to specify either a "Get Statistics" or a "Clear Statistics"
+        operation.  The two operations are exclusive - the "Get"
+        operation cannot clear the statistics, and the "Clear"
+        operation does not return statistics prior to clearing
+        them. Statistics are also cleared on power-up of the slave
+        device.
         """
-        return self.execute(no_response_expected, pdu_diag.GetClearModbusPlusRequest(slave_id=slave))
+        return self.execute(no_response_expected, pdu_diag.GetClearModbusPlusRequest(message=data, slave_id=slave))
 
     def diag_get_comm_event_counter(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose get event counter (code 0x0B).

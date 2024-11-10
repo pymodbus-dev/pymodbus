@@ -6,7 +6,6 @@ bit based request/response messages:
 * Read/Write Discretes
 * Read Coils
 """
-from pymodbus.pdu import ModbusExceptions
 from pymodbus.pdu.file_message import (
     FileRecord,
     ReadFifoQueueRequest,
@@ -41,22 +40,6 @@ class TestBitMessage:
         handle = ReadFifoQueueRequest(0x1234)
         result = await handle.update_datastore(context)
         assert isinstance(result, ReadFifoQueueResponse)
-
-        handle.address = -1
-        result = await handle.update_datastore(context)
-        assert result.exception_code == ModbusExceptions.ILLEGAL_VALUE
-
-        handle.values = [0x00] * 33
-        result = await handle.update_datastore(context)
-        assert result.exception_code == ModbusExceptions.ILLEGAL_VALUE
-
-    async def test_read_fifo_queue_request_error(self, mock_context):
-        """Test basic bit message encoding/decoding."""
-        context = mock_context()
-        handle = ReadFifoQueueRequest(0x1234)
-        handle.values = [0x00] * 32
-        result = await handle.update_datastore(context)
-        assert result.function_code == 0x98
 
     def test_read_fifo_queue_response_encode(self):
         """Test that the read fifo queue response can encode."""

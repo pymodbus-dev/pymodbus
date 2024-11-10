@@ -2,32 +2,31 @@
 from __future__ import annotations
 
 import struct
+from dataclasses import dataclass
 
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.exceptions import ModbusException
-from pymodbus.pdu.pdu import ModbusExceptions as merror
 from pymodbus.pdu.pdu import ModbusPDU
 
 
-# ---------------------------------------------------------------------------#
-#  File Record Types
-# ---------------------------------------------------------------------------#
-class FileRecord:  # pylint: disable=too-few-public-methods
+@dataclass
+class FileRecord:
     """Represents a file record and its relevant data."""
 
-    def __init__(self, file_number=0x00, record_number=0x00, record_data=b'', record_length=0) -> None:
-        """Initialize a new instance."""
-        if record_data:
-            if record_length:
-                raise ModbusException("Use either record_data= or record_length=")
-            if (record_length := len(record_data)) % 2:
-                raise ModbusException("length of record_data must be a multiple of 2")
-            record_length //= 2
+    file_number: int = 0
+    record_number: int = 0
+    record_data: bytes = b''
+    record_length: int = 0
 
-        self.file_number = file_number
-        self.record_number = record_number
-        self.record_data = record_data
-        self.record_length = record_length
+    def __post_init__(self) -> None:
+        """Initialize a new instance."""
+        if self.record_data:
+            if self.record_length:
+                raise ModbusException("Use either record_data= or record_length=")
+            self.record_length = len(self.record_data)
+            if self.record_length % 2:
+                raise ModbusException("length of record_data must be a multiple of 2")
+            self.record_length //= 2
 
 
 class ReadFileRecordRequest(ModbusPDU):
@@ -36,10 +35,10 @@ class ReadFileRecordRequest(ModbusPDU):
     function_code = 0x14
     rtu_byte_count_pos = 2
 
-    def __init__(self, records=None,  slave_id=1, transaction_id=0) -> None:
+    def __init__(self, records: list[FileRecord] | None = None,  slave_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, slave_id=slave_id)
-        self.records: list[FileRecord] = records if records else []
+        self.records: list[FileRecord] = records or []
 
     def encode(self) -> bytes:
         """Encode the request packet."""
@@ -68,8 +67,11 @@ class ReadFileRecordRequest(ModbusPDU):
             self.records.append(record)
 
     def get_response_pdu_size(self) -> int:
-        """Get response pdu size."""
-        return 0 # 1 + 7 * len(self.records)
+        """Get response pdu size.
+
+        Func_code (1 byte) + Quantity of record (each 7 bytes),
+        """
+        return 1 + 7 * len(self.records)
 
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
         """Run a read exception status request against the store."""
@@ -85,10 +87,10 @@ class ReadFileRecordResponse(ModbusPDU):
     function_code = 0x14
     rtu_byte_count_pos = 2
 
-    def __init__(self, records= None, slave_id=1, transaction_id=0) -> None:
+    def __init__(self, records: list[FileRecord] | None = None, slave_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, slave_id=slave_id)
-        self.records: list[FileRecord] = records if records else []
+        self.records: list[FileRecord] = records or []
 
     def encode(self) -> bytes:
         """Encode the response."""
@@ -123,10 +125,10 @@ class WriteFileRecordRequest(ModbusPDU):
     function_code = 0x15
     rtu_byte_count_pos = 2
 
-    def __init__(self, records=None, slave_id=1, transaction_id=0) -> None:
+    def __init__(self, records: list[FileRecord] | None = None, slave_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, slave_id=slave_id)
-        self.records: list[FileRecord] = records if records else []
+        self.records: list[FileRecord] = records or []
 
     def encode(self) -> bytes:
         """Encode the request packet."""
@@ -161,8 +163,11 @@ class WriteFileRecordRequest(ModbusPDU):
             self.records.append(record)
 
     def get_response_pdu_size(self) -> int:
-        """Get response pdu size."""
-        return 0 # 1 + 7 * len(self.records)
+        """Get response pdu size.
+
+        Func_code (1 byte) + Quantity of record (each 7 bytes),
+        """
+        return 1 + 7 * len(self.records)
 
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
         """Run the write file record request against the context."""
@@ -175,10 +180,10 @@ class WriteFileRecordResponse(ModbusPDU):
     function_code = 0x15
     rtu_byte_count_pos = 2
 
-    def __init__(self, records=None, slave_id=1, transaction_id=0) -> None:
+    def __init__(self, records: list[FileRecord] | None = None, slave_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, slave_id=slave_id)
-        self.records: list[FileRecord] = records if records else []
+        self.records: list[FileRecord] = records or []
 
     def encode(self) -> bytes:
         """Encode the response."""
@@ -218,11 +223,11 @@ class ReadFifoQueueRequest(ModbusPDU):
     function_code = 0x18
     rtu_frame_size = 6
 
-    def __init__(self, address=0x0000, slave_id=1, transaction_id=0) -> None:
+    def __init__(self, address: int = 0, slave_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, slave_id=slave_id)
         self.address = address
-        self.values: list[int] = []  # this should be added to the context
+        self.validateAddress()
 
     def encode(self) -> bytes:
         """Encode the request packet."""
@@ -232,17 +237,10 @@ class ReadFifoQueueRequest(ModbusPDU):
         """Decode the incoming request."""
         self.address = struct.unpack(">H", data)[0]
 
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size."""
-        return 0 # 1 + 7 * len(self.records)
-
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
         """Run a read exception status request against the store."""
-        if not 0x0000 <= self.address <= 0xFFFF:
-            return self.doException(merror.ILLEGAL_VALUE)
-        if len(self.values) > 31:
-            return self.doException(merror.ILLEGAL_VALUE)
-        return ReadFifoQueueResponse(values=self.values, slave_id=self.slave_id, transaction_id=self.transaction_id)
+        values = [0, 1, 2, 3] # server dummy response (should be in datastore)
+        return ReadFifoQueueResponse(values=values, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
 class ReadFifoQueueResponse(ModbusPDU):
@@ -257,7 +255,7 @@ class ReadFifoQueueResponse(ModbusPDU):
         lo_byte = int(buffer[3])
         return (hi_byte << 16) + lo_byte + 6
 
-    def __init__(self, values=None, slave_id=1, transaction_id=0) -> None:
+    def __init__(self, values: list[int] | None = None, slave_id: int = 1, transaction_id:int  = 0) -> None:
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, slave_id=slave_id)
         self.values = values or []

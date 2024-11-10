@@ -5,8 +5,8 @@ from typing import cast
 
 from pymodbus.constants import ModbusStatus
 from pymodbus.datastore import ModbusSlaveContext
+from pymodbus.pdu.pdu import ExceptionResponse, ModbusPDU
 from pymodbus.pdu.pdu import ModbusExceptions as merror
-from pymodbus.pdu.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
@@ -18,6 +18,8 @@ class ReadCoilsRequest(ModbusPDU):
 
     def encode(self) -> bytes:
         """Encode a request pdu."""
+        self.validateCount(2000)
+        self.validateAddress()
         return struct.pack(">HH", self.address, self.count)
 
     def decode(self, data: bytes) -> None:
@@ -34,16 +36,11 @@ class ReadCoilsRequest(ModbusPDU):
 
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run request against a datastore."""
-        if not (1 <= self.count <= 0x7D0):
-            return self.doException(merror.ILLEGAL_VALUE)
-        if not context.validate(self.function_code, self.address, self.count):
-            return self.doException(merror.ILLEGAL_ADDRESS)
-        values = cast(list[bool], await context.async_getValues(
+        values = await context.async_getValues(
             self.function_code, self.address, self.count
-        ))
-        response = (ReadCoilsResponse if self.function_code == 1 else ReadDiscreteInputsResponse)()
-        response.bits = values
-        return response
+        )
+        response_class = (ReadCoilsResponse if self.function_code == 1 else ReadDiscreteInputsResponse)
+        return response_class(slave_id=self.slave_id, transaction_id=self.transaction_id, bits=cast(list[bool], values))
 
 
 class ReadDiscreteInputsRequest(ReadCoilsRequest):
@@ -61,10 +58,9 @@ class ReadCoilsResponse(ModbusPDU):
     def encode(self) -> bytes:
         """Encode response pdu."""
         result = pack_bitstring(self.bits)
-        packet = struct.pack(">B", len(result)) + pack_bitstring(self.bits)
-        return packet
+        return struct.pack(">B", len(result)) + result
 
-    def decode(self, data):
+    def decode(self, data: bytes) -> None:
         """Decode response pdu."""
         self.bits = unpack_bitstring(data[1:])
 
@@ -83,13 +79,14 @@ class WriteSingleCoilResponse(ModbusPDU):
 
     def encode(self) -> bytes:
         """Encode write coil request."""
+        self.validateAddress()
         val = ModbusStatus.ON if self.bits[0] else ModbusStatus.OFF
         return struct.pack(">HH", self.address, val)
 
     def decode(self, data: bytes) -> None:
         """Decode a write coil request."""
         self.address, value = struct.unpack(">HH", data)
-        self.bits = [value == ModbusStatus.ON]
+        self.bits = [bool(value)]
 
 
 class WriteSingleCoilRequest(WriteSingleCoilResponse):
@@ -98,8 +95,7 @@ class WriteSingleCoilRequest(WriteSingleCoilResponse):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a request against a datastore."""
         if not context.validate(self.function_code, self.address, 1):
-            return self.doException(merror.ILLEGAL_ADDRESS)
-
+            return ExceptionResponse(self.function_code, merror.ILLEGAL_ADDRESS)
         await context.async_setValues(self.function_code, self.address, self.bits)
         values = cast(list[bool], await context.async_getValues(self.function_code, self.address, 1))
         return WriteSingleCoilResponse(address=self.address, bits=values, slave_id=self.slave_id, transaction_id=self.transaction_id)
@@ -120,26 +116,22 @@ class WriteMultipleCoilsRequest(ModbusPDU):
 
     def encode(self) -> bytes:
         """Encode write coils request."""
-        count = len(self.bits)
-        byte_count = (count + 7) // 8
-        packet = struct.pack(">HHB", self.address, count, byte_count)
-        packet += pack_bitstring(self.bits)
-        return packet
+        self.count = len(self.bits)
+        self.validateAddress()
+        self.validateCount(2000)
+        byte_count = (self.count + 7) // 8
+        return struct.pack(">HHB", self.address, self.count, byte_count) + pack_bitstring(self.bits)
 
     def decode(self, data: bytes) -> None:
         """Decode a write coils request."""
-        self.address, count, _ = struct.unpack(">HHB", data[0:5])
-        values = unpack_bitstring(data[5:])
-        self.bits = values[:count]
+        self.address, count, _byte_count = struct.unpack(">HHB", data[0:5])
+        self.bits = unpack_bitstring(data[5:])[:count]
 
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a request against a datastore."""
         count = len(self.bits)
-        if not 1 <= count <= 0x07B0:
-            return self.doException(merror.ILLEGAL_VALUE)
         if not context.validate(self.function_code, self.address, count):
-            return self.doException(merror.ILLEGAL_ADDRESS)
-
+            return ExceptionResponse(self.function_code, merror.ILLEGAL_ADDRESS)
         await context.async_setValues(
             self.function_code, self.address, self.bits
         )

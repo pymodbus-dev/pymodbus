@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 import struct
+from typing import cast
 
-from pymodbus.constants import ModbusPlusOperation, ModbusStatus
+from pymodbus.constants import ModbusPlusOperation
+from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.device import ModbusControlBlock
-from pymodbus.exceptions import ModbusException
 from pymodbus.pdu.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring
 
@@ -13,341 +14,142 @@ from pymodbus.utilities import pack_bitstring
 _MCB = ModbusControlBlock()
 
 
-class DiagnosticStatusRequest(ModbusPDU):
-    """DiagnosticStatusRequest."""
+class DiagnosticBase(ModbusPDU):
+    """DiagnosticBase."""
 
     function_code = 0x08
     sub_function_code: int = 9999
     rtu_frame_size = 8
 
-    def __init__(self, slave_id=1, transaction_id=0) -> None:
+    def __init__(self, message: bytes | int | str | list | tuple | None = 0, slave_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a diagnostic request."""
         super().__init__(transaction_id=transaction_id, slave_id=slave_id)
-        self.message: bytes | int | list | tuple | None = None
+        self.message: bytes | int | str | list | tuple | None = message
 
-
-    def encode(self):
+    def encode(self) -> bytes:
         """Encode a diagnostic response."""
         packet = struct.pack(">H", self.sub_function_code)
         if self.message is not None:
+            if isinstance(self.message, str):
+                packet += self.message.encode()
+                return packet
             if isinstance(self.message, bytes):
                 packet += self.message
                 return packet
             if isinstance(self.message, int):
                 packet += struct.pack(">H", self.message)
                 return packet
-
             if isinstance(self.message, (list, tuple)):
-                if len(self.message) > 1:
-                    raise RuntimeError("!!! self.message multiple entries !!!")
-
                 for piece in self.message:
                     packet += struct.pack(">H", piece)
                 return packet
             raise RuntimeError(f"UNKNOWN DIAG message type: {type(self.message)}")
         return packet
 
-    def decode(self, data):
+    def decode(self, data: bytes) -> None:
         """Decode a diagnostic request."""
         (self.sub_function_code, ) = struct.unpack(">H", data[:2])
+        data = data[2:]
         if self.sub_function_code == ReturnQueryDataRequest.sub_function_code:
-            self.message = data[2:]
-        elif len(data) > 2:
-            (self.message,) = struct.unpack(">H", data[2:])
+            self.message = data
+        elif (data_len := len(data)):
+            if data_len % 2:
+                data_len += 1
+                data += b"0"
+            if (word_len := data_len // 2) == 1:
+                (self.message,) = struct.unpack(">H", data)
+            else:
+                self.message = struct.unpack(">" + "H" * word_len, data)
 
-    def get_response_pdu_size(self):
+    def get_response_pdu_size(self) -> int:
         """Get response pdu size.
 
         Func_code (1 byte) + Sub function code (2 byte) + Data (2 * N bytes)
         """
         return 1 + 2 + 2
 
-    async def update_datastore(self, *args):
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
         """Implement dummy."""
-        return DiagnosticStatusResponse(args)
+        response = {
+            DiagnosticBase.sub_function_code: DiagnosticBase,
+            ReturnQueryDataResponse.sub_function_code: ReturnQueryDataResponse,
+            RestartCommunicationsOptionResponse.sub_function_code: RestartCommunicationsOptionResponse,
+        }[self.sub_function_code]
+        return response(message=self.message, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
-class DiagnosticStatusResponse(ModbusPDU):
-    """Diagnostic status.
-
-    This is a base class for all of the diagnostic response functions
-
-    It works by performing all of the encoding and decoding of variable
-    data and lets the higher classes define what extra data to append
-    and how to update_datastore a request
-    """
-
-    function_code = 0x08
-    sub_function_code = 9999
-    rtu_frame_size = 8
-
-    def __init__(self, slave_id=1, transaction_id=0):
-        """Initialize a diagnostic response."""
-        super().__init__(transaction_id=transaction_id, slave_id=slave_id)
-        self.message = None
-
-    def encode(self):
-        """Encode diagnostic response."""
-        packet = struct.pack(">H", self.sub_function_code)
-        if self.message is not None:
-            if isinstance(self.message, str):
-                packet += self.message.encode()
-            elif isinstance(self.message, bytes):
-                packet += self.message
-            elif isinstance(self.message, (list, tuple)):
-                for piece in self.message:
-                    packet += struct.pack(">H", piece)
-            elif isinstance(self.message, int):
-                packet += struct.pack(">H", self.message)
-        return packet
-
-    def decode(self, data):
-        """Decode diagnostic response."""
-        (self.sub_function_code, ) = struct.unpack(">H", data[:2])
-        data = data[2:]
-        if self.sub_function_code == ReturnQueryDataRequest.sub_function_code:
-            self.message = data
-        else:
-            word_len = len(data) // 2
-            if len(data) % 2:
-                word_len += 1
-                data += b"0"
-            data = struct.unpack(">" + "H" * word_len, data)
-            self.message = data
-
-
-class ReturnQueryDataRequest(DiagnosticStatusRequest):
-    """Return query data.
-
-    The data passed in the request data field is to be returned (looped back)
-    in the response. The entire response message should be identical to the
-    request.
-    """
+class ReturnQueryDataRequest(DiagnosticBase):
+    """ReturnQueryDataRequest."""
 
     sub_function_code = 0x0000
 
-    def __init__(self, message=b"\x00\x00", slave_id=1, transaction_id=0):
-        """Initialize a new instance of the request.
 
-        :param message: The message to send to loopback
-        """
-        DiagnosticStatusRequest.__init__(self, slave_id=slave_id, transaction_id=transaction_id)
-        if not isinstance(message, bytes):
-            raise ModbusException(f"message({type(message)}) must be bytes")
-        self.message = message
-
-    async def update_datastore(self, *_args):
-        """update_datastore the loopback request (builds the response).
-
-        :returns: The populated loopback response message
-        """
-        return ReturnQueryDataResponse(self.message)
-
-
-class ReturnQueryDataResponse(DiagnosticStatusResponse):
-    """Return query data.
-
-    The data passed in the request data field is to be returned (looped back)
-    in the response. The entire response message should be identical to the
-    request.
-    """
+class ReturnQueryDataResponse(DiagnosticBase):
+    """ReturnQueryDataResponse."""
 
     sub_function_code = 0x0000
 
-    def __init__(self, message=b"\x00\x00", slave_id=1, transaction_id=0):
-        """Initialize a new instance of the response.
 
-        :param message: The message to loopback
-        """
-        DiagnosticStatusResponse.__init__(self, slave_id=slave_id, transaction_id=transaction_id)
-        if not isinstance(message, bytes):
-            raise ModbusException(f"message({type(message)}) must be bytes")
-        self.message = message
-
-
-class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
-    """Restart communication.
-
-    The remote device serial line port must be initialized and restarted, and
-    all of its communications event counters are cleared. If the port is
-    currently in Listen Only Mode, no response is returned. This function is
-    the only one that brings the port out of Listen Only Mode. If the port is
-    not currently in Listen Only Mode, a normal response is returned. This
-    occurs before the restart is update_datastored.
-    """
+class RestartCommunicationsOptionRequest(DiagnosticBase):
+    """RestartCommunicationsOptionRequest."""
 
     sub_function_code = 0x0001
 
-    def __init__(self, toggle=False, slave_id=1, transaction_id=0):
-        """Initialize a new request.
 
-        :param toggle: Set to True to toggle, False otherwise
-        """
-        DiagnosticStatusRequest.__init__(self, slave_id=slave_id, transaction_id=transaction_id)
-        if toggle:
-            self.message = [ModbusStatus.ON]
-        else:
-            self.message = [ModbusStatus.OFF]
-
-    async def update_datastore(self, *_args):
-        """Clear event log and restart.
-
-        :returns: The initialized response message
-        """
-        # if _MCB.ListenOnly:
-        return RestartCommunicationsOptionResponse(self.message)
-
-
-class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
-    """Restart Communication.
-
-    The remote device serial line port must be initialized and restarted, and
-    all of its communications event counters are cleared. If the port is
-    currently in Listen Only Mode, no response is returned. This function is
-    the only one that brings the port out of Listen Only Mode. If the port is
-    not currently in Listen Only Mode, a normal response is returned. This
-    occurs before the restart is update_datastored.
-    """
+class RestartCommunicationsOptionResponse(DiagnosticBase):
+    """RestartCommunicationsOptionResponse."""
 
     sub_function_code = 0x0001
 
-    def __init__(self, toggle=False, slave_id=1, transaction_id=0):
-        """Initialize a new response.
 
-        :param toggle: Set to True if we toggled, False otherwise
-        """
-        DiagnosticStatusResponse.__init__(self, slave_id=slave_id, transaction_id=transaction_id)
-        if toggle:
-            self.message = [ModbusStatus.ON]
-        else:
-            self.message = [ModbusStatus.OFF]
-
-
-class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
-    """Return diagnostic status.
-
-    A large majority of the diagnostic functions are simple
-    status request functions.  They work by sending 0x0000
-    as data and their function code and they are returned
-    2 bytes of data.
-
-    If a function inherits this, they only need to implement
-    the update_datastore method
-    """
-
-    def __init__(self, data=0x0000, slave_id=1, transaction_id=0):
-        """Initialize a simple diagnostic request.
-
-        The data defaults to 0x0000 if not provided as over half
-        of the functions require it.
-
-        :param data: The data to send along with the request
-        """
-        DiagnosticStatusRequest.__init__(self, slave_id=slave_id, transaction_id=transaction_id)
-        self.message = data
-
-
-class DiagnosticStatusSimpleResponse(DiagnosticStatusResponse):
-    """Diagnostic status.
-
-    A large majority of the diagnostic functions are simple
-    status request functions.  They work by sending 0x0000
-    as data and their function code and they are returned
-    2 bytes of data.
-    """
-
-    def __init__(self, data=0x0000, slave_id=1, transaction_id=0):
-        """Return a simple diagnostic response.
-
-        :param data: The resulting data to return to the client
-        """
-        DiagnosticStatusResponse.__init__(self, slave_id=slave_id, transaction_id=transaction_id)
-        self.message = data
-
-
-class ReturnDiagnosticRegisterRequest(DiagnosticStatusSimpleRequest):
-    """The contents of the remote device's 16-bit diagnostic register are returned in the response."""
+class ReturnDiagnosticRegisterRequest(DiagnosticBase):
+    """ReturnDiagnosticRegisterRequest."""
 
     sub_function_code = 0x0002
 
-    async def update_datastore(self, *args):
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
-        # if _MCB.isListenOnly():
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """update_datastore the diagnostic request on the given device."""
         register = pack_bitstring(_MCB.getDiagnosticRegister())
-        return ReturnDiagnosticRegisterResponse(register)
+        return ReturnDiagnosticRegisterResponse(message=register, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
-class ReturnDiagnosticRegisterResponse(DiagnosticStatusSimpleResponse):
-    """Return diagnostic register.
-
-    The contents of the remote device's 16-bit diagnostic register are
-    returned in the response
-    """
+class ReturnDiagnosticRegisterResponse(DiagnosticBase):
+    """ReturnDiagnosticRegisterResponse."""
 
     sub_function_code = 0x0002
 
 
-class ChangeAsciiInputDelimiterRequest(DiagnosticStatusSimpleRequest):
-    """Change ascii input delimiter.
-
-    The character "CHAR" passed in the request data field becomes the end of
-    message delimiter for future messages (replacing the default LF
-    character). This function is useful in cases of a Line Feed is not
-    required at the end of ASCII messages.
-    """
+class ChangeAsciiInputDelimiterRequest(DiagnosticBase):
+    """ChangeAsciiInputDelimiterRequest."""
 
     sub_function_code = 0x0003
 
-    async def update_datastore(self, *args):
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
-        char = (self.message & 0xFF00) >> 8  # type: ignore[operator]
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """update_datastore the diagnostic request on the given device."""
+        char = (cast(int, self.message) & 0xFF00) >> 8
         _MCB.Delimiter = char
-        return ChangeAsciiInputDelimiterResponse(self.message)
+        return ChangeAsciiInputDelimiterResponse(message=self.message, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
-class ChangeAsciiInputDelimiterResponse(DiagnosticStatusSimpleResponse):
-    """Change ascii input delimiter.
-
-    The character "CHAR" passed in the request data field becomes the end of
-    message delimiter for future messages (replacing the default LF
-    character). This function is useful in cases of a Line Feed is not
-    required at the end of ASCII messages.
-    """
+class ChangeAsciiInputDelimiterResponse(DiagnosticBase):
+    """ChangeAsciiInputDelimiterResponse."""
 
     sub_function_code = 0x0003
 
 
-class ForceListenOnlyModeRequest(DiagnosticStatusSimpleRequest):
-    """Forces the addressed remote device to its Listen Only Mode for MODBUS communications.
-
-    This isolates it from the other devices on the network,
-    allowing them to continue communicating without interruption from the
-    addressed remote device. No response is returned.
-    """
+class ForceListenOnlyModeRequest(DiagnosticBase):
+    """ForceListenOnlyModeRequest."""
 
     sub_function_code = 0x0004
 
-    async def update_datastore(self, *args):
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """update_datastore the diagnostic request on the given device."""
         _MCB.ListenOnly = True
-        return ForceListenOnlyModeResponse()
+        return ForceListenOnlyModeResponse(slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
-class ForceListenOnlyModeResponse(DiagnosticStatusResponse):
-    """Forces the addressed remote device to its Listen Only Mode for MODBUS communications.
-
-    This isolates it from the other devices on the network,
-    allowing them to continue communicating without interruption from the
-    addressed remote device. No response is returned.
+class ForceListenOnlyModeResponse(DiagnosticBase):
+    """ForceListenOnlyModeResponse.
 
     This does not send a response
     """
@@ -356,374 +158,212 @@ class ForceListenOnlyModeResponse(DiagnosticStatusResponse):
 
     def __init__(self, slave_id=1, transaction_id=0):
         """Initialize to block a return response."""
-        DiagnosticStatusResponse.__init__(self, slave_id=slave_id, transaction_id=transaction_id)
+        DiagnosticBase.__init__(self, slave_id=slave_id, transaction_id=transaction_id)
         self.message = []
 
 
-class ClearCountersRequest(DiagnosticStatusSimpleRequest):
-    """Clear ll counters and the diagnostic register.
-
-    Also, counters are cleared upon power-up
-    """
+class ClearCountersRequest(DiagnosticBase):
+    """ClearCountersRequest."""
 
     sub_function_code = 0x000A
 
-    async def update_datastore(self, *args):
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """update_datastore the diagnostic request on the given device."""
         _MCB.reset()
-        return ClearCountersResponse(self.message)
+        return ClearCountersResponse(slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
-class ClearCountersResponse(DiagnosticStatusSimpleResponse):
-    """Clear ll counters and the diagnostic register.
-
-    Also, counters are cleared upon power-up
-    """
+class ClearCountersResponse(DiagnosticBase):
+    """ClearCountersResponse."""
 
     sub_function_code = 0x000A
 
 
-class ReturnBusMessageCountRequest(DiagnosticStatusSimpleRequest):
-    """Return bus message count.
-
-    The response data field returns the quantity of messages that the
-    remote device has detected on the communications systems since its last
-    restart, clear counters operation, or power-up
-    """
+class ReturnBusMessageCountRequest(DiagnosticBase):
+    """ReturnBusMessageCountRequest."""
 
     sub_function_code = 0x000B
 
-    async def update_datastore(self, *args):
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.BusMessage
-        return ReturnBusMessageCountResponse(count)
+        return ReturnBusMessageCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
-class ReturnBusMessageCountResponse(DiagnosticStatusSimpleResponse):
-    """Return bus message count.
-
-    The response data field returns the quantity of messages that the
-    remote device has detected on the communications systems since its last
-    restart, clear counters operation, or power-up
-    """
+class ReturnBusMessageCountResponse(DiagnosticBase):
+    """ReturnBusMessageCountResponse."""
 
     sub_function_code = 0x000B
 
 
-class ReturnBusCommunicationErrorCountRequest(DiagnosticStatusSimpleRequest):
-    """Return bus comm. count.
-
-    The response data field returns the quantity of CRC errors encountered
-    by the remote device since its last restart, clear counter operation, or
-    power-up
-    """
+class ReturnBusCommunicationErrorCountRequest(DiagnosticBase):
+    """ReturnBusCommunicationErrorCountRequest."""
 
     sub_function_code = 0x000C
 
-    async def update_datastore(self, *args):
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.BusCommunicationError
-        return ReturnBusCommunicationErrorCountResponse(count)
+        return ReturnBusCommunicationErrorCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
-class ReturnBusCommunicationErrorCountResponse(DiagnosticStatusSimpleResponse):
-    """Return bus comm. error.
-
-    The response data field returns the quantity of CRC errors encountered
-    by the remote device since its last restart, clear counter operation, or
-    power-up
-    """
+class ReturnBusCommunicationErrorCountResponse(DiagnosticBase):
+    """ReturnBusCommunicationErrorCountResponse."""
 
     sub_function_code = 0x000C
 
 
-class ReturnBusExceptionErrorCountRequest(DiagnosticStatusSimpleRequest):
-    """Return bus exception.
-
-    The response data field returns the quantity of modbus exception
-    responses returned by the remote device since its last restart,
-    clear counters operation, or power-up
-    """
+class ReturnBusExceptionErrorCountRequest(DiagnosticBase):
+    """ReturnBusExceptionErrorCountRequest."""
 
     sub_function_code = 0x000D
 
-    async def update_datastore(self, *args):
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.BusExceptionError
-        return ReturnBusExceptionErrorCountResponse(count)
+        return ReturnBusExceptionErrorCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
-class ReturnBusExceptionErrorCountResponse(DiagnosticStatusSimpleResponse):
-    """Return bus exception.
-
-    The response data field returns the quantity of modbus exception
-    responses returned by the remote device since its last restart,
-    clear counters operation, or power-up
-    """
+class ReturnBusExceptionErrorCountResponse(DiagnosticBase):
+    """ReturnBusExceptionErrorCountResponse."""
 
     sub_function_code = 0x000D
 
 
-class ReturnSlaveMessageCountRequest(DiagnosticStatusSimpleRequest):
-    """Return slave message count.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device, that the remote device has processed since
-    its last restart, clear counters operation, or power-up
-    """
+class ReturnSlaveMessageCountRequest(DiagnosticBase):
+    """ReturnSlaveMessageCountRequest."""
 
     sub_function_code = 0x000E
 
-    async def update_datastore(self, *args):
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.SlaveMessage
-        return ReturnSlaveMessageCountResponse(count)
+        return ReturnSlaveMessageCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
-class ReturnSlaveMessageCountResponse(DiagnosticStatusSimpleResponse):
-    """Return slave message count.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device, that the remote device has processed since
-    its last restart, clear counters operation, or power-up
-    """
+class ReturnSlaveMessageCountResponse(DiagnosticBase):
+    """ReturnSlaveMessageCountResponse."""
 
     sub_function_code = 0x000E
 
 
-class ReturnSlaveNoResponseCountRequest(DiagnosticStatusSimpleRequest):
-    """Return slave no response.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device, that the remote device has processed since
-    its last restart, clear counters operation, or power-up
-    """
+class ReturnSlaveNoResponseCountRequest(DiagnosticBase):
+    """ReturnSlaveNoResponseCountRequest."""
 
     sub_function_code = 0x000F
 
-    async def update_datastore(self, *args):
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.SlaveNoResponse
-        return ReturnSlaveNoResponseCountResponse(count)
+        return ReturnSlaveNoResponseCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
-class ReturnSlaveNoResponseCountResponse(DiagnosticStatusSimpleResponse):
-    """Return slave no response.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device, that the remote device has processed since
-    its last restart, clear counters operation, or power-up
-    """
+class ReturnSlaveNoResponseCountResponse(DiagnosticBase):
+    """ReturnSlaveNoResponseCountResponse."""
 
     sub_function_code = 0x000F
 
 
-class ReturnSlaveNAKCountRequest(DiagnosticStatusSimpleRequest):
-    """Return slave NAK count.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device for which it returned a Negative ACKNOWLEDGE (NAK) exception
-    response, since its last restart, clear counters operation, or power-up.
-    Exception responses are described and listed in section 7 .
-    """
+class ReturnSlaveNAKCountRequest(DiagnosticBase):
+    """ReturnSlaveNAKCountRequest."""
 
     sub_function_code = 0x0010
 
-    async def update_datastore(self, *args):
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.SlaveNAK
-        return ReturnSlaveNAKCountResponse(count)
+        return ReturnSlaveNAKCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
-class ReturnSlaveNAKCountResponse(DiagnosticStatusSimpleResponse):
-    """Return slave NAK.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device for which it returned a Negative ACKNOWLEDGE (NAK) exception
-    response, since its last restart, clear counters operation, or power-up.
-    Exception responses are described and listed in section 7.
-    """
+class ReturnSlaveNAKCountResponse(DiagnosticBase):
+    """ReturnSlaveNAKCountResponse."""
 
     sub_function_code = 0x0010
 
 
-class ReturnSlaveBusyCountRequest(DiagnosticStatusSimpleRequest):
-    """Return slave busy count.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device for which it returned a Slave Device Busy exception response,
-    since its last restart, clear counters operation, or power-up.
-    """
+class ReturnSlaveBusyCountRequest(DiagnosticBase):
+    """ReturnSlaveBusyCountRequest."""
 
     sub_function_code = 0x0011
 
-    async def update_datastore(self, *args):
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.SLAVE_BUSY
-        return ReturnSlaveBusyCountResponse(count)
+        return ReturnSlaveBusyCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
-class ReturnSlaveBusyCountResponse(DiagnosticStatusSimpleResponse):
-    """Return slave busy count.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device for which it returned a Slave Device Busy exception response,
-    since its last restart, clear counters operation, or power-up.
-    """
+class ReturnSlaveBusyCountResponse(DiagnosticBase):
+    """ReturnSlaveBusyCountResponse."""
 
     sub_function_code = 0x0011
 
 
-class ReturnSlaveBusCharacterOverrunCountRequest(DiagnosticStatusSimpleRequest):
-    """Return slave character overrun.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device that it could not handle due to a character overrun condition,
-    since its last restart, clear counters operation, or power-up. A character
-    overrun is caused by data characters arriving at the port faster than they
-    can be stored, or by the loss of a character due to a hardware malfunction.
-    """
+class ReturnSlaveBusCharacterOverrunCountRequest(DiagnosticBase):
+    """ReturnSlaveBusCharacterOverrunCountRequest."""
 
     sub_function_code = 0x0012
 
-    async def update_datastore(self, *args):
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.BusCharacterOverrun
-        return ReturnSlaveBusCharacterOverrunCountResponse(count)
+        return ReturnSlaveBusCharacterOverrunCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
-class ReturnSlaveBusCharacterOverrunCountResponse(DiagnosticStatusSimpleResponse):
-    """Return the quantity of messages addressed to the remote device unhandled due to a character overrun.
-
-    Since its last restart, clear counters operation, or power-up. A character
-    overrun is caused by data characters arriving at the port faster than they
-    can be stored, or by the loss of a character due to a hardware malfunction.
-    """
+class ReturnSlaveBusCharacterOverrunCountResponse(DiagnosticBase):
+    """ReturnSlaveBusCharacterOverrunCountResponse."""
 
     sub_function_code = 0x0012
 
 
-class ReturnIopOverrunCountRequest(DiagnosticStatusSimpleRequest):
-    """Return IopOverrun.
-
-    An IOP overrun is caused by data characters arriving at the port
-    faster than they can be stored, or by the loss of a character due
-    to a hardware malfunction.  This function is specific to the 884.
-    """
+class ReturnIopOverrunCountRequest(DiagnosticBase):
+    """ReturnIopOverrunCountRequest."""
 
     sub_function_code = 0x0013
 
-    async def update_datastore(self, *args):
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.BusCharacterOverrun
-        return ReturnIopOverrunCountResponse(count)
+        return ReturnIopOverrunCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
-class ReturnIopOverrunCountResponse(DiagnosticStatusSimpleResponse):
-    """Return Iop overrun count.
-
-    The response data field returns the quantity of messages
-    addressed to the slave that it could not handle due to an 884
-    IOP overrun condition, since its last restart, clear counters
-    operation, or power-up.
-    """
+class ReturnIopOverrunCountResponse(DiagnosticBase):
+    """ReturnIopOverrunCountResponse."""
 
     sub_function_code = 0x0013
 
 
-class ClearOverrunCountRequest(DiagnosticStatusSimpleRequest):
-    """Clear the overrun error counter and reset the error flag.
-
-    An error flag should be cleared, but nothing else in the
-    specification mentions is, so it is ignored.
-    """
+class ClearOverrunCountRequest(DiagnosticBase):
+    """ClearOverrunCountRequest."""
 
     sub_function_code = 0x0014
 
-    async def update_datastore(self, *args):
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """update_datastore the diagnostic request on the given device."""
         _MCB.Counter.BusCharacterOverrun = 0x0000
-        return ClearOverrunCountResponse(self.message)
+        return ClearOverrunCountResponse(slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
-class ClearOverrunCountResponse(DiagnosticStatusSimpleResponse):
-    """Clear the overrun error counter and reset the error flag."""
+class ClearOverrunCountResponse(DiagnosticBase):
+    """ClearOverrunCountResponse."""
 
     sub_function_code = 0x0014
 
 
-class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
-    """Get/Clear modbus plus request.
-
-    In addition to the Function code (08) and Subfunction code
-    (00 15 hex) in the query, a two-byte Operation field is used
-    to specify either a "Get Statistics" or a "Clear Statistics"
-    operation.  The two operations are exclusive - the "Get"
-    operation cannot clear the statistics, and the "Clear"
-    operation does not return statistics prior to clearing
-    them. Statistics are also cleared on power-up of the slave
-    device.
-    """
+class GetClearModbusPlusRequest(DiagnosticBase):
+    """GetClearModbusPlusRequest."""
 
     sub_function_code = 0x0015
 
-    def __init__(self, data=0, slave_id=1, transaction_id=0):
-        """Initialize."""
-        super().__init__(slave_id=slave_id, transaction_id=transaction_id)
-        self.message=data
-
     def get_response_pdu_size(self):
-        """Return a series of 54 16-bit words (108 bytes) in the data field of the response.
+        """Return size of the respaonse.
 
-        This function differs from the usual two-byte length of the data field.
-        The data contains the statistics for the Modbus Plus peer processor in the slave device.
         Func_code (1 byte) + Sub function code (2 byte) + Operation (2 byte) + Data (108 bytes)
-        :return:
         """
-        if self.message == ModbusPlusOperation.GET_STATISTICS:
-            data = 2 + 108  # byte count(2) + data (54*2)
-        else:
-            data = 0
+        data = 2 + 108 if self.message == ModbusPlusOperation.GET_STATISTICS else 0
         return 1 + 2 + 2 + 2 + data
 
-    async def update_datastore(self, *args):
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+        """update_datastore the diagnostic request on the given device."""
         message: int | list | None = None  # the clear operation does not return info
         if self.message == ModbusPlusOperation.CLEAR_STATISTICS:
             _MCB.Plus.reset()
@@ -731,25 +371,16 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
         else:
             message = [self.message]
             message += _MCB.Plus.encode()
-        return GetClearModbusPlusResponse(message)
+        return GetClearModbusPlusResponse(message=message, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
     def encode(self):
-        """Encode a diagnostic response.
-
-        we encode the data set in self.message
-
-        :returns: The encoded packet
-        """
+        """Encode a diagnostic response."""
         packet = struct.pack(">H", self.sub_function_code)
         packet += struct.pack(">H", self.message)
         return packet
 
 
-class GetClearModbusPlusResponse(DiagnosticStatusSimpleResponse):
-    """Return a series of 54 16-bit words (108 bytes) in the data field of the response.
-
-    This function differs from the usual two-byte length of the data field.
-    The data contains the statistics for the Modbus Plus peer processor in the slave device.
-    """
+class GetClearModbusPlusResponse(DiagnosticBase):
+    """GetClearModbusPlusResponse."""
 
     sub_function_code = 0x0015

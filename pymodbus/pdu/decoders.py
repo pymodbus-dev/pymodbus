@@ -25,7 +25,7 @@ class DecodePDU:
         (reg_msg.WriteSingleRegisterRequest, reg_msg.WriteSingleRegisterResponse),
         (bit_msg.WriteSingleCoilRequest, bit_msg.WriteSingleCoilResponse),
         (reg_msg.ReadWriteMultipleRegistersRequest, reg_msg.ReadWriteMultipleRegistersResponse),
-        (diag_msg.DiagnosticStatusRequest, diag_msg.DiagnosticStatusResponse),
+        (diag_msg.DiagnosticBase, diag_msg.DiagnosticBase),
         (o_msg.ReadExceptionStatusRequest, o_msg.ReadExceptionStatusResponse),
         (o_msg.GetCommEventCounterRequest, o_msg.GetCommEventCounterResponse),
         (o_msg.GetCommEventLogRequest, o_msg.GetCommEventLogResponse),

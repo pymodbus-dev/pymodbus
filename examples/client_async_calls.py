@@ -190,7 +190,7 @@ async def async_handle_file_records(client):
     assert rr.records[0].record_data == b'SERVER DUMMY RECORD.'
     assert rr.records[1].record_data == b'SERVER DUMMY RECORD.'
     record.record_data = b'Pure test '
-    record.record_length = len(record.record_data) / 2
+    record.record_length = len(record.record_data) // 2
     record = FileRecord(file_number=14, record_number=12, record_data=b'Pure test ')
     rr = await client.write_file_record([record], slave=1)
     assert not rr.isError()

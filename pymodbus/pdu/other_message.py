@@ -1,7 +1,5 @@
-"""Diagnostic record read/write.
-
-Currently not all implemented
-"""
+"""Diagnostic record read/write."""
+from __future__ import annotations
 
 import struct
 
@@ -24,7 +22,7 @@ class ReadExceptionStatusRequest(ModbusPDU):
         """Encode the message."""
         return b""
 
-    def decode(self, data: bytes) -> None:
+    def decode(self, _data: bytes) -> None:
         """Decode data part of the message."""
 
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
@@ -116,12 +114,12 @@ class GetCommEventLogResponse(ModbusPDU):
     function_code = 0x0C
     rtu_byte_count_pos = 2
 
-    def __init__(self, status=True, message_count=0, event_count=0, events=None, slave_id=1, transaction_id=0) -> None:
+    def __init__(self, status: bool = True, message_count: int = 0, event_count: int = 0, events: list[int] | None = None, slave_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, slave_id=slave_id, status=status)
         self.message_count = message_count
         self.event_count = event_count
-        self.events = events if events else []
+        self.events = events or []
 
     def encode(self) -> bytes:
         """Encode the response."""
@@ -168,8 +166,6 @@ class ReportSlaveIdRequest(ModbusPDU):
             report_slave_id_data = getattr(context, "reportSlaveIdData", None)
         if not report_slave_id_data:
             information = DeviceInformationFactory.get(_MCB)
-
-            # Support identity values as bytes data and regular str data
             id_data = []
             for v_item in information.values():
                 if isinstance(v_item, bytes):
@@ -189,7 +185,7 @@ class ReportSlaveIdResponse(ModbusPDU):
     function_code = 0x11
     rtu_byte_count_pos = 2
 
-    def __init__(self, identifier=b"\x00", status=True, slave_id=1, transaction_id=0) -> None:
+    def __init__(self, identifier: bytes = b"\x00", status: bool = True, slave_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, slave_id=slave_id, status=status)
         self.identifier = identifier

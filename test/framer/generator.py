@@ -7,7 +7,7 @@ from pymodbus.framer import (
     FramerSocket,
     FramerTLS,
 )
-from pymodbus.pdu import DecodePDU
+from pymodbus.pdu import DecodePDU, ExceptionResponse
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.pdu.register_message import (
     ReadHoldingRegistersRequest,
@@ -24,19 +24,19 @@ def set_calls():
             for tid in (0, 3077):
                 print(f"    tid --> {tid}")
                 client = framer(DecodePDU(False))
-                request = ReadHoldingRegistersRequest(124, 2, dev_id)
+                request = ReadHoldingRegistersRequest(address=124, count=2, slave_id=dev_id)
                 request.transaction_id = tid
                 result = client.buildFrame(request)
                 print(f"      request --> {result}")
                 print(f"      request --> {result.hex()}")
                 server = framer(DecodePDU(True))
-                response = ReadHoldingRegistersResponse([141,142])
+                response = ReadHoldingRegistersResponse(registers=[141,142])
                 response.slave_id = dev_id
                 response.transaction_id = tid
                 result = server.buildFrame(response)
                 print(f"      response --> {result}")
                 print(f"      response --> {result.hex()}")
-                exception = request.doException(merror.ILLEGAL_ADDRESS)
+                exception = ExceptionResponse(request.function_code, merror.ILLEGAL_ADDRESS)
                 exception.transaction_id = tid
                 exception.slave_id = dev_id
                 result = server.buildFrame(exception)

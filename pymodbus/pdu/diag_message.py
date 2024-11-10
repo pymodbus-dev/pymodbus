@@ -333,25 +333,18 @@ class ReturnIopOverrunCountResponse(DiagnosticBase):
 
 
 class ClearOverrunCountRequest(DiagnosticBase):
-    """Clear the overrun error counter and reset the error flag.
-
-    An error flag should be cleared, but nothing else in the
-    specification mentions is, so it is ignored.
-    """
+    """ClearOverrunCountRequest."""
 
     sub_function_code = 0x0014
 
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+        """update_datastore the diagnostic request on the given device."""
         _MCB.Counter.BusCharacterOverrun = 0x0000
-        return ClearOverrunCountResponse(self.message)
+        return ClearOverrunCountResponse(slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
 class ClearOverrunCountResponse(DiagnosticBase):
-    """Clear the overrun error counter and reset the error flag."""
+    """ClearOverrunCountResponse."""
 
     sub_function_code = 0x0014
 

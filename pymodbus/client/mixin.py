@@ -401,6 +401,9 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        An error flag should be cleared, but nothing else in the
+        specification mentions is, so it is ignored.
         """
         return self.execute(no_response_expected, pdu_diag.ClearOverrunCountRequest(slave_id=slave))
 

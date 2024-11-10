@@ -187,7 +187,7 @@ class ReturnBusMessageCountRequest(DiagnosticBase):
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
         """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.BusMessage
-        return ReturnBusMessageCountResponse(message=count)
+        return ReturnBusMessageCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
 class ReturnBusMessageCountResponse(DiagnosticBase):
@@ -197,31 +197,18 @@ class ReturnBusMessageCountResponse(DiagnosticBase):
 
 
 class ReturnBusCommunicationErrorCountRequest(DiagnosticBase):
-    """Return bus comm. count.
-
-    The response data field returns the quantity of CRC errors encountered
-    by the remote device since its last restart, clear counter operation, or
-    power-up
-    """
+    """ReturnBusCommunicationErrorCountRequest."""
 
     sub_function_code = 0x000C
 
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.BusCommunicationError
-        return ReturnBusCommunicationErrorCountResponse(count)
+        return ReturnBusCommunicationErrorCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
 class ReturnBusCommunicationErrorCountResponse(DiagnosticBase):
-    """Return bus comm. error.
-
-    The response data field returns the quantity of CRC errors encountered
-    by the remote device since its last restart, clear counter operation, or
-    power-up
-    """
+    """ReturnBusCommunicationErrorCountResponse."""
 
     sub_function_code = 0x000C
 

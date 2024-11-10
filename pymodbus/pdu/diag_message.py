@@ -214,52 +214,31 @@ class ReturnBusCommunicationErrorCountResponse(DiagnosticBase):
 
 
 class ReturnBusExceptionErrorCountRequest(DiagnosticBase):
-    """Return bus exception.
-
-    The response data field returns the quantity of modbus exception
-    responses returned by the remote device since its last restart,
-    clear counters operation, or power-up
-    """
+    """ReturnBusExceptionErrorCountRequest."""
 
     sub_function_code = 0x000D
 
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.BusExceptionError
-        return ReturnBusExceptionErrorCountResponse(count)
+        return ReturnBusExceptionErrorCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
 class ReturnBusExceptionErrorCountResponse(DiagnosticBase):
-    """Return bus exception.
-
-    The response data field returns the quantity of modbus exception
-    responses returned by the remote device since its last restart,
-    clear counters operation, or power-up
-    """
+    """ReturnBusExceptionErrorCountResponse."""
 
     sub_function_code = 0x000D
 
 
 class ReturnSlaveMessageCountRequest(DiagnosticBase):
-    """Return slave message count.
-
-    The response data field returns the quantity of messages addressed to the
-    remote device, that the remote device has processed since
-    its last restart, clear counters operation, or power-up
-    """
+    """ReturnSlaveMessageCountRequest."""
 
     sub_function_code = 0x000E
 
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.SlaveMessage
-        return ReturnSlaveMessageCountResponse(count)
+        return ReturnSlaveMessageCountResponse(message=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
 
 class ReturnSlaveMessageCountResponse(DiagnosticBase):

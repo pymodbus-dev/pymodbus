@@ -307,6 +307,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The response data field returns the quantity of modbus exception
+        responses returned by the remote device since its last restart,
+        clear counters operation, or power-up
         """
         return self.execute(no_response_expected, pdu_diag.ReturnBusExceptionErrorCountRequest(slave_id=slave))
 
@@ -316,6 +320,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The response data field returns the quantity of messages addressed to the
+        remote device, that the remote device has processed since
+        its last restart, clear counters operation, or power-up
         """
         return self.execute(no_response_expected, pdu_diag.ReturnSlaveMessageCountRequest(slave_id=slave))
 

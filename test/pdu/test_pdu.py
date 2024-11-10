@@ -92,7 +92,7 @@ class TestPdu:
         (diag_msg.ReturnSlaveBusCharacterOverrunCountRequest, (), {"message": 0x1010}, b'\x08\x00\x12\x10\x10'),
         (diag_msg.ReturnIopOverrunCountRequest, (), {"message": 0x1010}, b'\x08\x00\x13\x10\x10'),
         (diag_msg.ClearOverrunCountRequest, (), {"message": 0x1010}, b'\x08\x00\x14\x10\x10'),
-        (diag_msg.GetClearModbusPlusRequest, (), {"data": 0x1010}, b'\x08\x00\x15\x10\x10'),
+        (diag_msg.GetClearModbusPlusRequest, (), {"message": 0x1010}, b'\x08\x00\x15\x10\x10'),
         (file_msg.ReadFileRecordRequest, (), {"records": [file_msg.FileRecord(), file_msg.FileRecord()]}, b'\x14\x0e\x06\x00\x00\x00\x00\x00\x00\x06\x00\x00\x00\x00\x00\x00'),
         (file_msg.WriteFileRecordRequest, (), {"records": [file_msg.FileRecord(), file_msg.FileRecord()]}, b'\x15\x0e\x06\x00\x00\x00\x00\x00\x00\x06\x00\x00\x00\x00\x00\x00'),
         (file_msg.ReadFifoQueueRequest, (), {"address": 117}, b'\x18\x00\x75'),

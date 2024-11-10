@@ -407,14 +407,24 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ClearOverrunCountRequest(slave_id=slave))
 
-    def diag_getclear_modbus_response(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
+    def diag_getclear_modbus_response(self, *, data: int = 0, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose Get/Clear modbus plus (code 0x08 sub 0x15).
 
+        :param data: "Get Statistics" or "Clear Statistics"
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        In addition to the Function code (08) and Subfunction code
+        (00 15 hex) in the query, a two-byte Operation field is used
+        to specify either a "Get Statistics" or a "Clear Statistics"
+        operation.  The two operations are exclusive - the "Get"
+        operation cannot clear the statistics, and the "Clear"
+        operation does not return statistics prior to clearing
+        them. Statistics are also cleared on power-up of the slave
+        device.
         """
-        return self.execute(no_response_expected, pdu_diag.GetClearModbusPlusRequest(slave_id=slave))
+        return self.execute(no_response_expected, pdu_diag.GetClearModbusPlusRequest(message=data, slave_id=slave))
 
     def diag_get_comm_event_counter(self, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Diagnose get event counter (code 0x0B).

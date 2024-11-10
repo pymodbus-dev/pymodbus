@@ -185,11 +185,11 @@ class TestDataStore:
 
     async def test_get_clear_modbus_plus_request_update_datastore(self):
         """Testing diagnostic message execution."""
-        request = GetClearModbusPlusRequest(data=ModbusPlusOperation.CLEAR_STATISTICS)
+        request = GetClearModbusPlusRequest(message=ModbusPlusOperation.CLEAR_STATISTICS)
         response = await request.update_datastore(None)
         assert response.message == ModbusPlusOperation.CLEAR_STATISTICS
 
-        request = GetClearModbusPlusRequest(data=ModbusPlusOperation.GET_STATISTICS)
+        request = GetClearModbusPlusRequest(message=ModbusPlusOperation.GET_STATISTICS)
         response = await request.update_datastore(None)
         resp = [ModbusPlusOperation.GET_STATISTICS]
         assert response.message == resp + [0x00] * 55

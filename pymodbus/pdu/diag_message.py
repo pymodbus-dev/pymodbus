@@ -350,24 +350,9 @@ class ClearOverrunCountResponse(DiagnosticBase):
 
 
 class GetClearModbusPlusRequest(DiagnosticBase):
-    """Get/Clear modbus plus request.
-
-    In addition to the Function code (08) and Subfunction code
-    (00 15 hex) in the query, a two-byte Operation field is used
-    to specify either a "Get Statistics" or a "Clear Statistics"
-    operation.  The two operations are exclusive - the "Get"
-    operation cannot clear the statistics, and the "Clear"
-    operation does not return statistics prior to clearing
-    them. Statistics are also cleared on power-up of the slave
-    device.
-    """
+    """GetClearModbusPlusRequest."""
 
     sub_function_code = 0x0015
-
-    def __init__(self, data=0, slave_id=1, transaction_id=0):
-        """Initialize."""
-        super().__init__(slave_id=slave_id, transaction_id=transaction_id)
-        self.message=data
 
     def get_response_pdu_size(self):
         """Return a series of 54 16-bit words (108 bytes) in the data field of the response.
@@ -395,7 +380,7 @@ class GetClearModbusPlusRequest(DiagnosticBase):
         else:
             message = [self.message]
             message += _MCB.Plus.encode()
-        return GetClearModbusPlusResponse(message)
+        return GetClearModbusPlusResponse(message=message, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
     def encode(self):
         """Encode a diagnostic response.

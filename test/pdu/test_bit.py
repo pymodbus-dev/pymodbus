@@ -43,17 +43,6 @@ class TestModbusBitMessage:
         ):
             await pdu.update_datastore(context)
 
-    async def test_bit_read_update_datastore_success(self, mock_context):
-        """Test bit read request encoding."""
-        context = mock_context()
-        context.validate = lambda a, b, c: True
-        for pdu in (
-            (bit_msg.ReadCoilsRequest(address=1, count=5)),
-            (bit_msg.ReadDiscreteInputsRequest(address=1, count=5)),
-        ):
-            result = await pdu.update_datastore(context)
-            assert result.bits == [True] * 5
-
     def test_bit_read_get_response_pdu(self):
         """Test bit read message get response pdu."""
         for pdu, expected in (

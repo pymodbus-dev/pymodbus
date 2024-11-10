@@ -75,6 +75,12 @@ class TestMeiMessage:
         handle.object_id = 0x100
         assert (await handle.update_datastore(None)).function_code == 0xAB
 
+    def test_read_device_information_calc1(self):
+        """Test calculateRtuFrameSize, short buffer."""
+        handle = ReadDeviceInformationResponse()
+        assert handle.calculateRtuFrameSize(b"\x0e\x01\x83") == 999
+        assert handle.calculateRtuFrameSize(b"\x0e\x01\x83\x00\x00\x03\x01\x03") == 998
+
     def test_read_device_information_encode(self):
         """Test that the read fifo queue response can encode."""
         message = b"\x0e\x01\x83\x00\x00\x03"

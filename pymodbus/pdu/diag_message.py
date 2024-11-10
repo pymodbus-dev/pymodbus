@@ -21,18 +21,15 @@ class DiagnosticBase(ModbusPDU):
     sub_function_code: int = 9999
     rtu_frame_size = 8
 
-    def __init__(self, message: bytes | int | str | list | tuple | None = 0, slave_id: int = 1, transaction_id: int = 0) -> None:
+    def __init__(self, message: bytes | int | list | tuple | None = 0, slave_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a diagnostic request."""
         super().__init__(transaction_id=transaction_id, slave_id=slave_id)
-        self.message: bytes | int | str | list | tuple | None = message
+        self.message: bytes | int | list | tuple | None = message
 
     def encode(self) -> bytes:
         """Encode a diagnostic response."""
         packet = struct.pack(">H", self.sub_function_code)
         if self.message is not None:
-            if isinstance(self.message, str):
-                packet += self.message.encode()
-                return packet
             if isinstance(self.message, bytes):
                 packet += self.message
                 return packet
@@ -43,7 +40,7 @@ class DiagnosticBase(ModbusPDU):
                 for piece in self.message:
                     packet += struct.pack(">H", piece)
                 return packet
-            raise RuntimeError(f"UNKNOWN DIAG message type: {type(self.message)}")
+            raise TypeError(f"UNKNOWN DIAG message type: {type(self.message)}")
         return packet
 
     def decode(self, data: bytes) -> None:

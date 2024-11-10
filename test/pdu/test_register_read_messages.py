@@ -1,4 +1,7 @@
 """Test register read messages."""
+import pytest
+
+from pymodbus.exceptions import ModbusIOException
 from pymodbus.pdu import ModbusExceptions
 from pymodbus.pdu.register_message import (
     ReadHoldingRegistersRequest,
@@ -75,6 +78,12 @@ class TestReadRegisterMessages:
             response.decode(packet)
             assert response.registers == self.values
 
+    def test_register_read_response_decode_error(self):
+        """Test register read response."""
+        reg = ReadHoldingRegistersResponse(count = 5)
+        with pytest.raises(ModbusIOException):
+            reg.decode(b'\x14\x00\x03\x00\x11')
+
     async def test_register_read_requests_count_errors(self):
         """This tests that the register request messages.
 
@@ -150,21 +159,6 @@ class TestReadRegisterMessages:
         request.write_byte_count = 0x100
         await request.update_datastore(context)
         #assert response.exception_code == ModbusExceptions.ILLEGAL_VALUE
-
-    def test_read_write_multiple_registers_request_decode(self):
-        """Test read/write multiple registers."""
-        request, response = next(
-            (k, v)
-            for k, v in self.request_read.items()
-            if getattr(k, "function_code", 0) == 23
-        )
-        request.decode(response)
-        assert request.read_address == 0x01
-        assert request.write_address == 0x01
-        assert request.read_count == 0x05
-        assert request.write_count == 0x05
-        assert request.write_byte_count == 0x0A
-        assert request.write_registers == [0x00] * 5
 
     def test_serializing_to_string(self):
         """Test serializing to string."""

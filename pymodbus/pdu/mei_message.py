@@ -77,16 +77,13 @@ class ReadDeviceInformationResponse(ModbusPDU):
             return 999
         count = int(buffer[7])
 
-        try:
-            while count > 0:
-                if data_len < size+2:
-                    return 998
-                _, object_length = struct.unpack(">BB", buffer[size : size + 2])
-                size += object_length + 2
-                count -= 1
-            return size + 2
-        except struct.error as exc:
-            raise IndexError from exc
+        while count > 0:
+            if data_len < size+2:
+                return 998
+            _, object_length = struct.unpack(">BB", buffer[size : size + 2])
+            size += object_length + 2
+            count -= 1
+        return size + 2
 
     def __init__(self, read_code: int | None = None, information: dict | None = None, slave_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a new instance."""

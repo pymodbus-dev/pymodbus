@@ -24,9 +24,9 @@ class FileRecord:
             if self.record_length:
                 raise ModbusException("Use either record_data= or record_length=")
             self.record_length = len(self.record_data)
-            if self.record_length % 2:
-                raise ModbusException("length of record_data must be a multiple of 2")
-            self.record_length //= 2
+        if self.record_length % 2:
+            raise ModbusException("length of record_data must be a multiple of 2")
+        self.record_length //= 2
 
 
 class ReadFileRecordRequest(ModbusPDU):

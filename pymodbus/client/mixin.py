@@ -281,6 +281,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        The response data field returns the quantity of messages that the
+        remote device has detected on the communications systems since its last
+        restart, clear counters operation, or power-up
         """
         return self.execute(no_response_expected, pdu_diag.ReturnBusMessageCountRequest(slave_id=slave))
 

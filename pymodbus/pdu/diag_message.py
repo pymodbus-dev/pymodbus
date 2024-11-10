@@ -180,31 +180,18 @@ class ClearCountersResponse(DiagnosticBase):
 
 
 class ReturnBusMessageCountRequest(DiagnosticBase):
-    """Return bus message count.
-
-    The response data field returns the quantity of messages that the
-    remote device has detected on the communications systems since its last
-    restart, clear counters operation, or power-up
-    """
+    """ReturnBusMessageCountRequest."""
 
     sub_function_code = 0x000B
 
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
-        """update_datastore the diagnostic request on the given device.
-
-        :returns: The initialized response message
-        """
+        """update_datastore the diagnostic request on the given device."""
         count = _MCB.Counter.BusMessage
-        return ReturnBusMessageCountResponse(count)
+        return ReturnBusMessageCountResponse(message=count)
 
 
 class ReturnBusMessageCountResponse(DiagnosticBase):
-    """Return bus message count.
-
-    The response data field returns the quantity of messages that the
-    remote device has detected on the communications systems since its last
-    restart, clear counters operation, or power-up
-    """
+    """ReturnBusMessageCountResponse."""
 
     sub_function_code = 0x000B
 

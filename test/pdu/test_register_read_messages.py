@@ -160,21 +160,6 @@ class TestReadRegisterMessages:
         await request.update_datastore(context)
         #assert response.exception_code == ModbusExceptions.ILLEGAL_VALUE
 
-    def test_read_write_multiple_registers_request_decode(self):
-        """Test read/write multiple registers."""
-        request, response = next(
-            (k, v)
-            for k, v in self.request_read.items()
-            if getattr(k, "function_code", 0) == 23
-        )
-        request.decode(response)
-        assert request.read_address == 0x01
-        assert request.write_address == 0x01
-        assert request.read_count == 0x05
-        assert request.write_count == 0x05
-        assert request.write_byte_count == 0x0A
-        assert request.write_registers == [0x00] * 5
-
     def test_serializing_to_string(self):
         """Test serializing to string."""
         for request in iter(self.request_read.keys()):

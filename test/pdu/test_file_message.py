@@ -8,6 +8,7 @@ bit based request/response messages:
 """
 import pytest
 
+from pymodbus.exceptions import ModbusException
 from pymodbus.pdu.file_message import (
     FileRecord,
     ReadFifoQueueRequest,
@@ -17,7 +18,6 @@ from pymodbus.pdu.file_message import (
     WriteFileRecordRequest,
     WriteFileRecordResponse,
 )
-from pymodbus.exceptions import ModbusException
 
 
 TEST_MESSAGE = b"\x00\n\x00\x08\x00\x01\x00\x02\x00\x03\x00\x04"

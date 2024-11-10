@@ -1,4 +1,5 @@
 """Test diag messages."""
+import pytest
 
 from pymodbus.constants import ModbusPlusOperation, ModbusStatus
 from pymodbus.pdu.diag_message import (
@@ -116,12 +117,24 @@ class TestDataStore:
 
     def test_diagnostic_encode_decode(self):
         """Testing diagnostic request/response can be decoded and encoded."""
-        for msg in (DiagnosticBase, DiagnosticBase):
-            msg_obj = msg()
-            data = b"\x00\x01\x02\x03"
-            msg_obj.decode(data)
-            result = msg_obj.encode()
-            assert data == result
+        msg_obj = DiagnosticBase()
+        data = b"\x00\x01\x02\x03"
+        msg_obj.decode(data)
+        result = msg_obj.encode()
+        assert data == result
+
+    def test_diagnostic_encode_error(self):
+        """Testing diagnostic request/response can be decoded and encoded."""
+        msg_obj = DiagnosticBase()
+        msg_obj.message = "not allowed"
+        with pytest.raises(TypeError):
+            msg_obj.encode()
+
+    def test_diagnostic_decode_error(self):
+        """Testing diagnostic request/response can be decoded and encoded."""
+        msg_obj = DiagnosticBase()
+        data = b"\x00\x01\x02\x03a"
+        msg_obj.decode(data)
 
     def test_diagnostic_requests_decode(self):
         """Testing diagnostic request messages encoding."""

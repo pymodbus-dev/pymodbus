@@ -40,7 +40,7 @@ class DiagnosticBase(ModbusPDU):
                 for piece in self.message:
                     packet += struct.pack(">H", piece)
                 return packet
-            raise RuntimeError(f"UNKNOWN DIAG message type: {type(self.message)}")
+            raise TypeError(f"UNKNOWN DIAG message type: {type(self.message)}")
         return packet
 
     def decode(self, data: bytes) -> None:

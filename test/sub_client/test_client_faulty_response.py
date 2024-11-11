@@ -29,7 +29,7 @@ class TestFaultyResponses:
         framer = FramerRTU(DecodePDU(False))
         used_len, pdu = framer.processIncomingFrame(recv)
         assert not pdu
-        assert used_len
+        assert not used_len
 
     def test_faulty_frame1(self, framer):
         """Test ok frame."""

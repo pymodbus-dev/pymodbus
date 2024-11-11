@@ -103,7 +103,7 @@ class FramerRTU(FramerBase):
         for used_len in range(data_len):
             if data_len - used_len < self.MIN_SIZE:
                 Log.debug("Short frame: {} wait for more data", data, ":hex")
-                return used_len, 0, 0, self.EMPTY
+                return 0, 0, 0, self.EMPTY
             dev_id = int(data[used_len])
             if not (pdu_class := self.decoder.lookupPduClass(data[used_len:])):
                 continue
@@ -111,7 +111,7 @@ class FramerRTU(FramerBase):
                 size = data_len +1
             if data_len < used_len +size:
                 Log.debug("Frame - not ready")
-                return used_len, dev_id, 0, self.EMPTY
+                return 0, dev_id, 0, self.EMPTY
             for test_len in range(data_len, used_len + size - 1, -1):
                 start_crc = test_len -2
                 crc = data[start_crc : start_crc + 2]

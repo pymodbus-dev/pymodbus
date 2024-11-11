@@ -21,7 +21,7 @@ from pymodbus.transaction import (
 TEST_MESSAGE = b"\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d"
 
 
-class TestTransaction:  # pylint: disable=too-many-public-methods
+class TestOldTransaction:  # pylint: disable=too-many-public-methods
     """Unittest for the pymodbus.transaction module."""
 
     client = None

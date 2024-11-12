@@ -167,7 +167,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 # This behaviour isn't quite right.
                 # It listens on any IPv4 address rather than the more natural default of any address (v6 or v4).
                 host = "0.0.0.0" # Any IPv4 host
-                port = 0 # Server will select an ephemeral port for itself
+                port = 502 # Server will listen on standard modbus port
         else:
             host = self.comm_params.host
             port = int(self.comm_params.port)

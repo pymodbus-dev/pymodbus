@@ -81,7 +81,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         """
         if not self.ctx.transport:
             raise ConnectionException(f"Not connected[{self!s}]")
-        return self.ctx.local_execute(no_response_expected, request)
+        return self.ctx.execute(no_response_expected, request)
 
     async def __aenter__(self):
         """Implement the client with enter block.

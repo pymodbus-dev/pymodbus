@@ -5,7 +5,6 @@ from collections.abc import Callable
 
 from pymodbus.framer import FramerBase
 from pymodbus.logging import Log
-from pymodbus.pdu import ModbusPDU
 from pymodbus.transaction import TransactionManager
 from pymodbus.transport import CommParams
 
@@ -26,13 +25,6 @@ class ModbusClientProtocol(TransactionManager):
         """Initialize a client instance."""
         super().__init__(params, framer, retries, False)
         self.on_connect_callback = on_connect_callback
-
-    async def local_execute(self, no_response_expected: bool, request) -> ModbusPDU | None:
-        """Execute requests asynchronously.
-
-        :meta private:
-        """
-        return await self.execute(no_response_expected, request)
 
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""

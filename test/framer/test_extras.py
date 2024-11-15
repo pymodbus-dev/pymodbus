@@ -13,7 +13,7 @@ TEST_MESSAGE = b"\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d"
 
 
 class TestExtas:
-    """Unittest for the pymodbus.transaction module."""
+    """Test for the framer module."""
 
     client = None
     decoder = None

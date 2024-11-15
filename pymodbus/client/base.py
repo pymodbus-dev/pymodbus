@@ -1,17 +1,16 @@
 """Base for all clients."""
 from __future__ import annotations
 
-import asyncio
 import socket
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.client.modbusclientprotocol import ModbusClientProtocol
-from pymodbus.exceptions import ConnectionException, ModbusIOException
+from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from pymodbus.logging import Log
-from pymodbus.pdu import DecodePDU, ExceptionResponse, ModbusPDU
+from pymodbus.pdu import DecodePDU, ModbusPDU
 from pymodbus.transaction import SyncModbusTransactionManager
 from pymodbus.transport import CommParams
 from pymodbus.utilities import ModbusTransactionState
@@ -37,21 +36,13 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
         if comm_params:
             self.comm_params = comm_params
-        self.retries = retries
         self.ctx = ModbusClientProtocol(
-            framer,
+            (FRAMER_NAME_TO_CLASS[framer])(DecodePDU(False)),
             self.comm_params,
+            retries,
             on_connect_callback,
         )
-
-        # Common variables.
-        self.use_udp = False
         self.state = ModbusTransactionState.IDLE
-        self.last_frame_end: float | None = 0
-        self.silent_interval: float = 0
-        self._lock = asyncio.Lock()
-        self.accept_no_response_limit = retries + 3
-        self.count_no_responses = 0
 
     @property
     def connected(self) -> bool:
@@ -90,57 +81,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         """
         if not self.ctx.transport:
             raise ConnectionException(f"Not connected[{self!s}]")
-        return self.async_execute(no_response_expected, request)
-
-    async def async_execute(self, no_response_expected: bool, request) -> ModbusPDU | None:
-        """Execute requests asynchronously.
-
-        :meta private:
-        """
-        request.transaction_id = self.ctx.transaction.getNextTID()
-        packet = self.ctx.framer.buildFrame(request)
-
-        count = 0
-        async with self._lock:
-            while count <= self.retries:
-                req = self.build_response(request)
-                self.ctx.send(packet)
-                if no_response_expected:
-                    resp = None
-                    break
-                try:
-                    resp = await asyncio.wait_for(
-                        req, timeout=self.ctx.comm_params.timeout_connect
-                    )
-                    break
-                except asyncio.exceptions.TimeoutError:
-                    count += 1
-        if count > self.retries:
-            if self.count_no_responses >= self.accept_no_response_limit:
-                self.ctx.connection_lost(asyncio.TimeoutError("Server not responding"))
-                raise ModbusIOException(
-                    f"ERROR: No response received of the last {self.accept_no_response_limit} request, CLOSING CONNECTION."
-                )
-            self.count_no_responses += 1
-            Log.error(f"No response received after {self.retries} retries, continue with next request")
-            return ExceptionResponse(request.function_code)
-
-        self.count_no_responses = 0
-        return resp
-
-    def build_response(self, request: ModbusPDU):
-        """Return a deferred response for the current request.
-
-        :meta private:
-        """
-        my_future: asyncio.Future = asyncio.Future()
-        request.fut = my_future
-        if not self.ctx.transport:
-            if not my_future.done():
-                my_future.set_exception(ConnectionException("Client is not connected"))
-        else:
-            self.ctx.transaction.addTransaction(request)
-        return my_future
+        return self.ctx.execute(no_response_expected, request)
 
     async def __aenter__(self):
         """Implement the client with enter block.

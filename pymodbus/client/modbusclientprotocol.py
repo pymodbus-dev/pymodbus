@@ -1,15 +1,13 @@
 """ModbusProtocol implementation for all clients."""
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Callable
 
-from pymodbus.framer import (
-    FRAMER_NAME_TO_CLASS,
-    FramerBase,
-    FramerType,
-)
+from pymodbus.exceptions import ConnectionException, ModbusIOException
+from pymodbus.framer import FramerBase
 from pymodbus.logging import Log
-from pymodbus.pdu import DecodePDU
+from pymodbus.pdu import ExceptionResponse, ModbusPDU
 from pymodbus.transaction import ModbusTransactionManager
 from pymodbus.transport import CommParams, ModbusProtocol
 
@@ -22,8 +20,9 @@ class ModbusClientProtocol(ModbusProtocol):
 
     def __init__(
         self,
-        framer: FramerType,
+        framer: FramerBase,
         params: CommParams,
+        retries: int,
         on_connect_callback: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize a client instance."""
@@ -32,13 +31,17 @@ class ModbusClientProtocol(ModbusProtocol):
             params,
             False,
         )
+        self.retries = retries
+        self.accept_no_response_limit = retries + 3
         self.on_connect_callback = on_connect_callback
+        self.count_no_responses = 0
 
         # Common variables.
-        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(DecodePDU(False))
+        self.framer = framer
         self.transaction = ModbusTransactionManager()
+        self._lock = asyncio.Lock()
 
-    def _handle_response(self, reply):
+    def _old_handle_response(self, reply):
         """Handle the processed response and link to correct deferred."""
         if reply is not None:
             tid = reply.transaction_id
@@ -48,6 +51,58 @@ class ModbusClientProtocol(ModbusProtocol):
                     handler.fut.set_result(reply)
             else:
                 Log.debug("Unrequested message: {}", reply, ":str")
+
+    def old_build_response(self, request: ModbusPDU):
+        """Return a deferred response for the current request.
+
+        :meta private:
+        """
+        my_future: asyncio.Future = asyncio.Future()
+        request.fut = my_future
+        if not self.transport:
+            if not my_future.done():
+                my_future.set_exception(ConnectionException("Client is not connected"))
+        else:
+            self.transaction.addTransaction(request)
+        return my_future
+
+
+    async def local_execute(self, no_response_expected: bool, request) -> ModbusPDU | None:
+        """Execute requests asynchronously.
+
+        :meta private:
+        """
+        request.transaction_id = self.transaction.getNextTID()
+        packet = self.framer.buildFrame(request)
+
+        count = 0
+        async with self._lock:
+            while count <= self.retries:
+                req = self.old_build_response(request)
+                self.send(packet)
+                if no_response_expected:
+                    resp = None
+                    break
+                try:
+                    resp = await asyncio.wait_for(
+                        req, timeout=self.comm_params.timeout_connect
+                    )
+                    break
+                except asyncio.exceptions.TimeoutError:
+                    count += 1
+        if count > self.retries:
+            if self.count_no_responses >= self.accept_no_response_limit:
+                self.connection_lost(asyncio.TimeoutError("Server not responding"))
+                raise ModbusIOException(
+                    f"ERROR: No response received of the last {self.accept_no_response_limit} request, CLOSING CONNECTION."
+                )
+            self.count_no_responses += 1
+            Log.error(f"No response received after {self.retries} retries, continue with next request")
+            return ExceptionResponse(request.function_code)
+
+        self.count_no_responses = 0
+        return resp
+
 
     def callback_new_connection(self):
         """Call when listener receive new connection request."""
@@ -70,7 +125,7 @@ class ModbusClientProtocol(ModbusProtocol):
         """
         used_len, pdu = self.framer.processIncomingFrame(data)
         if pdu:
-            self._handle_response(pdu)
+            self._old_handle_response(pdu)
         return used_len
 
     def __str__(self):

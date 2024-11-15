@@ -58,7 +58,7 @@ class TransactionManager(ModbusProtocol):
         """Execute requests asynchronously."""
         if not self.transport:
             Log.warning("Not connected, trying to connect!")
-            if not await self.connect():
+            if not self.transport and not await self.connect():
                 raise ConnectionException("Client cannot connect (automatic retry continuing) !!")
         async with self._lock:
             request.transaction_id = self.getNextTID()
@@ -77,7 +77,6 @@ class TransactionManager(ModbusProtocol):
                         self.response_future, timeout=self.comm_params.timeout_connect
                     )
                     self.count_no_responses = 0
-                    self.response_future = asyncio.Future()
                     self.response_future = asyncio.Future()
                     return response
                 except asyncio.exceptions.TimeoutError:
@@ -111,8 +110,9 @@ class TransactionManager(ModbusProtocol):
         if self.trace_send_pdu:
             self.trace_send_pdu(None)  # pylint: disable=not-callable
 
-    def callback_data(self, data: bytes, _addr: tuple | None = None) -> int:
+    def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
+        _ = (addr)
         if self.trace_recv_packet:
             data = self.trace_recv_packet(data)  # pylint: disable=not-callable
         used_len, pdu = self.framer.processIncomingFrame(data)

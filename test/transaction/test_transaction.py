@@ -5,7 +5,7 @@ from unittest import mock
 import pytest
 
 from pymodbus.exceptions import ConnectionException, ModbusIOException
-from pymodbus.framer import FramerRTU
+from pymodbus.framer import FramerRTU, FramerSocket
 from pymodbus.pdu import DecodePDU
 from pymodbus.pdu.bit_message import ReadCoilsRequest, ReadCoilsResponse
 from pymodbus.transaction import TransactionManager
@@ -82,7 +82,7 @@ class TestTransaction:
         request = ReadCoilsRequest(address=117, count=5)
         response = ReadCoilsResponse(bits=[True, False, True, True, False])
         transact.retries = 0
-        transact.transport = 1
+        transact.connection_made(mock.AsyncMock())
         if scenario == 0: # transport not ok and no connect
             transact.transport = None
             with pytest.raises(ConnectionException):
@@ -113,4 +113,37 @@ class TestTransaction:
             resp = asyncio.create_task(transact.execute(False, request))
             await asyncio.sleep(0.2)
             assert response == await resp
+
+    async def test_transaction_receiver(self, use_clc):
+        """Test tracers in disconnect."""
+        transact = TransactionManager(use_clc, FramerSocket(DecodePDU(False)), 5, False)
+        transact.send = mock.Mock()
+        response = ReadCoilsResponse(bits=[True, False, True, True, False])
+        transact.retries = 0
+        transact.connection_made(mock.AsyncMock())
+
+        data = b"\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04"
+        transact.data_received(data)
+        response = await transact.response_future
+        assert isinstance(response, ReadCoilsResponse)
+
+    @pytest.mark.parametrize("no_resp", [False, True])
+    async def test_client_protocol_execute_outside(self, use_clc, no_resp):
+        """Test the transaction execute method."""
+        transact = TransactionManager(use_clc, FramerSocket(DecodePDU(False)), 5, False)
+        transact.send = mock.Mock()
+        request = ReadCoilsRequest(address=117, count=5)
+        response = ReadCoilsResponse(bits=[True, False, True, True, False])
+        transact.retries = 0
+        transact.connection_made(mock.AsyncMock())
+        resp = asyncio.create_task(transact.execute(no_resp, request))
+        await asyncio.sleep(0.2)
+        data = b"\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04"
+        transact.data_received(data)
+        response = await resp
+        if no_resp:
+            assert not response
+        else:
+            assert not response.isError()
+            assert isinstance(response, ReadCoilsResponse)
 

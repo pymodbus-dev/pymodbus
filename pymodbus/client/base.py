@@ -11,7 +11,7 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from pymodbus.logging import Log
 from pymodbus.pdu import DecodePDU, ModbusPDU
-from pymodbus.transaction import SyncModbusTransactionManager
+from pymodbus.transaction.old_transaction import SyncModbusTransactionManager
 from pymodbus.transport import CommParams
 from pymodbus.utilities import ModbusTransactionState
 

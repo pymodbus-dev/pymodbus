@@ -138,18 +138,24 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self,
         params: CommParams,
         is_server: bool,
+        is_sync: bool = False
     ) -> None:
         """Initialize a transport instance.
 
         :param params: parameter dataclass
         :param is_server: true if object act as a server (listen/connect)
+        :param is_sync: true if used with sync client
         """
         self.comm_params = params.copy()
         self.is_server = is_server
         self.is_closing = False
 
         self.transport: asyncio.BaseTransport = None  # type: ignore[assignment]
-        self.loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
+        self.loop: asyncio.AbstractEventLoop
+        if is_sync:
+            self.loop = asyncio.new_event_loop()
+        else:
+            self.loop = asyncio.get_running_loop()
         self.recv_buffer: bytes = b""
         self.call_create: Callable[[], Coroutine[Any, Any, Any]] = None  # type: ignore[assignment]
         self.reconnect_task: asyncio.Task | None = None

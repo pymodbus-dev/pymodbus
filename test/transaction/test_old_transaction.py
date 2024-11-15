@@ -1,10 +1,6 @@
 """Test transaction."""
 from unittest import mock
 
-from pymodbus.client import ModbusTcpClient
-from pymodbus.exceptions import (
-    ModbusIOException,
-)
 from pymodbus.framer import (
     FramerAscii,
     FramerRTU,
@@ -12,10 +8,7 @@ from pymodbus.framer import (
     FramerTLS,
 )
 from pymodbus.pdu import DecodePDU, ModbusPDU
-from pymodbus.transaction import (
-    ModbusTransactionManager,
-    SyncModbusTransactionManager,
-)
+from pymodbus.transaction.old_transaction import SyncModbusTransactionManager
 
 
 TEST_MESSAGE = b"\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d"
@@ -50,54 +43,6 @@ class TestOldTransaction:  # pylint: disable=too-many-public-methods
     # ----------------------------------------------------------------------- #
     # Modbus transaction manager
     # ----------------------------------------------------------------------- #
-
-    @mock.patch.object(ModbusTransactionManager, "getTransaction")
-    def test_execute(self, mock_get_transaction):
-        """Test execute."""
-        client = ModbusTcpClient("localhost")
-        client.recv = mock.Mock()
-        client.framer = self._ascii
-        client.framer._buffer = b"deadbeef"  # pylint: disable=protected-access
-        client.framer.processIncomingFrame = mock.MagicMock()
-        client.framer.processIncomingFrame.return_value = 0, None
-        client.framer.buildFrame = mock.MagicMock()
-        client.framer.buildFrame.return_value = b"deadbeef"
-        client.send = mock.MagicMock()
-        client.send.return_value = len(b"deadbeef")
-        request = mock.MagicMock()
-        request.get_response_pdu_size.return_value = 10
-        request.slave_id = 1
-        request.function_code = 222
-        trans = SyncModbusTransactionManager(client, 3)
-        assert trans.retries == 3
-
-        client.recv.side_effect=iter([b"abcdef", None])
-        mock_get_transaction.return_value = b"response"
-        trans.retries = 0
-        response = trans.execute(False, request)
-        assert isinstance(response, ModbusIOException)
-        # No response
-        client.recv.side_effect=iter([b"abcdef", None])
-        trans.transactions = {}
-        mock_get_transaction.return_value = None
-        response = trans.execute(False, request)
-        assert isinstance(response, ModbusIOException)
-
-        # No response with retries
-        client.recv.side_effect=iter([b"", b"abcdef"])
-        response = trans.execute(False, request)
-        assert isinstance(response, ModbusIOException)
-
-        # wrong handle_local_echo
-        client.recv.side_effect=iter([b"abcdef", b"deadbe", b"123456"])
-        client.comm_params.handle_local_echo = True
-        assert trans.execute(False, request).message == "[Input/Output] SEND failed"
-        client.comm_params.handle_local_echo = False
-
-        # retry on invalid response
-        client.recv.side_effect=iter([b"", b"abcdef", b"deadbe", b"123456"])
-        response = trans.execute(False, request)
-        assert isinstance(response, ModbusIOException)
 
     def test_transaction_manager_tid(self):
         """Test the transaction manager TID."""

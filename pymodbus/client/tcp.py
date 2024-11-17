@@ -84,6 +84,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             framer,
             retries,
             on_connect_callback,
+            self.comm_params,
         )
 
 
@@ -154,7 +155,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
                 reconnect_delay_max=reconnect_delay_max,
                 timeout_connect=timeout,
             )
-        super().__init__(framer, retries)
+        super().__init__(framer, retries, self.comm_params)
         self.socket = None
 
     @property

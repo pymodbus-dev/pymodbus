@@ -246,7 +246,7 @@ async def test_client_modbusbaseclient():
         FramerType.ASCII,
         3,
         None,
-        comm_params=CommParams(
+        CommParams(
             host="localhost",
             port=BASE_PORT + 1,
             comm_type=CommType.TCP,
@@ -285,7 +285,7 @@ async def test_client_base_async():
             FramerType.ASCII,
             3,
             None,
-            comm_params=CommParams(
+            CommParams(
                 host="localhost",
                 port=BASE_PORT + 2,
                 comm_type=CommType.TCP,

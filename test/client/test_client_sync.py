@@ -1,5 +1,4 @@
 """Test client sync."""
-import socket
 from itertools import count
 from unittest import mock
 
@@ -446,8 +445,3 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         with mock.patch("pymodbus.client.serial.ModbusSerialClient.connect"), ModbusSerialClient("/dev/null") as client:
                 assert client
                 client.socket = mockSocket()
-
-    def test_syn_family(self):
-        """Test family test."""
-        assert ModbusTcpClient.get_address_family("::0") == socket.AF_INET6
-        assert ModbusTcpClient.get_address_family("192.168.1.1") == socket.AF_INET

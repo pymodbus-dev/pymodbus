@@ -185,6 +185,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         super().__init__(
             framer,
             retries,
+            self.comm_params,
         )
         if "serial" not in sys.modules:
             raise RuntimeError(

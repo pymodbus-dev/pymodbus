@@ -26,12 +26,8 @@ from test.conftest import mockSocket
 # ---------------------------------------------------------------------------#
 
 
-class TestSynchronousClient:  # pylint: disable=too-many-public-methods
+class TestSyncClientUdp:
     """Unittest for the pymodbus.client module."""
-
-    # -----------------------------------------------------------------------#
-    # Test UDP Client
-    # -----------------------------------------------------------------------#
 
     def test_basic_syn_udp_client(self):
         """Test the basic methods for the udp sync client."""
@@ -99,9 +95,9 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         )
         assert repr(client) == rep
 
-    # -----------------------------------------------------------------------#
-    # Test TCP Client
-    # -----------------------------------------------------------------------#
+
+class TestSyncClientTcp:
+    """Unittest for the pymodbus.client module."""
 
     def test_syn_tcp_client_instantiation(self):
         """Test sync tcp client."""
@@ -194,9 +190,8 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         assert repr(client) == rep
 
 
-    # -----------------------------------------------------------------------#
-    # Test TLS Client
-    # -----------------------------------------------------------------------#
+class TestSyncClientTls:
+    """Unittest for the pymodbus.client module."""
 
     def test_syn_tls_client_instantiation(self):
         """Test sync tls client."""
@@ -271,9 +266,9 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         )
         assert repr(client) == rep
 
-    # -----------------------------------------------------------------------#
-    # Test Serial Client
-    # -----------------------------------------------------------------------#
+class TestSyncClientSerial:
+    """Unittest for the pymodbus.client module."""
+
     def test_sync_serial_client_instantiation(self):
         """Test sync serial client."""
         client = ModbusSerialClient("/dev/null")

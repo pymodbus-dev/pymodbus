@@ -27,14 +27,14 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         framer: FramerType,
         retries: int,
         on_connect_callback: Callable[[bool], None] | None,
-        xxcomm_params: CommParams,
+        comm_params: CommParams,
     ) -> None:
         """Initialize a client instance.
 
         :meta private:
         """
         ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
-        self.comm_params = xxcomm_params
+        self.comm_params = comm_params
         self.ctx = ModbusClientProtocol(
             (FRAMER_NAME_TO_CLASS[framer])(DecodePDU(False)),
             self.comm_params,

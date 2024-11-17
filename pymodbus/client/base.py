@@ -11,7 +11,7 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from pymodbus.logging import Log
 from pymodbus.pdu import DecodePDU, ModbusPDU
-from pymodbus.transaction.old_transaction import SyncModbusTransactionManager
+from pymodbus.transaction import TransactionManager
 from pymodbus.transport import CommParams
 from pymodbus.utilities import ModbusTransactionState
 
@@ -128,9 +128,12 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
 
         # Common variables.
         self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(DecodePDU(False))
-        self.transaction = SyncModbusTransactionManager(
+        self.transaction = TransactionManager(
+            self.comm_params,
+            self.framer,
+            retries,
+            False,
             self,
-            self.retries,
         )
         self.reconnect_delay_current = self.comm_params.reconnect_delay or 0
         self.use_udp = False
@@ -175,7 +178,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         """
         if not self.connect():
             raise ConnectionException(f"Failed to connect[{self!s}]")
-        return self.transaction.execute(no_response_expected, request)
+        return self.transaction.sync_execute(no_response_expected, request)
 
     # ----------------------------------------------------------------------- #
     # Internal methods

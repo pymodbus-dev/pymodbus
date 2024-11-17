@@ -316,8 +316,6 @@ class TestClientBase:
         client.last_frame_end = None
 
         # a successful execute
-        client.connect = lambda: True
-        client.transport = lambda: None
         client.transaction = mock.Mock(**{"execute.return_value": True})
 
         # a unsuccessful connect
@@ -457,12 +455,19 @@ class TestClientBase:
             assert client.connect()
         client.close()
 
-    def test_client_tls_connect(self):
+    @pytest.mark.parametrize("use_async", [True, False])
+    def test_client_tls_connect(self, use_async):
         """Test the tls client connection method."""
-        sslctx=lib_client.ModbusTlsClient.generate_ssl(
-            certfile=get_certificate("crt"),
-            keyfile=get_certificate("key"),
-        )
+        if use_async:
+            sslctx=lib_client.AsyncModbusTlsClient.generate_ssl(
+                certfile=get_certificate("crt"),
+                keyfile=get_certificate("key"),
+            )
+        else:
+            sslctx=lib_client.ModbusTlsClient.generate_ssl(
+                certfile=get_certificate("crt"),
+                keyfile=get_certificate("key"),
+            )
         with mock.patch.object(ssl.SSLSocket, "connect") as mock_method:
             client = lib_client.ModbusTlsClient(
                 "127.0.0.1",
@@ -536,3 +541,24 @@ class TestClientBase:
         client.transaction = mock.Mock()
         client.connect.return_value = True
         client.execute(False, None)
+
+    @pytest.mark.parametrize(
+        ("client_class"),
+        [
+            lib_client.AsyncModbusSerialClient,
+            lib_client.AsyncModbusTcpClient,
+            lib_client.AsyncModbusTlsClient,
+            lib_client.AsyncModbusUdpClient,
+            lib_client.ModbusSerialClient,
+            lib_client.ModbusTcpClient,
+            lib_client.ModbusTlsClient,
+            lib_client.ModbusUdpClient,
+        ])
+    async def test_wrong_framer(self, client_class):
+        """Check use of wrong framer."""
+        with pytest.raises(TypeError):
+            client_class("host", framer="dummy")
+
+    async def test_instance_serial(self):
+        """Test instantiate."""
+        _client = lib_client.AsyncModbusSerialClient("port")

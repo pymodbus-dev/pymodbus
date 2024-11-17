@@ -372,6 +372,20 @@ class TestClientBase:
             client.ctx.close = mock.Mock()
             client.close()
 
+    async def test_client_protocol(self):
+        """Test protocol made connection."""
+        client = lib_client.AsyncModbusTcpClient("127.0.0.1")
+        client.ctx.loop = mock.Mock()
+        client.ctx.callback_connected()
+        client.ctx.callback_disconnected(None)
+        client = lib_client.AsyncModbusTcpClient("127.0.0.1", on_connect_callback=1)
+        client.ctx.loop = mock.Mock()
+        client.ctx.callback_connected()
+        client.ctx.callback_disconnected(None)
+        assert str(client.ctx)
+
+
+
 
     async def test_client_async_execute(self):
         """Test modbus base client class."""

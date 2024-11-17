@@ -193,18 +193,6 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         )
         assert repr(client) == rep
 
-    def test_tcp_client_register(self):
-        """Test tcp client."""
-
-        class CustomRequest:  # pylint: disable=too-few-public-methods
-            """Dummy custom request."""
-
-            function_code = 79
-
-        client = ModbusTcpClient("127.0.0.1")
-        client.framer = mock.Mock()
-        client.register(CustomRequest)
-        client.framer.decoder.register.assert_called_once_with(CustomRequest)
 
     # -----------------------------------------------------------------------#
     # Test TLS Client
@@ -282,19 +270,6 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
             f"timeout={client.comm_params.timeout_connect}>"
         )
         assert repr(client) == rep
-
-    def test_tls_client_register(self):
-        """Test tls client."""
-
-        class CustomRequest:  # pylint: disable=too-few-public-methods
-            """Dummy custom request."""
-
-            function_code = 79
-
-        client = ModbusTlsClient("127.0.0.1")
-        client.framer = mock.Mock()
-        client.register(CustomRequest)
-        client.framer.decoder.register.assert_called_once_with(CustomRequest)
 
     # -----------------------------------------------------------------------#
     # Test Serial Client

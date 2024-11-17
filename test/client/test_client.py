@@ -19,6 +19,7 @@ from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.exceptions import ConnectionException, ModbusException
 from pymodbus.pdu import ModbusPDU
 from pymodbus.transport import CommParams, CommType
+from pymodbus.utilities import ModbusTransactionState
 
 
 BASE_PORT = 6500
@@ -384,9 +385,6 @@ class TestClientBase:
         client.ctx.callback_disconnected(None)
         assert str(client.ctx)
 
-
-
-
     async def test_client_async_execute(self):
         """Test modbus base client class."""
         async with ModbusBaseClient(
@@ -495,3 +493,46 @@ class TestClientBase:
             mock_method.side_effect = OSError()
             client = lib_client.ModbusTlsClient("127.0.0.1", sslctx=sslctx)
             assert not client.connect()
+
+    def test_tcp_client_register(self):
+        """Test tcp client."""
+
+        class CustomRequest:  # pylint: disable=too-few-public-methods
+            """Dummy custom request."""
+
+            function_code = 79
+
+        client = lib_client.ModbusTcpClient("127.0.0.1")
+        client.framer = mock.Mock()
+        client.register(CustomRequest)
+        client.framer.decoder.register.assert_called_once_with(CustomRequest)
+
+    def test_idle_time(self):
+        """Test idle_time()."""
+        client = lib_client.ModbusTcpClient("127.0.0.1")
+        assert not client.idle_time()
+        client.last_frame_end = None
+        assert not client.idle_time()
+
+    def test_start_send(self):
+        """Test idle_time()."""
+        client = lib_client.ModbusTcpClient("127.0.0.1")
+        client.state = ModbusTransactionState.IDLE
+        client._start_send()
+        client.state = ModbusTransactionState.RETRYING
+        client._start_send()
+
+    def test_sync_block(self):
+        """Test idle_time()."""
+        with lib_client.ModbusTcpClient("127.0.0.1") as client:
+            assert not client.connected
+
+    def test_sync_execute(self):
+        """Test idle_time()."""
+        client = lib_client.ModbusTcpClient("127.0.0.1")
+        client.connect = mock.Mock(return_value=False)
+        with pytest.raises(ConnectionException):
+            client.execute(False, None)
+        client.transaction = mock.Mock()
+        client.connect.return_value = True
+        client.execute(False, None)

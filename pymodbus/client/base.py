@@ -115,14 +115,14 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         self,
         framer: FramerType,
         retries: int,
-        xxcomm_params: CommParams,
+        comm_params: CommParams,
     ) -> None:
         """Initialize a client instance.
 
         :meta private:
         """
         ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
-        self.comm_params = xxcomm_params
+        self.comm_params = comm_params
         self.retries = retries
         self.slaves: list[int] = []
 

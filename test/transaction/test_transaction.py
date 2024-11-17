@@ -191,7 +191,8 @@ class TestSyncTransaction:
                 transact.sync_execute(False, request)
         elif scenario == 4: # wait receive,timeout, no_responses pass
             transact.comm_params.timeout_connect = 0.1
-            assert not transact.sync_execute(False, request)
+            with pytest.raises(ModbusIOException):
+                transact.sync_execute(False, request)
         else: # if scenario == 5 # response
             transact.transport = 1
             resp_bytes = transact.framer.buildFrame(response)
@@ -231,7 +232,7 @@ class TestSyncTransaction:
         transact.sync_client.send = mock.Mock()
         result = transact.sync_execute(no_resp, request)
         if no_resp:
-            assert not result
+            assert result.isError()
         else:
             assert not result.isError()
             assert isinstance(response, ReadCoilsResponse)
@@ -247,5 +248,5 @@ class TestSyncTransaction:
         resp_bytes = transact.framer.buildFrame(response)[:-1]
         transact.sync_client.recv = mock.Mock(side_effect=[resp_bytes, b''])
         transact.sync_client.send = mock.Mock()
-        result = transact.sync_execute(False, request)
-        assert not result
+        with pytest.raises(ModbusIOException):
+            transact.sync_execute(False, request)

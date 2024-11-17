@@ -8,7 +8,7 @@ from threading import RLock
 from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.framer import FramerBase
 from pymodbus.logging import Log
-from pymodbus.pdu import ModbusPDU
+from pymodbus.pdu import ExceptionResponse, ModbusPDU
 from pymodbus.transport import CommParams, ModbusProtocol
 
 
@@ -60,7 +60,7 @@ class TransactionManager(ModbusProtocol):
             self._lock = asyncio.Lock()
         self.response_future: asyncio.Future = asyncio.Future()
 
-    def sync_get_response(self) -> ModbusPDU | None:
+    def sync_get_response(self) -> ModbusPDU:
         """Receive until PDU is correct or timeout."""
         databuffer = b''
         while True:
@@ -72,7 +72,7 @@ class TransactionManager(ModbusProtocol):
             if pdu:
                 return pdu
 
-    def sync_execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU | None:
+    def sync_execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
         """Execute requests asynchronously.
 
         REMARK: this method is identical to execute, apart from the lock and sync_receive.
@@ -93,7 +93,7 @@ class TransactionManager(ModbusProtocol):
                     packet = self.trace_send_packet(packet)  # pylint: disable=not-callable
                 self.sync_client.send(packet)
                 if no_response_expected:
-                    return None
+                    return ExceptionResponse(0xff)
                 try:
                     return self.sync_get_response()
                 except asyncio.exceptions.TimeoutError:
@@ -104,8 +104,9 @@ class TransactionManager(ModbusProtocol):
                     f"ERROR: No response received of the last {self.accept_no_response_limit} request, CLOSING CONNECTION."
                 )
             self.count_no_responses += 1
-            Log.error(f"No response received after {self.retries} retries, continue with next request")
-            return None
+            txt = f"No response received after {self.retries} retries, continue with next request"
+            Log.error(txt)
+            raise ModbusIOException(txt)
 
     async def execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU | None:
         """Execute requests asynchronously.

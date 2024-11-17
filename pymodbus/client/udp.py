@@ -85,6 +85,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
             framer,
             retries,
             on_connect_callback,
+            self.comm_params,
         )
         self.source_address = source_address
 

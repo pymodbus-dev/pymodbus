@@ -84,6 +84,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             framer,
             retries,
             on_connect_callback,
+            self.comm_params,
         )
 
 

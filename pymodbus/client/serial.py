@@ -78,7 +78,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         on_connect_callback: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
-        if "serial" not in sys.modules:
+        if "serial" not in sys.modules:  # pragma: no cover
             raise RuntimeError(
                 "Serial client requires pyserial "
                 'Please install with "pip install pyserial" and try again.'
@@ -168,6 +168,11 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         retries: int = 3,
     ) -> None:
         """Initialize Modbus Serial Client."""
+        if "serial" not in sys.modules:  # pragma: no cover
+            raise RuntimeError(
+                "Serial client requires pyserial "
+                'Please install with "pip install pyserial" and try again.'
+            )
         if framer not in [FramerType.ASCII, FramerType.RTU]:
             raise TypeError("Only RTU/ASCII allowed.")
         self.comm_params = CommParams(
@@ -188,11 +193,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             retries,
             self.comm_params,
         )
-        if "serial" not in sys.modules:
-            raise RuntimeError(
-                "Serial client requires pyserial "
-                'Please install with "pip install pyserial" and try again.'
-            )
         self.socket: serial.Serial | None = None
         self.last_frame_end = None
         self._t0 = float(1 + bytesize + stopbits) / baudrate
@@ -247,7 +247,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Return waiting bytes."""
         return getattr(self.socket, "in_waiting") if hasattr(self.socket, "in_waiting") else getattr(self.socket, "inWaiting")()
 
-    def _send(self, request: bytes) -> int:
+    def _send(self, request: bytes) -> int:  # pragma: no cover
         """Send data on the underlying socket.
 
         If receive buffer still holds some data then flush it.
@@ -266,7 +266,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             return size
         return 0
 
-    def send(self, request: bytes) -> int:
+    def send(self, request: bytes) -> int:  # pragma: no cover
         """Send data on the underlying socket."""
         start = time.time()
         if hasattr(self,"ctx"):

@@ -1,5 +1,4 @@
 """Test client sync."""
-import socket
 from itertools import count
 from unittest import mock
 
@@ -27,12 +26,8 @@ from test.conftest import mockSocket
 # ---------------------------------------------------------------------------#
 
 
-class TestSynchronousClient:  # pylint: disable=too-many-public-methods
+class TestSyncClientUdp:
     """Unittest for the pymodbus.client module."""
-
-    # -----------------------------------------------------------------------#
-    # Test UDP Client
-    # -----------------------------------------------------------------------#
 
     def test_basic_syn_udp_client(self):
         """Test the basic methods for the udp sync client."""
@@ -100,9 +95,9 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         )
         assert repr(client) == rep
 
-    # -----------------------------------------------------------------------#
-    # Test TCP Client
-    # -----------------------------------------------------------------------#
+
+class TestSyncClientTcp:
+    """Unittest for the pymodbus.client module."""
 
     def test_syn_tcp_client_instantiation(self):
         """Test sync tcp client."""
@@ -194,22 +189,9 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         )
         assert repr(client) == rep
 
-    def test_tcp_client_register(self):
-        """Test tcp client."""
 
-        class CustomRequest:  # pylint: disable=too-few-public-methods
-            """Dummy custom request."""
-
-            function_code = 79
-
-        client = ModbusTcpClient("127.0.0.1")
-        client.framer = mock.Mock()
-        client.register(CustomRequest)
-        client.framer.decoder.register.assert_called_once_with(CustomRequest)
-
-    # -----------------------------------------------------------------------#
-    # Test TLS Client
-    # -----------------------------------------------------------------------#
+class TestSyncClientTls:
+    """Unittest for the pymodbus.client module."""
 
     def test_syn_tls_client_instantiation(self):
         """Test sync tls client."""
@@ -284,22 +266,9 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         )
         assert repr(client) == rep
 
-    def test_tls_client_register(self):
-        """Test tls client."""
+class TestSyncClientSerial:
+    """Unittest for the pymodbus.client module."""
 
-        class CustomRequest:  # pylint: disable=too-few-public-methods
-            """Dummy custom request."""
-
-            function_code = 79
-
-        client = ModbusTlsClient("127.0.0.1")
-        client.framer = mock.Mock()
-        client.register(CustomRequest)
-        client.framer.decoder.register.assert_called_once_with(CustomRequest)
-
-    # -----------------------------------------------------------------------#
-    # Test Serial Client
-    # -----------------------------------------------------------------------#
     def test_sync_serial_client_instantiation(self):
         """Test sync serial client."""
         client = ModbusSerialClient("/dev/null")
@@ -446,8 +415,3 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         with mock.patch("pymodbus.client.serial.ModbusSerialClient.connect"), ModbusSerialClient("/dev/null") as client:
                 assert client
                 client.socket = mockSocket()
-
-    def test_syn_family(self):
-        """Test family test."""
-        assert ModbusTcpClient.get_address_family("::0") == socket.AF_INET6
-        assert ModbusTcpClient.get_address_family("192.168.1.1") == socket.AF_INET

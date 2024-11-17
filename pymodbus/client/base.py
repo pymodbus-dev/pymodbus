@@ -1,7 +1,6 @@
 """Base for all clients."""
 from __future__ import annotations
 
-import socket
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable
 
@@ -205,18 +204,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
 
         :meta private:
         """
-
-    @classmethod
-    def get_address_family(cls, address):
-        """Get the correct address family.
-
-        :meta private:
-        """
-        try:
-            _ = socket.inet_pton(socket.AF_INET6, address)
-        except OSError:  # not a valid ipv6 address
-            return socket.AF_INET
-        return socket.AF_INET6
 
     def connect(self) -> bool:  # type: ignore[empty-body]
         """Connect to other end, overwritten."""

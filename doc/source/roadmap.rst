@@ -18,11 +18,12 @@ The following bullet points are what the maintainers focus on:
 - 3.7.X, bug fix release, hopefully with:
     - Not planned
 - 3.8.0, with:
-    - all on dev
-    - Remove ModbusControlBlock
-    - new transaction handling
-    - transaction 100% coverage
-    - client 100% coverage
+    - ModbusControlBlock pr slave
+- 3.9.0, with:
+    - New serial forwarder
+    - New custom PDU (function codes)
+    - Remove remote_datastore
+    - Remove BinaryPayload
 - 4.0.0, with:
     - all on dev
     - client async with sync/async API

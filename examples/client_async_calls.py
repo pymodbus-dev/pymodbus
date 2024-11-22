@@ -169,7 +169,7 @@ async def async_write_registers_mypy(client):
     await client.write_registers(1, regs2, slave=SLAVE)
     rr = await client.read_holding_registers(1, count=len(regs2), slave=SLAVE)
     assert not rr.isError()  # test that call was OK
-    assert rr.registers == regs2
+    assert rr.registers == [int.from_bytes(i, byteorder="big") for i in regs2]
 
 
 async def async_handle_input_registers(client):

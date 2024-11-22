@@ -6,7 +6,6 @@ import struct
 from abc import abstractmethod
 from collections.abc import Sequence
 from enum import Enum
-from typing import cast
 
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.logging import Log
@@ -36,11 +35,14 @@ class ModbusPDU:
         self.bits: list[bool] = bits or []
         if not registers:
             registers = []
-        self.registers: list[int] = cast(list[int], registers)
-        for i, value in enumerate(registers):
+        self.registers: list[int] = []
+        # copy values so original sequence is not mutated
+        for value in registers:
             if isinstance(value, bytes):
-                self.registers[i] = int.from_bytes(value, byteorder="big")
-        self.count: int = count or len(registers)
+                value = int.from_bytes(value, byteorder="big")
+            self.registers.append(value)
+
+        self.count: int = count or len(self.registers)
         self.status: int = status
         self.fut: asyncio.Future
 

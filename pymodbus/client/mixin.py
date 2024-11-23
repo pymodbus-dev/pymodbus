@@ -514,6 +514,9 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
 
+        .. tip::
+            values= entries defined as bytes are silently converted to int !
+
         This function is used to write a block of contiguous registers
         (1 to approx. 120 registers) in a remote device.
         """
@@ -622,6 +625,9 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
+
+        .. tip::
+            values= entries defined as bytes are silently converted to int !
 
         This function performs a combination of one read operation and one
         write operation in a single MODBUS transaction. The write

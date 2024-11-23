@@ -4,7 +4,6 @@ from __future__ import annotations
 import asyncio
 import struct
 from abc import abstractmethod
-from collections.abc import Sequence
 from enum import Enum
 
 from pymodbus.exceptions import NotImplementedException
@@ -25,7 +24,7 @@ class ModbusPDU:
             address: int = 0,
             count: int = 0,
             bits: list[bool] | None = None,
-            registers: Sequence[int | bytes] | None = None,
+            registers: list[int] | list[bytes] | list[bytes | int] | None = None,
             status: int = 1,
         ) -> None:
         """Initialize the base data for a modbus request."""

@@ -149,9 +149,9 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         await context.async_setValues(
             self.function_code, self.write_address, self.write_registers
         )
-        registers = await context.async_getValues(
+        registers = cast(list[int], await context.async_getValues(
             self.function_code, self.read_address, self.read_count
-        )
+        ))
         return ReadWriteMultipleRegistersResponse(registers=registers, slave_id=self.slave_id, transaction_id=self.transaction_id)
 
     def get_response_pdu_size(self) -> int:
@@ -197,7 +197,7 @@ class WriteSingleRegisterRequest(WriteSingleRegisterResponse):
         await context.async_setValues(
             self.function_code, self.address, self.registers
         )
-        values = await context.async_getValues(self.function_code, self.address, 1)
+        values = cast(list[int], await context.async_getValues(self.function_code, self.address, 1))
         return WriteSingleRegisterResponse(address=self.address, registers=values)
 
     def get_response_pdu_size(self) -> int:

@@ -516,7 +516,9 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :raises ModbusException:
 
         .. tip::
-            values= entries defined as bytes are silently converted to int !
+            values= parameter:
+            entries defined as bytes are silently converted to int !
+            only list[int], list[bytes] or list[bytes | int] are expected (others may work unsupported)
 
         This function is used to write a block of contiguous registers
         (1 to approx. 120 registers) in a remote device.
@@ -628,7 +630,9 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :raises ModbusException:
 
         .. tip::
-            values= entries defined as bytes are silently converted to int !
+            values= parameter:
+            entries defined as bytes are silently converted to int !
+            only list[int], list[bytes] or list[bytes | int] are expected (others may work unsupported)
 
         This function performs a combination of one read operation and one
         write operation in a single MODBUS transaction. The write

@@ -5,6 +5,7 @@ import select
 import socket
 import time
 from collections.abc import Callable
+from ssl import SSLWantReadError
 
 from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
@@ -235,10 +236,13 @@ class ModbusTcpClient(ModbusBaseSyncClient):
             except ValueError:
                 return self._handle_abrupt_socket_close(size, data, time.time() - time_)
             if ready[0]:
-                if (recv_data := self.socket.recv(recv_size)) == b"":
-                    return self._handle_abrupt_socket_close(
-                        size, data, time.time() - time_
-                    )
+                try:
+                    if (recv_data := self.socket.recv(recv_size)) == b"":
+                        return self._handle_abrupt_socket_close(
+                            size, data, time.time() - time_
+                        )
+                except SSLWantReadError:
+                    continue
                 data.append(recv_data)
                 data_length += len(recv_data)
             time_ = time.time()

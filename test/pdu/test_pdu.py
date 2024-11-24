@@ -183,10 +183,11 @@ class TestPdu:
     def test_pdu_register_as_byte(self):
         """Test validate functions."""
         registers =[b'ab', b'cd']
+        # NOT ALLOWED, NO conversion.
         req = reg_msg.ReadHoldingRegistersRequest(address=117, registers=registers, count=3)
         assert len(req.registers) == 2
-        assert req.registers[0] == 24930
-        assert req.registers[1] == 25444
+        assert req.registers[0] != 24930
+        assert req.registers[1] != 25444
 
     def test_pdu_validate_address(self):
         """Test validate functions."""

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import struct
-from collections.abc import Sequence
 from enum import Enum
 from typing import Generic, TypeVar
 
@@ -159,7 +158,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         pdu = pdu_bit.WriteSingleCoilRequest(address=address, bits=[value], slave_id=slave)
         return self.execute(no_response_expected, pdu)
 
-    def write_register(self, address: int, value: bytes | int, *, slave: int = 1, no_response_expected: bool = False) -> T:
+    def write_register(self, address: int, value: int, *, slave: int = 1, no_response_expected: bool = False) -> T:
         """Write register (code 0x06).
 
         :param address: Address to write to
@@ -502,7 +501,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     def write_registers(
         self,
         address: int,
-        values: Sequence[int | bytes],
+        values: list[int],
         *,
         slave: int = 1,
         no_response_expected: bool = False
@@ -514,11 +513,6 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
-
-        .. tip::
-            values= parameter:
-            entries defined as bytes are silently converted to int !
-            only list[int], list[bytes] or list[bytes | int] are expected (others may work unsupported)
 
         This function is used to write a block of contiguous registers
         (1 to approx. 120 registers) in a remote device.
@@ -628,11 +622,6 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param slave: (optional) Modbus slave ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
-
-        .. tip::
-            values= parameter:
-            entries defined as bytes are silently converted to int !
-            only list[int], list[bytes] or list[bytes | int] are expected (others may work unsupported)
 
         This function performs a combination of one read operation and one
         write operation in a single MODBUS transaction. The write

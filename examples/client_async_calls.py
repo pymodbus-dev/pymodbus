@@ -165,10 +165,9 @@ async def async_write_registers_mypy(client: ModbusBaseClient) -> None:
     rr = await client.read_holding_registers(1, count=len(regs1), slave=SLAVE)
     assert not rr.isError()  # test that call was OK
 
-    regs2: list[bytes] = [b'\x01\x02', b'\x03\x04']
-    await client.write_registers(1, regs2, slave=SLAVE)
-    rr = await client.read_holding_registers(1, count=len(regs2), slave=SLAVE)
-    assert not rr.isError()  # test that call was OK
+    # regs2: list[bytes] = [b'\x01\x02', b'\x03\x04']
+    # await client.write_registers(1, regs2, slave=SLAVE)
+    # NOT ALLOWED
 
 
 async def async_handle_input_registers(client):

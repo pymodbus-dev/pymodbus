@@ -13,7 +13,6 @@ from pymodbus.exceptions import ModbusException, NoSuchSlaveException
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from pymodbus.logging import Log
 from pymodbus.pdu import DecodePDU
-from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.pdu.pdu import ExceptionResponse
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
 
@@ -127,7 +126,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
         except ModbusException:
             pdu = ExceptionResponse(
                 40,
-                exception_code=merror.ILLEGAL_FUNCTION
+                exception_code=ExceptionResponse.ILLEGAL_FUNCTION
             )
             self.server_send(pdu, 0)
             pdu = None
@@ -198,14 +197,14 @@ class ModbusServerRequestHandler(ModbusProtocol):
             Log.error("requested slave does not exist: {}", request.slave_id)
             if self.server.ignore_missing_slaves:
                 return  # the client will simply timeout waiting for a response
-            response = ExceptionResponse(0x00, merror.GATEWAY_NO_RESPONSE)
+            response = ExceptionResponse(0x00, ExceptionResponse.GATEWAY_NO_RESPONSE)
         except Exception as exc:  # pylint: disable=broad-except
             Log.error(
                 "Datastore unable to fulfill request: {}; {}",
                 exc,
                 traceback.format_exc(),
             )
-            response = ExceptionResponse(0x00, merror.SLAVE_FAILURE)
+            response = ExceptionResponse(0x00, ExceptionResponse.SLAVE_FAILURE)
         # no response when broadcasting
         if not broadcast:
             response.transaction_id = request.transaction_id

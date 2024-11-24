@@ -1,6 +1,6 @@
 """Test register write messages."""
 from pymodbus.payload import BinaryPayloadBuilder, Endian
-from pymodbus.pdu import ModbusExceptions
+from pymodbus.pdu import ExceptionResponse
 from pymodbus.pdu.register_message import (
     MaskWriteRegisterRequest,
     MaskWriteRegisterResponse,
@@ -83,11 +83,11 @@ class TestWriteRegisterMessages:
         context = mock_context()
         request = WriteSingleRegisterRequest(address=0x00, registers=[0xF0000])
         result = await request.update_datastore(context)
-        assert result.exception_code == ModbusExceptions.ILLEGAL_VALUE
+        assert result.exception_code == ExceptionResponse.ILLEGAL_VALUE
 
         request.registers[0] = 0x00FF
         result = await request.update_datastore(context)
-        assert result.exception_code == ModbusExceptions.ILLEGAL_ADDRESS
+        assert result.exception_code == ExceptionResponse.ILLEGAL_ADDRESS
 
         context.valid = True
         result = await request.update_datastore(context)
@@ -98,11 +98,11 @@ class TestWriteRegisterMessages:
         context = mock_context()
         request = WriteMultipleRegistersRequest(address=0x00, registers=[0x00] * 10)
         result = await request.update_datastore(context)
-        assert result.exception_code == ModbusExceptions.ILLEGAL_ADDRESS
+        assert result.exception_code == ExceptionResponse.ILLEGAL_ADDRESS
 
         request.count = 0x800  # outside of range
         result = await request.update_datastore(context)
-        assert result.exception_code == ModbusExceptions.ILLEGAL_VALUE
+        assert result.exception_code == ExceptionResponse.ILLEGAL_VALUE
 
         context.valid = True
         request = WriteMultipleRegistersRequest(address=0x00, registers=[0x00] * 10)
@@ -151,15 +151,15 @@ class TestWriteRegisterMessages:
         context = mock_context(valid=False, default=0x0000)
         handle = MaskWriteRegisterRequest(0x0000, -1, 0x1010)
         result = await handle.update_datastore(context)
-        assert result.exception_code == ModbusExceptions.ILLEGAL_VALUE
+        assert result.exception_code == ExceptionResponse.ILLEGAL_VALUE
 
         handle = MaskWriteRegisterRequest(0x0000, 0x0101, -1)
         result = await handle.update_datastore(context)
-        assert result.exception_code == ModbusExceptions.ILLEGAL_VALUE
+        assert result.exception_code == ExceptionResponse.ILLEGAL_VALUE
 
         handle = MaskWriteRegisterRequest(0x0000, 0x0101, 0x1010)
         result = await handle.update_datastore(context)
-        assert result.exception_code == ModbusExceptions.ILLEGAL_ADDRESS
+        assert result.exception_code == ExceptionResponse.ILLEGAL_ADDRESS
 
         # -----------------------------------------------------------------------#
         # Mask Write Register Response

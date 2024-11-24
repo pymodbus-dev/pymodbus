@@ -4,7 +4,6 @@ from __future__ import annotations
 import asyncio
 import struct
 from abc import abstractmethod
-from enum import Enum
 from typing import cast
 
 from pymodbus.exceptions import NotImplementedException
@@ -100,8 +99,10 @@ class ModbusPDU:
         )
 
 
-class ModbusExceptions(int, Enum):
-    """An enumeration of the valid modbus exceptions."""
+class ExceptionResponse(ModbusPDU):
+    """Base class for a modbus exception PDU."""
+
+    rtu_frame_size = 5
 
     ILLEGAL_FUNCTION = 0x01
     ILLEGAL_ADDRESS = 0x02
@@ -113,12 +114,6 @@ class ModbusExceptions(int, Enum):
     MEMORY_PARITY_ERROR = 0x08
     GATEWAY_PATH_UNAVIABLE = 0x0A
     GATEWAY_NO_RESPONSE = 0x0B
-
-
-class ExceptionResponse(ModbusPDU):
-    """Base class for a modbus exception PDU."""
-
-    rtu_frame_size = 5
 
     def __init__(
             self,

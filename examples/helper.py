@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import logging
 import os
+from typing import Any
 
 from pymodbus import pymodbus_apply_logging_config
 
@@ -16,7 +17,7 @@ from pymodbus import pymodbus_apply_logging_config
 _logger = logging.getLogger(__file__)
 
 
-def get_commandline(server=False, description=None, extras=None, cmdline=None):
+def get_commandline(server: bool = False, description: str | None = None, extras: Any = None, cmdline: str | None = None):
     """Read and validate command line arguments."""
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(

@@ -106,10 +106,10 @@ class Setup:
     :meta private:
     """
 
-    def __init__(self, runtime):
+    def __init__(self, runtime: Any) -> None:
         """Initialize."""
         self.runtime = runtime
-        self.config = {}
+        self.config: Any = {}
         self.config_types: dict[str, dict[str, Any]] = {
             Label.type_bits: {
                 Label.type: CellType.BITS,

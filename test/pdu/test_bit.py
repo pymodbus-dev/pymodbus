@@ -1,7 +1,7 @@
 """Bit Message Test Fixture."""
 
 import pymodbus.pdu.bit_message as bit_msg
-from pymodbus.pdu import ModbusExceptions
+from pymodbus.pdu import ExceptionResponse
 
 
 class TestModbusBitMessage:
@@ -97,7 +97,7 @@ class TestModbusBitMessage:
         context = mock_context(False, default=True)
         request = bit_msg.WriteSingleCoilRequest(address=2, bits=[True])
         result = await request.update_datastore(context)
-        assert result.exception_code == ModbusExceptions.ILLEGAL_ADDRESS
+        assert result.exception_code == ExceptionResponse.ILLEGAL_ADDRESS
 
         context.valid = True
         result = await request.update_datastore(context)

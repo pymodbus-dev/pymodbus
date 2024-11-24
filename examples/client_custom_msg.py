@@ -15,7 +15,7 @@ import struct
 
 from pymodbus import FramerType
 from pymodbus.client import AsyncModbusTcpClient as ModbusClient
-from pymodbus.pdu import ExceptionResponse, ModbusExceptions, ModbusPDU
+from pymodbus.pdu import ExceptionResponse, ModbusPDU
 from pymodbus.pdu.bit_message import ReadCoilsRequest
 
 
@@ -85,9 +85,9 @@ class CustomRequest(ModbusPDU):
     def execute(self, context):
         """Execute."""
         if not 1 <= self.count <= 0x7D0:
-            return ExceptionResponse(self.function_code, ModbusExceptions.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
         if not context.validate(self.function_code, self.address, self.count):
-            return ExceptionResponse(self.function_code, ModbusExceptions.ILLEGAL_ADDRESS)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_ADDRESS)
         values = context.getValues(self.function_code, self.address, self.count)
         return CustomModbusPDU(values)
 

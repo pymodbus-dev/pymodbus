@@ -2,7 +2,7 @@
 import pytest
 
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.pdu import ModbusExceptions
+from pymodbus.pdu import ExceptionResponse
 from pymodbus.pdu.register_message import (
     ReadHoldingRegistersRequest,
     ReadHoldingRegistersResponse,
@@ -101,7 +101,7 @@ class TestReadRegisterMessages:
         ]
         for request in requests:
             result = await request.update_datastore(None)
-            assert result.exception_code == ModbusExceptions.ILLEGAL_VALUE
+            assert result.exception_code == ExceptionResponse.ILLEGAL_VALUE
 
     async def test_register_read_requests_validate_errors(self, mock_context):
         """This tests that the register request messages.
@@ -117,7 +117,7 @@ class TestReadRegisterMessages:
         ]
         for request in requests:
             result = await request.update_datastore(context)
-            assert result.exception_code == ModbusExceptions.ILLEGAL_ADDRESS
+            assert result.exception_code == ExceptionResponse.ILLEGAL_ADDRESS
 
     async def test_register_read_requests_update_datastore(self, mock_context):
         """This tests that the register request messages.
@@ -150,15 +150,15 @@ class TestReadRegisterMessages:
             read_address=1, read_count=10, write_address=2, write_registers=[0x00]
         )
         await request.update_datastore(context)
-        #assert response.exception_code == ModbusExceptions.ILLEGAL_ADDRESS
+        #assert response.exception_code == ExceptionResponse.ILLEGAL_ADDRESS
 
         context.validate = lambda f, a, c: a == 2
         await request.update_datastore(context)
-        #assert response.exception_code == ModbusExceptions.ILLEGAL_ADDRESS
+        #assert response.exception_code == ExceptionResponse.ILLEGAL_ADDRESS
 
         request.write_byte_count = 0x100
         await request.update_datastore(context)
-        #assert response.exception_code == ModbusExceptions.ILLEGAL_VALUE
+        #assert response.exception_code == ExceptionResponse.ILLEGAL_VALUE
 
     def test_serializing_to_string(self):
         """Test serializing to string."""

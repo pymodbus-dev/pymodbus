@@ -7,7 +7,6 @@ from typing import cast
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.pdu.pdu import ExceptionResponse, ModbusPDU
-from pymodbus.pdu.pdu import ModbusExceptions as merror
 
 
 class ReadHoldingRegistersRequest(ModbusPDU):
@@ -36,7 +35,7 @@ class ReadHoldingRegistersRequest(ModbusPDU):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a read holding request against a datastore."""
         if not context.validate(self.function_code, self.address, self.count):
-            return ExceptionResponse(self.function_code, merror.ILLEGAL_ADDRESS)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_ADDRESS)
         values = cast(list[int], await context.async_getValues(
             self.function_code, self.address, self.count
         ))
@@ -137,15 +136,15 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a write single register request against a datastore."""
         if not (1 <= self.read_count <= 0x07D):
-            return ExceptionResponse(self.function_code, merror.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
         if not 1 <= self.write_count <= 0x079:
-            return ExceptionResponse(self.function_code, merror.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
         if not context.validate(
             self.function_code, self.write_address, self.write_count
         ):
-            return ExceptionResponse(self.function_code, merror.ILLEGAL_ADDRESS)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_ADDRESS)
         if not context.validate(self.function_code, self.read_address, self.read_count):
-            return ExceptionResponse(self.function_code, merror.ILLEGAL_ADDRESS)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_ADDRESS)
         await context.async_setValues(
             self.function_code, self.write_address, self.write_registers
         )
@@ -190,9 +189,9 @@ class WriteSingleRegisterRequest(WriteSingleRegisterResponse):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a write single register request against a datastore."""
         if not 0 <= self.registers[0] <= 0xFFFF:
-            return ExceptionResponse(self.function_code, merror.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
         if not context.validate(self.function_code, self.address, 1):
-            return ExceptionResponse(self.function_code, merror.ILLEGAL_ADDRESS)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_ADDRESS)
 
         await context.async_setValues(
             self.function_code, self.address, self.registers
@@ -232,9 +231,9 @@ class WriteMultipleRegistersRequest(ModbusPDU):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a write single register request against a datastore."""
         if not 1 <= self.count <= 0x07B:
-            return ExceptionResponse(self.function_code, merror.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
         if not context.validate(self.function_code, self.address, self.count):
-            return ExceptionResponse(self.function_code, merror.ILLEGAL_ADDRESS)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_ADDRESS)
 
         await context.async_setValues(
             self.function_code, self.address, self.registers
@@ -287,11 +286,11 @@ class MaskWriteRegisterRequest(ModbusPDU):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a mask write register request against the store."""
         if not 0x0000 <= self.and_mask <= 0xFFFF:
-            return ExceptionResponse(self.function_code, merror.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
         if not 0x0000 <= self.or_mask <= 0xFFFF:
-            return ExceptionResponse(self.function_code, merror.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
         if not context.validate(self.function_code, self.address, 1):
-            return ExceptionResponse(self.function_code, merror.ILLEGAL_ADDRESS)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_ADDRESS)
         values = (await context.async_getValues(self.function_code, self.address, 1))[0]
         values = (values & self.and_mask) | (self.or_mask & ~self.and_mask)
         await context.async_setValues(

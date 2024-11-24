@@ -6,7 +6,6 @@ from typing import cast
 from pymodbus.constants import ModbusStatus
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.pdu.pdu import ExceptionResponse, ModbusPDU
-from pymodbus.pdu.pdu import ModbusExceptions as merror
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
@@ -95,7 +94,7 @@ class WriteSingleCoilRequest(WriteSingleCoilResponse):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a request against a datastore."""
         if not context.validate(self.function_code, self.address, 1):
-            return ExceptionResponse(self.function_code, merror.ILLEGAL_ADDRESS)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_ADDRESS)
         await context.async_setValues(self.function_code, self.address, self.bits)
         values = cast(list[bool], await context.async_getValues(self.function_code, self.address, 1))
         return WriteSingleCoilResponse(address=self.address, bits=values, slave_id=self.slave_id, transaction_id=self.transaction_id)
@@ -131,7 +130,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
         """Run a request against a datastore."""
         count = len(self.bits)
         if not context.validate(self.function_code, self.address, count):
-            return ExceptionResponse(self.function_code, merror.ILLEGAL_ADDRESS)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_ADDRESS)
         await context.async_setValues(
             self.function_code, self.address, self.bits
         )

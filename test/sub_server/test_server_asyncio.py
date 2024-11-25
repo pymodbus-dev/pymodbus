@@ -9,6 +9,7 @@ from unittest import mock
 import pytest
 
 from pymodbus import FramerType
+from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
@@ -17,7 +18,7 @@ from pymodbus.datastore import (
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.server import ModbusTcpServer, ModbusTlsServer, ModbusUdpServer
-from pymodbus.client import AsyncModbusTcpClient
+
 
 _logger = logging.getLogger()
 

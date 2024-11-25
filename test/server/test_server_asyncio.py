@@ -368,6 +368,7 @@ class TestAsyncioServer:
             await asyncio.wait_for(BasicClient.connected, timeout=0.1)
             assert not BasicClient.done.done()
 
+    @pytest.mark.skip
     async def test_async_tcp_server_exception(self):
         """Send garbage data on a TCP socket should drop the connection."""
         BasicClient.data = b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"

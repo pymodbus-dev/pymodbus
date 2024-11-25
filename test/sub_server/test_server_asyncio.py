@@ -17,7 +17,7 @@ from pymodbus.datastore import (
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.server import ModbusTcpServer, ModbusTlsServer, ModbusUdpServer
-
+from pymodbus.client import AsyncModbusTcpClient
 
 _logger = logging.getLogger()
 
@@ -143,7 +143,7 @@ class TestAsyncioServer:
             result = result.result()
 
     async def start_server(
-        self, do_forever=True, do_tls=False, do_udp=False, do_ident=False
+        self, do_forever=True, do_tls=False, do_udp=False, do_ident=False, serv_addr=SERV_ADDR,
     ):
         """Handle setup and control of tcp server."""
         args = {
@@ -154,15 +154,15 @@ class TestAsyncioServer:
             args["identity"] = self.identity
         if do_tls:
             self.server = ModbusTlsServer(
-                self.context, FramerType.TLS, self.identity, SERV_ADDR
+                self.context, FramerType.TLS, self.identity, serv_addr
             )
         elif do_udp:
             self.server = ModbusUdpServer(
-                self.context, FramerType.SOCKET, self.identity, SERV_ADDR
+                self.context, FramerType.SOCKET, self.identity, serv_addr
             )
         else:
             self.server = ModbusTcpServer(
-                self.context, FramerType.SOCKET, self.identity, SERV_ADDR
+                self.context, FramerType.SOCKET, self.identity, serv_addr
             )
         assert self.server
         if do_forever:
@@ -230,6 +230,19 @@ class TestAsyncioServer:
         await self.connect_server()
         await asyncio.wait_for(BasicClient.done, timeout=0.1)
         assert BasicClient.received_data, expected_response
+
+    async def test_async_server_file_descriptors(self):
+        """Test sending and receiving data on tcp socket."""
+        expected_response = b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"
+        BasicClient.data = TEST_DATA  # slave 1, read register
+        addr = ("127.0.0.1", 25001)
+        await self.start_server(serv_addr=addr)
+        for _ in range(2048):
+            client = AsyncModbusTcpClient(addr[0], framer=FramerType.SOCKET, port=addr[1])
+            await client.connect()
+            response = await client.read_coils(31, count=1, slave=1)
+            assert not response.isError()
+            client.close()
 
     async def test_async_tcp_server_connection_lost(self):
         """Test tcp stream interruption."""

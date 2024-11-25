@@ -171,11 +171,17 @@ class TransactionManager(ModbusProtocol):
         _ = (addr)
         if self.trace_recv_packet:
             data = self.trace_recv_packet(data)  # pylint: disable=not-callable
-        used_len, pdu = self.framer.processIncomingFrame(data)
+        try:
+            used_len, pdu = self.framer.processIncomingFrame(data)
+        except ModbusIOException as exc:
+            if self.is_server:
+                self.response_future.set_result((None, addr, exc))
+            raise exc
         if pdu:
             if self.trace_recv_pdu:
                 pdu = self.trace_recv_pdu(pdu)  # pylint: disable=not-callable
-            self.response_future.set_result(pdu)
+            result = (pdu, addr, None) if self.is_server else pdu
+            self.response_future.set_result(result)
         return used_len
 
     def getNextTID(self) -> int:

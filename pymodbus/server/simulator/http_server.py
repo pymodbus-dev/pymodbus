@@ -737,7 +737,6 @@ class ModbusSimulatorServer:
         The filter returns:
 
         - response, either original or modified
-        - skip_encoding, signals whether or not to encode the response
         """
         if self.call_monitor.trace_response:
             tracer = CallTracer(
@@ -751,12 +750,11 @@ class ModbusSimulatorServer:
             self.call_monitor.trace_response = False
 
         if self.call_response.active != RESPONSE_INACTIVE:
-            return response, False
+            return response
 
-        skip_encoding = False
         if self.call_response.active == RESPONSE_EMPTY:
             Log.warning("Sending empty response")
-            return None, False
+            return None
         if self.call_response.active == RESPONSE_NORMAL:
             if self.call_response.delay:
                 Log.warning(
@@ -777,13 +775,12 @@ class ModbusSimulatorServer:
             err_response.slave_id = response.slave_id
         elif self.call_response.active == RESPONSE_JUNK:
             response = os.urandom(self.call_response.junk_len)
-            skip_encoding = True
 
         self.call_response.clear_after -= 1
         if self.call_response.clear_after <= 0:
             Log.info("Resetting manipulator due to clear_after")
             self.call_response.active = RESPONSE_EMPTY
-        return response, skip_encoding
+        return response
 
     def server_request_tracer(self, request, *_addr):
         """Trace requests.

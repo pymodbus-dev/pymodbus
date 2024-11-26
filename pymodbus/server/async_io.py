@@ -50,7 +50,11 @@ class ModbusServerRequestHandler(TransactionManager):
             params,
             self.framer,
             0,
-            True)
+            True,
+            None,
+            None,
+            None,
+        )
 
     def callback_new_connection(self) -> ModbusProtocol:
         """Call when listener receive new connection request."""
@@ -179,20 +183,16 @@ class ModbusServerRequestHandler(TransactionManager):
         if not broadcast:
             response.transaction_id = request.transaction_id
             response.slave_id = request.slave_id
-            skip_encoding = False
             if self.server.response_manipulator:
-                response, skip_encoding = self.server.response_manipulator(response)
-            self.server_send(response, *addr, skip_encoding=skip_encoding)
+                response = self.server.response_manipulator(response)
+            self.server_send(response, *addr)
 
-    def server_send(self, message, addr, **kwargs):
+    def server_send(self, pdu, addr):
         """Send message."""
-        if kwargs.get("skip_encoding", False):
-            self.send(message, addr=addr)
-        if not message:
+        if not pdu:
             Log.debug("Skipping sending response!!")
         else:
-            pdu = self.framer.buildFrame(message)
-            self.send(pdu, addr=addr)
+            self.pdu_send(pdu, addr=addr)
 
 
 class ModbusBaseServer(ModbusProtocol):

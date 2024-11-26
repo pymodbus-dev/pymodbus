@@ -25,9 +25,9 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         framer: FramerType,
         retries: int,
         comm_params: CommParams,
-        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
-        trace_connect: Callable[[bool], None] | None = None,
+        trace_packet: Callable[[bool, bytes], bytes] | None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None,
+        trace_connect: Callable[[bool], None] | None,
     ) -> None:
         """Initialize a client instance.
 
@@ -40,9 +40,9 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
             (FRAMER_NAME_TO_CLASS[framer])(DecodePDU(False)),
             retries,
             False,
-            trace_packet=trace_packet,
-            trace_pdu=trace_pdu,
-            trace_connect=trace_connect,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
         )
         self.state = ModbusTransactionState.IDLE
 
@@ -119,9 +119,9 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         framer: FramerType,
         retries: int,
         comm_params: CommParams,
-        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
-        trace_connect: Callable[[bool], None] | None = None,
+        trace_packet: Callable[[bool, bytes], bytes] | None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None,
+        trace_connect: Callable[[bool], None] | None,
     ) -> None:
         """Initialize a client instance.
 
@@ -139,9 +139,9 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
             self.framer,
             retries,
             False,
-            trace_packet=trace_packet,
-            trace_pdu=trace_pdu,
-            trace_connect=trace_connect,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
             sync_client=self,
         )
         self.reconnect_delay_current = self.comm_params.reconnect_delay or 0
@@ -202,7 +202,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
             self.state = ModbusTransactionState.SENDING
 
     @abstractmethod
-    def send(self, request: bytes) -> int:
+    def send(self, request: bytes, addr: tuple | None = None) -> int:
         """Send request.
 
         :meta private:

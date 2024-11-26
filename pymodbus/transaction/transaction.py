@@ -40,9 +40,9 @@ class TransactionManager(ModbusProtocol):
         framer: FramerBase,
         retries: int,
         is_server: bool,
-        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
-        trace_connect: Callable[[bool], None] | None = None,
+        trace_packet: Callable[[bool, bytes], bytes] | None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None,
+        trace_connect: Callable[[bool], None] | None,
         sync_client = None,
         ) -> None:
         """Initialize an instance of the ModbusTransactionManager."""
@@ -58,8 +58,10 @@ class TransactionManager(ModbusProtocol):
         if sync_client:
             self.sync_client = sync_client
             self._sync_lock = RLock()
+            self.low_level_send = self.sync_client.send
         else:
             self._lock = asyncio.Lock()
+            self.low_level_send = self.send
         self.response_future: asyncio.Future = asyncio.Future()
 
     def dummy_trace_packet(self, sending: bool, data: bytes) -> bytes:
@@ -100,10 +102,9 @@ class TransactionManager(ModbusProtocol):
                 raise ConnectionException("Client cannot connect (automatic retry continuing) !!")
         with self._sync_lock:
             request.transaction_id = self.getNextTID()
-            packet = self.framer.buildFrame(self.trace_pdu(True, request))
             count_retries = 0
             while count_retries <= self.retries:
-                self.sync_client.send(self.trace_packet(True, packet))
+                self.pdu_send(request)
                 if no_response_expected:
                     return ExceptionResponse(0xff)
                 try:
@@ -132,10 +133,9 @@ class TransactionManager(ModbusProtocol):
                 raise ConnectionException("Client cannot connect (automatic retry continuing) !!")
         async with self._lock:
             request.transaction_id = self.getNextTID()
-            packet = self.framer.buildFrame(self.trace_pdu(True, request))
             count_retries = 0
             while count_retries <= self.retries:
-                self.send(self.trace_packet(True, packet))
+                self.pdu_send(request)
                 if no_response_expected:
                     return None
                 try:
@@ -166,6 +166,11 @@ class TransactionManager(ModbusProtocol):
         pdu, addr, exc = await asyncio.wait_for(self.response_future, None)
         self.response_future = asyncio.Future()
         return pdu, addr, exc
+
+    def pdu_send(self, pdu: ModbusPDU, addr: tuple | None = None) -> None:
+        """Build byte stream and send."""
+        packet = self.framer.buildFrame(self.trace_pdu(True, pdu))
+        self.low_level_send(self.trace_packet(True, packet), addr=addr)
 
     def callback_new_connection(self):
         """Call when listener receive new connection request."""

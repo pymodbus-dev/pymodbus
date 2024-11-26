@@ -38,7 +38,6 @@ class Manipulator:
         The filter returns:
 
         - response, either original or modified
-        - skip_encoding, signals whether or not to encode the response
         """
         if not self.message_count:
             print(f"---> RESPONSE: {response}")
@@ -46,7 +45,7 @@ class Manipulator:
         else:
             print("---> RESPONSE: NONE")
             self.message_count -= 1
-        return response, False
+        return response
 
     async def setup(self):
         """Prepare server."""

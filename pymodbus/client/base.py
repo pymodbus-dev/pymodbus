@@ -132,6 +132,9 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
             self.framer,
             retries,
             False,
+            None,
+            None,
+            None,
             self,
         )
         self.reconnect_delay_current = self.comm_params.reconnect_delay or 0

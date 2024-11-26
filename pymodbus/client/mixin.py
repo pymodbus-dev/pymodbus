@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import struct
+from abc import abstractmethod
 from enum import Enum
 from typing import Generic, TypeVar
 
@@ -48,17 +49,9 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     def __init__(self):
         """Initialize."""
 
-    def execute(self,  _no_response_expected: bool, _request: ModbusPDU,) -> T:
-        """Execute request (code ???).
-
-        :raises ModbusException:
-
-        Call with custom function codes.
-
-        .. tip::
-            Response is not interpreted.
-        """
-        raise NotImplementedError("execute of ModbusClientMixin needs to be overridden")
+    @abstractmethod
+    def execute(self,  no_response_expected: bool, request: ModbusPDU,) -> T:
+        """Execute request."""
 
     def read_coils(self, address: int, *, count: int = 1, slave: int = 1, no_response_expected: bool = False) -> T:
         """Read coils (code 0x01).

@@ -41,16 +41,13 @@ class TestTransaction:
     async def test_transaction_disconnect(self, use_clc):
         """Test tracers in disconnect."""
         transact = TransactionManager(use_clc, FramerRTU(DecodePDU(False)), 5, False)
+        transact.trace_packet = mock.Mock()
+        transact.trace_pdu = mock.Mock()
+        transact.trace_connect = mock.Mock()
         transact.callback_disconnected(None)
-        transact.trace_recv_packet = mock.Mock()
-        transact.trace_recv_pdu = mock.Mock()
-        transact.trace_send_packet = mock.Mock()
-        transact.trace_send_pdu = mock.Mock()
-        transact.callback_disconnected(None)
-        transact.trace_recv_packet.assert_called_once_with(None)
-        transact.trace_recv_pdu.assert_called_once_with(None)
-        transact.trace_send_packet.assert_called_once_with(None)
-        transact.trace_send_pdu.assert_called_once_with(None)
+        transact.trace_connect.assert_called_once_with(False)
+        transact.trace_packet.assert_not_called()
+        transact.trace_pdu.assert_not_called()
 
     @pytest.mark.parametrize("test", [True, False])
     async def test_transaction_data(self, use_clc, test):
@@ -60,19 +57,19 @@ class TestTransaction:
         packet = b'123'
         transact.callback_data(packet)
         assert not transact.response_future.done()
-        transact.trace_recv_packet = mock.Mock()
+        transact.trace_packet = mock.Mock(return_value=packet)
         pdu = "dummy pdu"
 
         if test:
             transact.framer.processIncomingFrame.return_value = (1, pdu)
             transact.callback_data(packet)
-            transact.trace_recv_packet.assert_called_once_with(packet)
+            transact.trace_packet.assert_called_once_with(False, packet)
         else:
-            transact.trace_recv_pdu = mock.Mock(return_value=pdu)
+            transact.trace_pdu = mock.Mock(return_value=pdu)
             transact.framer.processIncomingFrame.return_value = (1, pdu)
             transact.callback_data(packet)
-            transact.trace_recv_packet.assert_called_with(packet)
-            transact.trace_recv_pdu.assert_called_once_with(pdu)
+            transact.trace_packet.assert_called_with(False, packet)
+            transact.trace_pdu.assert_called_once_with(False, pdu)
             assert transact.response_future.result() == pdu
 
     @pytest.mark.parametrize("scenario", range(6))
@@ -93,11 +90,11 @@ class TestTransaction:
             transact.connect = mock.AsyncMock(return_value=1)
             await transact.execute(True, request)
         elif scenario == 2: # transport ok, trace and send
-            transact.trace_send_pdu = mock.Mock(return_value=request)
-            transact.trace_send_packet = mock.Mock(return_value=b'123')
+            transact.trace_pdu = mock.Mock(return_value=request)
+            transact.trace_packet = mock.Mock(return_value=b'123')
             await transact.execute(True, request)
-            transact.trace_send_pdu.assert_called_once_with(request)
-            transact.trace_send_packet.assert_called_once_with(b'\x00\x01\x00u\x00\x05\xec\x02')
+            transact.trace_pdu.assert_called_once_with(True, request)
+            transact.trace_packet.assert_called_once_with(True, b'\x00\x01\x00u\x00\x05\xec\x02')
         elif scenario == 3: # wait receive,timeout, no_responses
             transact.comm_params.timeout_connect = 0.1
             transact.count_no_responses = 10
@@ -179,11 +176,11 @@ class TestSyncTransaction:
             transact.sync_client.connect = mock.Mock(return_value=True)
             transact.sync_execute(True, request)
         elif scenario == 2: # transport ok, trace and send
-            transact.trace_send_pdu = mock.Mock(return_value=request)
-            transact.trace_send_packet = mock.Mock(return_value=b'123')
+            transact.trace_pdu = mock.Mock(return_value=request)
+            transact.trace_packet = mock.Mock(return_value=b'123')
             transact.sync_execute(True, request)
-            transact.trace_send_pdu.assert_called_once_with(request)
-            transact.trace_send_packet.assert_called_once_with(b'\x00\x01\x00u\x00\x05\xec\x02')
+            transact.trace_pdu.assert_called_once_with(True, request)
+            transact.trace_packet.assert_called_once_with(True, b'\x00\x01\x00u\x00\x05\xec\x02')
         elif scenario == 3: # wait receive,timeout, no_responses
             transact.comm_params.timeout_connect = 0.1
             transact.count_no_responses = 10

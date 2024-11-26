@@ -183,15 +183,6 @@ class TestMixin:
         with pytest.raises(ModbusException):
             ModbusClientMixin.convert_from_registers([123], ModbusClientMixin.DATATYPE.FLOAT64)
 
-    async def test_client_mixin_execute(self):
-        """Test dummy execute for both sync and async."""
-        client = ModbusClientMixin()
-        pdu = ModbusPDU()
-        with pytest.raises(NotImplementedError):
-            client.execute(False, pdu)
-        with pytest.raises(NotImplementedError):
-            await client.execute(False, pdu)
-
 
 class TestClientBase:
     """Test client code."""
@@ -330,7 +321,6 @@ class TestClientBase:
         client = ModbusBaseClient(
             FramerType.ASCII,
             3,
-            None,
             CommParams(
                 host="localhost",
                 port=BASE_PORT + 1,
@@ -357,7 +347,6 @@ class TestClientBase:
         async with ModbusBaseClient(
             FramerType.ASCII,
             3,
-            None,
             CommParams(
                 host="localhost",
                 port=BASE_PORT + 2,
@@ -377,7 +366,7 @@ class TestClientBase:
         client.ctx.loop = mock.Mock()
         client.ctx.callback_connected()
         client.ctx.callback_disconnected(None)
-        client = lib_client.AsyncModbusTcpClient("127.0.0.1", on_connect_callback=1)
+        client = lib_client.AsyncModbusTcpClient("127.0.0.1", trace_connect=1)
         client.ctx.loop = mock.Mock()
         client.ctx.callback_connected()
         client.ctx.callback_disconnected(None)
@@ -388,7 +377,6 @@ class TestClientBase:
         async with ModbusBaseClient(
             FramerType.ASCII,
             3,
-            None,
             CommParams(
                 host="localhost",
                 port=BASE_PORT + 2,

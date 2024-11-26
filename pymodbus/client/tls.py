@@ -8,6 +8,7 @@ from collections.abc import Callable
 from pymodbus.client.tcp import AsyncModbusTcpClient, ModbusTcpClient
 from pymodbus.framer import FramerType
 from pymodbus.logging import Log
+from pymodbus.pdu import ModbusPDU
 from pymodbus.transport import CommParams, CommType
 
 
@@ -29,7 +30,12 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for connecting and receiving data, in seconds.
     :param retries: Max number of retries per request.
-    :param on_connect_callback: Function that will be called just before a connection attempt.
+    :param trace_packet: Called with bytestream received/to be sent
+    :param trace_pdu: Called with PDU received/to be sent
+    :param trace_connect: Called when connected/disconnected
+
+    .. tip::
+        The trace methods allow to modify the datastream/pdu !
 
     .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect, from
@@ -63,7 +69,9 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        on_connect_callback: Callable[[bool], None] | None = None,
+        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
     ):
         """Initialize Asyncio Modbus TLS Client."""
         if framer not in [FramerType.TLS]:
@@ -84,7 +92,6 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
             "",
             framer=framer,
             retries=retries,
-            on_connect_callback=on_connect_callback,
         )
 
     @classmethod
@@ -127,12 +134,12 @@ class ModbusTlsClient(ModbusTcpClient):
     :param reconnect_delay_max: Not used in the sync client
     :param timeout: Timeout for connecting and receiving data, in seconds.
     :param retries: Max number of retries per request.
+    :param trace_packet: Called with bytestream received/to be sent
+    :param trace_pdu: Called with PDU received/to be sent
+    :param trace_connect: Called when connected/disconnected
 
     .. tip::
-        Unlike the async client, the sync client does not perform
-        retries. If the connection has closed, the client will attempt to reconnect
-        once before executing each read/write request, and will raise a
-        ConnectionException if this fails.
+        The trace methods allow to modify the datastream/pdu !
 
     Example::
 
@@ -161,6 +168,9 @@ class ModbusTlsClient(ModbusTcpClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
+        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
     ):
         """Initialize Modbus TLS Client."""
         if framer not in [FramerType.TLS]:

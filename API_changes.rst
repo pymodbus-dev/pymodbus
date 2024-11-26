@@ -8,7 +8,8 @@ API changes 3.8.0
 - Remove skip_encode parameter.
 - rename ModbusExceptions enums to legal constants.
 - enforce client keyword only parameters (positional not allowed).
-
+- added trace_packet/pdu/connect to client
+- removed on_connect_callback from client
 
 API changes 3.7.0
 -----------------

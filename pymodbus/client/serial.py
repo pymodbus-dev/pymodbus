@@ -11,6 +11,7 @@ from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import FramerType
 from pymodbus.logging import Log
+from pymodbus.pdu import ModbusPDU
 from pymodbus.transport import CommParams, CommType
 from pymodbus.utilities import ModbusTransactionState
 
@@ -39,7 +40,12 @@ class AsyncModbusSerialClient(ModbusBaseClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for connecting and receiving data, in seconds.
     :param retries: Max number of retries per request.
-    :param on_connect_callback: Function that will be called just before a connection attempt.
+    :param trace_packet: Called with bytestream received/to be sent
+    :param trace_pdu: Called with PDU received/to be sent
+    :param trace_connect: Called when connected/disconnected
+
+    .. tip::
+        The trace methods allow to modify the datastream/pdu !
 
     .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect, from
@@ -75,7 +81,9 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        on_connect_callback: Callable[[bool], None] | None = None,
+        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
         if "serial" not in sys.modules:  # pragma: no cover
@@ -102,7 +110,6 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             self,
             framer,
             retries,
-            on_connect_callback,
             self.comm_params,
         )
 
@@ -127,11 +134,12 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     :param reconnect_delay_max: Not used in the sync client
     :param timeout: Timeout for connecting and receiving data, in seconds.
     :param retries: Max number of retries per request.
+    :param trace_packet: Called with bytestream received/to be sent
+    :param trace_pdu: Called with PDU received/to be sent
+    :param trace_connect: Called when connected/disconnected
 
-    Note that unlike the async client, the sync client does not perform
-    retries. If the connection has closed, the client will attempt to reconnect
-    once before executing each read/write request, and will raise a
-    ConnectionException if this fails.
+    .. tip::
+        The trace methods allow to modify the datastream/pdu !
 
     Example::
 
@@ -166,6 +174,9 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
+        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Modbus Serial Client."""
         if "serial" not in sys.modules:  # pragma: no cover
@@ -192,6 +203,9 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             framer,
             retries,
             self.comm_params,
+            trace_connect=trace_connect,
+            trace_packet=trace_packet,
+            trace_pdu=trace_pdu,
         )
         self.socket: serial.Serial | None = None
         self.last_frame_end = None

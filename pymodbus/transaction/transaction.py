@@ -40,6 +40,9 @@ class TransactionManager(ModbusProtocol):
         framer: FramerBase,
         retries: int,
         is_server: bool,
+        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
         sync_client = None,
         ) -> None:
         """Initialize an instance of the ModbusTransactionManager."""
@@ -47,10 +50,9 @@ class TransactionManager(ModbusProtocol):
         self.framer = framer
         self.retries = retries
         self.next_tid: int = 0
-        self.trace_recv_packet: Callable[[bytes | None], bytes] | None = None
-        self.trace_recv_pdu: Callable[[ModbusPDU | None], ModbusPDU] | None = None
-        self.trace_send_packet: Callable[[bytes | None], bytes] | None = None
-        self.trace_send_pdu: Callable[[ModbusPDU | None], ModbusPDU] | None = None
+        self.trace_packet = trace_packet or self.dummy_trace_packet
+        self.trace_pdu = trace_pdu or self.dummy_trace_pdu
+        self.trace_connect = trace_connect or self.dummy_trace_connect
         self.accept_no_response_limit = retries + 3
         self.count_no_responses = 0
         if sync_client:
@@ -59,6 +61,20 @@ class TransactionManager(ModbusProtocol):
         else:
             self._lock = asyncio.Lock()
         self.response_future: asyncio.Future = asyncio.Future()
+
+    def dummy_trace_packet(self, sending: bool, data: bytes) -> bytes:
+        """Do dummy trace."""
+        _ = sending
+        return data
+
+    def dummy_trace_pdu(self, sending: bool, pdu: ModbusPDU) -> ModbusPDU:
+        """Do dummy trace."""
+        _ = sending
+        return pdu
+
+    def dummy_trace_connect(self, connect: bool) -> None:
+        """Do dummy trace."""
+        _ = connect
 
     def sync_get_response(self) -> ModbusPDU:
         """Receive until PDU is correct or timeout."""
@@ -84,14 +100,10 @@ class TransactionManager(ModbusProtocol):
                 raise ConnectionException("Client cannot connect (automatic retry continuing) !!")
         with self._sync_lock:
             request.transaction_id = self.getNextTID()
-            if self.trace_send_pdu:
-                request = self.trace_send_pdu(request)  # pylint: disable=not-callable
-            packet = self.framer.buildFrame(request)
+            packet = self.framer.buildFrame(self.trace_pdu(True, request))
             count_retries = 0
             while count_retries <= self.retries:
-                if self.trace_send_packet:
-                    packet = self.trace_send_packet(packet)  # pylint: disable=not-callable
-                self.sync_client.send(packet)
+                self.sync_client.send(self.trace_packet(True, packet))
                 if no_response_expected:
                     return ExceptionResponse(0xff)
                 try:
@@ -120,14 +132,10 @@ class TransactionManager(ModbusProtocol):
                 raise ConnectionException("Client cannot connect (automatic retry continuing) !!")
         async with self._lock:
             request.transaction_id = self.getNextTID()
-            if self.trace_send_pdu:
-                request = self.trace_send_pdu(request)  # pylint: disable=not-callable
-            packet = self.framer.buildFrame(request)
+            packet = self.framer.buildFrame(self.trace_pdu(True, request))
             count_retries = 0
             while count_retries <= self.retries:
-                if self.trace_send_packet:
-                    packet = self.trace_send_packet(packet)  # pylint: disable=not-callable
-                self.send(packet)
+                self.send(self.trace_packet(True, packet))
                 if no_response_expected:
                     return None
                 try:
@@ -166,30 +174,23 @@ class TransactionManager(ModbusProtocol):
         """Call when connection is succcesfull."""
         self.count_no_responses = 0
         self.next_tid = 0
+        self.trace_connect(True)
 
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""
-        for call in (self.trace_recv_packet,
-                     self.trace_recv_pdu,
-                     self.trace_send_packet,
-                     self.trace_send_pdu):
-            if call:
-                call(None)  # pylint: disable=not-callable
+        self.trace_connect(False)
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
-        if self.trace_recv_packet:
-            data = self.trace_recv_packet(data)  # pylint: disable=not-callable
         try:
-            used_len, pdu = self.framer.processIncomingFrame(data)
+            used_len, pdu = self.framer.processIncomingFrame(self.trace_packet(False, data))
         except ModbusIOException as exc:
             if self.is_server:
                 self.response_future.set_result((None, addr, exc))
                 return len(data)
             raise exc
         if pdu:
-            if self.trace_recv_pdu:
-                pdu = self.trace_recv_pdu(pdu)  # pylint: disable=not-callable
+            pdu = self.trace_pdu(False, pdu)
             result = (pdu, addr, None) if self.is_server else pdu
             self.response_future.set_result(result)
         return used_len

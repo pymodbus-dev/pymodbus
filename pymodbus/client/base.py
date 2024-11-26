@@ -24,14 +24,15 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         self,
         framer: FramerType,
         retries: int,
-        on_connect_callback: Callable[[bool], None] | None,
         comm_params: CommParams,
+        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize a client instance.
 
         :meta private:
         """
-        _ = on_connect_callback
         ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
         self.comm_params = comm_params
         self.ctx = TransactionManager(
@@ -39,9 +40,9 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
             (FRAMER_NAME_TO_CLASS[framer])(DecodePDU(False)),
             retries,
             False,
-            trace_packet=None,
-            trace_pdu=None,
-            trace_connect=None,
+            trace_packet=trace_packet,
+            trace_pdu=trace_pdu,
+            trace_connect=trace_connect,
         )
         self.state = ModbusTransactionState.IDLE
 
@@ -118,6 +119,9 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         framer: FramerType,
         retries: int,
         comm_params: CommParams,
+        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize a client instance.
 
@@ -135,10 +139,10 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
             self.framer,
             retries,
             False,
-            None,
-            None,
-            None,
-            self,
+            trace_packet=trace_packet,
+            trace_pdu=trace_pdu,
+            trace_connect=trace_connect,
+            sync_client=self,
         )
         self.reconnect_delay_current = self.comm_params.reconnect_delay or 0
         self.use_udp = False

@@ -8,6 +8,8 @@ API changes 3.8.0
 - Remove skip_encode parameter.
 - rename ModbusExceptions enums to legal constants.
 - enforce client keyword only parameters (positional not allowed).
+- request_tracer in server classes, replaced with trace_recv_packet/pdu.
+- response_manipulator in server classes, replaced with trace_send_packet/pdu.
 
 
 API changes 3.7.0

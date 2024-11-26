@@ -52,12 +52,6 @@ class ModbusServerRequestHandler(TransactionManager):
             0,
             True)
 
-    def _log_exception(self):
-        """Show log exception."""
-        Log.debug(
-            "Handler for stream [{}] has been canceled", self.comm_params.comm_name
-        )
-
     def callback_new_connection(self) -> ModbusProtocol:
         """Call when listener receive new connection request."""
         Log.debug("callback_new_connection called")
@@ -92,7 +86,9 @@ class ModbusServerRequestHandler(TransactionManager):
             if hasattr(self.server, "on_connection_lost"):
                 self.server.on_connection_lost()
             if call_exc is None:
-                self._log_exception()
+                Log.debug(
+                    "Handler for stream [{}] has been canceled", self.comm_params.comm_name
+                )
             else:
                 Log.debug(
                     "Client Disconnection {} due to {}",
@@ -136,7 +132,9 @@ class ModbusServerRequestHandler(TransactionManager):
             except asyncio.CancelledError:
                 # catch and ignore cancellation errors
                 if self.running:
-                    self._log_exception()
+                    Log.debug(
+                        "Handler for stream [{}] has been canceled", self.comm_params.comm_name
+                    )
                     self.running = False
             except Exception as exc:  # pylint: disable=broad-except
                 # force TCP socket termination as framer
@@ -655,22 +653,22 @@ async def StartAsyncSerialServer(  # pylint: disable=invalid-name,dangerous-defa
 
 
 def StartSerialServer(**kwargs):  # pylint: disable=invalid-name
-    """Start and run a serial modbus server."""
+    """Start and run a modbus serial server."""
     return asyncio.run(StartAsyncSerialServer(**kwargs))
 
 
 def StartTcpServer(**kwargs):  # pylint: disable=invalid-name
-    """Start and run a serial modbus server."""
+    """Start and run a modbus TCP server."""
     return asyncio.run(StartAsyncTcpServer(**kwargs))
 
 
 def StartTlsServer(**kwargs):  # pylint: disable=invalid-name
-    """Start and run a serial modbus server."""
+    """Start and run a modbus TLS server."""
     return asyncio.run(StartAsyncTlsServer(**kwargs))
 
 
 def StartUdpServer(**kwargs):  # pylint: disable=invalid-name
-    """Start and run a serial modbus server."""
+    """Start and run a modbus UDP server."""
     return asyncio.run(StartAsyncUdpServer(**kwargs))
 
 

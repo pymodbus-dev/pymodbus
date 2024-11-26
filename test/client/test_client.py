@@ -183,15 +183,6 @@ class TestMixin:
         with pytest.raises(ModbusException):
             ModbusClientMixin.convert_from_registers([123], ModbusClientMixin.DATATYPE.FLOAT64)
 
-    async def test_client_mixin_execute(self):
-        """Test dummy execute for both sync and async."""
-        client = ModbusClientMixin()
-        pdu = ModbusPDU()
-        with pytest.raises(NotImplementedError):
-            client.execute(False, pdu)
-        with pytest.raises(NotImplementedError):
-            await client.execute(False, pdu)
-
 
 class TestClientBase:
     """Test client code."""

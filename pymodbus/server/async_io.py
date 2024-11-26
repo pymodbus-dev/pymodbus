@@ -9,7 +9,7 @@ from contextlib import suppress
 
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
-from pymodbus.exceptions import ModbusException, NoSuchSlaveException
+from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType
 from pymodbus.logging import Log
 from pymodbus.pdu import DecodePDU
@@ -43,7 +43,6 @@ class ModbusServerRequestHandler(TransactionManager):
         self.server = owner
         self.framer = self.server.framer(self.server.decoder)
         self.running = False
-        self.receive_queue: asyncio.Queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
         self.databuffer = b''
         self.loop = asyncio.get_running_loop()
@@ -125,7 +124,14 @@ class ModbusServerRequestHandler(TransactionManager):
         """
         while self.running:
             try:
-                pdu, *addr = await self.receive_queue.get()
+                pdu, *addr, exc = await self.server_execute()
+                if exc:
+                    pdu = ExceptionResponse(
+                        40,
+                        exception_code=ExceptionResponse.ILLEGAL_FUNCTION
+                    )
+                    self.server_send(pdu, 0)
+                    continue
                 await self.server_async_execute(pdu, *addr)
             except asyncio.CancelledError:
                 # catch and ignore cancellation errors
@@ -189,21 +195,6 @@ class ModbusServerRequestHandler(TransactionManager):
         else:
             pdu = self.framer.buildFrame(message)
             self.send(pdu, addr=addr)
-
-    def callback_data(self, data: bytes, addr: tuple | None = ()) -> int:
-        """Handle received data."""
-        try:
-            used_len, pdu = self.framer.processIncomingFrame(data)
-        except ModbusException:
-            pdu = ExceptionResponse(
-                40,
-                exception_code=ExceptionResponse.ILLEGAL_FUNCTION
-            )
-            self.server_send(pdu, 0)
-            return len(self.databuffer)
-        if pdu:
-            self.receive_queue.put_nowait((pdu, addr))
-        return used_len
 
 
 class ModbusBaseServer(ModbusProtocol):

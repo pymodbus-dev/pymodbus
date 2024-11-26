@@ -9,20 +9,16 @@ from contextlib import suppress
 
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
-from pymodbus.exceptions import ModbusException, NoSuchSlaveException
-from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
+from pymodbus.exceptions import NoSuchSlaveException
+from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType
 from pymodbus.logging import Log
 from pymodbus.pdu import DecodePDU
 from pymodbus.pdu.pdu import ExceptionResponse
+from pymodbus.transaction import TransactionManager
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
 
 
-# --------------------------------------------------------------------------- #
-# Protocol Handlers
-# --------------------------------------------------------------------------- #
-
-
-class ModbusServerRequestHandler(ModbusProtocol):
+class ModbusServerRequestHandler(TransactionManager):
     """Implements modbus slave wire protocol.
 
     This uses the asyncio.Protocol to implement the server protocol.
@@ -44,14 +40,17 @@ class ModbusServerRequestHandler(ModbusProtocol):
             port=owner.comm_params.source_address[1],
             handle_local_echo=owner.comm_params.handle_local_echo,
         )
-        super().__init__(params, True)
         self.server = owner
+        self.framer = self.server.framer(self.server.decoder)
         self.running = False
-        self.receive_queue: asyncio.Queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
         self.databuffer = b''
-        self.framer: FramerBase
         self.loop = asyncio.get_running_loop()
+        super().__init__(
+            params,
+            self.framer,
+            0,
+            True)
 
     def _log_exception(self):
         """Show log exception."""
@@ -66,13 +65,13 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
+        super().callback_connected()
         slaves = self.server.context.slaves()
         if self.server.broadcast_enable:
             if 0 not in slaves:
                 slaves.append(0)
         try:
             self.running = True
-            self.framer = self.server.framer(self.server.decoder)
 
             # schedule the connection handler on the event loop
             self.handler_task = asyncio.create_task(self.handle())
@@ -86,6 +85,7 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
     def callback_disconnected(self, call_exc: Exception | None) -> None:
         """Call when connection is lost."""
+        super().callback_disconnected(call_exc)
         try:
             if self.handler_task:
                 self.handler_task.cancel()
@@ -107,34 +107,6 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 traceback.format_exc(),
             )
 
-    async def inner_handle(self):
-        """Handle handler."""
-        # this is an asyncio.Queue await, it will never fail
-        data = await self._recv_()
-        if isinstance(data, tuple):
-            # addr is populated when talking over UDP
-            data, *addr = data
-        else:
-            addr = [None]
-
-        # if broadcast is enabled make sure to
-        # process requests to address 0
-        self.databuffer += data
-        Log.debug("Handling data: {}", self.databuffer, ":hex")
-        try:
-            used_len, pdu = self.framer.processIncomingFrame(self.databuffer)
-        except ModbusException:
-            pdu = ExceptionResponse(
-                40,
-                exception_code=ExceptionResponse.ILLEGAL_FUNCTION
-            )
-            self.server_send(pdu, 0)
-            pdu = None
-            used_len = len(self.databuffer)
-        self.databuffer = self.databuffer[used_len:]
-        if pdu:
-           self.execute(pdu, *addr)
-
     async def handle(self) -> None:
         """Coroutine which represents a single master <=> slave conversation.
 
@@ -152,7 +124,15 @@ class ModbusServerRequestHandler(ModbusProtocol):
         """
         while self.running:
             try:
-                await self.inner_handle()
+                pdu, *addr, exc = await self.server_execute()
+                if exc:
+                    pdu = ExceptionResponse(
+                        40,
+                        exception_code=ExceptionResponse.ILLEGAL_FUNCTION
+                    )
+                    self.server_send(pdu, 0)
+                    continue
+                await self.server_async_execute(pdu, *addr)
             except asyncio.CancelledError:
                 # catch and ignore cancellation errors
                 if self.running:
@@ -169,19 +149,11 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 self.close()
                 self.callback_disconnected(exc)
 
-    def execute(self, request, *addr):
-        """Call with the resulting message.
-
-        :param request: The decoded request message
-        :param addr: the address
-        """
+    async def server_async_execute(self, request, *addr):
+        """Handle request."""
+        broadcast = False
         if self.server.request_tracer:
             self.server.request_tracer(request, *addr)
-
-        asyncio.run_coroutine_threadsafe(self._async_execute(request, *addr), self.loop)
-
-    async def _async_execute(self, request, *addr):
-        broadcast = False
         try:
             if self.server.broadcast_enable and not request.slave_id:
                 broadcast = True
@@ -223,28 +195,6 @@ class ModbusServerRequestHandler(ModbusProtocol):
         else:
             pdu = self.framer.buildFrame(message)
             self.send(pdu, addr=addr)
-
-    async def _recv_(self):
-        """Receive data from the network."""
-        try:
-            result = await self.receive_queue.get()
-        except RuntimeError:
-            Log.error("Event loop is closed")
-            result = None
-        return result
-
-    def callback_data(self, data: bytes, addr: tuple | None = ()) -> int:
-        """Handle received data."""
-        if addr != ():
-            self.receive_queue.put_nowait((data, addr))
-        else:
-            self.receive_queue.put_nowait(data)
-        return len(data)
-
-
-# --------------------------------------------------------------------------- #
-# Server Implementations
-# --------------------------------------------------------------------------- #
 
 
 class ModbusBaseServer(ModbusProtocol):
@@ -313,6 +263,7 @@ class ModbusBaseServer(ModbusProtocol):
         """Handle received data."""
         Log.debug("callback_data called: {} addr={}", data, ":hex", addr)
         return 0
+
 
 class ModbusTcpServer(ModbusBaseServer):
     """A modbus threaded tcp socket server.
@@ -553,11 +504,6 @@ class ModbusSerialServer(ModbusBaseServer):
             framer=framer,
         )
         self.handle_local_echo = kwargs.get("handle_local_echo", False)
-
-
-# --------------------------------------------------------------------------- #
-# Creation Factories
-# --------------------------------------------------------------------------- #
 
 
 class _serverList:

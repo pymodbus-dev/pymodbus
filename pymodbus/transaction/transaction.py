@@ -149,6 +149,16 @@ class TransactionManager(ModbusProtocol):
             self.response_future = asyncio.Future()
             return None
 
+    async def server_execute(self) -> tuple[ModbusPDU, int, Exception]:
+        """Wait for request.
+
+        Used in server, with an instance for each connection, therefore
+        there are NO concurrency.
+        """
+        pdu, addr, exc = await asyncio.wait_for(self.response_future, None)
+        self.response_future = asyncio.Future()
+        return pdu, addr, exc
+
     def callback_new_connection(self):
         """Call when listener receive new connection request."""
 
@@ -168,14 +178,20 @@ class TransactionManager(ModbusProtocol):
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
-        _ = (addr)
         if self.trace_recv_packet:
             data = self.trace_recv_packet(data)  # pylint: disable=not-callable
-        used_len, pdu = self.framer.processIncomingFrame(data)
+        try:
+            used_len, pdu = self.framer.processIncomingFrame(data)
+        except ModbusIOException as exc:
+            if self.is_server:
+                self.response_future.set_result((None, addr, exc))
+                return len(data)
+            raise exc
         if pdu:
             if self.trace_recv_pdu:
                 pdu = self.trace_recv_pdu(pdu)  # pylint: disable=not-callable
-            self.response_future.set_result(pdu)
+            result = (pdu, addr, None) if self.is_server else pdu
+            self.response_future.set_result(result)
         return used_len
 
     def getNextTID(self) -> int:

@@ -460,6 +460,8 @@ class ModbusSerialServer(ModbusBaseServer):
     ):
         """Initialize the socket server.
 
+        If the identity structure is not passed in, the ModbusControlBlock
+        uses its own empty structure.
         :param context: The ModbusServerContext datastore
         :param framer: The framer strategy to use, default FramerType.RTU
         :param identity: An optional identify structure
@@ -547,11 +549,11 @@ class _serverList:
         future.result(timeout=10 if os.name == 'nt' else 0.1)
 
 
-async def StartAsyncTcpServer(  # pylint: disable=invalid-name
+async def StartAsyncTcpServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
     identity=None,
     address=None,
-    custom_functions=None,
+    custom_functions=[],
     **kwargs,
 ):
     """Start and run a tcp modbus server.
@@ -559,17 +561,18 @@ async def StartAsyncTcpServer(  # pylint: disable=invalid-name
     :param context: The ModbusServerContext datastore
     :param identity: An optional identify structure
     :param address: An optional (interface, port) to bind to.
-    :param custom_functions: An optional list of custom PDU classes.
+    :param custom_functions: An optional list of custom function classes
+        supported by server instance.
     :param kwargs: The rest
     """
     kwargs.pop("host", None)
     server = ModbusTcpServer(
         context, kwargs.pop("framer", FramerType.SOCKET), identity, address, **kwargs
     )
-    await _serverList.run(server, custom_functions or [])
+    await _serverList.run(server, custom_functions)
 
 
-async def StartAsyncTlsServer(  # pylint: disable=invalid-name
+async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
     identity=None,
     address=None,
@@ -577,7 +580,7 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name
     certfile=None,
     keyfile=None,
     password=None,
-    custom_functions=None,
+    custom_functions=[],
     **kwargs,
 ):
     """Start and run a tls modbus server.
@@ -589,7 +592,8 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name
     :param certfile: The cert file path for TLS (used if sslctx is None)
     :param keyfile: The key file path for TLS (used if sslctx is None)
     :param password: The password for for decrypting the private key file
-    :param custom_functions: An optional list of custom PDU classes
+    :param custom_functions: An optional list of custom function classes
+        supported by server instance.
     :param kwargs: The rest
     """
     kwargs.pop("host", None)
@@ -604,14 +608,14 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name
         password,
         **kwargs,
     )
-    await _serverList.run(server, custom_functions or [])
+    await _serverList.run(server, custom_functions)
 
 
-async def StartAsyncUdpServer(  # pylint: disable=invalid-name
+async def StartAsyncUdpServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
     identity=None,
     address=None,
-    custom_functions=None,
+    custom_functions=[],
     **kwargs,
 ):
     """Start and run a udp modbus server.
@@ -627,26 +631,27 @@ async def StartAsyncUdpServer(  # pylint: disable=invalid-name
     server = ModbusUdpServer(
         context, kwargs.pop("framer", FramerType.SOCKET), identity, address, **kwargs
     )
-    await _serverList.run(server, custom_functions or [])
+    await _serverList.run(server, custom_functions)
 
 
-async def StartAsyncSerialServer(  # pylint: disable=invalid-name
+async def StartAsyncSerialServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
     identity=None,
-    custom_functions=None,
+    custom_functions=[],
     **kwargs,
 ):
     """Start and run a serial modbus server.
 
     :param context: The ModbusServerContext datastore
     :param identity: An optional identify structure
-    :param custom_functions: An optional list of custom PDU classes.
+    :param custom_functions: An optional list of custom function classes
+        supported by server instance.
     :param kwargs: The rest
     """
     server = ModbusSerialServer(
         context, kwargs.pop("framer", FramerType.RTU), identity=identity, **kwargs
     )
-    await _serverList.run(server, custom_functions or [])
+    await _serverList.run(server, custom_functions)
 
 
 def StartSerialServer(**kwargs):  # pylint: disable=invalid-name

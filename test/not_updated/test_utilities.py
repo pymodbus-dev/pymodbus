@@ -1,5 +1,6 @@
 """Test utilities."""
 import struct
+import pytest
 
 from pymodbus.utilities import (
     default,
@@ -40,20 +41,9 @@ class TestUtility:
         self.string = (  # pylint: disable=attribute-defined-outside-init
             b"test the computation"
         )
-        self.bits = [  # pylint: disable=attribute-defined-outside-init
-            True,
-            False,
-            True,
-            False,
-            True,
-            False,
-            True,
-            False,
-        ]
 
     def teardown_method(self):
         """Clean up the test environment."""
-        del self.bits
         del self.string
 
     def test_dict_property(self):
@@ -86,7 +76,17 @@ class TestUtility:
         assert not default({1: 1})
         assert not default(True)
 
-    def test_bit_packing(self):
+    @pytest.mark.parametrize(
+            ["bytestream", "bitlist"],
+            [
+                (b"\x55", [True, False, True, False, True, False, True, False]),
+                (b"\x80", [False] * 7 + [True]),
+                (b"\x01", [True] + [False] * 7),
+                # (b"\x00\x80", [False] * 7 + [True]),
+                # (b"\x00\x01", [True] + [False] * 15),
+            ]
+    )
+    def test_bit_packing(self, bytestream, bitlist):
         """Test all string <=> bit packing functions."""
-        assert unpack_bitstring(b"\x55") == self.bits
-        assert pack_bitstring(self.bits) == b"\x55"
+        assert pack_bitstring(bitlist) == bytestream
+        assert unpack_bitstring(bytestream) == bitlist

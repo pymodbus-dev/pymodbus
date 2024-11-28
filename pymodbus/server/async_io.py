@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import os
 import traceback
+from collections.abc import Callable
 from contextlib import suppress
 
 from pymodbus.datastore import ModbusServerContext
@@ -12,7 +13,7 @@ from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType
 from pymodbus.logging import Log
-from pymodbus.pdu import DecodePDU
+from pymodbus.pdu import DecodePDU, ModbusPDU
 from pymodbus.pdu.pdu import ExceptionResponse
 from pymodbus.transaction import TransactionManager
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
@@ -154,8 +155,6 @@ class ModbusServerRequestHandler(TransactionManager):
     async def server_async_execute(self, request, *addr):
         """Handle request."""
         broadcast = False
-        if self.server.request_tracer:
-            self.server.request_tracer(request, *addr)
         try:
             if self.server.broadcast_enable and not request.slave_id:
                 broadcast = True
@@ -183,8 +182,6 @@ class ModbusServerRequestHandler(TransactionManager):
         if not broadcast:
             response.transaction_id = request.transaction_id
             response.slave_id = request.slave_id
-            if self.server.response_manipulator:
-                response = self.server.response_manipulator(response)
             self.server_send(response, *addr)
 
     def server_send(self, pdu, addr):
@@ -204,10 +201,11 @@ class ModbusBaseServer(ModbusProtocol):
         context,
         ignore_missing_slaves,
         broadcast_enable,
-        response_manipulator,
-        request_tracer,
         identity,
         framer,
+        trace_packet: Callable[[bool, bytes], bytes] | None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None,
+        trace_connect: Callable[[bool], None] | None,
     ) -> None:
         """Initialize base server."""
         super().__init__(
@@ -220,8 +218,9 @@ class ModbusBaseServer(ModbusProtocol):
         self.control = ModbusControlBlock()
         self.ignore_missing_slaves = ignore_missing_slaves
         self.broadcast_enable = broadcast_enable
-        self.response_manipulator = response_manipulator
-        self.request_tracer = request_tracer
+        self.trace_packet = trace_packet
+        self.trace_pdu = trace_pdu
+        self.trace_connect = trace_connect
         self.handle_local_echo = False
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
@@ -274,13 +273,15 @@ class ModbusTcpServer(ModbusBaseServer):
     def __init__(
         self,
         context,
+        *,
         framer=FramerType.SOCKET,
         identity=None,
         address=("", 502),
         ignore_missing_slaves=False,
         broadcast_enable=False,
-        response_manipulator=None,
-        request_tracer=None,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
     ):
         """Initialize the socket server.
 
@@ -295,9 +296,9 @@ class ModbusTcpServer(ModbusBaseServer):
                         to a missing slave
         :param broadcast_enable: True to treat slave_id 0 as broadcast address,
                         False to treat 0 as any other slave_id
-        :param response_manipulator: Callback method for manipulating the
-                                        response
-        :param request_tracer: Callback method for tracing
+        :param trace_packet: Called with bytestream received/to be sent
+        :param trace_pdu: Called with PDU received/to be sent
+        :param trace_connect: Called when connected/disconnected
         """
         params = getattr(
             self,
@@ -316,10 +317,11 @@ class ModbusTcpServer(ModbusBaseServer):
             context,
             ignore_missing_slaves,
             broadcast_enable,
-            response_manipulator,
-            request_tracer,
             identity,
             framer,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
         )
 
 
@@ -334,6 +336,7 @@ class ModbusTlsServer(ModbusTcpServer):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         context,
+        *,
         framer=FramerType.TLS,
         identity=None,
         address=("", 502),
@@ -343,8 +346,9 @@ class ModbusTlsServer(ModbusTcpServer):
         password=None,
         ignore_missing_slaves=False,
         broadcast_enable=False,
-        response_manipulator=None,
-        request_tracer=None,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
     ):
         """Overloaded initializer for the socket server.
 
@@ -364,8 +368,6 @@ class ModbusTlsServer(ModbusTcpServer):
                         to a missing slave
         :param broadcast_enable: True to treat slave_id 0 as broadcast address,
                         False to treat 0 as any other slave_id
-        :param response_manipulator: Callback method for
-                        manipulating the response
         """
         self.tls_setup = CommParams(
             comm_type=CommType.TLS,
@@ -384,8 +386,9 @@ class ModbusTlsServer(ModbusTcpServer):
             address=address,
             ignore_missing_slaves=ignore_missing_slaves,
             broadcast_enable=broadcast_enable,
-            response_manipulator=response_manipulator,
-            request_tracer=request_tracer,
+            trace_packet=trace_packet,
+            trace_pdu=trace_pdu,
+            trace_connect=trace_connect
         )
 
 
@@ -400,13 +403,15 @@ class ModbusUdpServer(ModbusBaseServer):
     def __init__(
         self,
         context,
+        *,
         framer=FramerType.SOCKET,
         identity=None,
         address=("", 502),
         ignore_missing_slaves=False,
         broadcast_enable=False,
-        response_manipulator=None,
-        request_tracer=None,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
     ):
         """Overloaded initializer for the socket server.
 
@@ -421,27 +426,29 @@ class ModbusUdpServer(ModbusBaseServer):
                             to a missing slave
         :param broadcast_enable: True to treat slave_id 0 as broadcast address,
                             False to treat 0 as any other slave_id
-        :param response_manipulator: Callback method for
-                            manipulating the response
-        :param request_tracer: Callback method for tracing
+        :param trace_packet: Called with bytestream received/to be sent
+        :param trace_pdu: Called with PDU received/to be sent
+        :param trace_connect: Called when connected/disconnected
         """
         # ----------------
+        params = CommParams(
+            comm_type=CommType.UDP,
+            comm_name="server_listener",
+            source_address=address,
+            reconnect_delay=0.0,
+            reconnect_delay_max=0.0,
+            timeout_connect=0.0,
+        )
         super().__init__(
-            CommParams(
-                comm_type=CommType.UDP,
-                comm_name="server_listener",
-                source_address=address,
-                reconnect_delay=0.0,
-                reconnect_delay_max=0.0,
-                timeout_connect=0.0,
-            ),
+            params,
             context,
             ignore_missing_slaves,
             broadcast_enable,
-            response_manipulator,
-            request_tracer,
             identity,
             framer,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
         )
 
 
@@ -454,7 +461,17 @@ class ModbusSerialServer(ModbusBaseServer):
     """
 
     def __init__(
-        self, context, framer=FramerType.RTU, identity=None, **kwargs
+        self,
+        context,
+        *,
+        framer=FramerType.RTU,
+        ignore_missing_slaves: bool = False,
+        identity: str | None = None,
+        broadcast_enable: bool = False,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
+        **kwargs
     ):
         """Initialize the socket server.
 
@@ -475,31 +492,33 @@ class ModbusSerialServer(ModbusBaseServer):
         :param broadcast_enable: True to treat slave_id 0 as broadcast address,
                             False to treat 0 as any other slave_id
         :param reconnect_delay: reconnect delay in seconds
-        :param response_manipulator: Callback method for
-                    manipulating the response
-        :param request_tracer: Callback method for tracing
+        :param trace_packet: Called with bytestream received/to be sent
+        :param trace_pdu: Called with PDU received/to be sent
+        :param trace_connect: Called when connected/disconnected
         """
+        params = CommParams(
+            comm_type=CommType.SERIAL,
+            comm_name="server_listener",
+            reconnect_delay=kwargs.get("reconnect_delay", 2),
+            reconnect_delay_max=0.0,
+            timeout_connect=kwargs.get("timeout", 3),
+            source_address=(kwargs.get("port", 0), 0),
+            bytesize=kwargs.get("bytesize", 8),
+            parity=kwargs.get("parity", "N"),
+            baudrate=kwargs.get("baudrate", 19200),
+            stopbits=kwargs.get("stopbits", 1),
+            handle_local_echo=kwargs.get("handle_local_echo", False)
+        )
         super().__init__(
-            params=CommParams(
-                comm_type=CommType.SERIAL,
-                comm_name="server_listener",
-                reconnect_delay=kwargs.get("reconnect_delay", 2),
-                reconnect_delay_max=0.0,
-                timeout_connect=kwargs.get("timeout", 3),
-                source_address=(kwargs.get("port", 0), 0),
-                bytesize=kwargs.get("bytesize", 8),
-                parity=kwargs.get("parity", "N"),
-                baudrate=kwargs.get("baudrate", 19200),
-                stopbits=kwargs.get("stopbits", 1),
-                handle_local_echo=kwargs.get("handle_local_echo", False)
-            ),
-            context=context,
-            ignore_missing_slaves=kwargs.get("ignore_missing_slaves", False),
-            broadcast_enable=kwargs.get("broadcast_enable", False),
-            response_manipulator=kwargs.get("response_manipulator", None),
-            request_tracer=kwargs.get("request_tracer", None),
-            identity=kwargs.get("identity", None),
-            framer=framer,
+            params,
+            context,
+            ignore_missing_slaves,
+            broadcast_enable,
+            identity,
+            framer,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
         )
         self.handle_local_echo = kwargs.get("handle_local_echo", False)
 

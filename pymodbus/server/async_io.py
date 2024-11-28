@@ -1,5 +1,4 @@
 """Implementation of a Threaded Modbus Server."""
-# pylint: disable=missing-type-doc
 from __future__ import annotations
 
 import asyncio
@@ -198,11 +197,11 @@ class ModbusBaseServer(ModbusProtocol):
     def __init__(
         self,
         params: CommParams,
-        context,
-        ignore_missing_slaves,
-        broadcast_enable,
-        identity,
-        framer,
+        context: ModbusServerContext | None,
+        ignore_missing_slaves: bool,
+        broadcast_enable: bool,
+        identity: ModbusDeviceIdentification | None,
+        framer: FramerType,
         trace_packet: Callable[[bool, bytes], bytes] | None,
         trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None,
         trace_connect: Callable[[bool], None] | None,
@@ -272,13 +271,13 @@ class ModbusTcpServer(ModbusBaseServer):
 
     def __init__(
         self,
-        context,
+        context: ModbusServerContext,
         *,
         framer=FramerType.SOCKET,
-        identity=None,
-        address=("", 502),
-        ignore_missing_slaves=False,
-        broadcast_enable=False,
+        identity: ModbusDeviceIdentification | None = None,
+        address: tuple[str, int] = ("", 502),
+        ignore_missing_slaves: bool = False,
+        broadcast_enable: bool = False,
         trace_packet: Callable[[bool, bytes], bytes] | None = None,
         trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
@@ -335,11 +334,11 @@ class ModbusTlsServer(ModbusTcpServer):
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        context,
+        context: ModbusServerContext,
         *,
         framer=FramerType.TLS,
-        identity=None,
-        address=("", 502),
+        identity: ModbusDeviceIdentification | None = None,
+        address: tuple[str, int] = ("", 502),
         sslctx=None,
         certfile=None,
         keyfile=None,
@@ -402,13 +401,13 @@ class ModbusUdpServer(ModbusBaseServer):
 
     def __init__(
         self,
-        context,
+        context: ModbusServerContext,
         *,
         framer=FramerType.SOCKET,
-        identity=None,
-        address=("", 502),
-        ignore_missing_slaves=False,
-        broadcast_enable=False,
+        identity: ModbusDeviceIdentification | None = None,
+        address: tuple[str, int] = ("", 502),
+        ignore_missing_slaves: bool = False,
+        broadcast_enable: bool = False,
         trace_packet: Callable[[bool, bytes], bytes] | None = None,
         trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
@@ -462,11 +461,11 @@ class ModbusSerialServer(ModbusBaseServer):
 
     def __init__(
         self,
-        context,
+        context: ModbusServerContext,
         *,
-        framer=FramerType.RTU,
+        framer: FramerType = FramerType.RTU,
         ignore_missing_slaves: bool = False,
-        identity: str | None = None,
+        identity: ModbusDeviceIdentification | None = None,
         broadcast_enable: bool = False,
         trace_packet: Callable[[bool, bytes], bytes] | None = None,
         trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
@@ -567,62 +566,40 @@ class _serverList:
 
 
 async def StartAsyncTcpServer(  # pylint: disable=invalid-name,dangerous-default-value
-    context=None,
-    identity=None,
-    address=None,
+    context,
     custom_functions=[],
     **kwargs,
 ):
     """Start and run a tcp modbus server.
 
-    :param context: The ModbusServerContext datastore
-    :param identity: An optional identify structure
-    :param address: An optional (interface, port) to bind to.
-    :param custom_functions: An optional list of custom function classes
-        supported by server instance.
-    :param kwargs: The rest
+    For parameter explanation see ModbusTcpServer.
+
+    parameter custom_functions: optional list of custom function classes.
     """
     kwargs.pop("host", None)
     server = ModbusTcpServer(
-        context, kwargs.pop("framer", FramerType.SOCKET), identity, address, **kwargs
+        context,
+        framer=kwargs.pop("framer", FramerType.SOCKET),
+        **kwargs
     )
     await _serverList.run(server, custom_functions)
 
 
 async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
-    identity=None,
-    address=None,
-    sslctx=None,
-    certfile=None,
-    keyfile=None,
-    password=None,
     custom_functions=[],
     **kwargs,
 ):
     """Start and run a tls modbus server.
 
-    :param context: The ModbusServerContext datastore
-    :param identity: An optional identify structure
-    :param address: An optional (interface, port) to bind to.
-    :param sslctx: The SSLContext to use for TLS (default None and auto create)
-    :param certfile: The cert file path for TLS (used if sslctx is None)
-    :param keyfile: The key file path for TLS (used if sslctx is None)
-    :param password: The password for for decrypting the private key file
-    :param custom_functions: An optional list of custom function classes
-        supported by server instance.
-    :param kwargs: The rest
+    For parameter explanation see ModbusTlsServer.
+
+    parameter custom_functions: optional list of custom function classes.
     """
     kwargs.pop("host", None)
     server = ModbusTlsServer(
         context,
-        kwargs.pop("framer", FramerType.TLS),
-        identity,
-        address,
-        sslctx,
-        certfile,
-        keyfile,
-        password,
+        framer=kwargs.pop("framer", FramerType.TLS),
         **kwargs,
     )
     await _serverList.run(server, custom_functions)
@@ -630,64 +607,70 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default
 
 async def StartAsyncUdpServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
-    identity=None,
-    address=None,
     custom_functions=[],
     **kwargs,
 ):
     """Start and run a udp modbus server.
 
-    :param context: The ModbusServerContext datastore
-    :param identity: An optional identify structure
-    :param address: An optional (interface, port) to bind to.
-    :param custom_functions: An optional list of custom function classes
-        supported by server instance.
-    :param kwargs:
+    For parameter explanation see ModbusUdpServer.
+
+    parameter custom_functions: optional list of custom function classes.
     """
     kwargs.pop("host", None)
     server = ModbusUdpServer(
-        context, kwargs.pop("framer", FramerType.SOCKET), identity, address, **kwargs
+        context,
+        **kwargs
     )
     await _serverList.run(server, custom_functions)
 
 
 async def StartAsyncSerialServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
-    identity=None,
     custom_functions=[],
     **kwargs,
 ):
     """Start and run a serial modbus server.
 
-    :param context: The ModbusServerContext datastore
-    :param identity: An optional identify structure
-    :param custom_functions: An optional list of custom function classes
-        supported by server instance.
-    :param kwargs: The rest
+    For parameter explanation see ModbusSerialServer.
+
+    parameter custom_functions: optional list of custom function classes.
     """
     server = ModbusSerialServer(
-        context, kwargs.pop("framer", FramerType.RTU), identity=identity, **kwargs
+        context,
+        **kwargs
     )
     await _serverList.run(server, custom_functions)
 
 
 def StartSerialServer(**kwargs):  # pylint: disable=invalid-name
-    """Start and run a modbus serial server."""
+    """Start and run a modbus serial server.
+
+    For parameter explanation see ModbusSerialServer.
+    """
     return asyncio.run(StartAsyncSerialServer(**kwargs))
 
 
 def StartTcpServer(**kwargs):  # pylint: disable=invalid-name
-    """Start and run a modbus TCP server."""
+    """Start and run a modbus TCP server.
+
+    For parameter explanation see ModbusTcpServer.
+    """
     return asyncio.run(StartAsyncTcpServer(**kwargs))
 
 
 def StartTlsServer(**kwargs):  # pylint: disable=invalid-name
-    """Start and run a modbus TLS server."""
+    """Start and run a modbus TLS server.
+
+    For parameter explanation see ModbusTlsServer.
+    """
     return asyncio.run(StartAsyncTlsServer(**kwargs))
 
 
 def StartUdpServer(**kwargs):  # pylint: disable=invalid-name
-    """Start and run a modbus UDP server."""
+    """Start and run a modbus UDP server.
+
+    For parameter explanation see ModbusUdpServer.
+    """
     return asyncio.run(StartAsyncUdpServer(**kwargs))
 
 

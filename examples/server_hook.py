@@ -15,6 +15,7 @@ from pymodbus.datastore import (
     ModbusServerContext,
     ModbusSlaveContext,
 )
+from pymodbus.pdu import ModbusPDU
 from pymodbus.server import ModbusTcpServer
 
 
@@ -23,6 +24,22 @@ class Manipulator:
 
     message_count: int = 1
     server: ModbusTcpServer
+
+    def trace_packet(self, sending: bool, data: bytes) -> bytes:
+        """Do dummy trace."""
+        txt = "REQUEST stream" if sending else "RESPONSE stream"
+        print(f"---> {txt}: {data!r}")
+
+        return data
+
+    def trace_pdu(self, sending: bool, pdu: ModbusPDU) -> ModbusPDU:
+        """Do dummy trace."""
+        print(f"---> {"REQUEST pdu" if sending else "RESPONSE pdu"}: {pdu}")
+        return pdu
+
+    def trace_connect(self, connect: bool) -> None:
+        """Do dummy trace."""
+        print(f"---> {"Connected" if connect else "Disconnected"}")
 
     def server_request_tracer(self, request, *_addr):
         """Trace requests.
@@ -59,11 +76,12 @@ class Manipulator:
         )
         self.server = ModbusTcpServer(
             context,
-            FramerType.SOCKET,
-            None,
-            ("127.0.0.1", 5020),
-            request_tracer=self.server_request_tracer,
-            response_manipulator=self.server_response_manipulator,
+            framer=FramerType.SOCKET,
+            identity=None,
+            address=("127.0.0.1", 5020),
+            trace_packet=self.trace_packet,
+            trace_pdu=self.trace_pdu,
+            trace_connect=self.trace_connect,
         )
 
     async def run(self):

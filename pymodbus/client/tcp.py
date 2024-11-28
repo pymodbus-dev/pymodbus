@@ -70,8 +70,8 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
@@ -93,6 +93,9 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             framer,
             retries,
             self.comm_params,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
         )
 
 
@@ -148,8 +151,8 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Modbus TCP Client."""
@@ -166,7 +169,14 @@ class ModbusTcpClient(ModbusBaseSyncClient):
                 reconnect_delay_max=reconnect_delay_max,
                 timeout_connect=timeout,
             )
-        super().__init__(framer, retries, self.comm_params)
+        super().__init__(
+            framer,
+            retries,
+            self.comm_params,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
+        )
         self.socket = None
 
     @property
@@ -204,8 +214,9 @@ class ModbusTcpClient(ModbusBaseSyncClient):
             self.socket.close()
         self.socket = None
 
-    def send(self, request):
+    def send(self, request, addr: tuple | None = None):
         """Send data on the underlying socket."""
+        _ = addr
         super()._start_send()
         if not self.socket:
             raise ConnectionException(str(self))

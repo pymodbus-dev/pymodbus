@@ -7,7 +7,6 @@ import dataclasses
 import importlib
 import json
 import os
-from time import sleep
 from typing import TYPE_CHECKING
 
 
@@ -25,7 +24,7 @@ from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.datastore.simulator import Label
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.logging import Log
-from pymodbus.pdu import DecodePDU, ExceptionResponse
+from pymodbus.pdu import DecodePDU
 from pymodbus.server.async_io import (
     ModbusSerialServer,
     ModbusTcpServer,
@@ -633,15 +632,11 @@ class ModbusSimulatorServer:
     def action_stop(self, _params, _range_start, _range_stop):
         """Stop call monitoring."""
         self.call_monitor = CallTypeMonitor()
-        self.modbus_server.response_manipulator = None
-        self.modbus_server.request_tracer = None
         return None, "Stopped monitoring"
 
     def action_reset(self, _params, _range_start, _range_stop):
         """Reset call simulation."""
         self.call_response = CallTypeResponse()
-        if not self.call_monitor.active:
-            self.modbus_server.response_manipulator = self.server_response_manipulator
         return None, None
 
     def action_add(self, params, range_start, range_stop):
@@ -682,8 +677,6 @@ class ModbusSimulatorServer:
         self.call_monitor.hex = "show_hex" in params
         self.call_monitor.decode = "show_decode" in params
         self.call_monitor.active = True
-        self.modbus_server.response_manipulator = self.server_response_manipulator
-        self.modbus_server.request_tracer = self.server_request_tracer
         return None, None
 
     def action_set(self, params, _range_start, _range_stop):
@@ -727,84 +720,4 @@ class ModbusSimulatorServer:
             self.call_response.clear_after = int(params["response_clear_after"])
         else:
             self.call_response.clear_after = 1
-        self.modbus_server.response_manipulator = self.server_response_manipulator
         return None, None
-
-    def server_response_manipulator(self, response):
-        """Manipulate responses.
-
-        All server responses passes this filter before being sent.
-        The filter returns:
-
-        - response, either original or modified
-        - skip_encoding, signals whether or not to encode the response
-        """
-        if self.call_monitor.trace_response:
-            tracer = CallTracer(
-                call=False,
-                fc=response.function_code,
-                address=response.address if hasattr(response, "address") else -1,
-                count=response.count if hasattr(response, "count") else -1,
-                data=b"-",
-            )
-            self.call_list.append(tracer)
-            self.call_monitor.trace_response = False
-
-        if self.call_response.active != RESPONSE_INACTIVE:
-            return response, False
-
-        skip_encoding = False
-        if self.call_response.active == RESPONSE_EMPTY:
-            Log.warning("Sending empty response")
-            return None, False
-        if self.call_response.active == RESPONSE_NORMAL:
-            if self.call_response.delay:
-                Log.warning(
-                    "Delaying response by {}s for all incoming requests",
-                    self.call_response.delay,
-                )
-                sleep(self.call_response.delay)  # change to async
-            else:
-                pass
-                # self.call_response.change_rate
-                # self.call_response.split
-        elif self.call_response.active == RESPONSE_ERROR:
-            Log.warning("Sending error response for all incoming requests")
-            err_response = ExceptionResponse(
-                response.function_code, self.call_response.error_response
-            )
-            err_response.transaction_id = response.transaction_id
-            err_response.slave_id = response.slave_id
-        elif self.call_response.active == RESPONSE_JUNK:
-            response = os.urandom(self.call_response.junk_len)
-            skip_encoding = True
-
-        self.call_response.clear_after -= 1
-        if self.call_response.clear_after <= 0:
-            Log.info("Resetting manipulator due to clear_after")
-            self.call_response.active = RESPONSE_EMPTY
-        return response, skip_encoding
-
-    def server_request_tracer(self, request, *_addr):
-        """Trace requests.
-
-        All server requests passes this filter before being handled.
-        """
-        if self.call_monitor.function not in {-1, request.function_code}:
-            return
-        address = request.address if hasattr(request, "address") else -1
-        if self.call_monitor.range_start != -1 and address != -1:
-            if (
-                self.call_monitor.range_start > address
-                or self.call_monitor.range_stop < address
-            ):
-                return
-        tracer = CallTracer(
-            call=True,
-            fc=request.function_code,
-            address=address,
-            count=request.count if hasattr(request, "count") else -1,
-            data=b"-",
-        )
-        self.call_list.append(tracer)
-        self.call_monitor.trace_response = True

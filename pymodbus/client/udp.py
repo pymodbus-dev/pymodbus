@@ -71,8 +71,8 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus UDP Client."""
@@ -93,6 +93,9 @@ class AsyncModbusUdpClient(ModbusBaseClient):
             framer,
             retries,
             self.comm_params,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
         )
         self.source_address = source_address
 
@@ -149,8 +152,8 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Modbus UDP Client."""
@@ -166,7 +169,14 @@ class ModbusUdpClient(ModbusBaseSyncClient):
             reconnect_delay_max=reconnect_delay_max,
             timeout_connect=timeout,
         )
-        super().__init__(framer, retries, self.comm_params)
+        super().__init__(
+            framer,
+            retries,
+            self.comm_params,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
+        )
         self.socket = None
 
     @property
@@ -196,11 +206,12 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         """
         self.socket = None
 
-    def send(self, request: bytes) -> int:
+    def send(self, request: bytes, addr: tuple | None = None) -> int:
         """Send data on the underlying socket.
 
         :meta private:
         """
+        _ = addr
         super()._start_send()
         if not self.socket:
             raise ConnectionException(str(self))

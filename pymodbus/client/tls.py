@@ -69,8 +69,8 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
     ):
         """Initialize Asyncio Modbus TLS Client."""
@@ -92,6 +92,9 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
             "",
             framer=framer,
             retries=retries,
+            trace_packet=trace_packet,
+            trace_pdu=trace_pdu,
+            trace_connect=trace_connect,
         )
 
     @classmethod
@@ -168,8 +171,8 @@ class ModbusTlsClient(ModbusTcpClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
     ):
         """Initialize Modbus TLS Client."""
@@ -190,6 +193,9 @@ class ModbusTlsClient(ModbusTcpClient):
             "",
             framer=framer,
             retries=retries,
+            trace_packet=trace_packet,
+            trace_pdu=trace_pdu,
+            trace_connect=trace_connect,
         )
 
     @classmethod

@@ -155,15 +155,24 @@ class TestAsyncioServer:
             args["identity"] = self.identity
         if do_tls:
             self.server = ModbusTlsServer(
-                self.context, FramerType.TLS, self.identity, serv_addr
+                self.context,
+                framer=FramerType.TLS,
+                identity=self.identity,
+                address=serv_addr
             )
         elif do_udp:
             self.server = ModbusUdpServer(
-                self.context, FramerType.SOCKET, self.identity, serv_addr
+                self.context,
+                framer=FramerType.SOCKET,
+                identity=self.identity,
+                address=serv_addr
             )
         else:
             self.server = ModbusTcpServer(
-                self.context, FramerType.SOCKET, self.identity, serv_addr
+                self.context,
+                framer=FramerType.SOCKET,
+                identity=self.identity,
+                address=serv_addr
             )
         assert self.server
         if do_forever:

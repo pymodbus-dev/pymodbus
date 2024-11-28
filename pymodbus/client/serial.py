@@ -81,8 +81,8 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
@@ -111,6 +111,9 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             framer,
             retries,
             self.comm_params,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
         )
 
 
@@ -174,8 +177,8 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        trace_packet: Callable[[bool, bytes | None], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU | None], ModbusPDU] | None = None,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Modbus Serial Client."""
@@ -203,9 +206,9 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             framer,
             retries,
             self.comm_params,
-            trace_connect=trace_connect,
-            trace_packet=trace_packet,
-            trace_pdu=trace_pdu,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
         )
         self.socket: serial.Serial | None = None
         self.last_frame_end = None
@@ -280,8 +283,9 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             return size
         return 0
 
-    def send(self, request: bytes) -> int:  # pragma: no cover
+    def send(self, request: bytes, addr: tuple | None = None) -> int:  # pragma: no cover
         """Send data on the underlying socket."""
+        _ = addr
         start = time.time()
         if hasattr(self,"ctx"):
           timeout = start + self.ctx.comm_params.timeout_connect

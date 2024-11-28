@@ -18,12 +18,36 @@ class TestTransaction:
 
     async def test_transaction_instance(self, use_clc):
         """Test instantiate class."""
-        TransactionManager(use_clc, FramerRTU(DecodePDU(False)), 5, False)
-        TransactionManager(use_clc, FramerRTU(DecodePDU(True)), 5, True)
+        TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+        )
+        TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(True)),
+            5,
+            True,
+            None,
+            None,
+            None,
+        )
 
     async def test_transaction_manager_tid(self, use_clc):
         """Test next TID."""
-        transact = TransactionManager(use_clc, FramerRTU(DecodePDU(False)), 5, False)
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+        )
         assert transact.getNextTID() == 1
         for tid in range(2, 12):
             assert tid == transact.getNextTID()
@@ -34,13 +58,29 @@ class TestTransaction:
 
     async def test_transaction_calls(self, use_clc):
         """Test dummy calls from transport."""
-        transact = TransactionManager(use_clc, FramerRTU(DecodePDU(False)), 5, False)
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+        )
         transact.callback_new_connection()
         transact.callback_connected()
 
     async def test_transaction_disconnect(self, use_clc):
         """Test tracers in disconnect."""
-        transact = TransactionManager(use_clc, FramerRTU(DecodePDU(False)), 5, False)
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+        )
         transact.trace_packet = mock.Mock()
         transact.trace_pdu = mock.Mock()
         transact.trace_connect = mock.Mock()
@@ -52,19 +92,28 @@ class TestTransaction:
     @pytest.mark.parametrize("test", [True, False])
     async def test_transaction_data(self, use_clc, test):
         """Test tracers in disconnect."""
-        transact = TransactionManager(use_clc, FramerRTU(DecodePDU(False)), 5, False)
-        transact.framer.processIncomingFrame = mock.Mock(return_value=(0, None))
+        pdu = "dummy pdu"
         packet = b'123'
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+        )
+        transact.framer.processIncomingFrame = mock.Mock(return_value=(0, None))
         transact.callback_data(packet)
         assert not transact.response_future.done()
-        transact.trace_packet = mock.Mock(return_value=packet)
-        pdu = "dummy pdu"
 
         if test:
+            transact.trace_packet = mock.Mock(return_value=packet)
             transact.framer.processIncomingFrame.return_value = (1, pdu)
             transact.callback_data(packet)
             transact.trace_packet.assert_called_once_with(False, packet)
         else:
+            transact.trace_packet = mock.Mock(return_value=packet)
             transact.trace_pdu = mock.Mock(return_value=pdu)
             transact.framer.processIncomingFrame.return_value = (1, pdu)
             transact.callback_data(packet)
@@ -75,7 +124,15 @@ class TestTransaction:
     @pytest.mark.parametrize("scenario", range(6))
     async def test_transaction_execute(self, use_clc, scenario):
         """Test tracers in disconnect."""
-        transact = TransactionManager(use_clc, FramerRTU(DecodePDU(False)), 5, False)
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+        )
         transact.send = mock.Mock()
         request = ReadCoilsRequest(address=117, count=5)
         response = ReadCoilsResponse(bits=[True, False, True, True, False])
@@ -114,7 +171,15 @@ class TestTransaction:
 
     async def test_transaction_receiver(self, use_clc):
         """Test tracers in disconnect."""
-        transact = TransactionManager(use_clc, FramerSocket(DecodePDU(False)), 5, False)
+        transact = TransactionManager(
+            use_clc,
+            FramerSocket(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+        )
         transact.send = mock.Mock()
         response = ReadCoilsResponse(bits=[True, False, True, True, False])
         transact.retries = 0
@@ -128,7 +193,15 @@ class TestTransaction:
     @pytest.mark.parametrize("no_resp", [False, True])
     async def test_client_protocol_execute_outside(self, use_clc, no_resp):
         """Test the transaction execute method."""
-        transact = TransactionManager(use_clc, FramerSocket(DecodePDU(False)), 5, False)
+        transact = TransactionManager(
+            use_clc,
+            FramerSocket(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+        )
         transact.send = mock.Mock()
         request = ReadCoilsRequest(address=117, count=5)
         transact.retries = 0
@@ -151,16 +224,57 @@ class TestSyncTransaction:
 
     def test_sync_transaction_instance(self, use_clc):
         """Test instantiate class."""
-        client = ModbusBaseSyncClient(FramerType.SOCKET, 5, use_clc)
-        TransactionManager(use_clc, FramerRTU(DecodePDU(False)), 5, False, sync_client=client)
-        TransactionManager(use_clc, FramerRTU(DecodePDU(True)), 5, True, sync_client=client)
+        client = ModbusBaseSyncClient(
+            FramerType.SOCKET,
+            5,
+            use_clc,
+            None,
+            None,
+            None,
+            )
+        TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+            sync_client=client,
+        )
+        TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(True)),
+            5,
+            True,
+            None,
+            None,
+            None,
+            sync_client=client,
+        )
 
 
     @pytest.mark.parametrize("scenario", range(6))
     async def test_sync_transaction_execute(self, use_clc, scenario):
         """Test tracers in disconnect."""
-        client = ModbusBaseSyncClient(FramerType.SOCKET, 5, use_clc)
-        transact = TransactionManager(use_clc, FramerRTU(DecodePDU(False)), 5, False, sync_client=client)
+        client = ModbusBaseSyncClient(
+            FramerType.SOCKET,
+            5,
+            use_clc,
+            None,
+            None,
+            None,
+            )
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+            sync_client=client,
+        )
         transact.send = mock.Mock()
         transact.sync_client.connect = mock.Mock(return_value=True)
         request = ReadCoilsRequest(address=117, count=5)
@@ -201,8 +315,24 @@ class TestSyncTransaction:
 
     def test_sync_transaction_receiver(self, use_clc):
         """Test tracers in disconnect."""
-        client = ModbusBaseSyncClient(FramerType.SOCKET, 5, use_clc)
-        transact = TransactionManager(use_clc, FramerRTU(DecodePDU(False)), 5, False, sync_client=client)
+        client = ModbusBaseSyncClient(
+            FramerType.SOCKET,
+            5,
+            use_clc,
+            None,
+            None,
+            None,
+            )
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+            sync_client=client,
+        )
         transact.sync_client.send = mock.Mock()
         request = ReadCoilsRequest(address=117, count=5)
         response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False])
@@ -218,8 +348,24 @@ class TestSyncTransaction:
     @pytest.mark.parametrize("no_resp", [False, True])
     def test_sync_client_protocol_execute_outside(self, use_clc, no_resp):
         """Test the transaction execute method."""
-        client = ModbusBaseSyncClient(FramerType.SOCKET, 5, use_clc)
-        transact = TransactionManager(use_clc, FramerRTU(DecodePDU(False)), 5, False, sync_client=client)
+        client = ModbusBaseSyncClient(
+            FramerType.SOCKET,
+            5,
+            use_clc,
+            None,
+            None,
+            None,
+        )
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+            sync_client=client,
+        )
         request = ReadCoilsRequest(address=117, count=5)
         response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False])
         transact.retries = 0
@@ -236,8 +382,24 @@ class TestSyncTransaction:
 
     def test_sync_client_protocol_execute_no_pdu(self, use_clc):
         """Test the transaction execute method."""
-        client = ModbusBaseSyncClient(FramerType.SOCKET, 5, use_clc)
-        transact = TransactionManager(use_clc, FramerRTU(DecodePDU(False)), 5, False, sync_client=client)
+        client = ModbusBaseSyncClient(
+            FramerType.SOCKET,
+            5,
+            use_clc,
+            None,
+            None,
+            None,
+        )
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+            sync_client=client,
+        )
         request = ReadCoilsRequest(address=117, count=5)
         response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False])
         transact.retries = 0

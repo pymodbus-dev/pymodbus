@@ -326,6 +326,9 @@ class TestClientBase:
                 port=BASE_PORT + 1,
                 comm_type=CommType.TCP,
             ),
+            None,
+            None,
+            None,
         )
         client.register(pdu_bit.ReadCoilsResponse)
         assert str(client)
@@ -352,6 +355,9 @@ class TestClientBase:
                 port=BASE_PORT + 2,
                 comm_type=CommType.TCP,
             ),
+            None,
+            None,
+            None,
         ) as client:
             str(client)
             client.ctx = mock.Mock()
@@ -366,7 +372,7 @@ class TestClientBase:
         client.ctx.loop = mock.Mock()
         client.ctx.callback_connected()
         client.ctx.callback_disconnected(None)
-        client = lib_client.AsyncModbusTcpClient("127.0.0.1", trace_connect=1)
+        client = lib_client.AsyncModbusTcpClient("127.0.0.1", trace_connect=client.ctx.dummy_trace_connect)
         client.ctx.loop = mock.Mock()
         client.ctx.callback_connected()
         client.ctx.callback_disconnected(None)
@@ -382,6 +388,9 @@ class TestClientBase:
                 port=BASE_PORT + 2,
                 comm_type=CommType.TCP,
             ),
+            None,
+            None,
+            None,
         ) as client:
             str(client)
             client.ctx = mock.Mock()

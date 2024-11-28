@@ -96,7 +96,6 @@ class TestMixin:
             getattr(ModbusClientMixin(), method)(**arglist[arg])
             assert isinstance(pdu_to_call, pdu_request)
 
-
     @pytest.mark.parametrize(
         ("datatype", "value", "registers"),
         [
@@ -133,8 +132,28 @@ class TestMixin:
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
-                [False] * 13 + [True, False, True],
-                [0x00A0],
+                [True],
+                [256],
+            ),
+            (
+                ModbusClientMixin.DATATYPE.BITS,
+                [True, False, True],
+                [1280],
+            ),
+            (
+                ModbusClientMixin.DATATYPE.BITS,
+                [True, False, True] + [False] * 5 + [True],
+                [1281],
+            ),
+            (
+                ModbusClientMixin.DATATYPE.BITS,
+                [True, False, True] + [False] * 5 + [True] + [False] * 6 + [True],
+                [1409],
+            ),
+            (
+                ModbusClientMixin.DATATYPE.BITS,
+                [True, False, True] + [False] * 5 + [True] + [False] * 6 + [True] * 2,
+                [1409, 256],
             ),
         ],
     )
@@ -142,10 +161,13 @@ class TestMixin:
         """Test converter methods."""
         regs = ModbusClientMixin.convert_to_registers(value, datatype)
         assert regs == registers
-        # result = ModbusClientMixin.convert_from_registers(registers, datatype)
-        # if datatype == ModbusClientMixin.DATATYPE.FLOAT32:
-        #     result = round(result, 6)
-        # assert result == value
+        result = ModbusClientMixin.convert_from_registers(registers, datatype)
+        if datatype == ModbusClientMixin.DATATYPE.FLOAT32:
+            result = round(result, 6)
+        if datatype == ModbusClientMixin.DATATYPE.BITS:
+            if (missing := len(value) % 16):
+                value = value + [False] * (16 - missing)
+        assert result == value
 
     @pytest.mark.parametrize(
         ("datatype", "value", "registers"),

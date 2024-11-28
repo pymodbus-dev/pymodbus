@@ -41,29 +41,6 @@ class Manipulator:
         """Do dummy trace."""
         print(f"---> {"Connected" if connect else "Disconnected"}")
 
-    def server_request_tracer(self, request, *_addr):
-        """Trace requests.
-
-        All server requests passes this filter before being handled.
-        """
-        print(f"---> REQUEST: {request}")
-
-    def server_response_manipulator(self, response):
-        """Manipulate responses.
-
-        All server responses passes this filter before being sent.
-        The filter returns:
-
-        - response, either original or modified
-        """
-        if not self.message_count:
-            print(f"---> RESPONSE: {response}")
-            self.message_count = 3
-        else:
-            print("---> RESPONSE: NONE")
-            self.message_count -= 1
-        return response
-
     async def setup(self):
         """Prepare server."""
         pymodbus_apply_logging_config(logging.DEBUG)

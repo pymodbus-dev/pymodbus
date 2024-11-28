@@ -15,6 +15,7 @@ import pymodbus.pdu.register_message as pdu_reg
 from pymodbus.constants import ModbusStatus
 from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ModbusPDU
+from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
 T = TypeVar("T", covariant=False)
@@ -690,16 +691,17 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         FLOAT32 = ("f", 2)
         FLOAT64 = ("d", 4)
         STRING = ("s", 0)
+        BITS = "bits"
 
     @classmethod
     def convert_from_registers(
         cls, registers: list[int], data_type: DATATYPE
-    ) -> int | float | str:
+    ) -> int | float | str | list[bool]:
         """Convert registers to int/float/str.
 
         :param registers: list of registers received from e.g. read_holding_registers()
         :param data_type: data type to convert to
-        :returns: int, float or str depending on "data_type"
+        :returns: int, float, str or list[bool] depending on "data_type"
         :raises ModbusException: when size of registers is not 1, 2 or 4
         """
         byte_list = bytearray()
@@ -709,6 +711,8 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
             if byte_list[-1:] == b"\00":
                 byte_list = byte_list[:-1]
             return byte_list.decode("utf-8")
+        if data_type == cls.DATATYPE.BITS:
+            return unpack_bitstring(byte_list)
         if len(registers) != data_type.value[1]:
             raise ModbusException(
                 f"Illegal size ({len(registers)}) of register array, cannot convert!"
@@ -717,7 +721,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
     @classmethod
     def convert_to_registers(
-        cls, value: int | float | str, data_type: DATATYPE
+        cls, value: int | float | str | list[bool], data_type: DATATYPE
     ) -> list[int]:
         """Convert int/float/str to registers (16/32/64 bit).
 
@@ -726,7 +730,13 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :returns: List of registers, can be used directly in e.g. write_registers()
         :raises TypeError: when there is a mismatch between data_type and value
         """
-        if data_type == cls.DATATYPE.STRING:
+        if data_type == cls.DATATYPE.BITS:
+            if not isinstance(value, list):
+                raise TypeError(f"Value should be string but is {type(value)}.")
+            if (missing := len(value) % 16):
+                value = value + [False] * (16 - missing)
+            byte_list = pack_bitstring(value)
+        elif data_type == cls.DATATYPE.STRING:
             if not isinstance(value, str):
                 raise TypeError(f"Value should be string but is {type(value)}.")
             byte_list = value.encode()

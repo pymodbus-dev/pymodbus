@@ -34,12 +34,14 @@ class Manipulator:
 
     def trace_pdu(self, sending: bool, pdu: ModbusPDU) -> ModbusPDU:
         """Do dummy trace."""
-        print(f"---> {"REQUEST pdu" if sending else "RESPONSE pdu"}: {pdu}")
+        txt = "REQUEST pdu" if sending else "RESPONSE pdu"
+        print(f"---> {txt}: {pdu}")
         return pdu
 
     def trace_connect(self, connect: bool) -> None:
         """Do dummy trace."""
-        print(f"---> {"Connected" if connect else "Disconnected"}")
+        txt = "Connected" if connect else "Disconnected"
+        print(f"---> {txt}")
 
     async def setup(self):
         """Prepare server."""

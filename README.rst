@@ -40,6 +40,9 @@ A big thanks to all the `volunteers <https://pymodbus.readthedocs.io/en/latest/s
 
 Source code on `github <https://github.com/pymodbus-dev/pymodbus>`_
 
+Full documentation for newest releases as well as the bleeding edge (dev) `readthedocs <https://pymodbus.readthedocs.io>`_
+
+
 Pymodbus in a nutshell
 ----------------------
 Pymodbus consist of 5 parts:

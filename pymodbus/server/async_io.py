@@ -223,8 +223,8 @@ class ModbusBaseServer(ModbusProtocol):
         self.handle_local_echo = False
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
-
-        self.framer = FRAMER_NAME_TO_CLASS[framer]
+        # Support mapping of FramerType to a Framer class, or a Framer class
+        self.framer = FRAMER_NAME_TO_CLASS.get(framer, framer)
         self.serving: asyncio.Future = asyncio.Future()
 
     def callback_new_connection(self):

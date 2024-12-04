@@ -22,7 +22,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
 
     def __init__(
         self,
-        framer: FramerType,
+        framer: FramerType | type[FramerBase],
         retries: int,
         comm_params: CommParams,
         trace_packet: Callable[[bool, bytes], bytes] | None,
@@ -37,7 +37,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         self.comm_params = comm_params
         self.ctx = TransactionManager(
             comm_params,
-            (FRAMER_NAME_TO_CLASS[framer])(DecodePDU(False)),
+            FRAMER_NAME_TO_CLASS.get(framer, framer)(DecodePDU(False)),
             retries,
             False,
             trace_packet,
@@ -116,7 +116,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
 
     def __init__(
         self,
-        framer: FramerType,
+        framer: FramerType | type[FramerBase],
         retries: int,
         comm_params: CommParams,
         trace_packet: Callable[[bool, bytes], bytes] | None,
@@ -133,7 +133,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         self.slaves: list[int] = []
 
         # Common variables.
-        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(DecodePDU(False))
+        self.framer: FramerBase = FRAMER_NAME_TO_CLASS.get(framer, framer)(DecodePDU(False))
         self.transaction = TransactionManager(
             self.comm_params,
             self.framer,

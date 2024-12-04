@@ -10,7 +10,7 @@ from contextlib import suppress
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
-from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType, FramerBase
+from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from pymodbus.logging import Log
 from pymodbus.pdu import DecodePDU, ModbusPDU
 from pymodbus.pdu.pdu import ExceptionResponse
@@ -224,7 +224,9 @@ class ModbusBaseServer(ModbusProtocol):
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
         # Support mapping of FramerType to a Framer class, or a Framer class
-        self.framer = FRAMER_NAME_TO_CLASS.get(framer, framer)
+        if not isinstance(framer, type) or not issubclass(framer, FramerBase):
+            framer = FRAMER_NAME_TO_CLASS[FramerType(framer)]
+        self.framer = framer
         self.serving: asyncio.Future = asyncio.Future()
 
     def callback_new_connection(self):
@@ -273,7 +275,7 @@ class ModbusTcpServer(ModbusBaseServer):
         self,
         context: ModbusServerContext,
         *,
-        framer=FramerType.SOCKET,
+        framer: FramerType | type[FramerBase] = FramerType.SOCKET,
         identity: ModbusDeviceIdentification | None = None,
         address: tuple[str, int] = ("", 502),
         ignore_missing_slaves: bool = False,
@@ -336,7 +338,7 @@ class ModbusTlsServer(ModbusTcpServer):
         self,
         context: ModbusServerContext,
         *,
-        framer=FramerType.TLS,
+        framer: FramerType | type[FramerBase] = FramerType.TLS,
         identity: ModbusDeviceIdentification | None = None,
         address: tuple[str, int] = ("", 502),
         sslctx=None,
@@ -403,7 +405,7 @@ class ModbusUdpServer(ModbusBaseServer):
         self,
         context: ModbusServerContext,
         *,
-        framer=FramerType.SOCKET,
+        framer: FramerType | type[FramerBase] = FramerType.SOCKET,
         identity: ModbusDeviceIdentification | None = None,
         address: tuple[str, int] = ("", 502),
         ignore_missing_slaves: bool = False,
@@ -463,7 +465,7 @@ class ModbusSerialServer(ModbusBaseServer):
         self,
         context: ModbusServerContext,
         *,
-        framer: FramerType = FramerType.RTU,
+        framer: FramerType | type[FramerBase] = FramerType.RTU,
         ignore_missing_slaves: bool = False,
         identity: ModbusDeviceIdentification | None = None,
         broadcast_enable: bool = False,

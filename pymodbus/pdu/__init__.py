@@ -2,7 +2,6 @@
 __all__ = [
     "DecodePDU",
     "ExceptionResponse",
-    "ExceptionResponse",
     "FileRecord",
     "ModbusPDU",
 ]

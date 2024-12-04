@@ -10,7 +10,7 @@ from contextlib import suppress
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
-from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType
+from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType, FramerBase
 from pymodbus.logging import Log
 from pymodbus.pdu import DecodePDU, ModbusPDU
 from pymodbus.pdu.pdu import ExceptionResponse
@@ -201,7 +201,7 @@ class ModbusBaseServer(ModbusProtocol):
         ignore_missing_slaves: bool,
         broadcast_enable: bool,
         identity: ModbusDeviceIdentification | None,
-        framer: FramerType,
+        framer: FramerType | type[FramerBase],
         trace_packet: Callable[[bool, bytes], bytes] | None,
         trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None,
         trace_connect: Callable[[bool], None] | None,

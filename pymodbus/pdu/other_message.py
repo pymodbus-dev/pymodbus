@@ -28,7 +28,7 @@ class ReadExceptionStatusRequest(ModbusPDU):
     async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
         """Run a read exception status request against the store."""
         status = _MCB.Counter.summary()
-        return ReadExceptionStatusResponse(status=status, slave_id=self.slave_id, transaction_id=self.transaction_id)
+        return ReadExceptionStatusResponse(status=status, dev_id=self.dev_id, transaction_id=self.transaction_id)
 
 
 class ReadExceptionStatusResponse(ModbusPDU):
@@ -65,7 +65,7 @@ class GetCommEventCounterRequest(ModbusPDU):
     async def update_datastore(self, _context) -> ModbusPDU:
         """Run a read exception status request against the store."""
         count = _MCB.Counter.Event
-        return GetCommEventCounterResponse(count=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
+        return GetCommEventCounterResponse(count=count, dev_id=self.dev_id, transaction_id=self.transaction_id)
 
 
 class GetCommEventCounterResponse(ModbusPDU):
@@ -105,7 +105,7 @@ class GetCommEventLogRequest(ModbusPDU):
             message_count=_MCB.Counter.BusMessage,
             event_count=_MCB.Counter.Event,
             events=_MCB.getEvents(),
-            slave_id=self.slave_id, transaction_id=self.transaction_id)
+            dev_id=self.dev_id, transaction_id=self.transaction_id)
 
 
 class GetCommEventLogResponse(ModbusPDU):
@@ -114,9 +114,9 @@ class GetCommEventLogResponse(ModbusPDU):
     function_code = 0x0C
     rtu_byte_count_pos = 2
 
-    def __init__(self, status: bool = True, message_count: int = 0, event_count: int = 0, events: list[int] | None = None, slave_id: int = 1, transaction_id: int = 0) -> None:
+    def __init__(self, status: bool = True, message_count: int = 0, event_count: int = 0, events: list[int] | None = None, dev_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a new instance."""
-        super().__init__(transaction_id=transaction_id, slave_id=slave_id, status=status)
+        super().__init__(transaction_id=transaction_id, dev_id=dev_id, status=status)
         self.message_count = message_count
         self.event_count = event_count
         self.events = events or []
@@ -171,7 +171,7 @@ class ReportSlaveIdRequest(ModbusPDU):
 
         identifier = b"-".join(id_data)
         identifier = identifier or b"Pymodbus"
-        return ReportSlaveIdResponse(identifier=identifier, slave_id=self.slave_id, transaction_id=self.transaction_id)
+        return ReportSlaveIdResponse(identifier=identifier, dev_id=self.dev_id, transaction_id=self.transaction_id)
 
 
 class ReportSlaveIdResponse(ModbusPDU):
@@ -180,9 +180,9 @@ class ReportSlaveIdResponse(ModbusPDU):
     function_code = 0x11
     rtu_byte_count_pos = 2
 
-    def __init__(self, identifier: bytes = b"\x00", status: bool = True, slave_id: int = 1, transaction_id: int = 0) -> None:
+    def __init__(self, identifier: bytes = b"\x00", status: bool = True, dev_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a new instance."""
-        super().__init__(transaction_id=transaction_id, slave_id=slave_id, status=status)
+        super().__init__(transaction_id=transaction_id, dev_id=dev_id, status=status)
         self.identifier = identifier
         self.byte_count = 0
 

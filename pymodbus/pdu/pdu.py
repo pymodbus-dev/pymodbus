@@ -18,7 +18,7 @@ class ModbusPDU:
     rtu_byte_count_pos: int = 0
 
     def __init__(self,
-            slave_id: int = 0,
+            dev_id: int = 0,
             transaction_id: int = 0,
             address: int = 0,
             count: int = 0,
@@ -27,7 +27,7 @@ class ModbusPDU:
             status: int = 1,
         ) -> None:
         """Initialize the base data for a modbus request."""
-        self.slave_id: int = slave_id
+        self.dev_id: int = dev_id
         self.transaction_id: int = transaction_id
         self.address: int = address
         self.bits: list[bool] = bits or []
@@ -58,7 +58,7 @@ class ModbusPDU:
         """Build a representation of an exception response."""
         return (
             f"{self.__class__.__name__}("
-            f"slave_id={self.slave_id}, "
+            f"dev_id={self.dev_id}, "
             f"transaction_id={self.transaction_id}, "
             f"address={self.address}, "
             f"count={self.count}, "
@@ -116,7 +116,7 @@ class ExceptionResponse(ModbusPDU):
             slave: int = 1,
             transaction: int = 0) -> None:
         """Initialize the modbus exception response."""
-        super().__init__(transaction_id=transaction, slave_id=slave)
+        super().__init__(transaction_id=transaction, dev_id=slave)
         self.function_code = function_code | 0x80
         self.exception_code = exception_code
         Log.error(f"Exception response {self.function_code} / {self.exception_code}")

@@ -34,9 +34,9 @@ class ReadDeviceInformationRequest(ModbusPDU):
     sub_function_code = 0x0E
     rtu_frame_size = 7
 
-    def __init__(self, read_code: int | None = None, object_id: int = 0, slave_id: int = 1, transaction_id: int = 0) -> None:
+    def __init__(self, read_code: int | None = None, object_id: int = 0, dev_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a new instance."""
-        super().__init__(transaction_id=transaction_id, slave_id=slave_id)
+        super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.read_code = read_code or DeviceInformation.BASIC
         self.object_id = object_id
 
@@ -59,7 +59,7 @@ class ReadDeviceInformationRequest(ModbusPDU):
             return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
 
         information = DeviceInformationFactory.get(_MCB, self.read_code, self.object_id)
-        return ReadDeviceInformationResponse(read_code=self.read_code, information=information, slave_id=self.slave_id, transaction_id=self.transaction_id)
+        return ReadDeviceInformationResponse(read_code=self.read_code, information=information, dev_id=self.dev_id, transaction_id=self.transaction_id)
 
 
 class ReadDeviceInformationResponse(ModbusPDU):
@@ -84,9 +84,9 @@ class ReadDeviceInformationResponse(ModbusPDU):
             count -= 1
         return size + 2
 
-    def __init__(self, read_code: int | None = None, information: dict | None = None, slave_id: int = 1, transaction_id: int = 0) -> None:
+    def __init__(self, read_code: int | None = None, information: dict | None = None, dev_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a new instance."""
-        super().__init__(transaction_id=transaction_id, slave_id=slave_id)
+        super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.read_code = read_code or DeviceInformation.BASIC
         self.information = information or {}
         self.number_of_objects = 0

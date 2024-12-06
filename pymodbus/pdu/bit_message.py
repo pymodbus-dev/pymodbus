@@ -39,7 +39,7 @@ class ReadCoilsRequest(ModbusPDU):
             self.function_code, self.address, self.count
         )
         response_class = (ReadCoilsResponse if self.function_code == 1 else ReadDiscreteInputsResponse)
-        return response_class(slave_id=self.slave_id, transaction_id=self.transaction_id, bits=cast(list[bool], values))
+        return response_class(dev_id=self.dev_id, transaction_id=self.transaction_id, bits=cast(list[bool], values))
 
 
 class ReadDiscreteInputsRequest(ReadCoilsRequest):
@@ -97,7 +97,7 @@ class WriteSingleCoilRequest(WriteSingleCoilResponse):
             return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_ADDRESS)
         await context.async_setValues(self.function_code, self.address, self.bits)
         values = cast(list[bool], await context.async_getValues(self.function_code, self.address, 1))
-        return WriteSingleCoilResponse(address=self.address, bits=values, slave_id=self.slave_id, transaction_id=self.transaction_id)
+        return WriteSingleCoilResponse(address=self.address, bits=values, dev_id=self.dev_id, transaction_id=self.transaction_id)
 
     def get_response_pdu_size(self) -> int:
         """Get response pdu size.
@@ -134,7 +134,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
         await context.async_setValues(
             self.function_code, self.address, self.bits
         )
-        return WriteMultipleCoilsResponse(address=self.address, count=count, slave_id=self.slave_id, transaction_id=self.transaction_id)
+        return WriteMultipleCoilsResponse(address=self.address, count=count, dev_id=self.dev_id, transaction_id=self.transaction_id)
 
     def get_response_pdu_size(self) -> int:
         """Get response pdu size.

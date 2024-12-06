@@ -428,7 +428,7 @@ class TestFramerType:
             used_len, result = test_framer.processIncomingFrame(msg)
         assert used_len == len(msg)
         assert result
-        assert result.slave_id == dev_id
+        assert result.dev_id == dev_id
         assert result.transaction_id == tid
         expected = test_framer.encode(
             result.function_code.to_bytes(1,'big') + result.encode(),
@@ -447,7 +447,7 @@ class TestFramerType:
         with mock.patch.object(ModbusPDU, "encode") as mock_encode:
             message = ModbusPDU()
             message.transaction_id = 0x0001
-            message.slave_id = 0xFF
+            message.dev_id = 0xFF
             message.function_code = 0x01
             mock_encode.return_value = b""
 

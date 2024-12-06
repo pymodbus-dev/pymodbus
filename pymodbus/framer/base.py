@@ -60,7 +60,7 @@ class FramerBase:
         :param message: The populated request/response to send
         """
         data = message.function_code.to_bytes(1,'big') + message.encode()
-        frame = self.encode(data, message.slave_id, message.transaction_id)
+        frame = self.encode(data, message.dev_id, message.transaction_id)
         return frame
 
     def processIncomingFrame(self, data: bytes) -> tuple[int, ModbusPDU | None]:
@@ -96,7 +96,7 @@ class FramerBase:
             return used_len, None
         if (result := self.decoder.decode(frame_data)) is None:
             raise ModbusIOException("Unable to decode request")
-        result.slave_id = dev_id
+        result.dev_id = dev_id
         result.transaction_id = tid
         Log.debug("Frame advanced, resetting header!!")
         return used_len, result

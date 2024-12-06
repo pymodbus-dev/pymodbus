@@ -155,18 +155,18 @@ class ModbusServerRequestHandler(TransactionManager):
         """Handle request."""
         broadcast = False
         try:
-            if self.server.broadcast_enable and not request.slave_id:
+            if self.server.broadcast_enable and not request.dev_id:
                 broadcast = True
                 # if broadcasting then execute on all slave contexts,
                 # note response will be ignored
-                for slave_id in self.server.context.slaves():
-                    response = await request.update_datastore(self.server.context[slave_id])
+                for dev_id in self.server.context.slaves():
+                    response = await request.update_datastore(self.server.context[dev_id])
             else:
-                context = self.server.context[request.slave_id]
+                context = self.server.context[request.dev_id]
                 response = await request.update_datastore(context)
 
         except NoSuchSlaveException:
-            Log.error("requested slave does not exist: {}", request.slave_id)
+            Log.error("requested slave does not exist: {}", request.dev_id)
             if self.server.ignore_missing_slaves:
                 return  # the client will simply timeout waiting for a response
             response = ExceptionResponse(0x00, ExceptionResponse.GATEWAY_NO_RESPONSE)
@@ -180,7 +180,7 @@ class ModbusServerRequestHandler(TransactionManager):
         # no response when broadcasting
         if not broadcast:
             response.transaction_id = request.transaction_id
-            response.slave_id = request.slave_id
+            response.dev_id = request.dev_id
             self.server_send(response, *addr)
 
     def server_send(self, pdu, addr):
@@ -293,8 +293,8 @@ class ModbusTcpServer(ModbusBaseServer):
         :param address: An optional (interface, port) to bind to.
         :param ignore_missing_slaves: True to not send errors on a request
                         to a missing slave
-        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
-                        False to treat 0 as any other slave_id
+        :param broadcast_enable: True to treat dev_id 0 as broadcast address,
+                        False to treat 0 as any other dev_id
         :param trace_packet: Called with bytestream received/to be sent
         :param trace_pdu: Called with PDU received/to be sent
         :param trace_connect: Called when connected/disconnected
@@ -365,8 +365,8 @@ class ModbusTlsServer(ModbusTcpServer):
         :param password: The password for for decrypting the private key file
         :param ignore_missing_slaves: True to not send errors on a request
                         to a missing slave
-        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
-                        False to treat 0 as any other slave_id
+        :param broadcast_enable: True to treat dev_id 0 as broadcast address,
+                        False to treat 0 as any other dev_id
         """
         self.tls_setup = CommParams(
             comm_type=CommType.TLS,
@@ -423,8 +423,8 @@ class ModbusUdpServer(ModbusBaseServer):
         :param address: An optional (interface, port) to bind to.
         :param ignore_missing_slaves: True to not send errors on a request
                             to a missing slave
-        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
-                            False to treat 0 as any other slave_id
+        :param broadcast_enable: True to treat dev_id 0 as broadcast address,
+                            False to treat 0 as any other dev_id
         :param trace_packet: Called with bytestream received/to be sent
         :param trace_pdu: Called with PDU received/to be sent
         :param trace_connect: Called when connected/disconnected
@@ -488,8 +488,8 @@ class ModbusSerialServer(ModbusBaseServer):
         :param handle_local_echo: (optional) Discard local echo from dongle.
         :param ignore_missing_slaves: True to not send errors on a request
                             to a missing slave
-        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
-                            False to treat 0 as any other slave_id
+        :param broadcast_enable: True to treat dev_id 0 as broadcast address,
+                            False to treat 0 as any other dev_id
         :param reconnect_delay: reconnect delay in seconds
         :param trace_packet: Called with bytestream received/to be sent
         :param trace_pdu: Called with PDU received/to be sent

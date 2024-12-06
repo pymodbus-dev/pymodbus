@@ -17,8 +17,8 @@ class TestServerSingleContext:
 
     def test_single_context_gets(self):
         """Test getting on a single context."""
-        for slave_id in range(0, 0xFF):
-            assert self.slave == self.context[slave_id]
+        for dev_id in range(0, 0xFF):
+            assert self.slave == self.context[dev_id]
 
     def test_single_context_deletes(self):
         """Test removing on multiple context."""
@@ -70,8 +70,8 @@ class TestServerMultipleContext:
 
     def test_multiple_context_gets(self):
         """Test getting on multiple context."""
-        for slave_id in range(0, 10):
-            assert self.slaves[slave_id] == self.context[slave_id]
+        for dev_id in range(0, 10):
+            assert self.slaves[dev_id] == self.context[dev_id]
 
     def test_multiple_context_deletes(self):
         """Test removing on multiple context."""
@@ -81,9 +81,9 @@ class TestServerMultipleContext:
 
     def test_multiple_context_iter(self):
         """Test iterating over multiple context."""
-        for slave_id, slave in self.context:
-            assert slave == self.slaves[slave_id]
-            assert slave_id in self.context
+        for dev_id, slave in self.context:
+            assert slave == self.slaves[dev_id]
+            assert dev_id in self.context
 
     def test_multiple_context_default(self):
         """Test that the multiple context default values work."""
@@ -94,8 +94,8 @@ class TestServerMultipleContext:
     def test_multiple_context_set(self):
         """Test a setting multiple slave contexts."""
         slaves = {id: ModbusSlaveContext() for id in range(10)}
-        for slave_id, slave in iter(slaves.items()):
-            self.context[slave_id] = slave
-        for slave_id, slave in iter(slaves.items()):
-            actual = self.context[slave_id]
+        for dev_id, slave in iter(slaves.items()):
+            self.context[dev_id] = slave
+        for dev_id, slave in iter(slaves.items()):
+            actual = self.context[dev_id]
             assert slave == actual

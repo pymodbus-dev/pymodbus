@@ -152,7 +152,7 @@ async def run_async_server(args):
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
         )
     elif args.comm == "udp":
@@ -167,7 +167,7 @@ async def run_async_server(args):
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
         )
     elif args.comm == "serial":
@@ -186,7 +186,7 @@ async def run_async_server(args):
             baudrate=args.baudrate,  # The baud rate to use for the serial device
             # handle_local_echo=False,  # Handle local echo of the USB-to-RS485 adaptor
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave 0 as broadcast address,
         )
     elif args.comm == "tls":
         address = (args.host if args.host else "", args.port if args.port else None)
@@ -207,7 +207,7 @@ async def run_async_server(args):
             ),  # The key file path for TLS (used if sslctx is None)
             # password="none",  # The password for for decrypting the private key file
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
         )
     return server

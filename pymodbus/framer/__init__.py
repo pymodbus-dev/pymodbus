@@ -1,11 +1,11 @@
 """Framer."""
 __all__ = [
-    "FramerBase",
-    "FramerType",
     "FramerAscii",
+    "FramerBase",
     "FramerRTU",
     "FramerSocket",
-    "FramerTLS"
+    "FramerTLS",
+    "FramerType"
 ]
 
 from pymodbus.framer.ascii import FramerAscii

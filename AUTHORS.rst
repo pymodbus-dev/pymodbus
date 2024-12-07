@@ -29,6 +29,7 @@ Thanks to
 - Chandler Riehm
 - Chris Hung
 - Christian Krause
+- Christian Pfisterer
 - Daniel Rauber
 - dhoomakethu
 - doelki
@@ -56,6 +57,7 @@ Thanks to
 - Joe Burmeister
 - John Miko
 - Jonathan Reichelt Gjertsen
+- JorisW
 - julian
 - Justin Standring
 - Kenny Johansson

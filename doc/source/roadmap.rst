@@ -15,17 +15,15 @@ It is the community that decides how pymodbus evolves NOT the maintainers !
 
 The following bullet points are what the maintainers focus on:
 
-- 3.7.X, bug fix release, hopefully with:
-    - Not planned
-- 3.8.0, with:
-    - ModbusControlBlock pr slave
+- 3.8.1, bug fix release, with:
+    - Currently not planned
 - 3.9.0, with:
-    - New serial forwarder
+    - ModbusControlBlock pr slave
     - New custom PDU (function codes)
     - Remove remote_datastore
     - Remove BinaryPayload
 - 4.0.0, with:
-    - all on dev
+    - New serial forwarder
     - client async with sync/async API
     - Only one datastore, but with different API`s
     - Simulator standard in server

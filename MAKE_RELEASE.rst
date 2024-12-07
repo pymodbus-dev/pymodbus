@@ -11,13 +11,13 @@ Prepare/make release on dev.
 * Make pull request "prepare v3.7.x", with the following:
    * Update pymodbus/__init__.py with version number (__version__ X.Y.Zpre)
    * Update README.rst "Supported versions"
+   * Update roadmap.rst
    * Control / Update API_changes.rst
    * Update CHANGELOG.rst
       * Add commits from last release, but selectively !
-        git log --oneline v3.7.4..HEAD > commit.log
-        git log --pretty="%an" v3.7.4..HEAD | sort -uf > authors.log
+        git log --oneline v3.8.0..HEAD > commit.log
+        git log --pretty="%an" v3.8.0..HEAD | sort -uf > authors.log
         update AUTHORS.rst and CHANGELOG.rst
-        update roadmap.rst
         cd doc; ./build_html
    * rm -rf build/* dist/*
    * python3 -m build

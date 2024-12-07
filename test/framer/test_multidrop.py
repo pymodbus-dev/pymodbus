@@ -1,5 +1,4 @@
 """Test server working as slave on a multidrop RS485 line."""
-from unittest import mock
 
 import pytest
 
@@ -17,11 +16,6 @@ class TestMultidrop:
     def fixture_framer(self):
         """Prepare framer."""
         return FramerRTU(DecodePDU(True))
-
-    @pytest.fixture(name="callback")
-    def fixture_callback(self):
-        """Prepare dummy callback."""
-        return mock.Mock()
 
     def test_ok_frame(self, framer):
         """Test ok frame."""
@@ -171,3 +165,21 @@ class TestMultidrop:
         used_len, pdu = framer.processIncomingFrame(framer_2ok)
         assert pdu
         assert used_len == len(framer_2ok)
+
+    def test_rtu_split_frame(self, framer):
+        """Test test_rtu_split_frame."""
+        msg1 = (b'\x01\x08\x00\x00\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb'
+                b'\xcc\xdd\xee\xff\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99')
+        msg2 = (b'\xaa\xbb\xcc\xdd\xee\xff\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99'
+                b'\xaa\xbb\xcc\xdd\xee\xff\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99'
+                b'\xaa\xbb\xcc\xdd\xee\xff\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99'
+                b'\xaa\xbb\xcc\xdd\xee\xff\xe7\x65')
+        used_len, pdu = framer.processIncomingFrame(msg1+msg2)
+        assert pdu
+        assert used_len == len(msg1 + msg2)
+        used_len, pdu = framer.processIncomingFrame(msg1)
+        assert not pdu
+        assert not used_len
+        used_len, pdu = framer.processIncomingFrame(msg1+msg2)
+        assert pdu
+        assert used_len == len(msg1 + msg2)

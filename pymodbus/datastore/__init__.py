@@ -3,10 +3,10 @@
 __all__ = [
     "ModbusBaseSlaveContext",
     "ModbusSequentialDataBlock",
-    "ModbusSparseDataBlock",
-    "ModbusSlaveContext",
     "ModbusServerContext",
     "ModbusSimulatorContext",
+    "ModbusSlaveContext",
+    "ModbusSparseDataBlock",
 ]
 
 from pymodbus.datastore.context import (

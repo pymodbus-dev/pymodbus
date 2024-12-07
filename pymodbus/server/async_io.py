@@ -1,29 +1,24 @@
 """Implementation of a Threaded Modbus Server."""
-# pylint: disable=missing-type-doc
 from __future__ import annotations
 
 import asyncio
 import os
 import traceback
+from collections.abc import Callable
 from contextlib import suppress
 
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
-from pymodbus.exceptions import ModbusException, NoSuchSlaveException
-from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
+from pymodbus.exceptions import NoSuchSlaveException
+from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType
 from pymodbus.logging import Log
-from pymodbus.pdu import DecodePDU
-from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.pdu import DecodePDU, ModbusPDU
 from pymodbus.pdu.pdu import ExceptionResponse
+from pymodbus.transaction import TransactionManager
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
 
 
-# --------------------------------------------------------------------------- #
-# Protocol Handlers
-# --------------------------------------------------------------------------- #
-
-
-class ModbusServerRequestHandler(ModbusProtocol):
+class ModbusServerRequestHandler(TransactionManager):
     """Implements modbus slave wire protocol.
 
     This uses the asyncio.Protocol to implement the server protocol.
@@ -43,20 +38,22 @@ class ModbusServerRequestHandler(ModbusProtocol):
             timeout_connect=0.0,
             host=owner.comm_params.source_address[0],
             port=owner.comm_params.source_address[1],
+            handle_local_echo=owner.comm_params.handle_local_echo,
         )
-        super().__init__(params, True)
         self.server = owner
+        self.framer = self.server.framer(self.server.decoder)
         self.running = False
-        self.receive_queue: asyncio.Queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
         self.databuffer = b''
-        self.framer: FramerBase
         self.loop = asyncio.get_running_loop()
-
-    def _log_exception(self):
-        """Show log exception."""
-        Log.debug(
-            "Handler for stream [{}] has been canceled", self.comm_params.comm_name
+        super().__init__(
+            params,
+            self.framer,
+            0,
+            True,
+            None,
+            None,
+            None,
         )
 
     def callback_new_connection(self) -> ModbusProtocol:
@@ -66,13 +63,13 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
+        super().callback_connected()
         slaves = self.server.context.slaves()
         if self.server.broadcast_enable:
             if 0 not in slaves:
                 slaves.append(0)
         try:
             self.running = True
-            self.framer = self.server.framer(self.server.decoder)
 
             # schedule the connection handler on the event loop
             self.handler_task = asyncio.create_task(self.handle())
@@ -86,13 +83,16 @@ class ModbusServerRequestHandler(ModbusProtocol):
 
     def callback_disconnected(self, call_exc: Exception | None) -> None:
         """Call when connection is lost."""
+        super().callback_disconnected(call_exc)
         try:
             if self.handler_task:
                 self.handler_task.cancel()
             if hasattr(self.server, "on_connection_lost"):
                 self.server.on_connection_lost()
             if call_exc is None:
-                self._log_exception()
+                Log.debug(
+                    "Handler for stream [{}] has been canceled", self.comm_params.comm_name
+                )
             else:
                 Log.debug(
                     "Client Disconnection {} due to {}",
@@ -106,34 +106,6 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 exc,
                 traceback.format_exc(),
             )
-
-    async def inner_handle(self):
-        """Handle handler."""
-        # this is an asyncio.Queue await, it will never fail
-        data = await self._recv_()
-        if isinstance(data, tuple):
-            # addr is populated when talking over UDP
-            data, *addr = data
-        else:
-            addr = [None]
-
-        # if broadcast is enabled make sure to
-        # process requests to address 0
-        self.databuffer += data
-        Log.debug("Handling data: {}", self.databuffer, ":hex")
-        try:
-            used_len, pdu = self.framer.processIncomingFrame(self.databuffer)
-        except ModbusException:
-            pdu = ExceptionResponse(
-                40,
-                exception_code=merror.IllegalFunction
-            )
-            self.server_send(pdu, 0)
-            pdu = None
-            used_len = len(self.databuffer)
-        self.databuffer = self.databuffer[used_len:]
-        if pdu:
-           self.execute(pdu, *addr)
 
     async def handle(self) -> None:
         """Coroutine which represents a single master <=> slave conversation.
@@ -152,11 +124,21 @@ class ModbusServerRequestHandler(ModbusProtocol):
         """
         while self.running:
             try:
-                await self.inner_handle()
+                pdu, *addr, exc = await self.server_execute()
+                if exc:
+                    pdu = ExceptionResponse(
+                        40,
+                        exception_code=ExceptionResponse.ILLEGAL_FUNCTION
+                    )
+                    self.server_send(pdu, 0)
+                    continue
+                await self.server_async_execute(pdu, *addr)
             except asyncio.CancelledError:
                 # catch and ignore cancellation errors
                 if self.running:
-                    self._log_exception()
+                    Log.debug(
+                        "Handler for stream [{}] has been canceled", self.comm_params.comm_name
+                    )
                     self.running = False
             except Exception as exc:  # pylint: disable=broad-except
                 # force TCP socket termination as framer
@@ -169,82 +151,44 @@ class ModbusServerRequestHandler(ModbusProtocol):
                 self.close()
                 self.callback_disconnected(exc)
 
-    def execute(self, request, *addr):
-        """Call with the resulting message.
-
-        :param request: The decoded request message
-        :param addr: the address
-        """
-        if self.server.request_tracer:
-            self.server.request_tracer(request, *addr)
-
-        asyncio.run_coroutine_threadsafe(self._async_execute(request, *addr), self.loop)
-
-    async def _async_execute(self, request, *addr):
+    async def server_async_execute(self, request, *addr):
+        """Handle request."""
         broadcast = False
         try:
-            if self.server.broadcast_enable and not request.slave_id:
+            if self.server.broadcast_enable and not request.dev_id:
                 broadcast = True
                 # if broadcasting then execute on all slave contexts,
                 # note response will be ignored
-                for slave_id in self.server.context.slaves():
-                    response = await request.update_datastore(self.server.context[slave_id])
+                for dev_id in self.server.context.slaves():
+                    response = await request.update_datastore(self.server.context[dev_id])
             else:
-                context = self.server.context[request.slave_id]
+                context = self.server.context[request.dev_id]
                 response = await request.update_datastore(context)
 
         except NoSuchSlaveException:
-            Log.error("requested slave does not exist: {}", request.slave_id)
+            Log.error("requested slave does not exist: {}", request.dev_id)
             if self.server.ignore_missing_slaves:
                 return  # the client will simply timeout waiting for a response
-            response = request.doException(merror.GatewayNoResponse)
+            response = ExceptionResponse(0x00, ExceptionResponse.GATEWAY_NO_RESPONSE)
         except Exception as exc:  # pylint: disable=broad-except
             Log.error(
                 "Datastore unable to fulfill request: {}; {}",
                 exc,
                 traceback.format_exc(),
             )
-            response = request.doException(merror.SlaveFailure)
+            response = ExceptionResponse(0x00, ExceptionResponse.SLAVE_FAILURE)
         # no response when broadcasting
         if not broadcast:
             response.transaction_id = request.transaction_id
-            response.slave_id = request.slave_id
-            skip_encoding = False
-            if self.server.response_manipulator:
-                response, skip_encoding = self.server.response_manipulator(response)
-            self.server_send(response, *addr, skip_encoding=skip_encoding)
+            response.dev_id = request.dev_id
+            self.server_send(response, *addr)
 
-    def server_send(self, message, addr, **kwargs):
+    def server_send(self, pdu, addr):
         """Send message."""
-        if kwargs.get("skip_encoding", False):
-            self.send(message, addr=addr)
-        if not message:
+        if not pdu:
             Log.debug("Skipping sending response!!")
         else:
-            pdu = self.framer.buildFrame(message)
-            self.send(pdu, addr=addr)
-
-    async def _recv_(self):
-        """Receive data from the network."""
-        try:
-            result = await self.receive_queue.get()
-        except RuntimeError:
-            Log.error("Event loop is closed")
-            result = None
-        return result
-
-    def callback_data(self, data: bytes, addr: tuple | None = ()) -> int:
-        """Handle received data."""
-        if addr != ():
-            self.receive_queue.put_nowait((data, addr))
-        else:
-            self.receive_queue.put_nowait(data)
-        return len(data)
-
-
-# --------------------------------------------------------------------------- #
-# Server Implementations
-# --------------------------------------------------------------------------- #
+            self.pdu_send(pdu, addr=addr)
 
 
 class ModbusBaseServer(ModbusProtocol):
@@ -253,13 +197,14 @@ class ModbusBaseServer(ModbusProtocol):
     def __init__(
         self,
         params: CommParams,
-        context,
-        ignore_missing_slaves,
-        broadcast_enable,
-        response_manipulator,
-        request_tracer,
-        identity,
-        framer,
+        context: ModbusServerContext | None,
+        ignore_missing_slaves: bool,
+        broadcast_enable: bool,
+        identity: ModbusDeviceIdentification | None,
+        framer: FramerType,
+        trace_packet: Callable[[bool, bytes], bytes] | None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None,
+        trace_connect: Callable[[bool], None] | None,
     ) -> None:
         """Initialize base server."""
         super().__init__(
@@ -272,8 +217,9 @@ class ModbusBaseServer(ModbusProtocol):
         self.control = ModbusControlBlock()
         self.ignore_missing_slaves = ignore_missing_slaves
         self.broadcast_enable = broadcast_enable
-        self.response_manipulator = response_manipulator
-        self.request_tracer = request_tracer
+        self.trace_packet = trace_packet
+        self.trace_pdu = trace_pdu
+        self.trace_connect = trace_connect
         self.handle_local_echo = False
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
@@ -314,6 +260,7 @@ class ModbusBaseServer(ModbusProtocol):
         Log.debug("callback_data called: {} addr={}", data, ":hex", addr)
         return 0
 
+
 class ModbusTcpServer(ModbusBaseServer):
     """A modbus threaded tcp socket server.
 
@@ -324,14 +271,16 @@ class ModbusTcpServer(ModbusBaseServer):
 
     def __init__(
         self,
-        context,
+        context: ModbusServerContext,
+        *,
         framer=FramerType.SOCKET,
-        identity=None,
-        address=("", 502),
-        ignore_missing_slaves=False,
-        broadcast_enable=False,
-        response_manipulator=None,
-        request_tracer=None,
+        identity: ModbusDeviceIdentification | None = None,
+        address: tuple[str, int] = ("", 502),
+        ignore_missing_slaves: bool = False,
+        broadcast_enable: bool = False,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
     ):
         """Initialize the socket server.
 
@@ -344,11 +293,11 @@ class ModbusTcpServer(ModbusBaseServer):
         :param address: An optional (interface, port) to bind to.
         :param ignore_missing_slaves: True to not send errors on a request
                         to a missing slave
-        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
-                        False to treat 0 as any other slave_id
-        :param response_manipulator: Callback method for manipulating the
-                                        response
-        :param request_tracer: Callback method for tracing
+        :param broadcast_enable: True to treat dev_id 0 as broadcast address,
+                        False to treat 0 as any other dev_id
+        :param trace_packet: Called with bytestream received/to be sent
+        :param trace_pdu: Called with PDU received/to be sent
+        :param trace_connect: Called when connected/disconnected
         """
         params = getattr(
             self,
@@ -367,10 +316,11 @@ class ModbusTcpServer(ModbusBaseServer):
             context,
             ignore_missing_slaves,
             broadcast_enable,
-            response_manipulator,
-            request_tracer,
             identity,
             framer,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
         )
 
 
@@ -384,18 +334,20 @@ class ModbusTlsServer(ModbusTcpServer):
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        context,
+        context: ModbusServerContext,
+        *,
         framer=FramerType.TLS,
-        identity=None,
-        address=("", 502),
+        identity: ModbusDeviceIdentification | None = None,
+        address: tuple[str, int] = ("", 502),
         sslctx=None,
         certfile=None,
         keyfile=None,
         password=None,
         ignore_missing_slaves=False,
         broadcast_enable=False,
-        response_manipulator=None,
-        request_tracer=None,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
     ):
         """Overloaded initializer for the socket server.
 
@@ -413,10 +365,8 @@ class ModbusTlsServer(ModbusTcpServer):
         :param password: The password for for decrypting the private key file
         :param ignore_missing_slaves: True to not send errors on a request
                         to a missing slave
-        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
-                        False to treat 0 as any other slave_id
-        :param response_manipulator: Callback method for
-                        manipulating the response
+        :param broadcast_enable: True to treat dev_id 0 as broadcast address,
+                        False to treat 0 as any other dev_id
         """
         self.tls_setup = CommParams(
             comm_type=CommType.TLS,
@@ -435,8 +385,9 @@ class ModbusTlsServer(ModbusTcpServer):
             address=address,
             ignore_missing_slaves=ignore_missing_slaves,
             broadcast_enable=broadcast_enable,
-            response_manipulator=response_manipulator,
-            request_tracer=request_tracer,
+            trace_packet=trace_packet,
+            trace_pdu=trace_pdu,
+            trace_connect=trace_connect
         )
 
 
@@ -450,14 +401,16 @@ class ModbusUdpServer(ModbusBaseServer):
 
     def __init__(
         self,
-        context,
+        context: ModbusServerContext,
+        *,
         framer=FramerType.SOCKET,
-        identity=None,
-        address=("", 502),
-        ignore_missing_slaves=False,
-        broadcast_enable=False,
-        response_manipulator=None,
-        request_tracer=None,
+        identity: ModbusDeviceIdentification | None = None,
+        address: tuple[str, int] = ("", 502),
+        ignore_missing_slaves: bool = False,
+        broadcast_enable: bool = False,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
     ):
         """Overloaded initializer for the socket server.
 
@@ -470,29 +423,31 @@ class ModbusUdpServer(ModbusBaseServer):
         :param address: An optional (interface, port) to bind to.
         :param ignore_missing_slaves: True to not send errors on a request
                             to a missing slave
-        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
-                            False to treat 0 as any other slave_id
-        :param response_manipulator: Callback method for
-                            manipulating the response
-        :param request_tracer: Callback method for tracing
+        :param broadcast_enable: True to treat dev_id 0 as broadcast address,
+                            False to treat 0 as any other dev_id
+        :param trace_packet: Called with bytestream received/to be sent
+        :param trace_pdu: Called with PDU received/to be sent
+        :param trace_connect: Called when connected/disconnected
         """
         # ----------------
+        params = CommParams(
+            comm_type=CommType.UDP,
+            comm_name="server_listener",
+            source_address=address,
+            reconnect_delay=0.0,
+            reconnect_delay_max=0.0,
+            timeout_connect=0.0,
+        )
         super().__init__(
-            CommParams(
-                comm_type=CommType.UDP,
-                comm_name="server_listener",
-                source_address=address,
-                reconnect_delay=0.0,
-                reconnect_delay_max=0.0,
-                timeout_connect=0.0,
-            ),
+            params,
             context,
             ignore_missing_slaves,
             broadcast_enable,
-            response_manipulator,
-            request_tracer,
             identity,
             framer,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
         )
 
 
@@ -505,7 +460,17 @@ class ModbusSerialServer(ModbusBaseServer):
     """
 
     def __init__(
-        self, context, framer=FramerType.RTU, identity=None, **kwargs
+        self,
+        context: ModbusServerContext,
+        *,
+        framer: FramerType = FramerType.RTU,
+        ignore_missing_slaves: bool = False,
+        identity: ModbusDeviceIdentification | None = None,
+        broadcast_enable: bool = False,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
+        **kwargs
     ):
         """Initialize the socket server.
 
@@ -523,40 +488,38 @@ class ModbusSerialServer(ModbusBaseServer):
         :param handle_local_echo: (optional) Discard local echo from dongle.
         :param ignore_missing_slaves: True to not send errors on a request
                             to a missing slave
-        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
-                            False to treat 0 as any other slave_id
+        :param broadcast_enable: True to treat dev_id 0 as broadcast address,
+                            False to treat 0 as any other dev_id
         :param reconnect_delay: reconnect delay in seconds
-        :param response_manipulator: Callback method for
-                    manipulating the response
-        :param request_tracer: Callback method for tracing
+        :param trace_packet: Called with bytestream received/to be sent
+        :param trace_pdu: Called with PDU received/to be sent
+        :param trace_connect: Called when connected/disconnected
         """
+        params = CommParams(
+            comm_type=CommType.SERIAL,
+            comm_name="server_listener",
+            reconnect_delay=kwargs.get("reconnect_delay", 2),
+            reconnect_delay_max=0.0,
+            timeout_connect=kwargs.get("timeout", 3),
+            source_address=(kwargs.get("port", 0), 0),
+            bytesize=kwargs.get("bytesize", 8),
+            parity=kwargs.get("parity", "N"),
+            baudrate=kwargs.get("baudrate", 19200),
+            stopbits=kwargs.get("stopbits", 1),
+            handle_local_echo=kwargs.get("handle_local_echo", False)
+        )
         super().__init__(
-            params=CommParams(
-                comm_type=CommType.SERIAL,
-                comm_name="server_listener",
-                reconnect_delay=kwargs.get("reconnect_delay", 2),
-                reconnect_delay_max=0.0,
-                timeout_connect=kwargs.get("timeout", 3),
-                source_address=(kwargs.get("port", 0), 0),
-                bytesize=kwargs.get("bytesize", 8),
-                parity=kwargs.get("parity", "N"),
-                baudrate=kwargs.get("baudrate", 19200),
-                stopbits=kwargs.get("stopbits", 1),
-            ),
-            context=context,
-            ignore_missing_slaves=kwargs.get("ignore_missing_slaves", False),
-            broadcast_enable=kwargs.get("broadcast_enable", False),
-            response_manipulator=kwargs.get("response_manipulator", None),
-            request_tracer=kwargs.get("request_tracer", None),
-            identity=kwargs.get("identity", None),
-            framer=framer,
+            params,
+            context,
+            ignore_missing_slaves,
+            broadcast_enable,
+            identity,
+            framer,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
         )
         self.handle_local_echo = kwargs.get("handle_local_echo", False)
-
-
-# --------------------------------------------------------------------------- #
-# Creation Factories
-# --------------------------------------------------------------------------- #
 
 
 class _serverList:
@@ -603,62 +566,40 @@ class _serverList:
 
 
 async def StartAsyncTcpServer(  # pylint: disable=invalid-name,dangerous-default-value
-    context=None,
-    identity=None,
-    address=None,
+    context,
     custom_functions=[],
     **kwargs,
 ):
     """Start and run a tcp modbus server.
 
-    :param context: The ModbusServerContext datastore
-    :param identity: An optional identify structure
-    :param address: An optional (interface, port) to bind to.
-    :param custom_functions: An optional list of custom function classes
-        supported by server instance.
-    :param kwargs: The rest
+    For parameter explanation see ModbusTcpServer.
+
+    parameter custom_functions: optional list of custom function classes.
     """
     kwargs.pop("host", None)
     server = ModbusTcpServer(
-        context, kwargs.pop("framer", FramerType.SOCKET), identity, address, **kwargs
+        context,
+        framer=kwargs.pop("framer", FramerType.SOCKET),
+        **kwargs
     )
     await _serverList.run(server, custom_functions)
 
 
 async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
-    identity=None,
-    address=None,
-    sslctx=None,
-    certfile=None,
-    keyfile=None,
-    password=None,
     custom_functions=[],
     **kwargs,
 ):
     """Start and run a tls modbus server.
 
-    :param context: The ModbusServerContext datastore
-    :param identity: An optional identify structure
-    :param address: An optional (interface, port) to bind to.
-    :param sslctx: The SSLContext to use for TLS (default None and auto create)
-    :param certfile: The cert file path for TLS (used if sslctx is None)
-    :param keyfile: The key file path for TLS (used if sslctx is None)
-    :param password: The password for for decrypting the private key file
-    :param custom_functions: An optional list of custom function classes
-        supported by server instance.
-    :param kwargs: The rest
+    For parameter explanation see ModbusTlsServer.
+
+    parameter custom_functions: optional list of custom function classes.
     """
     kwargs.pop("host", None)
     server = ModbusTlsServer(
         context,
-        kwargs.pop("framer", FramerType.TLS),
-        identity,
-        address,
-        sslctx,
-        certfile,
-        keyfile,
-        password,
+        framer=kwargs.pop("framer", FramerType.TLS),
         **kwargs,
     )
     await _serverList.run(server, custom_functions)
@@ -666,64 +607,70 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default
 
 async def StartAsyncUdpServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
-    identity=None,
-    address=None,
     custom_functions=[],
     **kwargs,
 ):
     """Start and run a udp modbus server.
 
-    :param context: The ModbusServerContext datastore
-    :param identity: An optional identify structure
-    :param address: An optional (interface, port) to bind to.
-    :param custom_functions: An optional list of custom function classes
-        supported by server instance.
-    :param kwargs:
+    For parameter explanation see ModbusUdpServer.
+
+    parameter custom_functions: optional list of custom function classes.
     """
     kwargs.pop("host", None)
     server = ModbusUdpServer(
-        context, kwargs.pop("framer", FramerType.SOCKET), identity, address, **kwargs
+        context,
+        **kwargs
     )
     await _serverList.run(server, custom_functions)
 
 
 async def StartAsyncSerialServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
-    identity=None,
     custom_functions=[],
     **kwargs,
 ):
     """Start and run a serial modbus server.
 
-    :param context: The ModbusServerContext datastore
-    :param identity: An optional identify structure
-    :param custom_functions: An optional list of custom function classes
-        supported by server instance.
-    :param kwargs: The rest
+    For parameter explanation see ModbusSerialServer.
+
+    parameter custom_functions: optional list of custom function classes.
     """
     server = ModbusSerialServer(
-        context, kwargs.pop("framer", FramerType.RTU), identity=identity, **kwargs
+        context,
+        **kwargs
     )
     await _serverList.run(server, custom_functions)
 
 
 def StartSerialServer(**kwargs):  # pylint: disable=invalid-name
-    """Start and run a serial modbus server."""
+    """Start and run a modbus serial server.
+
+    For parameter explanation see ModbusSerialServer.
+    """
     return asyncio.run(StartAsyncSerialServer(**kwargs))
 
 
 def StartTcpServer(**kwargs):  # pylint: disable=invalid-name
-    """Start and run a serial modbus server."""
+    """Start and run a modbus TCP server.
+
+    For parameter explanation see ModbusTcpServer.
+    """
     return asyncio.run(StartAsyncTcpServer(**kwargs))
 
 
 def StartTlsServer(**kwargs):  # pylint: disable=invalid-name
-    """Start and run a serial modbus server."""
+    """Start and run a modbus TLS server.
+
+    For parameter explanation see ModbusTlsServer.
+    """
     return asyncio.run(StartAsyncTlsServer(**kwargs))
 
 
 def StartUdpServer(**kwargs):  # pylint: disable=invalid-name
-    """Start and run a serial modbus server."""
+    """Start and run a modbus UDP server.
+
+    For parameter explanation see ModbusUdpServer.
+    """
     return asyncio.run(StartAsyncUdpServer(**kwargs))
 
 

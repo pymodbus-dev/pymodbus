@@ -4,6 +4,8 @@
 This is an example of using the builtin request/response tracer to
 manipulate the messages to/from the modbus server
 """
+from __future__ import annotations
+
 import asyncio
 import logging
 
@@ -13,6 +15,7 @@ from pymodbus.datastore import (
     ModbusServerContext,
     ModbusSlaveContext,
 )
+from pymodbus.pdu import ModbusPDU
 from pymodbus.server import ModbusTcpServer
 
 
@@ -20,31 +23,25 @@ class Manipulator:
     """A Class to run the server."""
 
     message_count: int = 1
-    server: ModbusTcpServer = None
+    server: ModbusTcpServer
 
-    def server_request_tracer(self, request, *_addr):
-        """Trace requests.
+    def trace_packet(self, sending: bool, data: bytes) -> bytes:
+        """Do dummy trace."""
+        txt = "REQUEST stream" if sending else "RESPONSE stream"
+        print(f"---> {txt}: {data!r}")
 
-        All server requests passes this filter before being handled.
-        """
-        print(f"---> REQUEST: {request}")
+        return data
 
-    def server_response_manipulator(self, response):
-        """Manipulate responses.
+    def trace_pdu(self, sending: bool, pdu: ModbusPDU) -> ModbusPDU:
+        """Do dummy trace."""
+        txt = "REQUEST pdu" if sending else "RESPONSE pdu"
+        print(f"---> {txt}: {pdu}")
+        return pdu
 
-        All server responses passes this filter before being sent.
-        The filter returns:
-
-        - response, either original or modified
-        - skip_encoding, signals whether or not to encode the response
-        """
-        if not self.message_count:
-            print(f"---> RESPONSE: {response}")
-            self.message_count = 3
-        else:
-            print("---> RESPONSE: NONE")
-            self.message_count -= 1
-        return response, False
+    def trace_connect(self, connect: bool) -> None:
+        """Do dummy trace."""
+        txt = "Connected" if connect else "Disconnected"
+        print(f"---> {txt}")
 
     async def setup(self):
         """Prepare server."""
@@ -58,11 +55,12 @@ class Manipulator:
         )
         self.server = ModbusTcpServer(
             context,
-            FramerType.SOCKET,
-            None,
-            ("127.0.0.1", 5020),
-            request_tracer=self.server_request_tracer,
-            response_manipulator=self.server_response_manipulator,
+            framer=FramerType.SOCKET,
+            identity=None,
+            address=("127.0.0.1", 5020),
+            trace_packet=self.trace_packet,
+            trace_pdu=self.trace_pdu,
+            trace_connect=self.trace_connect,
         )
 
     async def run(self):

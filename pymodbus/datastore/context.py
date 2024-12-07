@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 # pylint: disable=missing-type-doc
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.exceptions import NoSuchSlaveException
@@ -30,7 +32,7 @@ class ModbusBaseSlaveContext:
         """
         return self._fx_mapper[fx]
 
-    async def async_getValues(self, fc_as_hex: int, address: int, count: int = 1) -> list[int | bool | None]:
+    async def async_getValues(self, fc_as_hex: int, address: int, count: int = 1) -> Sequence[int | bool]:
         """Get `count` values from datastore.
 
         :param fc_as_hex: The function we are working with
@@ -40,7 +42,7 @@ class ModbusBaseSlaveContext:
         """
         return self.getValues(fc_as_hex, address, count)
 
-    async def async_setValues(self, fc_as_hex: int, address: int, values: list[int | bool]) -> None:
+    async def async_setValues(self, fc_as_hex: int, address: int, values: Sequence[int | bool]) -> None:
         """Set the datastore with the supplied values.
 
         :param fc_as_hex: The function we are working with
@@ -49,7 +51,7 @@ class ModbusBaseSlaveContext:
         """
         self.setValues(fc_as_hex, address, values)
 
-    def getValues(self, fc_as_hex: int, address: int, count: int = 1) -> list[int | bool | None]:
+    def getValues(self, fc_as_hex: int, address: int, count: int = 1) -> Sequence[int | bool]:
         """Get `count` values from datastore.
 
         :param fc_as_hex: The function we are working with
@@ -60,7 +62,7 @@ class ModbusBaseSlaveContext:
         Log.error("getValues({},{},{}) not implemented!", fc_as_hex, address, count)
         return []
 
-    def setValues(self, fc_as_hex: int, address: int, values: list[int | bool]) -> None:
+    def setValues(self, fc_as_hex: int, address: int, values: Sequence[int | bool]) -> None:
         """Set the datastore with the supplied values.
 
         :param fc_as_hex: The function we are working with
@@ -79,17 +81,6 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
     :param co: coils initializer ModbusDataBlock
     :param hr: holding register initializer ModbusDataBlock
     :param ir: input registers initializer ModbusDataBlock
-    :param zero_mode: Not add one to address
-
-        When True, a request for address zero to n will map to
-        datastore address zero to n.
-
-        When False, a request for address zero to n will map to
-        datastore address one to n+1, based on section 4.4 of
-        specification.
-
-        Default is False.
-
     """
 
     def __init__(self, *_args,
@@ -97,14 +88,13 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
                     co=ModbusSequentialDataBlock.create(),
                     ir=ModbusSequentialDataBlock.create(),
                     hr=ModbusSequentialDataBlock.create(),
-                    zero_mode=False):
+                ):
         """Initialize the datastores."""
         self.store = {}
         self.store["d"] = di
         self.store["c"] = co
         self.store["i"] = ir
         self.store["h"] = hr
-        self.zero_mode = zero_mode
 
     def __str__(self):
         """Return a string representation of the context.
@@ -126,8 +116,7 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
         :param count: The number of values to test
         :returns: True if the request in within range, False otherwise
         """
-        if not self.zero_mode:
-            address += 1
+        address += 1
         Log.debug("validate: fc-[{}] address-{}: count-{}", fc_as_hex, address, count)
         return self.store[self.decode(fc_as_hex)].validate(address, count)
 
@@ -139,8 +128,7 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         """
-        if not self.zero_mode:
-            address += 1
+        address += 1
         Log.debug("getValues: fc-[{}] address-{}: count-{}", fc_as_hex, address, count)
         return self.store[self.decode(fc_as_hex)].getValues(address, count)
 
@@ -151,8 +139,7 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
         :param address: The starting address
         :param values: The new values to be set
         """
-        if not self.zero_mode:
-            address += 1
+        address += 1
         Log.debug("setValues[{}] address-{}: count-{}", fc_as_hex, address, len(values))
         self.store[self.decode(fc_as_hex)].setValues(address, values)
 
@@ -171,7 +158,7 @@ class ModbusServerContext:
     """This represents a master collection of slave contexts.
 
     If single is set to true, it will be treated as a single
-    context so every slave_id returns the same context. If single
+    context so every device id returns the same context. If single
     is set to false, it will be interpreted as a collection of
     slave contexts.
     """

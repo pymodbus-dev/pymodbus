@@ -210,28 +210,10 @@ Source: :github:`examples/contrib/solar.py`
     :noindex:
 
 
-Redis datastore
-^^^^^^^^^^^^^^^
-Source: :github:`examples/contrib/redis_datastore.py`
-
-.. automodule:: examples.contrib.redis_datastore
-    :undoc-members:
-    :noindex:
-
-
 Serial Forwarder
 ^^^^^^^^^^^^^^^^
 Source: :github:`examples/contrib/serial_forwarder.py`
 
 .. automodule:: examples.contrib.serial_forwarder
-    :undoc-members:
-    :noindex:
-
-
-Sqlalchemy datastore
-^^^^^^^^^^^^^^^^^^^^
-Source: :github:`examples/contrib/sql_datastore.py`
-
-.. automodule:: examples.contrib.sql_datastore
     :undoc-members:
     :noindex:

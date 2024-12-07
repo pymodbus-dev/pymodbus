@@ -65,7 +65,7 @@ from pymodbus.transport.serialtransport import create_serial_connection
 NULLMODEM_HOST = "__pymodbus_nullmodem"
 
 
-class CommType(Enum):
+class CommType(int, Enum):
     """Type of transport."""
 
     TCP = 1
@@ -138,26 +138,32 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self,
         params: CommParams,
         is_server: bool,
+        is_sync: bool = False
     ) -> None:
         """Initialize a transport instance.
 
         :param params: parameter dataclass
         :param is_server: true if object act as a server (listen/connect)
+        :param is_sync: true if used with sync client
         """
         self.comm_params = params.copy()
         self.is_server = is_server
         self.is_closing = False
 
         self.transport: asyncio.BaseTransport = None  # type: ignore[assignment]
-        self.loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
         self.recv_buffer: bytes = b""
         self.call_create: Callable[[], Coroutine[Any, Any, Any]] = None  # type: ignore[assignment]
         self.reconnect_task: asyncio.Task | None = None
         self.listener: ModbusProtocol | None = None
+        self.is_listener: bool = False
         self.active_connections: dict[str, ModbusProtocol] = {}
         self.unique_id: str = str(id(self))
         self.reconnect_delay_current = 0.0
         self.sent_buffer: bytes = b""
+        self.loop: asyncio.AbstractEventLoop
+        if is_sync:
+            return
+        self.loop = asyncio.get_running_loop()
         if self.is_server:
             if self.comm_params.source_address is not None:
                 host = self.comm_params.source_address[0]
@@ -166,7 +172,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 # This behaviour isn't quite right.
                 # It listens on any IPv4 address rather than the more natural default of any address (v6 or v4).
                 host = "0.0.0.0" # Any IPv4 host
-                port = 0 # Server will select an ephemeral port for itself
+                port = 502 # Server will listen on standard modbus port
         else:
             host = self.comm_params.host
             port = int(self.comm_params.port)
@@ -249,6 +255,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         """Handle generic listen and call on to specific transport listen."""
         Log.debug("Awaiting connections {}", self.comm_params.comm_name)
         self.is_closing = False
+        self.is_listener = True
         try:
             self.transport = await self.call_create()
             if isinstance(self.transport, tuple):
@@ -281,7 +288,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
             return
         Log.debug("Connection lost {} due to {}", self.comm_params.comm_name, reason)
         self.__close()
-        if self.is_server:
+        if self.is_listener:
             self.reconnect_task = asyncio.create_task(self.do_relisten())
             self.reconnect_task.set_name("transport relisten")
         elif not self.listener and self.comm_params.reconnect_delay:
@@ -397,7 +404,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
             self.transport.close()
             self.transport = None  # type: ignore[assignment]
         self.recv_buffer = b""
-        if self.is_server:
+        if self.is_listener:
             for _key, value in self.active_connections.items():
                 value.listener = None
                 value.callback_disconnected(None)

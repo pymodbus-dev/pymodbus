@@ -12,7 +12,7 @@ from collections import OrderedDict
 
 
 try:
-    import client_async
+    import client_async  # type: ignore[import-not-found]
 except ImportError:
     print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
@@ -64,7 +64,7 @@ async def run_payload_calls(client):
         # Normally just do:  builder = BinaryPayloadBuilder()
         my_string = "abcdefgh"
         builder.add_string(my_string)
-        builder.add_bits([0, 1, 0, 1, 1, 0, 1, 0])
+        builder.add_bits([False, True, False, True, True, False, True, False])
         builder.add_8bit_int(-0x12)
         builder.add_8bit_uint(0x12)
         builder.add_16bit_int(-0x5678)
@@ -90,9 +90,6 @@ async def run_payload_calls(client):
         # We can write registers
         rr = await client.write_registers(address, registers, slave=slave)
         assert not rr.isError()
-        # Or we can write an encoded binary string
-        rr = await client.write_registers(address, payload, skip_encode=True, slave=1)
-        assert not rr.isError()
 
         # ----------------------------------------------------------------------- #
         # If you need to decode a collection of registers in a weird layout, the
@@ -100,7 +97,7 @@ async def run_payload_calls(client):
         # ----------------------------------------------------------------------- #
         print("Reading Registers:")
         count = len(payload)
-        rr = await client.read_holding_registers(address, count, slave=slave)
+        rr = await client.read_holding_registers(address, count=count, slave=slave)
         assert not rr.isError()
         print(rr.registers)
         print("\n")

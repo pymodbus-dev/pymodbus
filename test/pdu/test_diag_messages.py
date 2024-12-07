@@ -1,8 +1,7 @@
 """Test diag messages."""
 import pytest
 
-from pymodbus.constants import ModbusPlusOperation
-from pymodbus.exceptions import NotImplementedException
+from pymodbus.constants import ModbusPlusOperation, ModbusStatus
 from pymodbus.pdu.diag_message import (
     ChangeAsciiInputDelimiterRequest,
     ChangeAsciiInputDelimiterResponse,
@@ -10,10 +9,7 @@ from pymodbus.pdu.diag_message import (
     ClearCountersResponse,
     ClearOverrunCountRequest,
     ClearOverrunCountResponse,
-    DiagnosticStatusRequest,
-    DiagnosticStatusResponse,
-    DiagnosticStatusSimpleRequest,
-    DiagnosticStatusSimpleResponse,
+    DiagnosticBase,
     ForceListenOnlyModeRequest,
     ForceListenOnlyModeResponse,
     GetClearModbusPlusRequest,
@@ -52,7 +48,7 @@ class TestDataStore:
         (
             RestartCommunicationsOptionRequest,
             b"\x00\x01\x00\x00",
-            b"\x00\x01\xff\x00",
+            b"\x00\x01\x00\x00",
         ),
         (ReturnDiagnosticRegisterRequest, b"\x00\x02\x00\x00", b"\x00\x02\x00\x00"),
         (
@@ -97,8 +93,8 @@ class TestDataStore:
     ]
 
     responses = [
-        (DiagnosticStatusResponse,                     b"\x00\x00\x00\x00"),
-        (DiagnosticStatusSimpleResponse,               b"\x00\x00\x00\x00"),
+        (DiagnosticBase,                     b"\x00\x00\x00\x00"),
+        (DiagnosticBase,               b"\x00\x00\x00\x00"),
         (ReturnQueryDataResponse, b"\x00\x00\x00\x00"),
         (RestartCommunicationsOptionResponse, b"\x00\x01\x00\x00"),
         (ReturnDiagnosticRegisterResponse, b"\x00\x02\x00\x00"),
@@ -121,17 +117,29 @@ class TestDataStore:
 
     def test_diagnostic_encode_decode(self):
         """Testing diagnostic request/response can be decoded and encoded."""
-        for msg in (DiagnosticStatusRequest, DiagnosticStatusResponse):
-            msg_obj = msg()
-            data = b"\x00\x01\x02\x03"
-            msg_obj.decode(data)
-            result = msg_obj.encode()
-            assert data == result
+        msg_obj = DiagnosticBase()
+        data = b"\x00\x01\x02\x03"
+        msg_obj.decode(data)
+        result = msg_obj.encode()
+        assert data == result
+
+    def test_diagnostic_encode_error(self):
+        """Testing diagnostic request/response can be decoded and encoded."""
+        msg_obj = DiagnosticBase()
+        msg_obj.message = "not allowed"
+        with pytest.raises(TypeError):
+            msg_obj.encode()
+
+    def test_diagnostic_decode_error(self):
+        """Testing diagnostic request/response can be decoded and encoded."""
+        msg_obj = DiagnosticBase()
+        data = b"\x00\x01\x02\x03a"
+        msg_obj.decode(data)
 
     def test_diagnostic_requests_decode(self):
         """Testing diagnostic request messages encoding."""
         for msg, enc, _ in self.requests:
-            handle = DiagnosticStatusRequest()
+            handle = DiagnosticBase()
             handle.decode(enc)
             assert handle.sub_function_code == msg.sub_function_code
             encoded = handle.encode()
@@ -139,17 +147,15 @@ class TestDataStore:
 
     async def test_diagnostic_simple_requests(self):
         """Testing diagnostic request messages encoding."""
-        request = DiagnosticStatusSimpleRequest(b"\x12\x34")
+        request = DiagnosticBase(message=b"\x12\x34")
         request.sub_function_code = 0x1234
-        with pytest.raises(NotImplementedException):
-            await request.update_datastore()
         assert request.encode() == b"\x12\x34\x12\x34"
-        DiagnosticStatusSimpleResponse()
+        DiagnosticBase()
 
     def test_diagnostic_response_decode(self):
         """Testing diagnostic request messages encoding."""
         for msg, enc, _ in self.requests:
-            handle = DiagnosticStatusResponse()
+            handle = DiagnosticBase()
             handle.decode(enc)
             assert handle.sub_function_code == msg.sub_function_code
 
@@ -161,7 +167,7 @@ class TestDataStore:
     async def test_diagnostic_update_datastore(self):
         """Testing diagnostic message execution."""
         for message, encoded, update_datastored in self.requests:
-            encoded = (await message().update_datastore()).encode()
+            encoded = (await message().update_datastore(None)).encode()
             assert encoded == update_datastored
 
     def test_return_query_data_request(self):
@@ -180,23 +186,23 @@ class TestDataStore:
 
     def test_restart_communications_option(self):
         """Testing diagnostic message execution."""
-        request = RestartCommunicationsOptionRequest(True)
+        request = RestartCommunicationsOptionRequest(message=ModbusStatus.ON)
         assert request.encode() == b"\x00\x01\xff\x00"
-        request = RestartCommunicationsOptionRequest(False)
+        request = RestartCommunicationsOptionRequest(message=ModbusStatus.OFF)
         assert request.encode() == b"\x00\x01\x00\x00"
 
-        response = RestartCommunicationsOptionResponse(True)
+        response = RestartCommunicationsOptionResponse(message=ModbusStatus.ON)
         assert response.encode() == b"\x00\x01\xff\x00"
-        response = RestartCommunicationsOptionResponse(False)
+        response = RestartCommunicationsOptionResponse(message=ModbusStatus.OFF)
         assert response.encode() == b"\x00\x01\x00\x00"
 
     async def test_get_clear_modbus_plus_request_update_datastore(self):
         """Testing diagnostic message execution."""
-        request = GetClearModbusPlusRequest(data=ModbusPlusOperation.CLEAR_STATISTICS)
-        response = await request.update_datastore()
+        request = GetClearModbusPlusRequest(message=ModbusPlusOperation.CLEAR_STATISTICS)
+        response = await request.update_datastore(None)
         assert response.message == ModbusPlusOperation.CLEAR_STATISTICS
 
-        request = GetClearModbusPlusRequest(data=ModbusPlusOperation.GET_STATISTICS)
-        response = await request.update_datastore()
+        request = GetClearModbusPlusRequest(message=ModbusPlusOperation.GET_STATISTICS)
+        response = await request.update_datastore(None)
         resp = [ModbusPlusOperation.GET_STATISTICS]
         assert response.message == resp + [0x00] * 55

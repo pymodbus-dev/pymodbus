@@ -7,9 +7,8 @@ import pytest
 from pymodbus.datastore.remote import RemoteSlaveContext
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.pdu import ExceptionResponse
-from pymodbus.pdu.bit_read_message import ReadCoilsResponse
-from pymodbus.pdu.bit_write_message import WriteMultipleCoilsResponse
-from pymodbus.pdu.register_read_message import ReadInputRegistersResponse
+from pymodbus.pdu.bit_message import ReadCoilsResponse, WriteMultipleCoilsResponse
+from pymodbus.pdu.register_message import ReadInputRegistersResponse
 
 
 class TestRemoteDataStore:
@@ -50,8 +49,9 @@ class TestRemoteDataStore:
     def test_remote_slave_get_values(self):
         """Test getting values from a remote slave context."""
         client = mock.MagicMock()
-        client.read_coils = lambda a, b: ReadCoilsResponse([1] * 10)
-        client.read_input_registers = lambda a, b: ReadInputRegistersResponse([10] * 10)
+        pdu = ReadCoilsResponse(bits=[True] * 10)
+        client.read_coils = lambda a, b: pdu
+        client.read_input_registers = lambda a, b: ReadInputRegistersResponse(registers=[10] * 10)
         client.read_holding_registers = lambda a, b: ExceptionResponse(0x15)
 
         context = RemoteSlaveContext(client)
@@ -70,9 +70,10 @@ class TestRemoteDataStore:
     async def test_remote_slave_async_get_values(self):
         """Test getting values from a remote slave context."""
         client = mock.MagicMock()
-        client.read_coils = mock.MagicMock(return_value=ReadCoilsResponse([1] * 10))
+        pdu = ReadCoilsResponse(bits=[True] * 10)
+        client.read_coils = mock.MagicMock(return_value=pdu)
         client.read_input_registers = mock.MagicMock(
-            return_value=ReadInputRegistersResponse([10] * 10)
+            return_value=ReadInputRegistersResponse(registers=[10] * 10)
         )
         client.read_holding_registers = mock.MagicMock(
             return_value=ExceptionResponse(0x15)
@@ -94,8 +95,8 @@ class TestRemoteDataStore:
     def test_remote_slave_validate_values(self):
         """Test validating against a remote slave context."""
         client = mock.MagicMock()
-        client.read_coils = lambda a, b: ReadCoilsResponse([1] * 10)
-        client.read_input_registers = lambda a, b: ReadInputRegistersResponse([10] * 10)
+        client.read_coils = lambda a, b: ReadCoilsResponse(bits=[1] * 10)
+        client.read_input_registers = lambda a, b: ReadInputRegistersResponse(registers=[10] * 10)
         client.read_holding_registers = lambda a, b: ExceptionResponse(0x15)
 
         context = RemoteSlaveContext(client)

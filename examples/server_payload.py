@@ -10,7 +10,7 @@ import sys
 
 
 try:
-    import server_async
+    import server_async  # type: ignore[import-not-found]
 except ImportError:
     print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
@@ -37,7 +37,7 @@ def setup_payload_server(cmdline=None):
     # ----------------------------------------------------------------------- #
     builder = BinaryPayloadBuilder(byteorder=Endian.LITTLE, wordorder=Endian.LITTLE)
     builder.add_string("abcdefgh")
-    builder.add_bits([0, 1, 0, 1, 1, 0, 1, 0])
+    builder.add_bits([False, True, False, True, True, False, True, False])
     builder.add_8bit_int(-0x12)
     builder.add_8bit_uint(0x12)
     builder.add_16bit_int(-0x5678)

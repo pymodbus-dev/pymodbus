@@ -37,7 +37,7 @@ import sys
 
 
 try:
-    import server_async
+    import server_async  # type: ignore[import-not-found]
 except ImportError:
     print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
@@ -101,8 +101,8 @@ def setup_updating_server(cmdline=None):
 
     # Continuing, use a sequential block without gaps.
     datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
-    context = ModbusSlaveContext(di=datablock, co=datablock, hr=datablock, ir=datablock)
-    context = ModbusServerContext(slaves=context, single=True)
+    slavecontext = ModbusSlaveContext(di=datablock, co=datablock, hr=datablock, ir=datablock)
+    context = ModbusServerContext(slaves=slavecontext, single=True)
     return server_async.setup_server(
         description="Run asynchronous server.", context=context, cmdline=cmdline
     )

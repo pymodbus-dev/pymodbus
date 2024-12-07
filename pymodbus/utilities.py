@@ -5,13 +5,6 @@ data computing checksums, and decode checksums.
 """
 from __future__ import annotations
 
-
-__all__ = [
-    "pack_bitstring",
-    "unpack_bitstring",
-    "default",
-]
-
 # pylint: disable=missing-type-doc
 import struct
 
@@ -43,20 +36,6 @@ class ModbusTransactionState:  # pylint: disable=too-few-public-methods
             ModbusTransactionState.RETRYING: "RETRYING TRANSACTION",
         }
         return states.get(state, None)
-
-
-# --------------------------------------------------------------------------- #
-# Helpers
-# --------------------------------------------------------------------------- #
-
-
-def default(value):
-    """Return the default value of object.
-
-    :param value: The value to get the default of
-    :returns: The default value
-    """
-    return type(value)()
 
 
 def dict_property(store, index):

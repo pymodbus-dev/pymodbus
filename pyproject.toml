@@ -52,7 +52,7 @@ repl = [
 
 simulator = [
     "aiohttp>=3.8.6;python_version<'3.12'",
-    "aiohttp>=3.10.5;python_version>='3.12'"
+    "aiohttp>=3.10.6;python_version>='3.12'"
 ]
 documentation = [
     "recommonmark>=0.7.1",
@@ -72,7 +72,7 @@ development = [
     "pytest-timeout>=2.3.1",
     "pytest-xdist>=3.6.1",
     "pytest-aiohttp>=1.0.5",
-    "ruff>=0.5.3",
+    "ruff>=0.8.2",
     "twine>=5.1.1",
     "types-Pygments",
     "types-pyserial"
@@ -186,6 +186,7 @@ overgeneral-exceptions = "builtins.Exception"
 bad-functions = "map,input"
 
 [tool.mypy]
+exclude = '/contrib/'
 strict_optional = true
 show_error_codes = true
 local_partial_types = true
@@ -243,7 +244,7 @@ exclude_also = [
     "if __name__ == .__main__.:",
     ]
 skip_covered = true
-fail_under = 90.0
+fail_under = 92.0
 
 [tool.coverage.html]
 directory = "build/cov"

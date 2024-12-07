@@ -39,8 +39,8 @@ import sys
 
 
 try:
-    import helper
-    import server_async
+    import helper  # type: ignore[import-not-found]
+    import server_async  # type: ignore[import-not-found]
 except ImportError:
     print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
@@ -78,7 +78,7 @@ def run_sync_server(args):
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
         )
     elif args.comm == "udp":
@@ -90,7 +90,7 @@ def run_sync_server(args):
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
         )
     elif args.comm == "serial":
@@ -109,7 +109,7 @@ def run_sync_server(args):
             baudrate=args.baudrate,  # The baud rate to use for the serial device
             # handle_local_echo=False,  # Handle local echo of the USB-to-RS485 adaptor
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave 0 as broadcast address,
         )
     elif args.comm == "tls":
         address = ("", args.port) if args.port else None
@@ -130,7 +130,7 @@ def run_sync_server(args):
             ),  # The key file path for TLS (used if sslctx is None)
             # password=None,  # The password for for decrypting the private key file
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
         )
     return server

@@ -67,7 +67,7 @@ class TransportStub(ModbusProtocol):
         self,
         params: CommParams,
         is_server: bool,
-        handler: Callable[[bytes], bytes],
+        handler: Callable[[ModbusProtocol, bool, bytes], None],
     ) -> None:
         """Initialize a stub instance."""
         self.stub_handle_data = handler
@@ -109,7 +109,7 @@ class ClientTester:  # pylint: disable=too-few-public-methods
         global test_port  # pylint: disable=global-statement
         self.comm = comm
         host = NULLMODEM_HOST
-
+        self.client: modbusClient.AsyncModbusTcpClient | modbusClient.AsyncModbusSerialClient
         if comm == CommType.TCP:
             self.client = modbusClient.AsyncModbusTcpClient(
                         host,
@@ -157,6 +157,7 @@ class ServerTester:  # pylint: disable=too-few-public-methods
         self.identity = ModbusDeviceIdentification(
             info_name={"VendorName": "VendorName"}
         )
+        self.server: modbusServer.ModbusTcpServer | modbusServer.ModbusSerialServer
         if comm == CommType.TCP:
             self.server = modbusServer.ModbusTcpServer(
                 self.context,
@@ -174,8 +175,9 @@ class ServerTester:  # pylint: disable=too-few-public-methods
         else:
             raise RuntimeError("ERROR: CommType not implemented")
         client_params = self.server.comm_params.copy()
-        client_params.host = client_params.source_address[0]
-        client_params.port = client_params.source_address[1]
+        if client_params.source_address:
+            client_params.host = client_params.source_address[0]
+            client_params.port = client_params.source_address[1]
         client_params.timeout_connect = 1.0
         self.stub = TransportStub(client_params, False, simulate_client)
         test_port += 1
@@ -194,6 +196,7 @@ class ServerTester:  # pylint: disable=too-few-public-methods
 
 async def main(comm: CommType, use_server: bool):
     """Combine setup and run."""
+    test: ServerTester | ClientTester
     if use_server:
         test = ServerTester(comm)
     else:

@@ -10,7 +10,7 @@ import sys
 
 
 try:
-    import server_async
+    import server_async  # type: ignore[import-not-found]
 except ImportError:
     print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
@@ -62,7 +62,7 @@ class CallbackDataBlock(ModbusSequentialDataBlock):
 
 async def run_callback_server(cmdline=None):
     """Define datastore callback for server and do setup."""
-    queue = asyncio.Queue()
+    queue: asyncio.Queue = asyncio.Queue()
     block = CallbackDataBlock(queue, 0x00, [17] * 100)
     block.setValues(1, 15)
     store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)

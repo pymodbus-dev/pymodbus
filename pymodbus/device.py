@@ -8,9 +8,9 @@ from __future__ import annotations
 
 
 __all__ = [
-    "ModbusPlusStatistics",
-    "ModbusDeviceIdentification",
     "DeviceInformationFactory",
+    "ModbusDeviceIdentification",
+    "ModbusPlusStatistics",
 ]
 
 import struct
@@ -343,7 +343,7 @@ class ModbusCountersHandler:
     0x10  6  Return Slave NAK Count
 
              Quantity of messages addressed to the remote device for which it
-             returned a Negative Acknowledge (NAK) exception response, since
+             returned a Negative ACKNOWLEDGE (NAK) exception response, since
              its last restart, clear counters operation, or power-up. Exception
              responses are described and listed in "MODBUS Application Protocol
              Specification" document.
@@ -375,7 +375,7 @@ class ModbusCountersHandler:
         "SlaveMessage",
         "SlaveNoResponse",
         "SlaveNAK",
-        "SlaveBusy",
+        "SLAVE_BUSY",
         "BusCharacterOverrun",
     ]
 
@@ -425,7 +425,7 @@ class ModbusCountersHandler:
     SlaveMessage = dict_property(lambda s: s.__data, 3)  # pylint: disable=protected-access
     SlaveNoResponse = dict_property(lambda s: s.__data, 4)  # pylint: disable=protected-access
     SlaveNAK = dict_property(lambda s: s.__data, 5)  # pylint: disable=protected-access
-    SlaveBusy = dict_property(lambda s: s.__data, 6)  # pylint: disable=protected-access
+    SLAVE_BUSY = dict_property(lambda s: s.__data, 6)  # pylint: disable=protected-access
     BusCharacterOverrun = dict_property(lambda s: s.__data, 7)  # pylint: disable=protected-access
     Event = dict_property(lambda s: s.__data, 8)  # pylint: disable=protected-access
     # fmt: on

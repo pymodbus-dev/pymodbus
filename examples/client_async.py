@@ -26,13 +26,15 @@ usage::
 The corresponding server must be started before e.g. as:
     python3 server_sync.py
 """
+from __future__ import annotations
+
 import asyncio
 import logging
 import sys
 
 
 try:
-    import helper
+    import helper  # type: ignore[import-not-found]
 except ImportError:
     print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
@@ -40,20 +42,19 @@ except ImportError:
     sys.exit(-1)
 
 import pymodbus.client as modbusClient
-from pymodbus import ModbusException
 
 
 _logger = logging.getLogger(__file__)
 _logger.setLevel("DEBUG")
 
 
-def setup_async_client(description=None, cmdline=None):
+def setup_async_client(description: str | None =None, cmdline: str | None = None) -> modbusClient.ModbusBaseClient:
     """Run client setup."""
     args = helper.get_commandline(
         server=False, description=description, cmdline=cmdline
     )
     _logger.info("### Create client object")
-    client = None
+    client: modbusClient.ModbusBaseClient | None = None
     if args.comm == "tcp":
         client = modbusClient.AsyncModbusTcpClient(
             args.host,
@@ -124,15 +125,11 @@ async def run_async_client(client, modbus_calls=None):
 
 async def run_a_few_calls(client):
     """Test connection works."""
-    try:
-        rr = await client.read_coils(32, 1, slave=1)
-        assert len(rr.bits) == 8
-        rr = await client.read_holding_registers(4, 2, slave=1)
-        assert rr.registers[0] == 17
-        assert rr.registers[1] == 17
-    except ModbusException:
-        pass
-
+    rr = await client.read_coils(32, count=1, slave=1)
+    assert len(rr.bits) == 8
+    rr = await client.read_holding_registers(4, count=2, slave=1)
+    assert rr.registers[0] == 17
+    assert rr.registers[1] == 17
 
 async def main(cmdline=None):
     """Combine setup and run."""

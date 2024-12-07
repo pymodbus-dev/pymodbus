@@ -15,8 +15,8 @@ import struct
 
 from pymodbus import FramerType
 from pymodbus.client import AsyncModbusTcpClient as ModbusClient
-from pymodbus.pdu import ModbusExceptions, ModbusPDU
-from pymodbus.pdu.bit_read_message import ReadCoilsRequest
+from pymodbus.pdu import ExceptionResponse, ModbusPDU
+from pymodbus.pdu.bit_message import ReadCoilsRequest
 
 
 # --------------------------------------------------------------------------- #
@@ -34,12 +34,11 @@ class CustomModbusPDU(ModbusPDU):
     """Custom modbus response."""
 
     function_code = 55
-    _rtu_byte_count_pos = 2
+    rtu_byte_count_pos = 2
 
-    def __init__(self, values=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, values=None, slave=1, transaction=0):
         """Initialize."""
-        super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().__init__(dev_id=slave, transaction_id=transaction)
         self.values = values or []
 
     def encode(self):
@@ -67,12 +66,11 @@ class CustomRequest(ModbusPDU):
     """Custom modbus request."""
 
     function_code = 55
-    _rtu_frame_size = 8
+    rtu_frame_size = 8
 
-    def __init__(self, address=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address=None, slave=1, transaction=0):
         """Initialize."""
-        super().__init__()
-        super().setData(slave, transaction, skip_encode)
+        super().__init__(dev_id=slave, transaction_id=transaction)
         self.address = address
         self.count = 16
 
@@ -87,9 +85,9 @@ class CustomRequest(ModbusPDU):
     def execute(self, context):
         """Execute."""
         if not 1 <= self.count <= 0x7D0:
-            return self.doException(ModbusExceptions.IllegalValue)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
         if not context.validate(self.function_code, self.address, self.count):
-            return self.doException(ModbusExceptions.IllegalAddress)
+            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_ADDRESS)
         values = context.getValues(self.function_code, self.address, self.count)
         return CustomModbusPDU(values)
 
@@ -102,12 +100,12 @@ class CustomRequest(ModbusPDU):
 class Read16CoilsRequest(ReadCoilsRequest):
     """Read 16 coils in one request."""
 
-    def __init__(self, address, count=None, slave=1, transaction=0, skip_encode=False):
+    def __init__(self, address, slave=1, transaction=0):
         """Initialize a new instance.
 
         :param address: The address to start reading from
         """
-        ReadCoilsRequest.__init__(self, address, count=16, slave=slave, transaction=transaction, skip_encode=skip_encode)
+        super().__init__(address=address, count=16, dev_id=slave, transaction_id=transaction)
 
 
 # --------------------------------------------------------------------------- #
@@ -129,13 +127,13 @@ async def main(host="localhost", port=5020):
         # new modbus function code.
         client.register(CustomModbusPDU)
         slave=1
-        request = CustomRequest(32, slave=slave)
-        result = await client.execute(False, request)
+        request1 = CustomRequest(32, slave=slave)
+        result = await client.execute(False, request1)
         print(result)
 
         # inherited request
-        request = Read16CoilsRequest(32, slave)
-        result = await client.execute(False, request)
+        request2 = Read16CoilsRequest(32, slave)
+        result = await client.execute(False, request2)
         print(result)
 
 

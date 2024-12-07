@@ -15,17 +15,15 @@ It is the community that decides how pymodbus evolves NOT the maintainers !
 
 The following bullet points are what the maintainers focus on:
 
-- 3.7.5, bug fix release, hopefully with:
-    - Simplify PDU classes
-    - Simplify transaction manager (central control point)
-    - Remove ModbusControlBlock
-- 3.7.6, bug fix release, with:
-    - Not planned
-- 3.8.0, with:
-    - new transaction handling
-    - transaction 100% coverage
-    - skip_encode, zero_mode parameters removed
+- 3.8.1, bug fix release, with:
+    - Currently not planned
+- 3.9.0, with:
+    - ModbusControlBlock pr slave
+    - New custom PDU (function codes)
+    - Remove remote_datastore
+    - Remove BinaryPayload
 - 4.0.0, with:
+    - New serial forwarder
     - client async with sync/async API
     - Only one datastore, but with different API`s
     - Simulator standard in server

@@ -1,15 +1,13 @@
 """Modbus Request/Response Decoders."""
 from __future__ import annotations
 
-import pymodbus.pdu.bit_read_message as bit_r_msg
-import pymodbus.pdu.bit_write_message as bit_w_msg
+import pymodbus.pdu.bit_message as bit_msg
 import pymodbus.pdu.diag_message as diag_msg
 import pymodbus.pdu.file_message as file_msg
 import pymodbus.pdu.mei_message as mei_msg
 import pymodbus.pdu.other_message as o_msg
 import pymodbus.pdu.pdu as base
-import pymodbus.pdu.register_read_message as reg_r_msg
-import pymodbus.pdu.register_write_message as reg_w_msg
+import pymodbus.pdu.register_message as reg_msg
 from pymodbus.exceptions import MessageRegisterException, ModbusException
 from pymodbus.logging import Log
 
@@ -18,23 +16,23 @@ class DecodePDU:
     """Decode pdu requests/responses (server/client)."""
 
     _pdu_class_table: set[tuple[type[base.ModbusPDU], type[base.ModbusPDU]]] = {
-        (reg_r_msg.ReadHoldingRegistersRequest, reg_r_msg.ReadHoldingRegistersResponse),
-        (bit_r_msg.ReadDiscreteInputsRequest, bit_r_msg.ReadDiscreteInputsResponse),
-        (reg_r_msg.ReadInputRegistersRequest, reg_r_msg.ReadInputRegistersResponse),
-        (bit_r_msg.ReadCoilsRequest, bit_r_msg.ReadCoilsResponse),
-        (bit_w_msg.WriteMultipleCoilsRequest, bit_w_msg.WriteMultipleCoilsResponse),
-        (reg_w_msg.WriteMultipleRegistersRequest, reg_w_msg.WriteMultipleRegistersResponse),
-        (reg_w_msg.WriteSingleRegisterRequest, reg_w_msg.WriteSingleRegisterResponse),
-        (bit_w_msg.WriteSingleCoilRequest, bit_w_msg.WriteSingleCoilResponse),
-        (reg_r_msg.ReadWriteMultipleRegistersRequest, reg_r_msg.ReadWriteMultipleRegistersResponse),
-        (diag_msg.DiagnosticStatusRequest, diag_msg.DiagnosticStatusResponse),
+        (reg_msg.ReadHoldingRegistersRequest, reg_msg.ReadHoldingRegistersResponse),
+        (bit_msg.ReadDiscreteInputsRequest, bit_msg.ReadDiscreteInputsResponse),
+        (reg_msg.ReadInputRegistersRequest, reg_msg.ReadInputRegistersResponse),
+        (bit_msg.ReadCoilsRequest, bit_msg.ReadCoilsResponse),
+        (bit_msg.WriteMultipleCoilsRequest, bit_msg.WriteMultipleCoilsResponse),
+        (reg_msg.WriteMultipleRegistersRequest, reg_msg.WriteMultipleRegistersResponse),
+        (reg_msg.WriteSingleRegisterRequest, reg_msg.WriteSingleRegisterResponse),
+        (bit_msg.WriteSingleCoilRequest, bit_msg.WriteSingleCoilResponse),
+        (reg_msg.ReadWriteMultipleRegistersRequest, reg_msg.ReadWriteMultipleRegistersResponse),
+        (diag_msg.DiagnosticBase, diag_msg.DiagnosticBase),
         (o_msg.ReadExceptionStatusRequest, o_msg.ReadExceptionStatusResponse),
         (o_msg.GetCommEventCounterRequest, o_msg.GetCommEventCounterResponse),
         (o_msg.GetCommEventLogRequest, o_msg.GetCommEventLogResponse),
         (o_msg.ReportSlaveIdRequest, o_msg.ReportSlaveIdResponse),
         (file_msg.ReadFileRecordRequest, file_msg.ReadFileRecordResponse),
         (file_msg.WriteFileRecordRequest, file_msg.WriteFileRecordResponse),
-        (reg_w_msg.MaskWriteRegisterRequest, reg_w_msg.MaskWriteRegisterResponse),
+        (reg_msg.MaskWriteRegisterRequest, reg_msg.MaskWriteRegisterResponse),
         (file_msg.ReadFifoQueueRequest, file_msg.ReadFifoQueueResponse),
         (mei_msg.ReadDeviceInformationRequest, mei_msg.ReadDeviceInformationResponse),
     }
@@ -64,13 +62,25 @@ class DecodePDU:
         """Initialize function_tables."""
         inx = 0 if is_server else 1
         self.lookup: dict[int, type[base.ModbusPDU]] = {cl[inx].function_code: cl[inx] for cl in self._pdu_class_table}
-        self.sub_lookup: dict[int, dict[int, type[base.ModbusPDU]]] = {f: {} for f in self.lookup}
+        self.sub_lookup: dict[int, dict[int, type[base.ModbusPDU]]] = {}
         for f in self._pdu_sub_class_table:
-            self.sub_lookup[f[inx].function_code][f[inx].sub_function_code] = f[inx]
+            if (function_code := f[inx].function_code) not in self.sub_lookup:
+                self.sub_lookup[function_code] = {f[inx].sub_function_code: f[inx]}
+            else:
+                self.sub_lookup[function_code][f[inx].sub_function_code] = f[inx]
 
-    def lookupPduClass(self, function_code: int) -> type[base.ModbusPDU]:
+    def lookupPduClass(self, data: bytes) -> type[base.ModbusPDU] | None:
         """Use `function_code` to determine the class of the PDU."""
-        return self.lookup.get(function_code, base.ExceptionResponse)
+        func_code = int(data[1])
+        if func_code & 0x80:
+            return base.ExceptionResponse
+        if func_code == 0x2B:  # mei message, sub_function_code is 1 byte
+            sub_func_code = int(data[2])
+            return self.sub_lookup[func_code].get(sub_func_code, None)
+        if func_code == 0x08:  # diag message,  sub_function_code is 2 bytes
+            sub_func_code = int(data[3])
+            return self.sub_lookup[func_code].get(sub_func_code, None)
+        return self.lookup.get(func_code, None)
 
     def register(self, custom_class: type[base.ModbusPDU]) -> None:
         """Register a function and sub function class with the decoder."""
@@ -99,9 +109,8 @@ class DecodePDU:
                 Log.debug("decode PDU failed for function code {}", function_code)
                 raise ModbusException(f"Unknown response {function_code}")
             pdu = pdu_type()
-            pdu.setData(0, 0, False)
-            Log.debug("decode PDU for {}", function_code)
             pdu.decode(frame[1:])
+            Log.debug("decoded PDU function_code({} sub {}) -> {} ", pdu.function_code, pdu.sub_function_code, str(pdu))
 
             if pdu.sub_function_code >= 0:
                 lookup = self.sub_lookup.get(pdu.function_code, {})

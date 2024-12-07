@@ -11,6 +11,7 @@ from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import FramerType
 from pymodbus.logging import Log
+from pymodbus.pdu import ModbusPDU
 from pymodbus.transport import CommParams, CommType
 from pymodbus.utilities import ModbusTransactionState
 
@@ -39,7 +40,12 @@ class AsyncModbusSerialClient(ModbusBaseClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for connecting and receiving data, in seconds.
     :param retries: Max number of retries per request.
-    :param on_connect_callback: Function that will be called just before a connection attempt.
+    :param trace_packet: Called with bytestream received/to be sent
+    :param trace_pdu: Called with PDU received/to be sent
+    :param trace_connect: Called when connected/disconnected
+
+    .. tip::
+        The trace methods allow to modify the datastream/pdu !
 
     .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect, from
@@ -63,6 +69,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         port: str,
+        *,
         framer: FramerType = FramerType.RTU,
         baudrate: int = 19200,
         bytesize: int = 8,
@@ -74,14 +81,18 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        on_connect_callback: Callable[[bool], None] | None = None,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
-        if "serial" not in sys.modules:
+        if "serial" not in sys.modules:  # pragma: no cover
             raise RuntimeError(
                 "Serial client requires pyserial "
                 'Please install with "pip install pyserial" and try again.'
             )
+        if framer not in [FramerType.ASCII, FramerType.RTU]:
+            raise TypeError("Only FramerType RTU/ASCII allowed.")
         self.comm_params = CommParams(
             comm_type=CommType.SERIAL,
             host=port,
@@ -99,7 +110,10 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             self,
             framer,
             retries,
-            on_connect_callback,
+            self.comm_params,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
         )
 
 
@@ -123,11 +137,12 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     :param reconnect_delay_max: Not used in the sync client
     :param timeout: Timeout for connecting and receiving data, in seconds.
     :param retries: Max number of retries per request.
+    :param trace_packet: Called with bytestream received/to be sent
+    :param trace_pdu: Called with PDU received/to be sent
+    :param trace_connect: Called when connected/disconnected
 
-    Note that unlike the async client, the sync client does not perform
-    retries. If the connection has closed, the client will attempt to reconnect
-    once before executing each read/write request, and will raise a
-    ConnectionException if this fails.
+    .. tip::
+        The trace methods allow to modify the datastream/pdu !
 
     Example::
 
@@ -150,6 +165,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         port: str,
+        *,
         framer: FramerType = FramerType.RTU,
         baudrate: int = 19200,
         bytesize: int = 8,
@@ -161,8 +177,18 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Modbus Serial Client."""
+        if "serial" not in sys.modules:  # pragma: no cover
+            raise RuntimeError(
+                "Serial client requires pyserial "
+                'Please install with "pip install pyserial" and try again.'
+            )
+        if framer not in [FramerType.ASCII, FramerType.RTU]:
+            raise TypeError("Only RTU/ASCII allowed.")
         self.comm_params = CommParams(
             comm_type=CommType.SERIAL,
             host=port,
@@ -179,12 +205,11 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         super().__init__(
             framer,
             retries,
+            self.comm_params,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
         )
-        if "serial" not in sys.modules:
-            raise RuntimeError(
-                "Serial client requires pyserial "
-                'Please install with "pip install pyserial" and try again.'
-            )
         self.socket: serial.Serial | None = None
         self.last_frame_end = None
         self._t0 = float(1 + bytesize + stopbits) / baudrate
@@ -239,7 +264,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Return waiting bytes."""
         return getattr(self.socket, "in_waiting") if hasattr(self.socket, "in_waiting") else getattr(self.socket, "inWaiting")()
 
-    def _send(self, request: bytes) -> int:
+    def _send(self, request: bytes) -> int:  # pragma: no cover
         """Send data on the underlying socket.
 
         If receive buffer still holds some data then flush it.
@@ -258,8 +283,9 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             return size
         return 0
 
-    def send(self, request: bytes) -> int:
+    def send(self, request: bytes, addr: tuple | None = None) -> int:  # pragma: no cover
         """Send data on the underlying socket."""
+        _ = addr
         start = time.time()
         if hasattr(self,"ctx"):
           timeout = start + self.ctx.comm_params.timeout_connect

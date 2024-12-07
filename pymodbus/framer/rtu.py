@@ -103,24 +103,23 @@ class FramerRTU(FramerBase):
         for used_len in range(data_len):
             if data_len - used_len < self.MIN_SIZE:
                 Log.debug("Short frame: {} wait for more data", data, ":hex")
-                return used_len, 0, 0, self.EMPTY
+                return 0, 0, 0, self.EMPTY
             dev_id = int(data[used_len])
-            func_code = int(data[used_len + 1])
-            if func_code & 0x7F not in self.decoder.lookup:
+            if not (pdu_class := self.decoder.lookupPduClass(data[used_len:])):
                 continue
-            pdu_class = self.decoder.lookupPduClass(func_code)
             if not (size := pdu_class.calculateRtuFrameSize(data[used_len:])):
                 size = data_len +1
             if data_len < used_len +size:
                 Log.debug("Frame - not ready")
-                return used_len, dev_id, 0, self.EMPTY
-            start_crc = used_len + size -2
-            crc = data[start_crc : start_crc + 2]
-            crc_val = (int(crc[0]) << 8) + int(crc[1])
-            if not FramerRTU.check_CRC(data[used_len : start_crc], crc_val):
-                Log.debug("Frame check failed, ignoring!!")
-                continue
-            return start_crc + 2, dev_id, 0, data[used_len + 1 : start_crc]
+                return 0, dev_id, 0, self.EMPTY
+            for test_len in range(data_len, used_len + size - 1, -1):
+                start_crc = test_len -2
+                crc = data[start_crc : start_crc + 2]
+                crc_val = (int(crc[0]) << 8) + int(crc[1])
+                if not FramerRTU.check_CRC(data[used_len : start_crc], crc_val):
+                    Log.debug("Frame check failed, possible garbage after frame, testing..")
+                    continue
+                return start_crc + 2, dev_id, 0, data[used_len + 1 : start_crc]
         return 0, 0, 0, self.EMPTY
 
 

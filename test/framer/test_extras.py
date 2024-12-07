@@ -13,7 +13,7 @@ TEST_MESSAGE = b"\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d"
 
 
 class TestExtas:
-    """Unittest for the pymodbus.transaction module."""
+    """Test for the framer module."""
 
     client = None
     decoder = None
@@ -75,7 +75,7 @@ class TestExtas:
 
     def test_tls_incoming_packet(self):
         """Framer tls incoming packet."""
-        msg = b"\x01\x12\x34\x00\x06"
+        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
         _, pdu = self._tls.processIncomingFrame(msg)
         assert pdu
 

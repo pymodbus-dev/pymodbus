@@ -9,6 +9,7 @@ from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import FramerType
 from pymodbus.logging import Log
+from pymodbus.pdu import ModbusPDU
 from pymodbus.transport import CommParams, CommType
 
 
@@ -32,7 +33,12 @@ class AsyncModbusUdpClient(ModbusBaseClient):
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
     :param timeout: Timeout for connecting and receiving data, in seconds.
     :param retries: Max number of retries per request.
-    :param on_connect_callback: Function that will be called just before a connection attempt.
+    :param trace_packet: Called with bytestream received/to be sent
+    :param trace_pdu: Called with PDU received/to be sent
+    :param trace_connect: Called when connected/disconnected
+
+    .. tip::
+        The trace methods allow to modify the datastream/pdu !
 
     .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect, from
@@ -56,6 +62,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         host: str,
+        *,
         framer: FramerType = FramerType.SOCKET,
         port: int = 502,
         name: str = "comm",
@@ -64,7 +71,9 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
-        on_connect_callback: Callable[[bool], None] | None = None,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus UDP Client."""
         self.comm_params = CommParams(
@@ -77,11 +86,16 @@ class AsyncModbusUdpClient(ModbusBaseClient):
             reconnect_delay_max=reconnect_delay_max,
             timeout_connect=timeout,
         )
+        if framer not in [FramerType.SOCKET, FramerType.RTU, FramerType.ASCII]:
+            raise TypeError("Only FramerType SOCKET/RTU/ASCII allowed.")
         ModbusBaseClient.__init__(
             self,
             framer,
             retries,
-            on_connect_callback,
+            self.comm_params,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
         )
         self.source_address = source_address
 
@@ -103,12 +117,12 @@ class ModbusUdpClient(ModbusBaseSyncClient):
     :param reconnect_delay_max: Not used in the sync client
     :param timeout: Timeout for connecting and receiving data, in seconds.
     :param retries: Max number of retries per request.
+    :param trace_packet: Called with bytestream received/to be sent
+    :param trace_pdu: Called with PDU received/to be sent
+    :param trace_connect: Called when connected/disconnected
 
     .. tip::
-        Unlike the async client, the sync client does not perform
-        retries. If the connection has closed, the client will attempt to reconnect
-        once before executing each read/write request, and will raise a
-        ConnectionException if this fails.
+        The trace methods allow to modify the datastream/pdu !
 
     Example::
 
@@ -126,9 +140,10 @@ class ModbusUdpClient(ModbusBaseSyncClient):
 
     socket: socket.socket | None
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         host: str,
+        *,
         framer: FramerType = FramerType.SOCKET,
         port: int = 502,
         name: str = "comm",
@@ -137,8 +152,13 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
+        trace_packet: Callable[[bool, bytes], bytes] | None = None,
+        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Modbus UDP Client."""
+        if framer not in [FramerType.SOCKET, FramerType.RTU, FramerType.ASCII]:
+            raise TypeError("Only FramerType SOCKET/RTU/ASCII allowed.")
         self.comm_params = CommParams(
             comm_type=CommType.UDP,
             host=host,
@@ -149,7 +169,14 @@ class ModbusUdpClient(ModbusBaseSyncClient):
             reconnect_delay_max=reconnect_delay_max,
             timeout_connect=timeout,
         )
-        super().__init__(framer, retries)
+        super().__init__(
+            framer,
+            retries,
+            self.comm_params,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
+        )
         self.socket = None
 
     @property
@@ -165,8 +192,7 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         if self.socket:
             return True
         try:
-            family = ModbusUdpClient.get_address_family(self.comm_params.host)
-            self.socket = socket.socket(family, socket.SOCK_DGRAM)
+            self.socket = socket.socket(-1, socket.SOCK_DGRAM)
             self.socket.settimeout(self.comm_params.timeout_connect)
         except OSError as exc:
             Log.error("Unable to create udp socket {}", exc)
@@ -180,11 +206,12 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         """
         self.socket = None
 
-    def send(self, request: bytes) -> int:
+    def send(self, request: bytes, addr: tuple | None = None) -> int:
         """Send data on the underlying socket.
 
         :meta private:
         """
+        _ = addr
         super()._start_send()
         if not self.socket:
             raise ConnectionException(str(self))
@@ -202,7 +229,7 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         if not self.socket:
             raise ConnectionException(str(self))
         if size is None:
-            size = 0
+            size = 4096
         data = self.socket.recvfrom(size)[0]
         self.last_frame_end = round(time.time(), 6)
         return data

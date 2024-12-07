@@ -56,7 +56,7 @@ async def run_forwarder(args):
     )
     args.client.connect()
     assert args.client.connected
-    # If required to communicate with a specified client use slave=<slave_id>
+    # If required to communicate with a specified client use slave=<device id>
     # in RemoteSlaveContext
     # For e.g to forward the requests to slave with slave address 1 use
     # store = RemoteSlaveContext(client, slave=1)

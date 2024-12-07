@@ -169,14 +169,11 @@ class TestPdu:
     def test_pdu_instance_extras(self, pdutype, kwargs):
         """Test that all PDU types can be created."""
         tid = 9112
-        slave_id = 63
-        try:
-            pdu = pdutype(transaction=tid, slave=slave_id, **kwargs)
-        except TypeError:
-            pdu = pdutype(transaction_id=tid, slave_id=slave_id, **kwargs)
+        dev_id = 63
+        pdu = pdutype(transaction_id=tid, dev_id=dev_id, **kwargs)
         assert pdu
         assert str(pdu)
-        assert pdu.slave_id == slave_id
+        assert pdu.dev_id == dev_id
         assert pdu.transaction_id == tid
         assert pdu.function_code > 0
 

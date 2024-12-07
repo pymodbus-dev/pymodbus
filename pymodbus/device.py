@@ -8,9 +8,9 @@ from __future__ import annotations
 
 
 __all__ = [
-    "ModbusPlusStatistics",
-    "ModbusDeviceIdentification",
     "DeviceInformationFactory",
+    "ModbusDeviceIdentification",
+    "ModbusPlusStatistics",
 ]
 
 import struct

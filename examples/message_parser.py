@@ -93,40 +93,22 @@ class Decoder:
     def report(self, message):
         """Print the message information."""
         print(
-            "%-15s = %s"  # pylint: disable=consider-using-f-string
-            % (
-                "name",
-                message.__class__.__name__,
-            )
+            f"{'name':.15s} = {message.__class__.__name__}"
         )
         for k_dict, v_dict in message.__dict__.items():
             if isinstance(v_dict, dict):
-                print("%-15s =" % k_dict)  # pylint: disable=consider-using-f-string
+                print(f"{k_dict:.15s} =")
                 for k_item, v_item in v_dict.items():
-                    print(
-                        "  %-12s => %s"  # pylint: disable=consider-using-f-string
-                        % (k_item, v_item)
+                    print(f"  {k_item:.12s} => {v_item}"
                     )
             elif isinstance(v_dict, collections.abc.Iterable):
-                print("%-15s =" % k_dict)  # pylint: disable=consider-using-f-string
+                print(f"{k_dict:.15s} =")
                 value = str([int(x) for x in v_dict])
                 for line in textwrap.wrap(value, 60):
-                    print(
-                        "%-15s . %s"  # pylint: disable=consider-using-f-string
-                        % ("", line)
-                    )
+                    print(f"{' ':.15s} . {line}")
             else:
-                print(
-                    "%-15s = %s"  # pylint: disable=consider-using-f-string
-                    % (k_dict, hex(v_dict))
-                )
-        print(
-            "%-15s = %s"  # pylint: disable=consider-using-f-string
-            % (
-                "documentation",
-                message.__doc__,
-            )
-        )
+                print(f"{k_dict:.15s} = {hex(v_dict)}")
+        print("{'documentation':.15s} = {message.__doc__}")
 
 
 # -------------------------------------------------------------------------- #

@@ -7,9 +7,9 @@ __all__ = [
     "ExceptionResponse",
     "FramerType",
     "ModbusException",
-    "pymodbus_apply_logging_config",
     "__version__",
     "__version_full__",
+    "pymodbus_apply_logging_config",
 ]
 
 from pymodbus.exceptions import ModbusException

@@ -4,13 +4,13 @@ Custom exceptions to be used in the Modbus code.
 """
 
 __all__ = [
-    "ModbusIOException",
-    "ParameterException",
-    "NotImplementedException",
     "ConnectionException",
-    "NoSuchSlaveException",
     "InvalidMessageReceivedException",
     "MessageRegisterException",
+    "ModbusIOException",
+    "NoSuchSlaveException",
+    "NotImplementedException",
+    "ParameterException",
 ]
 
 

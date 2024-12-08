@@ -25,7 +25,7 @@ from pymodbus.datastore.simulator import Label
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.logging import Log
 from pymodbus.pdu import DecodePDU
-from pymodbus.server.async_io import (
+from pymodbus.server.server import (
     ModbusSerialServer,
     ModbusTcpServer,
     ModbusTlsServer,

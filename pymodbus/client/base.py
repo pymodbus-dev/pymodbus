@@ -149,7 +149,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float | None = 0
         self.silent_interval: float = 0
-        self.transport = None
 
     # ----------------------------------------------------------------------- #
     # Client external interface

@@ -16,7 +16,9 @@ class SerialTransport(asyncio.Transport):
 
     force_poll: bool = os.name == "nt"
 
-    def __init__(self, loop, protocol, url, baudrate, bytesize, parity, stopbits, timeout) -> None:
+    def __init__(
+        self, loop, protocol, url, baudrate, bytesize, parity, stopbits, timeout, rs485_settings
+    ) -> None:
         """Initialize."""
         super().__init__()
         if "serial" not in sys.modules:
@@ -26,9 +28,12 @@ class SerialTransport(asyncio.Transport):
             )
         self.async_loop = loop
         self.intern_protocol: asyncio.BaseProtocol = protocol
-        self.sync_serial = serial.serial_for_url(url, exclusive=True,
+        self.sync_serial = serial.serial_for_url(url, do_not_open=True, exclusive=True,
             baudrate=baudrate, bytesize=bytesize, parity=parity, stopbits=stopbits, timeout=timeout
-)
+        )
+        if rs485_settings is not None:
+            self.sync_serial.rs485_mode = rs485_settings
+        self.sync_serial.open()
         self.intern_write_buffer: list[bytes] = []
         self.poll_task: asyncio.Task | None = None
         self._poll_wait_time = 0.0005
@@ -168,6 +173,7 @@ async def create_serial_connection(
     parity=None,
     stopbits=None,
     timeout=None,
+    rs485_settings=None
 ) -> tuple[asyncio.Transport, asyncio.BaseProtocol]:
     """Create a connection to a new serial port instance."""
     protocol = protocol_factory()
@@ -176,6 +182,7 @@ async def create_serial_connection(
                     bytesize,
                     parity,
                     stopbits,
-                    timeout)
+                    timeout,
+                    rs485_settings)
     loop.call_soon(transport.setup)
     return transport, protocol

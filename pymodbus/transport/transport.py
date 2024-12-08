@@ -56,10 +56,14 @@ from collections.abc import Callable, Coroutine
 from contextlib import suppress
 from enum import Enum
 from functools import partial
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pymodbus.logging import Log
 from pymodbus.transport.serialtransport import create_serial_connection
+
+
+if TYPE_CHECKING:
+    import serial
 
 
 NULLMODEM_HOST = "__pymodbus_nullmodem"
@@ -97,6 +101,9 @@ class CommParams:
     bytesize: int = -1
     parity: str = ''
     stopbits: int = -1
+
+    # RS485
+    rs485_settings: 'serial.rs485.RS485Settings' | None = None  # noqa: UP037
 
     @classmethod
     def generate_ssl(
@@ -204,6 +211,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 parity=self.comm_params.parity,
                 stopbits=self.comm_params.stopbits,
                 timeout=self.comm_params.timeout_connect,
+                rs485_settings=self.comm_params.rs485_settings,
             )
             return
         if self.comm_params.comm_type == CommType.UDP:

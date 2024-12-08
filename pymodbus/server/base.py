@@ -17,6 +17,8 @@ from .requesthandler import ServerRequestHandler
 class ModbusBaseServer(ModbusProtocol):
     """Common functionality for all server classes."""
 
+    active_server: ModbusBaseServer | None
+
     def __init__(  # pylint: disable=too-many-arguments
         self,
         params: CommParams,
@@ -53,6 +55,7 @@ class ModbusBaseServer(ModbusProtocol):
 
         self.framer = FRAMER_NAME_TO_CLASS[framer]
         self.serving: asyncio.Future = asyncio.Future()
+        ModbusBaseServer.active_server = self
 
     def callback_new_connection(self):
         """Handle incoming connect."""

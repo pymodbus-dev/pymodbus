@@ -62,18 +62,15 @@ _logger = logging.getLogger(__name__)
 _logger.setLevel("DEBUG")
 
 
-def run_sync_server(args):
+def run_sync_server(args) -> None:
     """Run server."""
     txt = f"### start SYNC server, listening on {args.port} - {args.comm}"
     _logger.info(txt)
-    server = None
     if args.comm == "tcp":
         address = ("", args.port) if args.port else None
-        server = StartTcpServer(
+        StartTcpServer(
             context=args.context,  # Data storage
             identity=args.identity,  # server identify
-            # TBD host=
-            # TBD port=
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
@@ -83,7 +80,7 @@ def run_sync_server(args):
         )
     elif args.comm == "udp":
         address = ("127.0.0.1", args.port) if args.port else None
-        server = StartUdpServer(
+        StartUdpServer(
             context=args.context,  # Data storage
             identity=args.identity,  # server identify
             address=address,  # listen address
@@ -96,7 +93,7 @@ def run_sync_server(args):
     elif args.comm == "serial":
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600
         #             PTY,link=/tmp/ttyp0,raw,echo=0,ospeed=9600
-        server = StartSerialServer(
+        StartSerialServer(
             context=args.context,  # Data storage
             identity=args.identity,  # server identify
             # timeout=1,  # waiting time for request to complete
@@ -113,9 +110,8 @@ def run_sync_server(args):
         )
     elif args.comm == "tls":
         address = ("", args.port) if args.port else None
-        server = StartTlsServer(
+        StartTlsServer(
             context=args.context,  # Data storage
-            host="localhost",  # define tcp address where to connect to.
             # port=port,  # on which port
             identity=args.identity,  # server identify
             # custom_functions=[],  # allow custom handling
@@ -133,14 +129,13 @@ def run_sync_server(args):
             # broadcast_enable=False,  # treat slave 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
         )
-    return server
 
 
-def sync_helper():
+def sync_helper() -> None:
     """Combine setup and run."""
     run_args = server_async.setup_server(description="Run synchronous server.")
-    server = run_sync_server(run_args)
-    server.shutdown()
+    run_sync_server(run_args)
+    # server.shutdown()
 
 
 if __name__ == "__main__":

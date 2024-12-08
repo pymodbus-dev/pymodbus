@@ -11,7 +11,7 @@ import signal
 from pymodbus.client import ModbusSerialClient
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.remote import RemoteSlaveContext
-from pymodbus.server.async_io import ModbusTcpServer
+from pymodbus.server import ModbusTcpServer
 
 
 _logger = logging.getLogger(__file__)

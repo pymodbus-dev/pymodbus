@@ -710,7 +710,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         if data_type == cls.DATATYPE.STRING:
             # remove trailing null bytes
             trailing_nulls_begin = len(byte_list)
-            while trailing_nulls_begin > 0 and byte_list[trailing_nulls_begin - 1] == 0:
+            while trailing_nulls_begin > 0 and not byte_list[trailing_nulls_begin - 1]:
                 trailing_nulls_begin -= 1
             byte_list = byte_list[:trailing_nulls_begin]
 

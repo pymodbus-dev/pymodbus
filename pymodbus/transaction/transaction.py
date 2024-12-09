@@ -96,10 +96,8 @@ class TransactionManager(ModbusProtocol):
         REMARK: this method is identical to execute, apart from the lock and sync_receive.
                 any changes in either method MUST be mirrored !!!
         """
-        if not self.transport:
-            Log.warning("Not connected, trying to connect!")
-            if not self.sync_client.connect():
-                raise ConnectionException("Client cannot connect (automatic retry continuing) !!")
+        if not self.sync_client.connect():
+            raise ConnectionException("Client cannot connect (automatic retry continuing) !!")
         with self._sync_lock:
             request.transaction_id = self.getNextTID()
             count_retries = 0

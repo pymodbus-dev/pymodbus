@@ -333,6 +333,7 @@ class TestSyncTransaction:
             None,
             sync_client=client,
         )
+        transact.sync_client.connect = mock.Mock(return_value=True)
         transact.sync_client.send = mock.Mock()
         request = ReadCoilsRequest(address=117, count=5)
         response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False])
@@ -366,6 +367,7 @@ class TestSyncTransaction:
             None,
             sync_client=client,
         )
+        transact.sync_client.connect = mock.Mock(return_value=True)
         request = ReadCoilsRequest(address=117, count=5)
         response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False])
         transact.retries = 0
@@ -400,6 +402,7 @@ class TestSyncTransaction:
             None,
             sync_client=client,
         )
+        transact.sync_client.connect = mock.Mock(return_value=True)
         request = ReadCoilsRequest(address=117, count=5)
         response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False])
         transact.retries = 0

@@ -166,9 +166,10 @@ class ModbusServerRequestHandler(TransactionManager):
                 response = await request.update_datastore(context)
 
         except NoSuchSlaveException:
-            Log.error("requested slave does not exist: {}", request.dev_id)
             if self.server.ignore_missing_slaves:
+                Log.debug("ignored slave that does not exist: {}", request.slave_id)
                 return  # the client will simply timeout waiting for a response
+            Log.error("requested slave does not exist: {}", request.slave_id)
             response = ExceptionResponse(0x00, ExceptionResponse.GATEWAY_NO_RESPONSE)
         except Exception as exc:  # pylint: disable=broad-except
             Log.error(

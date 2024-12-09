@@ -708,8 +708,12 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         for x in registers:
             byte_list.extend(int.to_bytes(x, 2, "big"))
         if data_type == cls.DATATYPE.STRING:
-            while byte_list[-1:] == b"\00":
-                byte_list = byte_list[:-1]
+            # remove trailing null bytes
+            trailing_nulls_begin = len(byte_list)
+            while trailing_nulls_begin > 0 and byte_list[trailing_nulls_begin - 1] == 0:
+                trailing_nulls_begin -= 1
+            byte_list = byte_list[:trailing_nulls_begin]
+
             return byte_list.decode("utf-8")
         if data_type == cls.DATATYPE.BITS:
             return unpack_bitstring(byte_list)

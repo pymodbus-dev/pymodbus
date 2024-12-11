@@ -23,7 +23,7 @@ class ReadHoldingRegistersRequest(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode a register request packet."""
-        self.address, self.count = struct.unpack(">HH", data)
+        self.address, self.count = struct.unpack(">HH", data[:4])
 
     def get_response_pdu_size(self) -> int:
         """Get response pdu size.
@@ -179,7 +179,7 @@ class WriteSingleRegisterResponse(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode a write single register packet packet request."""
-        self.address, register = struct.unpack(">HH", data)
+        self.address, register = struct.unpack(">HH", data[:4])
         self.registers = [register]
 
 
@@ -260,7 +260,7 @@ class WriteMultipleRegistersResponse(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode a write single register packet packet request."""
-        self.address, self.count = struct.unpack(">HH", data)
+        self.address, self.count = struct.unpack(">HH", data[:4])
 
 
 class MaskWriteRegisterRequest(ModbusPDU):
@@ -281,7 +281,7 @@ class MaskWriteRegisterRequest(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode the incoming request."""
-        self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data)
+        self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data[:6])
 
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a mask write register request against the store."""
@@ -318,4 +318,4 @@ class MaskWriteRegisterResponse(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode a the response."""
-        self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data)
+        self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data[:6])

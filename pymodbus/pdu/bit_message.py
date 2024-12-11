@@ -23,7 +23,7 @@ class ReadCoilsRequest(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode a request pdu."""
-        self.address, self.count = struct.unpack(">HH", data)
+        self.address, self.count = struct.unpack(">HH", data[:4])
 
     def get_response_pdu_size(self) -> int:
         """Get response pdu size.
@@ -84,7 +84,7 @@ class WriteSingleCoilResponse(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode a write coil request."""
-        self.address, value = struct.unpack(">HH", data)
+        self.address, value = struct.unpack(">HH", data[:4])
         self.bits = [bool(value)]
 
 
@@ -123,7 +123,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode a write coils request."""
-        self.address, count, _byte_count = struct.unpack(">HHB", data[0:5])
+        self.address, count, _byte_count = struct.unpack(">HHB", data[:5])
         self.bits = unpack_bitstring(data[5:])[:count]
 
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
@@ -157,4 +157,4 @@ class WriteMultipleCoilsResponse(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode a write coils response."""
-        self.address, self.count = struct.unpack(">HH", data)
+        self.address, self.count = struct.unpack(">HH", data[:4])

@@ -75,7 +75,7 @@ Client Features
 * asynchronous API and synchronous API for applications
 * very simple setup and call sequence (just 6 lines of code)
 * utilities to convert int/float to/from multiple registers
-* payload builder/decoder to help with complex data
+* encoder/decoder to help with standard python data types
 
 `Client documentation <https://pymodbus.readthedocs.io/en/latest/source/client.html>`_
 

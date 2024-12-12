@@ -88,14 +88,6 @@ Source: :github:`examples/custom_msg.py`
     :noindex:
 
 
-Client payload
-^^^^^^^^^^^^^^
-Source: :github:`examples/client_payload.py`
-
-.. automodule:: examples.client_payload
-    :undoc-members:
-    :noindex:
-
 Client synchronous
 ^^^^^^^^^^^^^^^^^^
 Source: :github:`examples/client_sync.py`
@@ -128,15 +120,6 @@ Server tracer
 Source: :github:`examples/server_hook.py`
 
 .. automodule:: examples.server_hook
-    :undoc-members:
-    :noindex:
-
-
-Server payload
-^^^^^^^^^^^^^^
-Source: :github:`examples/server_payload.py`
-
-.. automodule:: examples.server_payload
     :undoc-members:
     :noindex:
 

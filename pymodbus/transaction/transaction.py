@@ -151,9 +151,10 @@ class TransactionManager(ModbusProtocol):
                     f"ERROR: No response received of the last {self.accept_no_response_limit} request, CLOSING CONNECTION."
                 )
             self.count_no_responses += 1
-            Log.error(f"No response received after {self.retries} retries, continue with next request")
             self.response_future = asyncio.Future()
-            return None
+            txt = f"No response received after {self.retries} retries, continue with next request"
+            Log.error(txt)
+            raise ModbusIOException(txt)
 
     async def server_execute(self) -> tuple[ModbusPDU, int, Exception]:
         """Wait for request.

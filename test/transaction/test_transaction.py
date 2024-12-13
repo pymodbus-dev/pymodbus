@@ -161,7 +161,8 @@ class TestTransaction:
         elif scenario == 4: # wait receive,timeout, no_responses pass
             transact.comm_params.timeout_connect = 0.1
             transact.connection_lost = mock.Mock()
-            assert not await transact.execute(False, request)
+            with pytest.raises(ModbusIOException):
+                await transact.execute(False, request)
         else: # if scenario == 5: # response
             transact.comm_params.timeout_connect = 0.2
             transact.response_future.set_result(response)

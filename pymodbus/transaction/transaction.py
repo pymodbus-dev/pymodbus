@@ -163,6 +163,7 @@ class TransactionManager(ModbusProtocol):
         there are NO concurrency.
         """
         pdu, addr, exc = await asyncio.wait_for(self.response_future, None)
+        self.response_future = asyncio.Future()
         return pdu, addr, exc
 
     def pdu_send(self, pdu: ModbusPDU, addr: tuple | None = None) -> None:
@@ -189,9 +190,7 @@ class TransactionManager(ModbusProtocol):
             used_len, pdu = self.framer.processIncomingFrame(self.trace_packet(False, data))
         except ModbusIOException as exc:
             if self.is_server:
-                # Data received is not a valid PDU, skip it !
                 self.response_future.set_result((None, addr, exc))
-                self.response_future = asyncio.Future()
                 return len(data)
             raise exc
         if pdu:

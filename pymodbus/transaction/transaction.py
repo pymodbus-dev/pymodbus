@@ -177,6 +177,7 @@ class TransactionManager(ModbusProtocol):
         """Call when connection is succcesfull."""
         self.count_no_responses = 0
         self.next_tid = 0
+        self.response_future = asyncio.Future()
         self.trace_connect(True)
 
     def callback_disconnected(self, exc: Exception | None) -> None:

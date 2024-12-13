@@ -190,7 +190,7 @@ class TransactionManager(ModbusProtocol):
             used_len, pdu = self.framer.processIncomingFrame(self.trace_packet(False, data))
         except ModbusIOException as exc:
             if self.is_server:
-                self.response_future.set_result((None, addr, exc))
+                Log.info(str(exc))
                 return len(data)
             raise exc
         if pdu:

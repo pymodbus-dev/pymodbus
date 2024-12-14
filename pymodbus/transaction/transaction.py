@@ -145,13 +145,13 @@ class TransactionManager(ModbusProtocol):
                     return response
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
+            self.response_future = asyncio.Future()
             if self.count_no_responses >= self.accept_no_response_limit:
                 self.connection_lost(asyncio.TimeoutError("Server not responding"))
                 raise ModbusIOException(
                     f"ERROR: No response received of the last {self.accept_no_response_limit} request, CLOSING CONNECTION."
                 )
             self.count_no_responses += 1
-            self.response_future = asyncio.Future()
             txt = f"No response received after {self.retries} retries, continue with next request"
             Log.error(txt)
             raise ModbusIOException(txt)

@@ -145,13 +145,13 @@ class TransactionManager(ModbusProtocol):
                     return response
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
+            self.response_future = asyncio.Future()
             if self.count_no_responses >= self.accept_no_response_limit:
                 self.connection_lost(asyncio.TimeoutError("Server not responding"))
                 raise ModbusIOException(
                     f"ERROR: No response received of the last {self.accept_no_response_limit} request, CLOSING CONNECTION."
                 )
             self.count_no_responses += 1
-            self.response_future = asyncio.Future()
             txt = f"No response received after {self.retries} retries, continue with next request"
             Log.error(txt)
             raise ModbusIOException(txt)
@@ -178,7 +178,6 @@ class TransactionManager(ModbusProtocol):
         """Call when connection is succcesfull."""
         self.count_no_responses = 0
         self.next_tid = 0
-        self.response_future = asyncio.Future()
         self.trace_connect(True)
 
     def callback_disconnected(self, exc: Exception | None) -> None:
@@ -191,7 +190,7 @@ class TransactionManager(ModbusProtocol):
             used_len, pdu = self.framer.processIncomingFrame(self.trace_packet(False, data))
         except ModbusIOException as exc:
             if self.is_server:
-                self.response_future.set_result((None, addr, exc))
+                Log.info(str(exc))
                 return len(data)
             raise exc
         if pdu:

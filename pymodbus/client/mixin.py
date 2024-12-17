@@ -16,6 +16,7 @@ from pymodbus.constants import ModbusStatus
 from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
+from pymodbus.constants import Endian
 
 
 T = TypeVar("T", covariant=False)
@@ -695,18 +696,19 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
     @classmethod
     def convert_from_registers(
-        cls, registers: list[int], data_type: DATATYPE
+        cls, registers: list[int], data_type: DATATYPE, endian: Endian=Endian.BIG
     ) -> int | float | str | list[bool]:
         """Convert registers to int/float/str.
 
         :param registers: list of registers received from e.g. read_holding_registers()
         :param data_type: data type to convert to
+        :param endian: endianness of the byte order
         :returns: int, float, str or list[bool] depending on "data_type"
         :raises ModbusException: when size of registers is not 1, 2 or 4
         """
         byte_list = bytearray()
         for x in registers:
-            byte_list.extend(int.to_bytes(x, 2, "big"))
+            byte_list.extend(int.to_bytes(x, 2, endian))
         if data_type == cls.DATATYPE.STRING:
             # remove trailing null bytes
             trailing_nulls_begin = len(byte_list)
@@ -725,12 +727,13 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
     @classmethod
     def convert_to_registers(
-        cls, value: int | float | str | list[bool], data_type: DATATYPE
+        cls, value: int | float | str | list[bool], data_type: DATATYPE, endian: Endian=Endian.BIG
     ) -> list[int]:
         """Convert int/float/str to registers (16/32/64 bit).
 
         :param value: value to be converted
         :param data_type: data type to be encoded as registers
+        :param endian: endianness to encode bytes to
         :returns: List of registers, can be used directly in e.g. write_registers()
         :raises TypeError: when there is a mismatch between data_type and value
         """
@@ -749,7 +752,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         else:
             byte_list = struct.pack(f">{data_type.value[0]}", value)
         regs = [
-            int.from_bytes(byte_list[x : x + 2], "big")
+            int.from_bytes(byte_list[x : x + 2], endian)
             for x in range(0, len(byte_list), 2)
         ]
         return regs

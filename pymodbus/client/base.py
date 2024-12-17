@@ -22,7 +22,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
 
     def __init__(
         self,
-        framer: FramerType,
+        framer: FramerType | type[FramerBase],
         retries: int,
         comm_params: CommParams,
         trace_packet: Callable[[bool, bytes], bytes] | None,
@@ -35,9 +35,11 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         """
         ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
         self.comm_params = comm_params
+        if not isinstance(framer, type) or not issubclass(framer, FramerBase):
+            framer = FRAMER_NAME_TO_CLASS[FramerType(framer)]
         self.ctx = TransactionManager(
             comm_params,
-            (FRAMER_NAME_TO_CLASS[framer])(DecodePDU(False)),
+            framer(DecodePDU(False)),
             retries,
             False,
             trace_packet,
@@ -116,7 +118,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
 
     def __init__(
         self,
-        framer: FramerType,
+        framer: FramerType | type[FramerBase],
         retries: int,
         comm_params: CommParams,
         trace_packet: Callable[[bool, bytes], bytes] | None,
@@ -133,7 +135,9 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         self.slaves: list[int] = []
 
         # Common variables.
-        self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(DecodePDU(False))
+        if not isinstance(framer, type) or not issubclass(framer, FramerBase):
+            framer = FRAMER_NAME_TO_CLASS[FramerType(framer)]
+        self.framer: FramerBase = framer(DecodePDU(False))
         self.transaction = TransactionManager(
             self.comm_params,
             self.framer,

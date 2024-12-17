@@ -10,7 +10,7 @@ from contextlib import suppress
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
-from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType
+from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from pymodbus.logging import Log
 from pymodbus.pdu import DecodePDU, ModbusPDU
 from pymodbus.pdu.pdu import ExceptionResponse
@@ -166,9 +166,10 @@ class ModbusServerRequestHandler(TransactionManager):
                 response = await request.update_datastore(context)
 
         except NoSuchSlaveException:
-            Log.error("requested slave does not exist: {}", request.dev_id)
             if self.server.ignore_missing_slaves:
+                Log.debug("ignored slave that does not exist: {}", request.slave_id)
                 return  # the client will simply timeout waiting for a response
+            Log.error("requested slave does not exist: {}", request.slave_id)
             response = ExceptionResponse(0x00, ExceptionResponse.GATEWAY_NO_RESPONSE)
         except Exception as exc:  # pylint: disable=broad-except
             Log.error(
@@ -201,7 +202,7 @@ class ModbusBaseServer(ModbusProtocol):
         ignore_missing_slaves: bool,
         broadcast_enable: bool,
         identity: ModbusDeviceIdentification | None,
-        framer: FramerType,
+        framer: FramerType | type[FramerBase],
         trace_packet: Callable[[bool, bytes], bytes] | None,
         trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None,
         trace_connect: Callable[[bool], None] | None,
@@ -223,8 +224,10 @@ class ModbusBaseServer(ModbusProtocol):
         self.handle_local_echo = False
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
-
-        self.framer = FRAMER_NAME_TO_CLASS[framer]
+        # Support mapping of FramerType to a Framer class, or a Framer class
+        if not isinstance(framer, type) or not issubclass(framer, FramerBase):
+            framer = FRAMER_NAME_TO_CLASS[FramerType(framer)]
+        self.framer = framer
         self.serving: asyncio.Future = asyncio.Future()
 
     def callback_new_connection(self):
@@ -273,7 +276,7 @@ class ModbusTcpServer(ModbusBaseServer):
         self,
         context: ModbusServerContext,
         *,
-        framer=FramerType.SOCKET,
+        framer: FramerType | type[FramerBase] = FramerType.SOCKET,
         identity: ModbusDeviceIdentification | None = None,
         address: tuple[str, int] = ("", 502),
         ignore_missing_slaves: bool = False,
@@ -336,7 +339,7 @@ class ModbusTlsServer(ModbusTcpServer):
         self,
         context: ModbusServerContext,
         *,
-        framer=FramerType.TLS,
+        framer: FramerType | type[FramerBase] = FramerType.TLS,
         identity: ModbusDeviceIdentification | None = None,
         address: tuple[str, int] = ("", 502),
         sslctx=None,
@@ -403,7 +406,7 @@ class ModbusUdpServer(ModbusBaseServer):
         self,
         context: ModbusServerContext,
         *,
-        framer=FramerType.SOCKET,
+        framer: FramerType | type[FramerBase] = FramerType.SOCKET,
         identity: ModbusDeviceIdentification | None = None,
         address: tuple[str, int] = ("", 502),
         ignore_missing_slaves: bool = False,
@@ -463,7 +466,7 @@ class ModbusSerialServer(ModbusBaseServer):
         self,
         context: ModbusServerContext,
         *,
-        framer: FramerType = FramerType.RTU,
+        framer: FramerType | type[FramerBase] = FramerType.RTU,
         ignore_missing_slaves: bool = False,
         identity: ModbusDeviceIdentification | None = None,
         broadcast_enable: bool = False,

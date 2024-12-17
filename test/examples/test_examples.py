@@ -156,8 +156,7 @@ class TestAsyncExamples:
         if use_comm != "tcp" or use_framer != "socket":
             return
         assert mock_server
-        with pytest.raises(asyncio.CancelledError):
-            await main_custom_client(port=use_port, host=use_host)
+        await main_custom_client(port=use_port, host=use_host)
 
     async def test_payload(self, mock_clc, mock_cls):
         """Test server/client with payload."""

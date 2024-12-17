@@ -133,6 +133,7 @@ class TransactionManager(ModbusProtocol):
             request.transaction_id = self.getNextTID()
             count_retries = 0
             while count_retries <= self.retries:
+                self.response_future = asyncio.Future()
                 self.pdu_send(request)
                 if no_response_expected:
                     return None
@@ -141,11 +142,9 @@ class TransactionManager(ModbusProtocol):
                         self.response_future, timeout=self.comm_params.timeout_connect
                     )
                     self.count_no_responses = 0
-                    self.response_future = asyncio.Future()
                     return response
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
-            self.response_future = asyncio.Future()
             if self.count_no_responses >= self.accept_no_response_limit:
                 self.connection_lost(asyncio.TimeoutError("Server not responding"))
                 raise ModbusIOException(

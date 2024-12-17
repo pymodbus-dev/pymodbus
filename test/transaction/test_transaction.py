@@ -165,9 +165,10 @@ class TestTransaction:
                 await transact.execute(False, request)
         else: # if scenario == 5: # response
             transact.comm_params.timeout_connect = 0.2
-            transact.response_future.set_result(response)
             resp = asyncio.create_task(transact.execute(False, request))
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(0.1)
+            transact.response_future.set_result(response)
+            await asyncio.sleep(0.1)
             assert response == await resp
 
     async def test_transaction_receiver(self, use_clc):

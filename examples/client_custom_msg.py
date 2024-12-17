@@ -15,6 +15,7 @@ import struct
 
 from pymodbus import FramerType
 from pymodbus.client import AsyncModbusTcpClient as ModbusClient
+from pymodbus.exceptions import ModbusIOException
 from pymodbus.pdu import ExceptionResponse, ModbusPDU
 from pymodbus.pdu.bit_message import ReadCoilsRequest
 
@@ -128,8 +129,12 @@ async def main(host="localhost", port=5020):
         client.register(CustomModbusPDU)
         slave=1
         request1 = CustomRequest(32, slave=slave)
-        result = await client.execute(False, request1)
-        print(result)
+        try:
+            result = await client.execute(False, request1)
+        except ModbusIOException:
+            print("Server do not support CustomRequest.")
+        else:
+            print(result)
 
         # inherited request
         request2 = Read16CoilsRequest(32, slave)

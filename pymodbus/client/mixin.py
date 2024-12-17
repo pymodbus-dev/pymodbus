@@ -16,8 +16,7 @@ from pymodbus.constants import ModbusStatus
 from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
-from pymodbus.constants import Endian
-
+from typing import Literal
 
 T = TypeVar("T", covariant=False)
 
@@ -696,7 +695,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
     @classmethod
     def convert_from_registers(
-        cls, registers: list[int], data_type: DATATYPE, endian: Endian=Endian.BIG
+        cls, registers: list[int], data_type: DATATYPE, endian: Literal["big", "little"] = "big"
     ) -> int | float | str | list[bool]:
         """Convert registers to int/float/str.
 
@@ -707,7 +706,6 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :raises ModbusException: when size of registers is not 1, 2 or 4
         """
         byte_list = bytearray()
-        endian = "big" if endian == Endian.BIG else "little"
         for x in registers:
             byte_list.extend(int.to_bytes(x, 2, endian))
         if data_type == cls.DATATYPE.STRING:
@@ -728,7 +726,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
     @classmethod
     def convert_to_registers(
-        cls, value: int | float | str | list[bool], data_type: DATATYPE, endian: Endian=Endian.BIG
+        cls, value: int | float | str | list[bool], data_type: DATATYPE, endian: Literal["big", "little"] = "big"
     ) -> list[int]:
         """Convert int/float/str to registers (16/32/64 bit).
 
@@ -738,7 +736,6 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :returns: List of registers, can be used directly in e.g. write_registers()
         :raises TypeError: when there is a mismatch between data_type and value
         """
-        endian = "big" if endian == Endian.BIG else "little"
         if data_type == cls.DATATYPE.BITS:
             if not isinstance(value, list):
                 raise TypeError(f"Value should be string but is {type(value)}.")

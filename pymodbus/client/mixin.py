@@ -707,6 +707,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :raises ModbusException: when size of registers is not 1, 2 or 4
         """
         byte_list = bytearray()
+        endian = "big" if endian == Endian.BIG else "little"
         for x in registers:
             byte_list.extend(int.to_bytes(x, 2, endian))
         if data_type == cls.DATATYPE.STRING:
@@ -737,6 +738,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :returns: List of registers, can be used directly in e.g. write_registers()
         :raises TypeError: when there is a mismatch between data_type and value
         """
+        endian = "big" if endian == Endian.BIG else "little"
         if data_type == cls.DATATYPE.BITS:
             if not isinstance(value, list):
                 raise TypeError(f"Value should be string but is {type(value)}.")

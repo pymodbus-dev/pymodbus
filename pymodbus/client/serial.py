@@ -13,7 +13,6 @@ from pymodbus.framer import FramerType
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusPDU
 from pymodbus.transport import CommParams, CommType
-from pymodbus.utilities import ModbusTransactionState
 
 
 with contextlib.suppress(ImportError):
@@ -158,10 +157,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
-    state = ModbusTransactionState.IDLE
-    inter_byte_timeout: float = 0
-    silent_interval: float = 0
-
     def __init__(  # pylint: disable=too-many-arguments
         self,
         port: str,
@@ -219,6 +214,8 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         # Set a minimum of 1ms for high baudrates
         self._recv_interval = max(self._recv_interval, 0.001)
 
+        self.inter_byte_timeout: float = 0
+        self.silent_interval: float = 0
         if baudrate > 19200:
             self.silent_interval = 1.75 / 1000  # ms
         else:
@@ -264,14 +261,9 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Return waiting bytes."""
         return getattr(self.socket, "in_waiting") if hasattr(self.socket, "in_waiting") else getattr(self.socket, "inWaiting")()
 
-    def _send(self, request: bytes) -> int:  # pragma: no cover
-        """Send data on the underlying socket.
-
-        If receive buffer still holds some data then flush it.
-
-        Sleep if last send finished less than 3.5 character times ago.
-        """
-        super()._start_send()
+    def send(self, request: bytes, addr: tuple | None = None) -> int:
+        """Send data on the underlying socket."""
+        _ = addr
         if not self.socket:
             raise ConnectionException(str(self))
         if request:
@@ -282,52 +274,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
                 size = 0
             return size
         return 0
-
-    def send(self, request: bytes, addr: tuple | None = None) -> int:  # pragma: no cover
-        """Send data on the underlying socket."""
-        _ = addr
-        start = time.time()
-        if hasattr(self,"ctx"):
-          timeout = start + self.ctx.comm_params.timeout_connect
-        else:
-            timeout = start + self.comm_params.timeout_connect
-        while self.state != ModbusTransactionState.IDLE:
-            if self.state == ModbusTransactionState.TRANSACTION_COMPLETE:
-                timestamp = round(time.time(), 6)
-                Log.debug(
-                    "Changing state to IDLE - Last Frame End - {} Current Time stamp - {}",
-                    self.last_frame_end,
-                    timestamp,
-                )
-                if self.last_frame_end:
-                    idle_time = self.idle_time()
-                    if round(timestamp - idle_time, 6) <= self.silent_interval:
-                        Log.debug(
-                            "Waiting for 3.5 char before next send - {} ms",
-                            self.silent_interval * 1000,
-                        )
-                        time.sleep(self.silent_interval)
-                else:
-                    # Recovering from last error ??
-                    time.sleep(self.silent_interval)
-                self.state = ModbusTransactionState.IDLE
-            elif self.state == ModbusTransactionState.RETRYING:
-                # Simple lets settle down!!!
-                # To check for higher baudrates
-                time.sleep(self.comm_params.timeout_connect)
-                break
-            elif time.time() > timeout:
-                Log.debug(
-                    "Spent more time than the read time out, "
-                    "resetting the transaction to IDLE"
-                )
-                self.state = ModbusTransactionState.IDLE
-            else:
-                Log.debug("Sleeping")
-                time.sleep(self.silent_interval)
-        size = self._send(request)
-        self.last_frame_end = round(time.time(), 6)
-        return size
 
     def _wait_for_data(self) -> int:
         """Wait for data."""

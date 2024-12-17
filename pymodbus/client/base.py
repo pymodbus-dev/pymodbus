@@ -11,7 +11,6 @@ from pymodbus.logging import Log
 from pymodbus.pdu import DecodePDU, ModbusPDU
 from pymodbus.transaction import TransactionManager
 from pymodbus.transport import CommParams
-from pymodbus.utilities import ModbusTransactionState
 
 
 class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
@@ -44,7 +43,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
             trace_pdu,
             trace_connect,
         )
-        self.state = ModbusTransactionState.IDLE
 
     @property
     def connected(self) -> bool:
@@ -146,7 +144,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         )
         self.reconnect_delay_current = self.comm_params.reconnect_delay or 0
         self.use_udp = False
-        self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float | None = 0
         self.silent_interval: float = 0
 
@@ -191,15 +188,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
     # ----------------------------------------------------------------------- #
     # Internal methods
     # ----------------------------------------------------------------------- #
-    def _start_send(self):
-        """Send request.
-
-        :meta private:
-        """
-        if self.state != ModbusTransactionState.RETRYING:
-            Log.debug('New Transaction state "SENDING"')
-            self.state = ModbusTransactionState.SENDING
-
     @abstractmethod
     def send(self, request: bytes, addr: tuple | None = None) -> int:
         """Send request.

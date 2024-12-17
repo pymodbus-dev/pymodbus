@@ -19,7 +19,6 @@ from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.exceptions import ConnectionException, ModbusException
 from pymodbus.pdu import ModbusPDU
 from pymodbus.transport import CommParams, CommType
-from pymodbus.utilities import ModbusTransactionState
 
 
 BASE_PORT = 6500
@@ -542,14 +541,6 @@ class TestClientBase:
         assert not client.idle_time()
         client.last_frame_end = None
         assert not client.idle_time()
-
-    def test_start_send(self):
-        """Test idle_time()."""
-        client = lib_client.ModbusTcpClient("127.0.0.1")
-        client.state = ModbusTransactionState.IDLE
-        client._start_send()
-        client.state = ModbusTransactionState.RETRYING
-        client._start_send()
 
     def test_sync_block(self):
         """Test idle_time()."""

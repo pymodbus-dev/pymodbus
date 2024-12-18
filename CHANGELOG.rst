@@ -7,6 +7,17 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.8.1
+-------------
+* Convert endianness (#2506)
+* Fix sync serial client, loop. (#2510)
+* Correct future. (#2507)
+* Correct #2501 (#2504)
+* Raise exception on no response in async client. (#2502)
+* re-instatiate Future on reconnect (#2501)
+* Remove all trailing zeroes during string decoding (#2493)
+* Fix too many sync client log messages. (#2491)
+
 Version 3.8.0
 -------------
 * slave_id -> dev_id (internally). (#2486)

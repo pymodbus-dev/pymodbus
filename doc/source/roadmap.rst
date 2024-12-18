@@ -15,9 +15,10 @@ It is the community that decides how pymodbus evolves NOT the maintainers !
 
 The following bullet points are what the maintainers focus on:
 
-- 3.8.1, bug fix release, with:
+- 3.8.2, bug fix release, with:
     - Currently not planned
 - 3.9.0, with:
+    - All of branch wait_next_api
     - ModbusControlBlock pr slave
     - New custom PDU (function codes)
     - Remove remote_datastore

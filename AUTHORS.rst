@@ -16,6 +16,7 @@ Thanks to
 - Alex Ruddick
 - Alexander Lanin
 - Alexandre CUER
+- alexis-care
 - Alois Hockenschlohe
 - Andy Walker
 - Arjan
@@ -30,6 +31,7 @@ Thanks to
 - Chris Hung
 - Christian Krause
 - Christian Pfisterer
+- daanwtb
 - Daniel Rauber
 - dhoomakethu
 - doelki
@@ -74,6 +76,7 @@ Thanks to
 - Pavel Kostromitinov
 - peufeu2
 - Philip Couling
+- Philip Jones
 - Qi Li
 - Sebastian Machuca
 - Sefa Keleş

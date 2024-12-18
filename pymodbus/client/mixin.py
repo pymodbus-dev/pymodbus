@@ -760,7 +760,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
                 byte_list += b"\x00"
         else:
             if not isinstance(value, list):
-                value = [cast(int | float, value)]
+                value = cast(list[int], [value])
             byte_list = bytearray()
             for v in value:
                 byte_list.extend(struct.pack(f">{data_type.value[0]}", v))

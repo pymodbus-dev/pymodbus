@@ -135,10 +135,13 @@ def handle_holding_registers(client):
     assert not rr.isError()  # test that call was OK
     assert rr.registers[0] == 10
 
-    client.write_registers(1, [10] * 8, slave=SLAVE)
-    rr = client.read_holding_registers(1, count=8, slave=SLAVE)
+    value_int32 = 13211
+    registers = client.convert_to_registers(value_int32, client.DATATYPE.INT32)
+    client.write_registers(1, registers, slave=SLAVE)
+    rr = client.read_holding_registers(1, count=len(registers), slave=SLAVE)
     assert not rr.isError()  # test that call was OK
-    assert rr.registers == [10] * 8
+    value = client.convert_from_registers(rr.registers, client.DATATYPE.INT32)
+    assert value_int32 == value
 
     _logger.info("### write read holding registers")
     arguments = {

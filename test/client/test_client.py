@@ -104,7 +104,6 @@ class TestMixin:
             (ModbusClientMixin.DATATYPE.STRING, "a", [0x6100]),
             (ModbusClientMixin.DATATYPE.UINT16, 27123, [0x69F3]),
             (ModbusClientMixin.DATATYPE.INT16, -27123, [0x960D]),
-            (ModbusClientMixin.DATATYPE.INT16, -27123, [0x960D]),
             (ModbusClientMixin.DATATYPE.UINT32, 27123, [0x0000, 0x69F3]),
             (ModbusClientMixin.DATATYPE.UINT32, 32145678, [0x01EA, 0x810E]),
             (ModbusClientMixin.DATATYPE.INT32, -32145678, [0xFE15, 0x7EF2]),

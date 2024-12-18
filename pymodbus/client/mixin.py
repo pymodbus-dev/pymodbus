@@ -4,7 +4,7 @@ from __future__ import annotations
 import struct
 from abc import abstractmethod
 from enum import Enum
-from typing import Generic, TypeVar, Literal
+from typing import Generic, Literal, TypeVar
 
 import pymodbus.pdu.bit_message as pdu_bit
 import pymodbus.pdu.diag_message as pdu_diag
@@ -695,32 +695,26 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
     @classmethod
     def convert_from_registers(
-        cls, registers: list[int], data_type: DATATYPE, byte_order: Literal["big", "little"] = "big",
-            word_order: Literal["big", "little"] = "big"
+        cls, registers: list[int], data_type: DATATYPE, word_order: Literal["big", "little"] = "big"
     ) -> int | float | str | list[bool]:
         """Convert registers to int/float/str.
 
         :param registers: list of registers received from e.g. read_holding_registers()
         :param data_type: data type to convert to
-        :param byte_order: Literal[big, small] order of to bytes in 16 bit register encoding (ALMOST always big)
-                                                                                                        (default is big)
-        :param word_order: Literal[big, small] order of words (registers) when encoding in multiple registers
-                                                                                                        (default is big)
+        :param word_order: Literal[big, small] order of words/registers
         :returns: int, float, str or list[bool] depending on "data_type"
         :raises ModbusException: when size of registers is not 1, 2 or 4
         """
+        _ = word_order
         byte_list = bytearray()
         for x in registers:
-            byte_list.extend(int.to_bytes(x, 2, byte_order))
-        if word_order == "little":
-            byte_list = byte_list[::-1]
+            byte_list.extend(int.to_bytes(x, 2, "big"))
         if data_type == cls.DATATYPE.STRING:
             # remove trailing null bytes
             trailing_nulls_begin = len(byte_list)
             while trailing_nulls_begin > 0 and not byte_list[trailing_nulls_begin - 1]:
                 trailing_nulls_begin -= 1
             byte_list = byte_list[:trailing_nulls_begin]
-
             return byte_list.decode("utf-8")
         if data_type == cls.DATATYPE.BITS:
             return unpack_bitstring(byte_list)
@@ -732,25 +726,20 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
     @classmethod
     def convert_to_registers(
-        cls, value: int | float | str | list[bool], data_type: DATATYPE, byte_order: Literal["big", "little"] = "big",
-            word_order: Literal["big", "little"] = "big"
+        cls, value: int | float | str | list[bool], data_type: DATATYPE, word_order: Literal["big", "little"] = "big"
     ) -> list[int]:
         """Convert int/float/str to registers (16/32/64 bit).
 
         :param value: value to be converted
         :param data_type: data type to be encoded as registers
-        :param byte_order: Literal[big, small] order of to bytes in 16 bit register encoding (ALMOST always big)
-                                                                                                        (default is big)
-        :param word_order: Literal[big, small] order of words (registers) when encoding in multiple registers
-                                                                                                        (default is big)
+        :param word_order: Literal[big, small] order of words/registers
         :returns: List of registers, can be used directly in e.g. write_registers()
         :raises TypeError: when there is a mismatch between data_type and value
         """
-        if word_order == "little" and isinstance(value, list):
-            value = value[::-1]
+        _ = word_order
         if data_type == cls.DATATYPE.BITS:
             if not isinstance(value, list):
-                raise TypeError(f"Value should be string but is {type(value)}.")
+                raise TypeError(f"Value should be list of bool but is {type(value)}.")
             if (missing := len(value) % 16):
                 value = value + [False] * (16 - missing)
             byte_list = pack_bitstring(value)
@@ -763,7 +752,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         else:
             byte_list = struct.pack(f">{data_type.value[0]}", value)
         regs = [
-            int.from_bytes(byte_list[x : x + 2], byte_order)
+            int.from_bytes(byte_list[x : x + 2], "big")
             for x in range(0, len(byte_list), 2)
         ]
         return regs

@@ -95,6 +95,7 @@ class TestMixin:
             getattr(ModbusClientMixin(), method)(**arglist[arg])
             assert isinstance(pdu_to_call, pdu_request)
 
+    @pytest.mark.parametrize(("word_order"), ["big", "little", None])
     @pytest.mark.parametrize(
         ("datatype", "value", "registers"),
         [
@@ -156,11 +157,16 @@ class TestMixin:
             ),
         ],
     )
-    def test_client_mixin_convert(self, datatype, registers, value):
+    def test_client_mixin_convert(self, datatype, word_order, registers, value):
         """Test converter methods."""
-        regs = ModbusClientMixin.convert_to_registers(value, datatype)
+        if word_order == "little":
+            x = registers.copy()
+            x.reverse()
+            registers = x
+        kwargs = {"word_order": word_order} if word_order else {}
+        regs = ModbusClientMixin.convert_to_registers(value, datatype, **kwargs)
         assert regs == registers
-        result = ModbusClientMixin.convert_from_registers(registers, datatype)
+        result = ModbusClientMixin.convert_from_registers(registers, datatype, **kwargs)
         if datatype == ModbusClientMixin.DATATYPE.FLOAT32:
             result = round(result, 6)
         if datatype == ModbusClientMixin.DATATYPE.BITS:
@@ -174,6 +180,7 @@ class TestMixin:
             (ModbusClientMixin.DATATYPE.STRING, "0123", [b'\x30\x31', b'\x32\x33']),
             (ModbusClientMixin.DATATYPE.UINT16, 258, [b'\x01\x02']),
             (ModbusClientMixin.DATATYPE.INT16, -32510, [b'\x81\x02']),
+            (ModbusClientMixin.DATATYPE.INT16, [-32510, 258], [b'\x81\x02', b'\x01\x02']),
             (ModbusClientMixin.DATATYPE.UINT32, 16909060, [b'\x01\x02', b'\x03\x04']),
             (ModbusClientMixin.DATATYPE.INT32, -2130574588, [b'\x81\x02', b'\x03\x04']),
             (
@@ -208,6 +215,9 @@ class TestMixin:
 
         with pytest.raises(ModbusException):
             ModbusClientMixin.convert_from_registers([123], ModbusClientMixin.DATATYPE.FLOAT64)
+
+        with pytest.raises(TypeError):
+            ModbusClientMixin.convert_to_registers(bool, ModbusClientMixin.DATATYPE.BITS)
 
 
 class TestClientBase:

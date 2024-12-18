@@ -146,6 +146,14 @@ async def async_handle_holding_registers(client):
     assert not rr.isError()  # test that call was OK
     assert rr.registers == [10]
 
+    value_int32 = 13211
+    registers = client.convert_to_registers(value_int32, client.DATATYPE.INT32)
+    await client.write_registers(1, registers, slave=SLAVE)
+    rr = await client.read_holding_registers(1, count=len(registers), slave=SLAVE)
+    assert not rr.isError()  # test that call was OK
+    value = client.convert_from_registers(rr.registers, client.DATATYPE.INT32)
+    assert value_int32 == value
+
     _logger.info("### write read holding registers")
     arguments = {
         "read_address": 1,

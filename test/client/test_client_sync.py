@@ -213,7 +213,7 @@ class TestSyncClientTls:
         assert client.recv(1) == b"\x45"
 
         # connect/disconnect
-        assert not client.connected
+        assert client.connected
         assert client.connect()
         client.close()
 

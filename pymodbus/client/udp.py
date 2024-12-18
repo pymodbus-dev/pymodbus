@@ -138,8 +138,6 @@ class ModbusUdpClient(ModbusBaseSyncClient):
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
-    socket: socket.socket | None
-
     def __init__(  # pylint: disable=too-many-arguments
         self,
         host: str,
@@ -177,7 +175,7 @@ class ModbusUdpClient(ModbusBaseSyncClient):
             trace_pdu,
             trace_connect,
         )
-        self.socket = None
+        self.socket: socket.socket | None = None
 
     @property
     def connected(self) -> bool:
@@ -185,7 +183,7 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         return self.socket is not None
 
     def connect(self):
-        """Connect to the modbus tcp server.
+        """Connect to the modbus udp server.
 
         :meta private:
         """
@@ -212,7 +210,6 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         :meta private:
         """
         _ = addr
-        super()._start_send()
         if not self.socket:
             raise ConnectionException(str(self))
         if request:

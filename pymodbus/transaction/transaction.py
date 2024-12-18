@@ -96,10 +96,8 @@ class TransactionManager(ModbusProtocol):
         REMARK: this method is identical to execute, apart from the lock and sync_receive.
                 any changes in either method MUST be mirrored !!!
         """
-        if not self.transport:
-            Log.warning("Not connected, trying to connect!")
-            if not self.sync_client.connect():
-                raise ConnectionException("Client cannot connect (automatic retry continuing) !!")
+        if not self.sync_client.connect():
+            raise ConnectionException("Client cannot connect (automatic retry continuing) !!")
         with self._sync_lock:
             request.transaction_id = self.getNextTID()
             count_retries = 0
@@ -135,6 +133,7 @@ class TransactionManager(ModbusProtocol):
             request.transaction_id = self.getNextTID()
             count_retries = 0
             while count_retries <= self.retries:
+                self.response_future = asyncio.Future()
                 self.pdu_send(request)
                 if no_response_expected:
                     return None
@@ -143,7 +142,6 @@ class TransactionManager(ModbusProtocol):
                         self.response_future, timeout=self.comm_params.timeout_connect
                     )
                     self.count_no_responses = 0
-                    self.response_future = asyncio.Future()
                     return response
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
@@ -153,9 +151,9 @@ class TransactionManager(ModbusProtocol):
                     f"ERROR: No response received of the last {self.accept_no_response_limit} request, CLOSING CONNECTION."
                 )
             self.count_no_responses += 1
-            Log.error(f"No response received after {self.retries} retries, continue with next request")
-            self.response_future = asyncio.Future()
-            return None
+            txt = f"No response received after {self.retries} retries, continue with next request"
+            Log.error(txt)
+            raise ModbusIOException(txt)
 
     async def server_execute(self) -> tuple[ModbusPDU, int, Exception]:
         """Wait for request.
@@ -191,7 +189,7 @@ class TransactionManager(ModbusProtocol):
             used_len, pdu = self.framer.processIncomingFrame(self.trace_packet(False, data))
         except ModbusIOException as exc:
             if self.is_server:
-                self.response_future.set_result((None, addr, exc))
+                Log.info(str(exc))
                 return len(data)
             raise exc
         if pdu:

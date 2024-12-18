@@ -161,12 +161,14 @@ class TestTransaction:
         elif scenario == 4: # wait receive,timeout, no_responses pass
             transact.comm_params.timeout_connect = 0.1
             transact.connection_lost = mock.Mock()
-            assert not await transact.execute(False, request)
+            with pytest.raises(ModbusIOException):
+                await transact.execute(False, request)
         else: # if scenario == 5: # response
             transact.comm_params.timeout_connect = 0.2
-            transact.response_future.set_result(response)
             resp = asyncio.create_task(transact.execute(False, request))
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(0.1)
+            transact.response_future.set_result(response)
+            await asyncio.sleep(0.1)
             assert response == await resp
 
     async def test_transaction_receiver(self, use_clc):
@@ -333,6 +335,7 @@ class TestSyncTransaction:
             None,
             sync_client=client,
         )
+        transact.sync_client.connect = mock.Mock(return_value=True)
         transact.sync_client.send = mock.Mock()
         request = ReadCoilsRequest(address=117, count=5)
         response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False])
@@ -366,6 +369,7 @@ class TestSyncTransaction:
             None,
             sync_client=client,
         )
+        transact.sync_client.connect = mock.Mock(return_value=True)
         request = ReadCoilsRequest(address=117, count=5)
         response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False])
         transact.retries = 0
@@ -400,6 +404,7 @@ class TestSyncTransaction:
             None,
             sync_client=client,
         )
+        transact.sync_client.connect = mock.Mock(return_value=True)
         request = ReadCoilsRequest(address=117, count=5)
         response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False])
         transact.retries = 0

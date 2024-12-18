@@ -137,8 +137,6 @@ class ModbusTcpClient(ModbusBaseSyncClient):
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
-    socket: socket.socket | None
-
     def __init__(  # pylint: disable=too-many-arguments
         self,
         host: str,
@@ -177,7 +175,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
             trace_pdu,
             trace_connect,
         )
-        self.socket = None
+        self.socket: socket.socket | None = None
 
     @property
     def connected(self) -> bool:
@@ -217,7 +215,6 @@ class ModbusTcpClient(ModbusBaseSyncClient):
     def send(self, request, addr: tuple | None = None):
         """Send data on the underlying socket."""
         _ = addr
-        super()._start_send()
         if not self.socket:
             raise ConnectionException(str(self))
         if request:

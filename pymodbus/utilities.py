@@ -9,35 +9,6 @@ from __future__ import annotations
 import struct
 
 
-class ModbusTransactionState:  # pylint: disable=too-few-public-methods
-    """Modbus Client States."""
-
-    IDLE = 0
-    SENDING = 1
-    WAITING_FOR_REPLY = 2
-    WAITING_TURNAROUND_DELAY = 3
-    PROCESSING_REPLY = 4
-    PROCESSING_ERROR = 5
-    TRANSACTION_COMPLETE = 6
-    RETRYING = 7
-    NO_RESPONSE_STATE = 8
-
-    @classmethod
-    def to_string(cls, state):
-        """Convert to string."""
-        states = {
-            ModbusTransactionState.IDLE: "IDLE",
-            ModbusTransactionState.SENDING: "SENDING",
-            ModbusTransactionState.WAITING_FOR_REPLY: "WAITING_FOR_REPLY",
-            ModbusTransactionState.WAITING_TURNAROUND_DELAY: "WAITING_TURNAROUND_DELAY",
-            ModbusTransactionState.PROCESSING_REPLY: "PROCESSING_REPLY",
-            ModbusTransactionState.PROCESSING_ERROR: "PROCESSING_ERROR",
-            ModbusTransactionState.TRANSACTION_COMPLETE: "TRANSACTION_COMPLETE",
-            ModbusTransactionState.RETRYING: "RETRYING TRANSACTION",
-        }
-        return states.get(state, None)
-
-
 def dict_property(store, index):
     """Create class properties from a dictionary.
 

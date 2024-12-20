@@ -7,6 +7,10 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.8.2
+-------------
+
+
 Version 3.8.1
 -------------
 * Convert endianness (#2506)

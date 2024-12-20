@@ -62,7 +62,7 @@ class TransactionManager(ModbusProtocol):
         else:
             self._lock = asyncio.Lock()
             self.low_level_send = self.send
-        self.response_future: asyncio.Future = asyncio.Future()
+            self.response_future: asyncio.Future = asyncio.Future()
 
     def dummy_trace_packet(self, sending: bool, data: bytes) -> bytes:
         """Do dummy trace."""
@@ -161,8 +161,8 @@ class TransactionManager(ModbusProtocol):
         Used in server, with an instance for each connection, therefore
         there are NO concurrency.
         """
-        pdu, addr, exc = await asyncio.wait_for(self.response_future, None)
         self.response_future = asyncio.Future()
+        pdu, addr, exc = await asyncio.wait_for(self.response_future, None)
         return pdu, addr, exc
 
     def pdu_send(self, pdu: ModbusPDU, addr: tuple | None = None) -> None:

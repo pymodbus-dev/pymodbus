@@ -9,7 +9,7 @@ helps make pymodbus a better product.
 
 Version 3.8.2
 -------------
-
+* Asyncio future removed from sync client. (#2514)
 
 Version 3.8.1
 -------------

@@ -31,7 +31,7 @@ Version 3.8.0
 * Add trace API to server. (#2479)
 * Add trace API for client. (#2478)
 * Integrate TransactionManager in server. (#2475)
-* Rename test/sub_. (#2473)
+* Rename test/sub. (#2473)
 * Check server closes file descriptors. (#2472)
 * Update http_server.py (#2471)
 * Restrict write_registers etc to list[int]. (#2469)

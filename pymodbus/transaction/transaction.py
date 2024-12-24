@@ -16,7 +16,6 @@ class TransactionManager(ModbusProtocol):
     """Transaction manager.
 
     This is the central class of the library, providing a separation between API and communication:
-
     - clients/servers calls the manager to execute requests/responses
     - transport/framer/pdu is by the manager to communicate with the devices
 
@@ -29,9 +28,7 @@ class TransactionManager(ModbusProtocol):
     Transaction manager offers:
     - a simple execute interface for requests (client)
     - a simple send interface for responses (server)
-    - external trace methods tracing:
-        - outgoing/incoming packets (byte stream)
-        - outgoing/incoming PDUs
+    - external trace methods tracing outgoing/incoming packets/PDUs (byte stream)
     """
 
     def __init__(

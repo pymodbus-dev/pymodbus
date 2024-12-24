@@ -771,3 +771,38 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         if word_order == "little":
             regs.reverse()
         return regs
+
+    @classmethod
+    def convert_combined_from_registers(
+        cls, registers: list[int], data_types: list[tuple[DATATYPE, int]], word_order: Literal["big", "little"] = "big"
+    ) -> list[bool | int | float | str]:
+        """Convert registers to int/float/str.
+
+        :param registers: list of registers received from e.g. read_holding_registers()
+        :param data_types: list of (data type, count) to convert to
+        :param word_order: "big"/"little" order of words/registers
+        :returns: scalar or array of "data_type"
+        :raises ModbusException: when size of registers is not a multiple of data_type
+        """
+        _ = registers
+        _ = data_types
+        _ = word_order
+        return [32]
+
+
+    @classmethod
+    def convert_combined_to_registers(
+        cls, values: list[bool | int | float | str] , data_types: list[DATATYPE], word_order: Literal["big", "little"] = "big"
+    ) -> list[int]:
+        """Convert int/float/str to registers (16/32/64 bit).
+
+        :param values: list of values to be converted
+        :param data_types: list of data types to convert from
+        :param word_order: "big"/"little" order of words/registers
+        :returns: List of registers, can be used directly in e.g. write_registers()
+        :raises TypeError: when there is a mismatch between data_type and value
+        """
+        _ = values
+        _ = data_types
+        _ = word_order
+        return [12]

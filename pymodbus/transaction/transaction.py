@@ -53,8 +53,7 @@ class TransactionManager(ModbusProtocol):
         self.trace_packet = trace_packet or self.dummy_trace_packet
         self.trace_pdu = trace_pdu or self.dummy_trace_pdu
         self.trace_connect = trace_connect or self.dummy_trace_connect
-        self.accept_no_response_limit = retries + 3
-        self.count_no_responses = 0
+        self.max_until_disconnect = self.count_until_disconnect = retries + 3
         if sync_client:
             self.sync_client = sync_client
             self._sync_lock = RLock()
@@ -109,12 +108,12 @@ class TransactionManager(ModbusProtocol):
                     return self.sync_get_response()
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
-            if self.count_no_responses >= self.accept_no_response_limit:
+            if self.count_until_disconnect < 0:
                 self.connection_lost(asyncio.TimeoutError("Server not responding"))
                 raise ModbusIOException(
-                    f"ERROR: No response received of the last {self.accept_no_response_limit} request, CLOSING CONNECTION."
+                    "ERROR: No response received of the last requests (default: retries+3), CLOSING CONNECTION."
                 )
-            self.count_no_responses += 1
+            self.count_until_disconnect -= 1
             txt = f"No response received after {self.retries} retries, continue with next request"
             Log.error(txt)
             raise ModbusIOException(txt)
@@ -141,16 +140,16 @@ class TransactionManager(ModbusProtocol):
                     response = await asyncio.wait_for(
                         self.response_future, timeout=self.comm_params.timeout_connect
                     )
-                    self.count_no_responses = 0
+                    self.count_until_disconnect= self.max_until_disconnect
                     return response
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
-            if self.count_no_responses >= self.accept_no_response_limit:
+            if self.count_until_disconnect < 0:
                 self.connection_lost(asyncio.TimeoutError("Server not responding"))
                 raise ModbusIOException(
-                    f"ERROR: No response received of the last {self.accept_no_response_limit} request, CLOSING CONNECTION."
+                    "ERROR: No response received of the last requests (default: retries+3), CLOSING CONNECTION."
                 )
-            self.count_no_responses += 1
+            self.count_until_disconnect -= 1
             txt = f"No response received after {self.retries} retries, continue with next request"
             Log.error(txt)
             raise ModbusIOException(txt)
@@ -175,7 +174,7 @@ class TransactionManager(ModbusProtocol):
 
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
-        self.count_no_responses = 0
+        self.count_until_disconnect = self.max_until_disconnect
         self.next_tid = 0
         self.trace_connect(True)
 

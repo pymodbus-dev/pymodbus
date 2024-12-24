@@ -6,6 +6,7 @@ API changes 3.9.0
 -----------------
 - Start*Server, added typing and removed not supported parameters.
 - Modbus*Server, added typing and removed not supported parameters.
+- payload removed (replaced by "convert_combined_to/from_registers")
 
 API changes 3.8.0
 -----------------

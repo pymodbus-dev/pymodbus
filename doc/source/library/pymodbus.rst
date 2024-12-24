@@ -21,11 +21,6 @@ Extra functions
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: pymodbus.payload
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 .. automodule:: pymodbus.transaction
     :members:
     :undoc-members:

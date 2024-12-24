@@ -79,11 +79,11 @@ Source: :github:`examples/client_calls.py`
     :noindex:
 
 
-Client custom message
-^^^^^^^^^^^^^^^^^^^^^
-Source: :github:`examples/client_custom_msg.py`
+Custom message
+^^^^^^^^^^^^^^
+Source: :github:`examples/custom_msg.py`
 
-.. automodule:: examples.client_custom_msg
+.. automodule:: examples.custom_msg
     :undoc-members:
     :noindex:
 

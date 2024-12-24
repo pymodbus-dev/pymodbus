@@ -47,7 +47,7 @@ class TestExamples:
         main_parse_messages(["--framer", framer, "-m", "00010000000401010101"])
 
     async def test_server_callback(self, use_port, use_host):
-        """Test server/client with payload."""
+        """Test server/client with callback."""
         cmdargs = ["--port", str(use_port), "--host", use_host]
         task = asyncio.create_task(run_callback_server(cmdline=cmdargs))
         task.set_name("run callback_server")

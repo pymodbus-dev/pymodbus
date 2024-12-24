@@ -83,6 +83,20 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
             raise ConnectionException(f"Not connected[{self!s}]")
         return self.ctx.execute(no_response_expected, request)
 
+    def set_max_no_responses(self, max_count: int) -> None:
+        """Override default max no request responses.
+
+        :param max_count: Max aborted requests before disconnecting.
+
+        The parameter retries defines how many times a request is retried
+        before being aborted. Once aborted a counter is incremented, and when
+        this counter is greater than max_count the connection is terminated.
+
+        .. tip::
+            When a request is successful the count is reset.
+        """
+        self.ctx.max_until_disconnect = max_count
+
     async def __aenter__(self):
         """Implement the client with enter block.
 
@@ -184,6 +198,20 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         if not self.connect():
             raise ConnectionException(f"Failed to connect[{self!s}]")
         return self.transaction.sync_execute(no_response_expected, request)
+
+    def set_max_no_responses(self, max_count: int) -> None:
+        """Override default max no request responses.
+
+        :param max_count: Max aborted requests before disconnecting.
+
+        The parameter retries defines how many times a request is retried
+        before being aborted. Once aborted a counter is incremented, and when
+        this counter is greater than max_count the connection is terminated.
+
+        .. tip::
+            When a request is successful the count is reset.
+        """
+        self.transaction.max_until_disconnect = max_count
 
     # ----------------------------------------------------------------------- #
     # Internal methods

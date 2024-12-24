@@ -368,6 +368,7 @@ class TestClientBase:
         )
         client.register(pdu_bit.ReadCoilsResponse)
         assert str(client)
+        client.set_max_no_responses(110)
         client.close()
 
     async def test_client_connection_made(self):

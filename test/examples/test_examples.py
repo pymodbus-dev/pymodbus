@@ -15,8 +15,8 @@ from examples.client_async_calls import async_template_call
 from examples.client_async_calls import main as main_client_async_calls
 from examples.client_calls import main as main_client_calls
 from examples.client_calls import template_call
-from examples.client_custom_msg import main as main_custom_client
 from examples.client_payload import main as main_payload_calls
+from examples.custom_msg import main as main_custom_client
 from examples.datastore_simulator_share import main as main_datastore_simulator_share
 from examples.message_parser import main as main_parse_messages
 from examples.server_async import setup_server
@@ -149,13 +149,11 @@ class TestAsyncExamples:
             await run_async_client(client, modbus_calls=template_call)
         client.close()
 
-    async def test_custom_msg(
-        self, mock_server, use_comm, use_framer, use_port, use_host
-    ):
+    async def test_custom_msg(self, use_comm, use_port, use_framer, use_host):
         """Test client with custom message."""
-        if use_comm != "tcp" or use_framer != "socket":
+        _ = use_framer
+        if use_comm != "tcp":
             return
-        assert mock_server
         await main_custom_client(port=use_port, host=use_host)
 
     async def test_payload(self, mock_clc, mock_cls):

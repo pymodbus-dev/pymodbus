@@ -142,7 +142,7 @@ class TestAsyncExamples:
         client = setup_async_client(cmdline=mock_server)
         client.read_coils = mock.Mock(side_effect=ModbusException("test"))
         with pytest.raises(ModbusException):
-            await run_async_client(client, modbus_calls=template_call)
+            await run_async_client(client, modbus_calls=async_template_call)
         client.close()
         client.read_coils = mock.Mock(return_value=ExceptionResponse(0x05, 0x10))
         with pytest.raises(ModbusException):

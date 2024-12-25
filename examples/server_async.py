@@ -136,18 +136,15 @@ def setup_server(description=None, context=None, cmdline=None):
     return args
 
 
-async def run_async_server(args):
+async def run_async_server(args) -> None:
     """Run server."""
     txt = f"### start ASYNC server, listening on {args.port} - {args.comm}"
     _logger.info(txt)
-    server = None
     if args.comm == "tcp":
         address = (args.host if args.host else "", args.port if args.port else None)
-        server = await StartAsyncTcpServer(
+        await StartAsyncTcpServer(
             context=args.context,  # Data storage
             identity=args.identity,  # server identify
-            # TBD host=
-            # TBD port=
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
@@ -160,7 +157,7 @@ async def run_async_server(args):
             args.host if args.host else "127.0.0.1",
             args.port if args.port else None,
         )
-        server = await StartAsyncUdpServer(
+        await StartAsyncUdpServer(
             context=args.context,  # Data storage
             identity=args.identity,  # server identify
             address=address,  # listen address
@@ -173,7 +170,7 @@ async def run_async_server(args):
     elif args.comm == "serial":
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600
         #             PTY,link=/tmp/ttyp0,raw,echo=0,ospeed=9600
-        server = await StartAsyncSerialServer(
+        await StartAsyncSerialServer(
             context=args.context,  # Data storage
             identity=args.identity,  # server identify
             # timeout=1,  # waiting time for request to complete
@@ -190,9 +187,8 @@ async def run_async_server(args):
         )
     elif args.comm == "tls":
         address = (args.host if args.host else "", args.port if args.port else None)
-        server = await StartAsyncTlsServer(
+        await StartAsyncTlsServer(
             context=args.context,  # Data storage
-            host="localhost",  # define tcp address where to connect to.
             # port=port,  # on which port
             identity=args.identity,  # server identify
             # custom_functions=[],  # allow custom handling
@@ -210,10 +206,9 @@ async def run_async_server(args):
             # broadcast_enable=False,  # treat slave 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
         )
-    return server
 
 
-async def async_helper():
+async def async_helper() -> None:
     """Combine setup and run."""
     _logger.info("Starting...")
     run_args = setup_server(description="Run asynchronous server.")

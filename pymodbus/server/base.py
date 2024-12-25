@@ -80,12 +80,12 @@ class ModbusBaseServer(ModbusProtocol):
 
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
+        raise RuntimeError("callback_new_connection should never be called")
 
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""
-        Log.debug("callback_disconnected called: {}", exc)
+        raise RuntimeError("callback_disconnected should never be called")
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
-        Log.debug("callback_data called: {} addr={}", data, ":hex", addr)
-        return 0
+        raise RuntimeError("callback_data should never be called")

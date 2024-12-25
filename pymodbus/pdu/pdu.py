@@ -5,6 +5,7 @@ import asyncio
 import struct
 from abc import abstractmethod
 
+from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.logging import Log
 
@@ -78,6 +79,11 @@ class ModbusPDU:
     @abstractmethod
     def decode(self, data: bytes) -> None:
         """Decode data part of the message."""
+
+    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
+        """Run request against a datastore."""
+        _ = context
+        return ExceptionResponse(0, 0)
 
     @classmethod
     def calculateRtuFrameSize(cls, data: bytes) -> int:

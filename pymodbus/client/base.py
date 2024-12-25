@@ -1,6 +1,7 @@
 """Base for all clients."""
 from __future__ import annotations
 
+import asyncio
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable
 
@@ -57,7 +58,9 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
             self.ctx.comm_params.host,
             self.ctx.comm_params.port,
         )
-        return await self.ctx.connect()
+        rc = await self.ctx.connect()
+        await asyncio.sleep(0.1)
+        return rc
 
     def register(self, custom_response_class: type[ModbusPDU]) -> None:
         """Register a custom response class with the decoder (call **sync**).

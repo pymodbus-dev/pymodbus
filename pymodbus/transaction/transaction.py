@@ -58,6 +58,9 @@ class TransactionManager(ModbusProtocol):
         else:
             self._lock = asyncio.Lock()
             self.low_level_send = self.send
+            if self.is_server:
+                self.last_pdu: ModbusPDU | None
+                self.last_addr: tuple | None
             self.response_future: asyncio.Future = asyncio.Future()
 
     def dummy_trace_packet(self, sending: bool, data: bytes) -> bytes:
@@ -151,16 +154,6 @@ class TransactionManager(ModbusProtocol):
             Log.error(txt)
             raise ModbusIOException(txt)
 
-    async def server_execute(self) -> tuple[ModbusPDU, int, Exception]:
-        """Wait for request.
-
-        Used in server, with an instance for each connection, therefore
-        there are NO concurrency.
-        """
-        self.response_future = asyncio.Future()
-        pdu, addr, exc = await asyncio.wait_for(self.response_future, None)
-        return pdu, addr, exc
-
     def pdu_send(self, pdu: ModbusPDU, addr: tuple | None = None) -> None:
         """Build byte stream and send."""
         packet = self.framer.buildFrame(self.trace_pdu(True, pdu))
@@ -181,17 +174,13 @@ class TransactionManager(ModbusProtocol):
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
-        try:
-            used_len, pdu = self.framer.processIncomingFrame(self.trace_packet(False, data))
-        except ModbusIOException as exc:
-            if self.is_server:
-                Log.info(str(exc))
-                return len(data)
-            raise exc
+        self.last_pdu = self.last_addr = None
+        used_len, pdu = self.framer.processIncomingFrame(self.trace_packet(False, data))
         if pdu:
-            pdu = self.trace_pdu(False, pdu)
-            result = (pdu, addr, None) if self.is_server else pdu
-            self.response_future.set_result(result)
+            self.last_pdu = self.trace_pdu(False, pdu)
+            self.last_addr = addr
+            if not self.is_server:
+                self.response_future.set_result(pdu)
         return used_len
 
     def getNextTID(self) -> int:

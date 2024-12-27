@@ -29,7 +29,6 @@ class ServerRequestHandler(TransactionManager):
         self.server = owner
         self.framer = self.server.framer(self.server.decoder)
         self.running = False
-        self.handler_task = None  # coroutine to be run on asyncio loop
         super().__init__(
             params,
             self.framer,
@@ -51,25 +50,11 @@ class ServerRequestHandler(TransactionManager):
         if self.server.broadcast_enable:
             if 0 not in slaves:
                 slaves.append(0)
-        try:
-            # schedule the connection handler on the event loop
-            self.handler_task = asyncio.create_task(self.handle())
-            self.handler_task.set_name("server connection handler")
-        except Exception as exc:  # pylint: disable=broad-except
-            Log.error(
-                "Server callback_connected exception: {}; {}",
-                exc,
-                traceback.format_exc(),
-            )
 
     def callback_disconnected(self, call_exc: Exception | None) -> None:
         """Call when connection is lost."""
         super().callback_disconnected(call_exc)
         try:
-            if self.handler_task:
-                self.handler_task.cancel()
-            if hasattr(self.server, "on_connection_lost"):
-                self.server.on_connection_lost()
             if call_exc is None:
                 Log.debug(
                     "Handler for stream [{}] has been canceled", self.comm_params.comm_name
@@ -100,34 +85,15 @@ class ServerRequestHandler(TransactionManager):
             self.server_send(response, 0)
             return(len(data))
         if self.last_pdu:
-            self.response_future.set_result(True)
+            if self.is_server:
+                self.loop.call_soon(self.handle_later)
+            else:
+                self.response_future.set_result(True)
         return used_len
 
-    async def handle(self) -> None:
-        """Coroutine which represents a single master <=> slave conversation."""
-        self.running = True
-        while self.running:
-            try:
-                self.response_future = asyncio.Future()
-                await asyncio.wait_for(self.response_future, None)
-                await self.handle_request()
-            except asyncio.CancelledError:
-                # catch and ignore cancellation errors
-                if self.running:
-                    Log.debug(
-                        "Handler for stream [{}] has been canceled", self.comm_params.comm_name
-                    )
-                    self.running = False
-            except Exception as exc:  # pylint: disable=broad-except
-                # force TCP socket termination as framer
-                # should handle application layer errors
-                Log.error(
-                    'Unknown exception "{}" on stream {} forcing disconnect',
-                    exc,
-                    self.comm_params.comm_name,
-                )
-                self.close()
-                self.callback_disconnected(exc)
+    def handle_later(self):
+        """Change sync (async not allowed in call_soon) to async."""
+        asyncio.run_coroutine_threadsafe(self.handle_request(), self.loop)
 
     async def handle_request(self):
         """Handle request."""

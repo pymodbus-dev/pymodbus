@@ -68,7 +68,7 @@ class ModbusBaseServer(ModbusProtocol):
             self.serving.set_result(True)
         self.close()
 
-    async def serve_forever(self):
+    async def serve_forever(self, *, background: bool = False):
         """Start endless loop."""
         if self.transport:
             raise RuntimeError(
@@ -76,9 +76,10 @@ class ModbusBaseServer(ModbusProtocol):
             )
         await self.listen()
         Log.info("Server listening.")
-        with suppress(asyncio.exceptions.CancelledError):
-            await self.serving
-        Log.info("Server graceful shutdown.")
+        if not background:
+            with suppress(asyncio.exceptions.CancelledError):
+                await self.serving
+            Log.info("Server graceful shutdown.")
 
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""

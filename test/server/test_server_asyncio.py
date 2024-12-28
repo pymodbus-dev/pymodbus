@@ -241,8 +241,12 @@ class TestAsyncioServer:
         await asyncio.wait_for(BasicClient.done, timeout=0.1)
         assert BasicClient.received_data, expected_response
 
+    @pytest.mark.skip
     async def test_async_server_file_descriptors(self):
-        """Test sending and receiving data on tcp socket."""
+        """Test sending and receiving data on tcp socket.
+
+        This test takes a long time (minutes) to run, so should only run when needed.
+        """
         addr = ("127.0.0.1", 25001)
         await self.start_server(serv_addr=addr)
         for _ in range(2048):

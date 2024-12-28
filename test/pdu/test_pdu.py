@@ -240,3 +240,9 @@ class TestPdu:
         context = mock_context()
         context.validate = lambda a, b, c: True
         assert await pdu.update_datastore(context)
+
+    async def test_pdu_default_datastore(self, mock_context):
+        """Test that all PDU types can be created."""
+        pdu = ModbusPDU()
+        context = mock_context()
+        assert await pdu.update_datastore(context)

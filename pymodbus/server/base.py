@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Callable
+from contextlib import suppress
 
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
@@ -67,7 +68,7 @@ class ModbusBaseServer(ModbusProtocol):
             self.serving.set_result(True)
         self.close()
 
-    async def serve_forever(self):
+    async def serve_forever(self, *, background: bool = False):
         """Start endless loop."""
         if self.transport:
             raise RuntimeError(
@@ -75,17 +76,19 @@ class ModbusBaseServer(ModbusProtocol):
             )
         await self.listen()
         Log.info("Server listening.")
-        await self.serving
-        Log.info("Server graceful shutdown.")
+        if not background:
+            with suppress(asyncio.exceptions.CancelledError):
+                await self.serving
+            Log.info("Server graceful shutdown.")
 
     def callback_connected(self) -> None:
         """Call when connection is succcesfull."""
+        raise RuntimeError("callback_new_connection should never be called")
 
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""
-        Log.debug("callback_disconnected called: {}", exc)
+        raise RuntimeError("callback_disconnected should never be called")
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
-        Log.debug("callback_data called: {} addr={}", data, ":hex", addr)
-        return 0
+        raise RuntimeError("callback_data should never be called")

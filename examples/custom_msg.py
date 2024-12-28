@@ -132,7 +132,7 @@ async def main(host="localhost", port=5020):
     task = asyncio.create_task(StartAsyncTcpServer(
         context=store,
         address=(host, port),
-        custom_functions=[CustomRequest])
+        custom_pdu=[CustomRequest])
     )
     await asyncio.sleep(0.1)
     async with ModbusClient(host=host, port=port, framer=FramerType.SOCKET) as client:

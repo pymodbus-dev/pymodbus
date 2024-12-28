@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Callable
+from contextlib import suppress
 
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
@@ -75,7 +76,8 @@ class ModbusBaseServer(ModbusProtocol):
             )
         await self.listen()
         Log.info("Server listening.")
-        await self.serving
+        with suppress(asyncio.exceptions.CancelledError):
+            await self.serving
         Log.info("Server graceful shutdown.")
 
     def callback_connected(self) -> None:

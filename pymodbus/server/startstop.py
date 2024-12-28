@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import asyncio
 import os
-from contextlib import suppress
 
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.pdu import ModbusPDU
@@ -33,9 +32,7 @@ async def StartAsyncTcpServer(  # pylint: disable=invalid-name
 
         Use ModbusTcpServer to allow multiple servers in one app.
     """
-    server = ModbusTcpServer(context, custom_pdu=custom_functions, **kwargs)
-    with suppress(asyncio.exceptions.CancelledError):
-        await server.serve_forever()
+    await ModbusTcpServer(context, custom_pdu=custom_functions, **kwargs).serve_forever()
 
 
 def StartTcpServer(  # pylint: disable=invalid-name
@@ -54,7 +51,7 @@ def StartTcpServer(  # pylint: disable=invalid-name
 
         Use ModbusTcpServer to allow multiple servers in one app.
     """
-    return asyncio.run(StartAsyncTcpServer(context, custom_functions=custom_functions, **kwargs))
+    asyncio.run(StartAsyncTcpServer(context, custom_functions=custom_functions, **kwargs))
 
 
 async def StartAsyncTlsServer(  # pylint: disable=invalid-name
@@ -73,9 +70,7 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name
 
         Use ModbusTlsServer to allow multiple servers in one app.
     """
-    server = ModbusTlsServer(context, custom_pdu=custom_functions, **kwargs)
-    with suppress(asyncio.exceptions.CancelledError):
-        await server.serve_forever()
+    await ModbusTlsServer(context, custom_pdu=custom_functions, **kwargs).serve_forever()
 
 
 def StartTlsServer(  # pylint: disable=invalid-name
@@ -113,9 +108,7 @@ async def StartAsyncUdpServer(  # pylint: disable=invalid-name
 
         Use ModbusUdpServer to allow multiple servers in one app.
     """
-    server = ModbusUdpServer(context, custom_pdu=custom_functions, **kwargs)
-    with suppress(asyncio.exceptions.CancelledError):
-        await server.serve_forever()
+    await ModbusUdpServer(context, custom_pdu=custom_functions, **kwargs).serve_forever()
 
 
 def StartUdpServer(  # pylint: disable=invalid-name
@@ -153,9 +146,7 @@ async def StartAsyncSerialServer(  # pylint: disable=invalid-name
 
         Use ModbusSerialServer to allow multiple servers in one app.
     """
-    server = ModbusSerialServer(context, custom_pdu=custom_functions, **kwargs)
-    with suppress(asyncio.exceptions.CancelledError):
-        await server.serve_forever()
+    await ModbusSerialServer(context, custom_pdu=custom_functions, **kwargs).serve_forever()
 
 
 def StartSerialServer(  # pylint: disable=invalid-name

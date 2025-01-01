@@ -701,7 +701,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
         :param registers: list of registers received from e.g. read_holding_registers()
         :param data_type: data type to convert to
-        :param word_order: "big"/"little" order of words/registers
+        :param word_order: "big"/"little" order of words/registers (Only used for special devices)
         :returns: scalar or array of "data_type"
         :raises ModbusException: when size of registers is not a multiple of data_type
         """
@@ -742,7 +742,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
         :param value: value to be converted
         :param data_type: data type to convert from
-        :param word_order: "big"/"little" order of words/registers
+        :param word_order: "big"/"little" order of words/registers (Only used for special devices)
         :returns: List of registers, can be used directly in e.g. write_registers()
         :raises TypeError: when there is a mismatch between data_type and value
         """
@@ -780,7 +780,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
         :param registers: list of registers received from e.g. read_holding_registers()
         :param data_types: list of (data type, count) to convert to
-        :param word_order: "big"/"little" order of words/registers
+        :param word_order: "big"/"little" order of words/registers (Only used for special devices)
         :returns: scalar or array of "data_type"
         :raises ModbusException: when size of registers is not a multiple of data_type
         """
@@ -797,7 +797,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """Convert int/float/str to registers (16/32/64 bit).
 
         :param values: list of values to be converted
-        :param data_types: list of data types to convert from
+        :param data_types: list of data types to convert from (Only used for special devices)
         :param word_order: "big"/"little" order of words/registers
         :returns: List of registers, can be used directly in e.g. write_registers()
         :raises TypeError: when there is a mismatch between data_type and value

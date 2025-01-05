@@ -21,7 +21,7 @@ extensions = [
     "sphinx_rtd_theme",
     "sphinx.ext.autosectionlabel"
 ]
-source_suffix = [".rst"]
+source_suffix = {'.rst': 'restructuredtext'}
 root_doc = "index"
 project = "PyModbus"
 copyright = "See license"

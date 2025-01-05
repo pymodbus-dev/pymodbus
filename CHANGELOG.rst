@@ -7,6 +7,15 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.8.3
+-------------
+* Remove deprecate from payload. (#2532)
+* Add background parameter to servers. (#2529)
+* Split async_io.py and simplify server start/stop. (#2528)
+* Update custom_msg example to include server. (#2527)
+* Move repl doc to repl repo. (#2522)
+* Add API to set max until disconnect. (#2521)
+
 Version 3.8.2
 -------------
 * Asyncio future removed from sync client. (#2514)

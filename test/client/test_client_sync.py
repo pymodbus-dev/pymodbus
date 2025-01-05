@@ -188,7 +188,7 @@ class TestSyncClientTcp:
             f"ipaddr={client.comm_params.host}, port={client.comm_params.port}, timeout={client.comm_params.timeout_connect}>"
         )
         assert repr(client) == rep
-
+        client.set_max_no_responses(110)
 
 class TestSyncClientTls:
     """Unittest for the pymodbus.client module."""

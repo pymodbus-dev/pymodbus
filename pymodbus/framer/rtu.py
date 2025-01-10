@@ -73,6 +73,9 @@ class FramerRTU(FramerBase):
         ------------------------------------------------------------------
         1 Byte = start + 8 bits + parity + stop = 11 bits
         (1/Baud)(bits) = delay seconds
+
+    .. Danger:: Current framerRTU does not support running the server on a multipoint rs485 line.
+
     """
 
     MIN_SIZE = 4  # <slave id><function code><crc 2 bytes>

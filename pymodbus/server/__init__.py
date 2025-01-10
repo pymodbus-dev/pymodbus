@@ -1,7 +1,4 @@
-"""Server.
-
-import external classes, to make them easier to use:
-"""
+"""**Server classes.**"""
 
 __all__ = [
     "ModbusSerialServer",

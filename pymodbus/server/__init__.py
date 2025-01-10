@@ -1,4 +1,4 @@
-"""**Server classes.**"""
+"""**Server classes**."""
 
 __all__ = [
     "ModbusSerialServer",

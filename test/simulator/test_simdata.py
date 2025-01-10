@@ -39,7 +39,6 @@ class TestSimData:
         """Test that simdata can be objects."""
         def dummy_action():
             """Set action."""
-            pass
 
         with pytest.raises(TypeError):
             SimData(start_register=0, action=action)

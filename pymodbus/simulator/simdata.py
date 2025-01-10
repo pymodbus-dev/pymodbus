@@ -248,3 +248,9 @@ class SimDevice:
             for entry in block:
                 if not isinstance(entry, SimData):
                     raise TypeError(f"block_{name} contains non SimData entries")
+
+
+def SimCheckConfig(devices: list[SimDevice]) -> bool:
+    """Verify configuration."""
+    _ = devices
+    return False

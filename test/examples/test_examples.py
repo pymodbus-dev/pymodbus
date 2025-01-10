@@ -96,9 +96,9 @@ class TestExamples:
         # Awaiting fix, missing stop of task.
         await run_simulator3()
 
-    async def test_simulator_datamodel(self):
+    def test_simulator_datamodel(self):
         """Run different simulator configurations."""
-        await run_main_simulator_datamodel()
+        run_main_simulator_datamodel()
 
     async def test_modbus_forwarder(self):
         """Test modbus forwarder."""

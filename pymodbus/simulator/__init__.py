@@ -7,5 +7,4 @@ __all__ = [
     "SimDevice"
 ]
 
-from pymodbus.simulator.simcore import SimCheckConfig
-from pymodbus.simulator.simdata import SimData, SimDataType, SimDevice
+from pymodbus.simulator.simdata import SimCheckConfig, SimData, SimDataType, SimDevice

@@ -112,14 +112,13 @@ class SimData:
     #: .. code-block:: python
     #:
     #:     def my_action(
-    #:        regs: SimData,
     #:        addr: int,
     #:        value: int | float | str | bool | bytes
     #:    ) -> int | float | str | bool | bytes:
     #:         return value + 1
     #:
     #: .. tip:: use functools.partial to add extra parameters if needed.
-    action: Callable[[SimData, int, int | float | str | bool | bytes], int | float | str | bool | bytes] | None = None
+    action: Callable[[int, int | float | str | bool | bytes], int | float | str | bool | bytes] | None = None
 
     def __post_init__(self):
         """Define a group of registers."""

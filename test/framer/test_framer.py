@@ -12,8 +12,7 @@ from pymodbus.framer import (
     FramerType,
 )
 from pymodbus.pdu import DecodePDU, ModbusPDU
-
-from .generator import set_calls
+from test.framer.generator import set_calls
 
 
 class TestFramer:

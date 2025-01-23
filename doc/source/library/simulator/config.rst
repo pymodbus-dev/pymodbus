@@ -25,7 +25,7 @@ each containing a list of servers/devices
     }
 
 You can define as many server and devices as you like, when starting
-:ref:`pymodbus.simulator` you select one server and one device to simulate.
+:ref:`pymodbus.simulator (v3.x)` you select one server and one device to simulate.
 
 A entry in “device_list” correspond to the dict you can use as parameter
 to datastore_simulator is you want to construct your own simulator.

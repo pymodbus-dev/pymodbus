@@ -12,11 +12,12 @@ Please select a topic in the left hand column.
    source/client
    source/server
    source/repl
+   source/simulator3
    source/simulator
    source/examples
    source/authors
    source/changelog
    source/internals
    source/roadmap
-   
+
 .. include:: ../README.rst

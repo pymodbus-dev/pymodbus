@@ -1,12 +1,12 @@
-Web frontend
-============
+Web frontend v3.x
+=================
 
 TO BE DOCUMENTED.
 
 
 
-pymodbus.simulator
-------------------
+pymodbus.simulator (v3.x)
+-------------------------
 
 The easiest way to run the simulator with web is to use "pymodbus.simulator" from the commandline.
 

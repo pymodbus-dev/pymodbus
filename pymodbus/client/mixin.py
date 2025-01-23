@@ -680,7 +680,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     # ------------------
 
     class DATATYPE(Enum):
-        """Datatype enum (name and number of bytes), used for convert_* calls."""
+        """Datatype enum (name and internal data), used for convert_* calls."""
 
         INT16 = ("h", 1)
         UINT16 = ("H", 1)

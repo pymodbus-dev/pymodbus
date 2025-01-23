@@ -60,7 +60,12 @@ class ModbusBaseServer(ModbusProtocol):
 
     def callback_new_connection(self):
         """Handle incoming connect."""
-        return ServerRequestHandler(self)
+        return ServerRequestHandler(
+            self,
+            self.trace_packet,
+            self.trace_pdu,
+            self.trace_connect
+        )
 
     async def shutdown(self):
         """Close server."""

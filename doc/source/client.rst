@@ -199,12 +199,12 @@ The logical devices represented by the device is addressed with the :mod:`slave=
 With **Serial**, the comm port is defined when creating the object.
 The physical devices are addressed with the :mod:`slave=` parameter.
 
-:mod:`slave=0` is defined as broadcast in the modbus standard, but pymodbus treats is a normal device.
+:mod:`slave=0` is defined as broadcast in the modbus standard, but pymodbus treats it as a normal device.
 
 If an application is expecting multiple responses to a broadcast request, it must call :mod:`client.execute` and deal with the responses.
 
 If no response is expected to a request, the :mod:`no_response_expected=True` argument can be used
-in the normal API calls, this will cause the call to return imidiatble with :mod:`None`
+in the normal API calls, this will cause the call to return immediately with :mod:`None`.
 
 
 Client response handling
@@ -224,7 +224,7 @@ The application should evaluate the result generically::
         raise ModbusException(txt)
 
 :mod:`except ModbusException as exc:` happens generally when pymodbus experiences an internal error.
-There are a few situation where a unexpected response from a device can cause an exception.
+There are a few situation where an unexpected response from a device can cause an exception.
 
 :mod:`rr.isError()` is set whenever the device reports a problem.
 
@@ -257,7 +257,7 @@ There are a client class for each type of communication and for asynchronous/syn
 
 Client common
 ^^^^^^^^^^^^^
-Some methods are common to all client:
+Some methods are common to all clients:
 
 .. autoclass:: pymodbus.client.base.ModbusBaseClient
     :members:
@@ -323,7 +323,7 @@ Modbus calls
 
 Pymodbus makes all standard modbus requests/responses available as simple calls.
 
-Using Modbus<transport>Client.register() custom messagees can be added to pymodbus,
+Using Modbus<transport>Client.register() custom messages can be added to pymodbus,
 and handled automatically.
 
 .. autoclass:: pymodbus.client.mixin.ModbusClientMixin

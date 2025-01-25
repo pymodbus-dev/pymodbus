@@ -37,10 +37,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     Advanced modbus message call::
 
         request = ReadCoilsRequest(1,10)
-        response = client.execute(no_response_expected=False, request=request)
+        response = client.execute(False, request)
         # or
         request = ReadCoilsRequest(1,10)
-        response = await client.execute(no_response_expected=False, request=request)
+        response = await client.execute(False, request)
 
     .. tip::
         All methods can be used directly (synchronous) or

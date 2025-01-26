@@ -53,7 +53,7 @@ class ModbusPDU:
         if address == -1:
             address = self.address
         if not 0 <= address <= 65535:
-            raise ValueError(f"9 < address {address} < 65535 !")
+            raise ValueError(f"0 < address {address} < 65535 !")
 
     def __str__(self) -> str:
         """Build a representation of an exception response."""

@@ -705,6 +705,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param string_encoding: The encoding with which to decode the bytearray, only used when data_type=DATATYPE.STRING
         :returns: scalar or array of "data_type"
         :raises ModbusException: when size of registers is not a multiple of data_type
+        :raises ParameterException: when the specified string encoding is not supported
         """
         if not (data_len := data_type.value[1]):
             byte_list = bytearray()
@@ -720,7 +721,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
                 try:
                     return byte_list.decode(string_encoding)
                 except LookupError as e:
-                    raise ParameterException(str(e))
+                    raise ParameterException(str(e)) from e
             return unpack_bitstring(byte_list)
         if (reg_len := len(registers)) % data_len:
             raise ModbusException(
@@ -750,6 +751,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param string_encoding: The encoding with which to encode the bytearray, only used when data_type=DATATYPE.STRING
         :returns: List of registers, can be used directly in e.g. write_registers()
         :raises TypeError: when there is a mismatch between data_type and value
+        :raises ParameterException: when the specified string encoding is not supported
         """
         if data_type == cls.DATATYPE.BITS:
             if not isinstance(value, list):
@@ -763,7 +765,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
             try:
                 byte_list = value.encode(string_encoding)
             except LookupError as e:
-                raise ParameterException(str(e))
+                raise ParameterException(str(e)) from e
             if len(byte_list) % 2:
                 byte_list += b"\x00"
         else:

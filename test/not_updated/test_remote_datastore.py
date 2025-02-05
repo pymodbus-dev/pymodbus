@@ -50,9 +50,11 @@ class TestRemoteDataStore:
         """Test getting values from a remote slave context."""
         client = mock.MagicMock()
         pdu = ReadCoilsResponse(bits=[True] * 10)
-        client.read_coils = lambda a, b: pdu
-        client.read_input_registers = lambda a, b: ReadInputRegistersResponse(registers=[10] * 10)
-        client.read_holding_registers = lambda a, b: ExceptionResponse(0x15)
+        read_input_reg_res = ReadInputRegistersResponse(registers=[10] * 10)
+        exception_response = ExceptionResponse(0x15)
+        client.read_coils = lambda a, count=1: pdu
+        client.read_input_registers = lambda a, count=1: read_input_reg_res
+        client.read_holding_registers = lambda a, count=1: exception_response
 
         context = RemoteSlaveContext(client)
         context.validate(1, 0, 10)

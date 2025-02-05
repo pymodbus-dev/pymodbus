@@ -74,16 +74,16 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
             params["slave"] = self.slave
         self.__get_callbacks = {
             "d": lambda a, c: self._client.read_discrete_inputs(
-                a, c, **params
+                a, count=c, **params
             ),
             "c": lambda a, c: self._client.read_coils(
-                a, c, **params
+                a, count=c, **params
             ),
             "h": lambda a, c: self._client.read_holding_registers(
-                a, c, **params
+                a, count=c, **params
             ),
             "i": lambda a, c: self._client.read_input_registers(
-                a, c, **params
+                a, count=c, **params
             ),
         }
         self.__set_callbacks = {

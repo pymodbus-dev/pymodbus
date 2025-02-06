@@ -13,7 +13,7 @@ import pymodbus.pdu.mei_message as pdu_mei
 import pymodbus.pdu.other_message as pdu_other_msg
 import pymodbus.pdu.register_message as pdu_reg
 from pymodbus.constants import ModbusStatus
-from pymodbus.exceptions import ModbusException, ParameterException
+from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 

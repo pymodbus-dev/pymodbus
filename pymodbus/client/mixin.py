@@ -718,10 +718,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
                 while trailing_nulls_begin > 0 and not byte_list[trailing_nulls_begin - 1]:
                     trailing_nulls_begin -= 1
                 byte_list = byte_list[:trailing_nulls_begin]
-                try:
-                    return byte_list.decode(string_encoding)
-                except LookupError as e:
-                    raise ParameterException(str(e)) from e
+                return byte_list.decode(string_encoding)
             return unpack_bitstring(byte_list)
         if (reg_len := len(registers)) % data_len:
             raise ModbusException(
@@ -762,10 +759,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         elif data_type == cls.DATATYPE.STRING:
             if not isinstance(value, str):
                 raise TypeError(f"Value should be string but is {type(value)}.")
-            try:
-                byte_list = value.encode(string_encoding)
-            except LookupError as e:
-                raise ParameterException(str(e)) from e
+            byte_list = value.encode(string_encoding)
             if len(byte_list) % 2:
                 byte_list += b"\x00"
         else:

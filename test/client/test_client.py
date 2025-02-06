@@ -231,12 +231,6 @@ class TestMixin:
         with pytest.raises(TypeError):
             ModbusClientMixin.convert_to_registers(bool, ModbusClientMixin.DATATYPE.BITS)
 
-        with pytest.raises(ParameterException):
-            ModbusClientMixin.convert_from_registers([123], ModbusClientMixin.DATATYPE.STRING, string_encoding="raw")
-
-        with pytest.raises(ParameterException):
-            ModbusClientMixin.convert_to_registers("123", ModbusClientMixin.DATATYPE.STRING, string_encoding="raw")
-
 
 class TestClientBase:
     """Test client code."""

@@ -16,7 +16,7 @@ from examples.helper import get_certificate
 from pymodbus import FramerType
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.mixin import ModbusClientMixin
-from pymodbus.exceptions import ConnectionException, ModbusException, ParameterException
+from pymodbus.exceptions import ConnectionException, ModbusException
 from pymodbus.pdu import ModbusPDU
 from pymodbus.transport import CommParams, CommType
 

@@ -24,6 +24,7 @@ Thanks to
 - andrew-harness
 - banana-sun
 - Blaise Thompson
+- Breina
 - CapraTheBest
 - cgernert
 - corollaries
@@ -77,6 +78,7 @@ Thanks to
 - peufeu2
 - Philip Couling
 - Philip Jones
+- Robin Trabert
 - Qi Li
 - Sebastian Machuca
 - Sefa Keleş

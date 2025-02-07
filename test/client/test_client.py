@@ -97,73 +97,85 @@ class TestMixin:
 
     @pytest.mark.parametrize(("word_order"), ["big", "little", None])
     @pytest.mark.parametrize(
-        ("datatype", "value", "registers"),
+        ("datatype", "value", "registers", "string_encoding"),
         [
-            (ModbusClientMixin.DATATYPE.STRING, "abcd", [0x6162, 0x6364]),
-            (ModbusClientMixin.DATATYPE.STRING, "a", [0x6100]),
-            (ModbusClientMixin.DATATYPE.UINT16, 27123, [0x69F3]),
-            (ModbusClientMixin.DATATYPE.INT16, -27123, [0x960D]),
-            (ModbusClientMixin.DATATYPE.UINT32, 27123, [0x0000, 0x69F3]),
-            (ModbusClientMixin.DATATYPE.UINT32, 32145678, [0x01EA, 0x810E]),
-            (ModbusClientMixin.DATATYPE.INT32, -32145678, [0xFE15, 0x7EF2]),
+            (ModbusClientMixin.DATATYPE.STRING, "abcdÇ", [0x6162, 0x6364, 0xc387], "utf-8"),
+            (ModbusClientMixin.DATATYPE.STRING, "abcdÇ", [0x6162, 0x6364, 0xc387], None),
+            (ModbusClientMixin.DATATYPE.STRING, "abcdÇ", [0x6162, 0x6364, 0x8000], "cp437"),
+            (ModbusClientMixin.DATATYPE.STRING, "a", [0x6100], None),
+            (ModbusClientMixin.DATATYPE.UINT16, 27123, [0x69F3], None),
+            (ModbusClientMixin.DATATYPE.INT16, -27123, [0x960D], None),
+            (ModbusClientMixin.DATATYPE.UINT32, 27123, [0x0000, 0x69F3], None),
+            (ModbusClientMixin.DATATYPE.UINT32, 32145678, [0x01EA, 0x810E], None),
+            (ModbusClientMixin.DATATYPE.INT32, -32145678, [0xFE15, 0x7EF2], None),
             (
                 ModbusClientMixin.DATATYPE.UINT64,
                 1234567890123456789,
                 [0x1122, 0x10F4, 0x7DE9, 0x8115],
+                None,
             ),
             (
                 ModbusClientMixin.DATATYPE.INT64,
                 -1234567890123456789,
                 [0xEEDD, 0xEF0B, 0x8216, 0x7EEB],
+                None,
             ),
-            (ModbusClientMixin.DATATYPE.FLOAT32, 27123.5, [0x46D3, 0xE700]),
-            (ModbusClientMixin.DATATYPE.FLOAT32, 3.141592, [0x4049, 0x0FD8]),
-            (ModbusClientMixin.DATATYPE.FLOAT32, -3.141592, [0xC049, 0x0FD8]),
-            (ModbusClientMixin.DATATYPE.FLOAT64, 27123.5, [0x40DA, 0x7CE0, 0x0000, 0x0000]),
+            (ModbusClientMixin.DATATYPE.FLOAT32, 27123.5, [0x46D3, 0xE700], None),
+            (ModbusClientMixin.DATATYPE.FLOAT32, 3.141592, [0x4049, 0x0FD8], None),
+            (ModbusClientMixin.DATATYPE.FLOAT32, -3.141592, [0xC049, 0x0FD8], None),
+            (ModbusClientMixin.DATATYPE.FLOAT64, 27123.5, [0x40DA, 0x7CE0, 0x0000, 0x0000], None),
             (
                 ModbusClientMixin.DATATYPE.FLOAT64,
                 3.14159265358979,
                 [0x4009, 0x21FB, 0x5444, 0x2D11],
+                None,
             ),
             (
                 ModbusClientMixin.DATATYPE.FLOAT64,
                 -3.14159265358979,
                 [0xC009, 0x21FB, 0x5444, 0x2D11],
+                None,
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
                 [True],
                 [256],
+                None,
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
                 [True, False, True],
                 [1280],
+                None,
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
                 [True, False, True] + [False] * 5 + [True],
                 [1281],
+                None,
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
                 [True, False, True] + [False] * 5 + [True] + [False] * 6 + [True],
                 [1409],
+                None,
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
                 [True, False, True] + [False] * 5 + [True] + [False] * 6 + [True] * 2,
                 [1409, 256],
+                None,
             ),
         ],
     )
-    def test_client_mixin_convert(self, datatype, word_order, registers, value):
+    def test_client_mixin_convert(self, datatype, word_order, registers, value, string_encoding):
         """Test converter methods."""
         if word_order == "little":
-            x = registers.copy()
-            x.reverse()
-            registers = x
-        kwargs = {"word_order": word_order} if word_order else {}
+            registers = list(reversed(registers))
+
+        kwargs = {**({"word_order": word_order} if word_order else {}),
+                  **({"string_encoding": string_encoding} if string_encoding else {})}
+
         regs = ModbusClientMixin.convert_to_registers(value, datatype, **kwargs)
         assert regs == registers
         result = ModbusClientMixin.convert_from_registers(registers, datatype, **kwargs)

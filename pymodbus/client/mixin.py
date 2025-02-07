@@ -37,10 +37,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     Advanced modbus message call::
 
         request = ReadCoilsRequest(1,10)
-        response = client.execute(request)
+        response = client.execute(False, request)
         # or
         request = ReadCoilsRequest(1,10)
-        response = await client.execute(request)
+        response = await client.execute(False, request)
 
     .. tip::
         All methods can be used directly (synchronous) or
@@ -51,7 +51,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """Initialize."""
 
     @abstractmethod
-    def execute(self,  no_response_expected: bool, request: ModbusPDU,) -> T:
+    def execute(self, no_response_expected: bool, request: ModbusPDU) -> T:
         """Execute request."""
 
     def read_coils(self, address: int, *, count: int = 1, slave: int = 1, no_response_expected: bool = False) -> T:
@@ -680,7 +680,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     # ------------------
 
     class DATATYPE(Enum):
-        """Datatype enum (name and number of bytes), used for convert_* calls."""
+        """Datatype enum (name and internal data), used for convert_* calls."""
 
         INT16 = ("h", 1)
         UINT16 = ("H", 1)
@@ -695,15 +695,17 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
     @classmethod
     def convert_from_registers(
-        cls, registers: list[int], data_type: DATATYPE, word_order: Literal["big", "little"] = "big"
+        cls, registers: list[int], data_type: DATATYPE, word_order: Literal["big", "little"] = "big", string_encoding: str = "utf-8"
     ) -> int | float | str | list[bool] | list[int] | list[float]:
         """Convert registers to int/float/str.
 
         :param registers: list of registers received from e.g. read_holding_registers()
         :param data_type: data type to convert to
         :param word_order: "big"/"little" order of words/registers
+        :param string_encoding: The encoding with which to decode the bytearray, only used when data_type=DATATYPE.STRING
         :returns: scalar or array of "data_type"
         :raises ModbusException: when size of registers is not a multiple of data_type
+        :raises ParameterException: when the specified string encoding is not supported
         """
         if not (data_len := data_type.value[1]):
             byte_list = bytearray()
@@ -716,7 +718,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
                 while trailing_nulls_begin > 0 and not byte_list[trailing_nulls_begin - 1]:
                     trailing_nulls_begin -= 1
                 byte_list = byte_list[:trailing_nulls_begin]
-                return byte_list.decode("utf-8")
+                return byte_list.decode(string_encoding)
             return unpack_bitstring(byte_list)
         if (reg_len := len(registers)) % data_len:
             raise ModbusException(
@@ -736,15 +738,17 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
     @classmethod
     def convert_to_registers(
-        cls, value: int | float | str | list[bool] | list[int] | list[float] , data_type: DATATYPE, word_order: Literal["big", "little"] = "big"
+        cls, value: int | float | str | list[bool] | list[int] | list[float], data_type: DATATYPE, word_order: Literal["big", "little"] = "big", string_encoding: str = "utf-8"
     ) -> list[int]:
         """Convert int/float/str to registers (16/32/64 bit).
 
         :param value: value to be converted
         :param data_type: data type to convert from
         :param word_order: "big"/"little" order of words/registers
+        :param string_encoding: The encoding with which to encode the bytearray, only used when data_type=DATATYPE.STRING
         :returns: List of registers, can be used directly in e.g. write_registers()
         :raises TypeError: when there is a mismatch between data_type and value
+        :raises ParameterException: when the specified string encoding is not supported
         """
         if data_type == cls.DATATYPE.BITS:
             if not isinstance(value, list):
@@ -755,7 +759,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         elif data_type == cls.DATATYPE.STRING:
             if not isinstance(value, str):
                 raise TypeError(f"Value should be string but is {type(value)}.")
-            byte_list = value.encode()
+            byte_list = value.encode(string_encoding)
             if len(byte_list) % 2:
                 byte_list += b"\x00"
         else:

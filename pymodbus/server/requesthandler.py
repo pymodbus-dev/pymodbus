@@ -14,7 +14,7 @@ from pymodbus.transport import CommParams, ModbusProtocol
 class ServerRequestHandler(TransactionManager):
     """Handle client connection."""
 
-    def __init__(self, owner):
+    def __init__(self, owner, trace_packet, trace_pdu, trace_connect):
         """Initialize."""
         params = CommParams(
             comm_name="server",
@@ -34,9 +34,9 @@ class ServerRequestHandler(TransactionManager):
             self.framer,
             0,
             True,
-            None,
-            None,
-            None,
+            trace_packet,
+            trace_pdu,
+            trace_connect,
         )
 
     def callback_new_connection(self) -> ModbusProtocol:

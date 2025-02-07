@@ -7,6 +7,19 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.8.4
+-------------
+* Parameterize string encoding in convert_to_registers and convert_from_registers (#2558)
+* Fix client modbus function calls in remote by adding count as keyword argument (#2563)
+* Fix exception text in ModbusPDU.validateAddress (#2551)
+* Typo arround `no_response_expected` (#2550)
+* Trace new connection in server. (#2549)
+* Add trace to server.
+* Update misleading DATATYPE text. (#2547)
+* Fix pylint.
+* Clarify server usage.
+* Solve instable transaction testing. (#2538)
+
 Version 3.8.3
 -------------
 * Remove deprecate from payload. (#2532)

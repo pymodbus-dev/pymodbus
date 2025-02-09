@@ -216,10 +216,6 @@ def define_mock_context():
             self.valid = valid
             self.default = default
 
-        def validate(self, _fc, _address, _count=0):
-            """Validate values."""
-            return self.valid
-
         def getValues(self, _fc, _address, count=0):
             """Get values."""
             return [self.default] * count
@@ -238,10 +234,6 @@ class MockLastValuesContext(ModbusBaseSlaveContext):
         self.valid = valid
         self.default = default
         self.last_values = []
-
-    def validate(self, _fc, _address, _count=0):
-        """Validate values."""
-        return self.valid
 
     def getValues(self, _fc, _address, count=0):
         """Get values."""

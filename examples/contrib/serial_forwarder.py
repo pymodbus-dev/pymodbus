@@ -58,7 +58,7 @@ class SerialForwarderTCPServer:
 
 
 def get_commandline():
-    """Read and validate command line arguments"""
+    """Read and check command line arguments"""
     parser = argparse.ArgumentParser(description="Command line options")
     parser.add_argument(
         "--log",

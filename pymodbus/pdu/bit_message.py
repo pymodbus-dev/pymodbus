@@ -5,7 +5,7 @@ from typing import cast
 
 from pymodbus.constants import ModbusStatus
 from pymodbus.datastore import ModbusSlaveContext
-from pymodbus.pdu.pdu import ExceptionResponse, ModbusPDU
+from pymodbus.pdu.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
@@ -17,8 +17,8 @@ class ReadCoilsRequest(ModbusPDU):
 
     def encode(self) -> bytes:
         """Encode a request pdu."""
-        self.validateCount(2000)
-        self.validateAddress()
+        self.verifyCount(2000)
+        self.verifyAddress()
         return struct.pack(">HH", self.address, self.count)
 
     def decode(self, data: bytes) -> None:
@@ -78,7 +78,7 @@ class WriteSingleCoilResponse(ModbusPDU):
 
     def encode(self) -> bytes:
         """Encode write coil request."""
-        self.validateAddress()
+        self.verifyAddress()
         val = ModbusStatus.ON if self.bits[0] else ModbusStatus.OFF
         return struct.pack(">HH", self.address, val)
 
@@ -93,8 +93,6 @@ class WriteSingleCoilRequest(WriteSingleCoilResponse):
 
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a request against a datastore."""
-        if not context.validate(self.function_code, self.address, 1):
-            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_ADDRESS)
         await context.async_setValues(self.function_code, self.address, self.bits)
         values = cast(list[bool], await context.async_getValues(self.function_code, self.address, 1))
         return WriteSingleCoilResponse(address=self.address, bits=values, dev_id=self.dev_id, transaction_id=self.transaction_id)
@@ -116,8 +114,8 @@ class WriteMultipleCoilsRequest(ModbusPDU):
     def encode(self) -> bytes:
         """Encode write coils request."""
         self.count = len(self.bits)
-        self.validateAddress()
-        self.validateCount(2000)
+        self.verifyAddress()
+        self.verifyCount(2000)
         byte_count = (self.count + 7) // 8
         return struct.pack(">HHB", self.address, self.count, byte_count) + pack_bitstring(self.bits)
 
@@ -129,8 +127,6 @@ class WriteMultipleCoilsRequest(ModbusPDU):
     async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
         """Run a request against a datastore."""
         count = len(self.bits)
-        if not context.validate(self.function_code, self.address, count):
-            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_ADDRESS)
         await context.async_setValues(
             self.function_code, self.address, self.bits
         )

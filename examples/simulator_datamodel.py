@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Pymodbus simulator datamodel examples.
 
+**WORK IN PROGRESS, do NOT use**
+
 This example shows how to configure the simulator datamodel to mimic a real
 device.
 

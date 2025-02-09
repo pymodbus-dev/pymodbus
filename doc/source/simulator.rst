@@ -1,6 +1,8 @@
 Simulator
 =========
 
+**WORK IN PROGRESS, do NOT use**
+
 The simulator is a full fledged modbus server/simulator.
 
 The purpose of the simulator is to provide support for client

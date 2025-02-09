@@ -102,7 +102,7 @@ class TransactionManager(ModbusProtocol):
             count_retries = 0
             while count_retries <= self.retries:
                 self.pdu_send(request)
-                if no_response_expected:
+                if not request.dev_id or no_response_expected:
                     return ExceptionResponse(0xff)
                 try:
                     return self.sync_get_response()
@@ -118,7 +118,7 @@ class TransactionManager(ModbusProtocol):
             Log.error(txt)
             raise ModbusIOException(txt)
 
-    async def execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU | None:
+    async def execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
         """Execute requests asynchronously.
 
         REMARK: this method is identical to sync_execute, apart from the lock and try/except.
@@ -134,8 +134,8 @@ class TransactionManager(ModbusProtocol):
             while count_retries <= self.retries:
                 self.response_future = asyncio.Future()
                 self.pdu_send(request)
-                if no_response_expected:
-                    return None
+                if not request.dev_id or no_response_expected:
+                    return ExceptionResponse(0xff)
                 try:
                     response = await asyncio.wait_for(
                         self.response_future, timeout=self.comm_params.timeout_connect

@@ -160,8 +160,9 @@ max-module-lines = "2000"
 
 [tool.pylint.basic]
 good-names = "i,j,k,rr,fc,rq,fd,x,_"
-attr-rgx = "([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__))$"
+attr-rgx = "([A-Za-z_][A-Za-z0-9_]{1,30}|(__.*__))$"
 method-rgx = "[a-z_][a-zA-Z0-9_]{2,}$"
+function-rgx = "[A-Za-z_][A-Za-z0-9_]{2,}$"
 
 [tool.pylint.design]
 max-positional = 15

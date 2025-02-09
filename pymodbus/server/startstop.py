@@ -16,7 +16,7 @@ from .server import (
 )
 
 
-async def StartAsyncTcpServer(  # pylint: disable=invalid-name
+async def StartAsyncTcpServer(
     context: ModbusServerContext,
     custom_functions: list[type[ModbusPDU]] | None = None,
     **kwargs,
@@ -35,7 +35,7 @@ async def StartAsyncTcpServer(  # pylint: disable=invalid-name
     await ModbusTcpServer(context, custom_pdu=custom_functions, **kwargs).serve_forever()
 
 
-def StartTcpServer(  # pylint: disable=invalid-name
+def StartTcpServer(
     context: ModbusServerContext,
     custom_functions: list[type[ModbusPDU]] | None = None,
     **kwargs
@@ -54,7 +54,7 @@ def StartTcpServer(  # pylint: disable=invalid-name
     asyncio.run(StartAsyncTcpServer(context, custom_functions=custom_functions, **kwargs))
 
 
-async def StartAsyncTlsServer(  # pylint: disable=invalid-name
+async def StartAsyncTlsServer(
     context: ModbusServerContext,
     custom_functions: list[type[ModbusPDU]] | None = None,
     **kwargs,
@@ -73,7 +73,7 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name
     await ModbusTlsServer(context, custom_pdu=custom_functions, **kwargs).serve_forever()
 
 
-def StartTlsServer(  # pylint: disable=invalid-name
+def StartTlsServer(
     context: ModbusServerContext,
     custom_functions: list[type[ModbusPDU]] | None = None,
     **kwargs
@@ -92,7 +92,7 @@ def StartTlsServer(  # pylint: disable=invalid-name
     asyncio.run(StartAsyncTlsServer(context, custom_functions=custom_functions, **kwargs))
 
 
-async def StartAsyncUdpServer(  # pylint: disable=invalid-name
+async def StartAsyncUdpServer(
     context: ModbusServerContext,
     custom_functions: list[type[ModbusPDU]] | None = None,
     **kwargs,
@@ -111,7 +111,7 @@ async def StartAsyncUdpServer(  # pylint: disable=invalid-name
     await ModbusUdpServer(context, custom_pdu=custom_functions, **kwargs).serve_forever()
 
 
-def StartUdpServer(  # pylint: disable=invalid-name
+def StartUdpServer(
     context: ModbusServerContext,
     custom_functions: list[type[ModbusPDU]] | None = None,
     **kwargs
@@ -130,7 +130,7 @@ def StartUdpServer(  # pylint: disable=invalid-name
     asyncio.run(StartAsyncUdpServer(context, custom_functions=custom_functions, **kwargs))
 
 
-async def StartAsyncSerialServer(  # pylint: disable=invalid-name
+async def StartAsyncSerialServer(
     context: ModbusServerContext,
     custom_functions: list[type[ModbusPDU]] | None = None,
     **kwargs,
@@ -149,7 +149,7 @@ async def StartAsyncSerialServer(  # pylint: disable=invalid-name
     await ModbusSerialServer(context, custom_pdu=custom_functions, **kwargs).serve_forever()
 
 
-def StartSerialServer(  # pylint: disable=invalid-name
+def StartSerialServer(
     context: ModbusServerContext,
     custom_functions: list[type[ModbusPDU]] | None = None,
     **kwargs
@@ -168,7 +168,7 @@ def StartSerialServer(  # pylint: disable=invalid-name
     asyncio.run(StartAsyncSerialServer(context, custom_functions=custom_functions, **kwargs))
 
 
-async def ServerAsyncStop() -> None:  # pylint: disable=invalid-name
+async def ServerAsyncStop() -> None:
     """Terminate server."""
     if not ModbusBaseServer.active_server:
         raise RuntimeError("Modbus server not running.")
@@ -176,7 +176,7 @@ async def ServerAsyncStop() -> None:  # pylint: disable=invalid-name
     ModbusBaseServer.active_server = None
 
 
-def ServerStop() -> None:  # pylint: disable=invalid-name
+def ServerStop() -> None:
     """Terminate server."""
     if not ModbusBaseServer.active_server:
         raise RuntimeError("Modbus server not running.")

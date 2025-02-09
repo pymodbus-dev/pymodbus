@@ -7,6 +7,12 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.8.5
+-------------
+* New simulator is WIP, not to be used. (#2568)
+* dev_id=0 no response expected (returns ExceptionResponse(0xff)). (#2567)
+* New simulator datastore. (#2535)
+
 Version 3.8.4
 -------------
 * Parameterize string encoding in convert_to_registers and convert_from_registers (#2558)

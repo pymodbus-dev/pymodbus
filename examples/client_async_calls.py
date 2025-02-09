@@ -266,7 +266,8 @@ async def async_execute_diagnostic_requests(client):
     assert not rr.isError()  # test that call was OK
     rr = await client.diag_getclear_modbus_response(slave=SLAVE)
     assert not rr.isError()  # test that call was OK
-    assert not await client.diag_force_listen_only(slave=SLAVE, no_response_expected=True)
+    rr = await client.diag_force_listen_only(slave=SLAVE, no_response_expected=True)
+    assert rr.isError()  # test that call was OK, error indicate no response
 
 
 # ------------------------

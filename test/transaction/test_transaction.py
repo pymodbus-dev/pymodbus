@@ -7,7 +7,7 @@ import pytest
 from pymodbus.client import ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.framer import FramerRTU, FramerSocket, FramerType
-from pymodbus.pdu import DecodePDU
+from pymodbus.pdu import DecodePDU, ExceptionResponse
 from pymodbus.pdu.bit_message import ReadCoilsRequest, ReadCoilsResponse
 from pymodbus.transaction import TransactionManager
 
@@ -134,8 +134,8 @@ class TestTransaction:
             None,
         )
         transact.send = mock.Mock()
-        request = ReadCoilsRequest(address=117, count=5)
-        response = ReadCoilsResponse(bits=[True, False, True, True, False])
+        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
+        response = ReadCoilsResponse(bits=[True, False, True, True, False], dev_id=1)
         transact.retries = 0
         transact.connection_made(mock.AsyncMock())
         transact.transport.write = mock.Mock()
@@ -206,7 +206,7 @@ class TestTransaction:
             None,
         )
         transact.send = mock.Mock()
-        request = ReadCoilsRequest(address=117, count=5)
+        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
         transact.retries = 0
         transact.connection_made(mock.AsyncMock())
         transact.transport.write = mock.Mock()
@@ -216,7 +216,8 @@ class TestTransaction:
         transact.data_received(data)
         result = await resp
         if no_resp:
-            assert not result
+            assert result.isError()
+            assert isinstance(result, ExceptionResponse)
         else:
             assert not result.isError()
             assert isinstance(result, ReadCoilsResponse)
@@ -281,8 +282,8 @@ class TestSyncTransaction:
         )
         transact.send = mock.Mock()
         transact.sync_client.connect = mock.Mock(return_value=True)
-        request = ReadCoilsRequest(address=117, count=5)
-        response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False])
+        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
+        response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False], dev_id=1)
         transact.retries = 0
         if scenario == 0: # transport not ok and no connect
             transact.transport = None
@@ -298,7 +299,7 @@ class TestSyncTransaction:
             transact.trace_packet = mock.Mock(return_value=b'123')
             transact.sync_execute(True, request)
             transact.trace_pdu.assert_called_once_with(True, request)
-            transact.trace_packet.assert_called_once_with(True, b'\x00\x01\x00u\x00\x05\xec\x02')
+            transact.trace_packet.assert_called_once_with(True, b'\x01\x01\x00u\x00\x05\xed\xd3')
         elif scenario == 3: # wait receive,timeout, no_responses
             transact.comm_params.timeout_connect = 0.1
             transact.count_no_responses = 10
@@ -339,8 +340,8 @@ class TestSyncTransaction:
         )
         transact.sync_client.connect = mock.Mock(return_value=True)
         transact.sync_client.send = mock.Mock()
-        request = ReadCoilsRequest(address=117, count=5)
-        response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False])
+        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
+        response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False], dev_id=1)
         transact.retries = 0
         transact.transport = 1
         resp_bytes = transact.framer.buildFrame(response)
@@ -372,8 +373,8 @@ class TestSyncTransaction:
             sync_client=client,
         )
         transact.sync_client.connect = mock.Mock(return_value=True)
-        request = ReadCoilsRequest(address=117, count=5)
-        response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False])
+        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
+        response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False], dev_id=1)
         transact.retries = 0
         transact.transport = 1
         resp_bytes = transact.framer.buildFrame(response)
@@ -407,8 +408,8 @@ class TestSyncTransaction:
             sync_client=client,
         )
         transact.sync_client.connect = mock.Mock(return_value=True)
-        request = ReadCoilsRequest(address=117, count=5)
-        response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False])
+        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
+        response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False], dev_id=1)
         transact.retries = 0
         transact.transport = 1
         resp_bytes = transact.framer.buildFrame(response)[:-1]

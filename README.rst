@@ -26,7 +26,7 @@ Upgrade examples:
 - 3.7.1 -> 3.8.0: Smaller changes to the pymodbus calls might be needed
 - 2.5.4 -> 3.0.0: Major changes in the application might be needed
 
-Current release is `3.8.5 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.8.5>`_.
+Current release is `3.8.6 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.8.6>`_.
 
 Bleeding edge (not released) is `dev <https://github.com/pymodbus-dev/pymodbus/tree/dev>`_.
 

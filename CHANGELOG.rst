@@ -7,6 +7,10 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.8.6
+-------------
+* Allow id=0 and check if response.id == request.id. (#2572)
+
 Version 3.8.5
 -------------
 * New simulator is WIP, not to be used. (#2568)

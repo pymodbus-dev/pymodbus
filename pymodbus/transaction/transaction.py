@@ -77,7 +77,7 @@ class TransactionManager(ModbusProtocol):
         """Do dummy trace."""
         _ = connect
 
-    def sync_get_response(self) -> ModbusPDU:
+    def sync_get_response(self, dev_id) -> ModbusPDU:
         """Receive until PDU is correct or timeout."""
         databuffer = b''
         while True:
@@ -87,6 +87,11 @@ class TransactionManager(ModbusProtocol):
             used_len, pdu = self.framer.processIncomingFrame(databuffer)
             databuffer = databuffer[used_len:]
             if pdu:
+                if pdu.dev_id != dev_id:
+                    raise ModbusIOException(
+                        f"ERROR: request ask for id={dev_id} but id={pdu.dev_id}, CLOSING CONNECTION."
+                    )
+
                 return pdu
 
     def sync_execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
@@ -102,10 +107,10 @@ class TransactionManager(ModbusProtocol):
             count_retries = 0
             while count_retries <= self.retries:
                 self.pdu_send(request)
-                if not request.dev_id or no_response_expected:
+                if no_response_expected:
                     return ExceptionResponse(0xff)
                 try:
-                    return self.sync_get_response()
+                    return self.sync_get_response(request.dev_id)
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
             if self.count_until_disconnect < 0:
@@ -134,13 +139,17 @@ class TransactionManager(ModbusProtocol):
             while count_retries <= self.retries:
                 self.response_future = asyncio.Future()
                 self.pdu_send(request)
-                if not request.dev_id or no_response_expected:
+                if no_response_expected:
                     return ExceptionResponse(0xff)
                 try:
                     response = await asyncio.wait_for(
                         self.response_future, timeout=self.comm_params.timeout_connect
                     )
                     self.count_until_disconnect= self.max_until_disconnect
+                    if response.dev_id != request.dev_id:
+                        raise ModbusIOException(
+                            f"ERROR: request ask for id={request.dev_id} but id={response.dev_id}, CLOSING CONNECTION."
+                        )
                     return response
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1

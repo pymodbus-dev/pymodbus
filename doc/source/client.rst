@@ -194,17 +194,19 @@ Client device addressing
 ------------------------
 
 With **TCP**, **TLS** and **UDP**, the tcp/ip address of the physical device is defined when creating the object.
-The logical devices represented by the device is addressed with the :mod:`slave=` parameter.
+Logical devices represented by the device is addressed with the :mod:`slave=` parameter.
 
 With **Serial**, the comm port is defined when creating the object.
 The physical devices are addressed with the :mod:`slave=` parameter.
 
 :mod:`slave=0` is defined as broadcast in the modbus standard, but pymodbus treats it as a normal device.
+please note :mod:`slave=0` can only be used to address devices that truly have id=0 ! Using :mod:`slave=0` to
+address a single device with id not 0 is against the protocol.
 
 If an application is expecting multiple responses to a broadcast request, it must call :mod:`client.execute` and deal with the responses.
 
 If no response is expected to a request, the :mod:`no_response_expected=True` argument can be used
-in the normal API calls, this will cause the call to return immediately with :mod:`None`.
+in the normal API calls, this will cause the call to return immediately with :mod:`ExceptionResponse(0xff)`.
 
 
 Client response handling

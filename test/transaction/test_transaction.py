@@ -151,8 +151,8 @@ class TestTransaction:
             transact.trace_pdu = mock.Mock(return_value=request)
             transact.trace_packet = mock.Mock(return_value=b'123')
             await transact.execute(True, request)
-            #transact.trace_pdu.assert_called_once_with(True, request)
-            #transact.trace_packet.assert_called_once_with(True, b'\x00\x01\x00u\x00\x05\xec\x02')
+            transact.trace_pdu.assert_called_once_with(True, request)
+            transact.trace_packet.assert_called_once_with(True, b'\x01\x01\x00u\x00\x05\xed\xd3')
         elif scenario == 3: # wait receive,timeout, no_responses
             transact.comm_params.timeout_connect = 0.1
             transact.count_no_responses = 10
@@ -212,7 +212,7 @@ class TestTransaction:
         transact.transport.write = mock.Mock()
         resp = asyncio.create_task(transact.execute(no_resp, request))
         await asyncio.sleep(0.2)
-        data = b"\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04"
+        data = b"\x00\x00\x12\x34\x00\x06\x01\x01\x01\x02\x00\x04"
         transact.data_received(data)
         result = await resp
         if no_resp:
@@ -417,3 +417,76 @@ class TestSyncTransaction:
         transact.sync_client.send = mock.Mock()
         with pytest.raises(ModbusIOException):
             transact.sync_execute(False, request)
+
+    def test_transaction_sync_id0(self, use_clc):
+        """Test id 0 in sync."""
+        client = ModbusBaseSyncClient(
+            FramerType.SOCKET,
+            5,
+            use_clc,
+            None,
+            None,
+            None,
+            )
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+            sync_client=client,
+        )
+        transact.sync_client.connect = mock.Mock(return_value=True)
+        transact.sync_client.send = mock.Mock()
+        request = ReadCoilsRequest(address=117, count=5, dev_id=0)
+        response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False], dev_id=1)
+        transact.retries = 0
+        transact.transport = 1
+        resp_bytes = transact.framer.buildFrame(response)
+        transact.sync_client.recv = mock.Mock(return_value=resp_bytes)
+        transact.sync_client.send = mock.Mock()
+        transact.comm_params.timeout_connect = 0.2
+        with pytest.raises(ModbusIOException):
+            transact.sync_execute(False, request)
+        response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False], dev_id=0)
+        resp_bytes = transact.framer.buildFrame(response)
+        transact.sync_client.recv = mock.Mock(return_value=resp_bytes)
+        resp = transact.sync_execute(False, request)
+        assert not resp.isError()
+
+    async def test_transaction_id0(self, use_clc):
+        """Test tracers in disconnect."""
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+        )
+        transact.send = mock.Mock()
+        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
+        response = ReadCoilsResponse(bits=[True, False, True, True, False], dev_id=0)
+        transact.retries = 0
+        transact.connection_made(mock.AsyncMock())
+        transact.transport.write = mock.Mock()
+        transact.comm_params.timeout_connect = 0.2
+        resp = asyncio.create_task(transact.execute(False, request))
+        await asyncio.sleep(0.1)
+        transact.response_future.set_result(response)
+        await asyncio.sleep(0.1)
+        with pytest.raises(ModbusIOException):
+            await resp
+        response = ReadCoilsResponse(bits=[True, False, True, True, False], dev_id=1)
+        transact.retries = 0
+        transact.connection_made(mock.AsyncMock())
+        transact.transport.write = mock.Mock()
+        transact.comm_params.timeout_connect = 0.2
+        resp = asyncio.create_task(transact.execute(False, request))
+        await asyncio.sleep(0.1)
+        transact.response_future.set_result(response)
+        await asyncio.sleep(0.1)
+        assert response == await resp

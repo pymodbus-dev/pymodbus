@@ -34,6 +34,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
     :param parity: 'E'ven, 'O'dd or 'N'one
     :param stopbits: Number of stop bits 1, 1.5, 2.
     :param handle_local_echo: Discard local echo from dongle.
+    :param rs485_settings: Allow configuring the underlying serial port for RS485 mode.
     :param name: Set communication name, used in logging
     :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
     :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
@@ -74,6 +75,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         bytesize: int = 8,
         parity: str = "N",
         stopbits: int = 1,
+        rs485_settings: serial.rs485.RS485Settings | None = None,
         handle_local_echo: bool = False,
         name: str = "comm",
         reconnect_delay: float = 0.1,
@@ -99,6 +101,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             bytesize=bytesize,
             parity=parity,
             stopbits=stopbits,
+            rs485_settings=rs485_settings,
             handle_local_echo=handle_local_echo,
             comm_name=name,
             reconnect_delay=reconnect_delay,
@@ -166,6 +169,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         bytesize: int = 8,
         parity: str = "N",
         stopbits: int = 1,
+        rs485_settings: serial.rs485.RS485Settings | None = None,
         handle_local_echo: bool = False,
         name: str = "comm",
         reconnect_delay: float = 0.1,
@@ -191,6 +195,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             bytesize=bytesize,
             parity=parity,
             stopbits=stopbits,
+            rs485_settings=rs485_settings,
             handle_local_echo=handle_local_echo,
             comm_name=name,
             reconnect_delay=reconnect_delay,

@@ -85,10 +85,7 @@ class ServerRequestHandler(TransactionManager):
             self.server_send(response, 0)
             return(len(data))
         if self.last_pdu:
-            if self.is_server:
-                self.loop.call_soon(self.handle_later)
-            else:
-                self.response_future.set_result(True)
+            self.loop.call_soon(self.handle_later)
         return used_len
 
     def handle_later(self):

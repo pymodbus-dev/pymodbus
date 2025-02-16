@@ -47,6 +47,7 @@ class TransactionManager(ModbusProtocol):
         self.framer = framer
         self.retries = retries
         self.next_tid: int = 0
+        self.request_dev_id: int = 0
         self.trace_packet = trace_packet or self.dummy_trace_packet
         self.trace_pdu = trace_pdu or self.dummy_trace_pdu
         self.trace_connect = trace_connect or self.dummy_trace_connect
@@ -84,15 +85,14 @@ class TransactionManager(ModbusProtocol):
             if not (data := self.sync_client.recv(None)):
                 raise asyncio.exceptions.TimeoutError()
             databuffer += data
-            used_len, pdu = self.framer.processIncomingFrame(databuffer)
+            used_len, pdu = self.framer.processIncomingFrame(self.trace_packet(False, databuffer))
             databuffer = databuffer[used_len:]
             if pdu:
                 if pdu.dev_id != dev_id:
                     raise ModbusIOException(
                         f"ERROR: request ask for id={dev_id} but id={pdu.dev_id}, CLOSING CONNECTION."
                     )
-
-                return pdu
+                return self.trace_pdu(False, pdu)
 
     def sync_execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
         """Execute requests asynchronously.
@@ -148,7 +148,7 @@ class TransactionManager(ModbusProtocol):
                     self.count_until_disconnect= self.max_until_disconnect
                     if response.dev_id != request.dev_id:
                         raise ModbusIOException(
-                            f"ERROR: request ask for id={request.dev_id} but id={response.dev_id}, CLOSING CONNECTION."
+                            f"ERROR: request ask for id={request.dev_id} but got id={response.dev_id}, CLOSING CONNECTION."
                         )
                     return response
                 except asyncio.exceptions.TimeoutError:
@@ -165,6 +165,7 @@ class TransactionManager(ModbusProtocol):
 
     def pdu_send(self, pdu: ModbusPDU, addr: tuple | None = None) -> None:
         """Build byte stream and send."""
+        self.request_dev_id = pdu.dev_id
         packet = self.framer.buildFrame(self.trace_pdu(True, pdu))
         self.low_level_send(self.trace_packet(True, packet), addr=addr)
 
@@ -189,7 +190,11 @@ class TransactionManager(ModbusProtocol):
             self.last_pdu = self.trace_pdu(False, pdu)
             self.last_addr = addr
             if not self.is_server:
-                self.response_future.set_result(pdu)
+                if pdu.dev_id != self.request_dev_id:
+                    raise ModbusIOException(
+                        f"ERROR: request ask for id={self.request_dev_id} but got id={pdu.dev_id}, CLOSING CONNECTION."
+                    )
+                self.response_future.set_result(self.last_pdu)
         return used_len
 
     def getNextTID(self) -> int:

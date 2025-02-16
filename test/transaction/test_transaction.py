@@ -92,8 +92,9 @@ class TestTransaction:
     @pytest.mark.parametrize("test", [True, False])
     async def test_transaction_data(self, use_clc, test):
         """Test tracers in disconnect."""
-        pdu = "dummy pdu"
-        packet = b'123'
+        pdu = ExceptionResponse(0xff)
+        pdu.dev_id = 0
+        packet = b'\x00\x03\x00\x7c\x00\x02\x04\x02'
         transact = TransactionManager(
             use_clc,
             FramerRTU(DecodePDU(False)),
@@ -184,11 +185,11 @@ class TestTransaction:
             None,
         )
         transact.send = mock.Mock()
-        response = ReadCoilsResponse(bits=[True, False, True, True, False])
+        response = ReadCoilsResponse(bits=[True, False, True, True, False], dev_id=0)
         transact.retries = 0
         transact.connection_made(mock.AsyncMock())
 
-        data = b"\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04"
+        data = b"\x00\x00\x12\x34\x00\x06\x00\x01\x01\x02\x00\x04"
         transact.data_received(data)
         response = await transact.response_future
         assert isinstance(response, ReadCoilsResponse)

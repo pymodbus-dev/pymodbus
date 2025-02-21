@@ -195,7 +195,10 @@ class TransactionManager(ModbusProtocol):
                     raise ModbusIOException(
                         f"ERROR: request ask for id={self.request_dev_id} but got id={pdu.dev_id}, CLOSING CONNECTION."
                     )
-                self.response_future.set_result(self.last_pdu)
+                if self.response_future.done():
+                    Log.warning("received unexpected pdu: {}", pdu, ":str")
+                else:
+                    self.response_future.set_result(self.last_pdu)
         return used_len
 
     def getNextTID(self) -> int:

@@ -154,6 +154,8 @@ class TransactionManager(ModbusProtocol):
                     return response
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
+                except asyncio.exceptions.CancelledError as exc:
+                    raise ModbusIOException("Request cancelled outside pymodbus.") from exc
             if self.count_until_disconnect < 0:
                 self.connection_lost(asyncio.TimeoutError("Server not responding"))
                 raise ModbusIOException(
@@ -195,6 +197,8 @@ class TransactionManager(ModbusProtocol):
                     raise ModbusIOException(
                         f"ERROR: request ask for id={self.request_dev_id} but got id={pdu.dev_id}, CLOSING CONNECTION."
                     )
+                if self.response_future.done():
+                    raise ModbusIOException(f"received pdu: {pdu:str} without a corresponding request")
                 self.response_future.set_result(self.last_pdu)
         return used_len
 

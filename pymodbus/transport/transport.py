@@ -468,9 +468,8 @@ class ModbusProtocol(asyncio.BaseProtocol):
             Log.debug("Wait 1s before reopening listener.")
             await asyncio.sleep(1)
             await self.listen()
-        except asyncio.CancelledError:
-            pass
-        self.reconnect_task = None
+        finally:
+            self.reconnect_task = None
 
     async def do_reconnect(self) -> None:
         """Handle reconnect as a task."""
@@ -490,8 +489,10 @@ class ModbusProtocol(asyncio.BaseProtocol):
                     self.comm_params.reconnect_delay_max,
                 )
         except asyncio.CancelledError:
-            pass
-        self.reconnect_task = None
+            self.reconnect_delay_current = self.comm_params.reconnect_delay or 0.0
+            raise
+        finally:
+            self.reconnect_task = None
 
     # ----------------- #
     # The magic methods #

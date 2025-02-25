@@ -137,6 +137,8 @@ class TransactionManager(ModbusProtocol):
             request.transaction_id = self.getNextTID()
             count_retries = 0
             while count_retries <= self.retries:
+                if flush := getattr(self.transport, 'flush', None):
+                    flush()
                 self.recv_buffer = b""
                 self.response_future = asyncio.Future()
                 self.pdu_send(request)

@@ -2,6 +2,10 @@ API changes
 ===========
 Versions (X.Y.Z) where Z > 0 e.g. 3.0.1 do NOT have API changes!
 
+API changes 3.8.7
+-----------------
+- Drop support for asyncio task cancellation
+
 API changes 3.8.0
 -----------------
 - ModbusSlaveContext, removed zero_mode parameter.

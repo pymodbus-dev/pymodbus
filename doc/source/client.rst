@@ -10,6 +10,9 @@ The client is NOT thread safe, meaning the application must ensure that calls ar
 This is only a problem for synchronous applications that use multiple threads or for asynchronous applications
 that use multiple :mod:`asyncio.create_task`.
 
+The client no longer supports task cancellation, please don't use pymodbus with asyncio frameworks like aiohttp that rely on task cancellation.
+Note that pymodbus is deliberately NOT safe to use with code that relies on task cancellation.
+
 It is allowed to have multiple client objects that e.g. each communicate with a TCP based device.
 
 

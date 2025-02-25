@@ -154,8 +154,6 @@ class TransactionManager(ModbusProtocol):
                     return response
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
-                except asyncio.exceptions.CancelledError as exc:
-                    raise ModbusIOException("Request cancelled outside pymodbus.") from exc
             if self.count_until_disconnect < 0:
                 self.connection_lost(asyncio.TimeoutError("Server not responding"))
                 raise ModbusIOException(

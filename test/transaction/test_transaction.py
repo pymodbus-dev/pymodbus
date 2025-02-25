@@ -173,6 +173,26 @@ class TestTransaction:
             await asyncio.sleep(0.1)
             assert response == await resp
 
+    async def test_transaction_task_cancellation(self, use_clc):
+        """Test transaction cancellation works."""
+        transact = TransactionManager(
+            use_clc,
+            FramerSocket(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+        )
+        transact.send = mock.Mock()
+        transact.connection_made(mock.AsyncMock())
+        transact.transport.write = mock.Mock()
+        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
+        task = asyncio.create_task(transact.execute(False, request))
+        with pytest.raises(asyncio.TimeoutError):
+            await asyncio.wait_for(task, 0.1)
+        assert task.cancelled()
+
     async def test_transaction_receiver(self, use_clc):
         """Test tracers in disconnect."""
         transact = TransactionManager(

@@ -70,6 +70,22 @@ class TestTransaction:
         transact.callback_new_connection()
         transact.callback_connected()
 
+    async def test_transaction_sync_pdu_send(self, use_clc):
+        """Test dummy calls from transport."""
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+        )
+        transact.is_sync = True
+        transact.comm_params.handle_local_echo = True
+        transact.pdu_send(ExceptionResponse(0xff), (0,0))
+        assert transact.sent_buffer == b'\x01\xff\x00a\xf0'
+
     async def test_transaction_disconnect(self, use_clc):
         """Test tracers in disconnect."""
         transact = TransactionManager(
@@ -89,8 +105,8 @@ class TestTransaction:
         transact.trace_packet.assert_not_called()
         transact.trace_pdu.assert_not_called()
 
-    @pytest.mark.parametrize("test", [True, False])
-    async def test_transaction_data(self, use_clc, test):
+    @pytest.mark.parametrize(("test", "is_server"), [(True, False), (False, False), (True, True)])
+    async def test_transaction_data(self, use_clc, test, is_server):
         """Test tracers in disconnect."""
         pdu = ExceptionResponse(0xff)
         pdu.dev_id = 0
@@ -104,6 +120,7 @@ class TestTransaction:
             None,
             None,
         )
+        transact.is_server = is_server
         transact.framer.processIncomingFrame = mock.Mock(return_value=(0, None))
         transact.callback_data(packet)
         assert not transact.response_future.done()
@@ -122,7 +139,32 @@ class TestTransaction:
             transact.trace_pdu.assert_called_once_with(False, pdu)
             assert transact.response_future.result() == pdu
 
-    @pytest.mark.parametrize("scenario", range(6))
+    @pytest.mark.parametrize("test", [True, False])
+    async def test_transaction_data_2(self, use_clc, test):
+        """Test tracers in disconnect."""
+        pdu = ExceptionResponse(0xff)
+        packet = b'\x00\x03\x00\x7c\x00\x02\x04\x02'
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+        )
+        transact.framer.processIncomingFrame = mock.Mock()
+        transact.trace_packet = mock.Mock(return_value=packet)
+        transact.framer.processIncomingFrame.return_value = (1, pdu)
+        if test:
+            pdu.dev_id = 17
+        else:
+            pdu.dev_id = 0
+            transact.response_future.set_result((1, pdu))
+        with pytest.raises(ModbusIOException):
+            transact.callback_data(packet)
+
+    @pytest.mark.parametrize("scenario", range(8))
     async def test_transaction_execute(self, use_clc, scenario):
         """Test tracers in disconnect."""
         transact = TransactionManager(
@@ -160,12 +202,27 @@ class TestTransaction:
             transact.connection_lost = mock.Mock()
             with pytest.raises(ModbusIOException):
                 await transact.execute(False, request)
-        elif scenario == 4: # wait receive,timeout, no_responses pass
+        elif scenario == 4: # wait receive,timeout, disconnect
+            transact.comm_params.timeout_connect = 0.1
+            transact.count_no_responses = 10
+            transact.count_until_disconnect = -1
+            transact.connection_lost = mock.Mock()
+            with pytest.raises(ModbusIOException):
+                await transact.execute(False, request)
+        elif scenario == 5: # wait receive,timeout, no_responses pass
             transact.comm_params.timeout_connect = 0.1
             transact.connection_lost = mock.Mock()
             with pytest.raises(ModbusIOException):
                 await transact.execute(False, request)
-        else: # if scenario == 5: # response
+        elif scenario == 6: # wait receive, cancel
+            transact.comm_params.timeout_connect = 0.2
+            resp = asyncio.create_task(transact.execute(False, request))
+            await asyncio.sleep(0.1)
+            resp.cancel()
+            await asyncio.sleep(0.1)
+            with pytest.raises(ModbusIOException):
+                await resp
+        else: # if scenario == 7: # response
             transact.comm_params.timeout_connect = 0.2
             resp = asyncio.create_task(transact.execute(False, request))
             await asyncio.sleep(0.1)
@@ -223,6 +280,41 @@ class TestTransaction:
             assert not result.isError()
             assert isinstance(result, ReadCoilsResponse)
 
+    async def test_transaction_id0(self, use_clc):
+        """Test tracers in disconnect."""
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+        )
+        transact.send = mock.Mock()
+        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
+        response = ReadCoilsResponse(bits=[True, False, True, True, False], dev_id=0)
+        transact.retries = 0
+        transact.connection_made(mock.AsyncMock())
+        transact.transport.write = mock.Mock()
+        transact.comm_params.timeout_connect = 0.2
+        resp = asyncio.create_task(transact.execute(False, request))
+        await asyncio.sleep(0.1)
+        transact.response_future.set_result(response)
+        await asyncio.sleep(0.1)
+        with pytest.raises(ModbusIOException):
+            await resp
+        response = ReadCoilsResponse(bits=[True, False, True, True, False], dev_id=1)
+        transact.retries = 0
+        transact.connection_made(mock.AsyncMock())
+        transact.transport.write = mock.Mock()
+        transact.comm_params.timeout_connect = 0.2
+        resp = asyncio.create_task(transact.execute(False, request))
+        await asyncio.sleep(0.1)
+        transact.response_future.set_result(response)
+        await asyncio.sleep(0.1)
+        assert response == await resp
+
 
 @pytest.mark.parametrize("use_port", [5098])
 class TestSyncTransaction:
@@ -260,7 +352,7 @@ class TestSyncTransaction:
         )
 
 
-    @pytest.mark.parametrize("scenario", range(6))
+    @pytest.mark.parametrize("scenario", range(7))
     async def test_sync_transaction_execute(self, use_clc, scenario):
         """Test tracers in disconnect."""
         client = ModbusBaseSyncClient(
@@ -306,11 +398,17 @@ class TestSyncTransaction:
             transact.count_no_responses = 10
             with pytest.raises(ModbusIOException):
                 transact.sync_execute(False, request)
-        elif scenario == 4: # wait receive,timeout, no_responses pass
+        elif scenario == 4: # wait receive,timeout, disconnect
+            transact.comm_params.timeout_connect = 0.1
+            transact.count_no_responses = 10
+            transact.count_until_disconnect = -1
+            with pytest.raises(ModbusIOException):
+                transact.sync_execute(False, request)
+        elif scenario == 5: # wait receive,timeout, no_responses pass
             transact.comm_params.timeout_connect = 0.1
             with pytest.raises(ModbusIOException):
                 transact.sync_execute(False, request)
-        else: # if scenario == 5 # response
+        else: # if scenario == 6 # response
             transact.transport = 1
             resp_bytes = transact.framer.buildFrame(response)
             transact.sync_client.recv = mock.Mock(return_value=resp_bytes)
@@ -457,8 +555,16 @@ class TestSyncTransaction:
         resp = transact.sync_execute(False, request)
         assert not resp.isError()
 
-    async def test_transaction_id0(self, use_clc):
-        """Test tracers in disconnect."""
+    def test_transaction_sync_get_response(self, use_clc):
+        """Test id 0 in sync."""
+        client = ModbusBaseSyncClient(
+            FramerType.SOCKET,
+            5,
+            use_clc,
+            None,
+            None,
+            None,
+            )
         transact = TransactionManager(
             use_clc,
             FramerRTU(DecodePDU(False)),
@@ -467,27 +573,20 @@ class TestSyncTransaction:
             None,
             None,
             None,
+            sync_client=client,
         )
-        transact.send = mock.Mock()
-        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
-        response = ReadCoilsResponse(bits=[True, False, True, True, False], dev_id=0)
-        transact.retries = 0
-        transact.connection_made(mock.AsyncMock())
-        transact.transport.write = mock.Mock()
-        transact.comm_params.timeout_connect = 0.2
-        resp = asyncio.create_task(transact.execute(False, request))
-        await asyncio.sleep(0.1)
-        transact.response_future.set_result(response)
-        await asyncio.sleep(0.1)
-        with pytest.raises(ModbusIOException):
-            await resp
-        response = ReadCoilsResponse(bits=[True, False, True, True, False], dev_id=1)
-        transact.retries = 0
-        transact.connection_made(mock.AsyncMock())
-        transact.transport.write = mock.Mock()
-        transact.comm_params.timeout_connect = 0.2
-        resp = asyncio.create_task(transact.execute(False, request))
-        await asyncio.sleep(0.1)
-        transact.response_future.set_result(response)
-        await asyncio.sleep(0.1)
-        assert response == await resp
+        client.recv = mock.Mock()
+        request = transact.framer.buildFrame(ReadCoilsRequest(address=117, count=5, dev_id=1))
+        response = transact.framer.buildFrame(ReadCoilsResponse(bits=[True*8], dev_id=1))
+        transact.sent_buffer = request
+        client.recv.side_effect = [request, response]
+        pdu = transact.sync_get_response(1)
+        assert isinstance(pdu, ReadCoilsResponse)
+        transact.sent_buffer = request
+        client.recv.side_effect = [request[:3], request[3:], response]
+        pdu = transact.sync_get_response(1)
+        assert isinstance(pdu, ReadCoilsResponse)
+        transact.sent_buffer = request
+        client.recv.side_effect = [response]
+        pdu = transact.sync_get_response(1)
+        assert isinstance(pdu, ReadCoilsResponse)

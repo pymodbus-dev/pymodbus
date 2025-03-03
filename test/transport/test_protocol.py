@@ -51,6 +51,11 @@ class TestTransportProtocol1:
         use_clc.source_address = ("localhost", 112)
         ModbusProtocol(use_clc, True)
 
+    def test_init_sync(self, use_clc):
+        """Test callbacks."""
+        use_clc.source_address = ("localhost", 112)
+        ModbusProtocol(use_clc, True, is_sync=True)
+
     async def test_init_source_addr_none(self, use_clc):
         """Test callbacks."""
         use_clc.source_address = None

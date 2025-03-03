@@ -387,6 +387,16 @@ class TestFramerType:
         assert not res_len
         assert not res_data
 
+    @pytest.mark.parametrize(("is_server"), [False])
+    async def xtest_processIncomingFrame_no(self, test_framer):
+        """Test processIncomingFrame."""
+        msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
+        with mock.patch.object(test_framer, "_processIncomingFrame") as mock_process:
+            mock_process.return_value = (5, None)
+            used_len, pdu = test_framer.processIncomingFrame(msg)
+            assert not used_len
+            assert not pdu
+
     @pytest.mark.parametrize(("is_server"), [True])
     async def test_processIncomingFrame1(self, test_framer):
         """Test processIncomingFrame."""

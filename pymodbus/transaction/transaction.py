@@ -43,7 +43,8 @@ class TransactionManager(ModbusProtocol):
         sync_client = None,
         ) -> None:
         """Initialize an instance of the ModbusTransactionManager."""
-        super().__init__(params, is_server, is_sync=bool(sync_client))
+        self.is_sync = bool(sync_client)
+        super().__init__(params, is_server, is_sync=self.is_sync)
         self.framer = framer
         self.retries = retries
         self.next_tid: int = 0
@@ -59,10 +60,9 @@ class TransactionManager(ModbusProtocol):
         else:
             self._lock = asyncio.Lock()
             self.low_level_send = self.send
-            if self.is_server:
-                self.last_pdu: ModbusPDU | None
-                self.last_addr: tuple | None
             self.response_future: asyncio.Future = asyncio.Future()
+            self.last_pdu: ModbusPDU | None
+            self.last_addr: tuple | None
 
     def dummy_trace_packet(self, sending: bool, data: bytes) -> bytes:
         """Do dummy trace."""
@@ -84,6 +84,28 @@ class TransactionManager(ModbusProtocol):
         while True:
             if not (data := self.sync_client.recv(None)):
                 raise asyncio.exceptions.TimeoutError()
+
+            if self.sent_buffer:
+                if data.startswith(self.sent_buffer):
+                    Log.debug(
+                        "sync recv skipping (local_echo): {}",
+                        self.sent_buffer,
+                        ":hex",
+                    )
+                    data = data[len(self.sent_buffer) :]
+                    self.sent_buffer = b""
+                elif self.sent_buffer.startswith(data):
+                    Log.debug(
+                        "sync recv skipping (partial local_echo): {}", data, ":hex"
+                    )
+                    self.sent_buffer = self.sent_buffer[len(data) :]
+                    continue
+                else:
+                    Log.debug("did not sync receive local echo: {}", data, ":hex")
+                    self.sent_buffer = b""
+                if not data:
+                    continue
+
             databuffer += data
             used_len, pdu = self.framer.processIncomingFrame(self.trace_packet(False, databuffer))
             databuffer = databuffer[used_len:]
@@ -170,6 +192,8 @@ class TransactionManager(ModbusProtocol):
         """Build byte stream and send."""
         self.request_dev_id = pdu.dev_id
         packet = self.framer.buildFrame(self.trace_pdu(True, pdu))
+        if self.is_sync and self.comm_params.handle_local_echo:
+            self.sent_buffer = packet
         self.low_level_send(self.trace_packet(True, packet), addr=addr)
 
     def callback_new_connection(self):
@@ -198,8 +222,10 @@ class TransactionManager(ModbusProtocol):
                         f"ERROR: request ask for id={self.request_dev_id} but got id={pdu.dev_id}, CLOSING CONNECTION."
                     )
                 if self.response_future.done():
-                    raise ModbusIOException(f"received pdu: {pdu:str} without a corresponding request")
-                self.response_future.set_result(self.last_pdu)
+                    raise ModbusIOException("received pdu without a corresponding request")
+                self.response_future.set_result(self.last_pdu
+
+                                                )
         return used_len
 
     def getNextTID(self) -> int:

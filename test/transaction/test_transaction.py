@@ -280,6 +280,41 @@ class TestTransaction:
             assert not result.isError()
             assert isinstance(result, ReadCoilsResponse)
 
+    async def test_transaction_id0(self, use_clc):
+        """Test tracers in disconnect."""
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+        )
+        transact.send = mock.Mock()
+        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
+        response = ReadCoilsResponse(bits=[True, False, True, True, False], dev_id=0)
+        transact.retries = 0
+        transact.connection_made(mock.AsyncMock())
+        transact.transport.write = mock.Mock()
+        transact.comm_params.timeout_connect = 0.2
+        resp = asyncio.create_task(transact.execute(False, request))
+        await asyncio.sleep(0.1)
+        transact.response_future.set_result(response)
+        await asyncio.sleep(0.1)
+        with pytest.raises(ModbusIOException):
+            await resp
+        response = ReadCoilsResponse(bits=[True, False, True, True, False], dev_id=1)
+        transact.retries = 0
+        transact.connection_made(mock.AsyncMock())
+        transact.transport.write = mock.Mock()
+        transact.comm_params.timeout_connect = 0.2
+        resp = asyncio.create_task(transact.execute(False, request))
+        await asyncio.sleep(0.1)
+        transact.response_future.set_result(response)
+        await asyncio.sleep(0.1)
+        assert response == await resp
+
 
 @pytest.mark.parametrize("use_port", [5098])
 class TestSyncTransaction:
@@ -520,8 +555,16 @@ class TestSyncTransaction:
         resp = transact.sync_execute(False, request)
         assert not resp.isError()
 
-    async def test_transaction_id0(self, use_clc):
-        """Test tracers in disconnect."""
+    def test_transaction_sync_get_response(self, use_clc):
+        """Test id 0 in sync."""
+        client = ModbusBaseSyncClient(
+            FramerType.SOCKET,
+            5,
+            use_clc,
+            None,
+            None,
+            None,
+            )
         transact = TransactionManager(
             use_clc,
             FramerRTU(DecodePDU(False)),
@@ -530,27 +573,20 @@ class TestSyncTransaction:
             None,
             None,
             None,
+            sync_client=client,
         )
-        transact.send = mock.Mock()
-        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
-        response = ReadCoilsResponse(bits=[True, False, True, True, False], dev_id=0)
-        transact.retries = 0
-        transact.connection_made(mock.AsyncMock())
-        transact.transport.write = mock.Mock()
-        transact.comm_params.timeout_connect = 0.2
-        resp = asyncio.create_task(transact.execute(False, request))
-        await asyncio.sleep(0.1)
-        transact.response_future.set_result(response)
-        await asyncio.sleep(0.1)
-        with pytest.raises(ModbusIOException):
-            await resp
-        response = ReadCoilsResponse(bits=[True, False, True, True, False], dev_id=1)
-        transact.retries = 0
-        transact.connection_made(mock.AsyncMock())
-        transact.transport.write = mock.Mock()
-        transact.comm_params.timeout_connect = 0.2
-        resp = asyncio.create_task(transact.execute(False, request))
-        await asyncio.sleep(0.1)
-        transact.response_future.set_result(response)
-        await asyncio.sleep(0.1)
-        assert response == await resp
+        client.recv = mock.Mock()
+        request = transact.framer.buildFrame(ReadCoilsRequest(address=117, count=5, dev_id=1))
+        response = transact.framer.buildFrame(ReadCoilsResponse(bits=[True*8], dev_id=1))
+        transact.sent_buffer = request
+        client.recv.side_effect = [request, response]
+        pdu = transact.sync_get_response(1)
+        assert isinstance(pdu, ReadCoilsResponse)
+        transact.sent_buffer = request
+        client.recv.side_effect = [request[:3], request[3:], response]
+        pdu = transact.sync_get_response(1)
+        assert isinstance(pdu, ReadCoilsResponse)
+        transact.sent_buffer = request
+        client.recv.side_effect = [response]
+        pdu = transact.sync_get_response(1)
+        assert isinstance(pdu, ReadCoilsResponse)

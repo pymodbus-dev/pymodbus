@@ -61,6 +61,8 @@ class TransactionManager(ModbusProtocol):
             self._lock = asyncio.Lock()
             self.low_level_send = self.send
             self.response_future: asyncio.Future = asyncio.Future()
+            self.last_pdu: ModbusPDU | None
+            self.last_addr: tuple | None
 
     def dummy_trace_packet(self, sending: bool, data: bytes) -> bytes:
         """Do dummy trace."""
@@ -209,17 +211,21 @@ class TransactionManager(ModbusProtocol):
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
+        self.last_pdu = self.last_addr = None
         used_len, pdu = self.framer.processIncomingFrame(self.trace_packet(False, data))
         if pdu:
-            new_pdu = self.trace_pdu(False, pdu)
+            self.last_pdu = self.trace_pdu(False, pdu)
+            self.last_addr = addr
             if not self.is_server:
                 if pdu.dev_id != self.request_dev_id:
                     raise ModbusIOException(
                         f"ERROR: request ask for id={self.request_dev_id} but got id={pdu.dev_id}, CLOSING CONNECTION."
                     )
                 if self.response_future.done():
-                    raise ModbusIOException(f"received pdu without a corresponding request")
-                self.response_future.set_result(new_pdu)
+                    raise ModbusIOException("received pdu without a corresponding request")
+                self.response_future.set_result(self.last_pdu
+
+                                                )
         return used_len
 
     def getNextTID(self) -> int:

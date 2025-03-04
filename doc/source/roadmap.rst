@@ -17,18 +17,17 @@ The following bullet points are what the maintainers focus on:
 
 - 3.8.X bug fix release, with:
     - Currently not planned
-- 3.9.0, with:
-    - All of branch wait_next_api
-    - ModbusControlBlock pr slave
-    - New custom PDU (function codes)
+- 4.0.0, with:
     - Simulator datastore, with simple configuration
     - Remove remote_datastore
-- 4.0.0, with:
     - Remove BinaryPayload
     - Server becomes Simulator
-    - New serial forwarder
     - client async with sync/async API
     - Only one datastore, but with different API`s
+- 4.1.0, with:
+    - ModbusControlBlock pr slave
+    - New custom PDU (function codes)
+    - New serial forwarder
     - GUI client, to analyze devices
     - GUI server, to simulate devices
 

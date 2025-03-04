@@ -41,14 +41,14 @@ class ModbusPDU:
         """Check if the error is a success or failure."""
         return self.function_code > 0x80
 
-    def validateCount(self, max_count: int, count: int = -1) -> None:
+    def verifyCount(self, max_count: int, count: int = -1) -> None:
         """Validate API supplied count."""
         if count == -1:
             count = self.count
         if not 1 <= count <= max_count:
             raise ValueError(f"1 < count {count} < {max_count} !")
 
-    def validateAddress(self, address: int = -1) -> None:
+    def verifyAddress(self, address: int = -1) -> None:
         """Validate API supplied address."""
         if address == -1:
             address = self.address

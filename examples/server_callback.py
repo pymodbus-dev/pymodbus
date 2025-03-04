@@ -52,13 +52,6 @@ class CallbackDataBlock(ModbusSequentialDataBlock):
         _logger.debug(txt)
         return result
 
-    def validate(self, address, count=1):
-        """Check to see if the request is in range."""
-        result = super().validate(address, count=count)
-        txt = f"Callback from validate with address {address}, count {count}, data {result}"
-        _logger.debug(txt)
-        return result
-
 
 async def run_callback_server(cmdline=None):
     """Define datastore callback for server and do setup."""

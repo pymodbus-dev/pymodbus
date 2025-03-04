@@ -534,51 +534,6 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
     _write_func_code = (5, 6, 15, 16, 22, 23)
     _bits_func_code = (1, 2, 5, 15)
 
-    def loop_validate(self, address, end_address, fx_write):
-        """Validate entry in loop.
-
-        :meta private:
-        """
-        i = address
-        while i < end_address:
-            reg = self.registers[i]
-            if (fx_write and not reg.access) or reg.type == CellType.INVALID:
-                return False
-            if not self.type_exception:
-                i += 1
-                continue
-            if reg.type == CellType.NEXT:
-                return False
-            if reg.type in (CellType.BITS, CellType.UINT16):
-                i += 1
-            elif reg.type in (CellType.UINT32, CellType.FLOAT32):
-                if i + 1 >= end_address:
-                    return False
-                i += 2
-            else:
-                i += 1
-                while i < end_address:
-                    if self.registers[i].type == CellType.NEXT:
-                        i += 1
-        return True
-
-    def validate(self, func_code, address, count=1):
-        """Check to see if the request is in range.
-
-        :meta private:
-        """
-        if func_code in self._bits_func_code:
-            # Bit count, correct to register count
-            count = int((count + WORD_SIZE - 1) / WORD_SIZE)
-            address = int(address / 16)
-
-        real_address = self.fc_offset[func_code] + address
-        if real_address < 0 or real_address > self.register_count:
-            return False
-
-        fx_write = func_code in self._write_func_code
-        return self.loop_validate(real_address, real_address + count, fx_write)
-
     def getValues(self, func_code, address, count=1):
         """Return the requested values of the datastore.
 
@@ -751,32 +706,6 @@ class ModbusSimulatorContext(ModbusBaseSlaveContext):
     # --------------------------------------------
     # Internal helper methods
     # --------------------------------------------
-
-    def validate_type(self, func_code, real_address, count) -> bool:
-        """Check if request is done against correct type.
-
-        :meta private:
-        """
-        check: tuple
-        if func_code in self._bits_func_code:
-            # Bit access
-            check = (CellType.BITS, -1)
-            reg_step = 1
-        elif count % 2:
-            # 16 bit access
-            check = (CellType.UINT16, CellType.STRING)
-            reg_step = 1
-        else:
-            check = (CellType.UINT32, CellType.FLOAT32, CellType.STRING)
-            reg_step = 2
-
-        for i in range(real_address, real_address + count, reg_step):
-            if self.registers[i].type in check:
-                continue
-            if self.registers[i].type is CellType.NEXT:
-                continue
-            return False
-        return True
 
     @classmethod
     def build_registers_from_value(cls, value, is_int):

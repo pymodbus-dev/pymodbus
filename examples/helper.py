@@ -18,7 +18,7 @@ _logger = logging.getLogger(__file__)
 
 
 def get_commandline(server: bool = False, description: str | None = None, extras: Any = None, cmdline: str | None = None):
-    """Read and validate command line arguments."""
+    """Read and check command line arguments."""
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
         "-c",

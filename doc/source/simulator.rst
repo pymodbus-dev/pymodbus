@@ -59,7 +59,7 @@ A server consist of communication parameters and a device or a list of devices
 
 :class:`SimDataType` is a helper class that defines legal datatypes.
 
-:class:`SimActions` is a helper class that defines built in actions.
+:class:`SimValueType` is a helper class that defines legal value types.
 
 :github:`examples/simulator_datamodel.py` contains usage examples.
 
@@ -83,6 +83,14 @@ SimDataType
 ^^^^^^^^^^^
 
 .. autoclass:: pymodbus.simulator.SimDataType
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+SimDataValue
+^^^^^^^^^^^^
+
+.. autoclass:: pymodbus.simulator.SimDataValue
     :members:
     :undoc-members:
     :show-inheritance:

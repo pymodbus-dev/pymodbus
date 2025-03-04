@@ -22,7 +22,6 @@ async def test_check_async_sparsedatastore():
         if isinstance(entry, int):
             entry = [entry]
         for value in entry:
-            assert datablock.validate(key, 1)
             assert await datablock.async_getValues(key, 1) == [value]
             key += 1
 
@@ -43,6 +42,5 @@ def test_check_sparsedatastore():
         if isinstance(entry, int):
             entry = [entry]
         for value in entry:
-            assert datablock.validate(key, 1)
             assert datablock.getValues(key, 1) == [value]
             key += 1

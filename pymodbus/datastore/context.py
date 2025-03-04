@@ -15,7 +15,6 @@ class ModbusBaseSlaveContext:
 
     Derived classes must implemented the following methods:
             reset(self)
-            validate(self, fx, address, count=1)
             getValues/async_getValues(self, fc_as_hex, address, count=1)
             setValues/async_setValues(self, fc_as_hex, address, values)
     """
@@ -107,18 +106,6 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
         """Reset all the datastores to their default values."""
         for datastore in iter(self.store.values()):
             datastore.reset()
-
-    def validate(self, fc_as_hex, address, count=1):
-        """Validate the request to make sure it is in range.
-
-        :param fc_as_hex: The function we are working with
-        :param address: The starting address
-        :param count: The number of values to test
-        :returns: True if the request in within range, False otherwise
-        """
-        address += 1
-        Log.debug("validate: fc-[{}] address-{}: count-{}", fc_as_hex, address, count)
-        return self.store[self.decode(fc_as_hex)].validate(address, count)
 
     def getValues(self, fc_as_hex, address, count=1):
         """Get `count` values from datastore.

@@ -22,9 +22,12 @@ The following bullet points are what the maintainers focus on:
     - Remove remote_datastore
     - Remove BinaryPayload
     - Server becomes Simulator
-    - New serial forwarder
     - client async with sync/async API
     - Only one datastore, but with different API`s
+- 4.1.0, with:
+    - ModbusControlBlock pr slave
+    - New custom PDU (function codes)
+    - New serial forwarder
     - GUI client, to analyze devices
     - GUI server, to simulate devices
 

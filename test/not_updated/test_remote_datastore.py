@@ -57,15 +57,12 @@ class TestRemoteDataStore:
         client.read_holding_registers = lambda a, count=1: exception_response
 
         context = RemoteSlaveContext(client)
-        context.validate(1, 0, 10)
         result = context.getValues(1, 0, 10)
         assert result == [1] * 10
 
-        context.validate(4, 0, 10)
         result = context.getValues(4, 0, 10)
         assert result == [10] * 10
 
-        context.validate(3, 0, 10)
         result = context.getValues(3, 0, 10)
         assert result != [10] * 10
 
@@ -82,31 +79,11 @@ class TestRemoteDataStore:
         )
 
         context = RemoteSlaveContext(client)
-        context.validate(1, 0, 10)
         result = await context.async_getValues(1, 0, 10)
         assert result == [1] * 10
 
-        context.validate(4, 0, 10)
         result = await context.async_getValues(4, 0, 10)
         assert result == [10] * 10
 
-        context.validate(3, 0, 10)
         result = await context.async_getValues(3, 0, 10)
         assert result != [10] * 10
-
-    def test_remote_slave_validate_values(self):
-        """Test validating against a remote slave context."""
-        client = mock.MagicMock()
-        client.read_coils = lambda a, b: ReadCoilsResponse(bits=[1] * 10)
-        client.read_input_registers = lambda a, b: ReadInputRegistersResponse(registers=[10] * 10)
-        client.read_holding_registers = lambda a, b: ExceptionResponse(0x15)
-
-        context = RemoteSlaveContext(client)
-        result = context.validate(1, 0, 10)
-        assert result
-
-        result = context.validate(4, 0, 10)
-        assert result
-
-        result = context.validate(3, 0, 10)
-        assert result

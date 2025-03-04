@@ -31,15 +31,8 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
         """Reset all the datastores to their default values."""
         raise NotImplementedException()
 
-    def validate(self, _fc_as_hex, _address, _count):
-        """Validate the request to make sure it is in range.
-
-        :returns: True
-        """
-        return True
-
     def getValues(self, fc_as_hex, _address, _count=1):
-        """Get values from real call in validate."""
+        """Get values from remote device."""
         if fc_as_hex in self._write_fc:
             return [0]
         group_fx = self.decode(fc_as_hex)

@@ -136,7 +136,7 @@ class FramerRTU(FramerBase):
         """Check if the data matches the passed in CRC.
 
         :param data: The data to create a crc16 of
-        :param check: The CRC to validate
+        :param check: The CRC to verify
         :returns: True if matched, False otherwise
         """
         return cls.compute_CRC(data) == check

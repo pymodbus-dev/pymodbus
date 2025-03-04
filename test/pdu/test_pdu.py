@@ -178,7 +178,7 @@ class TestPdu:
         assert pdu.function_code > 0
 
     def test_pdu_register_as_byte(self):
-        """Test validate functions."""
+        """Test verify functions."""
         registers =[b'ab', b'cd']
         # NOT ALLOWED, NO conversion.
         req = reg_msg.ReadHoldingRegistersRequest(address=117, registers=registers, count=3)
@@ -186,27 +186,27 @@ class TestPdu:
         assert req.registers[0] != 24930
         assert req.registers[1] != 25444
 
-    def test_pdu_validate_address(self):
-        """Test validate functions."""
+    def test_pdu_verify_address(self):
+        """Test verify functions."""
         req = reg_msg.ReadHoldingRegistersRequest(address=10, count=3)
         req.address = -1
         with pytest.raises(ValueError):  # noqa: PT011
-            req.validateAddress()
+            req.verifyAddress()
         req.address = 66000
         with pytest.raises(ValueError):  # noqa: PT011
-            req.validateAddress()
+            req.verifyAddress()
 
-    def test_pdu_validate_count(self):
-        """Test validate functions."""
+    def test_pdu_verify_count(self):
+        """Test verify functions."""
         req = reg_msg.ReadHoldingRegistersRequest(address=2, count=0)
         req.count = 0
         with pytest.raises(ValueError):  # noqa: PT011
-            req.validateCount(100)
+            req.verifyCount(100)
         req.count = 101
         with pytest.raises(ValueError):  # noqa: PT011
-            req.validateCount(100)
+            req.verifyCount(100)
         with pytest.raises(ValueError):  # noqa: PT011
-            req.validateCount(100, count=0)
+            req.verifyCount(100, count=0)
 
 
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests + responses)
@@ -238,7 +238,6 @@ class TestPdu:
         """Test that all PDU types can be created."""
         pdu = pdutype(**kwargs)
         context = mock_context()
-        context.validate = lambda a, b, c: True
         assert await pdu.update_datastore(context)
 
     async def test_pdu_default_datastore(self, mock_context):

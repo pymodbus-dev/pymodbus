@@ -227,7 +227,7 @@ class ReadFifoQueueRequest(ModbusPDU):
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.address = address
-        self.validateAddress()
+        self.verifyAddress()
 
     def encode(self) -> bytes:
         """Encode the request packet."""

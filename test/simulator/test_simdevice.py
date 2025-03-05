@@ -1,4 +1,4 @@
-"""Test pdu."""
+"""Test SimDevice."""
 
 import pytest
 

@@ -1,15 +1,17 @@
 """Simulator."""
 
 __all__ = [
-    "SimCheckConfig",
+    "SimAction",
+    "SimCore",
     "SimData",
     "SimDataType",
     "SimDevice",
     "SimValueType",
 ]
 
+from pymodbus.simulator.simcore import SimCore
 from pymodbus.simulator.simdata import (
-    SimCheckConfig,
+    SimAction,
     SimData,
     SimDataType,
     SimDevice,

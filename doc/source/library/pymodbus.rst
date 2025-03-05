@@ -6,16 +6,6 @@ Extra functions
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: pymodbus.device
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-.. automodule:: pymodbus.events
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 .. automodule:: pymodbus.exceptions
     :members:
     :undoc-members:
@@ -72,6 +62,16 @@ PDU classes
     :noindex:
 
 .. automodule:: pymodbus.pdu.register_message
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: pymodbus.pdu.device
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: pymodbus.pdu.events
     :members:
     :undoc-members:
     :show-inheritance:

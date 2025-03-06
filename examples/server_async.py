@@ -9,7 +9,7 @@ usage::
                     [--framer {ascii,rtu,socket,tls}]
                     [--log {critical,error,warning,info,debug}]
                     [--port PORT] [--store {sequential,sparse,factory,none}]
-                    [--slaves SLAVES]
+                    [--device_ids DEVICE_IDS]
 
     -h, --help
         show this help message and exit
@@ -24,8 +24,8 @@ usage::
         set serial device baud rate
     --store {sequential,sparse,factory,none}
         set datastore type
-    --slaves SLAVES
-        set number of slaves to respond to
+    --device_ids DEVICE IDs
+        set list of devices to respond to
 
 The corresponding client can be started as:
 
@@ -47,14 +47,14 @@ except ImportError:
           for more information.")
     sys.exit(-1)
 
+from pymodbus import ModbusDeviceIdentification
 from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import (
+    ModbusDeviceContext,
     ModbusSequentialDataBlock,
     ModbusServerContext,
-    ModbusSlaveContext,
     ModbusSparseDataBlock,
 )
-from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server import (
     StartAsyncSerialServer,
     StartAsyncTcpServer,
@@ -91,17 +91,17 @@ def setup_server(description=None, context=None, cmdline=None):
             # full address range::
             datablock = lambda : ModbusSequentialDataBlock.create()  # pylint: disable=unnecessary-lambda-assignment,unnecessary-lambda
 
-        if args.slaves > 1:
+        if args.device_ids > 1:
             # The server then makes use of a server context that allows the server
-            # to respond with different slave contexts for different slave ids.
-            # By default it will return the same context for every slave id supplied
+            # to respond with different device contexts for different device ids.
+            # By default it will return the same context for every device id supplied
             # (broadcast mode).
             # However, this can be overloaded by setting the single flag to False and
-            # then supplying a dictionary of slave id to context mapping::
+            # then supplying a dictionary of device id to context mapping::
             context = {}
 
-            for slave in range(args.slaves):
-                context[slave] = ModbusSlaveContext(
+            for device_id in range(args.device_ids):
+                context[device_id] = ModbusDeviceContext(
                     di=datablock(),
                     co=datablock(),
                     hr=datablock(),
@@ -110,13 +110,13 @@ def setup_server(description=None, context=None, cmdline=None):
 
             single = False
         else:
-            context = ModbusSlaveContext(
+            context = ModbusDeviceContext(
                 di=datablock(), co=datablock(), hr=datablock(), ir=datablock()
             )
             single = True
 
         # Build data storage
-        args.context = ModbusServerContext(slaves=context, single=single)
+        args.context = ModbusServerContext(devices=context, single=single)
 
     # ----------------------------------------------------------------------- #
     # initialize the server information
@@ -148,8 +148,8 @@ async def run_async_server(args) -> None:
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
-            # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat slave 0 as broadcast address,
+            # ignore_missing_devices=True,  # ignore request to a missing device
+            # broadcast_enable=False,  # treat device 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
         )
     elif args.comm == "udp":
@@ -163,8 +163,8 @@ async def run_async_server(args) -> None:
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
-            # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat slave 0 as broadcast address,
+            # ignore_missing_devices=True,  # ignore request to a missing device
+            # broadcast_enable=False,  # treat device id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
         )
     elif args.comm == "serial":
@@ -182,8 +182,8 @@ async def run_async_server(args) -> None:
             # parity="N",  # Which kind of parity to use
             baudrate=args.baudrate,  # The baud rate to use for the serial device
             # handle_local_echo=False,  # Handle local echo of the USB-to-RS485 adaptor
-            # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat slave 0 as broadcast address,
+            # ignore_missing_devices=True,  # ignore request to a missing device
+            # broadcast_enable=False,  # treat device_id 0 as broadcast address,
         )
     elif args.comm == "tls":
         address = (args.host if args.host else "", args.port if args.port else None)
@@ -202,8 +202,8 @@ async def run_async_server(args) -> None:
                 "key"
             ),  # The key file path for TLS (used if sslctx is None)
             # password="none",  # The password for for decrypting the private key file
-            # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat slave 0 as broadcast address,
+            # ignore_missing_devices=True,  # ignore request to a missing device
+            # broadcast_enable=False,  # treat device_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
         )
 

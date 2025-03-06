@@ -9,7 +9,7 @@ usage::
                    [--framer {ascii,rtu,socket,tls}]
                    [--log {critical,error,warning,info,debug}]
                    [--port PORT] [--store {sequential,sparse,factory,none}]
-                   [--slaves SLAVES]
+                   [--device_ids DEVICE_IDS]
 
     -h, --help
         show this help message and exit
@@ -24,8 +24,8 @@ usage::
         set serial device baud rate
     --store {sequential,sparse,factory,none}
         set datastore type
-    --slaves SLAVES
-        set number of slaves to respond to
+    --device_ids DEVICE_IDS
+        set list of devices to respond to
 
 The corresponding client can be started as:
     python3 client_sync.py
@@ -74,8 +74,8 @@ def run_sync_server(args) -> None:
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
-            # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat slave 0 as broadcast address,
+            # ignore_missing_devices=True,  # ignore request to a missing device
+            # broadcast_enable=False,  # treat device_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
         )
     elif args.comm == "udp":
@@ -86,8 +86,8 @@ def run_sync_server(args) -> None:
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
-            # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat slave 0 as broadcast address,
+            # ignore_missing_devices=True,  # ignore request to a missing device
+            # broadcast_enable=False,  # treat device_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
         )
     elif args.comm == "serial":
@@ -105,8 +105,8 @@ def run_sync_server(args) -> None:
             # parity="E",  # Which kind of parity to use
             baudrate=args.baudrate,  # The baud rate to use for the serial device
             # handle_local_echo=False,  # Handle local echo of the USB-to-RS485 adaptor
-            # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat slave 0 as broadcast address,
+            # ignore_missing_devices=True,  # ignore request to a missing device
+            # broadcast_enable=False,  # treat device_id 0 as broadcast address,
         )
     elif args.comm == "tls":
         address = ("", args.port) if args.port else None
@@ -125,8 +125,8 @@ def run_sync_server(args) -> None:
                 "key"
             ),  # The key file path for TLS (used if sslctx is None)
             # password=None,  # The password for for decrypting the private key file
-            # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat slave 0 as broadcast address,
+            # ignore_missing_devices=True,  # ignore request to a missing device
+            # broadcast_enable=False,  # treat device_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
         )
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 import struct
 from dataclasses import dataclass
 
-from pymodbus.datastore import ModbusSlaveContext
+from pymodbus.datastore import ModbusDeviceContext
 from pymodbus.exceptions import ModbusException
 from pymodbus.pdu.pdu import ModbusPDU
 
@@ -73,7 +73,7 @@ class ReadFileRecordRequest(ModbusPDU):
         """
         return 1 + 7 * len(self.records)
 
-    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+    async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
         """Run a read exception status request against the store."""
         for record in self.records:
             record.record_data = b'SERVER DUMMY RECORD.'
@@ -169,7 +169,7 @@ class WriteFileRecordRequest(ModbusPDU):
         """
         return 1 + 7 * len(self.records)
 
-    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+    async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
         """Run the write file record request against the context."""
         return WriteFileRecordResponse(records=self.records, dev_id=self.dev_id, transaction_id=self.transaction_id)
 
@@ -237,7 +237,7 @@ class ReadFifoQueueRequest(ModbusPDU):
         """Decode the incoming request."""
         self.address = struct.unpack(">H", data)[0]
 
-    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+    async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
         """Run a read exception status request against the store."""
         values = [0, 1, 2, 3] # server dummy response (should be in datastore)
         return ReadFifoQueueResponse(values=values, dev_id=self.dev_id, transaction_id=self.transaction_id)

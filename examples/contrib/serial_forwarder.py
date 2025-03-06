@@ -1,7 +1,7 @@
 """Pymodbus SerialRTU2TCP Forwarder
 
 usage :
-python3 serial_forwarder.py --log DEBUG --port "/dev/ttyUSB0" --baudrate 9600 --server_ip "192.168.1.27" --server_port 5020 --slaves 1 2 3
+python3 serial_forwarder.py --log DEBUG --port "/dev/ttyUSB0" --baudrate 9600 --server_ip "192.168.1.27" --server_port 5020 --device_ids 1 2 3
 """
 import argparse
 import asyncio
@@ -10,7 +10,7 @@ import signal
 
 from pymodbus.client import ModbusSerialClient
 from pymodbus.datastore import ModbusServerContext
-from pymodbus.datastore.remote import RemoteSlaveContext
+from pymodbus.datastore.remote import RemoteDeviceContext
 from pymodbus.server import ModbusTcpServer
 
 
@@ -32,21 +32,21 @@ class SerialForwarderTCPServer:
 
     async def run(self):
         """Run the server"""
-        port, baudrate, server_port, server_ip, slaves = get_commandline()
+        port, baudrate, server_port, server_ip, device_ids = get_commandline()
         client = ModbusSerialClient(method="rtu", port=port, baudrate=baudrate)
         message = f"RTU bus on {port} - baudrate {baudrate}"
         _logger.info(message)
         store = {}
-        for i in slaves:
-            store[i] = RemoteSlaveContext(client, slave=i)
-        context = ModbusServerContext(slaves=store, single=False)
+        for i in device_ids:
+            store[i] = RemoteDeviceContext(client, device_id=i)
+        context = ModbusServerContext(device_ids=store, single=False)
         self.server = ModbusTcpServer(
             context,
             address=(server_ip, server_port),
         )
         message = f"serving on {server_ip} port {server_port}"
         _logger.info(message)
-        message = f"listening to slaves {context.slaves()}"
+        message = f"listening to device_ids {context.device_ids()}"
         _logger.info(message)
         await self.server.serve_forever()
 
@@ -74,16 +74,16 @@ def get_commandline():
     parser.add_argument("--server_port", help="server port", default=5020, type=int)
     parser.add_argument("--server_ip", help="server IP", default="127.0.0.1", type=str)
     parser.add_argument(
-        "--slaves", help="list of slaves to forward", type=int, nargs="+"
+        "--sdevice_ids", help="list of device_ids to forward", type=int, nargs="+"
     )
 
     args = parser.parse_args()
 
     # set defaults
     _logger.setLevel(args.log.upper())
-    if not args.slaves:
-        args.slaves = {1, 2, 3}
-    return args.port, args.baudrate, args.server_port, args.server_ip, args.slaves
+    if not args.device_ids:
+        args.device_ids = {1, 2, 3}
+    return args.port, args.baudrate, args.server_port, args.server_ip, args.device_ids
 
 
 if __name__ == "__main__":

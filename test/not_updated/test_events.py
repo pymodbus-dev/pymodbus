@@ -1,13 +1,13 @@
 """Test events."""
 import pytest
 
-from pymodbus.events import (
+from pymodbus.exceptions import ParameterException
+from pymodbus.pdu.events import (
     CommunicationRestartEvent,
     EnteredListenModeEvent,
     RemoteReceiveEvent,
     RemoteSendEvent,
 )
-from pymodbus.exceptions import ParameterException
 
 
 class TestEvents:
@@ -28,9 +28,9 @@ class TestEvents:
         assert result == b"\x40"
         event.decode(b"\x7f")
         assert event.read
-        assert event.slave_abort
-        assert event.slave_busy
-        assert event.slave_nak
+        assert event.device_abort
+        assert event.device_busy
+        assert event.device_nak
         assert event.write_timeout
         assert event.listen
 
@@ -38,9 +38,9 @@ class TestEvents:
         """Test remote sent event encode."""
         arguments = {
             "read": True,
-            "slave_abort": True,
-            "slave_busy": True,
-            "slave_nak": True,
+            "device_abort": True,
+            "device_busy": True,
+            "device_nak": True,
             "write_timeout": True,
             "listen": True,
         }

@@ -10,7 +10,7 @@ usage::
                        [--framer {ascii,rtu,socket,tls}]
                        [--log {critical,error,warning,info,debug}]
                        [--port PORT] [--store {sequential,sparse,factory,none}]
-                       [--slaves SLAVES]
+                       [--device_ids DEVICE_IDS]
 
     -h, --help
         show this help message and exit
@@ -25,8 +25,8 @@ usage::
         set serial device baud rate
     --store {sequential,sparse,factory,none}
         set datastore type
-    --slaves SLAVES
-        set number of slaves to respond to
+    --device_ids DEVICE_IDS
+        set number of devices to respond to
 
 The corresponding client can be started as:
     python3 client_sync.py
@@ -45,9 +45,9 @@ except ImportError:
     sys.exit(-1)
 
 from pymodbus.datastore import (
+    ModbusDeviceContext,
     ModbusSequentialDataBlock,
     ModbusServerContext,
-    ModbusSlaveContext,
 )
 
 
@@ -64,14 +64,14 @@ async def updating_task(context):
     against concurrent use.
     """
     fc_as_hex = 3
-    slave_id = 0x00
+    device_id = 0x00
     address = 0x10
     count = 6
 
     # set values to zero
-    values = context[slave_id].getValues(fc_as_hex, address, count=count)
+    values = context[device_id].getValues(fc_as_hex, address, count=count)
     values = [0 for v in values]
-    context[slave_id].setValues(fc_as_hex, address, values)
+    context[device_id].setValues(fc_as_hex, address, values)
 
     txt = (
         f"updating_task: started: initialised values: {values!s} at address {address!s}"
@@ -83,9 +83,9 @@ async def updating_task(context):
     while True:
         await asyncio.sleep(2)
 
-        values = context[slave_id].getValues(fc_as_hex, address, count=count)
+        values = context[device_id].getValues(fc_as_hex, address, count=count)
         values = [v + 1 for v in values]
-        context[slave_id].setValues(fc_as_hex, address, values)
+        context[device_id].setValues(fc_as_hex, address, values)
 
         txt = f"updating_task: incremented values: {values!s} at address {address!s}"
         print(txt)
@@ -101,8 +101,8 @@ def setup_updating_server(cmdline=None):
 
     # Continuing, use a sequential block without gaps.
     datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
-    slavecontext = ModbusSlaveContext(di=datablock, co=datablock, hr=datablock, ir=datablock)
-    context = ModbusServerContext(slaves=slavecontext, single=True)
+    device_context = ModbusDeviceContext(di=datablock, co=datablock, hr=datablock, ir=datablock)
+    context = ModbusServerContext(devices=device_context, single=True)
     return server_async.setup_server(
         description="Run asynchronous server.", context=context, cmdline=cmdline
     )

@@ -20,12 +20,11 @@ The following bullet points are what the maintainers focus on:
 - 4.0.0, with:
     - Simulator datastore, with simple configuration
     - Remove remote_datastore
-    - Remove BinaryPayload
     - Server becomes Simulator
     - client async with sync/async API
     - Only one datastore, but with different API`s
 - 4.1.0, with:
-    - ModbusControlBlock pr slave
+    - ModbusControlBlock pr device
     - New custom PDU (function codes)
     - New serial forwarder
     - GUI client, to analyze devices

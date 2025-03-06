@@ -22,9 +22,9 @@ except ImportError:
 
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.datastore.simulator import Label
-from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.logging import Log
 from pymodbus.pdu import DecodePDU
+from pymodbus.pdu.device import ModbusDeviceIdentification
 from pymodbus.server.server import (
     ModbusSerialServer,
     ModbusTcpServer,
@@ -155,11 +155,11 @@ class ModbusSimulatorServer:
         datastore = None
         if "device_id" in server:
             # Designated ModBus unit address. Will only serve data if the address matches
-            datastore = ModbusServerContext(slaves={int(server["device_id"]): self.datastore_context}, single=False)
+            datastore = ModbusServerContext(devices={int(server["device_id"]): self.datastore_context}, single=False)
             del server["device_id"]
         else:
             # Will server any request regardless of addressing
-            datastore = ModbusServerContext(slaves=self.datastore_context, single=True)
+            datastore = ModbusServerContext(devices=self.datastore_context, single=True)
 
         comm = comm_class[server.pop("comm")]
         framer = server.pop("framer")
@@ -367,9 +367,9 @@ class ModbusSimulatorServer:
             (1, "ILLEGAL_FUNCTION"),
             (2, "ILLEGAL_ADDRESS"),
             (3, "ILLEGAL_VALUE"),
-            (4, "SLAVE_FAILURE"),
+            (4, "DEVICE_FAILURE"),
             (5, "ACKNOWLEDGE"),
-            (6, "SLAVE_BUSY"),
+            (6, "DEVICE_BUSY"),
             (7, "MEMORY_PARITY_ERROR"),
             (10, "GATEWAY_PATH_UNAVIABLE"),
             (11, "GATEWAY_NO_RESPONSE"),
@@ -529,9 +529,9 @@ class ModbusSimulatorServer:
             (1, "ILLEGAL_FUNCTION"),
             (2, "ILLEGAL_ADDRESS"),
             (3, "ILLEGAL_VALUE"),
-            (4, "SLAVE_FAILURE"),
+            (4, "DEVICE_FAILURE"),
             (5, "ACKNOWLEDGE"),
-            (6, "SLAVE_BUSY"),
+            (6, "DEVICE_BUSY"),
             (7, "MEMORY_PARITY_ERROR"),
             (10, "GATEWAY_PATH_UNAVIABLE"),
             (11, "GATEWAY_NO_RESPONSE"),

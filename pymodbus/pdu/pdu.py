@@ -5,8 +5,8 @@ import asyncio
 import struct
 from abc import abstractmethod
 
-from pymodbus.datastore import ModbusSlaveContext
-from pymodbus.exceptions import NotImplementedException
+from pymodbus.datastore import ModbusDeviceContext
+from pymodbus.exceptions import ModbusIOException, NotImplementedException
 from pymodbus.logging import Log
 
 
@@ -29,6 +29,8 @@ class ModbusPDU:
         ) -> None:
         """Initialize the base data for a modbus request."""
         self.dev_id: int = dev_id
+        if dev_id > 255:
+            raise ModbusIOException(f"Invalid ID {dev_id}")
         self.transaction_id: int = transaction_id
         self.address: int = address
         self.bits: list[bool] = bits or []
@@ -80,7 +82,7 @@ class ModbusPDU:
     def decode(self, data: bytes) -> None:
         """Decode data part of the message."""
 
-    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
+    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
         """Run request against a datastore."""
         _ = context
         return ExceptionResponse(0, 0)
@@ -107,9 +109,9 @@ class ExceptionResponse(ModbusPDU):
     ILLEGAL_FUNCTION = 0x01
     ILLEGAL_ADDRESS = 0x02
     ILLEGAL_VALUE = 0x03
-    SLAVE_FAILURE = 0x04
+    DEVICE_FAILURE = 0x04
     ACKNOWLEDGE = 0x05
-    SLAVE_BUSY = 0x06
+    DEVICE_BUSY = 0x06
     NEGATIVE_ACKNOWLEDGE = 0x07
     MEMORY_PARITY_ERROR = 0x08
     GATEWAY_PATH_UNAVIABLE = 0x0A
@@ -119,10 +121,10 @@ class ExceptionResponse(ModbusPDU):
             self,
             function_code: int,
             exception_code: int = 0,
-            slave: int = 1,
+            device_id: int = 1,
             transaction: int = 0) -> None:
         """Initialize the modbus exception response."""
-        super().__init__(transaction_id=transaction, dev_id=slave)
+        super().__init__(transaction_id=transaction, dev_id=device_id)
         self.function_code = function_code | 0x80
         self.exception_code = exception_code
         Log.error(f"Exception response {self.function_code} / {self.exception_code}")

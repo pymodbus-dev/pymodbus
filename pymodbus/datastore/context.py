@@ -6,12 +6,12 @@ from collections.abc import Sequence
 
 # pylint: disable=missing-type-doc
 from pymodbus.datastore.store import ModbusSequentialDataBlock
-from pymodbus.exceptions import NoSuchSlaveException
+from pymodbus.exceptions import NoSuchIdException
 from pymodbus.logging import Log
 
 
-class ModbusBaseSlaveContext:
-    """Interface for a modbus slave data context.
+class ModbusBaseDeviceContext:
+    """Interface for a modbus device data context.
 
     Derived classes must implemented the following methods:
             reset(self)
@@ -71,9 +71,9 @@ class ModbusBaseSlaveContext:
 
 
 # ---------------------------------------------------------------------------#
-#  Slave Contexts
+#  Device Contexts
 # ---------------------------------------------------------------------------#
-class ModbusSlaveContext(ModbusBaseSlaveContext):
+class ModbusDeviceContext(ModbusBaseDeviceContext):
     """Create a modbus data model with data stored in a block.
 
     :param di: discrete inputs initializer ModbusDataBlock
@@ -100,7 +100,7 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
 
         :returns: A string representation of the context
         """
-        return "Modbus Slave Context"
+        return "Modbus device Context"
 
     def reset(self):
         """Reset all the datastores to their default values."""
@@ -131,7 +131,7 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
         self.store[self.decode(fc_as_hex)].setValues(address, values)
 
     def register(self, function_code, fc_as_hex, datablock=None):
-        """Register a datablock with the slave context.
+        """Register a datablock with the device context.
 
         :param function_code: function code (int)
         :param fc_as_hex: string representation of function code (e.g "cf" )
@@ -142,83 +142,82 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
 
 
 class ModbusServerContext:
-    """This represents a master collection of slave contexts.
+    """This represents a master collection of device contexts.
 
     If single is set to true, it will be treated as a single
     context so every device id returns the same context. If single
     is set to false, it will be interpreted as a collection of
-    slave contexts.
+    device contexts.
     """
 
-    def __init__(self, slaves=None, single=True):
+    def __init__(self, devices=None, single=True):
         """Initialize a new instance of a modbus server context.
 
-        :param slaves: A dictionary of client contexts
+        :param devices: A dictionary of client contexts
         :param single: Set to true to treat this as a single context
         """
         self.single = single
-        self._slaves = slaves or {}
+        self._devices = devices or {}
         if self.single:
-            self._slaves = {0: self._slaves}
+            self._devices = {0: self._devices}
 
     def __iter__(self):
-        """Iterate over the current collection of slave contexts.
+        """Iterate over the current collection of device contexts.
 
-        :returns: An iterator over the slave contexts
+        :returns: An iterator over the device contexts
         """
-        return iter(self._slaves.items())
+        return iter(self._devices.items())
 
-    def __contains__(self, slave):
-        """Check if the given slave is in this list.
+    def __contains__(self, device_id):
+        """Check if the given device_id is in this list.
 
-        :param slave: slave The slave to check for existence
-        :returns: True if the slave exists, False otherwise
+        :param device_id: device_id The device_id to check for existence
+        :returns: True if the device_id exists, False otherwise
         """
-        if self.single and self._slaves:
+        if self.single and self._devices:
             return True
-        return slave in self._slaves
+        return device_id in self._devices
 
-    def __setitem__(self, slave, context):
-        """Use to set a new slave context.
+    def __setitem__(self, device_id, context):
+        """Use to set a new device_id context.
 
-        :param slave: The slave context to set
-        :param context: The new context to set for this slave
-        :raises NoSuchSlaveException:
+        :param device_id: The device_id context to set
+        :param context: The new context to set for this device_id
+        :raises NoSuchIdException:
         """
         if self.single:
-            slave = 0
-        if 0xF7 >= slave >= 0x00:
-            self._slaves[slave] = context
+            device_id = 0
+        if 0xF7 >= device_id >= 0x00:
+            self._devices[device_id] = context
         else:
-            raise NoSuchSlaveException(f"slave index :{slave} out of range")
+            raise NoSuchIdException(f"device_id index :{device_id} out of range")
 
-    def __delitem__(self, slave):
-        """Use to access the slave context.
+    def __delitem__(self, device_id):
+        """Use to access the device_id context.
 
-        :param slave: The slave context to remove
-        :raises NoSuchSlaveException:
+        :param device_id: The device context to remove
+        :raises NoSuchIdException:
         """
-        if not self.single and (0xF7 >= slave >= 0x00):
-            del self._slaves[slave]
+        if not self.single and (0xF7 >= device_id >= 0x00):
+            del self._devices[device_id]
         else:
-            raise NoSuchSlaveException(f"slave index: {slave} out of range")
+            raise NoSuchIdException(f"device_id index: {device_id} out of range")
 
-    def __getitem__(self, slave):
-        """Use to get access to a slave context.
+    def __getitem__(self, device_id):
+        """Use to get access to a device_id context.
 
-        :param slave: The slave context to get
-        :returns: The requested slave context
-        :raises NoSuchSlaveException:
+        :param device_id: The device context to get
+        :returns: The requested device context
+        :raises NoSuchIdException:
         """
         if self.single:
-            slave = 0
-        if slave in self._slaves:
-            return self._slaves.get(slave)
-        raise NoSuchSlaveException(
-            f"slave - {slave} does not exist, or is out of range"
+            device_id = 0
+        if device_id in self._devices:
+            return self._devices.get(device_id)
+        raise NoSuchIdException(
+            f"device_id - {device_id} does not exist, or is out of range"
         )
 
-    def slaves(self):
-        """Define slaves."""
-        # Python3 now returns keys() as iterable
-        return list(self._slaves.keys())
+    def device_ids(self):
+        """Define device_ids."""
+        return list(self._devices.keys())

@@ -87,21 +87,21 @@ class RemoteSendEvent(ModbusEvent):
         Bit Contents
         -----------------------------------------------------------
         0   Read Exception Sent (Exception Codes 1-3)
-        1   Slave Abort Exception Sent (Exception Code 4)
-        2   Slave Busy Exception Sent (Exception Codes 5-6)
-        3   Slave Program NAK Exception Sent (Exception Code 7)
+        1   Device Abort Exception Sent (Exception Code 4)
+        2   Device Busy Exception Sent (Exception Codes 5-6)
+        3   Device Program NAK Exception Sent (Exception Code 7)
         4   Write Timeout Error Occurred
         5   Currently in Listen Only Mode
         6   1
         7   0
     """
 
-    def __init__(self, read=False, slave_abort=False, slave_busy=False, slave_nak=False, write_timeout=False, listen=False):
+    def __init__(self, read=False, device_abort=False, device_busy=False, device_nak=False, write_timeout=False, listen=False):
         """Initialize a new event instance."""
         self.read = read
-        self.slave_abort = slave_abort
-        self.slave_busy = slave_busy
-        self.slave_nak = slave_nak
+        self.device_abort = device_abort
+        self.device_busy = device_busy
+        self.device_nak = device_nak
         self.write_timeout = write_timeout
         self.listen = listen
 
@@ -112,9 +112,9 @@ class RemoteSendEvent(ModbusEvent):
         """
         bits = [
             self.read,
-            self.slave_abort,
-            self.slave_busy,
-            self.slave_nak,
+            self.device_abort,
+            self.device_busy,
+            self.device_nak,
             self.write_timeout,
             self.listen,
         ]
@@ -130,9 +130,9 @@ class RemoteSendEvent(ModbusEvent):
         # todo fix the start byte count # pylint: disable=fixme
         bits = unpack_bitstring(event)
         self.read = bits[0]
-        self.slave_abort = bits[1]
-        self.slave_busy = bits[2]
-        self.slave_nak = bits[3]
+        self.device_abort = bits[1]
+        self.device_busy = bits[2]
+        self.device_nak = bits[3]
         self.write_timeout = bits[4]
         self.listen = bits[5]
 

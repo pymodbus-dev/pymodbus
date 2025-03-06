@@ -75,8 +75,8 @@ def get_commandline(server: bool = False, description: str | None = None, extras
             type=str,
         )
         parser.add_argument(
-            "--slaves",
-            help="set number of slaves, default is 0 (any)",
+            "--device_ids",
+            help="set number of device_ids, default is 0 (any)",
             default=0,
             type=int,
         )

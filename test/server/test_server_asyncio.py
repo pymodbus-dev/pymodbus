@@ -8,15 +8,14 @@ from unittest import mock
 
 import pytest
 
-from pymodbus import FramerType
+from pymodbus import FramerType, ModbusDeviceIdentification
 from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.datastore import (
+    ModbusDeviceContext,
     ModbusSequentialDataBlock,
     ModbusServerContext,
-    ModbusSlaveContext,
 )
-from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.exceptions import NoSuchSlaveException
+from pymodbus.exceptions import NoSuchIdException
 from pymodbus.server import ModbusTcpServer, ModbusTlsServer, ModbusUdpServer
 
 
@@ -112,13 +111,13 @@ class TestAsyncioServer:
     async def _setup_teardown(self):
         """Initialize the test environment by setting up a dummy store and context."""
         self.loop = asyncio.get_running_loop()
-        self.store = ModbusSlaveContext(
+        self.store = ModbusDeviceContext(
             di=ModbusSequentialDataBlock(0, [17] * 100),
             co=ModbusSequentialDataBlock(0, [17] * 100),
             hr=ModbusSequentialDataBlock(0, [17] * 100),
             ir=ModbusSequentialDataBlock(0, [17] * 100),
         )
-        self.context = ModbusServerContext(slaves=self.store, single=True)
+        self.context = ModbusServerContext(devices=self.store, single=True)
         self.identity = ModbusDeviceIdentification(
             info_name={"VendorName": "VendorName"}
         )
@@ -235,7 +234,7 @@ class TestAsyncioServer:
     async def test_async_tcp_server_roundtrip(self):
         """Test sending and receiving data on tcp socket."""
         expected_response = b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"
-        BasicClient.data = TEST_DATA  # slave 1, read register
+        BasicClient.data = TEST_DATA  # device 1, read register
         await self.start_server()
         await self.connect_server()
         await asyncio.wait_for(BasicClient.done, timeout=0.1)
@@ -252,7 +251,7 @@ class TestAsyncioServer:
         for _ in range(2048):
             client = AsyncModbusTcpClient(addr[0], framer=FramerType.SOCKET, port=addr[1])
             await client.connect()
-            response = await client.read_coils(31, count=1, slave=1)
+            response = await client.read_coils(31, count=1, device_id=1)
             assert not response.isError()
             client.close()
 
@@ -274,10 +273,10 @@ class TestAsyncioServer:
         await asyncio.sleep(0.5)
         await self.server.shutdown()
 
-    async def test_async_tcp_server_no_slave(self):
-        """Test unknown slave exception."""
+    async def test_async_tcp_server_no_device(self):
+        """Test unknown device exception."""
         self.context = ModbusServerContext(
-            slaves={0x01: self.store, 0x02: self.store}, single=False
+            devices={0x01: self.store, 0x02: self.store}, single=False
         )
         BasicClient.data = b"\x01\x00\x00\x00\x00\x06\x05\x03\x00\x00\x00\x01"
         await self.start_server()
@@ -292,7 +291,7 @@ class TestAsyncioServer:
         await self.start_server()
         with mock.patch(
             "pymodbus.pdu.register_message.ReadHoldingRegistersRequest.update_datastore",
-            side_effect=NoSuchSlaveException,
+            side_effect=NoSuchIdException,
         ):
             await self.connect_server()
             await asyncio.wait_for(BasicClient.done, timeout=0.1)
@@ -352,7 +351,7 @@ class TestAsyncioServer:
         expected_response = (
             b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"
         )  # value of 17 as per context
-        BasicClient.dataTo = TEST_DATA  # slave 1, read register
+        BasicClient.dataTo = TEST_DATA  # device 1, read register
         BasicClient.done = asyncio.Future()
         await self.start_server(do_udp=True)
         random_port = self.server.transport._sock.getsockname()[1]  # pylint: disable=protected-access

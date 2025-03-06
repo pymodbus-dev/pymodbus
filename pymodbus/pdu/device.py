@@ -19,7 +19,7 @@ import struct
 from collections import OrderedDict
 
 from pymodbus.constants import INTERNAL_ERROR, DeviceInformation
-from pymodbus.events import ModbusEvent
+from pymodbus.pdu.events import ModbusEvent
 from pymodbus.utilities import dict_property
 
 
@@ -46,13 +46,13 @@ class ModbusPlusStatistics:
             "data_master_token_failed": [0x00],  # 07 lo
             "program_master_token_owner": [0x00],  # 08 hi
             "data_master_token_owner": [0x00],  # 08 lo
-            "program_slave_token_owner": [0x00],  # 09 hi
-            "data_slave_token_owner": [0x00],  # 09 lo
-            "data_slave_command_transfer": [0x00],  # 10 hi
+            "program_id_token_owner": [0x00],  # 09 hi
+            "data_id_token_owner": [0x00],  # 09 lo
+            "data_id_command_transfer": [0x00],  # 10 hi
             "__unused_10_lowbit": [0x00],  # 10 lo
-            "program_slave_command_transfer": [0x00],  # 11 hi
+            "program_id_command_transfer": [0x00],  # 11 hi
             "program_master_rsp_transfer": [0x00],  # 11 lo
-            "program_slave_auto_logout": [0x00],  # 12 hi
+            "program_id_auto_logout": [0x00],  # 12 hi
             "program_master_connect_status": [0x00],  # 12 lo
             "receive_buffer_dma_overrun": [0x00],  # 13 hi
             "pretransmit_deferral_error": [0x00],  # 13 lo
@@ -79,9 +79,9 @@ class ModbusPlusStatistics:
             "global_data_bit_map": [0x00] * 8,  # 31-34
             "receive_buffer_use_bit_map": [0x00] * 8,  # 35-37
             "data_master_output_path": [0x00] * 8,  # 38-41
-            "data_slave_input_path": [0x00] * 8,  # 42-45
+            "data_id_input_path": [0x00] * 8,  # 42-45
             "program_master_outptu_path": [0x00] * 8,  # 46-49
-            "program_slave_input_path": [0x00] * 8,  # 50-53
+            "program_id_input_path": [0x00] * 8,  # 50-53
         }
     )
 
@@ -320,27 +320,27 @@ class ModbusCountersHandler:
              not able to calculate the CRC. In such cases, this counter is
              also incremented.
 
-    0x0D  3  Return Slave Exception Error Count
+    0x0D  3  Return device Exception Error Count
 
              Quantity of MODBUS exception error detected by the remote device
              since its last restart, clear counters operation, or power-up.
              Exception errors are described and listed in "MODBUS Application
              Protocol Specification" document.
 
-    0xOE  4  Return Slave Message Count
+    0xOE  4  Return device Message Count
 
              Quantity of messages addressed to the remote device that the remote
              device has processed since its last restart, clear counters operation,
              or power-up.
 
-    0x0F  5  Return Slave No Response Count
+    0x0F  5  Return device No Response Count
 
              Quantity of messages received by the remote device for which it
              returned no response (neither a normal response nor an exception
              response), since its last restart, clear counters operation, or
              power-up.
 
-    0x10  6  Return Slave NAK Count
+    0x10  6  Return device NAK Count
 
              Quantity of messages addressed to the remote device for which it
              returned a Negative ACKNOWLEDGE (NAK) exception response, since
@@ -348,10 +348,10 @@ class ModbusCountersHandler:
              responses are described and listed in "MODBUS Application Protocol
              Specification" document.
 
-    0x11  7  Return Slave Busy Count
+    0x11  7  Return device Busy Count
 
              Quantity of messages addressed to the remote device for which it
-             returned a Slave Device Busy exception response, since its last
+             returned a device Device Busy exception response, since its last
              restart, clear counters operation, or power-up. Exception
              responses are described and listed in "MODBUS Application
              Protocol Specification" document.
@@ -371,11 +371,11 @@ class ModbusCountersHandler:
     __names = [
         "BusMessage",
         "BusCommunicationError",
-        "SlaveExceptionError",
-        "SlaveMessage",
-        "SlaveNoResponse",
-        "SlaveNAK",
-        "SLAVE_BUSY",
+        "DeviceExceptionError",
+        "DeviceMessage",
+        "DeviceNoResponse",
+        "DeviceeNAK",
+        "DEVICE_BUSY",
         "BusCharacterOverrun",
     ]
 
@@ -422,10 +422,10 @@ class ModbusCountersHandler:
     BusMessage = dict_property(lambda s: s.__data, 0)  # pylint: disable=protected-access
     BusCommunicationError = dict_property(lambda s: s.__data, 1)  # pylint: disable=protected-access
     BusExceptionError = dict_property(lambda s: s.__data, 2)  # pylint: disable=protected-access
-    SlaveMessage = dict_property(lambda s: s.__data, 3)  # pylint: disable=protected-access
-    SlaveNoResponse = dict_property(lambda s: s.__data, 4)  # pylint: disable=protected-access
-    SlaveNAK = dict_property(lambda s: s.__data, 5)  # pylint: disable=protected-access
-    SLAVE_BUSY = dict_property(lambda s: s.__data, 6)  # pylint: disable=protected-access
+    DeviceMessage = dict_property(lambda s: s.__data, 3)  # pylint: disable=protected-access
+    DeviceNoResponse = dict_property(lambda s: s.__data, 4)  # pylint: disable=protected-access
+    DeviceNAK = dict_property(lambda s: s.__data, 5)  # pylint: disable=protected-access
+    DEVICE_BUSY = dict_property(lambda s: s.__data, 6)  # pylint: disable=protected-access
     BusCharacterOverrun = dict_property(lambda s: s.__data, 7)  # pylint: disable=protected-access
     Event = dict_property(lambda s: s.__data, 8)  # pylint: disable=protected-access
     # fmt: on

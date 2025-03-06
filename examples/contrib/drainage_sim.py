@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Simulates two Modbus TCP slave servers:
+# Simulates two Modbus TCP device servers:
 #
 # Port 5020: Digital IO (DIO) with 8 discrete inputs and 8 coils. The first two coils each control
 #            a simulated pump. Inputs are not used.
@@ -12,7 +12,7 @@ import asyncio
 import logging
 from datetime import datetime
 
-from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSlaveContext, ModbusServerContext
+from pymodbus.datastore import ModbusSequentialDataBlock, ModbusDeviceContext, ModbusServerContext
 from pymodbus.server import StartAsyncTcpServer
 
 INITIAL_WATER_LEVEL = 300
@@ -23,9 +23,9 @@ logging.basicConfig(level = logging.INFO)
 
 dio_di = ModbusSequentialDataBlock(1, [False] * 8)
 dio_co = ModbusSequentialDataBlock(1, [False] * 8)
-dio_context = ModbusSlaveContext(di = dio_di, co = dio_co)
+dio_context = ModbusDeviceContext(di = dio_di, co = dio_co)
 wlm_ir = ModbusSequentialDataBlock(1, [INITIAL_WATER_LEVEL])
-wlm_context = ModbusSlaveContext(ir = wlm_ir)
+wlm_context = ModbusDeviceContext(ir = wlm_ir)
 
 async def update():
     while True:
@@ -50,13 +50,13 @@ async def log():
         logging.info(f"{datetime.now()}: WLM water level: {wlm_level}, DIO outputs: {dio_outputs}")
 
 async def run():
-    ctx = ModbusServerContext(slaves = dio_context)
+    ctx = ModbusServerContext(device_ids = dio_context)
     dio_server = asyncio.create_task(StartAsyncTcpServer(context = ctx, address = ("0.0.0.0", 5020)))
-    logging.info("Initialising slave server DIO on port 5020")
+    logging.info("Initialising device server DIO on port 5020")
 
-    ctx = ModbusServerContext(slaves = wlm_context)
+    ctx = ModbusServerContext(device_ids = wlm_context)
     wlm_server = asyncio.create_task(StartAsyncTcpServer(context = ctx, address = ("0.0.0.0", 5021)))
-    logging.info("Initialising slave server WLM on port 5021")
+    logging.info("Initialising device server WLM on port 5021")
 
     update_task = asyncio.create_task(update())
     logging_task = asyncio.create_task(log())

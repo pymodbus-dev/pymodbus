@@ -8,7 +8,7 @@ from threading import enumerate as thread_enumerate
 import pytest
 import pytest_asyncio
 
-from pymodbus.datastore import ModbusBaseSlaveContext
+from pymodbus.datastore import ModbusBaseDeviceContext
 from pymodbus.server import ServerAsyncStop
 from pymodbus.transport import NULLMODEM_HOST, CommParams, CommType
 from pymodbus.transport.transport import NullModem
@@ -208,7 +208,7 @@ async def _check_system_health():
 @pytest.fixture(name="mock_context")
 def define_mock_context():
     """Define context class."""
-    class MockContext(ModbusBaseSlaveContext):
+    class MockContext(ModbusBaseDeviceContext):
         """Mock context."""
 
         def __init__(self, valid=False, default=True):
@@ -226,7 +226,7 @@ def define_mock_context():
     return MockContext
 
 
-class MockLastValuesContext(ModbusBaseSlaveContext):
+class MockLastValuesContext(ModbusBaseDeviceContext):
     """Mock context."""
 
     def __init__(self, valid=False, default=True):

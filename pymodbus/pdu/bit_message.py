@@ -4,7 +4,7 @@ import struct
 from typing import cast
 
 from pymodbus.constants import ModbusStatus
-from pymodbus.datastore import ModbusSlaveContext
+from pymodbus.datastore import ModbusDeviceContext
 from pymodbus.pdu.pdu import ModbusPDU
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
@@ -33,7 +33,7 @@ class ReadCoilsRequest(ModbusPDU):
         """
         return 1 + 1 + (self.count + 7) // 8
 
-    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
+    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
         """Run request against a datastore."""
         values = await context.async_getValues(
             self.function_code, self.address, self.count
@@ -91,7 +91,7 @@ class WriteSingleCoilResponse(ModbusPDU):
 class WriteSingleCoilRequest(WriteSingleCoilResponse):
     """WriteSingleCoilRequest."""
 
-    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
+    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
         """Run a request against a datastore."""
         await context.async_setValues(self.function_code, self.address, self.bits)
         values = cast(list[bool], await context.async_getValues(self.function_code, self.address, 1))
@@ -124,7 +124,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
         self.address, count, _byte_count = struct.unpack(">HHB", data[0:5])
         self.bits = unpack_bitstring(data[5:])[:count]
 
-    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
+    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
         """Run a request against a datastore."""
         count = len(self.bits)
         await context.async_setValues(

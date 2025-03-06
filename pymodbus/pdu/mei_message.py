@@ -4,8 +4,8 @@ from __future__ import annotations
 import struct
 
 from pymodbus.constants import DeviceInformation, MoreData
-from pymodbus.datastore import ModbusSlaveContext
-from pymodbus.device import DeviceInformationFactory, ModbusControlBlock
+from pymodbus.datastore import ModbusDeviceContext
+from pymodbus.pdu.device import DeviceInformationFactory, ModbusControlBlock
 from pymodbus.pdu.pdu import ExceptionResponse, ModbusPDU
 
 
@@ -51,7 +51,7 @@ class ReadDeviceInformationRequest(ModbusPDU):
         """Decode data part of the message."""
         self.sub_function_code, self.read_code, self.object_id = struct.unpack(">BBB", data)
 
-    async def update_datastore(self, _context: ModbusSlaveContext) -> ModbusPDU:
+    async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
         """Run a read exception status request against the store."""
         if not 0x00 <= self.object_id <= 0xFF:
             return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)

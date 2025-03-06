@@ -11,7 +11,7 @@ Datastore classes
     :members:
     :member-order: bysource
 
-.. autoclass:: pymodbus.datastore.ModbusSlaveContext
+.. autoclass:: pymodbus.datastore.ModbusDeviceContext
     :members:
     :member-order: bysource
 

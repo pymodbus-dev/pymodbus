@@ -29,22 +29,12 @@ class ModbusStatus(int, enum.Enum):
     .. attribute:: OFF
 
        This indicates that the given modbus entity is off
-
-    .. attribute:: SLAVE_ON
-
-       This indicates that the given modbus slave is running
-
-    .. attribute:: SLAVE_OFF
-
-       This indicates that the given modbus slave is not running
     """
 
     WAITING = 0xFFFF
     READY = 0x0000
     ON = 0xFF00
     OFF = 0x0000
-    SLAVE_ON = 0xFF
-    SLAVE_OFF = 0x00
 
 
 class Endian(str, enum.Enum):

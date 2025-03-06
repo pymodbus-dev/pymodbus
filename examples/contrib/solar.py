@@ -59,7 +59,7 @@ def main() -> None:
 def solar_calls(client: ModbusTcpClient) -> None:
     """Read registers."""
     error = False
-        
+
     for addr, format, factor, comment, unit in ( # data_type according to ModbusClientMixin.DATATYPE.value[0]
         (32008, "H", 1,     "Alarm 1",                          "(bitfield)"),
         (32009, "H", 1,     "Alarm 2",                          "(bitfield)"),
@@ -79,15 +79,15 @@ def solar_calls(client: ModbusTcpClient) -> None:
             sleep(0.1)
             client.connect()
             sleep(1)
-        
+
         data_type = get_data_type(format)
         count = data_type.value[1]
         var_type = data_type.name
 
         _logger.info(f"*** Reading {comment} ({var_type})")
-        
+
         try:
-            rr = client.read_holding_registers(address=addr, count=count, slave=1)
+            rr = client.read_holding_registers(address=addr, count=count, device_id=1)
         except ModbusException as exc:
             _logger.error(f"Modbus exception: {exc!s}")
             error = True
@@ -100,7 +100,7 @@ def solar_calls(client: ModbusTcpClient) -> None:
             _logger.error(f"Response exception: {rr!s}")
             error = True
             continue
-        
+
         value = client.convert_from_registers(rr.registers, data_type) * factor
         if factor < 1:
             value = round(value, int(log10(factor) * -1))

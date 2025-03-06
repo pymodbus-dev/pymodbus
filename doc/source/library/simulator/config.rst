@@ -87,7 +87,7 @@ Server configuration examples
                 "comm": "tcp",
                 "host": "0.0.0.0",
                 "port": 5020,
-                "ignore_missing_slaves": false,
+                "ignore_missing_devices": false,
                 "framer": "socket",
                 "identity": {
                     "VendorName": "pymodbus",
@@ -123,7 +123,7 @@ Server configuration examples
                 "port": 5020,
                 "certfile": "certificates/pymodbus.crt",
                 "keyfile": "certificates/pymodbus.key",
-                "ignore_missing_slaves": false,
+                "ignore_missing_devices": false,
                 "framer": "tls",
                 "identity": {
                     "VendorName": "pymodbus",
@@ -138,7 +138,7 @@ Server configuration examples
                 "comm": "udp",
                 "host": "0.0.0.0",
                 "port": 5020,
-                "ignore_missing_slaves": false,
+                "ignore_missing_devices": false,
                 "framer": "socket",
                 "identity": {
                     "VendorName": "pymodbus",

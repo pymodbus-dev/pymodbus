@@ -11,14 +11,14 @@ class TestOtherMessage:
         pymodbus_message.ReadExceptionStatusRequest,
         pymodbus_message.GetCommEventCounterRequest,
         pymodbus_message.GetCommEventLogRequest,
-        pymodbus_message.ReportSlaveIdRequest,
+        pymodbus_message.ReportDeviceIdRequest,
     ]
 
     responses = [
         pymodbus_message.ReadExceptionStatusResponse(0x12),
         pymodbus_message.GetCommEventCounterResponse(0x12),
         pymodbus_message.GetCommEventLogResponse,
-        pymodbus_message.ReportSlaveIdResponse(0x12),
+        pymodbus_message.ReportDeviceIdResponse(0x12),
     ]
 
     def test_other_messages_to_string(self):
@@ -85,8 +85,8 @@ class TestOtherMessage:
         assert response.event_count == 0x12
         assert response.events == [0x12, 0x34, 0x56]
 
-    async def test_report_slave_id_request(self):
-        """Test report slave id request."""
+    async def test_report_device_id_request(self):
+        """Test report device_id request."""
         with mock.patch("pymodbus.pdu.other_message.DeviceInformationFactory") as dif:
             # First test regular identity strings
             identity = {
@@ -103,7 +103,7 @@ class TestOtherMessage:
             dif.get.return_value = identity
             expected_identity = "-".join(identity.values()).encode()
 
-            request = pymodbus_message.ReportSlaveIdRequest()
+            request = pymodbus_message.ReportDeviceIdRequest()
             response = await request.update_datastore(None)
             assert response.identifier == expected_identity
 
@@ -121,20 +121,20 @@ class TestOtherMessage:
             }
             dif.get.return_value = identity
 
-            request = pymodbus_message.ReportSlaveIdRequest()
+            request = pymodbus_message.ReportDeviceIdRequest()
             response = await request.update_datastore(None)
             assert response.identifier == expected_identity
 
-    async def test_report_slave_id(self):
-        """Test report slave id."""
+    async def test_report_device_id(self):
+        """Test report device_id."""
         with mock.patch("pymodbus.pdu.other_message.DeviceInformationFactory") as dif:
             dif.get.return_value = {}
-            request = pymodbus_message.ReportSlaveIdRequest()
+            request = pymodbus_message.ReportDeviceIdRequest()
             request.decode(b"\x12")
             assert not request.encode()
             assert (await request.update_datastore(None)).function_code == 0x11
 
-            response = pymodbus_message.ReportSlaveIdResponse(
+            response = pymodbus_message.ReportDeviceIdResponse(
                 (await request.update_datastore(None)).identifier, True
             )
 

@@ -16,9 +16,9 @@ import struct
 from pymodbus import FramerType
 from pymodbus.client import AsyncModbusTcpClient as ModbusClient
 from pymodbus.datastore import (
+    ModbusDeviceContext,
     ModbusSequentialDataBlock,
     ModbusServerContext,
-    ModbusSlaveContext,
 )
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.pdu import ModbusPDU
@@ -43,9 +43,9 @@ class CustomModbusResponse(ModbusPDU):
     function_code = 55
     rtu_byte_count_pos = 2
 
-    def __init__(self, values=None, slave=1, transaction=0):
+    def __init__(self, values=None, device_id=1, transaction=0):
         """Initialize."""
-        super().__init__(dev_id=slave, transaction_id=transaction)
+        super().__init__(dev_id=device_id, transaction_id=transaction)
         self.values = values or []
 
     def encode(self):
@@ -75,9 +75,9 @@ class CustomRequest(ModbusPDU):
     function_code = 55
     rtu_frame_size = 8
 
-    def __init__(self, address=None, slave=1, transaction=0):
+    def __init__(self, address=None, device_id=1, transaction=0):
         """Initialize."""
-        super().__init__(dev_id=slave, transaction_id=transaction)
+        super().__init__(dev_id=device_id, transaction_id=transaction)
         self.address = address
         self.count = 2
 
@@ -89,7 +89,7 @@ class CustomRequest(ModbusPDU):
         """Decode."""
         self.address, self.count = struct.unpack(">HH", data)
 
-    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
+    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
         """Execute."""
         _ = context
         return CustomModbusResponse()
@@ -103,12 +103,12 @@ class CustomRequest(ModbusPDU):
 class Read16CoilsRequest(ReadCoilsRequest):
     """Read 16 coils in one request."""
 
-    def __init__(self, address, slave=1, transaction=0):
+    def __init__(self, address, device_id=1, transaction=0):
         """Initialize a new instance.
 
         :param address: The address to start reading from
         """
-        super().__init__(address=address, count=16, dev_id=slave, transaction_id=transaction)
+        super().__init__(address=address, count=16, dev_id=device_id, transaction_id=transaction)
 
 
 # --------------------------------------------------------------------------- #
@@ -121,7 +121,7 @@ class Read16CoilsRequest(ReadCoilsRequest):
 
 async def main(host="localhost", port=5020):
     """Run versions of read coil."""
-    store = ModbusServerContext(slaves=ModbusSlaveContext(
+    store = ModbusServerContext(devices=ModbusDeviceContext(
             di=ModbusSequentialDataBlock(0, [17] * 100),
             co=ModbusSequentialDataBlock(0, [17] * 100),
             hr=ModbusSequentialDataBlock(0, [17] * 100),
@@ -140,8 +140,8 @@ async def main(host="localhost", port=5020):
 
         # add new modbus function code.
         client.register(CustomModbusResponse)
-        slave=1
-        request1 = CustomRequest(32, slave=slave)
+        device_id=1
+        request1 = CustomRequest(32, device_id=device_id)
         try:
             result = await client.execute(False, request1)
         except ModbusIOException:
@@ -150,7 +150,7 @@ async def main(host="localhost", port=5020):
             print(result)
 
         # inherited request
-        request2 = Read16CoilsRequest(32, slave)
+        request2 = Read16CoilsRequest(32, device_id)
         result = await client.execute(False, request2)
         print(result)
     await ServerAsyncStop()

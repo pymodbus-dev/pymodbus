@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import traceback
 
-from pymodbus.exceptions import ModbusIOException, NoSuchSlaveException
+from pymodbus.exceptions import ModbusIOException, NoSuchIdException
 from pymodbus.logging import Log
 from pymodbus.pdu.pdu import ExceptionResponse
 from pymodbus.transaction import TransactionManager
@@ -42,14 +42,6 @@ class ServerRequestHandler(TransactionManager):
     def callback_new_connection(self) -> ModbusProtocol:
         """Call when listener receive new connection request."""
         raise RuntimeError("callback_new_connection should never be called")
-
-    def callback_connected(self) -> None:
-        """Call when connection is succcesfull."""
-        super().callback_connected()
-        slaves = self.server.context.slaves()
-        if self.server.broadcast_enable:
-            if 0 not in slaves:
-                slaves.append(0)
 
     def callback_disconnected(self, call_exc: Exception | None) -> None:
         """Call when connection is lost."""
@@ -100,17 +92,17 @@ class ServerRequestHandler(TransactionManager):
         try:
             if self.server.broadcast_enable and not self.last_pdu.dev_id:
                 broadcast = True
-                # if broadcasting then execute on all slave contexts,
+                # if broadcasting then execute on all device contexts,
                 # note response will be ignored
-                for dev_id in self.server.context.slaves():
+                for dev_id in self.server.context.device_id():
                     response = await self.last_pdu.update_datastore(self.server.context[dev_id])
             else:
                 context = self.server.context[self.last_pdu.dev_id]
                 response = await self.last_pdu.update_datastore(context)
 
-        except NoSuchSlaveException:
-            Log.error("requested slave does not exist: {}", self.last_pdu.dev_id)
-            if self.server.ignore_missing_slaves:
+        except NoSuchIdException:
+            Log.error("requested device id does not exist: {}", self.last_pdu.dev_id)
+            if self.server.ignore_missing_devices:
                 return  # the client will simply timeout waiting for a response
             response = ExceptionResponse(0x00, ExceptionResponse.GATEWAY_NO_RESPONSE)
         except Exception as exc:  # pylint: disable=broad-except
@@ -119,7 +111,7 @@ class ServerRequestHandler(TransactionManager):
                 exc,
                 traceback.format_exc(),
             )
-            response = ExceptionResponse(0x00, ExceptionResponse.SLAVE_FAILURE)
+            response = ExceptionResponse(0x00, ExceptionResponse.DEVICE_FAILURE)
         # no response when broadcasting
         if not broadcast:
             response.transaction_id = self.last_pdu.transaction_id

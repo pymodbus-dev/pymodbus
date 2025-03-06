@@ -145,7 +145,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         ModbusClientMixin.__init__(self)  # type: ignore[arg-type]
         self.comm_params = comm_params
         self.retries = retries
-        self.slaves: list[int] = []
 
         # Common variables.
         self.framer: FramerBase = (FRAMER_NAME_TO_CLASS[framer])(DecodePDU(False))

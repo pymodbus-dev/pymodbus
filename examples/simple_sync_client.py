@@ -67,7 +67,7 @@ def run_sync_simple_client(comm, host, port, framer=FramerType.SOCKET):
 
     print("get and verify data")
     try:
-        rr = client.read_coils(1, count=1, slave=1)
+        rr = client.read_coils(1, count=1, device_id=1)
     except ModbusException as exc:
         print(f"Received ModbusException({exc}) from library")
         client.close()
@@ -79,7 +79,7 @@ def run_sync_simple_client(comm, host, port, framer=FramerType.SOCKET):
         return
     try:
         # See all calls in client_calls.py
-        rr = client.read_holding_registers(10, count=2, slave=1)
+        rr = client.read_holding_registers(10, count=2, device_id=1)
     except ModbusException as exc:
         print(f"Received ModbusException({exc}) from library")
         client.close()

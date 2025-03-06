@@ -37,7 +37,7 @@ def run_sync_client_test():
 
     start_time = time.time()
     for _i in range(LOOP_COUNT):
-        rr = client.read_input_registers(1, count=REGISTER_COUNT, slave=1)
+        rr = client.read_input_registers(1, count=REGISTER_COUNT, device_id=1)
         if rr.isError():
             print(f"Received Modbus library error({rr})")
             break
@@ -64,7 +64,7 @@ async def run_async_client_test():
 
     start_time = time.time()
     for _i in range(LOOP_COUNT):
-        rr = await client.read_input_registers(1, count=REGISTER_COUNT, slave=1)
+        rr = await client.read_input_registers(1, count=REGISTER_COUNT, device_id=1)
         if rr.isError():
             print(f"Received Modbus library error({rr})")
             break

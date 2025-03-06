@@ -33,7 +33,7 @@ except ImportError:
 
 from pymodbus.client import ModbusTcpClient
 from pymodbus.datastore import ModbusServerContext
-from pymodbus.datastore.remote import RemoteSlaveContext
+from pymodbus.datastore.remote import RemoteDeviceContext
 from pymodbus.server import StartAsyncTcpServer
 
 
@@ -56,18 +56,18 @@ async def run_forwarder(args):
     )
     args.client.connect()
     assert args.client.connected
-    # If required to communicate with a specified client use slave=<device id>
-    # in RemoteSlaveContext
-    # For e.g to forward the requests to slave with slave address 1 use
-    # store = RemoteSlaveContext(client, slave=1)
-    store: dict | RemoteSlaveContext
-    if args.slaves:
+    # If required to communicate with a specified client use device_id=<device id>
+    # in RemoteDeviceContext
+    # For e.g to forward the requests to device_id with device address 1 use
+    # store = RemoteDeviceContext(client, device_id=1)
+    store: dict | RemoteDeviceContext
+    if args.device_ids:
         store = {}
-        for i in args.slaves:
-            store[i.to_bytes(1, "big")] = RemoteSlaveContext(args.client, slave=i)
+        for i in args.device_ids:
+            store[i.to_bytes(1, "big")] = RemoteDeviceContext(args.client, device_id=i)
     else:
-        store = RemoteSlaveContext(args.client, slave=1)
-    args.context = ModbusServerContext(slaves=store, single=True)
+        store = RemoteDeviceContext(args.client, device_id=1)
+    args.context = ModbusServerContext(devices=store, single=True)
 
     await StartAsyncTcpServer(context=args.context, address=("", args.port))
     # loop forever

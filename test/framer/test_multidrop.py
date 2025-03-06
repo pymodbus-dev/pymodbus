@@ -1,4 +1,4 @@
-"""Test server working as slave on a multidrop RS485 line."""
+"""Test server working as device on a multidrop RS485 line."""
 
 import pytest
 

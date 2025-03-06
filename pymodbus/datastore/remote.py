@@ -1,5 +1,5 @@
 """Remote datastore."""
-from pymodbus.datastore import ModbusBaseSlaveContext
+from pymodbus.datastore import ModbusBaseDeviceContext
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.logging import Log
 
@@ -7,21 +7,21 @@ from pymodbus.logging import Log
 # ---------------------------------------------------------------------------#
 #  Context
 # ---------------------------------------------------------------------------#
-class RemoteSlaveContext(ModbusBaseSlaveContext):
+class RemoteDeviceContext(ModbusBaseDeviceContext):
     """TODO.
 
     This creates a modbus data model that connects to
     a remote device (depending on the client used)
     """
 
-    def __init__(self, client, slave=None):
+    def __init__(self, client, device_id=None):
         """Initialize the datastores.
 
         :param client: The client to retrieve values with
-        :param slave: Unit ID of the remote slave
+        :param device_id: Unit ID of the remote device
         """
         self._client = client
-        self.slave = slave
+        self.device_id = device_id
         self.result = None
         self.__build_mapping()
         if not self.__set_callbacks:
@@ -58,13 +58,13 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
 
         :returns: A string representation of the context
         """
-        return f"Remote Slave Context({self._client})"
+        return f"Remote Device Context({self._client})"
 
     def __build_mapping(self):
         """Build the function code mapper."""
         params = {}
-        if self.slave:
-            params["slave"] = self.slave
+        if self.device_id:
+            params["device_id"] = self.device_id
         self.__get_callbacks = {
             "d": lambda a, c: self._client.read_discrete_inputs(
                 a, count=c, **params

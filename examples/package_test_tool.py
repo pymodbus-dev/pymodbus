@@ -49,13 +49,17 @@ from collections.abc import Callable
 
 import pymodbus.client as modbusClient
 import pymodbus.server as modbusServer
-from pymodbus import FramerType, ModbusException, pymodbus_apply_logging_config
+from pymodbus import (
+    FramerType,
+    ModbusDeviceIdentification,
+    ModbusException,
+    pymodbus_apply_logging_config,
+)
 from pymodbus.datastore import (
+    ModbusDeviceContext,
     ModbusSequentialDataBlock,
     ModbusServerContext,
-    ModbusSlaveContext,
 )
-from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.logging import Log
 from pymodbus.transport import NULLMODEM_HOST, CommParams, CommType, ModbusProtocol
 
@@ -147,13 +151,13 @@ class ServerTester:  # pylint: disable=too-few-public-methods
         """Initialize runtime tester."""
         global test_port  # pylint: disable=global-statement
         self.comm = comm
-        self.store = ModbusSlaveContext(
+        self.store = ModbusDeviceContext(
             di=ModbusSequentialDataBlock(0, [17] * 100),
             co=ModbusSequentialDataBlock(0, [17] * 100),
             hr=ModbusSequentialDataBlock(0, [17] * 100),
             ir=ModbusSequentialDataBlock(0, [17] * 100),
         )
-        self.context = ModbusServerContext(slaves=self.store, single=True)
+        self.context = ModbusServerContext(devices=self.store, single=True)
         self.identity = ModbusDeviceIdentification(
             info_name={"VendorName": "VendorName"}
         )
@@ -210,7 +214,7 @@ async def client_calls(client):
     """Test client API."""
     Log.debug("--> Client calls starting.")
     try:
-        resp = await client.read_holding_registers(address=124, count=4, slave=1)
+        resp = await client.read_holding_registers(address=124, count=4, device_id=1)
     except ModbusException as exc:
         txt = f"ERROR: exception in pymodbus {exc}"
         Log.error(txt)

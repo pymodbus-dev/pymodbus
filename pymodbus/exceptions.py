@@ -8,7 +8,7 @@ __all__ = [
     "InvalidMessageReceivedException",
     "MessageRegisterException",
     "ModbusIOException",
-    "NoSuchSlaveException",
+    "NoSuchIdException",
     "NotImplementedException",
     "ParameterException",
 ]
@@ -59,15 +59,15 @@ class ParameterException(ModbusException):
         ModbusException.__init__(self, message)
 
 
-class NoSuchSlaveException(ModbusException):
-    """Error resulting from making a request to a slave that does not exist."""
+class NoSuchIdException(ModbusException):
+    """Error resulting from making a request to a id that does not exist."""
 
     def __init__(self, string=""):
         """Initialize the exception.
 
         :param string: The message to append to the error
         """
-        message = f"[No Such Slave] {string}"
+        message = f"[No Such id] {string}"
         ModbusException.__init__(self, message)
 
 

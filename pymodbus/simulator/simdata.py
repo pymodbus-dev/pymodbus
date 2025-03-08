@@ -1,16 +1,18 @@
 """Simulator data model classes."""
 from __future__ import annotations
 
-from collections.abc import Callable
+import asyncio
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from enum import Enum
 from typing import TypeAlias
 
 
 SimValueType: TypeAlias = int | float | str | bool | bytes
+SimAction: TypeAlias = Callable[[SimValueType], SimValueType] | Awaitable[SimValueType]
 
 class SimDataType(Enum):
-    """Register types, used to define group of registers.
+    """Register types, used to type of a group of registers.
 
     This is the types pymodbus recognizes, actually the modbus standard do NOT define e.g. INT32,
     but since nearly every device contain e.g. values of type INT32, it is available in pymodbus,
@@ -41,11 +43,11 @@ class SimDataType(Enum):
     BITS = 10
     #: Raw registers
     #:
-    #: .. warning:: Do not use as default, since it fills the memory and block other registrations.
+    #: .. warning:: Do not use as default because it fills the memory and block other registrations.
     REGISTERS = 11
-    #: Defube register address limits.
+    #: Define register address limits and default values
     #:
-    #: .. tip:: It a single but special register, and therefore improves speed and memory usage compared to REGISTERS.
+    #: .. tip:: Implemented a single but special register, and therefore improves speed and memory usage compared to REGISTERS.
     DEFAULT = 12
 
 @dataclass(frozen=True)
@@ -65,7 +67,7 @@ class SimData:
 
     The above code defines 5 INT32, each with the value -123456, in total 10 registers (address 100-109)
 
-        .. code-block:: python
+    .. code-block:: python
 
         SimData(
             address=100,
@@ -118,8 +120,6 @@ class SimData:
     """
 
     #: Address of first register, starting with 0.
-    #:
-    #: .. caution:: No default, must be defined.
     address: int
 
     #: Value of datatype, to initialize the registers (repeated with count, apart from string).
@@ -152,8 +152,41 @@ class SimData:
     #:         value: SimValueType) -> SimValueType:
     #:             return value + 1
     #:
+    #:     async def my_action(
+    #:         addr: int,
+    #:         value: SimValueType) -> SimValueType:
+    #:             return value + 1
+    #:
     #: .. tip:: use functools.partial to add extra parameters if needed.
-    action: Callable[[int, SimValueType], SimValueType] | None = None
+    action: SimAction | None = None
+
+    def __check_datatype(self):
+        """Check datatype."""
+        if self.datatype == SimDataType.STRING and not isinstance(self.value, str):
+            raise TypeError("SimDataType.STRING but value not a string")
+        if self.datatype in (
+                SimDataType.INT16,
+                SimDataType.UINT16,
+                SimDataType.INT32,
+                SimDataType.UINT32,
+                SimDataType.INT64,
+                SimDataType.UINT64,
+            ) and not isinstance(self.value, int):
+            raise TypeError("SimDataType.INT variant but value not a int")
+        if self.datatype in (
+                SimDataType.FLOAT32,
+                SimDataType.FLOAT64,
+            ) and not isinstance(self.value, float):
+            raise TypeError("SimDataType.FLOAT variant but value not a float")
+        if self.datatype == SimDataType.BITS and not isinstance(self.value, (bool, int)):
+            raise TypeError("SimDataType.BITS but value not a bool or int")
+        if self.datatype == SimDataType.REGISTERS and not isinstance(self.value, int):
+            raise TypeError("SimDataType.REGISTERS but value not a int")
+        if self.datatype == SimDataType.DEFAULT:
+            if self.action:
+                raise TypeError("SimDataType.DEFAULT cannot have an action")
+            if not isinstance(self.value, int):
+                raise TypeError("SimDataType.DEFAULT but value not a int")
 
     def __post_init__(self):
         """Define a group of registers."""
@@ -161,13 +194,13 @@ class SimData:
             raise TypeError("0 <= address < 65535")
         if not isinstance(self.count, int) or not 0 < self.count <= 65535:
             raise TypeError("0 < count <= 65535")
+        if self.action and not (callable(self.action) or asyncio.iscoroutinefunction(self.action)):
+            raise TypeError("action not Callable or Awaitable (async)")
         if not isinstance(self.datatype, SimDataType):
             raise TypeError("datatype not SimDataType")
-        if self.action and not callable(self.action):
-            raise TypeError("action not Callable")
         if not isinstance(self.value, SimValueType):
             raise TypeError("value not a supported type")
-
+        self.__check_datatype()
 
 @dataclass(frozen=True)
 class SimDevice:
@@ -281,9 +314,3 @@ class SimDevice:
             for entry in block:
                 if not isinstance(entry, SimData):
                     raise TypeError(f"block_{name} contains non SimData entries")
-
-
-def SimCheckConfig(devices: list[SimDevice]) -> bool:
-    """Verify configuration."""
-    _ = devices
-    return False

@@ -1,5 +1,5 @@
-Server
-======
+Server (3.x)
+============
 
 Pymodbus offers servers with transport protocols for
 

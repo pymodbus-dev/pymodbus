@@ -21,13 +21,13 @@ from examples.datastore_simulator_share import main as main_datastore_simulator_
 from examples.message_parser import main as main_parse_messages
 from examples.server_async import setup_server
 from examples.server_callback import run_callback_server
+from examples.server_datamodel import main as run_main_datamodel
 from examples.server_payload import main as main_payload_server
 from examples.server_sync import run_sync_server
 from examples.server_updating import main as main_updating_server
 from examples.simple_async_client import run_async_simple_client
 from examples.simple_sync_client import run_sync_simple_client
 from examples.simulator import run_simulator as run_simulator3
-from examples.simulator_datamodel import main as run_main_simulator_datamodel
 from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ExceptionResponse
 from pymodbus.server import ServerAsyncStop, ServerStop
@@ -96,9 +96,9 @@ class TestExamples:
         # Awaiting fix, missing stop of task.
         await run_simulator3()
 
-    def test_simulator_datamodel(self):
+    def test_server_datamodel(self):
         """Run different simulator configurations."""
-        run_main_simulator_datamodel()
+        run_main_datamodel()
 
     async def test_modbus_forwarder(self):
         """Test modbus forwarder."""

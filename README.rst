@@ -57,14 +57,14 @@ Common features
 ^^^^^^^^^^^^^^^
 * Full modbus standard protocol implementation
 * Support for custom function codes
-* support serial (rs-485), tcp, tls and udp communication
-* support all standard frames: socket, rtu, rtu-over-tcp, tcp and ascii
-* does not have third party dependencies, apart from pyserial (optional)
-* very lightweight project
-* requires Python >= 3.10
-* thorough test suite, that test all corners of the library
-* automatically tested on Windows, Linux and MacOS combined with python 3.10 - 3.13
-* strongly typed API (py.typed present)
+* Support serial (rs-485), tcp, tls and udp communication
+* Support all standard frames: socket, rtu, rtu-over-tcp, tcp and ascii
+* Does not have third party dependencies, apart from pyserial (optional)
+* Very lightweight project
+* Requires Python >= 3.10
+* Thorough test suite, that test all corners of the library
+* Automatically tested on Windows, Linux and MacOS combined with python 3.10 - 3.13
+* Strongly typed API (py.typed present)
 
 The modbus protocol specification: Modbus_Application_Protocol_V1_1b3.pdf can be found on
 `modbus org <https://modbus.org>`_
@@ -72,46 +72,46 @@ The modbus protocol specification: Modbus_Application_Protocol_V1_1b3.pdf can be
 
 Client Features
 ^^^^^^^^^^^^^^^
-* asynchronous API and synchronous API for applications
-* very simple setup and call sequence (just 6 lines of code)
-* utilities to convert int/float to/from multiple registers
-* encoder/decoder to help with standard python data types
+* Asynchronous API and synchronous API for applications
+* Very simple setup and call sequence (just 6 lines of code)
+* Utilities to convert int/float to/from multiple registers
+* Encoder/decoder to help with standard python data types
 
 `Client documentation <https://pymodbus.readthedocs.io/en/latest/source/client.html>`_
 
 
 Server Features
 ^^^^^^^^^^^^^^^
-* asynchronous implementation for high performance
-* synchronous API classes for convenience
-* simulate real life devices
-* full server control context (device information, counters, etc)
-* different backend datastores to manage register values
-* callback to intercept requests/responses
-* work on RS485 in parallel with other devices
+* Asynchronous implementation for high performance
+* Synchronous API classes for convenience
+* Simulate real life devices
+* Full server control context (device information, counters, etc)
+* Different backend datastores to manage register values
+* Callback to intercept requests/responses
+* Work on RS485 in parallel with other devices
 
 `Server documentation <https://pymodbus.readthedocs.io/en/latest/source/server.html>`_
 
 
 REPL Features
 ^^^^^^^^^^^^^
-- server/client commandline emulator
-- easy test of real device (client)
-- easy test of client app (server)
-- simulation of broken requests/responses
-- simulation of error responses (hard to provoke in real devices)
+- Server/client commandline emulator
+- Easy test of real device (client)
+- Easy test of client app (server)
+- Simulation of broken requests/responses
+- Simulation of error responses (hard to provoke in real devices)
 
 `REPL documentation <https://github.com/pymodbus-dev/repl>`_
 
 
 Simulator Features
 ^^^^^^^^^^^^^^^^^^
-- server simulator with WEB interface
-- configure the structure of a real device
-- monitor traffic online
-- allow distributed team members to work on a virtual device using internet
-- simulation of broken requests/responses
-- simulation of error responses (hard to provoke in real devices)
+- Server simulator with WEB interface
+- Configure the structure of a real device
+- Monitor traffic online
+- Allow distributed team members to work on a virtual device using internet
+- Simulation of broken requests/responses
+- Simulation of error responses (hard to provoke in real devices)
 
 `Simulator documentation <https://pymodbus.readthedocs.io/en/dev/source/simulator.html>`_
 
@@ -148,8 +148,8 @@ The library is available on pypi.org and github.com to install with
 
 Be aware that there are a number of project, who have forked pymodbus and
 
-- seems just to provide a version frozen in time
-- extended pymodbus with extra functionality
+- Seems just to provide a version frozen in time
+- Extended pymodbus with extra functionality
 
 The latter is not because we rejected the extra functionality (we welcome all changes),
 but because the codeowners made that decision.

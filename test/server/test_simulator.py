@@ -510,7 +510,7 @@ class TestSimulator:
                 regs = exc_simulator.getValues(FX_READ_REG, 30, reg_count)
             else:
                 reg_bits = exc_simulator.getValues(FX_READ_BIT, 30 * 16, 16)
-                reg_value = sum([ bit * 2 ** i for i, bit in enumerate(reg_bits)])
+                reg_value = sum(bit * 2 ** i for i, bit in enumerate(reg_bits))
                 regs = [reg_value]
             if reg_count == 1:
                 assert expect_value == regs[0], f"type({celltype})"
@@ -549,7 +549,7 @@ class TestSimulator:
                 regs = exc_simulator.getValues(FX_READ_REG, 30, reg_count)
             else:
                 reg_bits = exc_simulator.getValues(FX_READ_BIT, 30 * 16, 16)
-                reg_value = sum([ bit * 2 ** i for i, bit in enumerate(reg_bits)])
+                reg_value = sum(bit * 2 ** i for i, bit in enumerate(reg_bits))
                 regs = [reg_value]
             if reg_count == 1:
                 new_value = regs[0]

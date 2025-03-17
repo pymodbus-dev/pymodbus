@@ -255,11 +255,8 @@ skip = "./build,./doc/source/_static,venv,.venv,.git,htmlcov,CHANGELOG.rst,.mypy
 ignore-words-list = "asend"
 
 [tool.ruff]
-target-version="py38"
-exclude = [
-    "venv",
-    ".venv",
-    ".git",
+target-version="py39"
+extend-exclude = [
     "build",
     "doc",
     "contrib"

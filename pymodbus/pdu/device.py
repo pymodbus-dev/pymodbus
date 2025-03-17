@@ -367,7 +367,7 @@ class ModbusCountersHandler:
     .. note:: I threw the event counter in here for convenience
     """
 
-    __data = {i: 0x0000 for i in range(9)}
+    __data = dict.fromkeys(range(9), 0x00)
     __names = [
         "BusMessage",
         "BusCommunicationError",
@@ -401,7 +401,7 @@ class ModbusCountersHandler:
 
     def reset(self):
         """Clear all of the system counters."""
-        self.__data = {i: 0x0000 for i in range(9)}
+        self.__data = dict.fromkeys(range(9), 0x00)
 
     def summary(self):
         """Return a summary of the counters current status.

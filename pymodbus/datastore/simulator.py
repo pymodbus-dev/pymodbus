@@ -219,7 +219,7 @@ class Setup:
     def handle_setup_section(self):
         """Load setup section."""
         layout = Label.try_get(Label.setup, self.config)
-        self.runtime.fc_offset = {key: 0 for key in range(25)}
+        self.runtime.fc_offset = dict.fromkeys(range(25), 0)
         size_co = Label.try_get(Label.co_size, layout)
         size_di = Label.try_get(Label.di_size, layout)
         size_hr = Label.try_get(Label.hr_size, layout)

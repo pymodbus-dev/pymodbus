@@ -35,6 +35,7 @@ class ModbusPDU:
         self.registers: list[int] = registers or []
         self.count: int = count or len(self.registers)
         self.status: int = status
+        self.exception_code: int = 0
         self.fut: asyncio.Future
 
     def isError(self) -> bool:

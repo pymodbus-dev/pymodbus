@@ -102,7 +102,7 @@ class DecodePDU:
         """Decode a frame."""
         try:
             if (function_code := int(frame[0])) > 0x80:
-                pdu_exp = base.ExceptionResponse(function_code & 0x7F, int(frame[1]))
+                pdu_exp = base.ExceptionResponse(function_code & 0x7F)
                 pdu_exp.decode(frame[1:])
                 return pdu_exp
             if not (pdu_type := self.lookup.get(function_code, None)):

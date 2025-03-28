@@ -134,11 +134,6 @@ class ExceptionResponse(ModbusPDU):
             f"{self.__class__.__name__}("
             f"dev_id={self.dev_id}, "
             f"transaction_id={self.transaction_id}, "
-            f"address={self.address}, "
-            f"count={self.count}, "
-            f"bits={self.bits!s}, "
-            f"registers={self.registers!s}, "
-            f"status={self.status!s}, "
             f"function_code={self.function_code}, "
             f"exception_code={self.exception_code})"
         )

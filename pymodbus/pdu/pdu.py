@@ -7,7 +7,6 @@ from abc import abstractmethod
 
 from pymodbus.datastore import ModbusDeviceContext
 from pymodbus.exceptions import ModbusIOException, NotImplementedException
-from pymodbus.logging import Log
 
 
 class ModbusPDU:
@@ -59,7 +58,7 @@ class ModbusPDU:
             raise ValueError(f"0 < address {address} < 65535 !")
 
     def __str__(self) -> str:
-        """Build a representation of an exception response."""
+        """Build a representation of a Modbus response."""
         return (
             f"{self.__class__.__name__}("
             f"dev_id={self.dev_id}, "
@@ -128,7 +127,15 @@ class ExceptionResponse(ModbusPDU):
         super().__init__(transaction_id=transaction, dev_id=device_id)
         self.function_code = function_code | 0x80
         self.exception_code = exception_code
-        Log.error(f"Exception response {self.function_code} / {self.exception_code}")
+
+    def __str__(self) -> str:
+        """Build a representation of an exception response."""
+        return (
+            f"{self.__class__.__name__}("
+            f"dev_id={self.dev_id}, "
+            f"function_code={self.function_code}, "
+            f"exception_code={self.exception_code})"
+        )
 
     def encode(self) -> bytes:
         """Encode a modbus exception response."""

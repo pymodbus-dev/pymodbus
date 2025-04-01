@@ -99,3 +99,15 @@ class TestServerMultipleContext:
         for dev_id, device in iter(devices.items()):
             actual = self.context[dev_id]
             assert device == actual
+
+    def test_edit_values(self):
+        """Test setValues and getValues in multiple device contexts."""
+        self.devices[0].setValues(fc_as_hex=3, address=1, values = [1,2,3])
+
+        for fc_as_hex in range(1,5):
+            if fc_as_hex == 3:
+                assert self.devices[0].getValues(fc_as_hex=fc_as_hex, address=1, count=3) == [1,2,3]
+            else:
+                assert self.devices[0].getValues(fc_as_hex=fc_as_hex, address=1, count=3) == [0,0,0]
+        for id in range(1,10):
+            assert self.devices[id].getValues(fc_as_hex=3, address=1, count=3) == [0,0,0]

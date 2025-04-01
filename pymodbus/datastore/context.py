@@ -83,10 +83,10 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
     """
 
     def __init__(self, *_args,
-                    di: ModbusSequentialDataBlock = None,
-                    co: ModbusSequentialDataBlock = None,
-                    ir: ModbusSequentialDataBlock = None,
-                    hr: ModbusSequentialDataBlock = None,
+                    di: ModbusSequentialDataBlock | None = None,
+                    co: ModbusSequentialDataBlock | None = None,
+                    ir: ModbusSequentialDataBlock | None = None,
+                    hr: ModbusSequentialDataBlock | None = None,
                 ):
         """Initialize the datastores."""
         self.store = {}

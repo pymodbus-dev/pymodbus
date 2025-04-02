@@ -83,17 +83,17 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
     """
 
     def __init__(self, *_args,
-                    di=ModbusSequentialDataBlock.create(),
-                    co=ModbusSequentialDataBlock.create(),
-                    ir=ModbusSequentialDataBlock.create(),
-                    hr=ModbusSequentialDataBlock.create(),
+                    di: ModbusSequentialDataBlock | None = None,
+                    co: ModbusSequentialDataBlock | None = None,
+                    ir: ModbusSequentialDataBlock | None = None,
+                    hr: ModbusSequentialDataBlock | None = None,
                 ):
         """Initialize the datastores."""
         self.store = {}
-        self.store["d"] = di
-        self.store["c"] = co
-        self.store["i"] = ir
-        self.store["h"] = hr
+        self.store["d"] = di or ModbusSequentialDataBlock.create()
+        self.store["c"] = co or ModbusSequentialDataBlock.create()
+        self.store["i"] = ir or ModbusSequentialDataBlock.create()
+        self.store["h"] = hr or ModbusSequentialDataBlock.create()
 
     def __str__(self):
         """Return a string representation of the context.

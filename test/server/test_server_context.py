@@ -92,10 +92,10 @@ class TestServerMultipleContext:
             self.context[0x00]()
 
     def test_multiple_context_set(self):
-        """Test a setting multiple slave contexts."""
-        slaves = {id: ModbusSlaveContext() for id in range(10)}
-        for dev_id, slave in iter(slaves.items()):
-            self.context[dev_id] = slave
-        for dev_id, slave in iter(slaves.items()):
+        """Test a setting multiple device< contexts."""
+        devices = {id: ModbusSlaveContext() for id in range(10)}
+        for dev_id, device in iter(devices.items()):
+            self.context[dev_id] = device
+        for dev_id, device in iter(devices.items()):
             actual = self.context[dev_id]
-            assert slave == actual
+            assert device == actual

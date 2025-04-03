@@ -45,56 +45,6 @@ def dict_property(store, index):
 
 
 # --------------------------------------------------------------------------- #
-# Bit packing functions
-# --------------------------------------------------------------------------- #
-def pack_bitstring(bits: list[bool]) -> bytes:
-    """Create a bytestring out of a list of bits.
-
-    :param bits: A list of bits
-
-    example::
-
-        bits   = [False, True, False, True]
-        result = pack_bitstring(bits)
-    """
-    ret = b""
-    i = packed = 0
-    for bit in bits:
-        if bit:
-            packed += 128
-        i += 1
-        if i == 8:
-            ret += struct.pack(">B", packed)
-            i = packed = 0
-        else:
-            packed >>= 1
-    if 0 < i < 8:
-        packed >>= 7 - i
-        ret += struct.pack(">B", packed)
-    return ret
-
-
-def unpack_bitstring(data: bytes) -> list[bool]:
-    """Create bit list out of a bytestring.
-
-    :param data: The modbus data packet to decode
-
-    example::
-
-        bytes  = "bytes to decode"
-        result = unpack_bitstring(bytes)
-    """
-    byte_count = len(data)
-    bits = []
-    for byte in range(byte_count):
-        value = int(data[byte])
-        for _ in range(8):
-            bits.append((value & 1) == 1)
-            value >>= 1
-    return bits
-
-
-# --------------------------------------------------------------------------- #
 # Error Detection Functions
 # --------------------------------------------------------------------------- #
 

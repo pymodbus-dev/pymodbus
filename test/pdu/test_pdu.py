@@ -13,6 +13,10 @@ from pymodbus.pdu import (
     ExceptionResponse,
     ModbusPDU,
 )
+from pymodbus.pdu.pdu import (
+    pack_bitstring,
+    unpack_bitstring
+)
 
 
 class TestPdu:
@@ -250,3 +254,44 @@ class TestPdu:
         pdu = ModbusPDU()
         context = mock_context()
         assert await pdu.update_datastore(context)
+
+    @pytest.mark.parametrize(
+        ("bytestream", "bitlist"),
+        [
+            (b"\x00\x01", [True] + [False] * 15),
+            (b"\x01\x00", [False] * 8 + [True] + [False] * 7),
+            (b"\x80\x00", [False] * 15 + [True]),
+            (b"\x80\x01", [True] + [False] * 14 + [True]),
+            (b"\x05\x00", [False] * 8 + [True, False, True] + [False] * 5),
+            (b"\x05\x01", [True] + [False] * 7 + [True, False, True] + [False] * 5),
+            (b"\x05\x81", [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
+            (b"\x05\x81\x01\x00", [False] * 8 + [True] + [False] * 7 + [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
+
+            (b"\x00\x01", [True]),
+            (b"\x01\x00", [False] * 8 + [True]),
+            (b"\x05\x00", [False] * 8 + [True, False, True]),
+            (b"\x05\x01", [True] + [False] * 7 + [True, False, True]),
+            (b"\x05\x81", [True] + [False] * 6 + [True, True, False, True]),
+            (b"\x05\x81\x01\x00", [False] * 8 + [True] + [False] * 7 + [True] + [False] * 6 + [True, True, False, True]),
+        ],
+    )
+    def test_bit_packing(self, bytestream, bitlist):
+        """Test all string <=> bit packing functions."""
+        assert pack_bitstring(bitlist) == bytestream
+
+    @pytest.mark.parametrize(
+        ("bytestream", "bitlist"),
+        [
+            (b"\x00\x01", [True] + [False] * 15),
+            (b"\x01\x00", [False] * 8 + [True] + [False] * 7),
+            (b"\x80\x00", [False] * 15 + [True]),
+            (b"\x80\x01", [True] + [False] * 14 + [True]),
+            (b"\x05\x00", [False] * 8 + [True, False, True] + [False] * 5),
+            (b"\x05\x01", [True] + [False] * 7 + [True, False, True] + [False] * 5),
+            (b"\x05\x81", [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
+            (b"\x05\x81\x01\x00", [False] * 8 + [True] + [False] * 7 + [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
+        ],
+    )
+    def test_bit_unpacking(self, bytestream, bitlist):
+        """Test all string <=> bit packing functions."""
+        assert unpack_bitstring(bytestream) == bitlist

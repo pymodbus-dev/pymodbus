@@ -72,6 +72,7 @@ Thanks to
 - Máté Szabó
 - Matthias Straka
 - Matthias Urlichs
+- Maxime LEURENT
 - Michel F
 - Mickaël Schoentgen
 - Pavel Kostromitinov
@@ -84,6 +85,7 @@ Thanks to
 - Sefa Keleş
 - Steffen Beyer
 - sumguytho
+- Szewcson
 - Thijs W
 - Totally a booplicate
 - WouterTuinstra
@@ -91,7 +93,7 @@ Thanks to
 - Yash Jani
 - Yohrog
 - yyokusa
-
+- zaid bin saeed
 
 Pymodbus version 2 family
 -------------------------

@@ -118,7 +118,6 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
             False, certfile=certfile, keyfile=keyfile, password=password
         )
 
-
 class ModbusTlsClient(ModbusTcpClient):
     """**ModbusTlsClient**.
 

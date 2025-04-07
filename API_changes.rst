@@ -4,13 +4,18 @@ Versions (X.Y.Z) where Z > 0 e.g. 3.0.1 do NOT have API changes!
 
 API changes 4.0.0
 -----------------
-- Python 3.9 is reaching end of life, and no longer supported.
-  Depending on the usage the code might still work
-- Start*Server, custom_functions is now custom_pdu (handled by Modbus<x>Server)
 - ModbusSlaveContext replaced by ModbusDeviceContext
 - payload removed (replaced by "convert_to/from_registers")
 - slave=, slaves= replaced by device_id=, device_ids=
 - slave request names changed to device
+
+-----------------
+API changes 3.9.0
+-----------------
+- Python 3.9 is reaching end of life, and no longer supported.
+  Depending on the usage the code might still work
+- Start*Server, custom_functions -> custom_pdu (handled by Modbus<x>Server)
+- Bit handling (e.g. read_coils) was not handling the bits in the correct order
 
 API changes 3.8.0
 -----------------

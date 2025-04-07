@@ -7,8 +7,7 @@ from typing import cast
 from pymodbus.constants import ModbusPlusOperation
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.device import ModbusControlBlock
-from pymodbus.pdu.pdu import ModbusPDU
-from pymodbus.utilities import pack_bitstring
+from pymodbus.pdu.pdu import ModbusPDU, pack_bitstring
 
 
 _MCB = ModbusControlBlock()

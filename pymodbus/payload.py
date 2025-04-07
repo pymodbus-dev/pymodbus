@@ -19,7 +19,7 @@ from struct import pack, unpack
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ParameterException
 from pymodbus.logging import Log
-from pymodbus.utilities import (
+from pymodbus.pdu.pdu import (
     pack_bitstring,
     unpack_bitstring,
 )

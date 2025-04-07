@@ -138,32 +138,50 @@ class TestMixin:
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
-                [True],
-                [256],
+                [True] + [False] * 15,
+                [1],  # 0x00 0x01
                 None,
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
-                [True, False, True],
-                [1280],
+                [False] * 8 + [True] + [False] * 7,
+                [256],  # 0x01 0x00
                 None,
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
-                [True, False, True] + [False] * 5 + [True],
-                [1281],
+                [False] * 15 + [True],
+                [32768],  # 0x80 0x00
                 None,
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
-                [True, False, True] + [False] * 5 + [True] + [False] * 6 + [True],
-                [1409],
+                [True] + [False] * 14 + [True],
+                [32769],  # 0x80 0x01
                 None,
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
-                [True, False, True] + [False] * 5 + [True] + [False] * 6 + [True] * 2,
-                [1409, 256],
+                [False] * 8 + [True, False, True] + [False] * 5,
+                [1280],  # 0x05 0x00
+                None,
+            ),
+            (
+                ModbusClientMixin.DATATYPE.BITS,
+                [True] + [False] * 7 + [True, False, True] + [False] * 5,
+                [1281],  # 0x05 0x01
+                None,
+            ),
+            (
+                ModbusClientMixin.DATATYPE.BITS,
+                [True] + [False] * 6 + [True, True, False, True] + [False] * 5,
+                [1409], # 0x05 0x81
+                None,
+            ),
+            (
+                ModbusClientMixin.DATATYPE.BITS,
+                [False] * 8 + [True] + [False] * 7 + [True] + [False] * 6 + [True, True, False, True] + [False] * 5,
+                [1409, 256],  # 92340480 = 0x05 0x81 0x01 0x00
                 None,
             ),
         ],
@@ -181,9 +199,6 @@ class TestMixin:
         result = ModbusClientMixin.convert_from_registers(registers, datatype, **kwargs)
         if datatype == ModbusClientMixin.DATATYPE.FLOAT32:
             result = round(result, 6)
-        if datatype == ModbusClientMixin.DATATYPE.BITS:
-            if (missing := len(value) % 16):
-                value = value + [False] * (16 - missing)
         assert result == value
 
     @pytest.mark.parametrize(

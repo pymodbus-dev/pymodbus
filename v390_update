@@ -1,0 +1,24 @@
+-- dev at time of v3.9.0 --
+included Correct bit handling internally and in API. (#2627)
+included d0d2cbe8 default argument  ModbusSequentialDataBlock (#2622)
+included 0b94011c Fix exception error message for decoding response (#2618)
+included ffa0da61 Expose exception_code to API. (#2615)
+included 33a21ad5 Simplify ruff config (#2611)
+included 79cc58cc Documentation dont fixed. (#2605)
+included 52b852f4 sum() can operate on an Iterator directly (#2610)
+WAITING  db4b933a SimData update. (#2601)
+WAITING  2f87de98 Change slave to device_id and slave= to device_id=. (#2600)
+WAITING  9432d2b9 Officially working towards 4.0.0
+WAITING  feeb36b8 Remove payload. (#2524)
+included 748d4edc Start<x>Server custom_functions -> custom_pdu.
+included 9d0f81be Update pyproject.toml to remove python 3.9.
+included 5e0f418c Remove validate() from datastores. (#2595)
+included 5c97de4b Python 3.9 is EOL, not supported actively. (#2596)
+included bd2d232b correct handle_local_echo for sync client. (#2593)
+included 7a6338ed devcontainer, automatic install. (#2583)
+included 74d1dcf7 Don't set_result on completed futures. (#2582)
+included c55d05bd Flush recv_buffer before each transaction write. (#2581)
+included 528d70dd Add missing trace. (#2578)
+included d795085b Update github actions. (#2579)
+included 46aa4e82 Prepare dev.
+-- v3.8.6 --

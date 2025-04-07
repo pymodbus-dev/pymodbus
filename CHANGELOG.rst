@@ -7,6 +7,27 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.9.0
+-------------
+* Correct bit handling internally and in API. (#2627)
+* default argument  ModbusSequentialDataBlock (#2622)
+* Fix exception error message for decoding response (#2618)
+* Expose exception_code to API. (#2615)
+* Simplify ruff config (#2611)
+* Documentation dont fixed. (#2605)
+* sum() can operate on an Iterator directly (#2610)
+* SimData update. (#2601)
+* Start<x>Server custom_functions -> custom_pdu.
+* Update pyproject.toml to remove python 3.9.
+* Remove validate() from datastores. (#2595)
+* Python 3.9 is EOL, not supported actively. (#2596)
+* correct handle_local_echo for sync client. (#2593)
+* devcontainer, automatic install. (#2583)
+* Don't set_result on completed futures. (#2582)
+* Flush recv_buffer before each transaction write. (#2581)
+* Add missing trace. (#2578)
+* Update github actions. (#2579)
+
 Version 3.8.6
 -------------
 * Allow id=0 and check if response.id == request.id. (#2572)

@@ -8,6 +8,7 @@ API changes 3.9.0
 - Python 3.9 is reaching end of life, and no longer supported.
   Depending on the usage the code might still work
 - Start*Server, custom_functions -> custom_pdu (handled by Modbus<x>Server)
+- Bit handling (e.g. read_coils) was not handling the bits in the correct order
 
 API changes 3.8.0
 -----------------

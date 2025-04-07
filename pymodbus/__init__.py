@@ -20,5 +20,5 @@ from pymodbus.pdu import ExceptionResponse
 from pymodbus.pdu.device import ModbusDeviceIdentification
 
 
-__version__ = "4.0.0dev0"
+__version__ = "4.0.0dev1"
 __version_full__ = f"[pymodbus, version {__version__}]"

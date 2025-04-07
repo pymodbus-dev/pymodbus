@@ -1,13 +1,7 @@
 """Test utilities."""
 import struct
 
-import pytest
-
-from pymodbus.utilities import (
-    dict_property,
-    pack_bitstring,
-    unpack_bitstring,
-)
+from pymodbus.utilities import dict_property
 
 
 _test_master = {4: "d"}
@@ -64,18 +58,3 @@ class TestUtility:
         assert result.s_1 == "x"
         assert result.s_2 == "x"
         assert result.g_1 == "x"
-
-    @pytest.mark.parametrize(
-            ("bytestream", "bitlist"),
-            [
-                (b"\x55", [True, False, True, False, True, False, True, False]),
-                (b"\x80", [False] * 7 + [True]),
-                (b"\x01", [True] + [False] * 7),
-                (b"\x80\x00", [False] * 7 + [True] + [False] * 8),
-                (b"\x01\x00", [True] + [False] * 15),
-            ]
-    )
-    def test_bit_packing(self, bytestream, bitlist):
-        """Test all string <=> bit packing functions."""
-        assert pack_bitstring(bitlist) == bytestream
-        assert unpack_bitstring(bytestream) == bitlist

@@ -12,8 +12,6 @@ class TestModbusBitMessage:
             data = [True] * i
             pdu = bit_msg.ReadCoilsResponse(bits=data)
             pdu.decode(pdu.encode())
-            if i % 8:
-                data.extend([False] * (8 - (i % 8)))
             assert pdu.bits == data
 
     def test_bit_read_base_requests(self):

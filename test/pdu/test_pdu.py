@@ -13,10 +13,7 @@ from pymodbus.pdu import (
     ExceptionResponse,
     ModbusPDU,
 )
-from pymodbus.pdu.pdu import (
-    pack_bitstring,
-    unpack_bitstring
-)
+from pymodbus.pdu.pdu import pack_bitstring, unpack_bitstring
 
 
 class TestPdu:
@@ -119,7 +116,7 @@ class TestPdu:
     ]
 
     responses = [
-        (bit_msg.ReadCoilsResponse, (), {"bits": [True, True], "address": 17}, b'\x01\x01\x03'),
+        (bit_msg.ReadCoilsResponse, (), {"bits": [True, True] + [False] * 6, "address": 17}, b'\x01\x01\x03'),
         (bit_msg.ReadDiscreteInputsResponse, (), {"bits": [True, True], "address": 17}, b'\x02\x01\x03'),
         (bit_msg.WriteSingleCoilResponse, (), {"address": 117, "bits": [True]}, b'\x05\x00\x75\xff\x00'),
         (bit_msg.WriteMultipleCoilsResponse, (), {"address": 117, "count": 3}, b'\x0f\x00\x75\x00\x03'),
@@ -277,11 +274,25 @@ class TestPdu:
     )
     def test_bit_packing(self, bytestream, bitlist):
         """Test all string <=> bit packing functions."""
+        assert pack_bitstring(bitlist, align_byte=False) == bytestream
+
+    @pytest.mark.parametrize(
+        ("bytestream", "bitlist"),
+        [
+            (b"\x01", [True]),
+            (b"\x01\x00", [False] * 8 + [True]),
+            (b"\x05", [True, False, True]),
+            (b"\x05\x01", [True] + [False] * 7 + [True, False, True]),
+        ],
+    )
+    def test_bit_packing8(self, bytestream, bitlist):
+        """Test all string <=> bit packing functions."""
         assert pack_bitstring(bitlist) == bytestream
 
     @pytest.mark.parametrize(
         ("bytestream", "bitlist"),
         [
+            (b"\x01", [True] + [False] * 7),
             (b"\x00\x01", [True] + [False] * 15),
             (b"\x01\x00", [False] * 8 + [True] + [False] * 7),
             (b"\x80\x00", [False] * 15 + [True]),

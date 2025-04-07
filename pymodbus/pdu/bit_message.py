@@ -5,6 +5,7 @@ from typing import cast
 
 from pymodbus.constants import ModbusStatus
 from pymodbus.datastore import ModbusDeviceContext
+
 from .pdu import ModbusPDU, pack_bitstring, unpack_bitstring
 
 

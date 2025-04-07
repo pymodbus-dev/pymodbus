@@ -5,8 +5,8 @@ data computing checksums, and decode checksums.
 """
 from __future__ import annotations
 
+
 # pylint: disable=missing-type-doc
-import struct
 
 
 def dict_property(store, index):

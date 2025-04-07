@@ -146,10 +146,8 @@ class ExceptionResponse(ModbusPDU):
         self.exception_code = int(data[0])
 
 
-def pack_bitstring(bits: list[bool]) -> bytes:
+def pack_bitstring(bits: list[bool], align_byte=True) -> bytes:
     """Create a bytestring out of a list of bits.
-
-    :param bits: A list of bits
 
     example::
 
@@ -158,13 +156,14 @@ def pack_bitstring(bits: list[bool]) -> bytes:
                  [True, False, True, False] +
                  [False, False, False, False]
         result = pack_bitstring(bits)
-        b'\x05\x81'
+        bytes 0x05 0x81
     """
     ret = b""
     i = packed = 0
     t_bits = bits
-    if (extra := len(bits) % 16):
-        t_bits += [False] * (16 - extra)
+    bits_extra = 8 if align_byte else 16
+    if (extra := len(bits) % bits_extra):
+        t_bits += [False] * (bits_extra - extra)
     for bit in reversed(t_bits):
         packed <<= 1
         if bit:
@@ -179,11 +178,9 @@ def pack_bitstring(bits: list[bool]) -> bytes:
 def unpack_bitstring(data: bytes) -> list[bool]:
     """Create bit list out of a bytestring.
 
-    :param data: The modbus data packet to decode
-
     example::
 
-        bytes  = b'\x05\x81'
+        bytes 0x05 0x81
         result = unpack_bitstring(bytes)
 
         [True, False, False, False] +
@@ -193,6 +190,6 @@ def unpack_bitstring(data: bytes) -> list[bool]:
     """
     res = []
     for byte_index in range(len(data) -1, -1, -1):
-        for bit in [1, 2, 4, 8, 16, 32, 64, 128]:
+        for bit in (1, 2, 4, 8, 16, 32, 64, 128):
             res.append(bool(data[byte_index] & bit))
     return res

@@ -1,8 +1,6 @@
 """Test utilities."""
 import struct
 
-import pytest
-
 from pymodbus.utilities import dict_property
 
 

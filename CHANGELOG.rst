@@ -7,6 +7,10 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.9.1
+-------------
+* Correct byte order in bits. (#2631)
+
 Version 3.9.0
 -------------
 * Correct bit handling internally and in API. (#2627)

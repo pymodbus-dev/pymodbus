@@ -13,19 +13,14 @@ The maintainers are very open to these pull request, and ONLY work to secure tha
 
 The following bullet points are what the maintainers focus on:
 
-- 3.9.1, with:
+- 3.9.2, with:
     - Currently not planned
 - 4.0.0, with:
-<<<<<<< HEAD
-    - Simulator datastore, with simple configuration
-    - Remove remote_datastore
-=======
     - ModbusControlBlock pr slave
     - New custom PDU (function codes)
     - Simulator datastore, with simple configuration
     - Remove remote_datastore
     - Remove BinaryPayload
->>>>>>> prepare_390
     - Server becomes Simulator
     - client async with sync/async API
     - Only one datastore, but with different API`s

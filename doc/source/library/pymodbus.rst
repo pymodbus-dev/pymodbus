@@ -71,12 +71,12 @@ PDU classes
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: pymodbus.pdu.device
+.. automodule:: pymodbus.device
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: pymodbus.pdu.events
+.. automodule:: pymodbus.events
     :members:
     :undoc-members:
     :show-inheritance:

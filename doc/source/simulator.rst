@@ -18,6 +18,11 @@ The simulator allows the user to (all automated):
 - test how a client handles modbus response and exceptions,
 - test a client apps correct use of the simulated device.
 
+For details please see:
+
+- :ref:`Data model configuration`
+- :ref:`Simulator server`
+
 The web interface (activated optionally) allows the user to:
 
 - introduce modbus errors (like e.g. wrong length),
@@ -26,6 +31,11 @@ The web interface (activated optionally) allows the user to:
 - see/Change values online.
 - inject modbus errors like malicious a response,
 - run your test server in the cloud,
+
+For details please see:
+
+- :ref:`Web frontend`
+
 
 The REST API allow the test process to be automated
 
@@ -37,78 +47,6 @@ The REST API allow the test process to be automated
 The web server uses the REST API internally, which helps to ensure that it
 actually works.
 
+For details please see:
 
-Data model configuration
-------------------------
-
-.. warning:: from v3.9.0 this is available as a "normal" datastore model.
-
-The simulator data model represent the registers and parameters of the simulated devices.
-The data model is defined using :class:`SimData` and :class:`SimDevice` before starting the
-server and cannot be changed without restarting the server.
-
-:class:`SimData` defines a group of continuous identical registers. This is the basis of the model,
-multiple :class:`SimData` should be used to mirror the physical device.
-
-:class:`SimDevice` defines device parameters and a list of :class:`SimData`.
-The list of :class:`SimData` can added as shared registers or as the 4 blocks, defined in modbus.
-:class:`SimDevice` can be used to simulate a single device, while a list of
-:class:`SimDevice` simulates a multipoint line (simulating a rs485 line or a tcp based serial forwarder).
-
-A server consist of communication parameters and a device or a list of devices
-
-:class:`SimDataType` is a helper class that defines legal datatypes.
-
-:class:`SimValueType` is a helper class that defines legal value types.
-
-:github:`examples/simulator_datamodel.py` contains usage examples.
-
-SimData
-^^^^^^^
-
-.. autoclass:: pymodbus.simulator.SimData
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-SimDevice
-^^^^^^^^^
-
-.. autoclass:: pymodbus.simulator.SimDevice
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-SimDataType
-^^^^^^^^^^^
-
-.. autoclass:: pymodbus.simulator.SimDataType
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-SimDataValue
-^^^^^^^^^^^^
-
-.. autoclass:: pymodbus.simulator.SimDataValue
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Simulator server
-----------------
-
-.. note:: This is a v4.0.0 functionality currently not available, please see the 3x simulator server.
-
-
-Web frontend
-------------
-
-.. note:: This is a v4.0.0 functionality currently not available, please see the 3x simulator server.
-
-
-REST API
---------
-
-.. note:: This is a v4.0.0 functionality currently not available, please see the 3x simulator server.
+- :ref:`REST API`

@@ -162,14 +162,15 @@ def pack_bitstring(bits: list[bool], align_byte=True) -> bytes:
     bits_extra = 8 if align_byte else 16
     if (extra := len(bits) % bits_extra):
         t_bits += [False] * (bits_extra - extra)
-    for bit in reversed(t_bits):
-        packed <<= 1
-        if bit:
-            packed += 1
-        i += 1
-        if i == 8:
-            ret += struct.pack(">B", packed)
-            i = packed = 0
+    for byte_inx in range(0, len(t_bits), 8):
+        for bit in reversed(t_bits[byte_inx:byte_inx+8]):
+            packed <<= 1
+            if bit:
+                packed += 1
+            i += 1
+            if i == 8:
+                ret += struct.pack(">B", packed)
+                i = packed = 0
     return ret
 
 
@@ -181,13 +182,11 @@ def unpack_bitstring(data: bytes) -> list[bool]:
         bytes 0x05 0x81
         result = unpack_bitstring(bytes)
 
-        [True, False, False, False] +
-        [False, False, False, True] +
-        [True, False, True, False] +
-        [False, False, False, False]
+        [True, False, True, False] + [False, False, False, False]
+        [True, False, False, False] + [False, False, False, True]
     """
     res = []
-    for byte_index in range(len(data) -1, -1, -1):
+    for _, t_byte in enumerate(data):
         for bit in (1, 2, 4, 8, 16, 32, 64, 128):
-            res.append(bool(data[byte_index] & bit))
+            res.append(bool(t_byte & bit))
     return res

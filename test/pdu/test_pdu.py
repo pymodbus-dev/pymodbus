@@ -250,21 +250,21 @@ class TestPdu:
     @pytest.mark.parametrize(
         ("bytestream", "bitlist"),
         [
-            (b"\x00\x01", [True] + [False] * 15),
-            (b"\x01\x00", [False] * 8 + [True] + [False] * 7),
-            (b"\x80\x00", [False] * 15 + [True]),
-            (b"\x80\x01", [True] + [False] * 14 + [True]),
-            (b"\x05\x00", [False] * 8 + [True, False, True] + [False] * 5),
-            (b"\x05\x01", [True] + [False] * 7 + [True, False, True] + [False] * 5),
-            (b"\x05\x81", [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
-            (b"\x05\x81\x01\x00", [False] * 8 + [True] + [False] * 7 + [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
+            (b"\x01\x00", [True] + [False] * 15),
+            (b"\x00\x80", [False] * 15 + [True]),
+            (b"\x00\x01", [False] * 8 + [True] + [False] * 7),
+            (b"\x01\x80", [True] + [False] * 14 + [True]),
+            (b"\x00\x05", [False] * 8 + [True, False, True] + [False] * 5),
+            (b"\x01\x05", [True] + [False] * 7 + [True, False, True] + [False] * 5),
+            (b"\x81\x05", [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
+            (b"\x00\x01\x81\x05", [False] * 8 + [True] + [False] * 7 + [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
 
-            (b"\x00\x01", [True]),
-            (b"\x01\x00", [False] * 8 + [True]),
-            (b"\x05\x00", [False] * 8 + [True, False, True]),
-            (b"\x05\x01", [True] + [False] * 7 + [True, False, True]),
-            (b"\x05\x81", [True] + [False] * 6 + [True, True, False, True]),
-            (b"\x05\x81\x01\x00", [False] * 8 + [True] + [False] * 7 + [True] + [False] * 6 + [True, True, False, True]),
+            (b"\x01\x00", [True]),
+            (b"\x00\x01", [False] * 8 + [True]),
+            (b"\x00\x05", [False] * 8 + [True, False, True]),
+            (b"\x01\x05", [True] + [False] * 7 + [True, False, True]),
+            (b"\x81\x05", [True] + [False] * 6 + [True, True, False, True]),
+            (b"\x00\x01\x81\x05", [False] * 8 + [True] + [False] * 7 + [True] + [False] * 6 + [True, True, False, True]),
         ],
     )
     def test_bit_packing(self, bytestream, bitlist):
@@ -275,9 +275,9 @@ class TestPdu:
         ("bytestream", "bitlist"),
         [
             (b"\x01", [True]),
-            (b"\x01\x00", [False] * 8 + [True]),
+            (b"\x00\x01", [False] * 8 + [True]),
             (b"\x05", [True, False, True]),
-            (b"\x05\x01", [True] + [False] * 7 + [True, False, True]),
+            (b"\x01\x05", [True] + [False] * 7 + [True, False, True]),
         ],
     )
     def test_bit_packing8(self, bytestream, bitlist):
@@ -288,14 +288,17 @@ class TestPdu:
         ("bytestream", "bitlist"),
         [
             (b"\x01", [True] + [False] * 7),
-            (b"\x00\x01", [True] + [False] * 15),
-            (b"\x01\x00", [False] * 8 + [True] + [False] * 7),
-            (b"\x80\x00", [False] * 15 + [True]),
-            (b"\x80\x01", [True] + [False] * 14 + [True]),
-            (b"\x05\x00", [False] * 8 + [True, False, True] + [False] * 5),
-            (b"\x05\x01", [True] + [False] * 7 + [True, False, True] + [False] * 5),
-            (b"\x05\x81", [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
-            (b"\x05\x81\x01\x00", [False] * 8 + [True] + [False] * 7 + [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
+            (b"\x01\x00", [True] + [False] * 15),
+            (b"\x00\x01", [False] * 8 + [True] + [False] * 7),
+            (b"\x00\x80", [False] * 15 + [True]),
+            (b"\x01\x80", [True] + [False] * 14 + [True]),
+            (b"\x00\x05", [False] * 8 + [True, False, True] + [False] * 5),
+            (b"\x01\x05", [True] + [False] * 7 + [True, False, True] + [False] * 5),
+            (b"\x81\x05", [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
+            (b"\x05\x81\x01\x00", [True, False, True] + [False] * 5 +
+                                  [True] + [False] * 6 + [True] +
+                                  [True] + [False] * 7 +
+                                  [False] * 8),
         ],
     )
     def test_bit_unpacking(self, bytestream, bitlist):

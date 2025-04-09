@@ -8,6 +8,7 @@ API changes 4.0.0
 - payload removed (replaced by "convert_to/from_registers")
 - slave=, slaves= replaced by device_id=, device_ids=
 - slave request names changed to device
+- bit handling order is LSB (last byte) -> MSB (first byte)
 
 -----------------
 API changes 3.9.0

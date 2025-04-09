@@ -139,49 +139,49 @@ class TestMixin:
             (
                 ModbusClientMixin.DATATYPE.BITS,
                 [True] + [False] * 15,
-                [256],  # 0x01 0x00
-                None,
-            ),
-            (
-                ModbusClientMixin.DATATYPE.BITS,
-                [False] * 8 + [True] + [False] * 7,
                 [1],  # 0x00 0x01
                 None,
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
+                [False] * 8 + [True] + [False] * 7,
+                [256],  # 0x01 0x00
+                None,
+            ),
+            (
+                ModbusClientMixin.DATATYPE.BITS,
                 [False] * 15 + [True],
-                [128],  # 0x00 0x80
+                [32768],  # 0x80 0x00
                 None,
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
                 [True] + [False] * 14 + [True],
-                [384],  # 0x01 0x80
+                [32769],  # 0x80 0x01
                 None,
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
                 [False] * 8 + [True, False, True] + [False] * 5,
-                [5],  # 0x00 0x05
+                [1280],  # 0x05 0x00
                 None,
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
                 [True] + [False] * 7 + [True, False, True] + [False] * 5,
-                [261],  # 0x01 0x05
+                [1281],  # 0x05 0x01
                 None,
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
                 [True] + [False] * 6 + [True, True, False, True] + [False] * 5,
-                [33029], # 0x81 0x05
+                [1409], # 0x05 0x81
                 None,
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
                 [False] * 8 + [True] + [False] * 7 + [True] + [False] * 6 + [True, True, False, True] + [False] * 5,
-                [1, 33029],  # 92340480 = 0x00 0x01 0x81 0x05
+                [1409, 256],  # 92340480 = 0x05 0x81 0x01 0x00
                 None,
             ),
         ],

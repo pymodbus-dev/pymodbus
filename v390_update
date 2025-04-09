@@ -1,4 +1,7 @@
--- dev at time of v3.9.0 --
+-- dev at time of v3.9.1 --
+included 3a3edf11 Prepare 3.9.1. (#2632)
+included 3f65d2a8 Correct byte order in bits. (#2631)
+WAITING  6c9c0a65 Prepare dev.
 included Correct bit handling internally and in API. (#2627)
 included d0d2cbe8 default argument  ModbusSequentialDataBlock (#2622)
 included 0b94011c Fix exception error message for decoding response (#2618)

@@ -8,7 +8,7 @@ Making a release.
 ------------------------------------------------------------
 Prepare/make release on dev.
 ------------------------------------------------------------
-* Make pull request "prepare v3.7.x", with the following:
+* Make pull request "prepare v3.9.x", with the following:
    * Update pymodbus/__init__.py with version number (__version__ X.Y.Zpre)
    * Update README.rst "Supported versions"
    * Update roadmap.rst

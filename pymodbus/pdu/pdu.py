@@ -188,7 +188,7 @@ def unpack_bitstring(data: bytes) -> list[bool]:
         [True, False, False, False] + [False, False, False, True]
     """
     res = []
-    for byte_index in range(len(data)):
+    for _, t_byte in enumerate(data):
         for bit in (1, 2, 4, 8, 16, 32, 64, 128):
-            res.append(bool(data[byte_index] & bit))
+            res.append(bool(t_byte & bit))
     return res

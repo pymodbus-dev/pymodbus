@@ -315,9 +315,9 @@ class TestTransaction:
         await asyncio.sleep(0.1)
         assert response == await resp
 
-    async def test_delayed_response(self):
+    async def test_delayed_response(self, use_clc):
         """Test delayed response combined with retries."""
-
+        _ = use_clc
 
 @pytest.mark.parametrize("use_port", [5098])
 class TestSyncTransaction:

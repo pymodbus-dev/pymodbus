@@ -6,7 +6,7 @@ from collections.abc import Callable
 from threading import RLock
 
 from pymodbus.exceptions import ConnectionException, ModbusIOException
-from pymodbus.framer import FramerBase
+from pymodbus.framer import FramerAscii, FramerBase, FramerRTU
 from pymodbus.logging import Log
 from pymodbus.pdu import ExceptionResponse, ModbusPDU
 from pymodbus.transport import CommParams, ModbusProtocol
@@ -49,6 +49,7 @@ class TransactionManager(ModbusProtocol):
         self.retries = retries
         self.next_tid: int = 0
         self.request_dev_id: int = 0
+        self.request_transaction_id: int = 0
         self.trace_packet = trace_packet or self.dummy_trace_packet
         self.trace_pdu = trace_pdu or self.dummy_trace_pdu
         self.trace_connect = trace_connect or self.dummy_trace_connect
@@ -191,6 +192,7 @@ class TransactionManager(ModbusProtocol):
     def pdu_send(self, pdu: ModbusPDU, addr: tuple | None = None) -> None:
         """Build byte stream and send."""
         self.request_dev_id = pdu.dev_id
+        self.request_transaction_id = pdu.transaction_id
         packet = self.framer.buildFrame(self.trace_pdu(True, pdu))
         if self.is_sync and self.comm_params.handle_local_echo:
             self.sent_buffer = packet
@@ -218,19 +220,20 @@ class TransactionManager(ModbusProtocol):
             self.last_addr = addr
             if not self.is_server:
                 if pdu.dev_id != self.request_dev_id:
-                    raise ModbusIOException(
-                        f"ERROR: request ask for id={self.request_dev_id} but got id={pdu.dev_id}, CLOSING CONNECTION."
-                    )
-                if self.response_future.done():
-                    raise ModbusIOException("received pdu without a corresponding request")
-                self.response_future.set_result(self.last_pdu
-
-                                                )
+                    Log.warning(f"ERROR: expected id {self.request_dev_id} but got {pdu.dev_id}, IGNORING.")
+                elif pdu.transaction_id != self.request_transaction_id:
+                    Log.warning(f"ERROR: expected transaction {self.request_transaction_id} but got {pdu.transaction_id}, IGNORING.")
+                elif self.response_future.done():
+                    Log.warning("ERROR: received pdu without a corresponding request, IGNORING")
+                else:
+                    self.response_future.set_result(self.last_pdu)
         return used_len
 
     def getNextTID(self) -> int:
         """Retrieve the next transaction identifier."""
-        if self.next_tid >= 65000:
+        if isinstance(self.framer, (FramerAscii, FramerRTU)):
+          self.next_tid = 0
+        elif self.next_tid >= 65000:
             self.next_tid = 1
         else:
             self.next_tid += 1

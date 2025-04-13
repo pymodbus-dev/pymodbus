@@ -41,7 +41,7 @@ class TestTransaction:
         """Test next TID."""
         transact = TransactionManager(
             use_clc,
-            FramerRTU(DecodePDU(False)),
+            FramerSocket(DecodePDU(False)),
             5,
             False,
             None,
@@ -161,8 +161,7 @@ class TestTransaction:
         else:
             pdu.dev_id = 0
             transact.response_future.set_result((1, pdu))
-        with pytest.raises(ModbusIOException):
-            transact.callback_data(packet)
+        transact.callback_data(packet)
 
     @pytest.mark.parametrize("scenario", range(8))
     async def test_transaction_execute(self, use_clc, scenario):
@@ -264,6 +263,7 @@ class TestTransaction:
             None,
         )
         transact.send = mock.Mock()
+        transact.comm_params.timeout_connect = 0.1
         request = ReadCoilsRequest(address=117, count=5, dev_id=1)
         transact.retries = 0
         transact.connection_made(mock.AsyncMock())
@@ -272,13 +272,13 @@ class TestTransaction:
         await asyncio.sleep(0.2)
         data = b"\x00\x00\x12\x34\x00\x06\x01\x01\x01\x02\x00\x04"
         transact.data_received(data)
-        result = await resp
         if no_resp:
+            result = await resp
             assert result.isError()
             assert isinstance(result, ExceptionResponse)
         else:
-            assert not result.isError()
-            assert isinstance(result, ReadCoilsResponse)
+            with pytest.raises(ModbusIOException):
+                await resp
 
     async def test_transaction_id0(self, use_clc):
         """Test tracers in disconnect."""
@@ -315,6 +315,58 @@ class TestTransaction:
         await asyncio.sleep(0.1)
         assert response == await resp
 
+    @pytest.mark.parametrize(("framer"), [FramerRTU, FramerSocket])
+    @pytest.mark.parametrize("scenario", range(2))
+    async def test_delayed_response(self, use_clc, framer, scenario):
+        """Test delayed rtu response combined with retries."""
+        transact = TransactionManager(
+            use_clc,
+            framer(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+        )
+        transact.send = mock.Mock()
+        request1 = ReadCoilsRequest(address=117, count=5, dev_id=1)
+        request2 = ReadCoilsRequest(address=118, count=2, dev_id=1)
+        response1 = ReadCoilsResponse(bits=[True, False, True, True] + [False]*4, dev_id=1)
+        response2 = ReadCoilsResponse(bits=[True] + [False]*7, dev_id=1)
+        if framer == FramerRTU:
+            cb_response1 = b'\x01\x01\x01\r\x90M'
+            cb_response2 = b'\x01\x01\x01\x01\x90H'
+        else:
+            cb_response1 = b'\x00\x01\x00\x00\x00\x04\x01\x01\x01\r'
+            cb_response2 = b'\x00\x02\x00\x00\x00\x04\x01\x01\x01\x01'
+        transact.retries = 1
+        transact.connection_made(mock.AsyncMock())
+        transact.transport.write = mock.Mock()
+        transact.comm_params.timeout_connect = 0.1
+
+        if scenario == 0: # timeout + double response
+            resp = asyncio.create_task(transact.execute(False, request1))
+            await asyncio.sleep(0.15)
+            transact.callback_data(cb_response1, None)
+            transact.callback_data(cb_response1, None)
+            result = await resp
+            assert result.bits == response1.bits
+        elif scenario == 1: # timeout + new request + double response
+            resp = asyncio.create_task(transact.execute(False, request1))
+            await asyncio.sleep(0.25)
+            with pytest.raises(ModbusIOException):
+                await resp
+            resp = asyncio.create_task(transact.execute(False, request2))
+            await asyncio.sleep(0.05)
+            transact.callback_data(cb_response1, None)
+            transact.callback_data(cb_response2, None)
+            result = await resp
+            if framer == FramerRTU:
+                # Return WRONG response
+                assert result.bits == response1.bits
+            else:
+                # Return CORRECT response
+                assert result.bits == response2.bits
 
 @pytest.mark.parametrize("use_port", [5098])
 class TestSyncTransaction:

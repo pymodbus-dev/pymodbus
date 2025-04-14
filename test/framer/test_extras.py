@@ -41,10 +41,10 @@ class TestExtas:
         """Test a half completed tcp frame transaction."""
         msg1 = b"\x00\x01\x12\x34\x00\x06\xff"
         msg2 = b"\x02\x01\x02\x00\x08"
-        used_len, pdu = self._tcp.processIncomingFrame(msg1)
+        used_len, pdu = self._tcp.handleFrame(msg1, 0, 0)
         assert not pdu
         assert not used_len
-        used_len, pdu = self._tcp.processIncomingFrame(msg1+msg2)
+        used_len, pdu = self._tcp.handleFrame(msg1+msg2, 0, 0)
         assert pdu
         assert used_len == len(msg1) + len(msg2)
         assert pdu.function_code.to_bytes(1,'big') + pdu.encode() == msg2
@@ -53,10 +53,10 @@ class TestExtas:
         """Test a half completed tcp frame transaction."""
         msg1 = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00"
         msg2 = b"\x08"
-        used_len, pdu = self._tcp.processIncomingFrame(msg1)
+        used_len, pdu = self._tcp.handleFrame(msg1, 0, 0)
         assert not pdu
         assert not used_len
-        used_len, pdu = self._tcp.processIncomingFrame(msg1+msg2)
+        used_len, pdu = self._tcp.handleFrame(msg1+msg2, 0, 0)
         assert pdu
         assert used_len == len(msg1) + len(msg2)
         assert pdu.function_code.to_bytes(1,'big') + pdu.encode() == msg1[7:] + msg2
@@ -65,10 +65,10 @@ class TestExtas:
         """Test that we can get back on track after an invalid message."""
         msg1 = b''
         msg2 = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
-        used_len, pdu = self._tcp.processIncomingFrame(msg1)
+        used_len, pdu = self._tcp.handleFrame(msg1, 0, 0)
         assert not pdu
         assert not used_len
-        used_len, pdu = self._tcp.processIncomingFrame(msg1+msg2)
+        used_len, pdu = self._tcp.handleFrame(msg1+msg2, 0, 0)
         assert pdu
         assert used_len == len(msg1) + len(msg2)
         assert pdu.function_code.to_bytes(1,'big') + pdu.encode() == msg2[7:]
@@ -76,23 +76,23 @@ class TestExtas:
     def test_tls_incoming_packet(self):
         """Framer tls incoming packet."""
         msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
-        _, pdu = self._tls.processIncomingFrame(msg)
+        _, pdu = self._tls.handleFrame(msg, 0, 0)
         assert pdu
 
     def test_rtu_process_incoming_packets(self):
         """Test rtu process incoming packets."""
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
-        _, pdu = self._rtu.processIncomingFrame(msg)
+        _, pdu = self._rtu.handleFrame(msg, 0, 0)
         assert pdu
 
     def test_ascii_process_incoming_packets(self):
         """Test ascii process incoming packet."""
         msg = b":F7031389000A60\r\n"
-        _, pdu = self._ascii.processIncomingFrame(msg)
+        _, pdu = self._ascii.handleFrame(msg, 0, 0)
         assert pdu
 
     def test_rtu_decode_exception(self):
         """Test that the RTU framer can decode errors."""
         msg = b"\x00\x90\x02\x9c\x01"
-        _, pdu = self._rtu.processIncomingFrame(msg)
+        _, pdu = self._rtu.handleFrame(msg, 0, 0)
         assert pdu

@@ -121,19 +121,19 @@ class TestTransaction:
             None,
         )
         transact.is_server = is_server
-        transact.framer.processIncomingFrame = mock.Mock(return_value=(0, None))
+        transact.framer.handleFrame = mock.Mock(return_value=(0, None))
         transact.callback_data(packet)
         assert not transact.response_future.done()
 
         if test:
             transact.trace_packet = mock.Mock(return_value=packet)
-            transact.framer.processIncomingFrame.return_value = (1, pdu)
+            transact.framer.handleFrame.return_value = (1, pdu)
             transact.callback_data(packet)
             transact.trace_packet.assert_called_once_with(False, packet)
         else:
             transact.trace_packet = mock.Mock(return_value=packet)
             transact.trace_pdu = mock.Mock(return_value=pdu)
-            transact.framer.processIncomingFrame.return_value = (1, pdu)
+            transact.framer.handleFrame.return_value = (1, pdu)
             transact.callback_data(packet)
             transact.trace_packet.assert_called_with(False, packet)
             transact.trace_pdu.assert_called_once_with(False, pdu)
@@ -153,9 +153,9 @@ class TestTransaction:
             None,
             None,
         )
-        transact.framer.processIncomingFrame = mock.Mock()
+        transact.framer.handleFrame = mock.Mock()
         transact.trace_packet = mock.Mock(return_value=packet)
-        transact.framer.processIncomingFrame.return_value = (1, pdu)
+        transact.framer.handleFrame.return_value = (1, pdu)
         if test:
             pdu.dev_id = 17
         else:

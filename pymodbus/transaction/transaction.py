@@ -108,7 +108,7 @@ class TransactionManager(ModbusProtocol):
                     continue
 
             databuffer += data
-            used_len, pdu = self.framer.processIncomingFrame(self.trace_packet(False, databuffer))
+            used_len, pdu = self.framer.handleFrame(self.trace_packet(False, databuffer), 0, 0)
             databuffer = databuffer[used_len:]
             if pdu:
                 if pdu.dev_id != dev_id:
@@ -214,7 +214,7 @@ class TransactionManager(ModbusProtocol):
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
         self.last_pdu = self.last_addr = None
-        used_len, pdu = self.framer.processIncomingFrame(self.trace_packet(False, data))
+        used_len, pdu = self.framer.handleFrame(self.trace_packet(False, data), 0, 0)
         if pdu:
             self.last_pdu = self.trace_pdu(False, pdu)
             self.last_addr = addr

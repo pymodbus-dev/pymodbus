@@ -259,7 +259,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
                         return self._handle_abrupt_socket_close(
                             size, data, time.time() - time_
                         )
-                except SSLWantReadError:
+                except SSLWantReadError:  # pragma: no cover
                     continue
                 data.append(recv_data)
                 data_length += len(recv_data)

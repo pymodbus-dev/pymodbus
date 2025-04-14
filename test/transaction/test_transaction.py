@@ -121,19 +121,19 @@ class TestTransaction:
             None,
         )
         transact.is_server = is_server
-        transact.framer.processIncomingFrame = mock.Mock(return_value=(0, None))
+        transact.framer.handleFrame = mock.Mock(return_value=(0, None))
         transact.callback_data(packet)
         assert not transact.response_future.done()
 
         if test:
             transact.trace_packet = mock.Mock(return_value=packet)
-            transact.framer.processIncomingFrame.return_value = (1, pdu)
+            transact.framer.handleFrame.return_value = (1, pdu)
             transact.callback_data(packet)
             transact.trace_packet.assert_called_once_with(False, packet)
         else:
             transact.trace_packet = mock.Mock(return_value=packet)
             transact.trace_pdu = mock.Mock(return_value=pdu)
-            transact.framer.processIncomingFrame.return_value = (1, pdu)
+            transact.framer.handleFrame.return_value = (1, pdu)
             transact.callback_data(packet)
             transact.trace_packet.assert_called_with(False, packet)
             transact.trace_pdu.assert_called_once_with(False, pdu)
@@ -153,9 +153,9 @@ class TestTransaction:
             None,
             None,
         )
-        transact.framer.processIncomingFrame = mock.Mock()
+        transact.framer.handleFrame = mock.Mock()
         transact.trace_packet = mock.Mock(return_value=packet)
-        transact.framer.processIncomingFrame.return_value = (1, pdu)
+        transact.framer.handleFrame.return_value = (1, pdu)
         if test:
             pdu.dev_id = 17
         else:
@@ -351,7 +351,7 @@ class TestTransaction:
             transact.callback_data(cb_response1, None)
             result = await resp
             assert result.bits == response1.bits
-        elif scenario == 1: # timeout + new request + double response
+        else: # if scenario == 1: # timeout + new request + double response
             resp = asyncio.create_task(transact.execute(False, request1))
             await asyncio.sleep(0.25)
             with pytest.raises(ModbusIOException):
@@ -591,17 +591,18 @@ class TestSyncTransaction:
         )
         transact.sync_client.connect = mock.Mock(return_value=True)
         transact.sync_client.send = mock.Mock()
-        request = ReadCoilsRequest(address=117, count=5, dev_id=0)
-        response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False], dev_id=1)
         transact.retries = 0
         transact.transport = 1
+        response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False], dev_id=2)
         resp_bytes = transact.framer.buildFrame(response)
-        transact.sync_client.recv = mock.Mock(return_value=resp_bytes)
+        transact.sync_client.recv = mock.Mock()
+        transact.sync_client.recv.side_effect = [resp_bytes, None]
         transact.sync_client.send = mock.Mock()
         transact.comm_params.timeout_connect = 0.2
+        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
         with pytest.raises(ModbusIOException):
             transact.sync_execute(False, request)
-        response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False], dev_id=0)
+        response = ReadCoilsResponse(bits=[True, False, True, True, False, False, False, False], dev_id=1)
         resp_bytes = transact.framer.buildFrame(response)
         transact.sync_client.recv = mock.Mock(return_value=resp_bytes)
         resp = transact.sync_execute(False, request)
@@ -632,13 +633,13 @@ class TestSyncTransaction:
         response = transact.framer.buildFrame(ReadCoilsResponse(bits=[True*8], dev_id=1))
         transact.sent_buffer = request
         client.recv.side_effect = [request, response]
-        pdu = transact.sync_get_response(1)
+        pdu = transact.sync_get_response(1, 0)
         assert isinstance(pdu, ReadCoilsResponse)
         transact.sent_buffer = request
         client.recv.side_effect = [request[:3], request[3:], response]
-        pdu = transact.sync_get_response(1)
+        pdu = transact.sync_get_response(1, 0)
         assert isinstance(pdu, ReadCoilsResponse)
         transact.sent_buffer = request
         client.recv.side_effect = [response]
-        pdu = transact.sync_get_response(1)
+        pdu = transact.sync_get_response(1, 0)
         assert isinstance(pdu, ReadCoilsResponse)

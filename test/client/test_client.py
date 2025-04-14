@@ -138,6 +138,12 @@ class TestMixin:
             ),
             (
                 ModbusClientMixin.DATATYPE.BITS,
+                [True],
+                [1],  # 0x00 0x01
+                None,
+            ),
+            (
+                ModbusClientMixin.DATATYPE.BITS,
                 [True] + [False] * 15,
                 [1],  # 0x00 0x01
                 None,
@@ -197,6 +203,9 @@ class TestMixin:
         regs = ModbusClientMixin.convert_to_registers(value, datatype, **kwargs)
         assert regs == registers
         result = ModbusClientMixin.convert_from_registers(registers, datatype, **kwargs)
+        if datatype == ModbusClientMixin.DATATYPE.BITS:
+            if (missing := len(value) % 16):
+                value = value + [False] * (16 - missing)
         if datatype == ModbusClientMixin.DATATYPE.FLOAT32:
             result = round(result, 6)
         assert result == value

@@ -18,7 +18,7 @@ import struct
 # pylint: disable=missing-type-doc
 from collections import OrderedDict
 
-from pymodbus.constants import INTERNAL_ERROR, DeviceInformation
+from pymodbus.constants import DeviceInformation
 from pymodbus.pdu.events import ModbusEvent
 from pymodbus.utilities import dict_property
 
@@ -293,11 +293,6 @@ class DeviceInformationFactory:  # pylint: disable=too-few-public-methods
         """
         return {oid: identity[oid] for oid in object_ids if identity[oid]}
 
-    def __init__(self):
-        """Prohibit objects."""
-        raise RuntimeError(INTERNAL_ERROR)
-
-
 # ---------------------------------------------------------------------------#
 #  Counters Handler
 # ---------------------------------------------------------------------------#
@@ -562,8 +557,7 @@ class ModbusControlBlock:
         :param mapping: Dictionary of key:value pairs to set
         """
         for entry in iter(mapping.items()):
-            if entry[0] >= 0 and entry[0] < len(self._diagnostic):
-                self._diagnostic[entry[0]] = bool(entry[1])
+            self._diagnostic[entry[0]] = bool(entry[1])
 
     def getDiagnostic(self, bit):
         """Get the value in the diagnostic register.

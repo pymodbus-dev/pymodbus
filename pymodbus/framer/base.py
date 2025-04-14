@@ -63,40 +63,29 @@ class FramerBase:
         frame = self.encode(data, message.dev_id, message.transaction_id)
         return frame
 
-    def processIncomingFrame(self, data: bytes) -> tuple[int, ModbusPDU | None]:
-        """Process new packet pattern.
-
-        This takes in a new request packet, adds it to the current
-        packet stream, and performs framing on it. That is, checks
-        for complete messages, and once found, will process all that
-        exist.
-        """
+    def handleFrame(self, data: bytes, exp_devid: int, exp_tid: int) -> tuple[int, ModbusPDU | None]:
+        """Process incoming data."""
         used_len = 0
         while True:
-            data_len, pdu = self._processIncomingFrame(data[used_len:])
-            used_len += data_len
-            if not data_len:
+            if used_len >= len(data):
                 return used_len, None
-            if pdu:
-                return used_len, pdu
-
-    def _processIncomingFrame(self, data: bytes) -> tuple[int, ModbusPDU | None]:
-        """Process new packet pattern.
-
-        This takes in a new request packet, adds it to the current
-        packet stream, and performs framing on it. That is, checks
-        for complete messages, and once found, will process all that
-        exist.
-        """
-        Log.debug("Processing: {}", data, ":hex")
-        if not data:
-            return 0, None
-        used_len, dev_id, tid, frame_data = self.decode(data)
-        if not frame_data:
-            return used_len, None
-        if (result := self.decoder.decode(frame_data)) is None:
-            raise ModbusIOException("Unable to decode request")
-        result.dev_id = dev_id
-        result.transaction_id = tid
-        Log.debug("Frame advanced, resetting header!!")
-        return used_len, result
+            Log.debug("Processing: {}", data, ":hex")
+            data_len, dev_id, tid, frame_data = self.decode(data)
+            used_len += data_len
+            if not data_len or not frame_data:
+                return used_len, None
+            if exp_devid and dev_id != exp_devid:
+                Log.error(
+                    f"ERROR: request ask for id={exp_devid} but got id={dev_id}, Skipping."
+                )
+                continue
+            if exp_tid and tid and tid != exp_tid:
+                Log.error(
+                    f"ERROR: request ask for transaction_id={exp_tid} but got id={tid}, Skipping."
+                )
+                continue
+            if (pdu := self.decoder.decode(frame_data)) is None:
+                raise ModbusIOException("Unable to decode request")
+            pdu.dev_id = dev_id
+            pdu.transaction_id = tid
+            return used_len, pdu

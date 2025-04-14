@@ -56,14 +56,14 @@ class BasicClient(asyncio.BaseProtocol):
         """Get Data received."""
         _logger.debug("TEST Client data received")
         BasicClient.received_data = data
-        if BasicClient.done is not None:
+        if BasicClient.done is not None:  # pragma: no cover
             BasicClient.done.set_result(True)
 
     def datagram_received(self, data, _addr):
         """Get Datagram received."""
         _logger.debug("TEST Client datagram received")
         BasicClient.received_data = data
-        if BasicClient.done is not None:
+        if BasicClient.done is not None:  # pragma: no cover
             BasicClient.done.set_result(True)
         self.transport.close()
 
@@ -129,7 +129,7 @@ class TestAsyncioServer:
             self.server = None
         if self.task is not None:
             await asyncio.sleep(0.1)
-            if not self.task.cancelled():
+            if not self.task.cancelled():  # pragma: no cover
                 self.task.cancel()
                 with suppress(CancelledError):
                     await self.task
@@ -224,7 +224,7 @@ class TestAsyncioServer:
         BasicClient.data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x19"
         await self.start_server()
         with mock.patch(
-            "pymodbus.framer.FramerSocket.processIncomingFrame",
+            "pymodbus.framer.FramerSocket.handleFrame",
             new_callable=mock.Mock,
         ) as process:
             await self.connect_server()
@@ -241,7 +241,7 @@ class TestAsyncioServer:
         assert BasicClient.received_data, expected_response
 
     @pytest.mark.skip
-    async def test_async_server_file_descriptors(self):
+    async def test_async_server_file_descriptors(self):  # pragma: no cover
         """Test sending and receiving data on tcp socket.
 
         This test takes a long time (minutes) to run, so should only run when needed.
@@ -369,7 +369,7 @@ class TestAsyncioServer:
         BasicClient.done = asyncio.Future()
         await self.start_server(do_udp=True)
         with mock.patch(
-            "pymodbus.framer.FramerSocket.processIncomingFrame",
+            "pymodbus.framer.FramerSocket.handleFrame",
             new_callable=lambda: mock.Mock(side_effect=Exception),
         ):
             # get the random server port pylint: disable=protected-access
@@ -381,12 +381,12 @@ class TestAsyncioServer:
             assert not BasicClient.done.done()
 
     @pytest.mark.skip
-    async def test_async_tcp_server_exception(self):
+    async def test_async_tcp_server_exception(self):  # pragma: no cover
         """Send garbage data on a TCP socket should drop the connection."""
         BasicClient.data = b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
         await self.start_server()
         with mock.patch(
-            "pymodbus.framer.FramerSocket.processIncomingFrame",
+            "pymodbus.framer.FramerSocket.handleFrame",
             new_callable=lambda: mock.Mock(side_effect=Exception),
         ):
             await self.connect_server()

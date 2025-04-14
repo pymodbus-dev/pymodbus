@@ -5,7 +5,6 @@ Custom exceptions to be used in the Modbus code.
 
 __all__ = [
     "ConnectionException",
-    "InvalidMessageReceivedException",
     "MessageRegisterException",
     "ModbusIOException",
     "NoSuchIdException",
@@ -92,18 +91,6 @@ class ConnectionException(ModbusException):
         :param string: The message to append to the error
         """
         message = f"[Connection] {string}"
-        ModbusException.__init__(self, message)
-
-
-class InvalidMessageReceivedException(ModbusException):
-    """Error resulting from invalid response received or decoded."""
-
-    def __init__(self, string=""):
-        """Initialize the exception.
-
-        :param string: The message to append to the error
-        """
-        message = f"[Invalid Message] {string}"
         ModbusException.__init__(self, message)
 
 

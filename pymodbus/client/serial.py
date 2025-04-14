@@ -270,7 +270,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             if waitingbytes := self._in_waiting():
                 result = self.socket.read(waitingbytes)
                 Log.warning("Cleanup recv buffer before send: {}", result, ":hex")
-            if (size := self.socket.write(request)) is None:
+            if (size := self.socket.write(request)) is None:  # pragma: no cover
                 size = 0
             return size
         return 0

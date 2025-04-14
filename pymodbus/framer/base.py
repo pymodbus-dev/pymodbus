@@ -64,13 +64,7 @@ class FramerBase:
         return frame
 
     def processIncomingFrame(self, data: bytes) -> tuple[int, ModbusPDU | None]:
-        """Process new packet pattern.
-
-        This takes in a new request packet, adds it to the current
-        packet stream, and performs framing on it. That is, checks
-        for complete messages, and once found, will process all that
-        exist.
-        """
+        """Process incoming data."""
         used_len = 0
         while True:
             data_len, pdu = self._processIncomingFrame(data[used_len:])
@@ -81,13 +75,7 @@ class FramerBase:
                 return used_len, pdu
 
     def _processIncomingFrame(self, data: bytes) -> tuple[int, ModbusPDU | None]:
-        """Process new packet pattern.
-
-        This takes in a new request packet, adds it to the current
-        packet stream, and performs framing on it. That is, checks
-        for complete messages, and once found, will process all that
-        exist.
-        """
+        """Assemble PDU."""
         Log.debug("Processing: {}", data, ":hex")
         if not data:
             return 0, None

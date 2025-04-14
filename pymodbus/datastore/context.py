@@ -90,10 +90,10 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
                 ):
         """Initialize the datastores."""
         self.store = {}
-        self.store["d"] = di or ModbusSequentialDataBlock.create()
-        self.store["c"] = co or ModbusSequentialDataBlock.create()
-        self.store["i"] = ir or ModbusSequentialDataBlock.create()
-        self.store["h"] = hr or ModbusSequentialDataBlock.create()
+        self.store["d"] = di if di is not None else ModbusSequentialDataBlock.create()
+        self.store["c"] = co if di is not None else ModbusSequentialDataBlock.create()
+        self.store["i"] = ir if di is not None else ModbusSequentialDataBlock.create()
+        self.store["h"] = hr if di is not None else ModbusSequentialDataBlock.create()
 
     def __str__(self):
         """Return a string representation of the context.

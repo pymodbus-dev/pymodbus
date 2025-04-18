@@ -13,7 +13,7 @@ The maintainers are very open to these pull request, and ONLY work to secure tha
 
 The following bullet points are what the maintainers focus on:
 
-- 3.9.2, with:
+- 3.9.x, with:
     - Currently not planned
 - 4.0.0, with:
     - ModbusControlBlock pr slave

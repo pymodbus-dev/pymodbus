@@ -7,6 +7,15 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.9.2
+-------------
+* Reactivate simulator validate. (#2643)
+* Don't bool-test explicit datastores (#2638)
+* Test and hard delayed response test. (#2636)
+* Update simulator doc. (#2635)
+* SimData update
+* Officially working towards 4.0.0
+
 Version 3.9.1
 -------------
 * Correct byte order in bits. (#2631)

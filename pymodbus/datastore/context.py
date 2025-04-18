@@ -31,7 +31,7 @@ class ModbusBaseSlaveContext:
         """
         return self._fx_mapper[fx]
 
-    async def async_getValues(self, fc_as_hex: int, address: int, count: int = 1) -> Sequence[int | bool]:
+    async def async_getValues(self, fc_as_hex: int, address: int, count: int = 1) -> Sequence[int | bool] | int:
         """Get `count` values from datastore.
 
         :param fc_as_hex: The function we are working with
@@ -41,14 +41,14 @@ class ModbusBaseSlaveContext:
         """
         return self.getValues(fc_as_hex, address, count)
 
-    async def async_setValues(self, fc_as_hex: int, address: int, values: Sequence[int | bool]) -> None:
+    async def async_setValues(self, fc_as_hex: int, address: int, values: Sequence[int | bool]) -> None | int:
         """Set the datastore with the supplied values.
 
         :param fc_as_hex: The function we are working with
         :param address: The starting address
         :param values: The new values to be set
         """
-        self.setValues(fc_as_hex, address, values)
+        return self.setValues(fc_as_hex, address, values)
 
     def getValues(self, fc_as_hex: int, address: int, count: int = 1) -> Sequence[int | bool]:
         """Get `count` values from datastore.
@@ -61,13 +61,15 @@ class ModbusBaseSlaveContext:
         Log.error("getValues({},{},{}) not implemented!", fc_as_hex, address, count)
         return []
 
-    def setValues(self, fc_as_hex: int, address: int, values: Sequence[int | bool]) -> None:
+    def setValues(self, fc_as_hex: int, address: int, values: Sequence[int | bool]) -> None | int:
         """Set the datastore with the supplied values.
 
         :param fc_as_hex: The function we are working with
         :param address: The starting address
         :param values: The new values to be set
         """
+        Log.error("setValues({},{},{}) not implemented!", fc_as_hex, address, values)
+        return 1
 
 
 # ---------------------------------------------------------------------------#

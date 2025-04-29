@@ -93,9 +93,9 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
         """Initialize the datastores."""
         self.store = {}
         self.store["d"] = di if di is not None else ModbusSequentialDataBlock.create()
-        self.store["c"] = co if di is not None else ModbusSequentialDataBlock.create()
-        self.store["i"] = ir if di is not None else ModbusSequentialDataBlock.create()
-        self.store["h"] = hr if di is not None else ModbusSequentialDataBlock.create()
+        self.store["c"] = co if co is not None else ModbusSequentialDataBlock.create()
+        self.store["i"] = ir if ir is not None else ModbusSequentialDataBlock.create()
+        self.store["h"] = hr if hr is not None else ModbusSequentialDataBlock.create()
 
     def __str__(self):
         """Return a string representation of the context.

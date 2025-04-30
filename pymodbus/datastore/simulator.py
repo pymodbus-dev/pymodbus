@@ -198,14 +198,14 @@ class Setup:
 
     def handle_type_string(self, start, stop, value, action, action_parameters):
         """Handle type string."""
-        regs = stop - start
+        regs = stop - start + 1
         reg_len = regs * 2
         if len(value) > reg_len:
             raise RuntimeError(
                 f'ERROR "{Label.type_string}" {start} too long "{value}"'
             )
         value = value.ljust(reg_len)
-        for i in range(stop - start):
+        for i in range(stop - start + 1):
             reg = self.runtime.registers[start + i]
             if reg.type != CellType.INVALID:
                 raise RuntimeError(f'ERROR "{Label.type_string}" {start + i} used')

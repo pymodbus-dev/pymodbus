@@ -31,13 +31,6 @@ Source: :github:`examples/simple_sync_client.py`
 .. literalinclude:: ../../examples/simple_sync_client.py
 
 
-Client performance sync vs async
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Source: :github:`examples/client_performance.py`
-
-.. literalinclude:: ../../examples/client_performance.py
-
-
 Advanced examples
 -----------------
 

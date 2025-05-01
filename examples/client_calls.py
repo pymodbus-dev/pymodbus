@@ -60,7 +60,7 @@ def template_call(client):
     """Show complete modbus call, sync version."""
     try:
         rr = client.read_coils(32, count=1, device_id=DEVICE_ID)
-    except client_sync.ModbusException as exc:
+    except client_sync.ModbusException as exc:  # pragma: no cover
         txt = f"ERROR: exception in pymodbus {exc}"
         _logger.error(txt)
         raise exc

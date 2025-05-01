@@ -15,8 +15,8 @@ It is allowed to have multiple client objects that e.g. each communicate with a 
 
 Client performance
 ------------------
-There are currently a big performance gap between the 2 clients
-(try it on your computer :github:`examples/client_performance.py`).
+There are currently a big performance gap between the 2 clients.
+
 This is due to a rather old implementation of the synchronous client, we are currently working to update the client code.
 Our aim is to achieve a similar data rate with both clients and at least double the data rate while keeping the stability.
 Table below is a test with 1000 calls each reading 10 registers.

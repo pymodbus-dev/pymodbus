@@ -31,13 +31,6 @@ Source: :github:`examples/simple_sync_client.py`
 .. literalinclude:: ../../examples/simple_sync_client.py
 
 
-Client performance sync vs async
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Source: :github:`examples/client_performance.py`
-
-.. literalinclude:: ../../examples/client_performance.py
-
-
 Advanced examples
 -----------------
 
@@ -165,15 +158,6 @@ Message Parser
 Source: :github:`examples/message_parser.py`
 
 .. automodule:: examples.message_parser
-    :undoc-members:
-    :noindex:
-
-
-Modbus forwarder
-^^^^^^^^^^^^^^^^
-Source: :github:`examples/modbus_forwarder.py`
-
-.. automodule:: examples.modbus_forwarder
     :undoc-members:
     :noindex:
 

@@ -83,7 +83,7 @@ def setup_sync_client(description=None, cmdline=None):
             # UDP setup parameters
             #    source_address=None,
         )
-    elif args.comm == "serial":
+    elif args.comm == "serial":  # pragma: no cover
         client = modbusClient.ModbusSerialClient(
             port=args.port,  # serial port
             # Common optional parameters:
@@ -97,7 +97,7 @@ def setup_sync_client(description=None, cmdline=None):
             #    stopbits=1,
             #    handle_local_echo=False,
         )
-    elif args.comm == "tls":
+    elif args.comm == "tls":  # pragma: no cover
         client = modbusClient.ModbusTlsClient(
             args.host,
             port=args.port,

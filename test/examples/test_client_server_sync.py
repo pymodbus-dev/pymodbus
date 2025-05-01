@@ -87,6 +87,7 @@ class TestClientServerSyncExamples:
         run_sync_client(test_client, modbus_calls=run_a_few_calls)
         sleep(SLEEPING)
         run_sync_client(test_client, modbus_calls=run_a_few_calls)
+        run_sync_client(test_client)
         ServerStop()
 
     def test_client_no_server(self, mock_clc):

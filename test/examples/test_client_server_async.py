@@ -65,6 +65,7 @@ class TestClientServerAsyncExamples:
         await run_async_client(test_client, modbus_calls=run_a_few_calls)
         await asyncio.sleep(0.5)
         await run_async_client(test_client, modbus_calls=run_a_few_calls)
+        await run_async_client(test_client)
 
     async def test_client_no_server(self, mock_clc):
         """Run async client without server."""

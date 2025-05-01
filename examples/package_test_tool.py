@@ -231,7 +231,7 @@ async def server_calls(transport: ModbusProtocol, is_tcp: bool):
     Log.debug("--> Server calls starting.")
 
     if is_tcp:
-        request = b'\x00\x02\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01'
+        request = b'\x00\x02\x00\x00\x00\x06\x00\x03\x00\x00\x00\x01'
     else:
         # 2 responses:
         # response = b'\x00\x02\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01' +
@@ -247,7 +247,7 @@ def simulate_server(transport: ModbusProtocol, is_tcp: bool, request: bytes):
     """Respond to request at transport level."""
     Log.debug("--> Server simulator called with request {}.", request, ":hex")
     if is_tcp:
-        response = b'\x00\x01\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x04'
+        response = b'\x00\x01\x00\x00\x00\x06\x01\x03\x00\x7c\x00\x04'
     else:
         response = b'\x01\x03\x08\x00\x05\x00\x05\x00\x00\x00\x00\x0c\xd7'
 
@@ -262,10 +262,13 @@ def simulate_client(_transport: ModbusProtocol, _is_tcp: bool, response: bytes):
     """Respond to request at transport level."""
     Log.debug("--> Client simulator called with response {}.", response, ":hex")
 
+async def run_test():
+    """Run whole test."""
+    await main(CommType.SERIAL, False)
+    await main(CommType.SERIAL, True)
+    await main(CommType.TCP, False)
+    await main(CommType.TCP, True)
 
 if __name__ == "__main__":
     # True for Server test, False for Client test
-    asyncio.run(main(CommType.SERIAL, False), debug=True)
-    asyncio.run(main(CommType.SERIAL, True), debug=True)
-    asyncio.run(main(CommType.TCP, False), debug=True)
-    asyncio.run(main(CommType.TCP, True), debug=True)
+    asyncio.run(run_test(), debug=True)

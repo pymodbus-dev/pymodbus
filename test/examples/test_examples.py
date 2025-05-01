@@ -18,6 +18,7 @@ from examples.client_calls import template_call
 from examples.custom_msg import main as main_custom_client
 from examples.datastore_simulator_share import main as main_datastore_simulator_share3
 from examples.message_parser import main as main_parse_messages
+from examples.package_test_tool import run_test as run_package_tool
 from examples.server_async import setup_server
 from examples.server_callback import run_callback_server
 from examples.server_datamodel import main as run_main_datamodel
@@ -172,6 +173,13 @@ class TestAsyncExamples:
             use_port = f"socket://{use_host}:{use_port}"
         await run_async_simple_client(use_comm, use_host, use_port, framer=use_framer)
 
+    async def test_package_tool(
+        self, use_comm, use_port, use_framer, mock_server, use_host
+    ):
+        """Run package test tool."""
+        if use_comm != "tcp":
+            return
+        await run_package_tool()
 
 @pytest.mark.parametrize("use_host", ["localhost"])
 @pytest.mark.parametrize(

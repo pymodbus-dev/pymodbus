@@ -12,7 +12,7 @@ from pymodbus.client import (
     ModbusTlsClient,
     ModbusUdpClient,
 )
-from pymodbus.exceptions import ConnectionException
+from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.framer import (
     FramerAscii,
     FramerRTU,
@@ -82,8 +82,8 @@ class TestSyncClientUdp:
         client.socket.mock_prepare_receive(test_msg)
         reply_ok = client.read_input_registers(0x820, count=1, device_id=1)
         assert not reply_ok.isError()
-        reply_ok = client.read_input_registers(0x40, count=10, device_id=1)
-        assert not reply_ok.isError()
+        with pytest.raises(ModbusIOException):
+            client.read_input_registers(0x40, count=10, device_id=1)
         client.close()
 
     def test_udp_client_repr(self):

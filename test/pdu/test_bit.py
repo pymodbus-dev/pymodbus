@@ -1,4 +1,7 @@
 """Bit Message Test Fixture."""
+from unittest import mock
+
+import pytest
 
 import pymodbus.pdu.bit_message as bit_msg
 
@@ -94,7 +97,6 @@ class TestModbusBitMessage:
         context = mock_context(False, default=True)
         request = bit_msg.WriteSingleCoilRequest(address=2, bits=[True])
         result = await request.update_datastore(context)
-        # assert result.exception_code == ExceptionResponse.ILLEGAL_ADDRESS
 
         context.valid = True
         result = await request.update_datastore(context)
@@ -121,6 +123,19 @@ class TestModbusBitMessage:
         context.valid = True
         result = await request.update_datastore(context)
         assert result.encode() == b"\x00\x02\x00\x04"
+
+    @pytest.mark.parametrize(("request_pdu"),
+        [
+            bit_msg.WriteSingleCoilRequest(address=2, bits=[True]),
+            bit_msg.WriteMultipleCoilsRequest(address=2, bits=[]),
+        ]
+    )
+    async def test_write_coil_exception(self, request_pdu, mock_context):
+        """Test write single coil."""
+        context = mock_context(True, default=True)
+        context.async_setValues = mock.AsyncMock(return_value=1)
+        result = await request_pdu.update_datastore(context)
+        assert result.exception_code == 1
 
     def test_write_multiple_coils_response(self):
         """Test write multiple coils."""

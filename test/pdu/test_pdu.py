@@ -306,3 +306,7 @@ class TestPdu:
     def test_bit_unpacking(self, bytestream, bitlist):
         """Test all string <=> bit packing functions."""
         assert unpack_bitstring(bytestream) == bitlist
+
+    def test_ExceptionResponse_str(self):
+        """Test string conversion of ExceptionResponse."""
+        assert str(self.exception) != ""

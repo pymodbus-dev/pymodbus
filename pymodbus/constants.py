@@ -112,10 +112,6 @@ class DeviceInformation(int, enum.Enum):
     EXTENDED = 0x03
     SPECIFIC = 0x04
 
-    def __str__(self):
-        """Override to force int representation for enum members."""
-        return str(int(self))
-
 
 class MoreData(int, enum.Enum):
     """Represents the more follows condition.

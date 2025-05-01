@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import struct
+from collections.abc import Sequence
 from typing import cast
 
 from pymodbus.datastore import ModbusDeviceContext
@@ -37,8 +38,6 @@ class ReadHoldingRegistersRequest(ModbusPDU):
         values = await context.async_getValues(
             self.function_code, self.address, self.count
         )
-        if isinstance(values, int):
-            return ExceptionResponse(self.function_code, values)
         response_class = (ReadHoldingRegistersResponse if self.function_code == 3 else ReadInputRegistersResponse)
         return response_class(registers=cast(list[int], values), dev_id=self.dev_id, transaction_id=self.transaction_id)
 
@@ -147,8 +146,6 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         registers = await context.async_getValues(
             self.function_code, self.read_address, self.read_count
         )
-        if isinstance(registers, int):
-            return ExceptionResponse(self.function_code, registers)
         return ReadWriteMultipleRegistersResponse(registers=cast(list[int], registers), dev_id=self.dev_id, transaction_id=self.transaction_id)
 
     def get_response_pdu_size(self) -> int:
@@ -194,8 +191,6 @@ class WriteSingleRegisterRequest(WriteSingleRegisterResponse):
         if rc:
             return ExceptionResponse(self.function_code, rc)
         values = await context.async_getValues(self.function_code, self.address, 1)
-        if isinstance(values, int):
-            return ExceptionResponse(self.function_code, values)
         return WriteSingleRegisterResponse(address=self.address, registers=cast(list[int], values))
 
     def get_response_pdu_size(self) -> int:
@@ -288,9 +283,7 @@ class MaskWriteRegisterRequest(ModbusPDU):
         if not 0x0000 <= self.or_mask <= 0xFFFF:
             return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
         values = await context.async_getValues(self.function_code, self.address, 1)
-        if isinstance(values, int):
-            return ExceptionResponse(self.function_code, values)
-        values = (values[0] & self.and_mask) | (self.or_mask & ~self.and_mask)
+        values = (cast(Sequence[int | bool], values)[0] & self.and_mask) | (self.or_mask & ~self.and_mask)
         rc = await context.async_setValues(
             self.function_code, self.address, cast(list[int], [values])
         )

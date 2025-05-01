@@ -26,3 +26,7 @@ class TestExceptions:  # pylint: disable=too-few-public-methods
         for exc in self.exceptions:
             with pytest.raises(ModbusException, match="Modbus Error:"):
                 raise exc
+
+    def test_is_error(self):
+        """Test is_error()."""
+        assert self.exceptions[0].isError()

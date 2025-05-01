@@ -83,7 +83,7 @@ class Log:
                     string_args.append(hexlify_packets(args[i]))
                 elif args[i + 1] == ":str":
                     string_args.append(str(args[i]))
-                elif args[i + 1] == ":b2a":
+                else: # args[i + 1] == ":b2a":
                     string_args.append(b2a_hex(args[i]))
                 skip = True
             else:
@@ -117,5 +117,4 @@ class Log:
     @classmethod
     def critical(cls, txt, *args):
         """Log critical messages."""
-        if cls._logger.isEnabledFor(logging.CRITICAL):
-            cls._logger.critical(cls.build_msg(txt, *args), stacklevel=2)
+        cls._logger.critical(cls.build_msg(txt, *args), stacklevel=2)

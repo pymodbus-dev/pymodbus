@@ -162,15 +162,6 @@ Source: :github:`examples/message_parser.py`
     :noindex:
 
 
-Modbus forwarder
-^^^^^^^^^^^^^^^^
-Source: :github:`examples/modbus_forwarder.py`
-
-.. automodule:: examples.modbus_forwarder
-    :undoc-members:
-    :noindex:
-
-
 Examples contributions
 ----------------------
 

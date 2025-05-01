@@ -99,9 +99,9 @@ class TestExamples:
         """Run different simulator configurations."""
         run_main_datamodel()
 
-    async def test_modbus_forwarder(self):
-        """Test modbus forwarder."""
-        print("waiting for fix")
+    async def test_package_tool(self):
+        """Run package test tool."""
+        await run_package_tool()
 
 
 @pytest.mark.parametrize(
@@ -172,14 +172,6 @@ class TestAsyncExamples:
         if use_comm == "serial":
             use_port = f"socket://{use_host}:{use_port}"
         await run_async_simple_client(use_comm, use_host, use_port, framer=use_framer)
-
-    async def test_package_tool(
-        self, use_comm, use_port, use_framer, mock_server, use_host
-    ):
-        """Run package test tool."""
-        if use_comm != "tcp":
-            return
-        await run_package_tool()
 
 @pytest.mark.parametrize("use_host", ["localhost"])
 @pytest.mark.parametrize(

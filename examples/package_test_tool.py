@@ -119,13 +119,11 @@ class ClientTester:  # pylint: disable=too-few-public-methods
                         host,
                         port=test_port,
             )
-        elif comm == CommType.SERIAL:
+        else:  # if comm == CommType.SERIAL:
             host = f"{NULLMODEM_HOST}:{test_port}"
             self.client = modbusClient.AsyncModbusSerialClient(
                         host,
             )
-        else:
-            raise RuntimeError("ERROR: CommType not implemented")
         server_params = self.client.ctx.comm_params.copy()
         server_params.source_address = (host, test_port)
         self.stub = TransportStub(server_params, True, simulate_server)
@@ -142,6 +140,7 @@ class ClientTester:  # pylint: disable=too-few-public-methods
         await client_calls(self.client)
         Log.debug("--> Closing.")
         self.client.close()
+        self.stub.close()
 
 
 class ServerTester:  # pylint: disable=too-few-public-methods
@@ -169,19 +168,14 @@ class ServerTester:  # pylint: disable=too-few-public-methods
                 identity=self.identity,
                 address=(NULLMODEM_HOST, test_port),
             )
-        elif comm == CommType.SERIAL:
+        else:  # if comm == CommType.SERIAL:
             self.server = modbusServer.ModbusSerialServer(
                 self.context,
                 framer=FramerType.SOCKET,
                 identity=self.identity,
                 port=f"{NULLMODEM_HOST}:{test_port}",
             )
-        else:
-            raise RuntimeError("ERROR: CommType not implemented")
         client_params = self.server.comm_params.copy()
-        if client_params.source_address:
-            client_params.host = client_params.source_address[0]
-            client_params.port = client_params.source_address[1]
         client_params.timeout_connect = 1.0
         self.stub = TransportStub(client_params, False, simulate_client)
         test_port += 1
@@ -195,7 +189,8 @@ class ServerTester:  # pylint: disable=too-few-public-methods
         await self.stub.start_run()
         await server_calls(self.stub, (self.comm == CommType.TCP))
         Log.debug("--> Shutting down.")
-        await self.server.shutdown()
+        self.stub.close()
+        self.server.close()
 
 
 async def main(comm: CommType, use_server: bool):
@@ -215,11 +210,11 @@ async def client_calls(client):
     Log.debug("--> Client calls starting.")
     try:
         resp = await client.read_holding_registers(address=124, count=4, device_id=1)
-    except ModbusException as exc:
+    except ModbusException as exc:  # pragma: no cover
         txt = f"ERROR: exception in pymodbus {exc}"
         Log.error(txt)
         return
-    if resp.isError():
+    if resp.isError():  # pragma: no cover
         txt = "ERROR: pymodbus returned an error!"
         Log.error(txt)
     await asyncio.sleep(1)
@@ -260,7 +255,7 @@ def simulate_server(transport: ModbusProtocol, is_tcp: bool, request: bytes):
 
 def simulate_client(_transport: ModbusProtocol, _is_tcp: bool, response: bytes):
     """Respond to request at transport level."""
-    Log.debug("--> Client simulator called with response {}.", response, ":hex")
+    Log.debug("--> Client simulator called with response {}.", response, ":hex")  # pragma: no cover
 
 async def run_test():
     """Run whole test."""

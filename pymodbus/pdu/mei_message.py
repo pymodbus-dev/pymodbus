@@ -49,7 +49,7 @@ class ReadDeviceInformationRequest(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode data part of the message."""
-        self.sub_function_code, self.read_code, self.object_id = struct.unpack(">BBB", data)
+        self.sub_function_code, self.read_code, self.object_id = struct.unpack(">BBB", data[:3])
 
     async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
         """Run a read exception status request against the store."""

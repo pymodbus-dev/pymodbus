@@ -69,6 +69,14 @@ class TestFramer:
         assert FramerRTU.compute_CRC(data) == 0xE2DB
         assert FramerRTU.check_CRC(data, 0xE2DB)
 
+    async def test_handleFrame2(self):
+        """Test handleFrame."""
+        test_framer = FramerRTU(DecodePDU(True))
+        msg = b"\xfe\x04\x00\x03\x00\x01\xd5\xc5\x00"
+        used_len, pdu = test_framer.handleFrame(msg, 0, 0)
+        assert used_len == len(msg)
+        assert not pdu
+
 
 class TestFramerType:
     """Test classes."""

@@ -235,7 +235,7 @@ class ReadFifoQueueRequest(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode the incoming request."""
-        self.address = struct.unpack(">H", data)[0]
+        self.address = struct.unpack(">H", data[:2])[0]
 
     async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
         """Run a read exception status request against the store."""

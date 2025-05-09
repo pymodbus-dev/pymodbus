@@ -81,7 +81,7 @@ class GetCommEventCounterResponse(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode a the response."""
-        ready, self.count = struct.unpack(">HH", data)
+        ready, self.count = struct.unpack(">HH", data[:4])
         self.status = ready == ModbusStatus.READY
 
 

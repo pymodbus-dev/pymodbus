@@ -54,9 +54,9 @@ class DiagnosticBase(ModbusPDU):
                 data_len += 1
                 data += b"0"
             if (word_len := data_len // 2) == 1:
-                (self.message,) = struct.unpack(">H", data)
+                (self.message,) = struct.unpack(">H", data[:2])
             else:
-                self.message = struct.unpack(">" + "H" * word_len, data)
+                self.message = struct.unpack(">" + "H" * word_len, data[:2 * word_len])
 
     def get_response_pdu_size(self) -> int:
         """Get response pdu size.

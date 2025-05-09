@@ -33,11 +33,10 @@ class RemoteDeviceContext(ModbusBaseDeviceContext):
 
     def getValues(self, fc_as_hex, _address, _count=1):
         """Get values from remote device."""
-        if fc_as_hex in self._write_fc:
-            return [0]
-        group_fx = self.decode(fc_as_hex)
-        func_fc = self.__get_callbacks[group_fx]
-        self.result = func_fc(_address, _count)
+        if not fc_as_hex in self._write_fc:
+            group_fx = self.decode(fc_as_hex)
+            func_fc = self.__get_callbacks[group_fx]
+            self.result = func_fc(_address, _count)
         return self.__extract_result(self.decode(fc_as_hex), self.result)
 
     def setValues(self, fc_as_hex, address, values):
@@ -116,7 +115,11 @@ class RemoteDeviceContext(ModbusBaseDeviceContext):
             if fc_as_hex in {"d", "c"}:
                 return result.bits
             if fc_as_hex in {"h", "i"}:
-                return result.registers
+                if result.registers:
+                    return result.registers
+                else:
+                    # WriteSingleRegisterResponse don't have registers value set
+                    return [result.value]
         else:
             return result
         return None

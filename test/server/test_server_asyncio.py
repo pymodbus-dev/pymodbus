@@ -257,11 +257,16 @@ class TestAsyncioServer:
 
     async def test_async_tcp_server_connection_lost(self):
         """Test tcp stream interruption."""
+        trace_connect = mock.Mock()
         await self.start_server()
+        self.server.trace_connect = trace_connect
         await self.connect_server()
+        trace_connect.assert_called_once_with(True)
+        trace_connect.reset_mock()
 
         BasicClient.transport.close()
         await asyncio.sleep(0.2)  # so we have to wait a bit
+        trace_connect.assert_called_once_with(False)
 
     async def test_async_tcp_server_shutdown_connection(self):
         """Test server shutdown() while there are active TCP connections."""

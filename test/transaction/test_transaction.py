@@ -86,6 +86,25 @@ class TestTransaction:
         transact.pdu_send(ExceptionResponse(0xff), (0,0))
         assert transact.sent_buffer == b'\x01\xff\x00a\xf0'
 
+    async def test_transaction_connect(self, use_clc):
+        """Test tracers in disconnect."""
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+        )
+        transact.trace_packet = mock.Mock()
+        transact.trace_pdu = mock.Mock()
+        transact.trace_connect = mock.Mock()
+        transact.callback_connected()
+        transact.trace_connect.assert_called_once_with(True)
+        transact.trace_packet.assert_not_called()
+        transact.trace_pdu.assert_not_called()
+
     async def test_transaction_disconnect(self, use_clc):
         """Test tracers in disconnect."""
         transact = TransactionManager(

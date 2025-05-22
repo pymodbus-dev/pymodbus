@@ -38,6 +38,7 @@ class ModbusPDU:
         self.status: int = status
         self.exception_code: int = 0
         self.fut: asyncio.Future
+        self.retries: int = 0
 
     def isError(self) -> bool:
         """Check if the error is a success or failure."""
@@ -67,7 +68,8 @@ class ModbusPDU:
             f"count={self.count}, "
             f"bits={self.bits!s}, "
             f"registers={self.registers!s}, "
-            f"status={self.status!s})"
+            f"status={self.status!s}"
+            f"retries={self.retries})"
         )
 
     def get_response_pdu_size(self) -> int:

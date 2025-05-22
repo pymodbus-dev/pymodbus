@@ -129,7 +129,7 @@ class TransactionManager(ModbusProtocol):
                 if no_response_expected:
                     return ExceptionResponse(0xff)
                 try:
-                    return self.sync_get_response(request.dev_id, request.transaction_id)
+                    return self.sync_get_response(request.dev_id, request.transaction_id), count_retries
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
             if self.count_until_disconnect < 0:
@@ -170,7 +170,7 @@ class TransactionManager(ModbusProtocol):
                         raise ModbusIOException(
                             f"ERROR: request ask for id={request.dev_id} but got id={response.dev_id}, CLOSING CONNECTION."
                         )
-                    return response
+                    return response, count_retries
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
                 except asyncio.exceptions.CancelledError as exc:

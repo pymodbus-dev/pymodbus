@@ -187,7 +187,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
             return 0
         return self.last_frame_end + self.silent_interval
 
-    def execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
+    def execute(self, no_response_expected: bool, request: ModbusPDU) -> tuple[ModbusPDU, int]:
         """Execute request and get response (call **sync/async**).
 
         :param no_response_expected: The client will not expect a response to the request

@@ -10,7 +10,6 @@ from pymodbus.framer import FramerAscii, FramerBase, FramerRTU
 from pymodbus.logging import Log
 from pymodbus.pdu import ExceptionResponse, ModbusPDU
 from pymodbus.transport import CommParams, ModbusProtocol
-from typing import Tuple
 
 class TransactionManager(ModbusProtocol):
     """Transaction manager.
@@ -113,7 +112,7 @@ class TransactionManager(ModbusProtocol):
             if pdu:
                 return self.trace_pdu(False, pdu)
 
-    def sync_execute(self, no_response_expected: bool, request: ModbusPDU) -> Tuple[ModbusPDU, int]:
+    def sync_execute(self, no_response_expected: bool, request: ModbusPDU) -> tuple[ModbusPDU, int]:
         """Execute requests asynchronously.
 
         REMARK: this method is identical to execute, apart from the lock and sync_receive.
@@ -142,7 +141,7 @@ class TransactionManager(ModbusProtocol):
             Log.error(txt)
             raise ModbusIOException(txt)
 
-    async def execute(self, no_response_expected: bool, request: ModbusPDU) -> Tuple[ModbusPDU, int]:
+    async def execute(self, no_response_expected: bool, request: ModbusPDU) -> tuple[ModbusPDU, int]:
         """Execute requests asynchronously.
 
         REMARK: this method is identical to sync_execute, apart from the lock and try/except.

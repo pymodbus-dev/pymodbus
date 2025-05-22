@@ -126,7 +126,7 @@ class TransactionManager(ModbusProtocol):
             while count_retries <= self.retries:
                 self.pdu_send(request)
                 if no_response_expected:
-                    return ExceptionResponse(0xff)
+                    return ExceptionResponse(0xff), count_retries
                 try:
                     return self.sync_get_response(request.dev_id, request.transaction_id), count_retries
                 except asyncio.exceptions.TimeoutError:
@@ -159,7 +159,7 @@ class TransactionManager(ModbusProtocol):
                 self.response_future = asyncio.Future()
                 self.pdu_send(request)
                 if no_response_expected:
-                    return ExceptionResponse(0xff)
+                    return ExceptionResponse(0xff), count_retries
                 try:
                     response = await asyncio.wait_for(
                         self.response_future, timeout=self.comm_params.timeout_connect

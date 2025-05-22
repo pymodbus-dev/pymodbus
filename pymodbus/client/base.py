@@ -14,7 +14,7 @@ from pymodbus.transaction import TransactionManager
 from pymodbus.transport import CommParams
 
 
-class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
+class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU, int]]):
     """**ModbusBaseClient**.
 
     :mod:`ModbusBaseClient` is normally not referenced outside :mod:`pymodbus`.

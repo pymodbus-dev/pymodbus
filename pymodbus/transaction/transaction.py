@@ -113,7 +113,7 @@ class TransactionManager(ModbusProtocol):
             if pdu:
                 return self.trace_pdu(False, pdu)
 
-    def sync_execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
+    def sync_execute(self, no_response_expected: bool, request: ModbusPDU) -> Tuple[ModbusPDU, int]:
         """Execute requests asynchronously.
 
         REMARK: this method is identical to execute, apart from the lock and sync_receive.
@@ -142,7 +142,7 @@ class TransactionManager(ModbusProtocol):
             Log.error(txt)
             raise ModbusIOException(txt)
 
-    async def execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
+    async def execute(self, no_response_expected: bool, request: ModbusPDU) -> Tuple[ModbusPDU, int]:
         """Execute requests asynchronously.
 
         REMARK: this method is identical to sync_execute, apart from the lock and try/except.

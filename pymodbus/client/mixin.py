@@ -72,7 +72,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
                              *,
                              count: int = 1,
                              device_id: int = 1,
-                             no_response_expected: bool = False) -> T:
+                             no_response_expected: bool = False) -> tuple[T, int]:
         """Read discrete inputs (code 0x02).
 
         :param address: Start address to read from
@@ -93,7 +93,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
                                *,
                                count: int = 1,
                                device_id: int = 1,
-                               no_response_expected: bool = False) -> T:
+                               no_response_expected: bool = False) -> tuple[T, int]:
         """Read holding registers (code 0x03).
 
         :param address: Start address to read from
@@ -116,7 +116,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
                              *,
                              count: int = 1,
                              device_id: int = 1,
-                             no_response_expected: bool = False) -> T:
+                             no_response_expected: bool = False) -> tuple[T, int]:
         """Read input registers (code 0x04).
 
         :param address: Start address to read from
@@ -134,7 +134,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_reg.ReadInputRegistersRequest(address=address, count=count, dev_id=device_id))
 
-    def write_coil(self, address: int, value: bool, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def write_coil(self, address: int, value: bool, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Write single coil (code 0x05).
 
         :param address: Address to write to
@@ -150,7 +150,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         pdu = pdu_bit.WriteSingleCoilRequest(address=address, bits=[value], dev_id=device_id)
         return self.execute(no_response_expected, pdu)
 
-    def write_register(self, address: int, value: int, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def write_register(self, address: int, value: int, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Write register (code 0x06).
 
         :param address: Address to write to
@@ -168,7 +168,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_reg.WriteSingleRegisterRequest(address=address, registers=[value], dev_id=device_id))
 
-    def read_exception_status(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def read_exception_status(self, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Read Exception Status (code 0x07).
 
         :param device_id: (optional) Modbus device ID
@@ -183,7 +183,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_other_msg.ReadExceptionStatusRequest(dev_id=device_id))
 
-    def diag_query_data(self, msg: bytes, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_query_data(self, msg: bytes, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose query data (code 0x08 sub 0x00).
 
         :param msg: Message to be returned
@@ -197,7 +197,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnQueryDataRequest(msg, dev_id=device_id))
 
-    def diag_restart_communication(self, toggle: bool, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_restart_communication(self, toggle: bool, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose restart communication (code 0x08 sub 0x01).
 
         :param toggle: True if toggled.
@@ -215,7 +215,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         msg = ModbusStatus.ON if toggle else ModbusStatus.OFF
         return self.execute(no_response_expected, pdu_diag.RestartCommunicationsOptionRequest(message=msg, dev_id=device_id))
 
-    def diag_read_diagnostic_register(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_diagnostic_register(self, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose read diagnostic register (code 0x08 sub 0x02).
 
         :param device_id: (optional) Modbus device ID
@@ -226,7 +226,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnDiagnosticRegisterRequest(dev_id=device_id))
 
-    def diag_change_ascii_input_delimeter(self, *, delimiter: int = 0x0a, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_change_ascii_input_delimeter(self, *, delimiter: int = 0x0a, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose change ASCII input delimiter (code 0x08 sub 0x03).
 
         :param delimiter: char to replace LF
@@ -241,7 +241,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ChangeAsciiInputDelimiterRequest(message=delimiter, dev_id=device_id))
 
-    def diag_force_listen_only(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_force_listen_only(self, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose force listen only (code 0x08 sub 0x04).
 
         :param device_id: (optional) Modbus device ID
@@ -256,7 +256,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ForceListenOnlyModeRequest(dev_id=device_id))
 
-    def diag_clear_counters(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_clear_counters(self, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose clear counters (code 0x08 sub 0x0A).
 
         :param device_id: (optional) Modbus device ID
@@ -267,7 +267,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ClearCountersRequest(dev_id=device_id))
 
-    def diag_read_bus_message_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_bus_message_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose read bus message count (code 0x08 sub 0x0B).
 
         :param device_id: (optional) Modbus device ID
@@ -280,7 +280,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnBusMessageCountRequest(dev_id=device_id))
 
-    def diag_read_bus_comm_error_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_bus_comm_error_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose read Bus Communication Error Count (code 0x08 sub 0x0C).
 
         :param device_id: (optional) Modbus device ID
@@ -293,7 +293,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnBusCommunicationErrorCountRequest(dev_id=device_id))
 
-    def diag_read_bus_exception_error_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_bus_exception_error_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose read Bus Exception Error Count (code 0x08 sub 0x0D).
 
         :param device_id: (optional) Modbus device ID
@@ -306,7 +306,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnBusExceptionErrorCountRequest(dev_id=device_id))
 
-    def diag_read_device_message_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_device_message_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose read device Message Count (code 0x08 sub 0x0E).
 
         :param device_id: (optional) Modbus device ID
@@ -319,7 +319,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnDeviceMessageCountRequest(dev_id=device_id))
 
-    def diag_read_device_no_response_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_device_no_response_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose read device No Response Count (code 0x08 sub 0x0F).
 
         :param device_id: (optional) Modbus device ID
@@ -332,7 +332,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnDeviceNoResponseCountRequest(dev_id=device_id))
 
-    def diag_read_device_nak_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_device_nak_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose read device NAK Count (code 0x08 sub 0x10).
 
         :param device_id: (optional) Modbus device ID
@@ -346,7 +346,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnDeviceNAKCountRequest(dev_id=device_id))
 
-    def diag_read_device_busy_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_device_busy_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose read device Busy Count (code 0x08 sub 0x11).
 
         :param device_id: (optional) Modbus device ID
@@ -359,7 +359,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnDeviceBusyCountRequest(dev_id=device_id))
 
-    def diag_read_bus_char_overrun_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_bus_char_overrun_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose read Bus Character Overrun Count (code 0x08 sub 0x12).
 
         :param device_id: (optional) Modbus device ID
@@ -374,7 +374,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnDeviceBusCharacterOverrunCountRequest(dev_id=device_id))
 
-    def diag_read_iop_overrun_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_read_iop_overrun_count(self, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose read Iop overrun count (code 0x08 sub 0x13).
 
         :param device_id: (optional) Modbus device ID
@@ -387,7 +387,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ReturnIopOverrunCountRequest(dev_id=device_id))
 
-    def diag_clear_overrun_counter(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_clear_overrun_counter(self, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose Clear Overrun Counter and Flag (code 0x08 sub 0x14).
 
         :param device_id: (optional) Modbus device ID
@@ -399,7 +399,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ClearOverrunCountRequest(dev_id=device_id))
 
-    def diag_getclear_modbus_response(self, *, data: int = 0, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_getclear_modbus_response(self, *, data: int = 0, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose Get/Clear modbus plus (code 0x08 sub 0x15).
 
         :param data: "Get Statistics" or "Clear Statistics"
@@ -417,7 +417,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.GetClearModbusPlusRequest(message=data, dev_id=device_id))
 
-    def diag_get_comm_event_counter(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_get_comm_event_counter(self, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose get event counter (code 0x0B).
 
         :param device_id: (optional) Modbus device ID
@@ -439,7 +439,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_other_msg.GetCommEventCounterRequest(dev_id=device_id))
 
-    def diag_get_comm_event_log(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_get_comm_event_log(self, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Diagnose get event counter (code 0x0C).
 
         :param device_id: (optional) Modbus device ID
@@ -473,7 +473,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         *,
         device_id: int = 1,
         no_response_expected: bool = False
-    ) -> T:
+    ) -> tuple[T, int]:
         """Write coils (code 0x0F).
 
         :param address: Start address to write to
@@ -496,7 +496,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         *,
         device_id: int = 1,
         no_response_expected: bool = False
-    ) -> T:
+    ) -> tuple[T, int]:
         """Write registers (code 0x10).
 
         :param address: Start address to write to
@@ -510,7 +510,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_reg.WriteMultipleRegistersRequest(address=address, registers=values,dev_id=device_id))
 
-    def report_device_id(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def report_device_id(self, *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Report device ID (code 0x11).
 
         :param device_id: (optional) Modbus device ID
@@ -522,7 +522,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_other_msg.ReportDeviceIdRequest(dev_id=device_id))
 
-    def read_file_record(self, records: list[pdu_file_msg.FileRecord], *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def read_file_record(self, records: list[pdu_file_msg.FileRecord], *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Read file record (code 0x14).
 
         :param records: List of FileRecord (Reference type, File number, Record Number)
@@ -552,7 +552,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_file_msg.ReadFileRecordRequest(records, dev_id=device_id))
 
-    def write_file_record(self, records: list[pdu_file_msg.FileRecord], *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def write_file_record(self, records: list[pdu_file_msg.FileRecord], *, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Write file record (code 0x15).
 
         :param records: List of File_record (Reference type, File number, Record Number, Record Length, Record Data)
@@ -575,7 +575,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         or_mask: int = 0x0000,
         device_id: int = 1,
         no_response_expected: bool = False
-    ) -> T:
+    ) -> tuple[T, int]:
         """Mask write register (code 0x16).
 
         :param address: The mask pointer address (0x0000 to 0xffff)
@@ -602,7 +602,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         values: list[int] | None = None,
         device_id: int = 1,
         no_response_expected: bool = False
-    ) -> T:
+    ) -> tuple[T, int]:
         """Read/Write registers (code 0x17).
 
         :param read_address: The address to start reading from
@@ -628,7 +628,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
             write_address = address
         return self.execute(no_response_expected, pdu_reg.ReadWriteMultipleRegistersRequest( read_address=read_address, read_count=read_count, write_address=write_address, write_registers=values,dev_id=device_id))
 
-    def read_fifo_queue(self, *, address: int = 0x0000, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def read_fifo_queue(self, *, address: int = 0x0000, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, int]:
         """Read FIFO queue (code 0x18).
 
         :param address: The address to start reading from
@@ -653,7 +653,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     def read_device_information(self, *, read_code: int | None = None,
                                 object_id: int = 0x00,
                                 device_id: int = 1,
-                                no_response_expected: bool = False) -> T:
+                                no_response_expected: bool = False) -> tuple[T, int]:
         """Read FIFO queue (code 0x2B sub 0x0E).
 
         :param read_code: The device information read code

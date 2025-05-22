@@ -10,7 +10,7 @@ from pymodbus.framer import FramerAscii, FramerBase, FramerRTU
 from pymodbus.logging import Log
 from pymodbus.pdu import ExceptionResponse, ModbusPDU
 from pymodbus.transport import CommParams, ModbusProtocol
-
+from typing import Tuple
 
 class TransactionManager(ModbusProtocol):
     """Transaction manager.

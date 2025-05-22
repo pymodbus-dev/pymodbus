@@ -18,9 +18,10 @@ from pymodbus.pdu.pdu import ModbusPDU, pack_bitstring, unpack_bitstring
 
 
 T = TypeVar("T", covariant=False)
+I = TypeVar("I", covariant=False)
 
 
-class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
+class ModbusClientMixin(Generic[T], Generic[I]):  # pylint: disable=too-many-public-methods
     """**ModbusClientMixin**.
 
     This is an interface class to facilitate the sending requests/receiving responses like read_coils.
@@ -50,10 +51,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """Initialize."""
 
     @abstractmethod
-    def execute(self, no_response_expected: bool, request: ModbusPDU) -> T:
+    def execute(self, no_response_expected: bool, request: ModbusPDU) -> tuple[T, I]:
         """Execute request."""
 
-    def read_coils(self, address: int, *, count: int = 1, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def read_coils(self, address: int, *, count: int = 1, device_id: int = 1, no_response_expected: bool = False) -> tuple[T, I]:
         """Read coils (code 0x01).
 
         :param address: Start address to read from

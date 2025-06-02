@@ -770,9 +770,13 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
             int.from_bytes(byte_list[x : x + 2], "big")
             for x in range(0, len(byte_list), 2)
         ]
-        if word_order != "little":
-            return regs
+        if word_order == "little":
+            return cls._get_reversed_registers(regs, data_type)
 
+        return regs
+
+    @classmethod
+    def _get_reversed_registers(cls, regs: list[int], data_type: DATATYPE) -> list[int]:
         data_type_len = data_type.value[1]
         if data_type_len == 0:
             regs.reverse()

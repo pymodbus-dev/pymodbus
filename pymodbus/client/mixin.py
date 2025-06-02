@@ -778,7 +778,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     @classmethod
     def _get_reversed_registers(cls, regs: list[int], data_type: DATATYPE) -> list[int]:
         data_type_len = data_type.value[1]
-        if data_type_len == 0:
+        if not data_type_len:
             regs.reverse()
             return regs
 

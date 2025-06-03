@@ -235,7 +235,7 @@ class TestMixin:
                     single_value_regs.reverse()
                     reversed_regs = reversed_regs + single_value_regs
                 registers = reversed_regs
-            
+
 
         kwargs = {**({"word_order": word_order} if word_order else {}),
                   **({"string_encoding": string_encoding} if string_encoding else {})}

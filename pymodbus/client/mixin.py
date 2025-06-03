@@ -781,7 +781,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
             regs.reverse()
             return regs
 
-        reversed_regs = []
+        reversed_regs: list[int] = []
         for x in range(0, len(regs), data_type_len):
             single_value_regs = regs[x: x + data_type_len]
             single_value_regs.reverse()

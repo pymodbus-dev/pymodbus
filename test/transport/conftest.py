@@ -35,7 +35,7 @@ class DummyProtocol(ModbusProtocol):
 
 
 @pytest.fixture(name="dummy_protocol")
-async def prepare_dummy_protocol():
+def prepare_dummy_protocol():
     """Return transport object."""
     return DummyProtocol
 

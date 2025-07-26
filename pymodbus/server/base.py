@@ -79,7 +79,8 @@ class ModbusBaseServer(ModbusProtocol):
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
             )
-        await self.listen()
+        if not await self.listen():
+            raise RuntimeError("Could not start listen, please check address.")
         Log.info("Server listening.")
         if not background:
             with suppress(asyncio.exceptions.CancelledError):

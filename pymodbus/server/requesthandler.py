@@ -104,14 +104,14 @@ class ServerRequestHandler(TransactionManager):
             Log.error("requested device id does not exist: {}", self.last_pdu.dev_id)
             if self.server.ignore_missing_devices:
                 return  # the client will simply timeout waiting for a response
-            response = ExceptionResponse(0x00, ExceptionResponse.GATEWAY_NO_RESPONSE)
+            response = ExceptionResponse(self.last_pdu.function_code, ExceptionResponse.GATEWAY_NO_RESPONSE)
         except Exception as exc:  # pylint: disable=broad-except
             Log.error(
                 "Datastore unable to fulfill request: {}; {}",
                 exc,
                 traceback.format_exc(),
             )
-            response = ExceptionResponse(0x00, ExceptionResponse.DEVICE_FAILURE)
+            response = ExceptionResponse(self.last_pdu.function_code, ExceptionResponse.DEVICE_FAILURE)
         # no response when broadcasting
         if not broadcast:
             response.transaction_id = self.last_pdu.transaction_id

@@ -23,10 +23,13 @@ Our releases follow the pattern `X.Y.Z`. We have strict rules for what different
 Upgrade examples:
 
 - 3.9.0 -> 3.9.2: just plugin the new version, no changes needed.
+                  Remark fixing bugs, can lead to a different behaviors/returns
 - 3.8.0 -> 3.9.0: Smaller changes to the pymodbus calls might be needed
 - 2.5.4 -> 3.0.0: Major changes in the application might be needed
 
-Current release is `3.9.2 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.9.2>`_.
+It is always recommended to read the CHANGELOG as well as the API_changes files.
+
+Current release is `3.10.0 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.10.0>`_.
 
 Bleeding edge (not released) is `dev <https://github.com/pymodbus-dev/pymodbus/tree/dev>`_.
 

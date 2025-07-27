@@ -2,7 +2,7 @@ API changes
 ===========
 Versions (X.Y.Z) where Z > 0 e.g. 3.0.1 do NOT have API changes!
 
-API changes 4.0.0
+API changes 3.10.0
 -----------------
 - ModbusSlaveContext replaced by ModbusDeviceContext
 - payload removed (replaced by "convert_to/from_registers")
@@ -10,7 +10,6 @@ API changes 4.0.0
 - slave request names changed to device
 - bit handling order is LSB (last byte) -> MSB (first byte)
 
------------------
 API changes 3.9.0
 -----------------
 - Python 3.9 is reaching end of life, and no longer supported.

@@ -4,22 +4,6 @@ Pymodbus 4.0 upgrade procedure
 Pymodbus 4.0 contains a number of incompatibilities with Pymodbus 3.x, however
 most of these are simple edits.
 
-Bit handling
-------------
-readCoils and other bit functions now return bit in logical order (NOT byte order)
-
-Older versions had LSB -> MSB pr byte
-New version have LSB -> MSB across bytes.
-
-Example:
-Hex bytes: 0x00 0x01
-v3.x would deliver False * 8 True False * 7
-V4.x deliver True False * 15
-
-Hex bytes: 0x01 0x03
-v3.x would deliver True False * 7 True True False * 6
-V4.x deliver True True False * 6 True False * 7
-
 
 Python 3.9
 ----------

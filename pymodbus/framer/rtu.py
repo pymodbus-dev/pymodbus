@@ -24,25 +24,25 @@ class FramerRTU(FramerBase):
 
     For client:
        - a request causes 1 response !
-       - Multiple requests are NOT allowed (master-slave protocol)
+       - Multiple requests are NOT allowed (master controlled protocol)
        - the server will not retransmit responses
 
     this means decoding is always exactly 1 frame (response)
 
     For server (Single device)
-       - only 1 request allowed (master-slave) protocol
+       - only 1 request allowed (master controlled protocol)
        - the client (master) may retransmit but in larger time intervals
 
     this means decoding is always exactly 1 frame (request)
 
     For server (Multidrop line --> devices in parallel)
-       - only 1 request allowed (master-slave) protocol
+       - only 1 request allowed (master controlled protocol)
        - other devices will send responses
        - the client (master) may retransmit but in larger time intervals
 
     this means decoding is always exactly 1 frame request, however some requests
-    will be for unknown slaves, which must be ignored together with the
-    response from the unknown slave.
+    will be for unknown devices, which must be ignored together with the
+    response from the unknown device.
 
     Recovery from bad cabling and unstable USB etc is important,
     the following scenarios is possible:
@@ -78,7 +78,7 @@ class FramerRTU(FramerBase):
 
     """
 
-    MIN_SIZE = 4  # <slave id><function code><crc 2 bytes>
+    MIN_SIZE = 4  # <device id><function code><crc 2 bytes>
 
     @classmethod
     def generate_crc16_table(cls) -> list[int]:

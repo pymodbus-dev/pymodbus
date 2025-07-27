@@ -11,9 +11,9 @@ import logging
 
 from pymodbus import FramerType, pymodbus_apply_logging_config
 from pymodbus.datastore import (
+    ModbusDeviceContext,
     ModbusSequentialDataBlock,
     ModbusServerContext,
-    ModbusSlaveContext,
 )
 from pymodbus.pdu import ModbusPDU
 from pymodbus.server import ModbusTcpServer
@@ -48,7 +48,7 @@ class Manipulator:
         pymodbus_apply_logging_config(logging.DEBUG)
         datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
         context = ModbusServerContext(
-            slaves=ModbusSlaveContext(
+            devices=ModbusDeviceContext(
                 di=datablock, co=datablock, hr=datablock, ir=datablock
             ),
             single=True,

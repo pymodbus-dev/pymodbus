@@ -8,7 +8,7 @@ import pymodbus.pdu.mei_message as mei_msg
 import pymodbus.pdu.other_message as o_msg
 import pymodbus.pdu.register_message as reg_msg
 from pymodbus.constants import ModbusStatus
-from pymodbus.exceptions import NotImplementedException
+from pymodbus.exceptions import ModbusIOException, NotImplementedException
 from pymodbus.pdu import (
     ExceptionResponse,
     ModbusPDU,
@@ -31,6 +31,11 @@ class TestPdu:
     async def test_get_pdu_size(self):
         """Test get pdu size."""
         assert not self.exception.get_response_pdu_size()
+
+    async def test_pdu_id(self):
+        """Test set illegal pdu id."""
+        with pytest.raises(ModbusIOException):
+            ModbusPDU(256)
 
     async def test_is_error(self):
         """Test is_error."""
@@ -86,11 +91,11 @@ class TestPdu:
         (diag_msg.ReturnBusMessageCountRequest, (), {"message": 0x1010}, b'\x08\x00\x0b\x10\x10'),
         (diag_msg.ReturnBusCommunicationErrorCountRequest, (), {"message": 0x1010}, b'\x08\x00\x0c\x10\x10'),
         (diag_msg.ReturnBusExceptionErrorCountRequest, (), {"message": 0x1010}, b'\x08\x00\x0d\x10\x10'),
-        (diag_msg.ReturnSlaveMessageCountRequest, (), {"message": 0x1010}, b'\x08\x00\x0e\x10\x10'),
-        (diag_msg.ReturnSlaveNoResponseCountRequest, (), {"message": 0x1010}, b'\x08\x00\x0f\x10\x10'),
-        (diag_msg.ReturnSlaveNAKCountRequest, (), {"message": 0x1010}, b'\x08\x00\x10\x10\x10'),
-        (diag_msg.ReturnSlaveBusyCountRequest, (), {"message": 0x1010}, b'\x08\x00\x11\x10\x10'),
-        (diag_msg.ReturnSlaveBusCharacterOverrunCountRequest, (), {"message": 0x1010}, b'\x08\x00\x12\x10\x10'),
+        (diag_msg.ReturnDeviceMessageCountRequest, (), {"message": 0x1010}, b'\x08\x00\x0e\x10\x10'),
+        (diag_msg.ReturnDeviceNoResponseCountRequest, (), {"message": 0x1010}, b'\x08\x00\x0f\x10\x10'),
+        (diag_msg.ReturnDeviceNAKCountRequest, (), {"message": 0x1010}, b'\x08\x00\x10\x10\x10'),
+        (diag_msg.ReturnDeviceBusyCountRequest, (), {"message": 0x1010}, b'\x08\x00\x11\x10\x10'),
+        (diag_msg.ReturnDeviceBusCharacterOverrunCountRequest, (), {"message": 0x1010}, b'\x08\x00\x12\x10\x10'),
         (diag_msg.ReturnIopOverrunCountRequest, (), {"message": 0x1010}, b'\x08\x00\x13\x10\x10'),
         (diag_msg.ClearOverrunCountRequest, (), {"message": 0x1010}, b'\x08\x00\x14\x10\x10'),
         (diag_msg.GetClearModbusPlusRequest, (), {"message": 0x1010}, b'\x08\x00\x15\x10\x10'),
@@ -101,7 +106,7 @@ class TestPdu:
         (o_msg.ReadExceptionStatusRequest, (), {}, b'\x07'),
         (o_msg.GetCommEventCounterRequest, (), {}, b'\x0b'),
         (o_msg.GetCommEventLogRequest, (), {}, b'\x0c'),
-        (o_msg.ReportSlaveIdRequest, (), {}, b'\x11'),
+        (o_msg.ReportDeviceIdRequest, (), {}, b'\x11'),
         (reg_msg.ReadHoldingRegistersRequest, (), {"address": 117, "count": 3}, b'\x03\x00\x75\x00\x03'),
         (reg_msg.ReadInputRegistersRequest, (), {"address": 117, "count": 3}, b'\x04\x00\x75\x00\x03'),
         (reg_msg.ReadWriteMultipleRegistersRequest, (), {"read_address": 17, "read_count": 2, "write_address": 25, "write_registers": [111, 112]}, b'\x17\x00\x11\x00\x02\x00\x19\x00\x02\x04\x00\x6f\x00\x70'),
@@ -126,11 +131,11 @@ class TestPdu:
         (diag_msg.ReturnBusMessageCountResponse, (), {"message": 0x1010}, b'\x08\x00\x0b\x10\x10'),
         (diag_msg.ReturnBusCommunicationErrorCountResponse, (), {"message": 0x1010}, b'\x08\x00\x0c\x10\x10'),
         (diag_msg.ReturnBusExceptionErrorCountResponse, (), {"message": 0x1010}, b'\x08\x00\x0d\x10\x10'),
-        (diag_msg.ReturnSlaveMessageCountResponse, (), {"message": 0x1010}, b'\x08\x00\x0e\x10\x10'),
-        (diag_msg.ReturnSlaveNoResponseCountResponse, (), {"message": 0x1010}, b'\x08\x00\x0f\x10\x10'),
-        (diag_msg.ReturnSlaveNAKCountResponse, (), {"message": 0x1010}, b'\x08\x00\x10\x10\x10'),
-        (diag_msg.ReturnSlaveBusyCountResponse, (), {"message": 0x1010}, b'\x08\x00\x11\x10\x10'),
-        (diag_msg.ReturnSlaveBusCharacterOverrunCountResponse, (), {"message": 0x1010}, b'\x08\x00\x12\x10\x10'),
+        (diag_msg.ReturnDeviceMessageCountResponse, (), {"message": 0x1010}, b'\x08\x00\x0e\x10\x10'),
+        (diag_msg.ReturnDeviceNoResponseCountResponse, (), {"message": 0x1010}, b'\x08\x00\x0f\x10\x10'),
+        (diag_msg.ReturnDeviceNAKCountResponse, (), {"message": 0x1010}, b'\x08\x00\x10\x10\x10'),
+        (diag_msg.ReturnDeviceBusyCountResponse, (), {"message": 0x1010}, b'\x08\x00\x11\x10\x10'),
+        (diag_msg.ReturnDeviceBusCharacterOverrunCountResponse, (), {"message": 0x1010}, b'\x08\x00\x12\x10\x10'),
         (diag_msg.ReturnIopOverrunCountResponse, (), {"message": 0x1010}, b'\x08\x00\x13\x10\x10'),
         (diag_msg.ClearOverrunCountResponse, (), {"message": 0x1010}, b'\x08\x00\x14\x10\x10'),
         (diag_msg.GetClearModbusPlusResponse, (), {"message": 0x1010}, b'\x08\x00\x15\x10\x10'),
@@ -141,7 +146,7 @@ class TestPdu:
         (o_msg.ReadExceptionStatusResponse, (), {"status": 0x23}, b'\x07\x23'),
         (o_msg.GetCommEventCounterResponse, (), {"count": 123}, b'\x0b\x00\x00\x00\x7b'),
         (o_msg.GetCommEventLogResponse, (), {"status": True, "message_count": 12, "event_count": 7, "events": [12, 14]}, b'\x0c\x08\x00\x00\x00\x07\x00\x0c\x0c\x0e'),
-        (o_msg.ReportSlaveIdResponse, (), {"identifier": b'\x12', "status": True}, b'\x11\x02\x12\xff'),
+        (o_msg.ReportDeviceIdResponse, (), {"identifier": b'\x12', "status": True}, b'\x11\x02\x12\xff'),
         (reg_msg.ReadHoldingRegistersResponse, (), {"registers": [3, 17]}, b'\x03\x04\x00\x03\x00\x11'),
         (reg_msg.ReadInputRegistersResponse, (), {"registers": [3, 17]}, b'\x04\x04\x00\x03\x00\x11'),
         (reg_msg.ReadWriteMultipleRegistersResponse, (), {"registers": [1, 2]}, b'\x17\x04\x00\x01\x00\x02'),
@@ -250,21 +255,21 @@ class TestPdu:
     @pytest.mark.parametrize(
         ("bytestream", "bitlist"),
         [
-            (b"\x01\x00", [True] + [False] * 15),
-            (b"\x00\x80", [False] * 15 + [True]),
-            (b"\x00\x01", [False] * 8 + [True] + [False] * 7),
-            (b"\x01\x80", [True] + [False] * 14 + [True]),
-            (b"\x00\x05", [False] * 8 + [True, False, True] + [False] * 5),
-            (b"\x01\x05", [True] + [False] * 7 + [True, False, True] + [False] * 5),
-            (b"\x81\x05", [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
-            (b"\x00\x01\x81\x05", [False] * 8 + [True] + [False] * 7 + [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
+            (b"\x00\x01", [True] + [False] * 15),
+            (b"\x01\x00", [False] * 8 + [True] + [False] * 7),
+            (b"\x80\x00", [False] * 15 + [True]),
+            (b"\x80\x01", [True] + [False] * 14 + [True]),
+            (b"\x05\x00", [False] * 8 + [True, False, True] + [False] * 5),
+            (b"\x05\x01", [True] + [False] * 7 + [True, False, True] + [False] * 5),
+            (b"\x05\x81", [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
+            (b"\x05\x81\x01\x00", [False] * 8 + [True] + [False] * 7 + [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
 
-            (b"\x01\x00", [True]),
-            (b"\x00\x01", [False] * 8 + [True]),
-            (b"\x00\x05", [False] * 8 + [True, False, True]),
-            (b"\x01\x05", [True] + [False] * 7 + [True, False, True]),
-            (b"\x81\x05", [True] + [False] * 6 + [True, True, False, True]),
-            (b"\x00\x01\x81\x05", [False] * 8 + [True] + [False] * 7 + [True] + [False] * 6 + [True, True, False, True]),
+            (b"\x00\x01", [True]),
+            (b"\x01\x00", [False] * 8 + [True]),
+            (b"\x05\x00", [False] * 8 + [True, False, True]),
+            (b"\x05\x01", [True] + [False] * 7 + [True, False, True]),
+            (b"\x05\x81", [True] + [False] * 6 + [True, True, False, True]),
+            (b"\x05\x81\x01\x00", [False] * 8 + [True] + [False] * 7 + [True] + [False] * 6 + [True, True, False, True]),
         ],
     )
     def test_bit_packing(self, bytestream, bitlist):
@@ -275,9 +280,9 @@ class TestPdu:
         ("bytestream", "bitlist"),
         [
             (b"\x01", [True]),
-            (b"\x00\x01", [False] * 8 + [True]),
+            (b"\x01\x00", [False] * 8 + [True]),
             (b"\x05", [True, False, True]),
-            (b"\x01\x05", [True] + [False] * 7 + [True, False, True]),
+            (b"\x05\x01", [True] + [False] * 7 + [True, False, True]),
         ],
     )
     def test_bit_packing8(self, bytestream, bitlist):
@@ -288,19 +293,20 @@ class TestPdu:
         ("bytestream", "bitlist"),
         [
             (b"\x01", [True] + [False] * 7),
-            (b"\x01\x00", [True] + [False] * 15),
-            (b"\x00\x01", [False] * 8 + [True] + [False] * 7),
-            (b"\x00\x80", [False] * 15 + [True]),
-            (b"\x01\x80", [True] + [False] * 14 + [True]),
-            (b"\x00\x05", [False] * 8 + [True, False, True] + [False] * 5),
-            (b"\x01\x05", [True] + [False] * 7 + [True, False, True] + [False] * 5),
-            (b"\x81\x05", [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
-            (b"\x05\x81\x01\x00", [True, False, True] + [False] * 5 +
-                                  [True] + [False] * 6 + [True] +
-                                  [True] + [False] * 7 +
-                                  [False] * 8),
+            (b"\x00\x01", [True] + [False] * 15),
+            (b"\x01\x00", [False] * 8 + [True] + [False] * 7),
+            (b"\x80\x00", [False] * 15 + [True]),
+            (b"\x80\x01", [True] + [False] * 14 + [True]),
+            (b"\x05\x00", [False] * 8 + [True, False, True] + [False] * 5),
+            (b"\x05\x01", [True] + [False] * 7 + [True, False, True] + [False] * 5),
+            (b"\x05\x81", [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
+            (b"\x05\x81\x01\x00", [False] * 8 + [True] + [False] * 7 + [True] + [False] * 6 + [True, True, False, True] + [False] * 5),
         ],
     )
     def test_bit_unpacking(self, bytestream, bitlist):
         """Test all string <=> bit packing functions."""
         assert unpack_bitstring(bytestream) == bitlist
+
+    def test_ExceptionResponse_str(self):
+        """Test string conversion of ExceptionResponse."""
+        assert str(self.exception) != ""

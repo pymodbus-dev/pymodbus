@@ -23,7 +23,7 @@ async def read_registers(
     client, addr, count, is_int, curval=None, minval=None, maxval=None
 ):
     """Run modbus call."""
-    rr = await client.read_holding_registers(addr, count=count, slave=1)
+    rr = await client.read_holding_registers(addr, count=count, device_id=1)
     assert not rr.isError()
     if count == 1:
         value = rr.registers[0]

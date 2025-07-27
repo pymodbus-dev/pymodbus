@@ -83,7 +83,7 @@ def setup_sync_client(description=None, cmdline=None):
             # UDP setup parameters
             #    source_address=None,
         )
-    elif args.comm == "serial":
+    elif args.comm == "serial":  # pragma: no cover
         client = modbusClient.ModbusSerialClient(
             port=args.port,  # serial port
             # Common optional parameters:
@@ -97,7 +97,7 @@ def setup_sync_client(description=None, cmdline=None):
             #    stopbits=1,
             #    handle_local_echo=False,
         )
-    elif args.comm == "tls":
+    elif args.comm == "tls":  # pragma: no cover
         client = modbusClient.ModbusTlsClient(
             args.host,
             port=args.port,
@@ -128,9 +128,9 @@ def run_sync_client(client, modbus_calls=None):
 def run_a_few_calls(client):
     """Test connection works."""
     try:
-        rr = client.read_coils(32, count=1, slave=1)
+        rr = client.read_coils(32, count=1, device_id=1)
         assert len(rr.bits) == 8
-        rr = client.read_holding_registers(4, count=2, slave=1)
+        rr = client.read_holding_registers(4, count=2, device_id=1)
         assert rr.registers[0] == 17
         assert rr.registers[1] == 17
     except ModbusException as exc:

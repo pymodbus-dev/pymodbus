@@ -50,7 +50,7 @@ _logger = logging.getLogger(__file__)
 _logger.setLevel("DEBUG")
 
 
-SLAVE = 0x01
+DEVICE_ID = 0x01
 
 
 # --------------------------------------------------
@@ -60,7 +60,7 @@ SLAVE = 0x01
 async def async_template_call(client):
     """Show complete modbus call, async version."""
     try:
-        rr = await client.read_coils(1, count=1, slave=SLAVE)
+        rr = await client.read_coils(1, count=1, device_id=DEVICE_ID)
     except ModbusException as exc:
         txt = f"ERROR: exception in pymodbus {exc}"
         _logger.error(txt)
@@ -81,30 +81,30 @@ async def async_template_call(client):
 async def async_handle_coils(client):
     """Read/Write coils."""
     _logger.info("### Reading Coil different number of bits (return 8 bits multiples)")
-    rr = await client.read_coils(1, count=1, slave=SLAVE)
+    rr = await client.read_coils(1, count=1, device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 8
 
-    rr = await client.read_coils(1, count=5, slave=SLAVE)
+    rr = await client.read_coils(1, count=5, device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 8
 
-    rr = await client.read_coils(1, count=12, slave=SLAVE)
+    rr = await client.read_coils(1, count=12, device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 16
 
-    rr = await client.read_coils(1, count=17, slave=SLAVE)
+    rr = await client.read_coils(1, count=17, device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 24
 
     _logger.info("### Write false/true to coils and read to verify")
-    await client.write_coil(0, True, slave=SLAVE)
-    rr = await client.read_coils(0, count=1, slave=SLAVE)
+    await client.write_coil(0, True, device_id=DEVICE_ID)
+    rr = await client.read_coils(0, count=1, device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert rr.bits[0]  # test the expected value
 
-    await client.write_coils(1, [True] * 21, slave=SLAVE)
-    rr = await client.read_coils(1, count=21, slave=SLAVE)
+    await client.write_coils(1, [True] * 21, device_id=DEVICE_ID)
+    rr = await client.read_coils(1, count=21, device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     resp = [True] * 21
     # If the returned output quantity is not a multiple of eight,
@@ -114,8 +114,8 @@ async def async_handle_coils(client):
     assert rr.bits == resp  # test the expected value
 
     _logger.info("### Write False to address 1-8 coils")
-    await client.write_coils(1, [False] * 8, slave=SLAVE)
-    rr = await client.read_coils(1, count=8, slave=SLAVE)
+    await client.write_coils(1, [False] * 8, device_id=DEVICE_ID)
+    rr = await client.read_coils(1, count=8, device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert rr.bits == [False] * 8  # test the expected value
 
@@ -123,7 +123,7 @@ async def async_handle_coils(client):
 async def async_handle_discrete_input(client):
     """Read discrete inputs."""
     _logger.info("### Reading discrete input, Read address:0-7")
-    rr = await client.read_discrete_inputs(0, count=8, slave=SLAVE)
+    rr = await client.read_discrete_inputs(0, count=8, device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert len(rr.bits) == 8
 
@@ -131,25 +131,25 @@ async def async_handle_discrete_input(client):
 async def async_handle_holding_registers(client):
     """Read/write holding registers."""
     _logger.info("### write holding register and read holding registers")
-    await client.write_register(1, 10, slave=SLAVE)
-    rr = await client.read_holding_registers(1, count=1, slave=SLAVE)
+    await client.write_register(1, 10, device_id=DEVICE_ID)
+    rr = await client.read_holding_registers(1, count=1, device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert rr.registers[0] == 10
 
-    await client.write_registers(1, [10] * 8, slave=SLAVE)
-    rr = await client.read_holding_registers(1, count=8, slave=SLAVE)
+    await client.write_registers(1, [10] * 8, device_id=DEVICE_ID)
+    rr = await client.read_holding_registers(1, count=8, device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == [10] * 8
 
-    await client.write_registers(1, [10], slave=SLAVE)
-    rr = await client.read_holding_registers(1, count=1, slave=SLAVE)
+    await client.write_registers(1, [10], device_id=DEVICE_ID)
+    rr = await client.read_holding_registers(1, count=1, device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == [10]
 
     value_int32 = 13211
     registers = client.convert_to_registers(value_int32, client.DATATYPE.INT32)
-    await client.write_registers(1, registers, slave=SLAVE)
-    rr = await client.read_holding_registers(1, count=len(registers), slave=SLAVE)
+    await client.write_registers(1, registers, device_id=DEVICE_ID)
+    rr = await client.read_holding_registers(1, count=len(registers), device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     value = client.convert_from_registers(rr.registers, client.DATATYPE.INT32)
     assert value_int32 == value
@@ -161,27 +161,27 @@ async def async_handle_holding_registers(client):
         "write_address": 1,
         "values": [256, 128, 100, 50, 25, 10, 5, 1],
     }
-    await client.readwrite_registers(slave=SLAVE, **arguments)
-    rr = await client.read_holding_registers(1, count=8, slave=SLAVE)
+    await client.readwrite_registers(device_id=DEVICE_ID, **arguments)
+    rr = await client.read_holding_registers(1, count=8, device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == arguments["values"]
 
 async def async_write_registers_mypy(client: ModbusBaseClient) -> None:
     """Read/write holding registers."""
     regs1: list[int] = [10] * 8
-    await client.write_registers(1, regs1, slave=SLAVE)
-    rr = await client.read_holding_registers(1, count=len(regs1), slave=SLAVE)
+    await client.write_registers(1, regs1, device_id=DEVICE_ID)
+    rr = await client.read_holding_registers(1, count=len(regs1), device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
 
     # regs2: list[bytes] = [b'\x01\x02', b'\x03\x04']
-    # await client.write_registers(1, regs2, slave=SLAVE)
+    # await client.write_registers(1, regs2, device_id=DEVICE_ID)
     # NOT ALLOWED
 
 
 async def async_handle_input_registers(client):
     """Read input registers."""
     _logger.info("### read input registers")
-    rr = await client.read_input_registers(1, count=8, slave=SLAVE)
+    rr = await client.read_input_registers(1, count=8, device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert len(rr.registers) == 8
 
@@ -190,7 +190,7 @@ async def async_handle_file_records(client):
     """Read/write file records."""
     _logger.info("### Read/write file records")
     record = FileRecord(file_number=14, record_number=12, record_length=64)
-    rr = await client.read_file_record([record, record], slave=SLAVE)
+    rr = await client.read_file_record([record, record], device_id=DEVICE_ID)
     assert not rr.isError()
     assert len(rr.records) == 2
     assert rr.records[0].record_data == b'SERVER DUMMY RECORD.'
@@ -198,7 +198,7 @@ async def async_handle_file_records(client):
     record.record_data = b'Pure test '
     record.record_length = len(record.record_data) // 2
     record = FileRecord(file_number=14, record_number=12, record_data=b'Pure test ')
-    rr = await client.write_file_record([record], slave=1)
+    rr = await client.write_file_record([record], device_id=1)
     assert not rr.isError()
 
 
@@ -207,24 +207,24 @@ async def async_handle_file_records(client):
 async def async_execute_information_requests(client):
     """Execute extended information requests."""
     _logger.info("### Running information requests.")
-    rr = await client.read_device_information(slave=SLAVE, read_code=1, object_id=0)
+    rr = await client.read_device_information(device_id=DEVICE_ID, read_code=1, object_id=0)
     assert not rr.isError()  # test that call was OK
     assert rr.information[0] == b"Pymodbus"
 
-    rr = await client.report_slave_id(slave=SLAVE)
+    rr = await client.report_device_id(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert rr.status
 
-    rr = await client.read_exception_status(slave=SLAVE)
+    rr = await client.read_exception_status(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert not rr.status
 
-    rr = await client.diag_get_comm_event_counter(slave=SLAVE)
+    rr = await client.diag_get_comm_event_counter(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert rr.status
     assert not rr.count
 
-    rr = await client.diag_get_comm_event_log(slave=SLAVE)
+    rr = await client.diag_get_comm_event_log(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert rr.status
     assert not (rr.event_count + rr.message_count + len(rr.events))
@@ -234,39 +234,39 @@ async def async_execute_diagnostic_requests(client):
     """Execute extended diagnostic requests."""
     _logger.info("### Running diagnostic requests.")
     message = b"OK"
-    rr = await client.diag_query_data(msg=message, slave=SLAVE)
+    rr = await client.diag_query_data(msg=message, device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert rr.message == message
 
-    rr = await client.diag_restart_communication(True, slave=SLAVE)
+    rr = await client.diag_restart_communication(True, device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
-    rr = await client.diag_read_diagnostic_register(slave=SLAVE)
+    rr = await client.diag_read_diagnostic_register(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
-    rr = await client.diag_change_ascii_input_delimeter(slave=SLAVE)
+    rr = await client.diag_change_ascii_input_delimeter(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     rr = await client.diag_clear_counters()
     assert not rr.isError()  # test that call was OK
-    rr = await client.diag_read_bus_comm_error_count(slave=SLAVE)
+    rr = await client.diag_read_bus_comm_error_count(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
-    rr = await client.diag_read_bus_exception_error_count(slave=SLAVE)
+    rr = await client.diag_read_bus_exception_error_count(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
-    rr = await client.diag_read_slave_message_count(slave=SLAVE)
+    rr = await client.diag_read_device_message_count(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
-    rr = await client.diag_read_slave_no_response_count(slave=SLAVE)
+    rr = await client.diag_read_device_no_response_count(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
-    rr = await client.diag_read_slave_nak_count(slave=SLAVE)
+    rr = await client.diag_read_device_nak_count(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
-    rr = await client.diag_read_slave_busy_count(slave=SLAVE)
+    rr = await client.diag_read_device_busy_count(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
-    rr = await client.diag_read_bus_char_overrun_count(slave=SLAVE)
+    rr = await client.diag_read_bus_char_overrun_count(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
-    rr = await client.diag_read_iop_overrun_count(slave=SLAVE)
+    rr = await client.diag_read_iop_overrun_count(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
-    rr = await client.diag_clear_overrun_counter(slave=SLAVE)
+    rr = await client.diag_clear_overrun_counter(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
-    rr = await client.diag_getclear_modbus_response(slave=SLAVE)
+    rr = await client.diag_getclear_modbus_response(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
-    rr = await client.diag_force_listen_only(slave=SLAVE, no_response_expected=True)
+    rr = await client.diag_force_listen_only(device_id=DEVICE_ID, no_response_expected=True)
     assert rr.isError()  # test that call was OK, error indicate no response
 
 

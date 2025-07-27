@@ -32,9 +32,8 @@ import argparse
 import asyncio
 import logging
 
-from pymodbus import pymodbus_apply_logging_config
+from pymodbus import ModbusDeviceIdentification, pymodbus_apply_logging_config
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
-from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server import StartAsyncTcpServer
 
 
@@ -153,7 +152,7 @@ def setup_simulator(setup=None, actions=None, cmdline=None):
     args.port = int(args.port)
 
     context = ModbusSimulatorContext(setup, actions)
-    args.context = ModbusServerContext(slaves=context, single=True)
+    args.context = ModbusServerContext(devices=context, single=True)
     args.identity = ModbusDeviceIdentification(
         info_name={
             "VendorName": "Pymodbus",

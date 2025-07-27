@@ -259,7 +259,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
                         return self._handle_abrupt_socket_close(
                             size, data, time.time() - time_
                         )
-                except SSLWantReadError:
+                except SSLWantReadError:  # pragma: no cover
                     continue
                 data.append(recv_data)
                 data_length += len(recv_data)
@@ -270,7 +270,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
                 break
             # Timeout is reduced also if some data has been received in order
             # to avoid infinite loops when there isn't an expected response
-            # size and the slave sends noisy data continuously.
+            # size and the device sends noisy data continuously.
             if time_ > end:
                 break
 
@@ -306,7 +306,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
             result = b"".join(data)
             Log.warning(" after returning {} bytes: {} ", len(result), result)
             return result
-        msg += " without response from slave before it closed connection"
+        msg += " without response from device before it closed connection"
         raise ConnectionException(msg)
 
     def is_socket_open(self) -> bool:

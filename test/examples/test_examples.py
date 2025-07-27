@@ -15,14 +15,13 @@ from examples.client_async_calls import async_template_call
 from examples.client_async_calls import main as main_client_async_calls
 from examples.client_calls import main as main_client_calls
 from examples.client_calls import template_call
-from examples.client_payload import main as main_payload_calls
 from examples.custom_msg import main as main_custom_client
 from examples.datastore_simulator_share import main as main_datastore_simulator_share3
 from examples.message_parser import main as main_parse_messages
+from examples.package_test_tool import run_test as run_package_tool
 from examples.server_async import setup_server
 from examples.server_callback import run_callback_server
 from examples.server_datamodel import main as run_main_datamodel
-from examples.server_payload import main as main_payload_server
 from examples.server_sync import run_sync_server
 from examples.server_updating import main as main_updating_server
 from examples.simple_async_client import run_async_simple_client
@@ -50,7 +49,7 @@ class TestExamples:
         main_parse_messages(["--framer", framer, "-m", "00010000000401010101"])
 
     async def test_server_callback(self, use_port, use_host):
-        """Test server/client with payload."""
+        """Test server/client with callback."""
         cmdargs = ["--port", str(use_port), "--host", use_host]
         task = asyncio.create_task(run_callback_server(cmdline=cmdargs))
         task.set_name("run callback_server")
@@ -100,9 +99,9 @@ class TestExamples:
         """Run different simulator configurations."""
         run_main_datamodel()
 
-    async def test_modbus_forwarder(self):
-        """Test modbus forwarder."""
-        print("waiting for fix")
+    async def test_package_tool(self):
+        """Run package test tool."""
+        await run_package_tool()
 
 
 @pytest.mark.parametrize(
@@ -161,18 +160,6 @@ class TestAsyncExamples:
             return
         await main_custom_client(port=use_port, host=use_host)
 
-    async def test_payload(self, mock_clc, mock_cls):
-        """Test server/client with payload."""
-        task = asyncio.create_task(main_payload_server(cmdline=mock_cls))
-        task.set_name("run main_payload_server")
-        await asyncio.sleep(0.1)
-        await main_payload_calls(cmdline=mock_clc)
-        await asyncio.sleep(0.1)
-        await ServerAsyncStop()
-        await asyncio.sleep(0.1)
-        task.cancel()
-        await task
-
     async def test_async_simple_client(
         self, use_comm, use_port, use_framer, mock_server, use_host
     ):
@@ -185,7 +172,6 @@ class TestAsyncExamples:
         if use_comm == "serial":
             use_port = f"socket://{use_host}:{use_port}"
         await run_async_simple_client(use_comm, use_host, use_port, framer=use_framer)
-
 
 @pytest.mark.parametrize("use_host", ["localhost"])
 @pytest.mark.parametrize(

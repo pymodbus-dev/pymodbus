@@ -2,7 +2,27 @@ API changes
 ===========
 Versions (X.Y.Z) where Z > 0 e.g. 3.0.1 do NOT have API changes!
 
+API changes 3.10.0
 -----------------
+- ModbusSlaveContext replaced by ModbusDeviceContext
+- payload removed (replaced by "convert_to/from_registers")
+- slave=, slaves= replaced by device_id=, device_ids=
+- slave request names changed to device
+- bit handling order is LSB (last byte) -> MSB (first byte)
+  readCoils and other bit functions now return bit in logical order (NOT byte order)
+
+  Older versions had LSB -> MSB pr byte
+  V3.10 have LSB -> MSB across bytes.
+
+  Example:
+  Hex bytes: 0x00 0x01
+  Older versions would deliver False * 8 True False * 7
+  V3.10 deliver True False * 15
+
+  Hex bytes: 0x01 0x03
+  Older versions would deliver True False * 7 True True False * 6
+  V3.10 deliver True True False * 6 True False * 7
+
 API changes 3.9.0
 -----------------
 - Python 3.9 is reaching end of life, and no longer supported.

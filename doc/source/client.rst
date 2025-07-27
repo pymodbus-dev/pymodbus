@@ -15,8 +15,8 @@ It is allowed to have multiple client objects that e.g. each communicate with a 
 
 Client performance
 ------------------
-There are currently a big performance gap between the 2 clients
-(try it on your computer :github:`examples/client_performance.py`).
+There are currently a big performance gap between the 2 clients.
+
 This is due to a rather old implementation of the synchronous client, we are currently working to update the client code.
 Our aim is to achieve a similar data rate with both clients and at least double the data rate while keeping the stability.
 Table below is a test with 1000 calls each reading 10 registers.
@@ -127,12 +127,12 @@ Synchronous example
 
     from pymodbus.client import ModbusTcpClient
 
-    client = ModbusTcpClient('MyDevice.lan')   # Create client object
-    client.connect()                           # connect to device
-    client.write_coil(1, True, slave=1)        # set information in device
-    result = client.read_coils(2, 3, slave=1)  # get information from device
-    print(result.bits[0])                      # use information
-    client.close()                             # Disconnect device
+    client = ModbusTcpClient('MyDevice.lan')       # Create client object
+    client.connect()                               # connect to device
+    client.write_coil(1, True, device_id=1)        # set information in device
+    result = client.read_coils(2, 3, device_id=1)  # get information from device
+    print(result.bits[0])                          # use information
+    client.close()                                 # Disconnect device
 
 The line :mod:`client.connect()` connects to the device (or comm port). If this cannot connect successfully within
 the timeout it throws an exception. After this initial connection, further
@@ -147,12 +147,12 @@ Asynchronous example
 
     from pymodbus.client import AsyncModbusTcpClient
 
-    client = AsyncModbusTcpClient('MyDevice.lan')    # Create client object
-    await client.connect()                           # connect to device, reconnect automatically
-    await client.write_coil(1, True, slave=1)        # set information in device
-    result = await client.read_coils(2, 3, slave=1)  # get information from device
-    print(result.bits[0])                            # use information
-    client.close()                                   # Disconnect device
+    client = AsyncModbusTcpClient('MyDevice.lan')        # Create client object
+    await client.connect()                               # connect to device, reconnect automatically
+    await client.write_coil(1, True, device_id=1)        # set information in device
+    result = await client.read_coils(2, 3, device_id=1)  # get information from device
+    print(result.bits[0])                                # use information
+    client.close()                                       # Disconnect device
 
 The line :mod:`client = AsyncModbusTcpClient('MyDevice.lan')` only creates the object; it does not activate
 anything.
@@ -160,9 +160,9 @@ anything.
 The line :mod:`await client.connect()` connects to the device (or comm port), if this cannot connect successfully within
 the timeout it throws an exception. If connected successfully reconnecting later is handled automatically
 
-The line :mod:`await client.write_coil(1, True, slave=1)` is an example of a write request, set address 1 to True on device 1 (slave).
+The line :mod:`await client.write_coil(1, True, device_id=1)` is an example of a write request, set address 1 to True on device 1.
 
-The line :mod:`result = await client.read_coils(2, 3, slave=1)` is an example of a read request, get the value of address 2, 3 and 4 (count = 3) from device 1 (slave).
+The line :mod:`result = await client.read_coils(2, 3, device_id=1)` is an example of a read request, get the value of address 2, 3 and 4 (count = 3) from device 1.
 
 The last line :mod:`client.close()` closes the connection and render the object inactive.
 
@@ -194,13 +194,13 @@ Client device addressing
 ------------------------
 
 With **TCP**, **TLS** and **UDP**, the tcp/ip address of the physical device is defined when creating the object.
-Logical devices represented by the device is addressed with the :mod:`slave=` parameter.
+Logical devices represented by the device is addressed with the :mod:`device_id=` parameter.
 
 With **Serial**, the comm port is defined when creating the object.
-The physical devices are addressed with the :mod:`slave=` parameter.
+The physical devices are addressed with the :mod:`device_id=` parameter.
 
-:mod:`slave=0` is defined as broadcast in the modbus standard, but pymodbus treats it as a normal device.
-please note :mod:`slave=0` can only be used to address devices that truly have id=0 ! Using :mod:`slave=0` to
+:mod:`device_id=0` is defined as broadcast in the modbus standard, but pymodbus treats it as a normal device.
+please note :mod:`device_id=0` can only be used to address devices that truly have id=0 ! Using :mod:`device_id=0` to
 address a single device with id not 0 is against the protocol.
 
 If an application is expecting multiple responses to a broadcast request, it must call :mod:`client.execute` and deal with the responses.
@@ -217,7 +217,7 @@ All simple request calls (mixin) return a unified result independent whether itÂ
 The application should evaluate the result generically::
 
     try:
-        rr = await client.read_coils(1, 1, slave=1)
+        rr = await client.read_coils(1, 1, device_id=1)
     except ModbusException as exc:
         _logger.error(f"ERROR: exception in pymodbus {exc}")
         raise exc

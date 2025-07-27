@@ -12,9 +12,9 @@ PyModbus - A Python Modbus Stack
    :target: https://gurubase.io/g/pymodbus
    :alt: PyModbus Guru
 
-Pymodbus is a full Modbus protocol implementation offering client/server with synchronous/asynchronous API and simulators.
+Pymodbus is a full Modbus protocol implementation offering a client and server with synchronous/asynchronous API and simulators.
 
-Our releases is defined as X.Y.Z, and we have strict rules what to release when:
+Our releases follow the pattern `X.Y.Z`. We have strict rules for what different version number updates mean:
 
 - **Z**, No API changes! bug fixes and smaller enhancements.
 - **Y**, API changes, bug fixes and bigger enhancements.
@@ -23,10 +23,13 @@ Our releases is defined as X.Y.Z, and we have strict rules what to release when:
 Upgrade examples:
 
 - 3.9.0 -> 3.9.2: just plugin the new version, no changes needed.
+                  Remark fixing bugs, can lead to a different behaviors/returns
 - 3.8.0 -> 3.9.0: Smaller changes to the pymodbus calls might be needed
 - 2.5.4 -> 3.0.0: Major changes in the application might be needed
 
-Current release is `3.9.2 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.9.2>`_.
+It is always recommended to read the CHANGELOG as well as the API_changes files.
+
+Current release is `3.10.0 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.10.0>`_.
 
 Bleeding edge (not released) is `dev <https://github.com/pymodbus-dev/pymodbus/tree/dev>`_.
 
@@ -124,10 +127,10 @@ server, the server is handy to verify the functionality of an application.
 
 The simulator and/or server is often used to simulate real life devices testing
 applications. The server is excellent to perform high volume testing (e.g.
-houndreds of devices connected to the application). The advantage of the server is
-that it runs not only a "normal" computers but also on small ones like Raspberry PI.
+hundreds of devices connected to the application). The advantage of the server is
+that it runs not only on "normal" computers but also on small ones like a Raspberry PI.
 
-Since the library is written in python, it allows for easy scripting and/or integration into their existing
+Since the library is written in python, it allows for easy scripting and/or integration into existing
 solutions.
 
 For more information please browse the project documentation:
@@ -240,7 +243,7 @@ The repository contains a number of important branches and tags.
 
 Example Code
 ------------
-For those of you that just want to get started fast, here you go::
+For those of you who just want to get started quickly, here you go::
 
     from pymodbus.client import ModbusTcpClient
 
@@ -289,7 +292,7 @@ solving issues:
 There are 2 bigger projects ongoing:
 
    * rewriting the internal part of all clients (both sync and async)
-   * Add features to and simulator, and enhance the web design
+   * Add features to the simulator, and enhance the web design
 
 
 Development instructions
@@ -326,7 +329,7 @@ you can also do extended testing::
 Internals
 ^^^^^^^^^
 
-There are no documentation of the architecture (help is welcome), but most classes and
+There is no documentation of the architecture (help is welcome), but most classes and
 methods are documented:
 
 `Pymodbus internals <https://pymodbus.readthedocs.io/en/dev/source/internals.html>`_

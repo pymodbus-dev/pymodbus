@@ -6,10 +6,10 @@ from collections.abc import Callable
 from contextlib import suppress
 
 from pymodbus.datastore import ModbusServerContext
-from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
 from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType
 from pymodbus.logging import Log
 from pymodbus.pdu import DecodePDU, ModbusPDU
+from pymodbus.pdu.device import ModbusControlBlock, ModbusDeviceIdentification
 from pymodbus.transport import CommParams, ModbusProtocol
 
 from .requesthandler import ServerRequestHandler
@@ -24,7 +24,7 @@ class ModbusBaseServer(ModbusProtocol):
         self,
         params: CommParams,
         context: ModbusServerContext | None,
-        ignore_missing_slaves: bool,
+        ignore_missing_devices: bool,
         broadcast_enable: bool,
         identity: ModbusDeviceIdentification | None,
         framer: FramerType,
@@ -45,7 +45,7 @@ class ModbusBaseServer(ModbusProtocol):
                 self.decoder.register(func)
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
-        self.ignore_missing_slaves = ignore_missing_slaves
+        self.ignore_missing_devices = ignore_missing_devices
         self.broadcast_enable = broadcast_enable
         self.trace_packet = trace_packet
         self.trace_pdu = trace_pdu
@@ -60,8 +60,6 @@ class ModbusBaseServer(ModbusProtocol):
 
     def callback_new_connection(self):
         """Handle incoming connect."""
-        if self.trace_connect:
-            self.trace_connect(True)
         return ServerRequestHandler(
             self,
             self.trace_packet,
@@ -81,7 +79,8 @@ class ModbusBaseServer(ModbusProtocol):
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
             )
-        await self.listen()
+        if not await self.listen():
+            raise RuntimeError("Could not start listen, please check address.")
         Log.info("Server listening.")
         if not background:
             with suppress(asyncio.exceptions.CancelledError):

@@ -24,7 +24,7 @@ class TestModbusPDU:
         (0x0C, b"\x0c"),  # get comm event log
         (0x0F, b"\x0f\x00\x01\x00\x08\x01\x00\xff"),  # write multiple coils
         (0x10, b"\x10\x00\x01\x00\x02\x04\0xff\xff"),  # write multiple registers
-        (0x11, b"\x11"),  # report slave id
+        (0x11, b"\x11"),  # report device id
         (
             0x14,
             b"\x14\x0e\x06\x00\x04\x00\x01\x00\x02\x06\x00\x03\x00\x09\x00\x02",
@@ -55,7 +55,7 @@ class TestModbusPDU:
         (0x0C, b"\x0c\x08\x00\x00\x01\x08\x01\x21\x20\x00"),  # get comm event log
         (0x0F, b"\x0f\x00\x01\x00\x08"),  # write multiple coils
         (0x10, b"\x10\x00\x01\x00\x02"),  # write multiple registers
-        (0x11, b"\x11\x03\x05\x01\x54"),  # report slave id (device specific)
+        (0x11, b"\x11\x03\x05\x01\x54"),  # report device id (device specific)
         (
             0x14,
             b"\x14\x0c\x05\x06\x0d\xfe\x00\x20\x05\x06\x33\xcd\x00\x40",
@@ -79,7 +79,7 @@ class TestModbusPDU:
         (0x83, b"\x83\x03\x50\xf1"),  # illegal data value exception
         (0x84, b"\x84\x04\x13\x03"),  # skave device failure exception
         (0x85, b"\x85\x05\xd3\x53"),  # acknowledge exception
-        (0x86, b"\x86\x06\x93\xa2"),  # slave device busy exception
+        (0x86, b"\x86\x06\x93\xa2"),  # device busy exception
         (0x87, b"\x87\x08\x53\xf2"),  # memory parity exception
         (0x88, b"\x88\x0a\x16\x06"),  # gateway path unavailable exception
         (0x89, b"\x89\x0b\xd6\x56"),  # gateway target failed exception

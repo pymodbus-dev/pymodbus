@@ -1,12 +1,12 @@
 """Test device."""
 from pymodbus.constants import DeviceInformation
-from pymodbus.device import (
+from pymodbus.pdu.device import (
     DeviceInformationFactory,
     ModbusControlBlock,
     ModbusDeviceIdentification,
     ModbusPlusStatistics,
 )
-from pymodbus.events import RemoteReceiveEvent
+from pymodbus.pdu.events import RemoteReceiveEvent
 
 
 # ---------------------------------------------------------------------------#
@@ -202,21 +202,21 @@ class TestDataStore:
         assert not self.control.Counter.BusMessage
         for _ in range(10):
             self.control.Counter.BusMessage += 1
-            self.control.Counter.SlaveMessage += 1
+            self.control.Counter.DeviceMessage += 1
         assert self.control.Counter.BusMessage == 10
         self.control.Counter.BusMessage = 0x00
         assert not self.control.Counter.BusMessage
-        assert self.control.Counter.SlaveMessage == 10
+        assert self.control.Counter.DeviceMessage == 10
         self.control.Counter.reset()
-        assert not self.control.Counter.SlaveMessage
+        assert not self.control.Counter.DeviceMessage
 
     def test_modbus_control_block_update(self):
         """Tests the MCB counters update methods."""
-        values = {"SlaveMessage": 5, "BusMessage": 5}
+        values = {"DeviceMessage": 5, "BusMessage": 5}
         self.control.Counter.BusMessage += 1
-        self.control.Counter.SlaveMessage += 1
+        self.control.Counter.DeviceMessage += 1
         self.control.Counter.update(values)
-        assert self.control.Counter.SlaveMessage == 6
+        assert self.control.Counter.DeviceMessage == 6
         assert self.control.Counter.BusMessage == 6
 
     def test_modbus_control_block_iterator(self):
@@ -236,8 +236,8 @@ class TestDataStore:
         assert not self.control.Counter.summary()
         for _ in range(10):
             self.control.Counter.BusMessage += 1
-            self.control.Counter.SlaveMessage += 1
-            self.control.Counter.SlaveNAK += 1
+            self.control.Counter.DeviceMessage += 1
+            self.control.Counter.DeviceNAK += 1
             self.control.Counter.BusCharacterOverrun += 1
         assert self.control.Counter.summary() == 0xA9
         self.control.Counter.reset()

@@ -4,7 +4,7 @@
             "comm": "tcp",
             "host": "0.0.0.0",
             "port": 5020,
-            "ignore_missing_slaves": false,
+            "ignore_missing_devices": false,
             "framer": "socket",
             "identity": {
                 "VendorName": "pymodbus",
@@ -40,7 +40,7 @@
             "port": 5020,
             "certfile": "certificates/pymodbus.crt",
             "keyfile": "certificates/pymodbus.key",
-            "ignore_missing_slaves": false,
+            "ignore_missing_devices": false,
             "framer": "tls",
             "identity": {
                 "VendorName": "pymodbus",
@@ -55,7 +55,7 @@
             "comm": "udp",
             "host": "0.0.0.0",
             "port": 5020,
-            "ignore_missing_slaves": false,
+            "ignore_missing_devices": false,
             "framer": "socket",
             "identity": {
                 "VendorName": "pymodbus",

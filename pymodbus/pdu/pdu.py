@@ -5,8 +5,8 @@ import asyncio
 import struct
 from abc import abstractmethod
 
-from pymodbus.datastore import ModbusSlaveContext
-from pymodbus.exceptions import NotImplementedException
+from pymodbus.datastore import ModbusDeviceContext
+from pymodbus.exceptions import ModbusIOException, NotImplementedException
 
 
 class ModbusPDU:
@@ -28,6 +28,8 @@ class ModbusPDU:
         ) -> None:
         """Initialize the base data for a modbus request."""
         self.dev_id: int = dev_id
+        if dev_id > 255:
+            raise ModbusIOException(f"Invalid ID {dev_id}")
         self.transaction_id: int = transaction_id
         self.address: int = address
         self.bits: list[bool] = bits or []
@@ -36,6 +38,7 @@ class ModbusPDU:
         self.status: int = status
         self.exception_code: int = 0
         self.fut: asyncio.Future
+        self.retries: int = 0
 
     def isError(self) -> bool:
         """Check if the error is a success or failure."""
@@ -65,7 +68,8 @@ class ModbusPDU:
             f"count={self.count}, "
             f"bits={self.bits!s}, "
             f"registers={self.registers!s}, "
-            f"status={self.status!s})"
+            f"status={self.status!s}"
+            f"retries={self.retries})"
         )
 
     def get_response_pdu_size(self) -> int:
@@ -80,7 +84,7 @@ class ModbusPDU:
     def decode(self, data: bytes) -> None:
         """Decode data part of the message."""
 
-    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
+    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
         """Run request against a datastore."""
         _ = context
         return ExceptionResponse(0, 0)
@@ -107,9 +111,9 @@ class ExceptionResponse(ModbusPDU):
     ILLEGAL_FUNCTION = 0x01
     ILLEGAL_ADDRESS = 0x02
     ILLEGAL_VALUE = 0x03
-    SLAVE_FAILURE = 0x04
+    DEVICE_FAILURE = 0x04
     ACKNOWLEDGE = 0x05
-    SLAVE_BUSY = 0x06
+    DEVICE_BUSY = 0x06
     NEGATIVE_ACKNOWLEDGE = 0x07
     MEMORY_PARITY_ERROR = 0x08
     GATEWAY_PATH_UNAVIABLE = 0x0A
@@ -119,10 +123,10 @@ class ExceptionResponse(ModbusPDU):
             self,
             function_code: int,
             exception_code: int = 0,
-            slave: int = 1,
+            device_id: int = 1,
             transaction: int = 0) -> None:
         """Initialize the modbus exception response."""
-        super().__init__(transaction_id=transaction, dev_id=slave)
+        super().__init__(transaction_id=transaction, dev_id=device_id)
         self.function_code = function_code | 0x80
         self.exception_code = exception_code
 
@@ -162,15 +166,14 @@ def pack_bitstring(bits: list[bool], align_byte=True) -> bytes:
     bits_extra = 8 if align_byte else 16
     if (extra := len(bits) % bits_extra):
         t_bits += [False] * (bits_extra - extra)
-    for byte_inx in range(0, len(t_bits), 8):
-        for bit in reversed(t_bits[byte_inx:byte_inx+8]):
-            packed <<= 1
-            if bit:
-                packed += 1
-            i += 1
-            if i == 8:
-                ret += struct.pack(">B", packed)
-                i = packed = 0
+    for bit in reversed(t_bits):
+        packed <<= 1
+        if bit:
+            packed += 1
+        i += 1
+        if i == 8:
+            ret += struct.pack(">B", packed)
+            i = packed = 0
     return ret
 
 
@@ -182,11 +185,13 @@ def unpack_bitstring(data: bytes) -> list[bool]:
         bytes 0x05 0x81
         result = unpack_bitstring(bytes)
 
-        [True, False, True, False] + [False, False, False, False]
-        [True, False, False, False] + [False, False, False, True]
+        [True, False, False, False] +
+        [False, False, False, True] +
+        [True, False, True, False] +
+        [False, False, False, False]
     """
     res = []
-    for _, t_byte in enumerate(data):
+    for byte_index in range(len(data) -1, -1, -1):
         for bit in (1, 2, 4, 8, 16, 32, 64, 128):
-            res.append(bool(t_byte & bit))
+            res.append(bool(data[byte_index] & bit))
     return res

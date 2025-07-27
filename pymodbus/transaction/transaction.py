@@ -79,7 +79,7 @@ class TransactionManager(ModbusProtocol):
         """Do dummy trace."""
         _ = connect
 
-    def sync_get_response(self, dev_id) -> ModbusPDU:
+    def sync_get_response(self, dev_id, tid) -> ModbusPDU:
         """Receive until PDU is correct or timeout."""
         databuffer = b''
         while True:
@@ -108,13 +108,9 @@ class TransactionManager(ModbusProtocol):
                     continue
 
             databuffer += data
-            used_len, pdu = self.framer.processIncomingFrame(self.trace_packet(False, databuffer))
+            used_len, pdu = self.framer.handleFrame(self.trace_packet(False, databuffer), dev_id, tid)
             databuffer = databuffer[used_len:]
             if pdu:
-                if pdu.dev_id != dev_id:
-                    raise ModbusIOException(
-                        f"ERROR: request ask for id={dev_id} but id={pdu.dev_id}, CLOSING CONNECTION."
-                    )
                 return self.trace_pdu(False, pdu)
 
     def sync_execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
@@ -133,7 +129,9 @@ class TransactionManager(ModbusProtocol):
                 if no_response_expected:
                     return ExceptionResponse(0xff)
                 try:
-                    return self.sync_get_response(request.dev_id)
+                    response = self.sync_get_response(request.dev_id, request.transaction_id)
+                    response.retries = count_retries
+                    return response
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
             if self.count_until_disconnect < 0:
@@ -174,6 +172,7 @@ class TransactionManager(ModbusProtocol):
                         raise ModbusIOException(
                             f"ERROR: request ask for id={request.dev_id} but got id={response.dev_id}, CLOSING CONNECTION."
                         )
+                    response.retries = count_retries
                     return response
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
@@ -191,8 +190,9 @@ class TransactionManager(ModbusProtocol):
 
     def pdu_send(self, pdu: ModbusPDU, addr: tuple | None = None) -> None:
         """Build byte stream and send."""
-        self.request_dev_id = pdu.dev_id
-        self.request_transaction_id = pdu.transaction_id
+        if not self.is_server:
+            self.request_dev_id = pdu.dev_id
+            self.request_transaction_id = pdu.transaction_id
         packet = self.framer.buildFrame(self.trace_pdu(True, pdu))
         if self.is_sync and self.comm_params.handle_local_echo:
             self.sent_buffer = packet
@@ -214,16 +214,12 @@ class TransactionManager(ModbusProtocol):
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
         self.last_pdu = self.last_addr = None
-        used_len, pdu = self.framer.processIncomingFrame(self.trace_packet(False, data))
+        used_len, pdu = self.framer.handleFrame(self.trace_packet(False, data), self.request_dev_id, self.request_transaction_id)
         if pdu:
             self.last_pdu = self.trace_pdu(False, pdu)
             self.last_addr = addr
             if not self.is_server:
-                if pdu.dev_id != self.request_dev_id:
-                    Log.warning(f"ERROR: expected id {self.request_dev_id} but got {pdu.dev_id}, IGNORING.")
-                elif pdu.transaction_id != self.request_transaction_id:
-                    Log.warning(f"ERROR: expected transaction {self.request_transaction_id} but got {pdu.transaction_id}, IGNORING.")
-                elif self.response_future.done():
+                if self.response_future.done():
                     Log.warning("ERROR: received pdu without a corresponding request, IGNORING")
                 else:
                     self.response_future.set_result(self.last_pdu)

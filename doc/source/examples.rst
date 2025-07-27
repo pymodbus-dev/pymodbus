@@ -31,13 +31,6 @@ Source: :github:`examples/simple_sync_client.py`
 .. literalinclude:: ../../examples/simple_sync_client.py
 
 
-Client performance sync vs async
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Source: :github:`examples/client_performance.py`
-
-.. literalinclude:: ../../examples/client_performance.py
-
-
 Advanced examples
 -----------------
 
@@ -88,14 +81,6 @@ Source: :github:`examples/custom_msg.py`
     :noindex:
 
 
-Client payload
-^^^^^^^^^^^^^^
-Source: :github:`examples/client_payload.py`
-
-.. automodule:: examples.client_payload
-    :undoc-members:
-    :noindex:
-
 Client synchronous
 ^^^^^^^^^^^^^^^^^^
 Source: :github:`examples/client_sync.py`
@@ -128,15 +113,6 @@ Server tracer
 Source: :github:`examples/server_hook.py`
 
 .. automodule:: examples.server_hook
-    :undoc-members:
-    :noindex:
-
-
-Server payload
-^^^^^^^^^^^^^^
-Source: :github:`examples/server_payload.py`
-
-.. automodule:: examples.server_payload
     :undoc-members:
     :noindex:
 
@@ -182,15 +158,6 @@ Message Parser
 Source: :github:`examples/message_parser.py`
 
 .. automodule:: examples.message_parser
-    :undoc-members:
-    :noindex:
-
-
-Modbus forwarder
-^^^^^^^^^^^^^^^^
-Source: :github:`examples/modbus_forwarder.py`
-
-.. automodule:: examples.modbus_forwarder
     :undoc-members:
     :noindex:
 

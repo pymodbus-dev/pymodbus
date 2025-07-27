@@ -25,6 +25,7 @@ Thanks to
 - banana-sun
 - Blaise Thompson
 - Breina
+- brherger
 - CapraTheBest
 - cgernert
 - corollaries
@@ -41,6 +42,7 @@ Thanks to
 - Dries
 - duc996
 - efdx
+- Erlend E. Aasland
 - Esco441-91
 - Farzad Panahi
 - Fredo70
@@ -48,6 +50,7 @@ Thanks to
 - Ghostkeeper
 - Hangyu Fan
 - Hayden Roche
+- igorbga
 - Iktek
 - Ilkka Ollakka
 - Jakob Ruhe
@@ -67,6 +70,8 @@ Thanks to
 - Kürşat Aktaş
 - laund
 - Logan Gunthorpe
+- Luke Hoggatt
+- Mark Deneen
 - Marko Luther
 - Martyy
 - Máté Szabó

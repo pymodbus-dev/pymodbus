@@ -1,10 +1,12 @@
 """Register Reading Request/Response."""
+
 from __future__ import annotations
 
 import struct
+from collections.abc import Sequence
 from typing import cast
 
-from pymodbus.datastore import ModbusSlaveContext
+from pymodbus.datastore import ModbusDeviceContext
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.pdu.pdu import ExceptionResponse, ModbusPDU
 
@@ -23,7 +25,7 @@ class ReadHoldingRegistersRequest(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode a register request packet."""
-        self.address, self.count = struct.unpack(">HH", data)
+        self.address, self.count = struct.unpack(">HH", data[:4])
 
     def get_response_pdu_size(self) -> int:
         """Get response pdu size.
@@ -32,15 +34,21 @@ class ReadHoldingRegistersRequest(ModbusPDU):
         """
         return 1 + 1 + 2 * self.count
 
-    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
+    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
         """Run a read holding request against a datastore."""
         values = await context.async_getValues(
             self.function_code, self.address, self.count
         )
-        if isinstance(values, int):
-            return ExceptionResponse(self.function_code, values)
-        response_class = (ReadHoldingRegistersResponse if self.function_code == 3 else ReadInputRegistersResponse)
-        return response_class(registers=cast(list[int], values), dev_id=self.dev_id, transaction_id=self.transaction_id)
+        response_class = (
+            ReadHoldingRegistersResponse
+            if self.function_code == 3
+            else ReadInputRegistersResponse
+        )
+        return response_class(
+            registers=cast(list[int], values),
+            dev_id=self.dev_id,
+            transaction_id=self.transaction_id,
+        )
 
 
 class ReadHoldingRegistersResponse(ModbusPDU):
@@ -60,7 +68,9 @@ class ReadHoldingRegistersResponse(ModbusPDU):
         """Decode a register response packet."""
         self.registers = []
         if (data_len := int(data[0])) >= len(data):
-            raise ModbusIOException(f"byte_count {data_len} > length of packet {len(data)}")
+            raise ModbusIOException(
+                f"byte_count {data_len} > length of packet {len(data)}"
+            )
         for i in range(1, data_len, 2):
             self.registers.append(struct.unpack(">H", data[i : i + 2])[0])
 
@@ -83,13 +93,15 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
     function_code = 23
     rtu_byte_count_pos = 10
 
-    def __init__(self,
-            read_address: int = 0x00,
-            read_count: int = 0,
-            write_address: int = 0x00,
-            write_registers: list[int] | None = None,
-            dev_id: int = 1,
-            transaction_id: int = 0) -> None:
+    def __init__(
+        self,
+        read_address: int = 0x00,
+        read_count: int = 0,
+        write_address: int = 0x00,
+        write_registers: list[int] | None = None,
+        dev_id: int = 1,
+        transaction_id: int = 0,
+    ) -> None:
         """Initialize a new request message."""
         if not write_registers:
             write_registers = []
@@ -133,12 +145,16 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
             register = struct.unpack(">H", data[i : i + 2])[0]
             self.write_registers.append(register)
 
-    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
+    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
         """Run a write single register request against a datastore."""
         if not (1 <= self.read_count <= 0x07D):
-            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
+            return ExceptionResponse(
+                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+            )
         if not 1 <= self.write_count <= 0x079:
-            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
+            return ExceptionResponse(
+                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+            )
         rc = await context.async_setValues(
             self.function_code, self.write_address, self.write_registers
         )
@@ -147,9 +163,11 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         registers = await context.async_getValues(
             self.function_code, self.read_address, self.read_count
         )
-        if isinstance(registers, int):
-            return ExceptionResponse(self.function_code, registers)
-        return ReadWriteMultipleRegistersResponse(registers=cast(list[int], registers), dev_id=self.dev_id, transaction_id=self.transaction_id)
+        return ReadWriteMultipleRegistersResponse(
+            registers=cast(list[int], registers),
+            dev_id=self.dev_id,
+            transaction_id=self.transaction_id,
+        )
 
     def get_response_pdu_size(self) -> int:
         """Get response pdu size.
@@ -177,26 +195,28 @@ class WriteSingleRegisterResponse(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode a write single register packet packet request."""
-        self.address, register = struct.unpack(">HH", data)
+        self.address, register = struct.unpack(">HH", data[:4])
         self.registers = [register]
 
 
 class WriteSingleRegisterRequest(WriteSingleRegisterResponse):
     """WriteSingleRegisterRequest."""
 
-    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
+    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
         """Run a write single register request against a datastore."""
         if not 0 <= self.registers[0] <= 0xFFFF:
-            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
+            return ExceptionResponse(
+                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+            )
         rc = await context.async_setValues(
             self.function_code, self.address, self.registers
         )
         if rc:
             return ExceptionResponse(self.function_code, rc)
         values = await context.async_getValues(self.function_code, self.address, 1)
-        if isinstance(values, int):
-            return ExceptionResponse(self.function_code, values)
-        return WriteSingleRegisterResponse(address=self.address, registers=cast(list[int], values))
+        return WriteSingleRegisterResponse(
+            address=self.address, registers=cast(list[int], values)
+        )
 
     def get_response_pdu_size(self) -> int:
         """Get response pdu size.
@@ -227,16 +247,23 @@ class WriteMultipleRegistersRequest(ModbusPDU):
         for idx in range(5, (self.count * 2) + 5, 2):
             self.registers.append(struct.unpack(">H", data[idx : idx + 2])[0])
 
-    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
+    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
         """Run a write single register request against a datastore."""
         if not 1 <= self.count <= 0x07B:
-            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
+            return ExceptionResponse(
+                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+            )
         rc = await context.async_setValues(
             self.function_code, self.address, self.registers
-          )
+        )
         if rc:
             return ExceptionResponse(self.function_code, rc)
-        return WriteMultipleRegistersResponse(address=self.address, count=self.count, dev_id=self.dev_id, transaction_id=self.transaction_id)
+        return WriteMultipleRegistersResponse(
+            address=self.address,
+            count=self.count,
+            dev_id=self.dev_id,
+            transaction_id=self.transaction_id,
+        )
 
     def get_response_pdu_size(self) -> int:
         """Get response pdu size.
@@ -258,7 +285,7 @@ class WriteMultipleRegistersResponse(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode a write single register packet packet request."""
-        self.address, self.count = struct.unpack(">HH", data)
+        self.address, self.count = struct.unpack(">HH", data[:4])
 
 
 class MaskWriteRegisterRequest(ModbusPDU):
@@ -267,7 +294,14 @@ class MaskWriteRegisterRequest(ModbusPDU):
     function_code = 0x16
     rtu_frame_size = 10
 
-    def __init__(self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, dev_id=1, transaction_id=0) -> None:
+    def __init__(
+        self,
+        address=0x0000,
+        and_mask=0xFFFF,
+        or_mask=0x0000,
+        dev_id=1,
+        transaction_id=0,
+    ) -> None:
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, dev_id=dev_id, address=address)
         self.and_mask = and_mask
@@ -279,24 +313,34 @@ class MaskWriteRegisterRequest(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode the incoming request."""
-        self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data)
+        self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data[:6])
 
-    async def update_datastore(self, context: ModbusSlaveContext) -> ModbusPDU:
+    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
         """Run a mask write register request against the store."""
         if not 0x0000 <= self.and_mask <= 0xFFFF:
-            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
+            return ExceptionResponse(
+                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+            )
         if not 0x0000 <= self.or_mask <= 0xFFFF:
-            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
+            return ExceptionResponse(
+                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+            )
         values = await context.async_getValues(self.function_code, self.address, 1)
-        if isinstance(values, int):
-            return ExceptionResponse(self.function_code, values)
-        values = (values[0] & self.and_mask) | (self.or_mask & ~self.and_mask)
+        values = (cast(Sequence[int | bool], values)[0] & self.and_mask) | (
+            self.or_mask & ~self.and_mask
+        )
         rc = await context.async_setValues(
             self.function_code, self.address, cast(list[int], [values])
         )
         if rc:
             return ExceptionResponse(self.function_code, rc)
-        return MaskWriteRegisterResponse(address=self.address, and_mask=self.and_mask, or_mask=self.or_mask, dev_id=self.dev_id, transaction_id=self.transaction_id)
+        return MaskWriteRegisterResponse(
+            address=self.address,
+            and_mask=self.and_mask,
+            or_mask=self.or_mask,
+            dev_id=self.dev_id,
+            transaction_id=self.transaction_id,
+        )
 
 
 class MaskWriteRegisterResponse(ModbusPDU):
@@ -305,7 +349,14 @@ class MaskWriteRegisterResponse(ModbusPDU):
     function_code = 0x16
     rtu_frame_size = 10
 
-    def __init__(self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, dev_id=1, transaction_id=0) -> None:
+    def __init__(
+        self,
+        address=0x0000,
+        and_mask=0xFFFF,
+        or_mask=0x0000,
+        dev_id=1,
+        transaction_id=0,
+    ) -> None:
         """Initialize new instance."""
         super().__init__(transaction_id=transaction_id, dev_id=dev_id, address=address)
         self.and_mask = and_mask
@@ -318,4 +369,4 @@ class MaskWriteRegisterResponse(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode a the response."""
-        self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data)
+        self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data[:6])

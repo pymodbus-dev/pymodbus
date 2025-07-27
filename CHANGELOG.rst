@@ -7,6 +7,27 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.10.0
+-------------
+* Raise runtimeerror if listen() fails. (#2697)
+* Correct values parameter in setValues. (#2696)
+* Correct return from getValues. (#2695)
+* Add request fc to exceptionResponse. (#2694)
+* DummyProtocol is not async (#2686)
+* Handle "little" for multiple values in to_registers (#2678)
+* Remove unused const. (#2676)
+* Add retries to ModbusPDU class (#2672)
+* Don't invoke `trace_connect` callback twice (#2670)
+* ensure unpacking of proper length during decoding (#2664) (#2665)
+* README clean-up (#2659)
+* Bump coverage to 95,5% (#2658)
+* Simplify response rejection. (#2657)
+* Bump coverage to 93%. (#2656)
+* Solve ModbusDeviceContext bug. (#2653)
+* Bit handling LSB -> MSB across bytes. (#2634)
+* Change slave to device_id and slave= to device_id=. (#2600)
+* Remove payload. (#2524)
+
 Version 3.9.2
 -------------
 * Reactivate simulator validate. (#2643)

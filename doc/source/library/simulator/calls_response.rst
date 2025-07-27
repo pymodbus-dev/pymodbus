@@ -72,7 +72,7 @@
             },
             {
                 "value": 17,
-                "text": "report_slave_id",
+                "text": "report_device_id",
                 "selected": false
             },
             {
@@ -131,7 +131,7 @@
             },
             {
                 "value": 4,
-                "text": "SLAVE_FAILURE",
+                "text": "DEVICE_FAILURE",
                 "selected": false
             },
             {
@@ -141,7 +141,7 @@
             },
             {
                 "value": 6,
-                "text": "SLAVE_BUSY",
+                "text": "DEVICE_BUSY",
                 "selected": false
             },
             {

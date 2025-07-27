@@ -1,4 +1,4 @@
-"""Test server working as slave on a multidrop RS485 line."""
+"""Test server working as a device on a multidrop RS485 line."""
 
 import pytest
 
@@ -19,7 +19,7 @@ class TestFaultyResponses:
 
     def test_ok_frame(self, framer):
         """Test ok frame."""
-        used_len, pdu = framer.processIncomingFrame(self.good_frame)
+        used_len, pdu = framer.handleFrame(self.good_frame, 0, 0)
         assert pdu
         assert used_len == len(self.good_frame)
 
@@ -27,7 +27,7 @@ class TestFaultyResponses:
         """Test invalid frame in issue 1917."""
         recv = b"\x01\x86\x02\x00\x01"
         framer = FramerRTU(DecodePDU(False))
-        used_len, pdu = framer.processIncomingFrame(recv)
+        used_len, pdu = framer.handleFrame(recv, 0, 0)
         assert not pdu
         assert not used_len
 
@@ -35,7 +35,7 @@ class TestFaultyResponses:
         """Test ok frame."""
         faulty_frame = b"\x00\x04\x00\x00\x00\x05\x00\x03\x0a\x00\x04"
         with pytest.raises(ModbusIOException):
-            framer.processIncomingFrame(faulty_frame)
-        used_len, pdu = framer.processIncomingFrame(self.good_frame)
+            framer.handleFrame(faulty_frame, 0, 0)
+        used_len, pdu = framer.handleFrame(self.good_frame, 0, 0)
         assert pdu
         assert used_len == len(self.good_frame)

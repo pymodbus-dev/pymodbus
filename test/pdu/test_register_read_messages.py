@@ -1,4 +1,6 @@
 """Test register read messages."""
+from unittest import mock
+
 import pytest
 
 from pymodbus.exceptions import ModbusIOException
@@ -163,3 +165,17 @@ class TestReadRegisterMessages:
             assert str(request)
         for request in iter(self.response_read.keys()):
             assert str(request)
+
+    @pytest.mark.parametrize(("request_pdu"),
+        [
+            ReadWriteMultipleRegistersRequest(
+                read_address=1, read_count=5, write_address=1, write_registers=[5]
+            ),
+        ]
+    )
+    async def test_register_read_exception(self, request_pdu, mock_context):
+        """Test write single coil."""
+        context = mock_context(True, default=True)
+        context.async_setValues = mock.AsyncMock(return_value=1)
+        result = await request_pdu.update_datastore(context)
+        assert result.exception_code == 1

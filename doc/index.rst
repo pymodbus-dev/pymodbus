@@ -8,6 +8,7 @@ Please select a topic in the left hand column.
    :caption: Contents:
    :hidden:
 
+   source/upgrade_40
    source/api_changes
    source/client
    source/server
@@ -20,6 +21,5 @@ Please select a topic in the left hand column.
    source/changelog
    source/internals
    source/roadmap
-   source/upgrade_40
 
 .. include:: ../README.rst

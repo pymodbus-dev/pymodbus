@@ -4,6 +4,7 @@ Pymodbus 4.0 upgrade procedure
 Pymodbus 4.0 contains a number of incompatibilities with Pymodbus 3.x, however
 most of these are simple edits.
 
+
 Python 3.9
 ----------
 Python 3.9 is reaching end of life and from october 2025 no longer receives security updates.

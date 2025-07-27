@@ -29,47 +29,12 @@ class ModbusStatus(int, enum.Enum):
     .. attribute:: OFF
 
        This indicates that the given modbus entity is off
-
-    .. attribute:: SLAVE_ON
-
-       This indicates that the given modbus slave is running
-
-    .. attribute:: SLAVE_OFF
-
-       This indicates that the given modbus slave is not running
     """
 
     WAITING = 0xFFFF
     READY = 0x0000
     ON = 0xFF00
     OFF = 0x0000
-    SLAVE_ON = 0xFF
-    SLAVE_OFF = 0x00
-
-
-class Endian(str, enum.Enum):
-    """An enumeration representing the various byte endianness.
-
-    .. attribute:: AUTO
-
-       This indicates that the byte order is chosen by the
-       current native environment.
-
-    .. attribute:: BIG
-
-       This indicates that the bytes are in big endian format
-
-    .. attribute:: LITTLE
-
-       This indicates that the bytes are in little endian format
-
-    .. note:: I am simply borrowing the format strings from the
-       python struct module for my convenience.
-    """
-
-    AUTO = "@"
-    BIG = ">"
-    LITTLE = "<"
 
 
 class ModbusPlusOperation(int, enum.Enum):
@@ -122,10 +87,6 @@ class DeviceInformation(int, enum.Enum):
     EXTENDED = 0x03
     SPECIFIC = 0x04
 
-    def __str__(self):
-        """Override to force int representation for enum members."""
-        return str(int(self))
-
 
 class MoreData(int, enum.Enum):
     """Represents the more follows condition.
@@ -141,4 +102,3 @@ class MoreData(int, enum.Enum):
 
     NOTHING = 0x00
     KEEP_READING = 0xFF
-

@@ -18,9 +18,9 @@ except ImportError:
     sys.exit(-1)
 
 from pymodbus.datastore import (
+    ModbusDeviceContext,
     ModbusSequentialDataBlock,
     ModbusServerContext,
-    ModbusSlaveContext,
 )
 
 
@@ -58,8 +58,8 @@ async def run_callback_server(cmdline=None):
     queue: asyncio.Queue = asyncio.Queue()
     block = CallbackDataBlock(queue, 0x00, [17] * 100)
     block.setValues(1, 15)
-    store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
-    context = ModbusServerContext(slaves=store, single=True)
+    store = ModbusDeviceContext(di=block, co=block, hr=block, ir=block)
+    context = ModbusServerContext(devices=store, single=True)
     run_args = server_async.setup_server(
         description="Run callback server.", cmdline=cmdline, context=context
     )

@@ -1,5 +1,8 @@
 """Test register write messages."""
-from pymodbus.payload import BinaryPayloadBuilder, Endian
+from unittest import mock
+
+import pytest
+
 from pymodbus.pdu import ExceptionResponse
 from pymodbus.pdu.register_message import (
     MaskWriteRegisterRequest,
@@ -31,15 +34,11 @@ class TestWriteRegisterMessages:
     values = None
     builder = None
     write = None
-    payload = None
 
     def setup_method(self):
         """Initialize the test environment and builds request/result encoding pairs."""
         self.value = 0xABCD
         self.values = [0xA, 0xB, 0xC]
-        builder = BinaryPayloadBuilder(byteorder=Endian.BIG)
-        builder.add_16bit_uint(0x1234)
-        self.payload = builder.build()
         self.write = {
             WriteSingleRegisterRequest(address=1, registers=[self.value]): b"\x00\x01\xab\xcd",
             WriteSingleRegisterResponse(address=1, registers=[self.value]): b"\x00\x01\xab\xcd",
@@ -176,3 +175,18 @@ class TestWriteRegisterMessages:
         assert handle.address == 0x0004
         assert handle.and_mask == 0x00F2
         assert handle.or_mask == 0x0025
+
+
+    @pytest.mark.parametrize(("request_pdu"),
+        [
+            WriteSingleRegisterRequest(address=0x00, registers=[5]),
+            WriteMultipleRegistersRequest(address=0x00, registers=[0x00] * 10),
+            MaskWriteRegisterRequest(0x0000, 0x01, 0x1010),
+        ]
+    )
+    async def test_register_write_exception(self, request_pdu, mock_context):
+        """Test write single coil."""
+        context = mock_context(True, default=True)
+        context.async_setValues = mock.AsyncMock(return_value=1)
+        result = await request_pdu.update_datastore(context)
+        assert result.exception_code == 1

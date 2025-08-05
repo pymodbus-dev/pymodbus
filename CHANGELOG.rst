@@ -11,6 +11,7 @@ Version 3.11.0
 --------------
  * Correct bit handling (each byte is LSB->MSB). (#2707)
  * read_input_registers docstring change count to regs (#2704)
+ * Add dev_id/tid check in clients (#2711)
 
 Version 3.10.0
 --------------

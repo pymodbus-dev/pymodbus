@@ -10,6 +10,7 @@ Pymodbus version 3 family
 -------------------------
 Thanks to
 
+- aaru-astranis
 - ahcm-dev
 - AKJ7
 - Alex

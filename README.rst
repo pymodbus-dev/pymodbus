@@ -29,7 +29,7 @@ Upgrade examples:
 
 It is always recommended to read the CHANGELOG as well as the API_changes files.
 
-Current release is `3.10.0 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.10.0>`_.
+Current release is `3.11.0 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.11.0>`_.
 
 Bleeding edge (not released) is `dev <https://github.com/pymodbus-dev/pymodbus/tree/dev>`_.
 

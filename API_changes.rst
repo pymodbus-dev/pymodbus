@@ -2,13 +2,26 @@ API changes
 ===========
 Versions (X.Y.Z) where Z > 0 e.g. 3.0.1 do NOT have API changes!
 
+API changes 3.11.0
+------------------
+- Revert wrong byte handling in v3.10.0
+  bit handling order is LSB-> MSB for each byte
+  REMARK: word are ordered depending on big/little endian
+  readCoils and other bit functions now return bit in logical order (NOT byte order)
+
+  Example:
+  Hex bytes: 0x00 0x01
+  delivers False * 8 True False * 7
+
+  Hex bytes: 0x01 0x03
+  delivers True False * 7 True True False * 6
+
 API changes 3.10.0
------------------
+------------------
 - ModbusSlaveContext replaced by ModbusDeviceContext
 - payload removed (replaced by "convert_to/from_registers")
 - slave=, slaves= replaced by device_id=, device_ids=
 - slave request names changed to device
-<<<<<<< HEAD
 - bit handling order is LSB (last byte) -> MSB (first byte)
   readCoils and other bit functions now return bit in logical order (NOT byte order)
 
@@ -23,8 +36,6 @@ API changes 3.10.0
   Hex bytes: 0x01 0x03
   Older versions would deliver True False * 7 True True False * 6
   V3.10 deliver True True False * 6 True False * 7
-=======
->>>>>>> parent of 968564c0 (Bit handling LSB -> MSB across bytes. (#2634))
 
 API changes 3.9.0
 -----------------

@@ -170,7 +170,7 @@ class TestMixin:
             (
                 ModbusClientMixin.DATATYPE.BITS,
                 [True],
-                [1],  # 0x00 0x01
+                [256],  # 0x01 0x00
                 None,
             ),
             (

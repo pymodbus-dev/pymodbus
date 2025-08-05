@@ -7,8 +7,13 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.11.0
+--------------
+ * Correct bit handling (each byte is LSB->MSB). (#2707)
+ * read_input_registers docstring change count to regs (#2704)
+
 Version 3.10.0
--------------
+--------------
 * Raise runtimeerror if listen() fails. (#2697)
 * Correct values parameter in setValues. (#2696)
 * Correct return from getValues. (#2695)

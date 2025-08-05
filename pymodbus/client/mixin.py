@@ -121,7 +121,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """Read input registers (code 0x04).
 
         :param address: Start address to read from
-        :param count: (optional) Number of coils to read
+        :param count: (optional) Number of registers to read
         :param device_id: (optional) Modbus device ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:

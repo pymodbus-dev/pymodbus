@@ -8,6 +8,7 @@ API changes 3.10.0
 - payload removed (replaced by "convert_to/from_registers")
 - slave=, slaves= replaced by device_id=, device_ids=
 - slave request names changed to device
+<<<<<<< HEAD
 - bit handling order is LSB (last byte) -> MSB (first byte)
   readCoils and other bit functions now return bit in logical order (NOT byte order)
 
@@ -22,6 +23,8 @@ API changes 3.10.0
   Hex bytes: 0x01 0x03
   Older versions would deliver True False * 7 True True False * 6
   V3.10 deliver True True False * 6 True False * 7
+=======
+>>>>>>> parent of 968564c0 (Bit handling LSB -> MSB across bytes. (#2634))
 
 API changes 3.9.0
 -----------------

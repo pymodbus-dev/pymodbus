@@ -130,6 +130,14 @@ class TransactionManager(ModbusProtocol):
                     return ExceptionResponse(0xff)
                 try:
                     response = self.sync_get_response(request.dev_id, request.transaction_id)
+                    if response.dev_id != request.dev_id:
+                        raise ModbusIOException(
+                            f"ERROR: request uses device id={request.dev_id} but received {response.dev_id}."
+                        )
+                    if response.transaction_id != request.transaction_id:
+                        raise ModbusIOException(
+                            f"ERROR: request uses transaction id={request.transaction_id} but received {response.transaction_id}."
+                       )
                     response.retries = count_retries
                     return response
                 except asyncio.exceptions.TimeoutError:
@@ -170,8 +178,12 @@ class TransactionManager(ModbusProtocol):
                     self.count_until_disconnect= self.max_until_disconnect
                     if response.dev_id != request.dev_id:
                         raise ModbusIOException(
-                            f"ERROR: request ask for id={request.dev_id} but got id={response.dev_id}, CLOSING CONNECTION."
+                            f"ERROR: request uses device id={request.dev_id} but received {response.dev_id}."
                         )
+                    if response.transaction_id != request.transaction_id:
+                        raise ModbusIOException(
+                            f"ERROR: request uses transaction id={request.transaction_id} but received {response.transaction_id}."
+                       )
                     response.retries = count_retries
                     return response
                 except asyncio.exceptions.TimeoutError:

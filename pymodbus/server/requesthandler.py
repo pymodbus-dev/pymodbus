@@ -105,6 +105,9 @@ class ServerRequestHandler(TransactionManager):
             if self.server.ignore_missing_devices:
                 return  # the client will simply timeout waiting for a response
             response = ExceptionResponse(self.last_pdu.function_code, ExceptionResponse.GATEWAY_NO_RESPONSE)
+        except KeyError:
+            Log.error("Requested register address does not exist: {}", self.last_pdu.address)
+            response = ExceptionResponse(self.last_pdu.function_code, ExceptionResponse.ILLEGAL_ADDRESS)
         except Exception as exc:  # pylint: disable=broad-except
             Log.error(
                 "Datastore unable to fulfill request: {}; {}",

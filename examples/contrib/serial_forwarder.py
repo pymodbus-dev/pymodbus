@@ -9,6 +9,7 @@ import logging
 import signal
 
 from pymodbus.client import ModbusSerialClient
+from pymodbus.framer import FramerType
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.remote import RemoteDeviceContext
 from pymodbus.server import ModbusTcpServer
@@ -33,13 +34,13 @@ class SerialForwarderTCPServer:
     async def run(self):
         """Run the server"""
         port, baudrate, server_port, server_ip, device_ids = get_commandline()
-        client = ModbusSerialClient(method="rtu", port=port, baudrate=baudrate)
+        client = ModbusSerialClient(framer=FramerType.RTU, port=port, baudrate=baudrate)
         message = f"RTU bus on {port} - baudrate {baudrate}"
         _logger.info(message)
         store = {}
         for i in device_ids:
             store[i] = RemoteDeviceContext(client, device_id=i)
-        context = ModbusServerContext(device_ids=store, single=False)
+        context = ModbusServerContext(devices=store, single=False)
         self.server = ModbusTcpServer(
             context,
             address=(server_ip, server_port),

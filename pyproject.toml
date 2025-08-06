@@ -36,7 +36,6 @@ Homepage = "https://github.com/pymodbus-dev/pymodbus/"
 "Source Code" = "https://github.com/pymodbus-dev/pymodbus"
 "Bug Reports" = "https://github.com/pymodbus-dev/pymodbus/issues"
 "Docs: Dev" = "https://pymodbus.readthedocs.io/en/latest/?badge=latest"
-Discord = "https://discord.gg/vcP8qAz2"
 
 [project.scripts]
 "pymodbus.simulator" = "pymodbus.server.simulator.main:main"

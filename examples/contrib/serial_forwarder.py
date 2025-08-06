@@ -74,7 +74,7 @@ def get_commandline():
     parser.add_argument("--server_port", help="server port", default=5020, type=int)
     parser.add_argument("--server_ip", help="server IP", default="127.0.0.1", type=str)
     parser.add_argument(
-        "--sdevice_ids", help="list of device_ids to forward", type=int, nargs="+"
+        "--device_ids", help="list of device_ids to forward", type=int, nargs="+"
     )
 
     args = parser.parse_args()

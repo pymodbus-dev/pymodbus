@@ -5,9 +5,12 @@ import asyncio
 import contextlib
 import os
 import sys
+from typing import TYPE_CHECKING
 
 
 with contextlib.suppress(ImportError):
+    import serial
+if TYPE_CHECKING:
     import serial
 
 
@@ -26,7 +29,7 @@ class SerialTransport(asyncio.Transport):
             )
         self.async_loop = loop
         self.intern_protocol: asyncio.BaseProtocol = protocol
-        self.sync_serial = serial.serial_for_url(url, exclusive=True,
+        self.sync_serial: serial.Serial = serial.serial_for_url(url, exclusive=True,
             baudrate=baudrate, bytesize=bytesize, parity=parity, stopbits=stopbits, timeout=timeout
 )
         self.intern_write_buffer: list[bytes] = []

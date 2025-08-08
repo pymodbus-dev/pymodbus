@@ -6,6 +6,7 @@ import sys
 import time
 from collections.abc import Callable
 from functools import partial
+from typing import TYPE_CHECKING
 
 from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException
@@ -16,6 +17,8 @@ from pymodbus.transport import CommParams, CommType
 
 
 with contextlib.suppress(ImportError):
+    import serial
+if TYPE_CHECKING:
     import serial
 
 

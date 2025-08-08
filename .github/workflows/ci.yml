@@ -54,11 +54,6 @@ jobs:
       - name: Checkout repo from github
         uses: actions/checkout@v4.2.2
 
-      - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v5.4.0
-        with:
-          python-version: ${{ matrix.python }}
-
       - name: Install uv
         uses: astral-sh/setup-uv@v6
         with:

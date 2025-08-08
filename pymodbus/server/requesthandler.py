@@ -92,11 +92,8 @@ class ServerRequestHandler(TransactionManager):
             if self.server.broadcast_enable and not self.last_pdu.dev_id:
                 # if broadcasting then execute on all device contexts,
                 # note response will be ignored
-                await asyncio.gather(*[
-                    self.last_pdu.update_datastore(self.server.context[dev_id])
-                    for dev_id in self.server.context.device_id()
-                ])
-
+                for dev_id in self.server.context.device_id():
+                    await self.last_pdu.update_datastore(self.server.context[dev_id])
                 return
 
             context = self.server.context[self.last_pdu.dev_id]

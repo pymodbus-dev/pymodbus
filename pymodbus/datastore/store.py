@@ -51,7 +51,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from typing import Any, Generic, TypeVar
 
-from pymodbus.exceptions import ParameterException
+from pymodbus.exceptions import NoSuchAddressException, ParameterException
 
 
 # ---------------------------------------------------------------------------#
@@ -259,8 +259,12 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
         :param address: The starting address
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
+        :raises: NoSuchAddressException
         """
-        return [self.values[i] for i in range(address, address + count)]
+        try:
+            return [self.values[i] for i in range(address, address + count)]
+        except KeyError as e:
+            raise NoSuchAddressException(str(e)) from e
 
     def _process_values(self, values):
         """Process values."""

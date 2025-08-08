@@ -69,6 +69,14 @@ class NoSuchIdException(ModbusException):
         message = f"[No Such id] {string}"
         ModbusException.__init__(self, message)
 
+class NoSuchAddressException(ModbusException):
+    """Error resulting from making a request for a register that does not exist."""
+
+    def __init__(self, string=""):
+        """Initialize."""
+        message = f"[No such register address] {string}"
+        ModbusException.__init__(self, message)
+
 
 class NotImplementedException(ModbusException):
     """Error resulting from not implemented function."""

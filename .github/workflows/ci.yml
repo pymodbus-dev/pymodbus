@@ -63,7 +63,11 @@ jobs:
 
       - name: documentation
         if: matrix.run_doc == true
-        run: cd doc && uv ./build_html
+        run: |
+          source .venv/bin/activate
+          cd doc 
+          ./build_html
+        # this won't work on Windows, but we run_doc == False on Windows
 
       - name: pylint
         if: matrix.run_lint == true

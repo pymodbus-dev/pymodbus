@@ -46,75 +46,53 @@ jobs:
       - name: Checkout repo from github
         uses: actions/checkout@v4.2.2
 
-      - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v5.4.0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
           python-version: ${{ matrix.python }}
+          enable-cache: true
 
-      - name: Set venv path (NON Windows)
-        if: matrix.os != 'windows-latest'
+      - name: Create virtualenv and sync dependencies
         run: |
-          echo "VIRTUAL_ENV=${{ github.workspace }}/venv" >> $GITHUB_ENV
-          echo ${{ github.workspace }}/venv/bin >> $GITHUB_PATH
-
-      - name: Set venv path (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          echo "VIRTUAL_ENV=${{ github.workspace }}\\venv" >> $Env:GITHUB_ENV
-          echo "${{ github.workspace }}\\venv\\Scripts" >> $Env:GITHUB_PATH
-
-      - name: Restore base Python virtual environment
-        id: cache-venv
-        uses: actions/cache@v4.2.0
-        with:
-          path: ${{ env.VIRTUAL_ENV }}
-          key: >-
-            ${{ runner.os }}-${{ matrix.python }}-venv-${{
-              hashFiles('pyproject.toml') }}
-
-      - name: Create venv (NEW CACHE)
-        if: steps.cache-venv.outputs.cache-hit != 'true'
-        run: |
-          python -m venv ${{ env.VIRTUAL_ENV }}
-          python -m pip install --upgrade pip
-          pip install -e ".[all]"
+          uv sync --all-extras
 
       - name: codespell
         if: matrix.run_doc == true
         run: |
-          codespell
+          uv run codespell
 
-      - name: dcoumentation
+      - name: documentation
         if: matrix.run_doc == true
         run: |
-          cd doc; ./build_html
+          source .venv/bin/activate
+          cd doc 
+          ./build_html
+        # this won't work on Windows, but we run_doc == False on Windows
 
       - name: pylint
         if: matrix.run_lint == true
         run: |
-          pylint --recursive=y examples pymodbus test
+          uv run pylint --recursive=y examples pymodbus test
 
       - name: mypy
         if: matrix.run_lint == true
         run: |
-          mypy pymodbus examples
+          uv run mypy pymodbus examples
 
       - name: ruff
         if: matrix.run_lint == true
         run: |
-          ruff check .
+          uv run ruff check .
 
       - name: pytest
-        if: ${{ (matrix.os != 'ubuntu-latest') || (matrix.python != '3.13') }}
-        run: |
-          env
-          pytest
+        if: ${{ (matrix.os != 'ubuntu-latest') || (matrix.python != '3.13.0') }}
+        run: | 
+          uv run pytest
 
       - name: pytest coverage
-        if: ${{ (matrix.os == 'ubuntu-latest') && (matrix.python == '3.13')  }}
+        if: ${{ (matrix.os == 'ubuntu-latest') && (matrix.python == '3.13.0') }}
         run: |
-          env
-          pytest --cov
+          uv run pytest --cov
 
   analyze:
     name: Analyze Python

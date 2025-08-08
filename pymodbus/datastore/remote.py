@@ -32,13 +32,13 @@ class RemoteDeviceContext(ModbusBaseDeviceContext):
         """Reset all the datastores to their default values."""
         raise NotImplementedException()
 
-    def getValues(self, fc_as_hex, _address, _count=1):
+    def getValues(self, fc_as_hex, address, count=1):
         """Get values from remote device."""
         if fc_as_hex in self._write_fc:
             return [0]
         group_fx = self.decode(fc_as_hex)
         func_fc = self.__get_callbacks[group_fx]
-        self.result = func_fc(_address, _count)
+        self.result = func_fc(address, count)
         return self.__extract_result(self.decode(fc_as_hex), self.result)
 
     def setValues(self, fc_as_hex, address, values):

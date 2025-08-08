@@ -44,11 +44,11 @@ class ServerRequestHandler(TransactionManager):
         """Call when listener receive new connection request."""
         raise RuntimeError("callback_new_connection should never be called")
 
-    def callback_disconnected(self, call_exc: Exception | None) -> None:
+    def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""
-        super().callback_disconnected(call_exc)
+        super().callback_disconnected(exc)
         try:
-            if call_exc is None:
+            if exc is None:
                 Log.debug(
                     "Handler for stream [{}] has been canceled", self.comm_params.comm_name
                 )
@@ -56,7 +56,7 @@ class ServerRequestHandler(TransactionManager):
                 Log.debug(
                     "Client Disconnection {} due to {}",
                     self.comm_params.comm_name,
-                    call_exc,
+                    exc,
                 )
             self.running = False
         except Exception as exc:  # pylint: disable=broad-except

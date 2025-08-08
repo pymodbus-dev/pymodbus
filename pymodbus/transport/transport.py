@@ -279,14 +279,14 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.reset_delay()
         self.callback_connected()
 
-    def connection_lost(self, reason: Exception | None) -> None:
+    def connection_lost(self, exc: Exception | None) -> None:
         """Call from asyncio, when the connection is lost or closed.
 
-        :param reason: None or an exception object
+        :param exception: None or an exception object
         """
         if not self.transport or self.is_closing:
             return
-        Log.debug("Connection lost {} due to {}", self.comm_params.comm_name, reason)
+        Log.debug("Connection lost {} due to {}", self.comm_params.comm_name, exc)
         self.__close()
         if self.is_listener:
             self.reconnect_task = asyncio.create_task(self.do_relisten())
@@ -294,7 +294,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         elif not self.listener and self.comm_params.reconnect_delay:
             self.reconnect_task = asyncio.create_task(self.do_reconnect())
             self.reconnect_task.set_name("transport reconnect")
-        self.callback_disconnected(reason)
+        self.callback_disconnected(exc)
 
     def data_received(self, data: bytes) -> None:
         """Call when some data is received.

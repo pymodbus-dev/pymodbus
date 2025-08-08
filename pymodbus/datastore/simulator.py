@@ -586,7 +586,7 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
 
         :meta private:
         """
-        if not self.validate(func_code, address, count):
+        if not self.validate(fc_as_hex, address, count):
             return ExcCodes.ILLEGAL_ADDRESS
         result = []
         if func_code not in self._bits_func_code:
@@ -618,7 +618,7 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
                 bit_index = 0
         return result
 
-    def setValues(self, func_code, address, values) -> None | ExcCodes:
+    def setValues(self, fc_as_hex, address, values) -> None | ExcCodes:
         """Set the requested values of the datastore.
 
         :meta private:

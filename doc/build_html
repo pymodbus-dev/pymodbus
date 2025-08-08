@@ -5,4 +5,10 @@ zip -9 doc/source/_static/examples.zip examples/*
 tar -czf doc/source/_static/examples.tgz examples
 popd
 
-sphinx-build -M html "." "../build/html" 
+if command -v uv &> /dev/null; then
+    echo "Using: uv run sphinx-build"
+    uv run sphinx-build -M html "." "../build/html"
+else
+    echo "Using: sphinx-build"
+    sphinx-build -M html "." "../build/html"
+fi

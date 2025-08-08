@@ -69,9 +69,9 @@ jobs:
         run: |
           uv run codespell --skip "*.lock"
 
-      # - name: documentation
-      #   if: matrix.run_doc == true
-      #   run: cd doc && ./build_html
+      - name: documentation
+        if: matrix.run_doc == true
+        run: cd doc && ./build_html
 
       - name: pylint
         if: matrix.run_lint == true

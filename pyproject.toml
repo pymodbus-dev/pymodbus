@@ -250,7 +250,7 @@ directory = "build/cov"
 
 
 [tool.codespell]
-skip = "./build,./doc/source/_static,venv,.venv,.git,htmlcov,CHANGELOG.rst,.mypy_cache"
+skip = "./build,./doc/source/_static,venv,.venv,.git,htmlcov,CHANGELOG.rst,.*_cache,*.lock"
 ignore-words-list = "asend"
 
 [tool.ruff]

@@ -86,19 +86,18 @@ class ServerRequestHandler(TransactionManager):
 
     async def handle_request(self):
         """Handle request."""
-        broadcast = False
         if not self.last_pdu:
             return
         try:
             if self.server.broadcast_enable and not self.last_pdu.dev_id:
-                broadcast = True
                 # if broadcasting then execute on all device contexts,
                 # note response will be ignored
                 for dev_id in self.server.context.device_id():
-                    response = await self.last_pdu.update_datastore(self.server.context[dev_id])
-            else:
-                context = self.server.context[self.last_pdu.dev_id]
-                response = await self.last_pdu.update_datastore(context)
+                    await self.last_pdu.update_datastore(self.server.context[dev_id])
+                return
+
+            context = self.server.context[self.last_pdu.dev_id]
+            response = await self.last_pdu.update_datastore(context)
 
         except NoSuchIdException:
             Log.error("requested device id does not exist: {}", self.last_pdu.dev_id)
@@ -112,11 +111,9 @@ class ServerRequestHandler(TransactionManager):
                 traceback.format_exc(),
             )
             response = ExceptionResponse(self.last_pdu.function_code, ExceptionResponse.DEVICE_FAILURE)
-        # no response when broadcasting
-        if not broadcast:
-            response.transaction_id = self.last_pdu.transaction_id
-            response.dev_id = self.last_pdu.dev_id
-            self.server_send(response, self.last_addr)
+        response.transaction_id = self.last_pdu.transaction_id
+        response.dev_id = self.last_pdu.dev_id
+        self.server_send(response, self.last_addr)
 
     def server_send(self, pdu, addr):
         """Send message."""

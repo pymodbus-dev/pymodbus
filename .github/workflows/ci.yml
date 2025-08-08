@@ -18,14 +18,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  faildraft:
-    name: fail draft
-    if: github.event.pull_request.draft == true
-    runs-on: ubuntu-latest
-    steps:
-      - name: fail draft
-        run: |
-          exit 1
 
   testing:
     name: ${{ matrix.os }} - ${{ matrix.python }}
@@ -36,11 +28,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python: ['3.10', '3.11', '3.12', "3.13.0"]
+        python: ['3.10', '3.11', '3.12', '3.13']
         include:
           - python: '3.10'
             run_lint: true
-          - python: '3.13.0'
+          - python: '3.13'
             run_doc: true
             run_lint: true
           - os: macos-latest
@@ -105,13 +97,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4.2.2
-
       - uses: github/codeql-action/init@v3
         with:
           languages: python
-
-      - uses: github/codeql-action/autobuild@v3
-
       - uses: github/codeql-action/analyze@v3
 
   ci_complete:

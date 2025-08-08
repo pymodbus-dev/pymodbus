@@ -61,6 +61,7 @@ development = [
     "build>=1.2.2",
     "codespell>=2.3.0",
     "coverage>=7.6.1",
+    "hypothesis>=6.137.1",
     "mypy>=1.11.2",
     "pylint>=3.3.0",
     "pytest>=8.3.3",
@@ -313,3 +314,4 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+

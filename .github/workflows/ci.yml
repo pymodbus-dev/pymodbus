@@ -72,7 +72,7 @@ jobs:
       - name: codespell
         if: matrix.run_doc == true
         run: |
-          uv run codespell
+          uv run codespell --skip "*.lock"
 
       # - name: documentation
       #   if: matrix.run_doc == true

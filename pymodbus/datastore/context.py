@@ -123,7 +123,7 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
         Log.debug("getValues: fc-[{}] address-{}: count-{}", fc_as_hex, address, count)
         return self.store[self.decode(fc_as_hex)].getValues(address, count)
 
-    def setValues(self, fc_as_hex, address, values) -> None | ExcCodes:  # pylint: disable=useless-return
+    def setValues(self, fc_as_hex, address, values) -> None | ExcCodes:
         """Set the datastore with the supplied values.
 
         :param fc_as_hex: The function we are working with
@@ -132,8 +132,7 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
         """
         address += 1
         Log.debug("setValues[{}] address-{}: count-{}", fc_as_hex, address, len(values))
-        self.store[self.decode(fc_as_hex)].setValues(address, values)
-        return None
+        return self.store[self.decode(fc_as_hex)].setValues(address, values)
 
     def register(self, function_code, fc_as_hex, datablock=None):
         """Register a datablock with the device context.

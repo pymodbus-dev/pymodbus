@@ -14,8 +14,6 @@ from .context import (
     ModbusDeviceContext,
     ModbusServerContext,
 )
+from .sequential import ModbusSequentialDataBlock
 from .simulator import ModbusSimulatorContext
-from .store import (
-    ModbusSequentialDataBlock,
-    ModbusSparseDataBlock,
-)
+from .sparse import ModbusSparseDataBlock

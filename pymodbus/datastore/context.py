@@ -6,7 +6,7 @@ from pymodbus.exceptions import NoSuchIdException
 from pymodbus.logging import Log
 
 # pylint: disable=missing-type-doc
-from .store import ModbusSequentialDataBlock
+from .sequential import ModbusSequentialDataBlock
 
 
 class ModbusBaseDeviceContext:

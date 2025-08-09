@@ -27,7 +27,7 @@ Upgrade examples:
 - 3.8.0 -> 3.9.0: Smaller changes to the pymodbus calls might be needed
 - 2.5.4 -> 3.0.0: Major changes in the application might be needed
 
-**REMARK: As can be seen from the above Pymodbus do NOT follow the semver standard.**
+**REMARK**: As can be seen from the above Pymodbus do NOT follow the semver.org standard.
 
 It is always recommended to read the
 `CHANGELOG <https://github.com/pymodbus-dev/pymodbus/blob/dev/CHANGELOG.rst>`_

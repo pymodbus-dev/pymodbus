@@ -79,7 +79,7 @@ class CallTypeResponse:
     clear_after: int = 1
 
 
-class ModbusSimulatorServer:
+class ModbusSimulatorServer:  # pylint: disable=too-many-instance-attributes
     """**ModbusSimulatorServer**.
 
     :param modbus_server: Server name in json file (default: "server")

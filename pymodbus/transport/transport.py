@@ -282,7 +282,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
     def connection_lost(self, exc: Exception | None) -> None:
         """Call from asyncio, when the connection is lost or closed.
 
-        :param exception: None or an exception object
+        :param exc: None or an exception object
         """
         if not self.transport or self.is_closing:
             return

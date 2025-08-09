@@ -73,7 +73,11 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         """
-        return [self.values[i] for i in range(address, address + count)]
+        try:
+            values = [self.values[i] for i in range(address, address + count)]
+        except KeyError:
+            return ExcCodes.ILLEGAL_ADDRESS
+        return values
 
     def _process_values(self, values):
         """Process values."""
@@ -99,7 +103,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
             )
         _process_as_dict(values)
 
-    def setValues(self, address, values, use_as_default=False) -> None | ExcCodes:  # pylint: disable=useless-return
+    def setValues(self, address, values, use_as_default=False) -> None | ExcCodes:
         """Set the requested values of the datastore.
 
         :param address: The starting address
@@ -107,20 +111,23 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
         :param use_as_default: Use the values as default
         :raises ParameterException:
         """
-        if isinstance(values, dict):
-            new_offsets = list(set(values.keys()) - set(self.values.keys()))
-            if new_offsets and not self.mutable:
-                raise ParameterException(f"Offsets {new_offsets} not in range")
-            self._process_values(values)
-        else:
-            if not isinstance(values, list):
-                values = [values]
-            for idx, val in enumerate(values):
-                if address + idx not in self.values and not self.mutable:
-                    raise ParameterException("Offset {address+idx} not in range")
-                self.values[address + idx] = val
-        if use_as_default:
-            for idx, val in iter(self.values.items()):
-                self.default_value[idx] = val
+        try:
+            if isinstance(values, dict):
+                new_offsets = list(set(values.keys()) - set(self.values.keys()))
+                if new_offsets and not self.mutable:
+                    raise ParameterException(f"Offsets {new_offsets} not in range")
+                self._process_values(values)
+            else:
+                if not isinstance(values, list):
+                    values = [values]
+                for idx, val in enumerate(values):
+                    if address + idx not in self.values and not self.mutable:
+                        raise ParameterException("Offset {address+idx} not in range")
+                    self.values[address + idx] = val
+            if use_as_default:
+                for idx, val in iter(self.values.items()):
+                    self.default_value[idx] = val
+        except KeyError:
+            return ExcCodes.ILLEGAL_ADDRESS
         return None
 

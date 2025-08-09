@@ -42,6 +42,8 @@ class ReadHoldingRegistersRequest(ModbusPDU):
         values = await context.async_getValues(
             self.function_code, self.address, self.count
         )
+        if isinstance(values, ExcCodes):
+            return ExceptionResponse(self.function_code, values)
         response_class = (
             ReadHoldingRegistersResponse
             if self.function_code == 3
@@ -166,6 +168,8 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         registers = await context.async_getValues(
             self.function_code, self.read_address, self.read_count
         )
+        if isinstance(registers, ExcCodes):
+            return ExceptionResponse(self.function_code, registers)
         return ReadWriteMultipleRegistersResponse(
             registers=cast(list[int], registers),
             dev_id=self.dev_id,
@@ -217,6 +221,8 @@ class WriteSingleRegisterRequest(WriteSingleRegisterResponse):
         if rc:
             return ExceptionResponse(self.function_code, rc)
         values = await context.async_getValues(self.function_code, self.address, 1)
+        if isinstance(values, ExcCodes):
+            return ExceptionResponse(self.function_code, values)
         return WriteSingleRegisterResponse(
             address=self.address, registers=cast(list[int], values)
         )
@@ -329,6 +335,8 @@ class MaskWriteRegisterRequest(ModbusPDU):
                 self.function_code, ExcCodes.ILLEGAL_VALUE
             )
         values = await context.async_getValues(self.function_code, self.address, 1)
+        if isinstance(values, ExcCodes):
+            return ExceptionResponse(self.function_code, values)
         values = (cast(Sequence[int | bool], values)[0] & self.and_mask) | (
             self.or_mask & ~self.and_mask
         )

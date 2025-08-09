@@ -57,9 +57,11 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock[list]):
         :returns: The requested values from a:a+c
         """
         start = address - self.address
+        if start < 0 or len(self.values) < start+count:
+            return ExcCodes.ILLEGAL_ADDRESS
         return self.values[start : start + count]
 
-    def setValues(self, address, values) -> None | ExcCodes:  # pylint: disable=useless-return
+    def setValues(self, address, values) -> None | ExcCodes:
         """Set the requested values of the datastore.
 
         :param address: The starting address
@@ -68,6 +70,8 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock[list]):
         if not isinstance(values, list):
             values = [values]
         start = address - self.address
+        if start < 0 or len(self.values) < start+len(values):
+            return ExcCodes.ILLEGAL_ADDRESS
         self.values[start : start + len(values)] = values
         return None
 

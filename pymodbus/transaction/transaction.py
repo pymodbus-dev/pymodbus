@@ -214,7 +214,7 @@ class TransactionManager(ModbusProtocol):
         """Call when listener receive new connection request."""
 
     def callback_connected(self) -> None:
-        """Call when connection is succcesfull."""
+        """Call when connection is successful."""
         self.count_until_disconnect = self.max_until_disconnect
         self.next_tid = 0
         self.trace_connect(True)

@@ -32,7 +32,7 @@ jobs:
         include:
           - python: '3.10'
             run_lint: true
-          - python: '3.14'
+          - python: '3.13'
             run_doc: true
             run_lint: true
           - os: macos-latest

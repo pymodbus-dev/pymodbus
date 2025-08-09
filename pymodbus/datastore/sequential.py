@@ -2,6 +2,8 @@
 # pylint: disable=missing-type-doc
 from __future__ import annotations
 
+from pymodbus.constants import ExcCodes
+
 from .store import BaseModbusDataBlock
 
 
@@ -47,7 +49,7 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock[list]):
         """Reset the datastore to the initialized default value."""
         self.values = [self.default_value] * len(self.values)
 
-    def getValues(self, address, count=1):
+    def getValues(self, address, count=1) -> list[int] | list[bool] | ExcCodes:
         """Return the requested values of the datastore.
 
         :param address: The starting address
@@ -57,7 +59,7 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock[list]):
         start = address - self.address
         return self.values[start : start + count]
 
-    def setValues(self, address, values):
+    def setValues(self, address, values) -> None | ExcCodes:  # pylint: disable=useless-return
         """Set the requested values of the datastore.
 
         :param address: The starting address
@@ -67,3 +69,5 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock[list]):
             values = [values]
         start = address - self.address
         self.values[start : start + len(values)] = values
+        return None
+

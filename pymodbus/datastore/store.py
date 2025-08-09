@@ -50,8 +50,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar
 
-
-# from pymodbus.pdu.exceptionresponse import ExceptionResponse
+from pymodbus.constants import ExcCodes
 
 
 # ---------------------------------------------------------------------------#
@@ -82,7 +81,7 @@ class BaseModbusDataBlock(ABC, Generic[V]):
     address: int
     default_value: Any
 
-    async def async_getValues(self, address: int, count=1) -> list[int] | list[bool]:
+    async def async_getValues(self, address: int, count=1) -> list[int] | list[bool] | ExcCodes:
         """Return the requested values from the datastore.
 
         :param address: The starting address
@@ -92,7 +91,7 @@ class BaseModbusDataBlock(ABC, Generic[V]):
         return self.getValues(address, count)
 
     @abstractmethod
-    def getValues(self, address:int, count=1) -> list[int] | list[bool]:
+    def getValues(self, address:int, count=1) -> list[int] | list[bool] | ExcCodes:
         """Return the requested values from the datastore.
 
         :param address: The starting address
@@ -100,23 +99,27 @@ class BaseModbusDataBlock(ABC, Generic[V]):
         :raises TypeError:
         """
 
-    async def async_setValues(self, address: int, values: list[int] | list[bool]) -> None:
+    async def async_setValues(self, address: int, values: list[int] | list[bool]) -> None | ExcCodes:
         """Set the requested values in the datastore.
 
         :param address: The starting address
         :param values: The values to store
         :raises TypeError:
         """
-        self.setValues(address, values)
+        return self.setValues(address, values)
+
 
     @abstractmethod
-    def setValues(self, address:int, values) -> None:
+    def setValues(self, address:int, values) -> None | ExcCodes:
         """Set the requested values in the datastore.
 
         :param address: The starting address
         :param values: The values to store
         :raises TypeError:
         """
+
+    def reset(self):
+        """Reset the datastore to the initialized default value."""
 
     def __str__(self):
         """Build a representation of the datastore.

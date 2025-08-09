@@ -4,12 +4,11 @@ from __future__ import annotations
 
 from typing import Any
 
+from pymodbus.constants import ExcCodes
 from pymodbus.exceptions import ParameterException
 
 from .store import BaseModbusDataBlock
 
-
-# from pymodbus.pdu.exceptionresponse import ExceptionResponse
 
 class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
     """A sparse modbus datastore.
@@ -67,7 +66,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
         """Reset the store to the initially provided defaults."""
         self.values = self.default_value.copy()
 
-    def getValues(self, address, count=1):
+    def getValues(self, address, count=1) -> list[int] | list[bool] | ExcCodes:
         """Return the requested values of the datastore.
 
         :param address: The starting address
@@ -100,7 +99,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
             )
         _process_as_dict(values)
 
-    def setValues(self, address, values, use_as_default=False):
+    def setValues(self, address, values, use_as_default=False) -> None | ExcCodes:  # pylint: disable=useless-return
         """Set the requested values of the datastore.
 
         :param address: The starting address
@@ -123,3 +122,5 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
         if use_as_default:
             for idx, val in iter(self.values.items()):
                 self.default_value[idx] = val
+        return None
+

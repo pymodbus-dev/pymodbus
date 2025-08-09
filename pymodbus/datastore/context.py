@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from pymodbus.constants import ExcCodes
 from pymodbus.exceptions import NoSuchIdException
 from pymodbus.logging import Log
 
-# pylint: disable=missing-type-doc
 from .sequential import ModbusSequentialDataBlock
+from .store import BaseModbusDataBlock
 
+
+# pylint: disable=missing-type-doc
 
 class ModbusBaseDeviceContext:
     """Interface for a modbus device data context.
@@ -30,7 +33,7 @@ class ModbusBaseDeviceContext:
         """
         return self._fx_mapper[fx]
 
-    async def async_getValues(self, fc_as_hex: int, address: int, count: int = 1) -> list[int] | list[bool] | int:
+    async def async_getValues(self, fc_as_hex: int, address: int, count: int = 1) -> list[int] | list[bool] | ExcCodes:
         """Get `count` values from datastore.
 
         :param fc_as_hex: The function we are working with
@@ -40,7 +43,7 @@ class ModbusBaseDeviceContext:
         """
         return self.getValues(fc_as_hex, address, count)
 
-    async def async_setValues(self, fc_as_hex: int, address: int, values: list[int] | list[bool] ) -> None | int:
+    async def async_setValues(self, fc_as_hex: int, address: int, values: list[int] | list[bool] ) -> None | ExcCodes:
         """Set the datastore with the supplied values.
 
         :param fc_as_hex: The function we are working with
@@ -49,7 +52,7 @@ class ModbusBaseDeviceContext:
         """
         return self.setValues(fc_as_hex, address, values)
 
-    def getValues(self, fc_as_hex: int, address: int, count: int = 1) -> list[int] | list[bool] :
+    def getValues(self, fc_as_hex: int, address: int, count: int = 1) -> list[int] | list[bool] | ExcCodes:
         """Get `count` values from datastore.
 
         :param fc_as_hex: The function we are working with
@@ -58,9 +61,9 @@ class ModbusBaseDeviceContext:
         :returns: The requested values from a:a+c
         """
         Log.error("getValues({},{},{}) not implemented!", fc_as_hex, address, count)
-        return []
+        return ExcCodes.ILLEGAL_FUNCTION
 
-    def setValues(self, fc_as_hex: int, address: int, values: list[int] | list[bool]) -> None | int:
+    def setValues(self, fc_as_hex: int, address: int, values: list[int] | list[bool]) -> None | ExcCodes:
         """Set the datastore with the supplied values.
 
         :param fc_as_hex: The function we are working with
@@ -68,7 +71,7 @@ class ModbusBaseDeviceContext:
         :param values: The new values to be set
         """
         Log.error("setValues({},{},{}) not implemented!", fc_as_hex, address, values)
-        return 1
+        return ExcCodes.ILLEGAL_FUNCTION
 
 
 # ---------------------------------------------------------------------------#
@@ -84,10 +87,10 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
     """
 
     def __init__(self, *_args,
-                    di: ModbusSequentialDataBlock | None = None,
-                    co: ModbusSequentialDataBlock | None = None,
-                    ir: ModbusSequentialDataBlock | None = None,
-                    hr: ModbusSequentialDataBlock | None = None,
+                    di: BaseModbusDataBlock | None = None,
+                    co: BaseModbusDataBlock | None = None,
+                    ir: BaseModbusDataBlock | None = None,
+                    hr: BaseModbusDataBlock | None = None,
                 ):
         """Initialize the datastores."""
         self.store = {}
@@ -108,7 +111,7 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
         for datastore in iter(self.store.values()):
             datastore.reset()
 
-    def getValues(self, fc_as_hex, address, count=1):
+    def getValues(self, fc_as_hex, address, count=1) -> list[int] | list[bool] | ExcCodes:
         """Get `count` values from datastore.
 
         :param fc_as_hex: The function we are working with
@@ -120,7 +123,7 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
         Log.debug("getValues: fc-[{}] address-{}: count-{}", fc_as_hex, address, count)
         return self.store[self.decode(fc_as_hex)].getValues(address, count)
 
-    def setValues(self, fc_as_hex, address, values):
+    def setValues(self, fc_as_hex, address, values) -> None | ExcCodes:  # pylint: disable=useless-return
         """Set the datastore with the supplied values.
 
         :param fc_as_hex: The function we are working with
@@ -130,6 +133,7 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
         address += 1
         Log.debug("setValues[{}] address-{}: count-{}", fc_as_hex, address, len(values))
         self.store[self.decode(fc_as_hex)].setValues(address, values)
+        return None
 
     def register(self, function_code, fc_as_hex, datablock=None):
         """Register a datablock with the device context.

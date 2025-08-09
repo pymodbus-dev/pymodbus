@@ -7,5 +7,6 @@ __all__ = [
 ]
 
 from .decoders import DecodePDU
+from .exceptionresponse import ExceptionResponse
 from .file_message import FileRecord
-from .pdu import ExceptionResponse, ModbusPDU
+from .pdu import ModbusPDU

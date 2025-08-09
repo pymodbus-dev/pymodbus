@@ -87,7 +87,9 @@ class ModbusPDU:
     async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
         """Run request against a datastore."""
         _ = context
-        return ExceptionResponse(0, 0)
+        raise NotImplementedException(
+            f"update datastore called wrongly {self.__class__.__name__}"
+        )
 
     @classmethod
     def calculateRtuFrameSize(cls, data: bytes) -> int:

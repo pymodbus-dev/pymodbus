@@ -6,7 +6,8 @@ from typing import cast
 from pymodbus.constants import ModbusStatus
 from pymodbus.datastore import ModbusDeviceContext
 
-from .pdu import ExceptionResponse, ModbusPDU, pack_bitstring, unpack_bitstring
+from .exceptionresponse import ExceptionResponse
+from .pdu import ModbusPDU, pack_bitstring, unpack_bitstring
 
 
 class ReadCoilsRequest(ModbusPDU):

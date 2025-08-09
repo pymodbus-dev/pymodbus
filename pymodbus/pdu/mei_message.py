@@ -7,7 +7,8 @@ from pymodbus.constants import DeviceInformation, MoreData
 from pymodbus.datastore import ModbusDeviceContext
 
 from .device import DeviceInformationFactory, ModbusControlBlock
-from .pdu import ExceptionResponse, ModbusPDU
+from .exceptionresponse import ExceptionResponse
+from .pdu import ModbusPDU
 
 
 _MCB = ModbusControlBlock()

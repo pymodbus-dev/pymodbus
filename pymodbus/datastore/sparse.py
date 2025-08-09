@@ -73,7 +73,11 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         """
-        return [self.values[i] for i in range(address, address + count)]
+        try:
+            values = [self.values[i] for i in range(address, address + count)]
+        except KeyError:
+            return ExcCodes.ILLEGAL_ADDRESS
+        return values
 
     def _process_values(self, values):
         """Process values."""

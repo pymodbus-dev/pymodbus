@@ -19,8 +19,9 @@ import struct
 from collections import OrderedDict
 
 from pymodbus.constants import DeviceInformation
-from pymodbus.pdu.events import ModbusEvent
 from pymodbus.utilities import dict_property
+
+from .events import ModbusEvent
 
 
 # ---------------------------------------------------------------------------#

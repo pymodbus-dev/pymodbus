@@ -6,7 +6,8 @@ from dataclasses import dataclass
 
 from pymodbus.datastore import ModbusDeviceContext
 from pymodbus.exceptions import ModbusException
-from pymodbus.pdu.pdu import ModbusPDU
+
+from .pdu import ModbusPDU
 
 
 @dataclass

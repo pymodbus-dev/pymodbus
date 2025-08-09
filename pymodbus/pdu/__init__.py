@@ -2,11 +2,10 @@
 __all__ = [
     "DecodePDU",
     "ExceptionResponse",
-    "ExceptionResponse",
     "FileRecord",
     "ModbusPDU",
 ]
 
-from pymodbus.pdu.decoders import DecodePDU
-from pymodbus.pdu.file_message import FileRecord
-from pymodbus.pdu.pdu import ExceptionResponse, ModbusPDU
+from .decoders import DecodePDU
+from .file_message import FileRecord
+from .pdu import ExceptionResponse, ModbusPDU

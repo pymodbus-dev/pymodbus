@@ -1,5 +1,4 @@
 """Test simulator API."""
-import asyncio
 import json
 
 import pytest
@@ -127,20 +126,16 @@ class TestSimulatorApi:
             json_file = config_path
         )
 
-        # Run the simulator in the current event loop. Store the task so they live
-        # until the test is done.
-        loop = asyncio.get_running_loop()
-        task = loop.create_task(simulator.run_forever(only_start=True))
+        # this will finish almost immediately; no need to keep a task
+        await simulator.run_forever(only_start=True)
 
-        # TODO: Make a better way to wait for the simulator to start
-        await asyncio.sleep(1)
+        # wait for the simulator to start
+        await simulator.ready_event.wait()
 
-        yield simulator
-
-        # Stop the simulator after the test is done
-        task.cancel()
-        await task
-        await simulator.stop()
+        try:
+            yield simulator
+        finally:
+            await simulator.stop()
 
     @pytest.mark.asyncio
     async def test_registers_json_valid(self, client, simulator):

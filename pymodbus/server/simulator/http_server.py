@@ -79,7 +79,7 @@ class CallTypeResponse:
     clear_after: int = 1
 
 
-class ModbusSimulatorServer:
+class ModbusSimulatorServer:  # pylint: disable=too-many-instance-attributes
     """**ModbusSimulatorServer**.
 
     :param modbus_server: Server name in json file (default: "server")
@@ -219,6 +219,7 @@ class ModbusSimulatorServer:
         self.call_response = CallTypeResponse()
         app_key = getattr(web, 'AppKey', str)  # fall back to str for aiohttp < 3.9.0
         self.api_key = app_key("modbus_server")
+        self.ready_event = asyncio.Event()
 
     async def start_modbus_server(self, app):
         """Start Modbus server as asyncio task."""
@@ -253,6 +254,7 @@ class ModbusSimulatorServer:
             await self.runner.setup()
             self.site = web.TCPSite(self.runner, self.http_host, self.http_port)
             await self.site.start()
+            self.ready_event.set()
         except Exception as exc:
             Log.error("Error starting http server, reason: {}", exc)
             raise exc

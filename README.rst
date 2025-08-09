@@ -29,7 +29,11 @@ Upgrade examples:
 
 **REMARK: As can be seen from the above Pymodbus do NOT follow the semver standard.**
 
-It is always recommended to read the CHANGELOG as well as the API_changes files.
+It is always recommended to read the
+`CHANGELOG <https://github.com/pymodbus-dev/pymodbus/blob/dev/CHANGELOG.rst>`_
+as well as the
+`API_changes <https://github.com/pymodbus-dev/pymodbus/blob/dev/API_changes.rst>`_
+files.
 
 Current release is `3.11.0 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.11.0>`_.
 

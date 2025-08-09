@@ -8,7 +8,9 @@ from typing import cast
 
 from pymodbus.datastore import ModbusDeviceContext
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.pdu.pdu import ExceptionResponse, ModbusPDU
+
+from .exceptionresponse import ExceptionResponse
+from .pdu import ModbusPDU
 
 
 class ReadHoldingRegistersRequest(ModbusPDU):

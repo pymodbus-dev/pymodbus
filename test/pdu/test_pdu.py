@@ -250,7 +250,8 @@ class TestPdu:
         """Test that all PDU types can be created."""
         pdu = ModbusPDU()
         context = mock_context()
-        assert await pdu.update_datastore(context)
+        with pytest.raises(NotImplementedException):
+            assert await pdu.update_datastore(context)
 
     @pytest.mark.parametrize(
         ("bytestream", "bitlist"),

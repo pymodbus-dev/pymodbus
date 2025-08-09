@@ -585,16 +585,16 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
         fx_write = func_code in self._write_func_code
         return self.loop_validate(real_address, real_address + count, fx_write)
 
-    def getValues(self, fc_as_hex, address, count=1) -> list[int] | list[bool] | ExcCodes:
+    def getValues(self, func_code, address, count=1) -> list[int] | list[bool] | ExcCodes:
         """Return the requested values of the datastore.
 
         :meta private:
         """
-        if not self.validate(fc_as_hex, address, count):
+        if not self.validate(func_code, address, count):
             return ExcCodes.ILLEGAL_ADDRESS
         result = []
-        if fc_as_hex not in self._bits_func_code:
-            real_address = self.fc_offset[fc_as_hex] + address
+        if func_code not in self._bits_func_code:
+            real_address = self.fc_offset[func_code] + address
             for i in range(real_address, real_address + count):
                 reg = self.registers[i]
                 parameters = reg.action_parameters if reg.action_parameters else {}
@@ -604,7 +604,7 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
                 result.append(reg.value)
         else:
             # bit access
-            real_address = self.fc_offset[fc_as_hex] + int(address / 16)
+            real_address = self.fc_offset[func_code] + int(address / 16)
             bit_index = address % 16
             reg_count = int((count + bit_index + 15) / 16)
             for i in range(real_address, real_address + reg_count):
@@ -622,15 +622,15 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
                 bit_index = 0
         return result
 
-    def setValues(self, fc_as_hex, address, values) -> None | ExcCodes:
+    def setValues(self, func_code, address, values) -> None | ExcCodes:
         """Set the requested values of the datastore.
 
         :meta private:
         """
-        if fc_as_hex not in self._bits_func_code:
-            real_address = self.fc_offset[fc_as_hex] + address
+        if func_code not in self._bits_func_code:
+            real_address = self.fc_offset[func_code] + address
             for value in values:
-                if not self.validate(fc_as_hex, address):
+                if not self.validate(func_code, address):
                     return ExcCodes.ILLEGAL_ADDRESS
                 self.registers[real_address].value = value
                 self.registers[real_address].count_write += 1
@@ -639,10 +639,10 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
             return None
 
         # bit access
-        real_address = self.fc_offset[fc_as_hex] + int(address / 16)
+        real_address = self.fc_offset[func_code] + int(address / 16)
         bit_index = address % 16
         for value in values:
-            if not self.validate(fc_as_hex, address):
+            if not self.validate(func_code, address):
                 return ExcCodes.ILLEGAL_ADDRESS
             bit_mask = 2**bit_index
             if bool(value):

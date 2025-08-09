@@ -39,6 +39,8 @@ class Log:
     """
 
     _logger = logging.getLogger(__name__)
+    last_log_text = ""
+    repeat_log = False
 
     @classmethod
     def apply_logging_config(cls, level, log_file_name):
@@ -88,33 +90,45 @@ class Log:
                 skip = True
             else:
                 string_args.append(args[i])
-        return txt.format(*string_args)
+        if (log_text := txt.format(*string_args)) != cls.last_log_text:
+            cls.last_log_text = log_text
+            cls.repeat_log = False
+            return log_text
+        if not cls.repeat_log:
+            cls.repeat_log = True
+            return "Repeating...."
+        return None
 
     @classmethod
     def info(cls, txt, *args):
         """Log info messages."""
         if cls._logger.isEnabledFor(logging.INFO):
-            cls._logger.info(cls.build_msg(txt, *args), stacklevel=2)
+            if (log_text := cls.build_msg(txt, *args)):
+                cls._logger.info(log_text, stacklevel=2)
 
     @classmethod
     def debug(cls, txt, *args):
         """Log debug messages."""
         if cls._logger.isEnabledFor(logging.DEBUG):
-            cls._logger.debug(cls.build_msg(txt, *args), stacklevel=2)
+            if (log_text := cls.build_msg(txt, *args)):
+                cls._logger.debug(log_text, stacklevel=2)
 
     @classmethod
     def warning(cls, txt, *args):
         """Log warning messages."""
         if cls._logger.isEnabledFor(logging.WARNING):
-            cls._logger.warning(cls.build_msg(txt, *args), stacklevel=2)
+            if (log_text := cls.build_msg(txt, *args)):
+                cls._logger.warning(log_text, stacklevel=2)
 
     @classmethod
     def error(cls, txt, *args):
         """Log error messages."""
         if cls._logger.isEnabledFor(logging.ERROR):
-            cls._logger.error(cls.build_msg(txt, *args), stacklevel=2)
+            if (log_text := cls.build_msg(txt, *args)):
+                cls._logger.error(log_text, stacklevel=2)
 
     @classmethod
     def critical(cls, txt, *args):
         """Log critical messages."""
-        cls._logger.critical(cls.build_msg(txt, *args), stacklevel=2)
+        if (log_text := cls.build_msg(txt, *args)):
+            cls._logger.critical(log_text, stacklevel=2)

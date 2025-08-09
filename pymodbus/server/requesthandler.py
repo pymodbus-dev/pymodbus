@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import traceback
 
+from pymodbus.constants import ExcCodes
 from pymodbus.exceptions import ModbusIOException, NoSuchIdException
 from pymodbus.logging import Log
 from pymodbus.pdu.pdu import ExceptionResponse
@@ -72,7 +73,7 @@ class ServerRequestHandler(TransactionManager):
         except ModbusIOException:
             response = ExceptionResponse(
                 40,
-                exception_code=ExceptionResponse.ILLEGAL_FUNCTION
+                exception_code=ExcCodes.ILLEGAL_FUNCTION
             )
             self.server_send(response, 0)
             return(len(data))
@@ -103,14 +104,14 @@ class ServerRequestHandler(TransactionManager):
             Log.error("requested device id does not exist: {}", self.last_pdu.dev_id)
             if self.server.ignore_missing_devices:
                 return  # the client will simply timeout waiting for a response
-            response = ExceptionResponse(self.last_pdu.function_code, ExceptionResponse.GATEWAY_NO_RESPONSE)
+            response = ExceptionResponse(self.last_pdu.function_code, ExcCodes.GATEWAY_NO_RESPONSE)
         except Exception as exc:  # pylint: disable=broad-except
             Log.error(
                 "Datastore unable to fulfill request: {}; {}",
                 exc,
                 traceback.format_exc(),
             )
-            response = ExceptionResponse(self.last_pdu.function_code, ExceptionResponse.DEVICE_FAILURE)
+            response = ExceptionResponse(self.last_pdu.function_code, ExcCodes.DEVICE_FAILURE)
         response.transaction_id = self.last_pdu.transaction_id
         response.dev_id = self.last_pdu.dev_id
         self.server_send(response, self.last_addr)

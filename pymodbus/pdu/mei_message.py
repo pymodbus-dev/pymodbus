@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import struct
 
-from pymodbus.constants import DeviceInformation, MoreData
+from pymodbus.constants import DeviceInformation, ExcCodes, MoreData
 from pymodbus.datastore import ModbusDeviceContext
 
 from .device import DeviceInformationFactory, ModbusControlBlock
@@ -56,9 +56,9 @@ class ReadDeviceInformationRequest(ModbusPDU):
     async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
         """Run a read exception status request against the store."""
         if not 0x00 <= self.object_id <= 0xFF:
-            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
         if not 0x00 <= self.read_code <= 0x04:
-            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
 
         information = DeviceInformationFactory.get(_MCB, self.read_code, self.object_id)
         return ReadDeviceInformationResponse(read_code=self.read_code, information=information, dev_id=self.dev_id, transaction_id=self.transaction_id)

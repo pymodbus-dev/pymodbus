@@ -6,6 +6,7 @@ import struct
 from collections.abc import Sequence
 from typing import cast
 
+from pymodbus.constants import ExcCodes
 from pymodbus.datastore import ModbusDeviceContext
 from pymodbus.exceptions import ModbusIOException
 
@@ -151,11 +152,11 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         """Run a write single register request against a datastore."""
         if not (1 <= self.read_count <= 0x07D):
             return ExceptionResponse(
-                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+                self.function_code, ExcCodes.ILLEGAL_VALUE
             )
         if not 1 <= self.write_count <= 0x079:
             return ExceptionResponse(
-                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+                self.function_code, ExcCodes.ILLEGAL_VALUE
             )
         rc = await context.async_setValues(
             self.function_code, self.write_address, self.write_registers
@@ -208,7 +209,7 @@ class WriteSingleRegisterRequest(WriteSingleRegisterResponse):
         """Run a write single register request against a datastore."""
         if not 0 <= self.registers[0] <= 0xFFFF:
             return ExceptionResponse(
-                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+                self.function_code, ExcCodes.ILLEGAL_VALUE
             )
         rc = await context.async_setValues(
             self.function_code, self.address, self.registers
@@ -253,7 +254,7 @@ class WriteMultipleRegistersRequest(ModbusPDU):
         """Run a write single register request against a datastore."""
         if not 1 <= self.count <= 0x07B:
             return ExceptionResponse(
-                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+                self.function_code, ExcCodes.ILLEGAL_VALUE
             )
         rc = await context.async_setValues(
             self.function_code, self.address, self.registers
@@ -321,11 +322,11 @@ class MaskWriteRegisterRequest(ModbusPDU):
         """Run a mask write register request against the store."""
         if not 0x0000 <= self.and_mask <= 0xFFFF:
             return ExceptionResponse(
-                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+                self.function_code, ExcCodes.ILLEGAL_VALUE
             )
         if not 0x0000 <= self.or_mask <= 0xFFFF:
             return ExceptionResponse(
-                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+                self.function_code, ExcCodes.ILLEGAL_VALUE
             )
         values = await context.async_getValues(self.function_code, self.address, 1)
         values = (cast(Sequence[int | bool], values)[0] & self.and_mask) | (

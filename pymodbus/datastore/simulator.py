@@ -341,15 +341,15 @@ class Setup:
         }
         if custom_actions:
             actions.update(custom_actions)
-        self.runtime.action_name_to_id = {None: 0}
+
         self.runtime.action_id_to_name = [Label.none]
         self.runtime.action_methods = [None]
-        i = 1
-        for key, method in actions.items():
+        for i, (key, method) in enumerate(actions.items(), start=1):
             self.runtime.action_name_to_id[key] = i
             self.runtime.action_id_to_name.append(key)
             self.runtime.action_methods.append(method)
-            i += 1
+        self.runtime.action_name_to_id.update({None: 0})
+
         self.runtime.registerType_name_to_id = {
             Label.type_bits: CellType.BITS,
             Label.type_uint16: CellType.UINT16,

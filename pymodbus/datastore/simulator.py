@@ -8,7 +8,7 @@ from collections.abc import Callable
 from datetime import datetime
 from typing import Any
 
-from pymodbus.datastore.context import ModbusBaseDeviceContext
+from .context import ModbusBaseDeviceContext
 
 
 WORD_SIZE = 16

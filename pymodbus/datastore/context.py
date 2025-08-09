@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-# pylint: disable=missing-type-doc
-from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.exceptions import NoSuchIdException
 from pymodbus.logging import Log
+
+# pylint: disable=missing-type-doc
+from .store import ModbusSequentialDataBlock
 
 
 class ModbusBaseDeviceContext:

@@ -1,7 +1,8 @@
 """Remote datastore."""
-from pymodbus.datastore import ModbusBaseDeviceContext
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.logging import Log
+
+from .context import ModbusBaseDeviceContext
 
 
 # ---------------------------------------------------------------------------#

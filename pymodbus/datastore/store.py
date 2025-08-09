@@ -48,10 +48,12 @@ based on their preference.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
 from typing import Any, Generic, TypeVar
 
 from pymodbus.exceptions import ParameterException
+
+
+# from pymodbus.pdu.exceptionresponse import ExceptionResponse
 
 
 # ---------------------------------------------------------------------------#
@@ -82,7 +84,7 @@ class BaseModbusDataBlock(ABC, Generic[V]):
     address: int
     default_value: Any
 
-    async def async_getValues(self, address: int, count=1) -> Iterable:
+    async def async_getValues(self, address: int, count=1) -> list[int] | list[bool]:
         """Return the requested values from the datastore.
 
         :param address: The starting address
@@ -92,7 +94,7 @@ class BaseModbusDataBlock(ABC, Generic[V]):
         return self.getValues(address, count)
 
     @abstractmethod
-    def getValues(self, address:int, count=1) -> Iterable:
+    def getValues(self, address:int, count=1) -> list[int] | list[bool]:
         """Return the requested values from the datastore.
 
         :param address: The starting address

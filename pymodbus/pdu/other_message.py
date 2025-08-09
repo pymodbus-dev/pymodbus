@@ -23,10 +23,10 @@ class ReadExceptionStatusRequest(ModbusPDU):
         """Encode the message."""
         return b""
 
-    def decode(self, data: bytes) -> None:
+    def decode(self, _data: bytes) -> None:
         """Decode data part of the message."""
 
-    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
+    async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
         """Run a read exception status request against the store."""
         status = _MCB.Counter.summary()
         return ReadExceptionStatusResponse(status=status, dev_id=self.dev_id, transaction_id=self.transaction_id)
@@ -60,10 +60,10 @@ class GetCommEventCounterRequest(ModbusPDU):
         """Encode the message."""
         return b""
 
-    def decode(self, data: bytes) -> None:
+    def decode(self, _data: bytes) -> None:
         """Decode data part of the message."""
 
-    async def update_datastore(self, context) -> ModbusPDU:
+    async def update_datastore(self, _context) -> ModbusPDU:
         """Run a read exception status request against the store."""
         count = _MCB.Counter.Event
         return GetCommEventCounterResponse(count=count, dev_id=self.dev_id, transaction_id=self.transaction_id)
@@ -96,10 +96,10 @@ class GetCommEventLogRequest(ModbusPDU):
         """Encode the message."""
         return b""
 
-    def decode(self, data: bytes) -> None:
+    def decode(self, _data: bytes) -> None:
         """Decode data part of the message."""
 
-    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
+    async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
         """Run a read exception status request against the store."""
         return GetCommEventLogResponse(
             status=True,
@@ -157,10 +157,10 @@ class ReportDeviceIdRequest(ModbusPDU):
         """Encode the message."""
         return b""
 
-    def decode(self, data: bytes) -> None:
+    def decode(self, _data: bytes) -> None:
         """Decode data part of the message."""
 
-    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
+    async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
         """Run a report device id request against the store."""
         information = DeviceInformationFactory.get(_MCB)
         id_data = []

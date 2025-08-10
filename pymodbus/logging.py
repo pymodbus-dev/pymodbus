@@ -31,12 +31,21 @@ def pymodbus_apply_logging_config(
         level = level.upper()
     Log.apply_logging_config(level, log_file_name)
 
+def pymodbus_get_last_frames() -> str:
+    """Prepare and return last frames, for automatic debugging."""
+    return Log.get_last_frames()
 
 class Log:
     """Class to hide logging complexity.
 
     :meta private:
     """
+
+    SEND_DATA = "send"
+    RECV_DATA = "recv"
+    EXTRA_DATA = "extra"
+    MAX_FRAMES = 20
+    frame_dump: list[tuple] = []
 
     _logger = logging.getLogger(__name__)
     last_log_text = ""
@@ -65,6 +74,50 @@ class Log:
     def setLevel(cls, level):
         """Apply basic logging level."""
         cls._logger.setLevel(level)
+
+    @classmethod
+    def build_frame_log_line(cls, data_type, data, old_data):
+        """Change frame into log line."""
+        if data_type == cls.SEND_DATA:
+            log_text = cls.build_msg("send: {}", data, ":hex")
+        elif data_type == cls.RECV_DATA:
+            log_text = cls.build_msg(
+                "recv: {} extra data: {}",
+                data,
+                ":hex",
+                old_data,
+                ":hex",
+            )
+        else:
+            log_text = cls.build_msg(
+                "extra: {} unexpected data: {}",
+                data,
+                ":hex",
+                old_data,
+                ":hex",
+            )
+        return log_text
+
+    @classmethod
+    def get_last_frames(cls):
+        """Prepare and return last frames, for automatic debugging."""
+        log_text = ""
+        for (data_type, data, old_data) in cls.frame_dump:
+            log_text += f"\n>>>>> {cls.build_frame_log_line(data_type, data, old_data)}"
+        cls.frame_dump = []
+        return log_text
+
+    @classmethod
+    def transport_dump(cls, data_type, data, old_data):
+        """Debug transport data."""
+        if not cls._logger.isEnabledFor(logging.DEBUG):
+            cls.frame_dump.append((data_type, data, old_data))
+            if len(cls.frame_dump) > cls.MAX_FRAMES:
+                del cls.frame_dump[0]
+            return
+
+        cls.frame_dump = []
+        cls._logger.debug(cls.build_frame_log_line(data_type, data, old_data), stacklevel=2)
 
     @classmethod
     def build_msg(cls, txt, *args):
@@ -97,7 +150,7 @@ class Log:
         if not cls.repeat_log:
             cls.repeat_log = True
             return "Repeating...."
-        return None
+        return cls.last_log_text
 
     @classmethod
     def info(cls, txt, *args):
@@ -125,10 +178,14 @@ class Log:
         """Log error messages."""
         if cls._logger.isEnabledFor(logging.ERROR):
             if (log_text := cls.build_msg(txt, *args)):
+                if not cls._logger.isEnabledFor(logging.DEBUG):
+                    log_text += cls.get_last_frames()
                 cls._logger.error(log_text, stacklevel=2)
 
     @classmethod
     def critical(cls, txt, *args):
         """Log critical messages."""
         if (log_text := cls.build_msg(txt, *args)):
+            if not cls._logger.isEnabledFor(logging.DEBUG):
+                log_text += cls.get_last_frames()
             cls._logger.critical(log_text, stacklevel=2)

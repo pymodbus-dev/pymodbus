@@ -341,15 +341,15 @@ class Setup:
         }
         if custom_actions:
             actions.update(custom_actions)
-        self.runtime.action_name_to_id = {None: 0}
+
         self.runtime.action_id_to_name = [Label.none]
         self.runtime.action_methods = [None]
-        i = 1
-        for key, method in actions.items():
+        for i, (key, method) in enumerate(actions.items(), start=1):
             self.runtime.action_name_to_id[key] = i
             self.runtime.action_id_to_name.append(key)
             self.runtime.action_methods.append(method)
-            i += 1
+        self.runtime.action_name_to_id.update({None: 0})
+
         self.runtime.registerType_name_to_id = {
             Label.type_bits: CellType.BITS,
             Label.type_uint16: CellType.UINT16,
@@ -359,11 +359,15 @@ class Setup:
             Label.next: CellType.NEXT,
             Label.invalid: CellType.INVALID,
         }
-        self.runtime.registerType_id_to_name = [None] * len(
-            self.runtime.registerType_name_to_id
-        )
-        for name, cell_type in self.runtime.registerType_name_to_id.items():
-            self.runtime.registerType_id_to_name[cell_type] = name
+        self.runtime.registerType_id_to_name = [
+            "invalid",    # 0
+            "bits",       # 1
+            "uint16",     # 2
+            "uint32",     # 3
+            "float32",    # 4
+            "string",     # 5
+            "next",       # 6
+        ]
 
         self.config = config
         self.handle_setup_section()

@@ -364,7 +364,7 @@ class GetClearModbusPlusRequest(DiagnosticBase):
         message: int | list | None = None  # the clear operation does not return info
         if self.message == ModbusPlusOperation.CLEAR_STATISTICS:
             _MCB.Plus.reset()
-            message = self.message
+            message = ModbusPlusOperation.CLEAR_STATISTICS
         else:
             message = [self.message]
             message += _MCB.Plus.encode()

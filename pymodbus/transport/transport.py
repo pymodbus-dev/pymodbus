@@ -326,23 +326,12 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 self.sent_buffer = b""
             if not data:
                 return
-        Log.debug(
-            "recv: {} old_data: {} addr={}",
-            data,
-            ":hex",
-            self.recv_buffer,
-            ":hex",
-            addr,
-        )
+        Log.transport_dump(Log.RECV_DATA, data, self.recv_buffer)
         self.recv_buffer += data
         cut = self.callback_data(self.recv_buffer, addr=addr)
         self.recv_buffer = self.recv_buffer[cut:]
         if self.recv_buffer:
-            Log.debug(
-                "recv, unused data waiting for next packet: {}",
-                self.recv_buffer,
-                ":hex",
-            )
+            Log.transport_dump(Log.EXTRA_DATA, None, self.recv_buffer)
 
     def eof_received(self) -> None:
         """Accept other end terminates connection."""
@@ -361,7 +350,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
     @abstractmethod
     def callback_connected(self) -> None:
-        """Call when connection is succcesfull."""
+        """Call when connection is successful."""
 
     @abstractmethod
     def callback_disconnected(self, exc: Exception | None) -> None:
@@ -383,7 +372,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         if not self.transport:
             Log.error("Cancel send, because not connected!")
             return
-        Log.debug("send: {}", data, ":hex")
+        Log.transport_dump(Log.SEND_DATA, data, None)
         self.recv_buffer = b""
         if self.comm_params.handle_local_echo:
             self.sent_buffer += data

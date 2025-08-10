@@ -9,7 +9,7 @@ from pymodbus.exceptions import ModbusIOException, NoSuchIdException
 from pymodbus.logging import Log
 from pymodbus.pdu.pdu import ExceptionResponse
 from pymodbus.transaction import TransactionManager
-from pymodbus.transport import CommParams, ModbusProtocol
+from pymodbus.transport import CommParams
 
 
 class ServerRequestHandler(TransactionManager):
@@ -39,10 +39,6 @@ class ServerRequestHandler(TransactionManager):
             trace_pdu,
             trace_connect,
         )
-
-    def callback_new_connection(self) -> ModbusProtocol:
-        """Call when listener receive new connection request."""
-        raise RuntimeError("callback_new_connection should never be called")
 
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""

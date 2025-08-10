@@ -90,7 +90,7 @@ class TransportStub(ModbusProtocol):
         return len(data)
 
     def callback_connected(self) -> None:
-        """Call when connection is succcesfull."""
+        """Call when connection is successful."""
 
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""

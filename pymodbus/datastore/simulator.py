@@ -8,7 +8,9 @@ from collections.abc import Callable
 from datetime import datetime
 from typing import Any
 
-from pymodbus.datastore.context import ModbusBaseDeviceContext
+from pymodbus.constants import ExcCodes
+
+from .context import ModbusBaseDeviceContext
 
 
 WORD_SIZE = 16
@@ -579,13 +581,13 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
         fx_write = func_code in self._write_func_code
         return self.loop_validate(real_address, real_address + count, fx_write)
 
-    def getValues(self, func_code, address, count=1):
+    def getValues(self, func_code, address, count=1) -> list[int] | list[bool] | ExcCodes:
         """Return the requested values of the datastore.
 
         :meta private:
         """
         if not self.validate(func_code, address, count):
-            return 2
+            return ExcCodes.ILLEGAL_ADDRESS
         result = []
         if func_code not in self._bits_func_code:
             real_address = self.fc_offset[func_code] + address
@@ -616,7 +618,7 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
                 bit_index = 0
         return result
 
-    def setValues(self, func_code, address, values):
+    def setValues(self, func_code, address, values) -> None | ExcCodes:
         """Set the requested values of the datastore.
 
         :meta private:
@@ -625,7 +627,7 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
             real_address = self.fc_offset[func_code] + address
             for value in values:
                 if not self.validate(func_code, address):
-                    return 2
+                    return ExcCodes.ILLEGAL_ADDRESS
                 self.registers[real_address].value = value
                 self.registers[real_address].count_write += 1
                 real_address += 1
@@ -637,7 +639,7 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
         bit_index = address % 16
         for value in values:
             if not self.validate(func_code, address):
-                return 2
+                return ExcCodes.ILLEGAL_ADDRESS
             bit_mask = 2**bit_index
             if bool(value):
                 self.registers[real_address].value |= bit_mask

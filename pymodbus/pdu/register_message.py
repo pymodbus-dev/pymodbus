@@ -6,9 +6,12 @@ import struct
 from collections.abc import Sequence
 from typing import cast
 
+from pymodbus.constants import ExcCodes
 from pymodbus.datastore import ModbusDeviceContext
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.pdu.pdu import ExceptionResponse, ModbusPDU
+
+from .exceptionresponse import ExceptionResponse
+from .pdu import ModbusPDU
 
 
 class ReadHoldingRegistersRequest(ModbusPDU):
@@ -39,6 +42,8 @@ class ReadHoldingRegistersRequest(ModbusPDU):
         values = await context.async_getValues(
             self.function_code, self.address, self.count
         )
+        if isinstance(values, ExcCodes):
+            return ExceptionResponse(self.function_code, values)
         response_class = (
             ReadHoldingRegistersResponse
             if self.function_code == 3
@@ -149,11 +154,11 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         """Run a write single register request against a datastore."""
         if not (1 <= self.read_count <= 0x07D):
             return ExceptionResponse(
-                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+                self.function_code, ExcCodes.ILLEGAL_VALUE
             )
         if not 1 <= self.write_count <= 0x079:
             return ExceptionResponse(
-                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+                self.function_code, ExcCodes.ILLEGAL_VALUE
             )
         rc = await context.async_setValues(
             self.function_code, self.write_address, self.write_registers
@@ -163,6 +168,8 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         registers = await context.async_getValues(
             self.function_code, self.read_address, self.read_count
         )
+        if isinstance(registers, ExcCodes):
+            return ExceptionResponse(self.function_code, registers)
         return ReadWriteMultipleRegistersResponse(
             registers=cast(list[int], registers),
             dev_id=self.dev_id,
@@ -206,7 +213,7 @@ class WriteSingleRegisterRequest(WriteSingleRegisterResponse):
         """Run a write single register request against a datastore."""
         if not 0 <= self.registers[0] <= 0xFFFF:
             return ExceptionResponse(
-                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+                self.function_code, ExcCodes.ILLEGAL_VALUE
             )
         rc = await context.async_setValues(
             self.function_code, self.address, self.registers
@@ -214,6 +221,8 @@ class WriteSingleRegisterRequest(WriteSingleRegisterResponse):
         if rc:
             return ExceptionResponse(self.function_code, rc)
         values = await context.async_getValues(self.function_code, self.address, 1)
+        if isinstance(values, ExcCodes):
+            return ExceptionResponse(self.function_code, values)
         return WriteSingleRegisterResponse(
             address=self.address, registers=cast(list[int], values)
         )
@@ -251,7 +260,7 @@ class WriteMultipleRegistersRequest(ModbusPDU):
         """Run a write single register request against a datastore."""
         if not 1 <= self.count <= 0x07B:
             return ExceptionResponse(
-                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+                self.function_code, ExcCodes.ILLEGAL_VALUE
             )
         rc = await context.async_setValues(
             self.function_code, self.address, self.registers
@@ -319,13 +328,15 @@ class MaskWriteRegisterRequest(ModbusPDU):
         """Run a mask write register request against the store."""
         if not 0x0000 <= self.and_mask <= 0xFFFF:
             return ExceptionResponse(
-                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+                self.function_code, ExcCodes.ILLEGAL_VALUE
             )
         if not 0x0000 <= self.or_mask <= 0xFFFF:
             return ExceptionResponse(
-                self.function_code, ExceptionResponse.ILLEGAL_VALUE
+                self.function_code, ExcCodes.ILLEGAL_VALUE
             )
         values = await context.async_getValues(self.function_code, self.address, 1)
+        if isinstance(values, ExcCodes):
+            return ExceptionResponse(self.function_code, values)
         values = (cast(Sequence[int | bool], values)[0] & self.and_mask) | (
             self.or_mask & ~self.and_mask
         )

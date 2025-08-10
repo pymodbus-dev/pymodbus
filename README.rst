@@ -27,9 +27,15 @@ Upgrade examples:
 - 3.8.0 -> 3.9.0: Smaller changes to the pymodbus calls might be needed
 - 2.5.4 -> 3.0.0: Major changes in the application might be needed
 
-It is always recommended to read the CHANGELOG as well as the API_changes files.
+**REMARK**: As can be seen from the above Pymodbus do NOT follow the semver.org standard.
 
-Current release is `3.11.0 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.11.0>`_.
+It is always recommended to read the
+`CHANGELOG <https://github.com/pymodbus-dev/pymodbus/blob/dev/CHANGELOG.rst>`_
+as well as the
+`API_changes <https://github.com/pymodbus-dev/pymodbus/blob/dev/API_changes.rst>`_
+files.
+
+Current release is `3.11.1 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.11.1>`_.
 
 Bleeding edge (not released) is `dev <https://github.com/pymodbus-dev/pymodbus/tree/dev>`_.
 

@@ -20,3 +20,4 @@ build/html
 venv
 downloaded_files/
 pymodbus.log
+*.lock

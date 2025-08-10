@@ -3,10 +3,11 @@
 import struct
 from typing import cast
 
-from pymodbus.constants import ModbusStatus
+from pymodbus.constants import ExcCodes, ModbusStatus
 from pymodbus.datastore import ModbusDeviceContext
 
-from .pdu import ExceptionResponse, ModbusPDU, pack_bitstring, unpack_bitstring
+from .exceptionresponse import ExceptionResponse
+from .pdu import ModbusPDU, pack_bitstring, unpack_bitstring
 
 
 class ReadCoilsRequest(ModbusPDU):
@@ -38,6 +39,8 @@ class ReadCoilsRequest(ModbusPDU):
         values = await context.async_getValues(
             self.function_code, self.address, self.count
         )
+        if isinstance(values, ExcCodes):
+            return ExceptionResponse(self.function_code, values)
         response_class = (ReadCoilsResponse if self.function_code == 1 else ReadDiscreteInputsResponse)
         return response_class(dev_id=self.dev_id, transaction_id=self.transaction_id, bits=cast(list[bool], values))
 
@@ -96,6 +99,8 @@ class WriteSingleCoilRequest(WriteSingleCoilResponse):
         if (rc := await context.async_setValues(self.function_code, self.address, self.bits)):
             return ExceptionResponse(self.function_code, rc)
         values = await context.async_getValues(self.function_code, self.address, 1)
+        if isinstance(values, ExcCodes):
+            return ExceptionResponse(self.function_code, values)
         return WriteSingleCoilResponse(address=self.address, bits=cast(list[bool], values), dev_id=self.dev_id, transaction_id=self.transaction_id)
 
     def get_response_pdu_size(self) -> int:

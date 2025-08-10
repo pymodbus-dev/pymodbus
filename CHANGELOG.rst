@@ -7,6 +7,27 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.11.1
+--------------
+* Auto debug in case of an error. (#2738)
+* Remove duplicate log lines. (#2736)
+* Remove unused callback in ServerRequestHandler (#2737)
+* test on Python 3.14 (#2735)
+* Validate address in all datastores. (#2733)
+* Use asyncio.Event to deterministically ensure simulator start (#2734)
+* Ignore lockfile (#2730)
+* Link api_changes/changelog to README.
+* Add note about semver.org.
+* Datastore, add typing to set/get. (#2729)
+* Move exception codes to constants. (#2728)
+* Move ExceptionResponse to proper file. (#2727)
+* make base frame signature match subclasses (#2726)
+* Switch from venv+pip to uv (#2723)
+* Cleanup CI configuration (#2724)
+* Simplify code flow for broadcast requests (#2720)
+* Fix serial_forwarder.py from examples/contrib (#2715)
+* Remove discord. (#2714)
+
 Version 3.11.0
 --------------
  * Correct bit handling (each byte is LSB->MSB). (#2707)

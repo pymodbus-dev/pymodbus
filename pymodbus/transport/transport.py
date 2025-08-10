@@ -361,7 +361,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
     @abstractmethod
     def callback_connected(self) -> None:
-        """Call when connection is succcesfull."""
+        """Call when connection is successful."""
 
     @abstractmethod
     def callback_disconnected(self, exc: Exception | None) -> None:

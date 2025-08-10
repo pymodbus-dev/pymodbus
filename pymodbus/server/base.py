@@ -88,8 +88,8 @@ class ModbusBaseServer(ModbusProtocol):
             Log.info("Server graceful shutdown.")
 
     def callback_connected(self) -> None:
-        """Call when connection is succcesfull."""
-        raise RuntimeError("callback_new_connection should never be called")
+        """Call when connection is successful."""
+        raise RuntimeError("callback_connected should never be called")
 
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""

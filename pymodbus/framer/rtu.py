@@ -19,7 +19,7 @@ class FramerRTU(FramerBase):
             neither when receiving nor when sending.
 
     Decoding is a complicated process because the RTU frame does not have a fixed prefix
-    only suffix, therefore it is necessary to decode the content (PDU) to get length etc.
+    only suffix, therefore it is necessary to decode the content of the frame to get length etc.
     There are some protocol restrictions that help with the detection.
 
     For client:
@@ -122,13 +122,13 @@ class FramerRTU(FramerBase):
                 if not FramerRTU.check_CRC(data[used_len : start_crc], crc_val):
                     Log.debug("Frame check failed, possible garbage after frame, testing..")
                     continue
-                return start_crc + 2, dev_id, 0, data[used_len + 1 : start_crc]
+                return data_len, dev_id, 0, data[used_len + 1 : start_crc]
         return 0, 0, 0, self.EMPTY
 
 
-    def encode(self, pdu: bytes, device_id: int, _tid: int) -> bytes:
+    def encode(self, payload: bytes, device_id: int, _tid: int) -> bytes:
         """Encode ADU."""
-        frame = device_id.to_bytes(1,'big') + pdu
+        frame = device_id.to_bytes(1,'big') + payload
         return frame + FramerRTU.compute_CRC(frame).to_bytes(2,'big')
 
     @classmethod

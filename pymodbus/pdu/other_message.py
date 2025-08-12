@@ -6,6 +6,7 @@ import struct
 from pymodbus.constants import ModbusStatus
 from pymodbus.datastore import ModbusDeviceContext
 
+from .decoders import DecodePDU
 from .device import DeviceInformationFactory, ModbusControlBlock
 from .pdu import ModbusPDU
 
@@ -208,3 +209,8 @@ class ReportDeviceIdResponse(ModbusPDU):
         self.identifier = data[1 : self.byte_count + 1]
         status = int(data[-1])
         self.status = status == ID_ON
+
+DecodePDU.add_pdu(ReadExceptionStatusRequest, ReadExceptionStatusResponse)
+DecodePDU.add_pdu(GetCommEventCounterRequest, GetCommEventCounterResponse)
+DecodePDU.add_pdu(GetCommEventLogRequest, GetCommEventLogResponse)
+DecodePDU.add_pdu(ReportDeviceIdRequest, ReportDeviceIdResponse)

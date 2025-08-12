@@ -6,6 +6,7 @@ import struct
 from pymodbus.constants import DeviceInformation, ExcCodes, MoreData
 from pymodbus.datastore import ModbusDeviceContext
 
+from .decoders import DecodePDU
 from .device import DeviceInformationFactory, ModbusControlBlock
 from .exceptionresponse import ExceptionResponse
 from .pdu import ModbusPDU
@@ -153,3 +154,6 @@ class ReadDeviceInformationResponse(ModbusPDU):
                     self.information[object_id],
                     data[count - object_length : count],
                 ]
+
+DecodePDU.add_pdu(ReadDeviceInformationRequest, ReadDeviceInformationResponse)
+DecodePDU.add_sub_pdu(ReadDeviceInformationRequest, ReadDeviceInformationResponse)

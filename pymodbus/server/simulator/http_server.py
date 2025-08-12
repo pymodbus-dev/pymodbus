@@ -7,18 +7,10 @@ import dataclasses
 import importlib
 import json
 import os
-from typing import TYPE_CHECKING
 
 
-try:
+with contextlib.suppress(ImportError):
     from aiohttp import web
-
-    AIOHTTP_MISSING = False
-except ImportError:
-    AIOHTTP_MISSING = True
-    if TYPE_CHECKING:  # always False at runtime
-        # type checkers do not understand the Raise RuntimeError in __init__()
-        from aiohttp import web
 
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.datastore.simulator import Label
@@ -124,11 +116,6 @@ class ModbusSimulatorServer:  # pylint: disable=too-many-instance-attributes
         custom_actions_module: str | None = None,
     ):
         """Initialize http interface."""
-        if AIOHTTP_MISSING:
-            raise RuntimeError(
-                "Simulator server requires aiohttp. "
-                'Please install with "pip install aiohttp" and try again.'
-            )
         with open(json_file, encoding="utf-8") as file:
             setup = json.load(file)
 

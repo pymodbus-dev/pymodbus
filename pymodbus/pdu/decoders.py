@@ -105,17 +105,17 @@ class DecodePDU:
                 pdu_exp = base.ExceptionResponse(function_code & 0x7F)
                 pdu_exp.decode(frame[1:])
                 return pdu_exp
-            if not (pdu_type := self.lookup.get(function_code, None)):
+            if not (pdu_class := self.lookup.get(function_code, None)):
                 Log.debug("decode PDU failed for function code {}", function_code)
                 raise ModbusException(f"Unknown response {function_code}")
-            pdu = pdu_type()
+            pdu = pdu_class()
             pdu.decode(frame[1:])
-            Log.debug("decoded PDU function_code({} sub {}) -> {} ", pdu.function_code, pdu.sub_function_code, str(pdu))
-
             if pdu.sub_function_code >= 0:
                 lookup = self.sub_lookup.get(pdu.function_code, {})
-                if subtype := lookup.get(pdu.sub_function_code, None):
-                    pdu.__class__ = subtype
+                if sub_class := lookup.get(pdu.sub_function_code, None):
+                    pdu = sub_class()
+                    pdu.decode(frame[1:])
+            Log.debug("decoded PDU function_code({} sub {}) -> {} ", pdu.function_code, pdu.sub_function_code, str(pdu))
             return pdu
         except (ModbusException, ValueError, IndexError) as exc:
             Log.warning("Unable to decode frame {}", exc)

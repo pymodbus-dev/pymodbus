@@ -63,15 +63,15 @@ async def updating_task(context):
     It should be noted that getValues and setValues are not safe
     against concurrent use.
     """
-    fc_as_hex = 3
+    func_code = 3
     device_id = 0x00
     address = 0x10
     count = 6
 
     # set values to zero
-    values = context[device_id].getValues(fc_as_hex, address, count=count)
+    values = context[device_id].getValues(func_code, address, count=count)
     values = [0 for v in values]
-    context[device_id].setValues(fc_as_hex, address, values)
+    context[device_id].setValues(func_code, address, values)
 
     txt = (
         f"updating_task: started: initialised values: {values!s} at address {address!s}"
@@ -83,9 +83,9 @@ async def updating_task(context):
     while True:
         await asyncio.sleep(2)
 
-        values = context[device_id].getValues(fc_as_hex, address, count=count)
+        values = context[device_id].getValues(func_code, address, count=count)
         values = [v + 1 for v in values]
-        context[device_id].setValues(fc_as_hex, address, values)
+        context[device_id].setValues(func_code, address, values)
 
         txt = f"updating_task: incremented values: {values!s} at address {address!s}"
         print(txt)

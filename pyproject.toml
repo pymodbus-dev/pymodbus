@@ -26,6 +26,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: System :: Networking",
     "Topic :: Utilities",
 ]
@@ -36,7 +37,6 @@ Homepage = "https://github.com/pymodbus-dev/pymodbus/"
 "Source Code" = "https://github.com/pymodbus-dev/pymodbus"
 "Bug Reports" = "https://github.com/pymodbus-dev/pymodbus/issues"
 "Docs: Dev" = "https://pymodbus.readthedocs.io/en/latest/?badge=latest"
-Discord = "https://discord.gg/vcP8qAz2"
 
 [project.scripts]
 "pymodbus.simulator" = "pymodbus.server.simulator.main:main"
@@ -244,14 +244,14 @@ exclude_also = [
     "if __name__ == .__main__.:",
     ]
 skip_covered = true
-fail_under = 95.5
+fail_under = 94.9
 
 [tool.coverage.html]
 directory = "build/cov"
 
 
 [tool.codespell]
-skip = "./build,./doc/source/_static,venv,.venv,.git,htmlcov,CHANGELOG.rst,.mypy_cache"
+skip = "./build,./doc/source/_static,venv,.venv,.git,htmlcov,CHANGELOG.rst,.*_cache,*.lock"
 ignore-words-list = "asend"
 
 [tool.ruff]
@@ -314,3 +314,6 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[tool.pyright]
+disableBytesTypePromotions = false

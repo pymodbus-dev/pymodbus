@@ -279,14 +279,14 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.reset_delay()
         self.callback_connected()
 
-    def connection_lost(self, reason: Exception | None) -> None:
+    def connection_lost(self, exc: Exception | None) -> None:
         """Call from asyncio, when the connection is lost or closed.
 
-        :param reason: None or an exception object
+        :param exc: None or an exception object
         """
         if not self.transport or self.is_closing:
             return
-        Log.debug("Connection lost {} due to {}", self.comm_params.comm_name, reason)
+        Log.debug("Connection lost {} due to {}", self.comm_params.comm_name, exc)
         self.__close()
         if self.is_listener:
             self.reconnect_task = asyncio.create_task(self.do_relisten())
@@ -294,7 +294,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         elif not self.listener and self.comm_params.reconnect_delay:
             self.reconnect_task = asyncio.create_task(self.do_reconnect())
             self.reconnect_task.set_name("transport reconnect")
-        self.callback_disconnected(reason)
+        self.callback_disconnected(exc)
 
     def data_received(self, data: bytes) -> None:
         """Call when some data is received.
@@ -326,23 +326,12 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 self.sent_buffer = b""
             if not data:
                 return
-        Log.debug(
-            "recv: {} old_data: {} addr={}",
-            data,
-            ":hex",
-            self.recv_buffer,
-            ":hex",
-            addr,
-        )
+        Log.transport_dump(Log.RECV_DATA, data, self.recv_buffer)
         self.recv_buffer += data
         cut = self.callback_data(self.recv_buffer, addr=addr)
         self.recv_buffer = self.recv_buffer[cut:]
         if self.recv_buffer:
-            Log.debug(
-                "recv, unused data waiting for next packet: {}",
-                self.recv_buffer,
-                ":hex",
-            )
+            Log.transport_dump(Log.EXTRA_DATA, None, self.recv_buffer)
 
     def eof_received(self) -> None:
         """Accept other end terminates connection."""
@@ -361,7 +350,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
 
     @abstractmethod
     def callback_connected(self) -> None:
-        """Call when connection is succcesfull."""
+        """Call when connection is successful."""
 
     @abstractmethod
     def callback_disconnected(self, exc: Exception | None) -> None:
@@ -383,7 +372,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         if not self.transport:
             Log.error("Cancel send, because not connected!")
             return
-        Log.debug("send: {}", data, ":hex")
+        Log.transport_dump(Log.SEND_DATA, data, None)
         self.recv_buffer = b""
         if self.comm_params.handle_local_echo:
             self.sent_buffer += data

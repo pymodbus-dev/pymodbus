@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build framer encode responses."""
 
+from pymodbus.constants import ExcCodes
 from pymodbus.framer import (
     FramerAscii,
     FramerRTU,
@@ -35,7 +36,7 @@ def set_calls():
                 result = server.buildFrame(response)
                 print(f"      response --> {result}")
                 print(f"      response --> {result.hex()}")
-                exception = ExceptionResponse(request.function_code, ExceptionResponse.ILLEGAL_ADDRESS)
+                exception = ExceptionResponse(request.function_code, ExcCodes.ILLEGAL_ADDRESS)
                 exception.transaction_id = tid
                 exception.dev_id = dev_id
                 result = server.buildFrame(exception)

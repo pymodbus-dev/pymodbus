@@ -22,7 +22,7 @@ class DummyProtocol(ModbusProtocol):
         return DummyProtocol(params=self.comm_params, is_server=False)
 
     def callback_connected(self) -> None:
-        """Call when connection is succcesfull."""
+        """Call when connection is successful."""
 
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""

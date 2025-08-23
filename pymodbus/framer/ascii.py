@@ -60,14 +60,14 @@ class FramerAscii(FramerBase):
                 continue
             return used_len, dev_id, 0, msg[1:]
 
-    def encode(self, data: bytes, device_id: int, _tid: int) -> bytes:
+    def encode(self, payload: bytes, device_id: int, _tid: int) -> bytes:
         """Encode ADU."""
         dev_id = device_id.to_bytes(1,'big')
-        checksum = self.compute_LRC(dev_id + data)
+        checksum = self.compute_LRC(dev_id + payload)
         frame = (
             self.START +
             f"{device_id:02x}".encode() +
-            b2a_hex(data) +
+            b2a_hex(payload) +
             f"{checksum:02x}".encode() +
             self.END
         ).upper()

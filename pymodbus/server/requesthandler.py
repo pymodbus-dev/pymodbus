@@ -4,11 +4,12 @@ from __future__ import annotations
 import asyncio
 import traceback
 
+from pymodbus.constants import ExcCodes
 from pymodbus.exceptions import ModbusIOException, NoSuchIdException
 from pymodbus.logging import Log
 from pymodbus.pdu.pdu import ExceptionResponse
 from pymodbus.transaction import TransactionManager
-from pymodbus.transport import CommParams, ModbusProtocol
+from pymodbus.transport import CommParams
 
 
 class ServerRequestHandler(TransactionManager):
@@ -39,15 +40,11 @@ class ServerRequestHandler(TransactionManager):
             trace_connect,
         )
 
-    def callback_new_connection(self) -> ModbusProtocol:
-        """Call when listener receive new connection request."""
-        raise RuntimeError("callback_new_connection should never be called")
-
-    def callback_disconnected(self, call_exc: Exception | None) -> None:
+    def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""
-        super().callback_disconnected(call_exc)
+        super().callback_disconnected(exc)
         try:
-            if call_exc is None:
+            if exc is None:
                 Log.debug(
                     "Handler for stream [{}] has been canceled", self.comm_params.comm_name
                 )
@@ -55,7 +52,7 @@ class ServerRequestHandler(TransactionManager):
                 Log.debug(
                     "Client Disconnection {} due to {}",
                     self.comm_params.comm_name,
-                    call_exc,
+                    exc,
                 )
             self.running = False
         except Exception as exc:  # pylint: disable=broad-except
@@ -72,7 +69,7 @@ class ServerRequestHandler(TransactionManager):
         except ModbusIOException:
             response = ExceptionResponse(
                 40,
-                exception_code=ExceptionResponse.ILLEGAL_FUNCTION
+                exception_code=ExcCodes.ILLEGAL_FUNCTION
             )
             self.server_send(response, 0)
             return(len(data))
@@ -86,37 +83,34 @@ class ServerRequestHandler(TransactionManager):
 
     async def handle_request(self):
         """Handle request."""
-        broadcast = False
         if not self.last_pdu:
             return
         try:
             if self.server.broadcast_enable and not self.last_pdu.dev_id:
-                broadcast = True
                 # if broadcasting then execute on all device contexts,
                 # note response will be ignored
                 for dev_id in self.server.context.device_id():
-                    response = await self.last_pdu.update_datastore(self.server.context[dev_id])
-            else:
-                context = self.server.context[self.last_pdu.dev_id]
-                response = await self.last_pdu.update_datastore(context)
+                    await self.last_pdu.update_datastore(self.server.context[dev_id])
+                return
+
+            context = self.server.context[self.last_pdu.dev_id]
+            response = await self.last_pdu.update_datastore(context)
 
         except NoSuchIdException:
             Log.error("requested device id does not exist: {}", self.last_pdu.dev_id)
             if self.server.ignore_missing_devices:
                 return  # the client will simply timeout waiting for a response
-            response = ExceptionResponse(self.last_pdu.function_code, ExceptionResponse.GATEWAY_NO_RESPONSE)
+            response = ExceptionResponse(self.last_pdu.function_code, ExcCodes.GATEWAY_NO_RESPONSE)
         except Exception as exc:  # pylint: disable=broad-except
             Log.error(
                 "Datastore unable to fulfill request: {}; {}",
                 exc,
                 traceback.format_exc(),
             )
-            response = ExceptionResponse(self.last_pdu.function_code, ExceptionResponse.DEVICE_FAILURE)
-        # no response when broadcasting
-        if not broadcast:
-            response.transaction_id = self.last_pdu.transaction_id
-            response.dev_id = self.last_pdu.dev_id
-            self.server_send(response, self.last_addr)
+            response = ExceptionResponse(self.last_pdu.function_code, ExcCodes.DEVICE_FAILURE)
+        response.transaction_id = self.last_pdu.transaction_id
+        response.dev_id = self.last_pdu.dev_id
+        self.server_send(response, self.last_addr)
 
     def server_send(self, pdu, addr):
         """Send message."""

@@ -37,6 +37,21 @@ class ModbusStatus(int, enum.Enum):
     OFF = 0x0000
 
 
+class ExcCodes(int, enum.Enum):
+   """Represents the allowed exception codes."""
+
+   ILLEGAL_FUNCTION = 0x01
+   ILLEGAL_ADDRESS = 0x02
+   ILLEGAL_VALUE = 0x03
+   DEVICE_FAILURE = 0x04
+   ACKNOWLEDGE = 0x05
+   DEVICE_BUSY = 0x06
+   NEGATIVE_ACKNOWLEDGE = 0x07
+   MEMORY_PARITY_ERROR = 0x08
+   GATEWAY_PATH_UNAVIABLE = 0x0A
+   GATEWAY_NO_RESPONSE = 0x0B
+
+
 class ModbusPlusOperation(int, enum.Enum):
     """Represents the type of modbus plus request.
 

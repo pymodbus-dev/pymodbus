@@ -3,10 +3,12 @@ from __future__ import annotations
 
 import struct
 
-from pymodbus.constants import DeviceInformation, MoreData
+from pymodbus.constants import DeviceInformation, ExcCodes, MoreData
 from pymodbus.datastore import ModbusDeviceContext
-from pymodbus.pdu.device import DeviceInformationFactory, ModbusControlBlock
-from pymodbus.pdu.pdu import ExceptionResponse, ModbusPDU
+
+from .device import DeviceInformationFactory, ModbusControlBlock
+from .exceptionresponse import ExceptionResponse
+from .pdu import ModbusPDU
 
 
 _MCB = ModbusControlBlock()
@@ -54,9 +56,9 @@ class ReadDeviceInformationRequest(ModbusPDU):
     async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
         """Run a read exception status request against the store."""
         if not 0x00 <= self.object_id <= 0xFF:
-            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
         if not 0x00 <= self.read_code <= 0x04:
-            return ExceptionResponse(self.function_code, ExceptionResponse.ILLEGAL_VALUE)
+            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
 
         information = DeviceInformationFactory.get(_MCB, self.read_code, self.object_id)
         return ReadDeviceInformationResponse(read_code=self.read_code, information=information, dev_id=self.dev_id, transaction_id=self.transaction_id)
@@ -69,17 +71,17 @@ class ReadDeviceInformationResponse(ModbusPDU):
     sub_function_code = 0x0E
 
     @classmethod
-    def calculateRtuFrameSize(cls, buffer: bytes) -> int:
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of the message."""
         size = 8  # skip the header information
-        if (data_len := len(buffer)) < size:
+        if (data_len := len(data)) < size:
             return 999
-        count = int(buffer[7])
+        count = int(data[7])
 
         while count > 0:
             if data_len < size+2:
                 return 998
-            _, object_length = struct.unpack(">BB", buffer[size : size + 2])
+            _, object_length = struct.unpack(">BB", data[size : size + 2])
             size += object_length + 2
             count -= 1
         return size + 2

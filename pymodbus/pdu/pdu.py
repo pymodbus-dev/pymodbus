@@ -68,7 +68,7 @@ class ModbusPDU:
             f"count={self.count}, "
             f"bits={self.bits!s}, "
             f"registers={self.registers!s}, "
-            f"status={self.status!s}"
+            f"status={self.status!s}, "
             f"retries={self.retries})"
         )
 

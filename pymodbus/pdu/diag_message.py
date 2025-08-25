@@ -7,6 +7,7 @@ from typing import cast
 from pymodbus.constants import ModbusPlusOperation
 from pymodbus.datastore import ModbusDeviceContext
 
+from .decoders import DecodePDU
 from .device import ModbusControlBlock
 from .pdu import ModbusPDU, pack_bitstring
 
@@ -381,3 +382,22 @@ class GetClearModbusPlusResponse(DiagnosticBase):
     """GetClearModbusPlusResponse."""
 
     sub_function_code = 0x0015
+
+DecodePDU.add_pdu(DiagnosticBase, DiagnosticBase)
+DecodePDU.add_sub_pdu(ReturnQueryDataRequest, ReturnQueryDataResponse)
+DecodePDU.add_sub_pdu(RestartCommunicationsOptionRequest, RestartCommunicationsOptionResponse)
+DecodePDU.add_sub_pdu(ReturnDiagnosticRegisterRequest, ReturnDiagnosticRegisterResponse)
+DecodePDU.add_sub_pdu(ChangeAsciiInputDelimiterRequest, ChangeAsciiInputDelimiterResponse)
+DecodePDU.add_sub_pdu(ForceListenOnlyModeRequest, ForceListenOnlyModeResponse)
+DecodePDU.add_sub_pdu(ClearCountersRequest, ClearCountersResponse)
+DecodePDU.add_sub_pdu(ReturnBusMessageCountRequest, ReturnBusMessageCountResponse)
+DecodePDU.add_sub_pdu(ReturnBusCommunicationErrorCountRequest, ReturnBusCommunicationErrorCountResponse)
+DecodePDU.add_sub_pdu(ReturnBusExceptionErrorCountRequest, ReturnBusExceptionErrorCountResponse)
+DecodePDU.add_sub_pdu(ReturnDeviceMessageCountRequest, ReturnDeviceMessageCountResponse)
+DecodePDU.add_sub_pdu(ReturnDeviceNoResponseCountRequest, ReturnDeviceNoResponseCountResponse)
+DecodePDU.add_sub_pdu(ReturnDeviceNAKCountRequest, ReturnDeviceNAKCountResponse)
+DecodePDU.add_sub_pdu(ReturnDeviceBusyCountRequest, ReturnDeviceBusyCountResponse)
+DecodePDU.add_sub_pdu(ReturnDeviceBusCharacterOverrunCountRequest, ReturnDeviceBusCharacterOverrunCountResponse)
+DecodePDU.add_sub_pdu(ReturnIopOverrunCountRequest, ReturnIopOverrunCountResponse)
+DecodePDU.add_sub_pdu(ClearOverrunCountRequest, ClearOverrunCountResponse)
+DecodePDU.add_sub_pdu(GetClearModbusPlusRequest, GetClearModbusPlusResponse)

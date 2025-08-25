@@ -1,79 +1,34 @@
 """Modbus Request/Response Decoders."""
 from __future__ import annotations
 
-import pymodbus.pdu.bit_message as bit_msg
-import pymodbus.pdu.diag_message as diag_msg
-import pymodbus.pdu.file_message as file_msg
-import pymodbus.pdu.mei_message as mei_msg
-import pymodbus.pdu.other_message as o_msg
-import pymodbus.pdu.pdu as base
-import pymodbus.pdu.register_message as reg_msg
 from pymodbus.exceptions import MessageRegisterException, ModbusException
 from pymodbus.logging import Log
+
+from .pdu import ExceptionResponse, ModbusPDU
 
 
 class DecodePDU:
     """Decode pdu requests/responses (server/client)."""
 
-    _pdu_class_table: set[tuple[type[base.ModbusPDU], type[base.ModbusPDU]]] = {
-        (reg_msg.ReadHoldingRegistersRequest, reg_msg.ReadHoldingRegistersResponse),
-        (bit_msg.ReadDiscreteInputsRequest, bit_msg.ReadDiscreteInputsResponse),
-        (reg_msg.ReadInputRegistersRequest, reg_msg.ReadInputRegistersResponse),
-        (bit_msg.ReadCoilsRequest, bit_msg.ReadCoilsResponse),
-        (bit_msg.WriteMultipleCoilsRequest, bit_msg.WriteMultipleCoilsResponse),
-        (reg_msg.WriteMultipleRegistersRequest, reg_msg.WriteMultipleRegistersResponse),
-        (reg_msg.WriteSingleRegisterRequest, reg_msg.WriteSingleRegisterResponse),
-        (bit_msg.WriteSingleCoilRequest, bit_msg.WriteSingleCoilResponse),
-        (reg_msg.ReadWriteMultipleRegistersRequest, reg_msg.ReadWriteMultipleRegistersResponse),
-        (diag_msg.DiagnosticBase, diag_msg.DiagnosticBase),
-        (o_msg.ReadExceptionStatusRequest, o_msg.ReadExceptionStatusResponse),
-        (o_msg.GetCommEventCounterRequest, o_msg.GetCommEventCounterResponse),
-        (o_msg.GetCommEventLogRequest, o_msg.GetCommEventLogResponse),
-        (o_msg.ReportDeviceIdRequest, o_msg.ReportDeviceIdResponse),
-        (file_msg.ReadFileRecordRequest, file_msg.ReadFileRecordResponse),
-        (file_msg.WriteFileRecordRequest, file_msg.WriteFileRecordResponse),
-        (reg_msg.MaskWriteRegisterRequest, reg_msg.MaskWriteRegisterResponse),
-        (file_msg.ReadFifoQueueRequest, file_msg.ReadFifoQueueResponse),
-        (mei_msg.ReadDeviceInformationRequest, mei_msg.ReadDeviceInformationResponse),
-    }
-
-    _pdu_sub_class_table: set[tuple[type[base.ModbusPDU], type[base.ModbusPDU]]] = {
-        (diag_msg.ReturnQueryDataRequest, diag_msg.ReturnQueryDataResponse),
-        (diag_msg.RestartCommunicationsOptionRequest, diag_msg.RestartCommunicationsOptionResponse),
-        (diag_msg.ReturnDiagnosticRegisterRequest, diag_msg.ReturnDiagnosticRegisterResponse),
-        (diag_msg.ChangeAsciiInputDelimiterRequest, diag_msg.ChangeAsciiInputDelimiterResponse),
-        (diag_msg.ForceListenOnlyModeRequest, diag_msg.ForceListenOnlyModeResponse),
-        (diag_msg.ClearCountersRequest, diag_msg.ClearCountersResponse),
-        (diag_msg.ReturnBusMessageCountRequest, diag_msg.ReturnBusMessageCountResponse),
-        (diag_msg.ReturnBusCommunicationErrorCountRequest, diag_msg.ReturnBusCommunicationErrorCountResponse),
-        (diag_msg.ReturnBusExceptionErrorCountRequest, diag_msg.ReturnBusExceptionErrorCountResponse),
-        (diag_msg.ReturnDeviceMessageCountRequest, diag_msg.ReturnDeviceMessageCountResponse),
-        (diag_msg.ReturnDeviceNoResponseCountRequest, diag_msg.ReturnDeviceNoResponseCountResponse),
-        (diag_msg.ReturnDeviceNAKCountRequest, diag_msg.ReturnDeviceNAKCountResponse),
-        (diag_msg.ReturnDeviceBusyCountRequest, diag_msg.ReturnDeviceBusyCountResponse),
-        (diag_msg.ReturnDeviceBusCharacterOverrunCountRequest, diag_msg.ReturnDeviceBusCharacterOverrunCountResponse),
-        (diag_msg.ReturnIopOverrunCountRequest, diag_msg.ReturnIopOverrunCountResponse),
-        (diag_msg.ClearOverrunCountRequest, diag_msg.ClearOverrunCountResponse),
-        (diag_msg.GetClearModbusPlusRequest, diag_msg.GetClearModbusPlusResponse),
-        (mei_msg.ReadDeviceInformationRequest, mei_msg.ReadDeviceInformationResponse),
-    }
+    _pdu_class_table: set[tuple[type[ModbusPDU], type[ModbusPDU]]] = set()
+    _pdu_sub_class_table: set[tuple[type[ModbusPDU], type[ModbusPDU]]] = set()
 
     def __init__(self, is_server: bool) -> None:
         """Initialize function_tables."""
         inx = 0 if is_server else 1
-        self.lookup: dict[int, type[base.ModbusPDU]] = {cl[inx].function_code: cl[inx] for cl in self._pdu_class_table}
-        self.sub_lookup: dict[int, dict[int, type[base.ModbusPDU]]] = {}
+        self.lookup: dict[int, type[ModbusPDU]] = {cl[inx].function_code: cl[inx] for cl in self._pdu_class_table}
+        self.sub_lookup: dict[int, dict[int, type[ModbusPDU]]] = {}
         for f in self._pdu_sub_class_table:
             if (function_code := f[inx].function_code) not in self.sub_lookup:
                 self.sub_lookup[function_code] = {f[inx].sub_function_code: f[inx]}
             else:
                 self.sub_lookup[function_code][f[inx].sub_function_code] = f[inx]
 
-    def lookupPduClass(self, data: bytes) -> type[base.ModbusPDU] | None:
+    def lookupPduClass(self, data: bytes) -> type[ModbusPDU] | None:
         """Use `function_code` to determine the class of the PDU."""
         func_code = int(data[1])
         if func_code & 0x80:
-            return base.ExceptionResponse
+            return ExceptionResponse
         if func_code == 0x2B:  # mei message, sub_function_code is 1 byte
             sub_func_code = int(data[2])
             return self.sub_lookup[func_code].get(sub_func_code, None)
@@ -82,9 +37,19 @@ class DecodePDU:
             return self.sub_lookup[func_code].get(sub_func_code, None)
         return self.lookup.get(func_code, None)
 
-    def register(self, custom_class: type[base.ModbusPDU]) -> None:
+    @classmethod
+    def add_pdu(cls, req: type[ModbusPDU], resp: type[ModbusPDU]):
+        """Register request/response."""
+        cls._pdu_class_table.add((req, resp))
+
+    @classmethod
+    def add_sub_pdu(cls, req: type[ModbusPDU], resp: type[ModbusPDU]):
+        """Register request/response."""
+        cls._pdu_sub_class_table.add((req, resp))
+
+    def register(self, custom_class: type[ModbusPDU]) -> None:
         """Register a function and sub function class with the decoder."""
-        if not issubclass(custom_class, base.ModbusPDU):
+        if not issubclass(custom_class, ModbusPDU):
             raise MessageRegisterException(
                 f'"{custom_class.__class__.__name__}" is Not a valid Modbus Message'
                 ". Class needs to be derived from "
@@ -98,11 +63,11 @@ class DecodePDU:
                 custom_class.sub_function_code
             ] = custom_class
 
-    def decode(self, frame: bytes) -> base.ModbusPDU | None:
+    def decode(self, frame: bytes) -> ModbusPDU | None:
         """Decode a frame."""
         try:
             if (function_code := int(frame[0])) > 0x80:
-                pdu_exp = base.ExceptionResponse(function_code & 0x7F)
+                pdu_exp = ExceptionResponse(function_code & 0x7F)
                 pdu_exp.decode(frame[1:])
                 return pdu_exp
             if not (pdu_class := self.lookup.get(function_code, None)):

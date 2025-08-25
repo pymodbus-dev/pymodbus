@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pymodbus.datastore import ModbusDeviceContext
 from pymodbus.exceptions import ModbusException
 
+from .decoders import DecodePDU
 from .pdu import ModbusPDU
 
 
@@ -276,3 +277,7 @@ class ReadFifoQueueResponse(ModbusPDU):
         for index in range(0, count - 4):
             idx = 4 + index * 2
             self.values.append(struct.unpack(">H", data[idx : idx + 2])[0])
+
+DecodePDU.add_pdu(ReadFileRecordRequest, ReadFileRecordResponse)
+DecodePDU.add_pdu(WriteFileRecordRequest, WriteFileRecordResponse)
+DecodePDU.add_pdu(ReadFifoQueueRequest, ReadFifoQueueResponse)

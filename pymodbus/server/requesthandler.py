@@ -97,9 +97,9 @@ class ServerRequestHandler(TransactionManager):
             response = await self.last_pdu.update_datastore(context)
 
         except NoSuchIdException:
-            Log.error("requested device id does not exist: {}", self.last_pdu.dev_id)
             if self.server.ignore_missing_devices:
                 return  # the client will simply timeout waiting for a response
+            Log.error("requested device id does not exist: {}", self.last_pdu.dev_id)
             response = ExceptionResponse(self.last_pdu.function_code, ExcCodes.GATEWAY_NO_RESPONSE)
         except Exception as exc:  # pylint: disable=broad-except
             Log.error(

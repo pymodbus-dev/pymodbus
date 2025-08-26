@@ -98,6 +98,7 @@ class ServerRequestHandler(TransactionManager):
 
         except NoSuchIdException:
             if self.server.ignore_missing_devices:
+                Log.debug("Ignoring request for unknown device id: {}", self.last_pdu.dev_id)
                 return  # the client will simply timeout waiting for a response
             Log.error("requested device id does not exist: {}", self.last_pdu.dev_id)
             response = ExceptionResponse(self.last_pdu.function_code, ExcCodes.GATEWAY_NO_RESPONSE)

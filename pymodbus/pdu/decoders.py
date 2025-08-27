@@ -33,7 +33,7 @@ class DecodePDU:
             sub_func_code = int(data[2])
             return self.sub_lookup[func_code].get(sub_func_code, None)
         if func_code == 0x08:  # diag message,  sub_function_code is 2 bytes
-            sub_func_code = int(data[3])
+            sub_func_code = int.from_bytes(data[2:4], "big")
             return self.sub_lookup[func_code].get(sub_func_code, None)
         return self.lookup.get(func_code, None)
 

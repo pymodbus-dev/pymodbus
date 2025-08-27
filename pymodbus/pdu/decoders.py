@@ -12,9 +12,13 @@ class DecodePDU:
 
     _pdu_class_table: set[tuple[type[ModbusPDU], type[ModbusPDU]]] = set()
     _pdu_sub_class_table: set[tuple[type[ModbusPDU], type[ModbusPDU]]] = set()
+    pdu_table: dict[int, tuple[type[ModbusPDU], type[ModbusPDU]]] = {}
+    pdu_sub_table: dict[int, dict[int, tuple[type[ModbusPDU], type[ModbusPDU]]]] = {}
+
 
     def __init__(self, is_server: bool) -> None:
         """Initialize function_tables."""
+        self.pdu_inx = 0 if is_server else 1
         inx = 0 if is_server else 1
         self.lookup: dict[int, type[ModbusPDU]] = {cl[inx].function_code: cl[inx] for cl in self._pdu_class_table}
         self.sub_lookup: dict[int, dict[int, type[ModbusPDU]]] = {}
@@ -26,29 +30,35 @@ class DecodePDU:
 
     def lookupPduClass(self, data: bytes) -> type[ModbusPDU] | None:
         """Use `function_code` to determine the class of the PDU."""
-        func_code = int(data[1])
-        if func_code & 0x80:
+        if (func_code := int(data[1])) & 0x80:
             return ExceptionResponse
+        if not (pdu := self.pdu_table.get(func_code, (None, None))[self.pdu_inx]):
+            return None
+
         if func_code == 0x2B:  # mei message, sub_function_code is 1 byte
             sub_func_code = int(data[2])
-            return self.sub_lookup[func_code].get(sub_func_code, None)
-        if func_code == 0x08:  # diag message,  sub_function_code is 2 bytes
+        elif func_code == 0x08:  # diag message,  sub_function_code is 2 bytes
             sub_func_code = int.from_bytes(data[2:4], "big")
-            return self.sub_lookup[func_code].get(sub_func_code, None)
-        return self.lookup.get(func_code, None)
+        else:
+            return pdu
+        return self.pdu_sub_table[func_code].get(sub_func_code, (None, None))[self.pdu_inx]
 
     def list_function_codes(self):
         """Return list of function codes."""
-        return list(self.lookup)
+        return list(self.pdu_table)
 
     @classmethod
     def add_pdu(cls, req: type[ModbusPDU], resp: type[ModbusPDU]):
         """Register request/response."""
+        cls.pdu_table[req.function_code] = (req, resp)
         cls._pdu_class_table.add((req, resp))
 
     @classmethod
     def add_sub_pdu(cls, req: type[ModbusPDU], resp: type[ModbusPDU]):
         """Register request/response."""
+        if req.function_code not in cls.pdu_sub_table:
+            cls.pdu_sub_table[req.function_code] = {}
+        cls.pdu_sub_table[req.function_code][req.sub_function_code] = (req, resp)
         cls._pdu_sub_class_table.add((req, resp))
 
     def register(self, custom_class: type[ModbusPDU]) -> None:
@@ -60,12 +70,7 @@ class DecodePDU:
                 "`pymodbus.pdu.ModbusPDU` "
             )
         self.lookup[custom_class.function_code] = custom_class
-        if custom_class.sub_function_code >= 0:
-            if custom_class.function_code not in self.sub_lookup:
-                self.sub_lookup[custom_class.function_code] = {}
-            self.sub_lookup[custom_class.function_code][
-                custom_class.sub_function_code
-            ] = custom_class
+        self.pdu_table[custom_class.function_code] = (custom_class, custom_class)
 
     def decode(self, frame: bytes) -> ModbusPDU | None:
         """Decode a frame."""

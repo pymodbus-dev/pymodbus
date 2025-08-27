@@ -71,7 +71,7 @@ class CallTypeResponse:
     clear_after: int = 1
 
 
-class ModbusSimulatorServer:  # pylint: disable=too-many-instance-attributes
+class ModbusSimulatorServer:
     """**ModbusSimulatorServer**.
 
     :param modbus_server: Server name in json file (default: "server")
@@ -201,7 +201,6 @@ class ModbusSimulatorServer:  # pylint: disable=too-many-instance-attributes
         self.refresh_rate = 0
         self.register_filter: list[int] = []
         self.call_list: list[CallTracer] = []
-        self.request_lookup = DecodePDU(True).lookup
         self.call_monitor = CallTypeMonitor()
         self.call_response = CallTypeResponse()
         app_key = getattr(web, 'AppKey', str)  # fall back to str for aiohttp < 3.9.0
@@ -376,7 +375,7 @@ class ModbusSimulatorServer:  # pylint: disable=too-many-instance-attributes
             else ""
         )
         function_codes = ""
-        for function in self.request_lookup.values():
+        for function in DecodePDU(True).list_function_codes():
             selected = (
                 "selected"
                 if function.function_code == self.call_monitor.function
@@ -392,9 +391,7 @@ class ModbusSimulatorServer:  # pylint: disable=too-many-instance-attributes
             del self.call_list[0]
         call_rows = ""
         for entry in reversed(self.call_list):
-            # req_obj = self.request_lookup[entry[1]]
             call_rows += f"<tr><td>{entry.call} - {entry.fc}</td><td>{entry.address}</td><td>{entry.count}</td><td>{entry.data.decode()}</td></tr>"
-            # line += req_obj.funcion_code_name
         new_html = (
             html.replace("<!--SIMULATION_ACTIVE-->", simulation_action)
             .replace("FUNCTION_RANGE_START", range_start_html)
@@ -543,11 +540,11 @@ class ModbusSimulatorServer:  # pylint: disable=too-many-instance-attributes
         )
 
         function_codes = []
-        for function in self.request_lookup.values():
+        for function in DecodePDU(True).list_function_codes():
             function_codes.append({
-                "value": function.function_code,
+                "value": function,
                 "text": "function code name",
-                "selected": function.function_code == self.call_monitor.function
+                "selected": function == self.call_monitor.function
             })
 
         simulation_action = "ACTIVE" if self.call_response.active != RESPONSE_INACTIVE else ""

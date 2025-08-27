@@ -37,6 +37,10 @@ class DecodePDU:
             return self.sub_lookup[func_code].get(sub_func_code, None)
         return self.lookup.get(func_code, None)
 
+    def list_function_codes(self):
+        """Return list of function codes."""
+        return list(self.lookup)
+
     @classmethod
     def add_pdu(cls, req: type[ModbusPDU], resp: type[ModbusPDU]):
         """Register request/response."""

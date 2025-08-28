@@ -12,7 +12,6 @@ from .pdu import ExceptionResponse, ModbusPDU
 class DecodePDU:
     """Decode pdu requests/responses (server/client)."""
 
-    _pdu_sub_class_table: set[tuple[type[ModbusPDU], type[ModbusPDU]]] = set()
     pdu_table: dict[int, tuple[type[ModbusPDU], type[ModbusPDU]]] = {}
     pdu_sub_table: dict[int, dict[int, tuple[type[ModbusPDU], type[ModbusPDU]]]] = {}
 
@@ -20,13 +19,6 @@ class DecodePDU:
     def __init__(self, is_server: bool) -> None:
         """Initialize function_tables."""
         self.pdu_inx = 0 if is_server else 1
-        inx = 0 if is_server else 1
-        self.sub_lookup: dict[int, dict[int, type[ModbusPDU]]] = {}
-        for f in self._pdu_sub_class_table:
-            if (function_code := f[inx].function_code) not in self.sub_lookup:
-                self.sub_lookup[function_code] = {f[inx].sub_function_code: f[inx]}
-            else:
-                self.sub_lookup[function_code][f[inx].sub_function_code] = f[inx]
 
     def lookupPduClass(self, data: bytes) -> type[ModbusPDU] | None:
         """Use `function_code` to determine the class of the PDU."""
@@ -58,7 +50,6 @@ class DecodePDU:
         if req.function_code not in cls.pdu_sub_table:
             cls.pdu_sub_table[req.function_code] = {}
         cls.pdu_sub_table[req.function_code][req.sub_function_code] = (req, resp)
-        cls._pdu_sub_class_table.add((req, resp))
 
     def register(self, custom_class: type[ModbusPDU]) -> None:
         """Register a function and sub function class with the decoder."""

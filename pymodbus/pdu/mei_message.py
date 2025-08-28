@@ -50,6 +50,11 @@ class ReadDeviceInformationRequest(ModbusPDU):
         )
         return packet
 
+    @classmethod
+    def decode_sub_function_code(cls, data: bytes) -> int:
+        """Decode sub function code (1 byte)."""
+        return int(data[2])
+
     def decode(self, data: bytes) -> None:
         """Decode data part of the message."""
         self.sub_function_code, self.read_code, self.object_id = struct.unpack(">BBB", data[:3])
@@ -133,6 +138,11 @@ class ReadDeviceInformationResponse(ModbusPDU):
         )
         packet += objects
         return packet
+
+    @classmethod
+    def decode_sub_function_code(cls, data: bytes) -> int:
+        """Decode sub function code (1 byte)."""
+        return int(data[2])
 
     def decode(self, data: bytes) -> None:
         """Decode a the response."""

@@ -12,7 +12,6 @@ from .pdu import ExceptionResponse, ModbusPDU
 class DecodePDU:
     """Decode pdu requests/responses (server/client)."""
 
-    _pdu_class_table: set[tuple[type[ModbusPDU], type[ModbusPDU]]] = set()
     _pdu_sub_class_table: set[tuple[type[ModbusPDU], type[ModbusPDU]]] = set()
     pdu_table: dict[int, tuple[type[ModbusPDU], type[ModbusPDU]]] = {}
     pdu_sub_table: dict[int, dict[int, tuple[type[ModbusPDU], type[ModbusPDU]]]] = {}
@@ -22,7 +21,6 @@ class DecodePDU:
         """Initialize function_tables."""
         self.pdu_inx = 0 if is_server else 1
         inx = 0 if is_server else 1
-        self.lookup: dict[int, type[ModbusPDU]] = {cl[inx].function_code: cl[inx] for cl in self._pdu_class_table}
         self.sub_lookup: dict[int, dict[int, type[ModbusPDU]]] = {}
         for f in self._pdu_sub_class_table:
             if (function_code := f[inx].function_code) not in self.sub_lookup:
@@ -53,7 +51,6 @@ class DecodePDU:
     def add_pdu(cls, req: type[ModbusPDU], resp: type[ModbusPDU]):
         """Register request/response."""
         cls.pdu_table[req.function_code] = (req, resp)
-        cls._pdu_class_table.add((req, resp))
 
     @classmethod
     def add_sub_pdu(cls, req: type[ModbusPDU], resp: type[ModbusPDU]):
@@ -73,7 +70,6 @@ class DecodePDU:
             )
         if "pdu_table" not in self.__dict__:
             self.pdu_table = copy.deepcopy(DecodePDU.pdu_table)
-        self.lookup[custom_class.function_code] = custom_class
         self.pdu_table[custom_class.function_code] = (custom_class, custom_class)
 
     def decode(self, frame: bytes) -> ModbusPDU | None:
@@ -89,8 +85,8 @@ class DecodePDU:
             pdu = pdu_class()
             pdu.decode(frame[1:])
             if pdu.sub_function_code >= 0:
-                lookup = self.sub_lookup.get(pdu.function_code, {})
-                if sub_class := lookup.get(pdu.sub_function_code, None):
+                lookup = self.pdu_sub_table.get(pdu.function_code, {})
+                if sub_class := lookup.get(pdu.sub_function_code, (None,None))[self.pdu_inx]:
                     pdu = sub_class()
                     pdu.decode(frame[1:])
             Log.debug("decoded PDU function_code({} sub {}) -> {} ", pdu.function_code, pdu.sub_function_code, str(pdu))

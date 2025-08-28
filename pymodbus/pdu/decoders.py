@@ -28,10 +28,6 @@ class DecodePDU:
             return None
         if (sub_func_code := pdu.decode_sub_function_code(data)) < 0:
             return pdu
-        if func_code == 0x2B:  # mei message, sub_function_code is 1 byte
-            sub_func_code = int(data[2])
-        elif func_code == 0x08:  # diag message,  sub_function_code is 2 bytes
-            sub_func_code = int.from_bytes(data[2:4], "big")
         return self.pdu_sub_table[func_code].get(sub_func_code, (None, None))[self.pdu_inx]
 
     def list_function_codes(self):

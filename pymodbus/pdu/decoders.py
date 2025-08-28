@@ -26,12 +26,7 @@ class DecodePDU:
             return ExceptionResponse
         if not (pdu := self.pdu_table.get(func_code, (None, None))[self.pdu_inx]):
             return None
-
-        if func_code == 0x2B:  # mei message, sub_function_code is 1 byte
-            sub_func_code = int(data[2])
-        elif func_code == 0x08:  # diag message,  sub_function_code is 2 bytes
-            sub_func_code = int.from_bytes(data[2:4], "big")
-        else:
+        if (sub_func_code := pdu.decode_sub_function_code(data)) < 0:
             return pdu
         return self.pdu_sub_table[func_code].get(sub_func_code, (None, None))[self.pdu_inx]
 

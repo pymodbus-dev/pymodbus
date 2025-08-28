@@ -58,6 +58,12 @@ class ModbusPDU:
         if not 0 <= address <= 65535:
             raise ValueError(f"0 < address {address} < 65535 !")
 
+    @classmethod
+    def decode_sub_function_code(cls, data: bytes) -> int:
+        """Decode sub function code."""
+        _ = data
+        return -1
+
     def __str__(self) -> str:
         """Build a representation of a Modbus response."""
         return (

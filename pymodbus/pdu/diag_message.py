@@ -44,6 +44,11 @@ class DiagnosticBase(ModbusPDU):
             raise TypeError(f"UNKNOWN DIAG message type: {type(self.message)}")
         return packet
 
+    @classmethod
+    def decode_sub_function_code(cls, data: bytes) -> int:
+        """Decode sub function code (2 bytes)."""
+        return int.from_bytes(data[2:4], "big")
+
     def decode(self, data: bytes) -> None:
         """Decode a diagnostic request."""
         (self.sub_function_code, ) = struct.unpack(">H", data[:2])

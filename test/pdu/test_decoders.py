@@ -100,6 +100,17 @@ class TestModbusPDU:
         if not code & 0x80:
             assert pdu.function_code == code
 
+    def test_client_lookup_no_fc(self):
+        """Test lookup for responses."""
+        data = b'\x01\x70'
+        pdu = self.client.lookupPduClass(data)
+        assert not pdu
+
+    def test_list_function_codes(self):
+        """Test lookup for responses."""
+        fc_list = self.client.list_function_codes()
+        assert fc_list
+
     @pytest.mark.parametrize(("code", "frame"), list(requests))
     def test_server_lookup(self, code, frame):
         """Test lookup for requests."""

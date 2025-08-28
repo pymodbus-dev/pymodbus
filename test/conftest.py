@@ -8,6 +8,7 @@ from threading import enumerate as thread_enumerate
 import pytest
 import pytest_asyncio
 
+from pymodbus.constants import ExcCodes
 from pymodbus.datastore import ModbusBaseDeviceContext
 from pymodbus.server import ServerAsyncStop
 from pymodbus.transport import NULLMODEM_HOST, CommParams, CommType
@@ -218,6 +219,8 @@ def define_mock_context():
 
         def getValues(self, _fc, _address, count=0):
             """Get values."""
+            if count > 0x100:
+                return ExcCodes.ILLEGAL_VALUE
             return [self.default] * count
 
         def setValues(self, _fc, _address, _values):

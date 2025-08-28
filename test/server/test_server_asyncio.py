@@ -9,7 +9,6 @@ from unittest import mock
 import pytest
 
 from pymodbus import FramerType, ModbusDeviceIdentification
-from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.datastore import (
     ModbusDeviceContext,
     ModbusSequentialDataBlock,
@@ -240,21 +239,6 @@ class TestAsyncioServer:
         await asyncio.wait_for(BasicClient.done, timeout=0.1)
         assert BasicClient.received_data, expected_response
 
-    @pytest.mark.skip
-    async def test_async_server_file_descriptors(self):  # pragma: no cover
-        """Test sending and receiving data on tcp socket.
-
-        This test takes a long time (minutes) to run, so should only run when needed.
-        """
-        addr = ("127.0.0.1", 25001)
-        await self.start_server(serv_addr=addr)
-        for _ in range(2048):
-            client = AsyncModbusTcpClient(addr[0], framer=FramerType.SOCKET, port=addr[1])
-            await client.connect()
-            response = await client.read_coils(31, count=1, device_id=1)
-            assert not response.isError()
-            client.close()
-
     async def test_async_server_trace_connect_disconnect(self):
         """Test connect/disconnect trace handler."""
         trace_connect = mock.Mock()
@@ -392,16 +376,3 @@ class TestAsyncioServer:
             )
             await asyncio.wait_for(BasicClient.connected, timeout=0.1)
             assert not BasicClient.done.done()
-
-    @pytest.mark.skip
-    async def test_async_tcp_server_exception(self):  # pragma: no cover
-        """Send garbage data on a TCP socket should drop the connection."""
-        BasicClient.data = b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
-        await self.start_server()
-        with mock.patch(
-            "pymodbus.framer.FramerSocket.handleFrame",
-            new_callable=lambda: mock.Mock(side_effect=Exception),
-        ):
-            await self.connect_server()
-            await asyncio.wait_for(BasicClient.eof, timeout=0.1)
-            # neither of these should timeout if the test is successful

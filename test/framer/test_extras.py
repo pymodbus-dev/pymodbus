@@ -1,5 +1,9 @@
 """Test transaction."""
+from unittest.mock import patch
 
+import pytest
+
+from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer import (
     FramerAscii,
     FramerRTU,
@@ -12,7 +16,7 @@ from pymodbus.pdu import DecodePDU
 TEST_MESSAGE = b"\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d"
 
 
-class TestExtas:
+class TestExtras:
     """Test for the framer module."""
 
     client = None
@@ -73,6 +77,26 @@ class TestExtas:
         assert used_len == len(msg1) + len(msg2)
         assert pdu.function_code.to_bytes(1,'big') + pdu.encode() == msg2[7:]
 
+    def test_tcp_framer_transaction_wrong_id(self):
+        """Test a half completed tcp frame transaction."""
+        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
+        used_len, pdu = self._tcp.handleFrame(msg, 1, 0)
+        assert not pdu
+        assert used_len == len(msg)
+
+    def test_tcp_framer_transaction_wrong_tid(self):
+        """Test a half completed tcp frame transaction."""
+        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
+        used_len, pdu = self._tcp.handleFrame(msg, 0, 10)
+        assert not pdu
+        assert used_len == len(msg)
+
+    def test_tcp_framer_transaction_wrong_fc(self):
+        """Test a half completed tcp frame transaction."""
+        msg = b"\x00\x01\x12\x34\x00\x06\xff\x70\x01\x02\x00\x08"
+        with pytest.raises(ModbusIOException):
+            self._tcp.handleFrame(msg, 0, 0)
+
     def test_tls_incoming_packet(self):
         """Framer tls incoming packet."""
         msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
@@ -84,6 +108,32 @@ class TestExtas:
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
         _, pdu = self._rtu.handleFrame(msg, 0, 0)
         assert pdu
+
+    def test_rtu_short_packets(self):
+        """Test rtu process incoming packets."""
+        msg1 = b"\x00\x01"
+        msg2 = b"\x00\x00\x00\x01\xfc\x1b"
+        used_len, pdu = self._rtu.handleFrame(msg1, 0, 0)
+        assert not used_len
+        assert not pdu
+        used_len, pdu = self._rtu.handleFrame(msg1+msg2, 0, 0)
+        assert used_len == len(msg1) + len(msg2)
+        assert pdu
+
+    def test_rtu_calculate(self):
+        """Test rtu process incoming packets."""
+        msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
+        with patch("pymodbus.pdu.ReadCoilsRequest.calculateRtuFrameSize", return_value=0):
+            used_len, pdu = self._rtu.handleFrame(msg, 0, 0)
+            assert not used_len
+            assert not pdu
+
+    def test_rtu_wrong_fc(self):
+        """Test rtu process incoming packets."""
+        msg = b"\x00\x70\x00\x00\x00\x71\xfc\x1b"
+        used_len, pdu = self._rtu.handleFrame(msg, 0, 0)
+        assert not pdu
+        assert not used_len
 
     def test_ascii_process_incoming_packets(self):
         """Test ascii process incoming packet."""

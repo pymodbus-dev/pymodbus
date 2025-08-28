@@ -470,7 +470,3 @@ class TestFramerType:
 
             actual = test_framer.buildFrame(message)
             assert msg == actual
-
-
-
-#    @pytest.mark.parametrize(("entry"), list(FramerType))

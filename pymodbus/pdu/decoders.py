@@ -1,6 +1,8 @@
 """Modbus Request/Response Decoders."""
 from __future__ import annotations
 
+import copy
+
 from pymodbus.exceptions import MessageRegisterException, ModbusException
 from pymodbus.logging import Log
 
@@ -69,6 +71,8 @@ class DecodePDU:
                 ". Class needs to be derived from "
                 "`pymodbus.pdu.ModbusPDU` "
             )
+        if "pdu_table" not in self.__dict__:
+            self.pdu_table = copy.deepcopy(DecodePDU.pdu_table)
         self.lookup[custom_class.function_code] = custom_class
         self.pdu_table[custom_class.function_code] = (custom_class, custom_class)
 
@@ -79,7 +83,7 @@ class DecodePDU:
                 pdu_exp = ExceptionResponse(function_code & 0x7F)
                 pdu_exp.decode(frame[1:])
                 return pdu_exp
-            if not (pdu_class := self.lookup.get(function_code, None)):
+            if not (pdu_class := self.pdu_table.get(function_code, (None, None))[self.pdu_inx]):
                 Log.debug("decode PDU failed for function code {}", function_code)
                 raise ModbusException(f"Unknown response {function_code}")
             pdu = pdu_class()

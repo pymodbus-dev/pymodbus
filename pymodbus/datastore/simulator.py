@@ -487,7 +487,8 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
         self.action_methods: list[Callable] = []
         self.registerType_name_to_id: dict[str, int] = {}
         self.registerType_id_to_name: list[str] = []
-        Setup(self).setup(config, custom_actions)
+        if config:
+            Setup(self).setup(config, custom_actions)
 
     # --------------------------------------------
     # Simulator server interface
@@ -566,6 +567,8 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
                 while i < end_address:
                     if self.registers[i].type == CellType.NEXT:
                         i += 1
+                    else:
+                        return False
         return True
 
     def validate(self, func_code, address, count=1):
@@ -708,7 +711,7 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
             new_regs = cls.build_registers_from_value(value, False)
             reg.value = new_regs[0]
             reg2.value = new_regs[1]
-        elif cell.type == CellType.UINT32:
+        else: # if cell.type == CellType.UINT32:
             tmp_reg = [reg.value, reg2.value]
             value = cls.build_value_from_registers(tmp_reg, True)
             value += 1
@@ -757,7 +760,7 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
             regs = cls.build_registers_from_value(value, False)
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]
-        elif cell.type == CellType.UINT32:
+        else: # if cell.type == CellType.UINT32:
             regs = cls.build_registers_from_value(value, True)
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]

@@ -31,7 +31,7 @@ class ModbusBaseDeviceContext:
         :param fx: The function we are working with
         :returns: one of [d(iscretes),i(nputs),h(olding),c(oils)
         """
-        return self._fx_mapper[fx]
+        return self._fx_mapper.get(fx, "x")
 
     async def async_getValues(self, func_code: int, address: int, count: int = 1) -> list[int] | list[bool] | ExcCodes:
         """Get `count` values from datastore.

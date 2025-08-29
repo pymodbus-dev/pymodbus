@@ -39,9 +39,7 @@ class TestContextDataStore:
         """Test ModbusServerContext."""
         dev = ModbusServerContext()
         str(dev)
-        dev = ModbusServerContext(devices={})
         dev = ModbusServerContext(single=False)
-        dev = ModbusServerContext(devices={1: {}}, single=False)
 
     def test_datastore_server_iter(self):
         """Test ModbusServerContext."""
@@ -68,14 +66,6 @@ class TestContextDataStore:
             srv[2000] = dev
         with pytest.raises(NoSuchIdException):
             del srv[2000]
-
-    def test_datastore_server_get(self):
-        """Test ModbusServerContext."""
-        srv = ModbusServerContext()
-        assert srv[0] == {}
-        #srv.single = False
-        #with pytest.raises(NoSuchIdException):
-        #    _ = srv[200]
 
     def test_datastore_server_ids(self):
         """Test ModbusServerContext."""

@@ -7,7 +7,7 @@ import traceback
 from pymodbus.constants import ExcCodes
 from pymodbus.exceptions import ModbusIOException, NoSuchIdException
 from pymodbus.logging import Log
-from pymodbus.pdu.pdu import ExceptionResponse
+from pymodbus.pdu import ExceptionResponse
 from pymodbus.transaction import TransactionManager
 from pymodbus.transport import CommParams
 

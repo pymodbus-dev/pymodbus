@@ -6,7 +6,8 @@ import copy
 from pymodbus.exceptions import MessageRegisterException, ModbusException
 from pymodbus.logging import Log
 
-from .pdu import ExceptionResponse, ModbusPDU
+from .exceptionresponse import ExceptionResponse
+from .pdu import ModbusPDU
 
 
 class DecodePDU:

@@ -110,9 +110,17 @@ class TestWriteRegisterMessages:
         result = await request.update_datastore(context)
         assert result.function_code == request.function_code
 
-        # -----------------------------------------------------------------------#
-        # Mask Write Register Request
-        # -----------------------------------------------------------------------#
+
+    async def test_register_write_datastore_exceptions(self, mock_context):
+        """Test exception response from datastore."""
+        context = mock_context()
+        context.async_getValues = mock.AsyncMock(return_value=ExcCodes.ILLEGAL_VALUE)
+        for pdu in (
+            WriteSingleRegisterRequest(address=0x00, registers=[0xF000]),
+            WriteMultipleRegistersRequest(address=0x00, registers=[0x00] * 10),
+            MaskWriteRegisterRequest(0x0000, 0x0101, 0x1010),
+        ):
+            await pdu.update_datastore(context)
 
     def test_mask_write_register_request_encode(self):
         """Test basic bit message encoding/decoding."""

@@ -1,6 +1,6 @@
 """Remote datastore."""
 from pymodbus.exceptions import NotImplementedException
-from pymodbus.logging import Log
+from pymodbus.pdu import ExceptionResponse
 
 from .context import ModbusBaseDeviceContext
 
@@ -25,8 +25,6 @@ class RemoteDeviceContext(ModbusBaseDeviceContext):
         self.device_id = device_id
         self.result = None
         self.__build_mapping()
-        if not self.__set_callbacks:
-            Log.error("Init went wrong.")
 
     def reset(self):
         """Reset all the datastores to their default values."""
@@ -79,6 +77,8 @@ class RemoteDeviceContext(ModbusBaseDeviceContext):
             "i": lambda a, c: self._client.read_input_registers(
                 a, count=c, **params
             ),
+            "x": lambda a, c: ExceptionResponse(0
+            ),
         }
         self.__set_callbacks = {
             "d5": lambda a, v: self._client.write_coil(
@@ -113,11 +113,10 @@ class RemoteDeviceContext(ModbusBaseDeviceContext):
 
         TODO make this consistent (values?)
         """
-        if not result.isError():
-            if func_code in {"d", "c"}:
-                return result.bits
-            if func_code in {"h", "i"}:
-                return result.registers
-        else:
-            return result
-        return None
+        if result.isError():
+            return None
+        if func_code in {"d", "c"}:
+            return result.bits
+        if func_code in {"h", "i"}:
+            return result.registers
+        return result

@@ -73,9 +73,12 @@ class TestContextDataStore:
         """Test ModbusServerContext."""
         srv = ModbusServerContext()
         assert srv[0] == {}
-        #srv.single = False
-        #with pytest.raises(NoSuchIdException):
-        #    _ = srv[200]
+        assert srv[1] == {}
+        srv = ModbusServerContext(devices={1: {}}, single=False)
+        assert srv[1] == {}
+        with pytest.raises(NoSuchIdException):
+            srv[200]
+        print("jan")
 
     def test_datastore_server_ids(self):
         """Test ModbusServerContext."""

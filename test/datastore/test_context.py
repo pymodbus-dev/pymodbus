@@ -39,7 +39,9 @@ class TestContextDataStore:
         """Test ModbusServerContext."""
         dev = ModbusServerContext()
         str(dev)
+        dev = ModbusServerContext(devices={})
         dev = ModbusServerContext(single=False)
+        dev = ModbusServerContext(devices={1: {}}, single=False)
 
     def test_datastore_server_iter(self):
         """Test ModbusServerContext."""

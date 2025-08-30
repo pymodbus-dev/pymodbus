@@ -194,7 +194,7 @@ class SimData:
             raise TypeError("0 <= address < 65535")
         if not isinstance(self.count, int) or not 0 < self.count <= 65535:
             raise TypeError("0 < count <= 65535")
-        if self.action and not (callable(self.action) or asyncio.iscoroutinefunction(self.action)):
+        if self.action and not callable(self.action):
             raise TypeError("action not Callable or Awaitable (async)")
         if not isinstance(self.datatype, SimDataType):
             raise TypeError("datatype not SimDataType")

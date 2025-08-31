@@ -62,8 +62,8 @@ class TransactionManager(ModbusProtocol):
             self._lock = asyncio.Lock()
             self.low_level_send = self.send
             self.response_future: asyncio.Future = asyncio.Future()
-            self.last_pdu: ModbusPDU | None
-            self.last_addr: tuple | None
+            self.last_pdu: ModbusPDU | None = None
+            self.last_addr: tuple | None = None
 
     def dummy_trace_packet(self, sending: bool, data: bytes) -> bytes:
         """Do dummy trace."""

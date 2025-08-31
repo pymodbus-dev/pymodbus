@@ -3,7 +3,7 @@
 import asyncio
 import copy
 import json
-from unittest.mock import mock_open, patch
+from unittest import mock
 
 import pytest
 
@@ -11,6 +11,7 @@ from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.datastore import ModbusSimulatorContext
 from pymodbus.datastore.simulator import Cell, CellType
 from pymodbus.server import ModbusSimulatorServer
+from pymodbus.server.simulator.main import run_main
 from pymodbus.transport import NULLMODEM_HOST
 
 
@@ -210,12 +211,17 @@ class TestSimulator:
         server["server"]["port"] = use_port
         return server
 
+    @pytest.fixture(name="only_object")
+    def fixture_only_object(self):
+        """Set default only_object."""
+        return False
+
     @pytest.fixture(name="simulator_server")
-    async def setup_simulator_server(self, server, device, unused_tcp_port):
+    async def setup_simulator_server(self, server, device, unused_tcp_port, only_object):
         """Mock open for simulator server."""
-        with patch(
+        with mock.patch(
             "builtins.open",
-            mock_open(
+            mock.mock_open(
                 read_data=json.dumps(
                     {
                         "server_list": server,
@@ -225,15 +231,55 @@ class TestSimulator:
             )
         ):
             task = ModbusSimulatorServer(http_port=unused_tcp_port)
-            await task.run_forever(only_start=True)
-            await asyncio.sleep(0.5)
-            task_future = task.serving
-            yield task
-            await task.stop()
-            await task_future
+            if only_object:
+                yield task
+            else:
+                await task.run_forever(only_start=True)
+                await asyncio.sleep(0.5)
+                task_future = task.serving
+                yield task
+                await task.stop()
+                await task_future
 
     async def test_simulator_server_tcp(self, simulator_server):
         """Test init simulator server."""
+
+    async def test_simulator_server(self, server, device, unused_tcp_port):
+        """Test init simulator server."""
+        server["server"]["device_id"] = 17
+        with mock.patch(
+            "builtins.open",
+            mock.mock_open(
+                read_data=json.dumps(
+                    {
+                        "server_list": server,
+                        "device_list": {"device": device},
+                    }
+                )
+            )
+        ):
+            task = ModbusSimulatorServer(http_port=unused_tcp_port, custom_actions_module="pymodbus.server.simulator.custom_actions")
+            app = {}
+            with mock.patch("asyncio.create_task") as create_task:
+                create_task.side_effect = RuntimeError
+                with pytest.raises(RuntimeError):
+                    await task.start_modbus_server(app)
+
+    @pytest.mark.parametrize("only_object", [True])
+    async def test_simulator_server_exc(self, simulator_server):
+        """Test init simulator server."""
+        simulator_server.ready_event.set = mock.Mock(side_effect=RuntimeError)
+        with pytest.raises(RuntimeError):
+            await simulator_server.run_forever()
+        await simulator_server.stop()
+        await simulator_server.serving
+
+    @pytest.mark.parametrize("only_object", [True])
+    async def test_simulator_server_serving(self, simulator_server):
+        """Test init simulator server."""
+        simulator_server.serving.set_result(True)
+        await simulator_server.run_forever()
+        await simulator_server.stop()
 
     async def test_simulator_server_end_to_end(self, simulator_server, use_port):
         """Test simulator server end to end."""
@@ -260,3 +306,10 @@ class TestSimulator:
         result = await client.read_holding_registers(21, count=23, device_id=1)
         assert len(result.registers) == 23
         client.close()
+
+    async def test_simulator_main(self):
+        """Test main."""
+        with mock.patch("pymodbus.server.simulator.http_server.ModbusSimulatorServer.run_forever") as server:
+            server.return_value = True
+            await run_main(cmdline={})
+

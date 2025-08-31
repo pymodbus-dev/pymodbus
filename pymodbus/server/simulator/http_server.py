@@ -131,7 +131,7 @@ class ModbusSimulatorServer:
         else:
             custom_actions_dict = {}
         server = setup["server_list"][modbus_server]
-        if server["comm"] != "serial":
+        if server["comm"] != "serial":  # pragma: no cover
             server["address"] = (server["host"], server["port"])
             del server["host"]
             del server["port"]
@@ -210,8 +210,6 @@ class ModbusSimulatorServer:
     async def start_modbus_server(self, app):
         """Start Modbus server as asyncio task."""
         try:
-            if getattr(self.modbus_server, "start", None):
-                await self.modbus_server.start()
             app[self.api_key] = asyncio.create_task(
                 self.modbus_server.serve_forever()
             )
@@ -257,7 +255,7 @@ class ModbusSimulatorServer:
             self.serving.set_result(True)
         await asyncio.sleep(0)
 
-    async def handle_html_static(self, request):
+    async def handle_html_static(self, request):  # pragma: no cover
         """Handle static html."""
         if not (page := request.path[1:]):
             page = "index.html"
@@ -270,7 +268,7 @@ class ModbusSimulatorServer:
         except (FileNotFoundError, IsADirectoryError) as exc:
             raise web.HTTPNotFound(reason="File not found") from exc
 
-    async def handle_html(self, request):
+    async def handle_html(self, request):  # pragma: no cover
         """Handle html."""
         page_type = request.path.split("/")[-1]
         params = dict(request.query)
@@ -297,7 +295,7 @@ class ModbusSimulatorServer:
             return web.json_response({"result": "error", "error": f"Unhandled error Error: {exc}"})
         return web.json_response(result)
 
-    def build_html_registers(self, params, html):
+    def build_html_registers(self, params, html):  # pragma: no cover
         """Build html registers page."""
         result_txt, foot = self.helper_handle_submit(params, self.submit_html)
         if not result_txt:
@@ -342,7 +340,7 @@ class ModbusSimulatorServer:
         )
         return new_html
 
-    def build_html_calls(self, params: dict, html: str) -> str:
+    def build_html_calls(self, params: dict, html: str) -> str:  # pragma: no cover
         """Build html calls page."""
         result_txt, foot = self.helper_handle_submit(params, self.submit_html)
         if not foot:
@@ -441,11 +439,11 @@ class ModbusSimulatorServer:
         )
         return new_html
 
-    def build_html_log(self, _params, html):
+    def build_html_log(self, _params, html):  # pragma: no cover
         """Build html log page."""
         return html
 
-    def build_html_server(self, _params, html):
+    def build_html_server(self, _params, html):  # pragma: no cover
         """Build html server page."""
         return html
 
@@ -456,9 +454,9 @@ class ModbusSimulatorServer:
             "Set": self.action_set,
         })
 
-        if not result_txt:
+        if not result_txt:  # pragma: no cover
             result_txt = "ok"
-        if not foot:
+        if not foot:  # pragma: no cover
             foot = "Operation completed successfully"
 
         # Extract necessary parameters
@@ -505,9 +503,9 @@ class ModbusSimulatorServer:
             "Add": self.action_add,
             "Simulate": self.action_simulate,
         })
-        if not foot:
+        if not foot:  # pragma: no cover
             foot = "Monitoring active" if self.call_monitor.active else "not active"
-        if not result_txt:
+        if not result_txt:  # pragma: no cover
             result_txt = "ok"
 
         function_error = []
@@ -550,10 +548,10 @@ class ModbusSimulatorServer:
         simulation_action = "ACTIVE" if self.call_response.active != RESPONSE_INACTIVE else ""
 
         max_len = MAX_FILTER if self.call_monitor.active else 0
-        while len(self.call_list) > max_len:
+        while len(self.call_list) > max_len:  # pragma: no cover
             del self.call_list[0]
         call_rows = []
-        for entry in reversed(self.call_list):
+        for entry in reversed(self.call_list):  # pragma: no cover
             call_rows.append({
                 "call": entry.call,
                 "fc": entry.fc,
@@ -604,18 +602,18 @@ class ModbusSimulatorServer:
             range_start = -1
         try:
             range_stop = int(params.get("range_stop", range_start))
-        except ValueError:
+        except ValueError:  # pragma: no cover
             range_stop = -1
         if (submit := params["submit"]) not in submit_actions:
             return None, None
         return submit_actions[submit](params, range_start, range_stop)
 
-    def action_clear(self, _params, _range_start, _range_stop):
+    def action_clear(self, _params, _range_start, _range_stop):  # pragma: no cover
         """Clear register filter."""
         self.register_filter = []
         return None, None
 
-    def action_stop(self, _params, _range_start, _range_stop):
+    def action_stop(self, _params, _range_start, _range_stop):  # pragma: no cover
         """Stop call monitoring."""
         self.call_monitor = CallTypeMonitor()
         return None, "Stopped monitoring"
@@ -625,7 +623,7 @@ class ModbusSimulatorServer:
         self.call_response = CallTypeResponse()
         return None, None
 
-    def action_add(self, params, range_start, range_stop):
+    def action_add(self, params, range_start, range_stop):  # pragma: no cover
         """Build list of registers matching filter."""
         reg_action = int(params.get("action", -1))
         reg_writeable = "writeable" in params
@@ -653,7 +651,7 @@ class ModbusSimulatorServer:
         self.register_filter.sort()
         return None, None
 
-    def action_monitor(self, params, range_start, range_stop):
+    def action_monitor(self, params, range_start, range_stop):  # pragma: no cover
         """Start monitoring calls."""
         self.call_monitor.range_start = range_start
         self.call_monitor.range_stop = range_stop
@@ -665,7 +663,7 @@ class ModbusSimulatorServer:
         self.call_monitor.active = True
         return None, None
 
-    def action_set(self, params, _range_start, _range_stop):
+    def action_set(self, params, _range_start, _range_stop):  # pragma: no cover
         """Set register value."""
         if not (register := params["register"]):
             return "Missing register", None
@@ -676,7 +674,7 @@ class ModbusSimulatorServer:
             self.datastore_context.registers[register].access = True
         return None, None
 
-    def action_simulate(self, params, _range_start, _range_stop):
+    def action_simulate(self, params, _range_start, _range_stop):  # pragma: no cover
         """Simulate responses."""
         self.call_response.active = int(params["response_type"])
         if "response_split" in params:

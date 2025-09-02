@@ -1,7 +1,7 @@
 """Test utilities."""
 import struct
 
-from pymodbus.utilities import dict_property
+from pymodbus.utilities import dict_property, hexlify_packets
 
 
 _test_master = {4: "d"}
@@ -58,3 +58,8 @@ class TestUtility:
         assert result.s_1 == "x"
         assert result.s_2 == "x"
         assert result.g_1 == "x"
+
+    def test_hexlify_packets(self):
+        """Test hexlify_packets."""
+        assert hexlify_packets(b'123') == "0x31 0x32 0x33"
+        assert hexlify_packets(None) == ""

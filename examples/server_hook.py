@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import sys
 
 from pymodbus import FramerType, pymodbus_apply_logging_config
 from pymodbus.datastore import (
@@ -17,6 +18,14 @@ from pymodbus.datastore import (
 )
 from pymodbus.pdu import ModbusPDU
 from pymodbus.server import ModbusTcpServer
+
+try:
+    import helper  # type: ignore[import-not-found]
+except ImportError:
+    print("*** ERROR --> THIS EXAMPLE needs the example directory, please see \n\
+          https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
+          for more information.")
+    sys.exit(-1)
 
 
 class Manipulator:
@@ -43,8 +52,9 @@ class Manipulator:
         txt = "Connected" if connect else "Disconnected"
         print(f"---> {txt}")
 
-    async def setup(self):
+    async def setup(self, cmdline):
         """Prepare server."""
+        args = helper.get_commandline(server=True, description="server hooks", cmdline=cmdline)
         pymodbus_apply_logging_config(logging.DEBUG)
         datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
         context = ModbusServerContext(
@@ -53,11 +63,12 @@ class Manipulator:
             ),
             single=True,
         )
+        address = (args.host if args.host else "", args.port if args.port else None)
         self.server = ModbusTcpServer(
             context,
             framer=FramerType.SOCKET,
             identity=None,
-            address=("127.0.0.1", 5020),
+            address=address,
             trace_packet=self.trace_packet,
             trace_pdu=self.trace_pdu,
             trace_connect=self.trace_connect,
@@ -68,10 +79,10 @@ class Manipulator:
         await self.server.serve_forever()
 
 
-async def main():
+async def main(cmdline=None):
     """Run example."""
     server = Manipulator()
-    await server.setup()
+    await server.setup(cmdline=cmdline)
     await server.run()
 
 

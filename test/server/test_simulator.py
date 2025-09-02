@@ -8,7 +8,6 @@ from unittest import mock
 import pytest
 
 from pymodbus.client import AsyncModbusTcpClient
-from pymodbus.datastore import ModbusSimulatorContext
 from pymodbus.datastore.simulator import Cell, CellType
 from pymodbus.server import ModbusSimulatorServer
 from pymodbus.server.simulator.main import run_main
@@ -198,11 +197,6 @@ class TestSimulator:
     def copy_default_device(self):
         """Copy default device."""
         return copy.deepcopy(self.default_device)
-
-    @pytest.fixture(name="simulator")
-    def create_simulator(self, device):
-        """Create simulator context."""
-        return ModbusSimulatorContext(device, self.custom_actions)
 
     @pytest.fixture(name="server")
     def copy_default_server(self, use_port):

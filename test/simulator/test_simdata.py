@@ -38,6 +38,7 @@ class TestSimData:
         (1.0, SimDataType.FLOAT32),
         (11, SimDataType.REGISTERS),
         (True, SimDataType.BITS),
+        (17, SimDataType.DEFAULT),
         ])
     def test_simdata_value_ok(self, value, value_type):
         """Test simdata value."""

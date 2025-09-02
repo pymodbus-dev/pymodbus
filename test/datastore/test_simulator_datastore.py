@@ -168,13 +168,6 @@ class TestDatastoreSimulator:
         # 48 MAX before repeat
     ]
 
-    @staticmethod
-    @pytest.fixture(name="use_port")
-    def get_port_in_class(base_ports):
-        """Return next port."""
-        base_ports[__class__.__name__] += 1
-        return base_ports[__class__.__name__]
-
     @classmethod
     def custom_action1(cls, _inx, _cell):
         """Test action."""

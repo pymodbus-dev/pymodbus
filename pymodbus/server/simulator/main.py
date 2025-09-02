@@ -48,7 +48,7 @@ from pymodbus.logging import Log
 from pymodbus.server.simulator.http_server import ModbusSimulatorServer
 
 
-def get_commandline(extras=None, cmdline=None):
+def get_commandline(cmdline=None):
     """Get command line arguments."""
     parser = argparse.ArgumentParser(
         description="Modbus server with REST-API and web server"
@@ -97,9 +97,6 @@ def get_commandline(extras=None, cmdline=None):
         help="python file with custom actions, default is none",
         type=str,
     )
-    if extras:
-        for extra in extras:
-            parser.add_argument(extra[0], **extra[1])
     args = parser.parse_args(cmdline)
     pymodbus_apply_logging_config(args.log.upper())
     Log.info("Start simulator")
@@ -112,17 +109,11 @@ def get_commandline(extras=None, cmdline=None):
     return cmd_args
 
 
-async def run_main():
+async def run_main(cmdline=None):
     """Run server async."""
-    cmd_args = get_commandline()
+    cmd_args = get_commandline(cmdline=cmdline)
     task = ModbusSimulatorServer(**cmd_args)
     await task.run_forever()
 
-
-def main():
-    """Run server."""
-    asyncio.run(run_main(), debug=True)
-
-
 if __name__ == "__main__":
-    main()
+    asyncio.run(run_main(), debug=True)

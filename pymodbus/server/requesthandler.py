@@ -43,24 +43,17 @@ class ServerRequestHandler(TransactionManager):
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""
         super().callback_disconnected(exc)
-        try:
-            if exc is None:
-                Log.debug(
-                    "Handler for stream [{}] has been canceled", self.comm_params.comm_name
-                )
-            else:
-                Log.debug(
-                    "Client Disconnection {} due to {}",
-                    self.comm_params.comm_name,
-                    exc,
-                )
-            self.running = False
-        except Exception as exc:  # pylint: disable=broad-except
-            Log.error(
-                "Datastore unable to fulfill request: {}; {}",
-                exc,
-                traceback.format_exc(),
+        if exc is None:
+            Log.debug(
+                "Handler for stream [{}] has been canceled", self.comm_params.comm_name
             )
+        else:
+            Log.debug(
+                "Client Disconnection {} due to {}",
+                self.comm_params.comm_name,
+                exc,
+            )
+        self.running = False
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
@@ -89,7 +82,7 @@ class ServerRequestHandler(TransactionManager):
             if self.server.broadcast_enable and not self.last_pdu.dev_id:
                 # if broadcasting then execute on all device contexts,
                 # note response will be ignored
-                for dev_id in self.server.context.device_id():
+                for dev_id in self.server.context.device_ids():
                     await self.last_pdu.update_datastore(self.server.context[dev_id])
                 return
 

@@ -18,7 +18,7 @@ from .requesthandler import ServerRequestHandler
 class ModbusBaseServer(ModbusProtocol):
     """Common functionality for all server classes."""
 
-    active_server: ModbusBaseServer | None
+    active_server: ModbusBaseServer | None = None
 
     def __init__(  # pylint: disable=too-many-arguments
         self,

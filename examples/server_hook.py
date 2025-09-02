@@ -19,6 +19,7 @@ from pymodbus.datastore import (
 from pymodbus.pdu import ModbusPDU
 from pymodbus.server import ModbusTcpServer
 
+
 try:
     import helper  # type: ignore[import-not-found]
 except ImportError:
@@ -63,7 +64,7 @@ class Manipulator:
             ),
             single=True,
         )
-        address = (args.host if args.host else "", args.port if args.port else None)
+        address: tuple[str, int] = (args.host if args.host else "", args.port if args.port else 0)
         self.server = ModbusTcpServer(
             context,
             framer=FramerType.SOCKET,

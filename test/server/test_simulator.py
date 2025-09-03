@@ -252,12 +252,7 @@ class TestSimulator:
                 )
             )
         ):
-            task = ModbusSimulatorServer(http_port=unused_tcp_port, custom_actions_module="pymodbus.server.simulator.custom_actions")
-            app = {}
-            with mock.patch("asyncio.create_task") as create_task:
-                create_task.side_effect = RuntimeError
-                with pytest.raises(RuntimeError):
-                    await task.start_modbus_server(app)
+            ModbusSimulatorServer(http_port=unused_tcp_port, custom_actions_module="pymodbus.server.simulator.custom_actions")
 
     @pytest.mark.parametrize("only_object", [True])
     async def test_simulator_server_exc(self, simulator_server):

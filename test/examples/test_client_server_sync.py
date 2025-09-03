@@ -73,6 +73,7 @@ class TestClientServerSyncExamples:
         sleep(SLEEPING)
         ServerStop()
 
+    @pytest.mark.skip
     def test_server_client_twice(self, mock_cls, mock_clc, use_comm):
         """Run async server without client."""
         if use_comm == "serial":

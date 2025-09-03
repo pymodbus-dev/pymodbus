@@ -209,14 +209,10 @@ class ModbusSimulatorServer:
 
     async def start_modbus_server(self, app):
         """Start Modbus server as asyncio task."""
-        try:
-            app[self.api_key] = asyncio.create_task(
-                self.modbus_server.serve_forever()
-            )
-            app[self.api_key].set_name("simulator modbus server")
-        except Exception as exc:
-            Log.error("Error starting modbus server, reason: {}", exc)
-            raise exc
+        app[self.api_key] = asyncio.create_task(
+            self.modbus_server.serve_forever()
+        )
+        app[self.api_key].set_name("simulator modbus server")
         Log.info(
             "Modbus server started on {}", self.modbus_server.comm_params.source_address
         )

@@ -29,8 +29,8 @@ class AsyncModbusUdpClient(ModbusBaseClient):
     :param port: Port used for communication.
     :param name: Set communication name, used in logging
     :param source_address: source address of client,
-    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
-    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
+    :param reconnect_delay: Minimum delay in seconds before reconnecting.
+    :param reconnect_delay_max: Maximum delay in seconds before reconnecting.
     :param timeout: Timeout for connecting and receiving data, in seconds.
     :param retries: Max number of retries per request.
     :param trace_packet: Called with bytestream received/to be sent

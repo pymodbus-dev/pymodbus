@@ -99,5 +99,5 @@ class TestRemoteDataStore:
         """Test setting values against a remote device context."""
         client = mock.MagicMock()
         context = RemoteDeviceContext(client)
-        with pytest.raises(ValueError, match="setValues*"):
+        with pytest.raises(ValueError, match=r"setValues*"):
             context.setValues(0x01, 0, [1])

@@ -34,7 +34,7 @@ class SimCore:
                 if cfg_block:
                     cls.build_block(cfg_block)
 
-            #core.devices[dev.id] = (
+            core.devices[dev.id] = dev
             #    block_coil,
             #    block_direct,
             #    block_holding,

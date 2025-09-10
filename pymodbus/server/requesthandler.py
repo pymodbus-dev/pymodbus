@@ -7,7 +7,7 @@ import traceback
 from pymodbus.constants import ExcCodes
 from pymodbus.exceptions import ModbusIOException, NoSuchIdException
 from pymodbus.logging import Log
-from pymodbus.pdu.pdu import ExceptionResponse
+from pymodbus.pdu import ExceptionResponse
 from pymodbus.transaction import TransactionManager
 from pymodbus.transport import CommParams
 
@@ -40,27 +40,20 @@ class ServerRequestHandler(TransactionManager):
             trace_connect,
         )
 
-    def callback_disconnected(self, call_exc: Exception | None) -> None:
+    def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""
-        super().callback_disconnected(call_exc)
-        try:
-            if call_exc is None:
-                Log.debug(
-                    "Handler for stream [{}] has been canceled", self.comm_params.comm_name
-                )
-            else:
-                Log.debug(
-                    "Client Disconnection {} due to {}",
-                    self.comm_params.comm_name,
-                    call_exc,
-                )
-            self.running = False
-        except Exception as exc:  # pylint: disable=broad-except
-            Log.error(
-                "Datastore unable to fulfill request: {}; {}",
-                exc,
-                traceback.format_exc(),
+        super().callback_disconnected(exc)
+        if exc is None:
+            Log.debug(
+                "Handler for stream [{}] has been canceled", self.comm_params.comm_name
             )
+        else:
+            Log.debug(
+                "Client Disconnection {} due to {}",
+                self.comm_params.comm_name,
+                exc,
+            )
+        self.running = False
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
@@ -89,7 +82,7 @@ class ServerRequestHandler(TransactionManager):
             if self.server.broadcast_enable and not self.last_pdu.dev_id:
                 # if broadcasting then execute on all device contexts,
                 # note response will be ignored
-                for dev_id in self.server.context.device_id():
+                for dev_id in self.server.context.device_ids():
                     await self.last_pdu.update_datastore(self.server.context[dev_id])
                 return
 
@@ -97,9 +90,10 @@ class ServerRequestHandler(TransactionManager):
             response = await self.last_pdu.update_datastore(context)
 
         except NoSuchIdException:
-            Log.error("requested device id does not exist: {}", self.last_pdu.dev_id)
             if self.server.ignore_missing_devices:
+                Log.debug("ignoring request for unknown device id: {}", self.last_pdu.dev_id)
                 return  # the client will simply timeout waiting for a response
+            Log.error("requested device id does not exist: {}", self.last_pdu.dev_id)
             response = ExceptionResponse(self.last_pdu.function_code, ExcCodes.GATEWAY_NO_RESPONSE)
         except Exception as exc:  # pylint: disable=broad-except
             Log.error(

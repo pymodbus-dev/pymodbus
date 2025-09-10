@@ -244,7 +244,7 @@ exclude_also = [
     "if __name__ == .__main__.:",
     ]
 skip_covered = true
-fail_under = 94.9
+fail_under = 99.5
 
 [tool.coverage.html]
 directory = "build/cov"
@@ -314,3 +314,6 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[tool.pyright]
+disableBytesTypePromotions = false

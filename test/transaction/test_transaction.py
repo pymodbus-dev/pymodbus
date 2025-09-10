@@ -1,5 +1,6 @@
 """Test transaction."""
 import asyncio
+import copy
 from unittest import mock
 
 import pytest
@@ -182,7 +183,7 @@ class TestTransaction:
             transact.response_future.set_result((1, pdu))
         transact.callback_data(packet)
 
-    @pytest.mark.parametrize("scenario", range(8))
+    @pytest.mark.parametrize("scenario", range(10))
     async def test_transaction_execute(self, use_clc, scenario):
         """Test tracers in disconnect."""
         transact = TransactionManager(
@@ -240,13 +241,33 @@ class TestTransaction:
             await asyncio.sleep(0.1)
             with pytest.raises(ModbusIOException):
                 await resp
-        else: # if scenario == 7: # response
+        elif scenario == 7: # response
             transact.comm_params.timeout_connect = 0.2
             resp = asyncio.create_task(transact.execute(False, request))
             await asyncio.sleep(0.1)
             transact.response_future.set_result(response)
             await asyncio.sleep(0.1)
             assert response == await resp
+        elif scenario == 8: # response wrong dev_id
+            transact.comm_params.timeout_connect = 0.2
+            resp = asyncio.create_task(transact.execute(False, request))
+            await asyncio.sleep(0.1)
+            new_resp = copy.deepcopy(response)
+            new_resp.dev_id = 17
+            transact.response_future.set_result(new_resp)
+            await asyncio.sleep(0.1)
+            with pytest.raises(ModbusIOException):
+                resp.result()
+        else: # if scenario == 9: # response wrong tid
+            transact.comm_params.timeout_connect = 0.2
+            resp = asyncio.create_task(transact.execute(False, request))
+            await asyncio.sleep(0.1)
+            new_resp = copy.deepcopy(response)
+            new_resp.transaction_id = 17
+            transact.response_future.set_result(new_resp)
+            await asyncio.sleep(0.1)
+            with pytest.raises(ModbusIOException):
+                resp.result()
 
     async def test_transaction_receiver(self, use_clc):
         """Test tracers in disconnect."""
@@ -423,7 +444,7 @@ class TestSyncTransaction:
         )
 
 
-    @pytest.mark.parametrize("scenario", range(7))
+    @pytest.mark.parametrize("scenario", range(10))
     async def test_sync_transaction_execute(self, use_clc, scenario):
         """Test tracers in disconnect."""
         client = ModbusBaseSyncClient(
@@ -479,7 +500,7 @@ class TestSyncTransaction:
             transact.comm_params.timeout_connect = 0.1
             with pytest.raises(ModbusIOException):
                 transact.sync_execute(False, request)
-        else: # if scenario == 6 # response
+        elif scenario == 6: # response
             transact.transport = 1
             resp_bytes = transact.framer.buildFrame(response)
             transact.sync_client.recv = mock.Mock(return_value=resp_bytes)
@@ -487,6 +508,32 @@ class TestSyncTransaction:
             transact.comm_params.timeout_connect = 0.2
             resp = transact.sync_execute(False, request)
             assert response.bits == resp.bits
+        elif scenario == 7: # response wrong dev_id
+            transact.transport = 1
+            pdu = copy.deepcopy(response)
+            pdu.dev_id = 17
+            transact.sync_get_response = mock.Mock(return_value=pdu)
+            transact.pdu_send = mock.Mock()
+            transact.comm_params.timeout_connect = 0.2
+            with pytest.raises(ModbusIOException):
+                transact.sync_execute(False, request)
+        elif scenario == 8: # response wrong tid
+            transact.transport = 1
+            pdu = copy.deepcopy(response)
+            pdu.transaction_id = 17
+            transact.sync_get_response = mock.Mock(return_value=pdu)
+            transact.pdu_send = mock.Mock()
+            transact.comm_params.timeout_connect = 0.2
+            with pytest.raises(ModbusIOException):
+                transact.sync_execute(False, request)
+        else : # if scenario == 9 # pdu_send from client
+            transact.transport = 1
+            transact.is_server = True
+            resp_bytes = transact.framer.buildFrame(response)
+            transact.sync_client.recv = mock.Mock(return_value=resp_bytes)
+            transact.sync_client.send = mock.Mock()
+            transact.comm_params.timeout_connect = 0.2
+            transact.pdu_send(response)
 
     def test_sync_transaction_receiver(self, use_clc):
         """Test tracers in disconnect."""

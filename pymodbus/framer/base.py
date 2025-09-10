@@ -46,13 +46,13 @@ class FramerBase:
         """
         return 0, 0, 0, self.EMPTY
 
-    def encode(self, pdu: bytes, _dev_id: int, _tid: int) -> bytes:
+    def encode(self, payload: bytes, _dev_id: int, _tid: int) -> bytes:
         """Encode ADU.
 
         returns:
             modbus ADU (bytes)
         """
-        return pdu
+        return payload
 
     def buildFrame(self, message: ModbusPDU) -> bytes:
         """Create a ready to send modbus packet.

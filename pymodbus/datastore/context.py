@@ -17,8 +17,8 @@ class ModbusBaseDeviceContext:
 
     Derived classes must implemented the following methods:
             reset(self)
-            getValues/async_getValues(self, fc_as_hex, address, count=1)
-            setValues/async_setValues(self, fc_as_hex, address, values)
+            getValues/async_getValues(self, func_code, address, count=1)
+            setValues/async_setValues(self, func_code, address, values)
     """
 
     _fx_mapper = {2: "d", 4: "i"}
@@ -31,46 +31,46 @@ class ModbusBaseDeviceContext:
         :param fx: The function we are working with
         :returns: one of [d(iscretes),i(nputs),h(olding),c(oils)
         """
-        return self._fx_mapper[fx]
+        return self._fx_mapper.get(fx, "x")
 
-    async def async_getValues(self, fc_as_hex: int, address: int, count: int = 1) -> list[int] | list[bool] | ExcCodes:
+    async def async_getValues(self, func_code: int, address: int, count: int = 1) -> list[int] | list[bool] | ExcCodes:
         """Get `count` values from datastore.
 
-        :param fc_as_hex: The function we are working with
+        :param func_code: The function we are working with
         :param address: The starting address
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         """
-        return self.getValues(fc_as_hex, address, count)
+        return self.getValues(func_code, address, count)
 
-    async def async_setValues(self, fc_as_hex: int, address: int, values: list[int] | list[bool] ) -> None | ExcCodes:
+    async def async_setValues(self, func_code: int, address: int, values: list[int] | list[bool] ) -> None | ExcCodes:
         """Set the datastore with the supplied values.
 
-        :param fc_as_hex: The function we are working with
+        :param func_code: The function we are working with
         :param address: The starting address
         :param values: The new values to be set
         """
-        return self.setValues(fc_as_hex, address, values)
+        return self.setValues(func_code, address, values)
 
-    def getValues(self, fc_as_hex: int, address: int, count: int = 1) -> list[int] | list[bool] | ExcCodes:
+    def getValues(self, func_code: int, address: int, count: int = 1) -> list[int] | list[bool] | ExcCodes:
         """Get `count` values from datastore.
 
-        :param fc_as_hex: The function we are working with
+        :param func_code: The function we are working with
         :param address: The starting address
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         """
-        Log.error("getValues({},{},{}) not implemented!", fc_as_hex, address, count)
+        Log.error("getValues({},{},{}) not implemented!", func_code, address, count)
         return ExcCodes.ILLEGAL_FUNCTION
 
-    def setValues(self, fc_as_hex: int, address: int, values: list[int] | list[bool]) -> None | ExcCodes:
+    def setValues(self, func_code: int, address: int, values: list[int] | list[bool]) -> None | ExcCodes:
         """Set the datastore with the supplied values.
 
-        :param fc_as_hex: The function we are working with
+        :param func_code: The function we are working with
         :param address: The starting address
         :param values: The new values to be set
         """
-        Log.error("setValues({},{},{}) not implemented!", fc_as_hex, address, values)
+        Log.error("setValues({},{},{}) not implemented!", func_code, address, values)
         return ExcCodes.ILLEGAL_FUNCTION
 
 
@@ -111,38 +111,38 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
         for datastore in iter(self.store.values()):
             datastore.reset()
 
-    def getValues(self, fc_as_hex, address, count=1) -> list[int] | list[bool] | ExcCodes:
+    def getValues(self, func_code, address, count=1) -> list[int] | list[bool] | ExcCodes:
         """Get `count` values from datastore.
 
-        :param fc_as_hex: The function we are working with
+        :param func_code: The function we are working with
         :param address: The starting address
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         """
         address += 1
-        Log.debug("getValues: fc-[{}] address-{}: count-{}", fc_as_hex, address, count)
-        return self.store[self.decode(fc_as_hex)].getValues(address, count)
+        Log.debug("getValues: fc-[{}] address-{}: count-{}", func_code, address, count)
+        return self.store[self.decode(func_code)].getValues(address, count)
 
-    def setValues(self, fc_as_hex, address, values) -> None | ExcCodes:
+    def setValues(self, func_code, address, values) -> None | ExcCodes:
         """Set the datastore with the supplied values.
 
-        :param fc_as_hex: The function we are working with
+        :param func_code: The function we are working with
         :param address: The starting address
         :param values: The new values to be set
         """
         address += 1
-        Log.debug("setValues[{}] address-{}: count-{}", fc_as_hex, address, len(values))
-        return self.store[self.decode(fc_as_hex)].setValues(address, values)
+        Log.debug("setValues[{}] address-{}: count-{}", func_code, address, len(values))
+        return self.store[self.decode(func_code)].setValues(address, values)
 
-    def register(self, function_code, fc_as_hex, datablock=None):
+    def register(self, function_code, func_code, datablock=None):
         """Register a datablock with the device context.
 
         :param function_code: function code (int)
-        :param fc_as_hex: string representation of function code (e.g "cf" )
+        :param func_code: string representation of function code (e.g "cf" )
         :param datablock: datablock to associate with this function code
         """
-        self.store[fc_as_hex] = datablock or ModbusSequentialDataBlock.create()
-        self._fx_mapper[function_code] = fc_as_hex
+        self.store[func_code] = datablock or ModbusSequentialDataBlock.create()
+        self._fx_mapper[function_code] = func_code
 
 
 class ModbusServerContext:

@@ -3,8 +3,10 @@ import pytest
 
 from pymodbus.exceptions import (
     ConnectionException,
+    MessageRegisterException,
     ModbusException,
     ModbusIOException,
+    NoSuchIdException,
     NotImplementedException,
     ParameterException,
 )
@@ -19,6 +21,8 @@ class TestExceptions:  # pylint: disable=too-few-public-methods
         ParameterException("bad parameter"),
         NotImplementedException("bad function"),
         ConnectionException("bad connection"),
+        NoSuchIdException("no id"),
+        MessageRegisterException("Wrong message"),
     ]
 
     def test_exceptions(self):

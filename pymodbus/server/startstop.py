@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import asyncio
-import os
+from time import sleep
 
 from pymodbus.datastore import ModbusServerContext
 
@@ -150,7 +150,6 @@ def StartSerialServer(
     """
     asyncio.run(StartAsyncSerialServer(context, **kwargs))
 
-
 async def ServerAsyncStop() -> None:
     """Terminate server."""
     if not ModbusBaseServer.active_server:
@@ -158,10 +157,10 @@ async def ServerAsyncStop() -> None:
     await ModbusBaseServer.active_server.shutdown()
     ModbusBaseServer.active_server = None
 
-
 def ServerStop() -> None:
     """Terminate server."""
     if not ModbusBaseServer.active_server:
         raise RuntimeError("Modbus server not running.")
     future = asyncio.run_coroutine_threadsafe(ServerAsyncStop(), ModbusBaseServer.active_server.loop)
-    future.result(timeout=10 if os.name == 'nt' else 0.1)
+    while not future.done():
+        sleep(0.1)

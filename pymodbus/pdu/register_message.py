@@ -10,6 +10,7 @@ from pymodbus.constants import ExcCodes
 from pymodbus.datastore import ModbusDeviceContext
 from pymodbus.exceptions import ModbusIOException
 
+from .decoders import DecodePDU
 from .exceptionresponse import ExceptionResponse
 from .pdu import ModbusPDU
 
@@ -381,3 +382,10 @@ class MaskWriteRegisterResponse(ModbusPDU):
     def decode(self, data: bytes) -> None:
         """Decode a the response."""
         self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data[:6])
+
+DecodePDU.add_pdu(ReadHoldingRegistersRequest, ReadHoldingRegistersResponse)
+DecodePDU.add_pdu(ReadInputRegistersRequest, ReadInputRegistersResponse)
+DecodePDU.add_pdu(WriteMultipleRegistersRequest, WriteMultipleRegistersResponse)
+DecodePDU.add_pdu(WriteSingleRegisterRequest, WriteSingleRegisterResponse)
+DecodePDU.add_pdu(ReadWriteMultipleRegistersRequest, ReadWriteMultipleRegistersResponse)
+DecodePDU.add_pdu(MaskWriteRegisterRequest, MaskWriteRegisterResponse)

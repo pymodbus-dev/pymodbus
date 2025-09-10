@@ -28,9 +28,9 @@ class AsyncModbusTcpClient(ModbusBaseClient):
     :param port: Port used for communication
     :param name: Set communication name, used in logging
     :param source_address: source address of client
-    :param reconnect_delay: Minimum delay in seconds.milliseconds before reconnecting.
-    :param reconnect_delay_max: Maximum delay in seconds.milliseconds before reconnecting.
-    :param timeout: Timeout for connecting and receiving data, in seconds.
+    :param reconnect_delay: Minimum delay when reconnecting, in seconds (use decimals for milliseconds).
+    :param reconnect_delay_max: Maximum delay when reconnecting, in seconds (use decimals for milliseconds).
+    :param timeout: Timeout for connecting and receiving data, in seconds (use decimals for milliseconds).
     :param retries: Max number of retries per request.
     :param trace_packet: Called with bytestream received/to be sent
     :param trace_pdu: Called with PDU received/to be sent

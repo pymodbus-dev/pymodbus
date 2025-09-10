@@ -21,6 +21,10 @@ class TestRemoteDataStore:
         with pytest.raises(NotImplementedException):
             context.reset()
 
+    def test_remote_device(self):
+        """Test a modbus remote device."""
+        RemoteDeviceContext(None, device_id=1)
+
     def test_remote_device_set_values(self):
         """Test setting values against a remote device context."""
         client = mock.MagicMock()
@@ -29,10 +33,8 @@ class TestRemoteDataStore:
 
         context = RemoteDeviceContext(client)
         context.setValues(0x0F, 0, [1])
-        # result = context.setValues(0x10, 1, [1])
         context.setValues(0x10, 1, [1])
-        # assert result.exception_code == 0x02
-        # assert result.function_code == 0x90
+        context.setValues(0x05, 1, [1])
 
     async def test_remote_device_async_set_values(self):
         """Test setting values against a remote device context."""
@@ -66,6 +68,11 @@ class TestRemoteDataStore:
         result = context.getValues(3, 0, 10)
         assert result != [10] * 10
 
+        result = context.getValues(5, 0, 10)
+        assert result != [10] * 10
+
+        result = context.getValues(17, 0, 10)
+
     async def test_remote_device_async_get_values(self):
         """Test getting values from a remote device context."""
         client = mock.MagicMock()
@@ -87,3 +94,10 @@ class TestRemoteDataStore:
 
         result = await context.async_getValues(3, 0, 10)
         assert result != [10] * 10
+
+    def test_remote_device_set_values_wrong(self):
+        """Test setting values against a remote device context."""
+        client = mock.MagicMock()
+        context = RemoteDeviceContext(client)
+        with pytest.raises(ValueError, match="setValues*"):
+            context.setValues(0x01, 0, [1])

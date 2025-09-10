@@ -4,7 +4,11 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.logging import Log, pymodbus_apply_logging_config
+from pymodbus.logging import (
+    Log,
+    pymodbus_apply_logging_config,
+    pymodbus_get_last_frames,
+)
 
 
 class TestLogging:
@@ -47,31 +51,73 @@ class TestLogging:
         pymodbus_apply_logging_config("info")
         pymodbus_apply_logging_config(logging.NOTSET)
         Log.debug("test 1no")
+        pymodbus_apply_logging_config(logging.CRITICAL)
+        Log.debug("test 1no")
         pymodbus_apply_logging_config("debug")
         Log.debug("test 1")
         Log.debug("test 1")
         Log.debug("test 1")
-        pymodbus_apply_logging_config(logging.NOTSET)
+        Log.error("get frames")
+        Log.critical("get frames")
+        pymodbus_apply_logging_config(logging.CRITICAL)
         Log.warning("test 2no")
         pymodbus_apply_logging_config("warning")
         Log.warning("test 2")
         Log.warning("test 2")
         Log.warning("test 2")
-        pymodbus_apply_logging_config(logging.NOTSET)
+        pymodbus_apply_logging_config(logging.CRITICAL)
         Log.critical("test 3no")
         pymodbus_apply_logging_config("critical")
         Log.critical("test 3")
         Log.critical("test 3")
         Log.critical("test 3")
-        pymodbus_apply_logging_config(logging.NOTSET)
+        pymodbus_apply_logging_config(logging.CRITICAL)
         Log.error("test 4no")
         pymodbus_apply_logging_config("error")
         Log.error("test 4")
         Log.error("test 4")
         Log.error("test 4")
-        pymodbus_apply_logging_config(logging.NOTSET)
+        pymodbus_apply_logging_config(logging.CRITICAL)
         Log.info("test 5no")
         pymodbus_apply_logging_config("info")
         Log.info("test 5")
         Log.info("test 5")
         Log.info("test 5")
+
+    def test_apply_build_no(self):
+        """Test pymodbus_apply_logging_config."""
+        with mock.patch("pymodbus.logging.Log.build_msg") as build:
+            build.return_value = None
+            Log.critical("test 0")
+            pymodbus_apply_logging_config("debug")
+            Log.debug("test 1")
+            pymodbus_apply_logging_config("warning")
+            Log.warning("test 2")
+            pymodbus_apply_logging_config("critical")
+            pymodbus_apply_logging_config("error")
+            Log.error("test 4")
+            pymodbus_apply_logging_config("info")
+            Log.info("test 5")
+
+    def test_log_get_frames(self):
+        """Test get_frames."""
+        pymodbus_get_last_frames()
+        for _ in range(100):
+            Log.transport_dump(Log.SEND_DATA, b'678', b'9')
+        pymodbus_get_last_frames()
+
+    def test_transport_dump(self):
+        """Test transport_dump."""
+        pymodbus_apply_logging_config("error")
+        Log.transport_dump(Log.SEND_DATA, b'123', b'4')
+        for _ in range(100):
+            Log.transport_dump(Log.SEND_DATA, b'678', b'9')
+        pymodbus_apply_logging_config("debug")
+        Log.transport_dump(Log.SEND_DATA, b'123', b'4')
+
+    def test_build_frame_log_line(self):
+        """Test build_frame_log_line."""
+        Log.build_frame_log_line(Log.SEND_DATA, b'123', b'4')
+        Log.build_frame_log_line(Log.RECV_DATA, b'123', b'4')
+        Log.build_frame_log_line("Unknown", b'123', b'4')
+

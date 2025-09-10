@@ -1,6 +1,7 @@
 """**Server classes**."""
 
 __all__ = [
+    "ModbusBaseServer",
     "ModbusSerialServer",
     "ModbusSimulatorServer",
     "ModbusTcpServer",
@@ -19,6 +20,7 @@ __all__ = [
     "get_simulator_commandline",
 ]
 
+from pymodbus.server.base import ModbusBaseServer
 from pymodbus.server.server import (
     ModbusSerialServer,
     ModbusTcpServer,

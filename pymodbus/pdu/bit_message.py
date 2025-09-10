@@ -6,6 +6,7 @@ from typing import cast
 from pymodbus.constants import ExcCodes, ModbusStatus
 from pymodbus.datastore import ModbusDeviceContext
 
+from .decoders import DecodePDU
 from .exceptionresponse import ExceptionResponse
 from .pdu import ModbusPDU, pack_bitstring, unpack_bitstring
 
@@ -163,3 +164,8 @@ class WriteMultipleCoilsResponse(ModbusPDU):
     def decode(self, data: bytes) -> None:
         """Decode a write coils response."""
         self.address, self.count = struct.unpack(">HH", data[:4])
+
+DecodePDU.add_pdu(ReadCoilsRequest, ReadCoilsResponse)
+DecodePDU.add_pdu(ReadDiscreteInputsRequest, ReadDiscreteInputsResponse)
+DecodePDU.add_pdu(WriteSingleCoilRequest, WriteSingleCoilResponse)
+DecodePDU.add_pdu(WriteMultipleCoilsRequest, WriteMultipleCoilsResponse)

@@ -4,6 +4,7 @@ from unittest import mock
 import pytest
 
 import pymodbus.pdu.bit_message as bit_msg
+from pymodbus.constants import ExcCodes
 
 
 class TestModbusBitMessage:
@@ -31,6 +32,18 @@ class TestModbusBitMessage:
         for pdu in (
             (bit_msg.ReadCoilsRequest(address=1, count=0x800)),
             (bit_msg.ReadDiscreteInputsRequest(address=1, count=0x800)),
+        ):
+            await pdu.update_datastore(context)
+
+    async def test_bit_datastore_exceptions(self, mock_context):
+        """Test bit exception response from datastore."""
+        context = mock_context()
+        context.async_getValues = mock.AsyncMock(return_value=ExcCodes.ILLEGAL_VALUE)
+        for pdu in (
+            (bit_msg.ReadCoilsRequest(address=1, count=0x800)),
+            (bit_msg.ReadDiscreteInputsRequest(address=1, count=0x800)),
+            (bit_msg.WriteSingleCoilRequest(address=1, bits=[True])),
+            (bit_msg.WriteMultipleCoilsRequest(address=1, bits=[True] * 5)),
         ):
             await pdu.update_datastore(context)
 

@@ -6,6 +6,7 @@ import struct
 from pymodbus.constants import DeviceInformation, ExcCodes, MoreData
 from pymodbus.datastore import ModbusDeviceContext
 
+from .decoders import DecodePDU
 from .device import DeviceInformationFactory, ModbusControlBlock
 from .exceptionresponse import ExceptionResponse
 from .pdu import ModbusPDU
@@ -49,6 +50,11 @@ class ReadDeviceInformationRequest(ModbusPDU):
         )
         return packet
 
+    @classmethod
+    def decode_sub_function_code(cls, data: bytes) -> int:
+        """Decode sub function code (1 byte)."""
+        return int(data[2])
+
     def decode(self, data: bytes) -> None:
         """Decode data part of the message."""
         self.sub_function_code, self.read_code, self.object_id = struct.unpack(">BBB", data[:3])
@@ -71,17 +77,17 @@ class ReadDeviceInformationResponse(ModbusPDU):
     sub_function_code = 0x0E
 
     @classmethod
-    def calculateRtuFrameSize(cls, buffer: bytes) -> int:
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of the message."""
         size = 8  # skip the header information
-        if (data_len := len(buffer)) < size:
+        if (data_len := len(data)) < size:
             return 999
-        count = int(buffer[7])
+        count = int(data[7])
 
         while count > 0:
             if data_len < size+2:
                 return 998
-            _, object_length = struct.unpack(">BB", buffer[size : size + 2])
+            _, object_length = struct.unpack(">BB", data[size : size + 2])
             size += object_length + 2
             count -= 1
         return size + 2
@@ -133,6 +139,11 @@ class ReadDeviceInformationResponse(ModbusPDU):
         packet += objects
         return packet
 
+    @classmethod
+    def decode_sub_function_code(cls, data: bytes) -> int:
+        """Decode sub function code (1 byte)."""
+        return int(data[2])
+
     def decode(self, data: bytes) -> None:
         """Decode a the response."""
         params = struct.unpack(">BBBBBB", data[0:6])
@@ -153,3 +164,6 @@ class ReadDeviceInformationResponse(ModbusPDU):
                     self.information[object_id],
                     data[count - object_length : count],
                 ]
+
+DecodePDU.add_pdu(ReadDeviceInformationRequest, ReadDeviceInformationResponse)
+DecodePDU.add_sub_pdu(ReadDeviceInformationRequest, ReadDeviceInformationResponse)

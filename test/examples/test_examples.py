@@ -22,6 +22,7 @@ from examples.package_test_tool import run_test as run_package_tool
 from examples.server_async import setup_server
 from examples.server_callback import run_callback_server
 from examples.server_datamodel import main as run_main_datamodel
+from examples.server_hook import main as main_hook_server
 from examples.server_sync import run_sync_server
 from examples.server_updating import main as main_updating_server
 from examples.simple_async_client import run_async_simple_client
@@ -67,6 +68,20 @@ class TestExamples:
         cmdargs = ["--port", str(use_port), "--host", use_host]
         task = asyncio.create_task(main_updating_server(cmdline=cmdargs))
         task.set_name("run main_updating_server")
+        await asyncio.sleep(0.1)
+        client = setup_async_client(cmdline=cmdargs)
+        await run_async_client(client, modbus_calls=run_a_few_calls)
+        await asyncio.sleep(10)
+        await ServerAsyncStop()
+        await asyncio.sleep(0.1)
+        task.cancel()
+        await task
+
+    async def test_hook_server(self, use_port, use_host):
+        """Test server server hooks."""
+        cmdargs = ["--port", str(use_port), "--host", use_host]
+        task = asyncio.create_task(main_hook_server(cmdline=cmdargs))
+        task.set_name("run main_hook_server")
         await asyncio.sleep(0.1)
         client = setup_async_client(cmdline=cmdargs)
         await run_async_client(client, modbus_calls=run_a_few_calls)

@@ -43,6 +43,7 @@ Thanks to
 - Dries
 - duc996
 - efdx
+- embedded-bed
 - Erlend E. Aasland
 - Esco441-91
 - Farzad Panahi

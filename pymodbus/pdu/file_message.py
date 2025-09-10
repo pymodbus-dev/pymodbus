@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pymodbus.datastore import ModbusDeviceContext
 from pymodbus.exceptions import ModbusException
 
+from .decoders import DecodePDU
 from .pdu import ModbusPDU
 
 
@@ -250,10 +251,10 @@ class ReadFifoQueueResponse(ModbusPDU):
     function_code = 0x18
 
     @classmethod
-    def calculateRtuFrameSize(cls, buffer: bytes) -> int:
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of the message."""
-        hi_byte = int(buffer[2])
-        lo_byte = int(buffer[3])
+        hi_byte = int(data[2])
+        lo_byte = int(data[3])
         return (hi_byte << 16) + lo_byte + 6
 
     def __init__(self, values: list[int] | None = None, dev_id: int = 1, transaction_id:int  = 0) -> None:
@@ -276,3 +277,7 @@ class ReadFifoQueueResponse(ModbusPDU):
         for index in range(0, count - 4):
             idx = 4 + index * 2
             self.values.append(struct.unpack(">H", data[idx : idx + 2])[0])
+
+DecodePDU.add_pdu(ReadFileRecordRequest, ReadFileRecordResponse)
+DecodePDU.add_pdu(WriteFileRecordRequest, WriteFileRecordResponse)
+DecodePDU.add_pdu(ReadFifoQueueRequest, ReadFifoQueueResponse)

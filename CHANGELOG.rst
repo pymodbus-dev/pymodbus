@@ -7,6 +7,34 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+
+Version 3.11.2
+--------------
+* Clarify documentation on reconnect_delay (#2769)
+* Solve CI complaints. (#2766)
+* Coverage not allowed below 99.5%. (#2765)
+* Test coverage global 100%. (#2764)
+* Test coverage simulator 100%. (#2763)
+* Test coverage server 100%. (#2760)
+* Fix python3.14 deprecation. (#2759)
+* Test coverage datastore 100%. (#2757)
+* Context test failed due to function code overwritten. (#2758)
+* Test coverage transaction 100%. (#2756)
+* Test coverage pdu 100%. (#2755)
+* Framer test 100%. (#2754)
+* llow sub_function_code is custom PDU. (#2753)
+* Generate pdu table direct. (#2752)
+* Clean pdu lookup in simulator. (#2751)
+* diag sub_function_code is 2 bytes. (#2750)
+* Requesthandler ignore missing devices logging (#2749)
+* Simplify pdu lookup. (#2745)
+* Missing coma in string representation of ModbusPDU (#2748)
+* Correct "install uv". (#2744)
+* Suppress aiohttp missing. (#2743)
+* Remove garbage bytes in serial comm. (#2741)
+* Test now included python 3.14.
+* Stricter types with pyright (#2731)
+
 Version 3.11.1
 --------------
 * Auto debug in case of an error. (#2738)

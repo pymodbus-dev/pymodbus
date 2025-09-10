@@ -1,6 +1,6 @@
 """Remote datastore."""
 from pymodbus.exceptions import NotImplementedException
-from pymodbus.logging import Log
+from pymodbus.pdu import ExceptionResponse
 
 from .context import ModbusBaseDeviceContext
 
@@ -25,29 +25,27 @@ class RemoteDeviceContext(ModbusBaseDeviceContext):
         self.device_id = device_id
         self.result = None
         self.__build_mapping()
-        if not self.__set_callbacks:
-            Log.error("Init went wrong.")
 
     def reset(self):
         """Reset all the datastores to their default values."""
         raise NotImplementedException()
 
-    def getValues(self, fc_as_hex, _address, _count=1):
+    def getValues(self, func_code, address, count=1):
         """Get values from remote device."""
-        if fc_as_hex in self._write_fc:
+        if func_code in self._write_fc:
             return [0]
-        group_fx = self.decode(fc_as_hex)
+        group_fx = self.decode(func_code)
         func_fc = self.__get_callbacks[group_fx]
-        self.result = func_fc(_address, _count)
-        return self.__extract_result(self.decode(fc_as_hex), self.result)
+        self.result = func_fc(address, count)
+        return self.__extract_result(self.decode(func_code), self.result)
 
-    def setValues(self, fc_as_hex, address, values):
+    def setValues(self, func_code, address, values):
         """Set the datastore with the supplied values."""
-        group_fx = self.decode(fc_as_hex)
-        if fc_as_hex not in self._write_fc:
-            raise ValueError(f"setValues() called with an non-write function code {fc_as_hex}")
-        func_fc = self.__set_callbacks[f"{group_fx}{fc_as_hex}"]
-        if fc_as_hex in {0x0F, 0x10}:  # Write Multiple Coils, Write Multiple Registers
+        group_fx = self.decode(func_code)
+        if func_code not in self._write_fc:
+            raise ValueError(f"setValues() called with an non-write function code {func_code}")
+        func_fc = self.__set_callbacks[f"{group_fx}{func_code}"]
+        if func_code in {0x0F, 0x10}:  # Write Multiple Coils, Write Multiple Registers
             self.result = func_fc(address, values)
         else:
             self.result = func_fc(address, values[0])
@@ -79,6 +77,8 @@ class RemoteDeviceContext(ModbusBaseDeviceContext):
             "i": lambda a, c: self._client.read_input_registers(
                 a, count=c, **params
             ),
+            "x": lambda a, c: ExceptionResponse(0
+            ),
         }
         self.__set_callbacks = {
             "d5": lambda a, v: self._client.write_coil(
@@ -108,16 +108,15 @@ class RemoteDeviceContext(ModbusBaseDeviceContext):
         }
         self._write_fc = (0x05, 0x06, 0x0F, 0x10)
 
-    def __extract_result(self, fc_as_hex, result):
+    def __extract_result(self, func_code, result):
         """Extract the values out of a response.
 
         TODO make this consistent (values?)
         """
-        if not result.isError():
-            if fc_as_hex in {"d", "c"}:
-                return result.bits
-            if fc_as_hex in {"h", "i"}:
-                return result.registers
-        else:
-            return result
-        return None
+        if result.isError():
+            return None
+        if func_code in {"d", "c"}:
+            return result.bits
+        if func_code in {"h", "i"}:
+            return result.registers
+        return result

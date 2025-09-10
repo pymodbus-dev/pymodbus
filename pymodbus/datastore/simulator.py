@@ -341,15 +341,15 @@ class Setup:
         }
         if custom_actions:
             actions.update(custom_actions)
-        self.runtime.action_name_to_id = {None: 0}
+
         self.runtime.action_id_to_name = [Label.none]
         self.runtime.action_methods = [None]
-        i = 1
-        for key, method in actions.items():
+        for i, (key, method) in enumerate(actions.items(), start=1):
             self.runtime.action_name_to_id[key] = i
             self.runtime.action_id_to_name.append(key)
             self.runtime.action_methods.append(method)
-            i += 1
+        self.runtime.action_name_to_id.update({None: 0})
+
         self.runtime.registerType_name_to_id = {
             Label.type_bits: CellType.BITS,
             Label.type_uint16: CellType.UINT16,
@@ -359,11 +359,15 @@ class Setup:
             Label.next: CellType.NEXT,
             Label.invalid: CellType.INVALID,
         }
-        self.runtime.registerType_id_to_name = [None] * len(
-            self.runtime.registerType_name_to_id
-        )
-        for name, cell_type in self.runtime.registerType_name_to_id.items():
-            self.runtime.registerType_id_to_name[cell_type] = name
+        self.runtime.registerType_id_to_name = [
+            "invalid",    # 0
+            "bits",       # 1
+            "uint16",     # 2
+            "uint32",     # 3
+            "float32",    # 4
+            "string",     # 5
+            "next",       # 6
+        ]
 
         self.config = config
         self.handle_setup_section()
@@ -483,7 +487,8 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
         self.action_methods: list[Callable] = []
         self.registerType_name_to_id: dict[str, int] = {}
         self.registerType_id_to_name: list[str] = []
-        Setup(self).setup(config, custom_actions)
+        if config:
+            Setup(self).setup(config, custom_actions)
 
     # --------------------------------------------
     # Simulator server interface
@@ -562,6 +567,8 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
                 while i < end_address:
                     if self.registers[i].type == CellType.NEXT:
                         i += 1
+                    else:
+                        return False
         return True
 
     def validate(self, func_code, address, count=1):
@@ -704,7 +711,7 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
             new_regs = cls.build_registers_from_value(value, False)
             reg.value = new_regs[0]
             reg2.value = new_regs[1]
-        elif cell.type == CellType.UINT32:
+        else: # if cell.type == CellType.UINT32:
             tmp_reg = [reg.value, reg2.value]
             value = cls.build_value_from_registers(tmp_reg, True)
             value += 1
@@ -753,7 +760,7 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
             regs = cls.build_registers_from_value(value, False)
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]
-        elif cell.type == CellType.UINT32:
+        else: # if cell.type == CellType.UINT32:
             regs = cls.build_registers_from_value(value, True)
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]

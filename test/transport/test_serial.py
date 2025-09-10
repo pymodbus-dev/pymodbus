@@ -97,7 +97,7 @@ class TestTransportSerial:
     async def test_write_force_poll(self):
         """Test write with poll."""
         SerialTransport.force_poll = True
-        transport, protocol = await create_serial_connection(
+        transport, _ = await create_serial_connection(
             asyncio.get_running_loop(), mock.Mock, "dummy"
         )
         await asyncio.sleep(0)

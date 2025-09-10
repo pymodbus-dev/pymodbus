@@ -35,9 +35,9 @@ class AsyncModbusSerialClient(ModbusBaseClient):
     :param stopbits: Number of stop bits 1, 1.5, 2.
     :param handle_local_echo: Discard local echo from dongle.
     :param name: Set communication name, used in logging
-    :param reconnect_delay: Minimum delay before reconnecting, in seconds (float).
-    :param reconnect_delay_max: Maximum delay before reconnecting, in seconds (float).
-    :param timeout: Timeout for connecting and receiving data, in seconds (float).
+    :param reconnect_delay: Minimum delay before reconnecting, in seconds.
+    :param reconnect_delay_max: Maximum delay before reconnecting, in seconds.
+    :param timeout: Timeout for connecting and receiving data, in seconds.
     :param retries: Max number of retries per request.
     :param trace_packet: Called with bytestream received/to be sent
     :param trace_pdu: Called with PDU received/to be sent
@@ -134,7 +134,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     :param name: Set communication name, used in logging
     :param reconnect_delay: Not used in the sync client
     :param reconnect_delay_max: Not used in the sync client
-    :param timeout: Timeout for connecting and receiving data, in seconds (float).
+    :param timeout: Timeout for connecting and receiving data, in seconds.
     :param retries: Max number of retries per request.
     :param trace_packet: Called with bytestream received/to be sent
     :param trace_pdu: Called with PDU received/to be sent

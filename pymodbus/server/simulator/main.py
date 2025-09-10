@@ -115,5 +115,9 @@ async def run_main(cmdline=None):
     task = ModbusSimulatorServer(**cmd_args)
     await task.run_forever()
 
+def main():  # pragma: no cover
+    """Run simulator."""
+    asyncio.run(run_main(), debug=True)
+
 if __name__ == "__main__":
     asyncio.run(run_main(), debug=True)

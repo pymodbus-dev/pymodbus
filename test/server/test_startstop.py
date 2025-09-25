@@ -78,7 +78,7 @@ class TestStartStopServer:
         kwargs = {"address": ("127.0.0.1", 9118)}
         thread = Thread(target = StartTcpServer, args = args, kwargs=kwargs)
         thread.start()
-        while not ModbusBaseServer.active_server:
+        while not ModbusBaseServer.active_server:  # pragma: no cover
             sleep(0.1)
         ServerStop()
         assert not ModbusBaseServer.active_server

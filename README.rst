@@ -52,9 +52,9 @@ pymodbus is maintained in 2 versions:
 - pymodbus, the official library
 - pymodbus_ha_core
 
-Pymodbus_ha_core
-----------------
-`Pymodbus_ha_core <https://pypi.org/project/pymodbus-ha-core/>`_ is
+Pymodbus_ha
+-----------
+`Pymodbus_ha <https://pypi.org/project/pymodbus-ha/>`_ is
 an alias to pymodbus, available on pypi.org.
 
 Being an alias means it is 100% the same as pymodbus, without any extra
@@ -62,10 +62,6 @@ code, just another name.
 
 This allows home-assistant to use a pymodbus version for the modbus integration,
 while custom_components use another version.
-
-We are offering to make other aliases for projects who need this, please
-open an issue in the pymodbus project, with an explanation of why it is
-needed.
 
 Pymodbus in a nutshell
 ----------------------

@@ -54,14 +54,23 @@ pymodbus is maintained in 2 versions:
 
 Pymodbus_ha
 -----------
+**CURRENTLY IN DEVELOPMENT**
+
 `Pymodbus_ha <https://pypi.org/project/pymodbus-ha/>`_ is
 an alias to pymodbus, available on pypi.org.
 
 Being an alias means it is 100% the same as pymodbus, without any extra
-code, just another name.
+code, just different distribution and package names.
 
-This allows home-assistant to use a pymodbus version for the modbus integration,
-while custom_components use another version.
+The idea is to allow projects like e.g. home-assistant to use this library
+in the core, while custom parts uses the normal pymodbus. Doing so allows
+the core and the custom part to use different versions.
+
+Of course the decision to use the library or not, is left to each project,
+just like it is the project that decides whether or not to use pymodbus.
+
+Pymodbus can easily be extended with other aliases if needed. Please open
+an issue for a discussion if wanted.
 
 Pymodbus in a nutshell
 ----------------------

@@ -55,7 +55,6 @@ Pymodbus consist of 5 parts:
 
 - **client**, connect to your favorite device(s)
 - **server**, simulate your favorite device(s)
-- **repl**, a commandline text based client/server simulator
 - **simulator**, an html based server simulator
 - **examples**, showing both simple and advances usage
 
@@ -97,17 +96,6 @@ Server Features
 * Work on RS485 in parallel with other devices
 
 `Server documentation <https://pymodbus.readthedocs.io/en/latest/source/server.html>`_
-
-
-REPL Features
-^^^^^^^^^^^^^
-- Server/client commandline emulator
-- Easy test of real device (client)
-- Easy test of client app (server)
-- Simulation of broken requests/responses
-- Simulation of error responses (hard to provoke in real devices)
-
-`REPL documentation <https://github.com/pymodbus-dev/repl>`_
 
 
 Simulator Features
@@ -182,7 +170,6 @@ This will install pymodbus with the pyserial dependency.
 
 Pymodbus offers a number of extra options:
 
-- **repl**, needed by pymodbus.repl
 - **serial**, needed for serial communication
 - **simulator**, needed by pymodbus.simulator
 - **documentation**, needed to generate documentation

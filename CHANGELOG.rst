@@ -7,6 +7,12 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.11.3
+--------------
+* Coverage 100% (using no cover, when needed). (#2783)
+* Create pypi alias for home-assistant. (#2782)
+* Bump utilities in pyproject.toml. (#2780)
+* Fix pymodbus.simulator. (#2773)
 
 Version 3.11.2
 --------------

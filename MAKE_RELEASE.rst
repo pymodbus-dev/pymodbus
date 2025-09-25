@@ -21,6 +21,7 @@ Prepare/make release on dev.
         cd doc; ./build_html
    * rm -rf build/* dist/*
    * python3 -m build
+   * pypi-alias pymodbus_ha_core
    * twine check dist/*
    * Commit, push and merge.
    * Wait for CI to complete

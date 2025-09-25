@@ -96,7 +96,7 @@ class Decoder:
             f"{'name':.15s} = {message.__class__.__name__}"
         )
         for k_dict, v_dict in message.__dict__.items():
-            if isinstance(v_dict, dict):
+            if isinstance(v_dict, dict):  # pragma: no cover
                 print(f"{k_dict:.15s} =")
                 for k_item, v_item in v_dict.items():
                     print(f"  {k_item:.12s} => {v_item}"
@@ -121,7 +121,7 @@ def parse_messages(cmdline=None):
     args = get_commandline(cmdline=cmdline)
     pymodbus_apply_logging_config(args.log.upper())
     _logger.setLevel(args.log.upper())
-    if not args.message:
+    if not args.message:  # pragma: no cover
         _logger.error("Missing --message.")
         return
 

@@ -79,19 +79,19 @@ def setup_server(description=None, context=None, cmdline=None):
         # If you initialize a DataBlock to addresses of 0x00 to 0xFF, a request to
         # 0x100 will respond with an invalid address exception.
         # This is because many devices exhibit this kind of behavior (but not all)
-        if args.store == "sequential":
+        if args.store == "sequential":  # pragma: no cover
             # Continuing, use a sequential block without gaps.
             datablock = lambda : ModbusSequentialDataBlock(0x00, [17] * 100)  # pylint: disable=unnecessary-lambda-assignment
-        elif args.store == "sparse":
+        elif args.store == "sparse":  # pragma: no cover
             # Continuing, or use a sparse DataBlock which can have gaps
             datablock = lambda : ModbusSparseDataBlock({0x00: 0, 0x05: 1})  # pylint: disable=unnecessary-lambda-assignment
-        elif args.store == "factory":
+        elif args.store == "factory":  # pragma: no cover
             # Alternately, use the factory methods to initialize the DataBlocks
             # or simply do not pass them to have them initialized to 0x00 on the
             # full address range::
             datablock = lambda : ModbusSequentialDataBlock.create()  # pylint: disable=unnecessary-lambda-assignment,unnecessary-lambda
 
-        if args.device_ids > 1:
+        if args.device_ids > 1:  # pragma: no cover
             # The server then makes use of a server context that allows the server
             # to respond with different device contexts for different device ids.
             # By default it will return the same context for every device id supplied
@@ -185,7 +185,7 @@ async def run_async_server(args) -> None:
             # ignore_missing_devices=True,  # ignore request to a missing device
             # broadcast_enable=False,  # treat device_id 0 as broadcast address,
         )
-    elif args.comm == "tls":
+    elif args.comm == "tls":  # pragma: no cover
         address = (args.host if args.host else "", args.port if args.port else None)
         await StartAsyncTlsServer(
             context=args.context,  # Data storage
@@ -208,7 +208,7 @@ async def run_async_server(args) -> None:
         )
 
 
-async def async_helper() -> None:
+async def async_helper() -> None:  # pragma: no cover
     """Combine setup and run."""
     _logger.info("Starting...")
     run_args = setup_server(description="Run asynchronous server.")

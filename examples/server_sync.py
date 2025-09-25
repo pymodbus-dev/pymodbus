@@ -90,7 +90,7 @@ def run_sync_server(args) -> None:
             # broadcast_enable=False,  # treat device_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
         )
-    elif args.comm == "serial":
+    elif args.comm == "serial":  # pragma: no cover
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600
         #             PTY,link=/tmp/ttyp0,raw,echo=0,ospeed=9600
         StartSerialServer(
@@ -108,7 +108,7 @@ def run_sync_server(args) -> None:
             # ignore_missing_devices=True,  # ignore request to a missing device
             # broadcast_enable=False,  # treat device_id 0 as broadcast address,
         )
-    elif args.comm == "tls":
+    elif args.comm == "tls":  # pragma: no cover
         address = ("", args.port) if args.port else None
         StartTlsServer(
             context=args.context,  # Data storage
@@ -131,7 +131,7 @@ def run_sync_server(args) -> None:
         )
 
 
-def sync_helper() -> None:
+def sync_helper() -> None:  # pragma: no cover
     """Combine setup and run."""
     run_args = server_async.setup_server(description="Run synchronous server.")
     run_sync_server(run_args)

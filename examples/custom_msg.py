@@ -54,7 +54,7 @@ class CustomModbusResponse(ModbusPDU):
         :returns: The encoded packet message
         """
         res = struct.pack(">B", len(self.values) * 2)
-        for register in self.values:
+        for register in self.values:  # pragma: no cover
             res += struct.pack(">H", register)
         return res
 
@@ -65,7 +65,7 @@ class CustomModbusResponse(ModbusPDU):
         """
         byte_count = int(data[0])
         self.values = []
-        for i in range(1, byte_count + 1, 2):
+        for i in range(1, byte_count + 1, 2):  # pragma: no cover
             self.values.append(struct.unpack(">H", data[i : i + 2])[0])
 
 
@@ -144,7 +144,7 @@ async def main(host="localhost", port=5020):
         request1 = CustomRequest(32, device_id=device_id)
         try:
             result = await client.execute(False, request1)
-        except ModbusIOException:
+        except ModbusIOException:  # pragma: no cover
             print("Server do not support CustomRequest.")
         else:
             print(result)

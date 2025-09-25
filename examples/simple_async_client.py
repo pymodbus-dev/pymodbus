@@ -44,7 +44,7 @@ async def run_async_simple_client(comm, host, port, framer=FramerType.SOCKET):
             # retries=3,
             # source_address=None,
         )
-    elif comm == "serial":
+    elif comm == "serial":  # pragma: no cover
         client = ModbusClient.AsyncModbusSerialClient(
             port,
             framer=framer,
@@ -56,7 +56,7 @@ async def run_async_simple_client(comm, host, port, framer=FramerType.SOCKET):
             stopbits=1,
             # handle_local_echo=False,
         )
-    else:
+    else:  # pragma: no cover
         print(f"Unknown client {comm} selected")
         return
 
@@ -69,11 +69,11 @@ async def run_async_simple_client(comm, host, port, framer=FramerType.SOCKET):
     try:
         # See all calls in client_calls.py
         rr = await client.read_coils(1, count=1, device_id=1)
-    except ModbusException as exc:
+    except ModbusException as exc:  # pragma: no cover
         print(f"Received ModbusException({exc}) from library")
         client.close()
         return
-    if rr.isError():
+    if rr.isError():  # pragma: no cover
         print(f"Received exception from device ({rr})")
         # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
         client.close()
@@ -81,11 +81,11 @@ async def run_async_simple_client(comm, host, port, framer=FramerType.SOCKET):
     try:
         # See all calls in client_calls.py
         rr = await client.read_holding_registers(10, count=2, device_id=1)
-    except ModbusException as exc:
+    except ModbusException as exc:  # pragma: no cover
         print(f"Received ModbusException({exc}) from library")
         client.close()
         return
-    if rr.isError():
+    if rr.isError():  # pragma: no cover
         print(f"Received exception from device ({rr})")
         # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
         client.close()

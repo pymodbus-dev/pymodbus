@@ -45,10 +45,6 @@ Homepage = "https://github.com/pymodbus-dev/pymodbus/"
 serial = [
     "pyserial>=3.5"
 ]
-repl = [
-   "pymodbus-repl>=2.0.4"
-]
-
 simulator = [
     "aiohttp>=3.8.6;python_version<'3.12'",
     "aiohttp>=3.10.6;python_version>='3.12'"
@@ -61,23 +57,24 @@ documentation = [
 development = [
     "build>=1.2.2",
     "codespell>=2.3.0",
-    "coverage>=7.6.1",
-    "mypy>=1.11.2",
+    "coverage>=7.10.7",
+    "mypy>=1.18.2",
     "pylint>=3.3.0",
-    "pytest>=8.3.3",
-    "pytest-asyncio>=0.24.0",
-    "pytest-cov>=5.0.0",
+    "pypi-alias>=2.0.0",
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.2.0",
+    "pytest-cov>=7.0.0",
     "pytest-profiling>=1.7.0;python_version<'3.13'",
     "pytest-timeout>=2.3.1",
     "pytest-xdist>=3.6.1",
     "pytest-aiohttp>=1.0.5",
-    "ruff>=0.8.2",
-    "twine>=5.1.1",
+    "ruff>=0.13.1",
+    "twine>=6.2.0",
     "types-Pygments",
     "types-pyserial"
 ]
 all = [
-    "pymodbus[serial, repl, simulator, documentation, development]"
+    "pymodbus[serial, simulator, documentation, development]"
 ]
 
 [tool.setuptools]

@@ -60,7 +60,6 @@ development = [
     "coverage>=7.10.7",
     "mypy>=1.18.2",
     "pylint>=3.3.0",
-    "pypi-alias>=2.0.0",
     "pytest>=8.4.2",
     "pytest-asyncio>=1.2.0",
     "pytest-cov>=7.0.0",
@@ -246,7 +245,6 @@ fail_under = 99.5
 [tool.coverage.html]
 directory = "build/cov"
 
-
 [tool.codespell]
 skip = "./build,./doc/source/_static,venv,.venv,.git,htmlcov,CHANGELOG.rst,.*_cache,*.lock"
 ignore-words-list = "asend"
@@ -259,7 +257,7 @@ extend-exclude = [
     "contrib"
 ]
 line-length = 88
-# indent-width = 4
+indent-width = 4
 
 [tool.ruff.lint]
 ignore = [

@@ -142,9 +142,9 @@ def get_commandline(cmdline=None):
 
 def setup_simulator(setup=None, actions=None, cmdline=None):
     """Run server setup."""
-    if not setup:
+    if not setup:  # pragma: no cover
         setup=demo_config
-    if not actions:
+    if not actions:  # pragma: no cover
         actions=demo_actions
     args = get_commandline(cmdline=cmdline)
     pymodbus_apply_logging_config(args.log.upper())

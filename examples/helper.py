@@ -92,7 +92,7 @@ def get_commandline(server: bool = False, description: str | None = None, extras
             default=10,
             type=float,
         )
-    if extras:
+    if extras:  # pragma: no cover
         for extra in extras:
             parser.add_argument(extra[0], **extra[1])
     args = parser.parse_args(cmdline)
@@ -120,13 +120,13 @@ def get_certificate(suffix: str):
     """Get example certificate."""
     delimiter = "\\" if os.name == "nt" else "/"
     cwd = os.getcwd().split(delimiter)[-1]
-    if cwd == "examples":
+    if cwd == "examples":  # pragma: no cover
         path = "."
-    elif cwd == "sub_examples":
+    elif cwd == "sub_examples":  # pragma: no cover
         path = "../../examples"
-    elif cwd == "test":
+    elif cwd == "test":  # pragma: no cover
         path = "../examples"
-    elif cwd == "pymodbus":
+    elif cwd == "pymodbus":  # pragma: no cover
         path = "examples"
     else:
         raise RuntimeError(f"**Error** Cannot find certificate path={cwd}")

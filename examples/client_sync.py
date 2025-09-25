@@ -119,7 +119,7 @@ def run_sync_client(client, modbus_calls=None):
     """Run sync client."""
     _logger.info("### Client starting")
     client.connect()
-    if modbus_calls:
+    if modbus_calls:  # pragma: no cover
         modbus_calls(client)
     client.close()
     _logger.info("### End of Program")

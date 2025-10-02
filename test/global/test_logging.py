@@ -1,6 +1,7 @@
 """Test datastore."""
 import logging
 from unittest import mock
+from os import remove
 
 import pytest
 
@@ -47,7 +48,8 @@ class TestLogging:
 
     def test_apply_logging(self):
         """Test pymodbus_apply_logging_config."""
-        pymodbus_apply_logging_config("debug", "pymodbus.log")
+        LOG_FILE = "pymodbus.log"
+        pymodbus_apply_logging_config("debug", LOG_FILE)
         pymodbus_apply_logging_config("info")
         pymodbus_apply_logging_config(logging.NOTSET)
         Log.debug("test 1no")
@@ -83,6 +85,7 @@ class TestLogging:
         Log.info("test 5")
         Log.info("test 5")
         Log.info("test 5")
+        remove(LOG_FILE)
 
     def test_apply_build_no(self):
         """Test pymodbus_apply_logging_config."""

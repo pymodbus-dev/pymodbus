@@ -4,6 +4,7 @@ This is the single location for storing default
 values for the servers and clients.
 """
 import enum
+from typing import Union
 
 
 INTERNAL_ERROR = "Pymodbus internal error"
@@ -120,43 +121,56 @@ class MoreData(enum.IntEnum):
 
 
 class DataType(enum.IntEnum):
-    """Register types, used to define of a group of registers.
+   """Register types, used to define of a group of registers.
 
-    This is the types pymodbus recognizes, actually the modbus standard do NOT define e.g. INT32,
-    but since nearly every device contain e.g. values of type INT32, it is available in pymodbus,
-    with automatic conversions to/from registers.
-    """
+   This is the types pymodbus recognizes, actually the modbus standard do NOT define e.g. INT32,
+   but since nearly every device contain e.g. values of type INT32, it is available in pymodbus,
+   with automatic conversions to/from registers.
+   """
 
-    #: 1 integer == 1 register
-    INT16 = enum.auto()
+   #: 1 integer == 1 register
+   INT16 = enum.auto()
 
-    #: 1 positive integer == 1 register
-    UINT16 = enum.auto()
+   #: 1 positive integer == 1 register
+   UINT16 = enum.auto()
 
-    #: 1 integer == 2 registers
-    INT32 = enum.auto()
+   #: 1 integer == 2 registers
+   INT32 = enum.auto()
 
-    #: 1 positive integer == 2 registers
-    UINT32 = enum.auto()
+   #: 1 positive integer == 2 registers
+   UINT32 = enum.auto()
 
-    #: 1 integer == 4 registers
-    INT64 = enum.auto()
+   #: 1 integer == 4 registers
+   INT64 = enum.auto()
 
-    #: 1 positive integer == 4 register
-    UINT64 = enum.auto()
+   #: 1 positive integer == 4 register
+   UINT64 = enum.auto()
 
-    #: 1 float == 2 registers
-    FLOAT32 = enum.auto()
+   #: 1 float == 2 registers
+   FLOAT32 = enum.auto()
 
-    #: 1 float == 4 registers
-    FLOAT64 = enum.auto()
+   #: 1 float == 4 registers
+   FLOAT64 = enum.auto()
 
-    #: 1 string == (len(string) / 2) registers
-    STRING = enum.auto()
+   #: 1 string == (len(string) / 2) registers
+   STRING = enum.auto()
 
-    #: 16 bits == 1 register
-    BITS = enum.auto()
+   #: 16 bits == 1 register
+   BITS = enum.auto()
 
-    #: Registers == 16bit
-    REGISTERS = enum.auto()
+   #: Registers == 2 bytes (identical to UINT16)
+   REGISTERS = enum.auto()
 
+DATATYPE_STRUCT: dict[DataType, tuple[Union[type, tuple[type, ...]], int]] = {  # pylint: disable=consider-using-namedtuple-or-dataclass
+   DataType.INT16: (int, 1),
+   DataType.UINT16: (int, 1),
+   DataType.INT32: (int, 2),
+   DataType.UINT32: (int, 2),
+   DataType.INT64: (int, 4),
+   DataType.UINT64: (int, 4),
+   DataType.FLOAT32: (float, 2),
+   DataType.FLOAT64: (float, 4),
+   DataType.STRING: (str, -1),
+   DataType.BITS: ((list, int, bool), -2),
+   DataType.REGISTERS: (int, 1),
+}

@@ -1,7 +1,8 @@
 """Simulator data model implementation."""
 from __future__ import annotations
 
-from .simdata import SimData, SimDevice
+from .simdata import SimData
+from .simdevice import SimDevice
 
 
 class SimCore:

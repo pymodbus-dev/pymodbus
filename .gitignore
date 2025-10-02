@@ -19,5 +19,4 @@ build/html
 /pymodbus.egg-info/
 venv
 downloaded_files/
-pymodbus.log
 *.lock

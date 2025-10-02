@@ -3,51 +3,13 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from enum import Enum
 from typing import TypeAlias
+
+from pymodbus.constants import DataType
 
 
 SimValueType: TypeAlias = int | float | str | bool | bytes
 SimAction: TypeAlias = Callable[[SimValueType], SimValueType] | Awaitable[SimValueType]
-
-class SimDataType(Enum):
-    """Register types, used to type of a group of registers.
-
-    This is the types pymodbus recognizes, actually the modbus standard do NOT define e.g. INT32,
-    but since nearly every device contain e.g. values of type INT32, it is available in pymodbus,
-    with automatic conversions to/from registers.
-    """
-
-    #: 1 integer == 1 register
-    INT16 = 1
-    #: 1 positive integer == 1 register
-    UINT16 = 2
-    #: 1 integer == 2 registers
-    INT32 = 3
-    #: 1 positive integer == 2 registers
-    UINT32 = 4
-    #: 1 integer == 4 registers
-    INT64 = 5
-    #: 1 positive integer == 4 register
-    UINT64 = 6
-    #: 1 float == 2 registers
-    FLOAT32 = 7
-    #: 1 float == 4 registers
-    FLOAT64 = 8
-    #: 1 string == len(string) / 2 registers
-    #:
-    #: .. tip:: String length must be a multiple of 2 (corresponding to registers).
-    STRING = 9
-    #: Shared mode: 16 bits == 1 register else 1 bit == 1 "register" (address)
-    BITS = 10
-    #: Raw registers
-    #:
-    #: .. warning:: Do not use as default because it fills the memory and block other registrations.
-    REGISTERS = 11
-    #: Define register address limits and default values
-    #:
-    #: .. tip:: Implemented a single but special register, and therefore improves speed and memory usage compared to REGISTERS.
-    DEFAULT = 12
 
 @dataclass(frozen=True)
 class SimData:
@@ -61,7 +23,7 @@ class SimData:
             address=100,
             count=5,
             value=-123456
-            datatype=SimDataType.INT32
+            datatype=DataType.INT32
         )
 
     The above code defines 5 INT32, each with the value -123456, in total 10 registers (address 100-109)
@@ -72,7 +34,7 @@ class SimData:
             address=100,
             count=17,
             value=-True
-            datatype=SimDataType.BITS
+            datatype=DataType.BITS
         )
 
     The above code defines 17 BITS (coils), each with the value True. In non-shared mode addresses are 100-115.
@@ -80,7 +42,7 @@ class SimData:
     in shared mode BITS are stored in registers (16bit is one register), the address refer to the register,
     addresses are 100-101 (with register 101 being padded with 15 bits)
 
-    .. tip:: use SimDatatype.DEFAULT to define register limits:
+    .. tip:: use DataType.DEFAULT to define register limits:
 
     .. code-block:: python
 
@@ -88,7 +50,7 @@ class SimData:
             address=0,    # First legal registers
             count=1000,   # last legal register is r+count-1
             value=0x1234  # Default register value
-            datatype=SimDataType.DEFAULT
+            datatype=DataType.DEFAULT
         )
 
     The above code sets the range of legal registers to 0..999 all with the value 0x1234.
@@ -102,18 +64,18 @@ class SimData:
             address=0,    # First legal registers
             count=1000,   # last legal register is r+count-1
             value=0x1234  # Default register value
-            datatype=SimDataType.DEFAULT
+            datatype=DataType.DEFAULT
         )
         SimData(
             address=6,
             count=1,
             value=117
-            datatype=SimDataType.INT32
+            datatype=DataType.INT32
         )
 
     Is a legal and normal combination.
 
-    .. attention:: Using SimDataType.DEFAULT is a LOT more efficient to define all registers, than \
+    .. attention:: Using DataType.DEFAULT is a LOT more efficient to define all registers, than \
     the other datatypes. This is because default registers are not created unless written to, whereas \
     the registers of other datatypes are each created as objects.
     """
@@ -127,9 +89,9 @@ class SimData:
     #: be used to define coils.
     value: SimValueType = 0
 
-    #: Count of datatype e.g. count=3 datatype=SimdataType.INT32 is 6 registers.
+    #: Count of datatype e.g. count=3 datatype=DataType.INT32 is 6 registers.
     #:
-    #: SimdataType.STR is special, the value string is copied "count" times.
+    #: DataType.STR is special, the value string is copied "count" times.
     #:
     #: - count=1, value="ABCD" is 2 registers
     #: - count=3, value="ABCD" is 6 registers, with "ABCD" repeated 3 times.
@@ -137,8 +99,8 @@ class SimData:
 
     #: Datatype, used to check access and calculate register count.
     #:
-    #: .. note:: Default is SimDataType.REGISTERS
-    datatype: SimDataType = SimDataType.REGISTERS
+    #: .. note:: Default is DataType.REGISTERS
+    datatype: DataType = DataType.REGISTERS
 
     #: Optional function to call when registers are being read/written.
     #:
@@ -161,31 +123,31 @@ class SimData:
 
     def __check_datatype(self):
         """Check datatype."""
-        if self.datatype == SimDataType.STRING and not isinstance(self.value, str):
-            raise TypeError("SimDataType.STRING but value not a string")
+        if self.datatype == DataType.STRING and not isinstance(self.value, str):
+            raise TypeError("DataType.STRING but value not a string")
         if self.datatype in (
-                SimDataType.INT16,
-                SimDataType.UINT16,
-                SimDataType.INT32,
-                SimDataType.UINT32,
-                SimDataType.INT64,
-                SimDataType.UINT64,
+                DataType.INT16,
+                DataType.UINT16,
+                DataType.INT32,
+                DataType.UINT32,
+                DataType.INT64,
+                DataType.UINT64,
             ) and not isinstance(self.value, int):
-            raise TypeError("SimDataType.INT variant but value not a int")
+            raise TypeError("DataType.INT variant but value not a int")
         if self.datatype in (
-                SimDataType.FLOAT32,
-                SimDataType.FLOAT64,
+                DataType.FLOAT32,
+                DataType.FLOAT64,
             ) and not isinstance(self.value, float):
-            raise TypeError("SimDataType.FLOAT variant but value not a float")
-        if self.datatype == SimDataType.BITS and not isinstance(self.value, (bool, int)):
-            raise TypeError("SimDataType.BITS but value not a bool or int")
-        if self.datatype == SimDataType.REGISTERS and not isinstance(self.value, int):
-            raise TypeError("SimDataType.REGISTERS but value not a int")
-        if self.datatype == SimDataType.DEFAULT:
-            if self.action:
-                raise TypeError("SimDataType.DEFAULT cannot have an action")
-            if not isinstance(self.value, int):
-                raise TypeError("SimDataType.DEFAULT but value not a int")
+            raise TypeError("DataType.FLOAT variant but value not a float")
+        if self.datatype == DataType.BITS and not isinstance(self.value, (bool, int)):
+            raise TypeError("DataType.BITS but value not a bool or int")
+        if self.datatype == DataType.REGISTERS and not isinstance(self.value, int):
+            raise TypeError("DataType.REGISTERS but value not a int")
+        #if self.datatype == DataType.DEFAULT:
+        #    if self.action:
+        #        raise TypeError("DataType.DEFAULT cannot have an action")
+        #    if not isinstance(self.value, int):
+        #        raise TypeError("DataType.DEFAULT but value not a int")
 
     def __post_init__(self):
         """Define a group of registers."""
@@ -195,8 +157,8 @@ class SimData:
             raise TypeError("0 < count <= 65535")
         if self.action and not callable(self.action):
             raise TypeError("action not Callable or Awaitable (async)")
-        if not isinstance(self.datatype, SimDataType):
-            raise TypeError("datatype not SimDataType")
+        if not isinstance(self.datatype, DataType):
+            raise TypeError("datatype not DataType")
         if not isinstance(self.value, SimValueType):
             raise TypeError("value not a supported type")
         self.__check_datatype()

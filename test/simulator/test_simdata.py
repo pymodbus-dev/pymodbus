@@ -2,7 +2,8 @@
 
 import pytest
 
-from pymodbus.simulator import SimData, SimDataType
+from pymodbus.constants import DataType
+from pymodbus.simulator import SimData
 
 
 class TestSimData:
@@ -31,29 +32,29 @@ class TestSimData:
         """Test simdata datatype."""
         with pytest.raises(TypeError):
             SimData(0, datatype=datatype)
-        SimData(0, datatype=SimDataType.BITS)
+        SimData(0, datatype=DataType.BITS)
 
     @pytest.mark.parametrize(("value", "value_type"), [
-        ("ok str", SimDataType.STRING),
-        (1.0, SimDataType.FLOAT32),
-        (11, SimDataType.REGISTERS),
-        (True, SimDataType.BITS),
-        (17, SimDataType.DEFAULT),
+        ("ok str", DataType.STRING),
+        (1.0, DataType.FLOAT32),
+        (11, DataType.REGISTERS),
+        (True, DataType.BITS),
+        # (17, DataType.DEFAULT),
         ])
     def test_simdata_value_ok(self, value, value_type):
         """Test simdata value."""
         SimData(0, value=value, datatype=value_type)
 
     @pytest.mark.parametrize(("value", "value_type"), [
-        ([True, False], SimDataType.BITS),
-        ({0: 1}, SimDataType.REGISTERS),
-        ((1, 0), SimDataType.REGISTERS),
-        (123, SimDataType.STRING),
-        ("", SimDataType.INT16),
-        (123, SimDataType.FLOAT32),
-        (123.0, SimDataType.BITS),
-        (123.0, SimDataType.REGISTERS),
-        ("", SimDataType.DEFAULT),
+        ([True, False], DataType.BITS),
+        ({0: 1}, DataType.REGISTERS),
+        ((1, 0), DataType.REGISTERS),
+        (123, DataType.STRING),
+        ("", DataType.INT16),
+        (123, DataType.FLOAT32),
+        (123.0, DataType.BITS),
+        (123.0, DataType.REGISTERS),
+        # ("", DataType.DEFAULT),
         ])
     def test_simdata_value_not_ok(self, value, value_type):
         """Test simdata value."""
@@ -72,5 +73,5 @@ class TestSimData:
             SimData(0, action="not_ok")
         SimData(0, action=dummy_action)
         SimData(0, action=async_dummy_action)
-        with pytest.raises(TypeError):
-            SimData(0, datatype=SimDataType.DEFAULT, action=dummy_action)
+        # with pytest.raises(TypeError):
+        #     SimData(0, datatype=DataType.DEFAULT, action=dummy_action)

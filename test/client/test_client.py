@@ -298,6 +298,14 @@ class TestMixin:
         with pytest.raises(TypeError):
             ModbusClientMixin.convert_to_registers(bool, ModbusClientMixin.DATATYPE.BITS)
 
+    def test_client_mixin_convert_datatype_fail(self):
+        """Test convert fail."""
+        with pytest.raises(TypeError):
+            ModbusClientMixin.convert_to_registers(123, ("s", 0))
+
+        with pytest.raises(TypeError):
+            ModbusClientMixin.convert_from_registers([123], ("d", 4))
+
 
 class TestClientBase:
     """Test client code."""

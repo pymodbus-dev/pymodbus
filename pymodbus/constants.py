@@ -9,7 +9,7 @@ import enum
 INTERNAL_ERROR = "Pymodbus internal error"
 
 
-class ModbusStatus(int, enum.Enum):
+class ModbusStatus(enum.IntEnum):
     """These represent various status codes in the modbus protocol.
 
     .. attribute:: WAITING
@@ -37,7 +37,7 @@ class ModbusStatus(int, enum.Enum):
     OFF = 0x0000
 
 
-class ExcCodes(int, enum.Enum):
+class ExcCodes(enum.IntEnum):
    """Represents the allowed exception codes."""
 
    ILLEGAL_FUNCTION = 0x01
@@ -52,7 +52,7 @@ class ExcCodes(int, enum.Enum):
    GATEWAY_NO_RESPONSE = 0x0B
 
 
-class ModbusPlusOperation(int, enum.Enum):
+class ModbusPlusOperation(enum.IntEnum):
     """Represents the type of modbus plus request.
 
     .. attribute:: GET_STATISTICS
@@ -70,7 +70,7 @@ class ModbusPlusOperation(int, enum.Enum):
     CLEAR_STATISTICS = 0x0004
 
 
-class DeviceInformation(int, enum.Enum):
+class DeviceInformation(enum.IntEnum):
     """Represents what type of device information to read.
 
     .. attribute:: BASIC
@@ -103,7 +103,7 @@ class DeviceInformation(int, enum.Enum):
     SPECIFIC = 0x04
 
 
-class MoreData(int, enum.Enum):
+class MoreData(enum.IntEnum):
     """Represents the more follows condition.
 
     .. attribute:: NOTHING
@@ -117,3 +117,46 @@ class MoreData(int, enum.Enum):
 
     NOTHING = 0x00
     KEEP_READING = 0xFF
+
+
+class DataType(enum.IntEnum):
+    """Register types, used to define of a group of registers.
+
+    This is the types pymodbus recognizes, actually the modbus standard do NOT define e.g. INT32,
+    but since nearly every device contain e.g. values of type INT32, it is available in pymodbus,
+    with automatic conversions to/from registers.
+    """
+
+    #: 1 integer == 1 register
+    INT16 = enum.auto()
+
+    #: 1 positive integer == 1 register
+    UINT16 = enum.auto()
+
+    #: 1 integer == 2 registers
+    INT32 = enum.auto()
+
+    #: 1 positive integer == 2 registers
+    UINT32 = enum.auto()
+
+    #: 1 integer == 4 registers
+    INT64 = enum.auto()
+
+    #: 1 positive integer == 4 register
+    UINT64 = enum.auto()
+
+    #: 1 float == 2 registers
+    FLOAT32 = enum.auto()
+
+    #: 1 float == 4 registers
+    FLOAT64 = enum.auto()
+
+    #: 1 string == (len(string) / 2) registers
+    STRING = enum.auto()
+
+    #: 16 bits == 1 register
+    BITS = enum.auto()
+
+    #: Registers == 16bit
+    REGISTERS = enum.auto()
+

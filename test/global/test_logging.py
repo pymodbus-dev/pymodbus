@@ -1,5 +1,6 @@
 """Test datastore."""
 import logging
+import os
 from unittest import mock
 
 import pytest
@@ -85,6 +86,8 @@ class TestLogging:
         Log.info("test 5")
         Log.info("test 5")
         logging.shutdown()
+        os.remove(LOG_FILE)
+
 
     def test_apply_build_no(self):
         """Test pymodbus_apply_logging_config."""

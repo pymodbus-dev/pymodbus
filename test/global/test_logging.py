@@ -15,6 +15,14 @@ from pymodbus.logging import (
 class TestLogging:
     """Tests of pymodbus logging."""
 
+    LOG_FILE = "pymodbus.log"
+
+    @classmethod
+    def teardown_class(cls):
+        """Remove test file."""
+        if not "CI" in os.environ:
+            os.remove(cls.LOG_FILE)
+
     def test_log_dont_call_build_msg(self):
         """Verify that build_msg is not called unnecessary."""
         with mock.patch("pymodbus.logging.Log.build_msg") as build_msg_mock:
@@ -48,8 +56,7 @@ class TestLogging:
 
     def test_apply_logging(self):
         """Test pymodbus_apply_logging_config."""
-        LOG_FILE = "pymodbus.log"
-        pymodbus_apply_logging_config("debug", LOG_FILE)
+        pymodbus_apply_logging_config("debug", self.LOG_FILE)
         pymodbus_apply_logging_config("info")
         pymodbus_apply_logging_config(logging.NOTSET)
         Log.debug("test 1no")
@@ -86,7 +93,6 @@ class TestLogging:
         Log.info("test 5")
         Log.info("test 5")
         logging.shutdown()
-        os.remove(LOG_FILE)
 
 
     def test_apply_build_no(self):

@@ -20,7 +20,7 @@ class TestLogging:
     @classmethod
     def teardown_class(cls):
         """Remove test file."""
-        if not "CI" in os.environ:
+        if "CI" not in os.environ:
             os.remove(cls.LOG_FILE)
 
     def test_log_dont_call_build_msg(self):

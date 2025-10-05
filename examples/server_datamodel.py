@@ -30,25 +30,21 @@ def define_datamodel():
     """
     # SimData can be instantiated with positional or optional parameters:
     assert SimData(
-            5, 17, 10, DataType.REGISTERS
+            5, 10, 17, DataType.REGISTERS
         ) == SimData(
             address=5, value=17, count=10, datatype=DataType.REGISTERS
         )
 
     # Define a group of coils/direct inputs non-shared (address=15..31 each 1 bit)
-    block1 = SimData(address=15, value=True, count=16, datatype=DataType.BITS)
+    block1 = SimData(address=15, count=16, value=True, datatype=DataType.BITS)
     # Define a group of coils/direct inputs shared (address=15..31 each 16 bit)
-    block2 = SimData(address=15, value=0xFFFF, count=16, datatype=DataType.BITS)
+    block2 = SimData(address=15, count=16, value=0xFFFF, datatype=DataType.BITS)
 
     # Define a group of holding/input registers (remark NO difference between shared and non-shared)
-    block3 = SimData(10, 123.4, datatype=DataType.FLOAT32)
-    block4 = SimData(17, value=123, count=5, datatype=DataType.INT64)
-    block5 = SimData(27, "Hello ", datatype=DataType.STRING)
+    block3 = SimData(10, 1, 123.4, datatype=DataType.FLOAT32)
+    block4 = SimData(17, count=5, value=123, datatype=DataType.INT64)
+    block5 = SimData(27, 1, "Hello ", datatype=DataType.STRING)
 
-    # Please use DataType.DEFAULT to define register limits.
-    # this datatype only uses 1 object, whereas DataType.REGISTERS uses <count> objects,
-    # mean DataType.DEFAULT is factors more efficient and much less memory consuming
-    # JAN TO CORRECT.
     block_def = SimData(0, count=1000, datatype=DataType.REGISTERS)
 
     # SimDevice can be instantiated with positional or optional parameters:

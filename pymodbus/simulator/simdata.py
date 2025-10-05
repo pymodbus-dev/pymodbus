@@ -4,17 +4,17 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import TypeAlias
+from typing import TypeAlias, cast
 
 from pymodbus.constants import DATATYPE_STRUCT, DataType
 from pymodbus.pdu import ExceptionResponse
 
 
-SimValueTypeSimple: TypeAlias = int | float | str | bool | bytes
-SimValueType: TypeAlias = SimValueTypeSimple | list[SimValueTypeSimple]
+SimValueTypeSimple: TypeAlias = int | float | str | bytes
+SimValueType: TypeAlias = SimValueTypeSimple | list[SimValueTypeSimple | bool]
 SimAction: TypeAlias = Callable[[int, int, list[int]], Awaitable[list[int] | ExceptionResponse]]
 
-@dataclass(frozen=True)
+@dataclass(order=True, frozen=True)
 class SimData:
     """Configure a group of continuous identical values/registers.
 
@@ -83,7 +83,7 @@ class SimData:
 
     #: Value/Values of datatype,
     #: will automatically be converted to registers, according to datatype.
-    value: SimValueType = 0
+    values: SimValueType = 0
 
     #: Used to check access and convert value to/from registers.
     datatype: DataType = DataType.REGISTERS
@@ -104,22 +104,68 @@ class SimData:
     #: .. tip:: use functools.partial to add extra parameters if needed.
     action: SimAction | None = None
 
+    #: Mark register(s) as readonly.
+    readonly: bool = False
+
+    #: Mark register(s) as invalid.
+    #: **remark** only to be used with address= and count=
+    invalid: bool = False
+
+    #: Use as default for undefined registers
+    #: Define legal register range as:
+    #:
+    #:      address=  <= legal addresses <= address= + count=
+    #:
+    #: **remark** only to be used with address= and count=
+    default: bool = False
+
+    #: The following are internal variables
+    register_count: int = -1
+    type_size: int = -1
+
+    def __check_default(self):
+        """Check use of default=."""
+        if self.datatype != DataType.REGISTERS:
+            raise TypeError("default=True only works with datatype=DataType.REGISTERS")
+        if isinstance(self.values, list):
+            raise TypeError("default=True only works with values=<integer>")
+
+    def __check_simple(self):
+        """Check simple parameters."""
+        if not isinstance(self.address, int) or not 0 <= self.address <= 65535:
+            raise TypeError("0 <= address < 65535")
+        if not isinstance(self.count, int) or not 1 <= self.count <= 65536:
+            raise TypeError("1 <= count < 65536")
+        if not 1 <= self.address + self.count <= 65536:
+            raise TypeError("1 <= address + count < 65536")
+        if not isinstance(self.datatype, DataType):
+            raise TypeError("datatype= must by an DataType")
+        if self.action and not (callable(self.action) and asyncio.iscoroutinefunction(self.action)):
+            raise TypeError("action= not a async function")
+        if self.register_count != -1:
+            raise TypeError("register_count= is illegal")
+        if self.type_size != -1:
+            raise TypeError("type_size= is illegal")
 
     def __post_init__(self):
         """Define a group of registers."""
-        if not isinstance(self.address, int) or not 0 <= self.address < 65535:
-            raise TypeError("0 <= address < 65535")
-        if not isinstance(self.count, int) or not 0 <= self.count < 65535:
-            raise TypeError("0 <= count < 65535")
-        if not isinstance(self.datatype, DataType):
-            raise TypeError("datatype must by an DataType")
-        if isinstance(self.value, list):
-            if self.count > 1 or self.datatype == DataType.STRING:
-                raise TypeError("count > 1 cannot be combined with given values=")
-            for entry in self.value:
-                if not isinstance(entry, DATATYPE_STRUCT[self.datatype][0]) or isinstance(entry, str):
-                    raise TypeError(f"elements in values must be {self.datatype!s} and not string")
-        elif not isinstance(self.value, DATATYPE_STRUCT[self.datatype][0]):
-            raise TypeError(f"value must be {self.datatype!s}")
-        if self.action and not (callable(self.action) and asyncio.iscoroutinefunction(self.action)):
-            raise TypeError("action not a async function")
+        self.__check_simple()
+        if self.default:
+            self.__check_default()
+        x_datatype: type | tuple[type, type]
+        if self.datatype == DataType.STRING:
+            if not isinstance(self.values, str):
+                raise TypeError("datatype=DataType.STRING only allows values=\"string\"")
+            x_datatype, x_len = str, int((len(self.values) +1) / 2)
+        else:
+            x_datatype, x_len = DATATYPE_STRUCT[self.datatype]
+            if not isinstance(self.values, list):
+                super().__setattr__("values", [self.values])
+            for x_value in cast(list, self.values):
+                if not isinstance(x_value, x_datatype):
+                    raise TypeError(f"value= can only contain {x_datatype!s}")
+        super().__setattr__("register_count", self.count * x_len)
+        super().__setattr__("type_size", x_len)
+
+
+

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from .simdata import SimData
 
 
-@dataclass(frozen=True)
+@dataclass(order=True, frozen=True)
 class SimDevice:
     """Configure a device with parameters and registers.
 
@@ -42,16 +42,19 @@ class SimDevice:
 
     A server can contain either a single :class:`SimDevice` or list of :class:`SimDevice`
     to simulate a multipoint line.
+
+    .. warning:: each block is sorted by address !!
     """
 
     #: Address of device
     #:
     #: Default 0 means accept all devices, except those specifically defined.
-    id: int = 0
+    id: int = -1
 
     #: Enforce type checking, if True access are controlled to be conform with datatypes.
     #:
-    #: Used to control that e.g. INT32 are not read as INT16.
+    #: Type violations like e.g. reading INT32 as INT16 are returned as ExceptionResponses,
+    #: as well as being logged.
     type_check: bool = False
 
     #: Use this block for shared registers (Modern devices).
@@ -61,54 +64,77 @@ class SimDevice:
     #: .. warning:: cannot be used together with other block_* parameters!
     block_shared: list[SimData] | None = None
 
-    #: Use this block for devices which are divided in 4 blocks.
+    #: Use these blocks for devices which are divided in 4 blocks.
     #:
-    #: In this block an address is a single coil, there are no registers.
+    #: block_coil and block_direct consist of coils/relays which each
+    #: can be addressed.
     #:
-    #: Request of type read/write_coil accesses this block.
+    #: block_holding and block_input consist of registers.
+    #:
+    #: read/write_coil requests uses block_coil
+    #: read/write_direct_input requests uses block_direct
+    #: read/write_holding requests uses block_holding
+    #: read/write_input requests uses block_input
     #:
     #: .. tip:: block_coil/direct/holding/input must all be defined
     block_coil: list[SimData] | None = None
-
-    #: Use this block for devices which are divided in 4 blocks.
-    #:
-    #: In this block an address is a single relay, there are no registers.
-    #:
-    #: Request of type read/write_direct_input accesses this block.
-    #:
-    #: .. tip:: block_coil/direct/holding/input must all be defined
     block_direct: list[SimData] | None = None
-
-    #: Use this block for devices which are divided in 4 blocks.
-    #:
-    #: In this block an address is a register.
-    #:
-    #: Request of type read/write_holding accesses this block.
-    #:
-    #: .. tip:: block_coil/direct/holding/input must all be defined
     block_holding: list[SimData] | None = None
-
-    #: Use this block for non-shared registers (very old devices).
-    #:
-    #: In this block an address is a register.
-    #:
-    #: Request of type read/write_input accesses this block.
-    #:
-    #: .. tip:: block_coil/direct/holding/input must all be defined
     block_input: list[SimData] | None = None
+
+    def __check_block(self, block: list[SimData] | None, name: str) -> list[SimData] | None:
+        """Check block content."""
+        if not block:
+            return None
+        if not isinstance(block, list):
+            raise TypeError(f"{name} not a list")
+        for entry in block:
+            if not isinstance(entry, SimData):
+                raise TypeError(f"{name} contains non SimData entries")
+        block.sort(key=lambda x: x.address)
+        return self.__check_block_entries(block, name)
+
+    def __check_block_entries(self, block: list[SimData], name: str) -> list[SimData] | None:
+        """Check block entries."""
+        last_address = -1
+        if len(block) > 1 and block[1].default:
+            temp = block[0]
+            block[0] = block[1]
+            block[1] = temp
+        first = True
+        for entry in block:
+            if entry.default:
+                if first:
+                    continue
+                raise TypeError(f"{name} contains multiple default SimData, not allowed")
+            first = False
+            if entry.address <= last_address:
+                raise TypeError(f"{name} address {entry.address} is overlapping!")
+            last_address = entry.address + entry.register_count -1
+        if not block[0].default:
+            default = SimData(address=block[0].address, count=last_address - block[0].address +1, default=True)
+            block.insert(0, default)
+        max_address = block[0].address + block[0].register_count -1
+        if last_address > max_address:
+            raise TypeError(f"{name} default set max address {max_address} but {last_address} is defined?")
+        if len(block) > 1 and block[0].address > block[1].address:
+            raise TypeError(f"{name} default set lowest address to {block[0].address} but {block[1].address} is defined?")
+        return block
 
     def __post_init__(self):
         """Define a device."""
-        if not isinstance(self.id, int) or 255 < self.id < 0:
+        if not isinstance(self.id, int) or not 0 <= self.id <= 255:
             raise TypeError("0 <= id < 255")
-        blocks = (self.block_coil, self.block_direct, self.block_holding, self.block_input)
-        if self.block_shared:
-            if not isinstance(self.block_shared, list):
-                raise TypeError("block_shared must be a list")
-            for entry in blocks:
-                if entry:
-                    raise TypeError(f"{entry} cannot be combined with block_shared")
-            return
-        for entry in blocks:
-            if not entry or not isinstance(entry, list):
-                raise TypeError(f"{entry} not defined or not a list")
+        non_shared = bool(self.block_coil) + bool(self.block_direct) + bool(self.block_holding) + bool(self.block_input)
+        if self.block_shared and non_shared:
+            raise TypeError("block_shared and non-shared blocks cannot be mixed")
+        if 0 != non_shared != 4:
+            raise TypeError("all 4 non-shared blocks must be defined")
+        if not self.block_shared and not non_shared:
+            raise TypeError("Either block_shared= or 4 non-shared blocks must be defined")
+
+        super().__setattr__("block_shared", self.__check_block(self.block_shared, "block_shared"))
+        super().__setattr__("block_coil", self.__check_block(self.block_coil, "block_coil"))
+        super().__setattr__("block_direct", self.__check_block(self.block_direct, "block_direct"))
+        super().__setattr__("block_holding", self.__check_block(self.block_holding, "block_holding"))
+        super().__setattr__("block_input", self.__check_block(self.block_input, "block_input"))

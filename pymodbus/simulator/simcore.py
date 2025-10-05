@@ -6,7 +6,7 @@ from .simdevice import SimDevice
 
 
 class SimCore:
-    """Datastore for the simulator/server."""
+    """Handler for the simulator/server."""
 
     def __init__(self) -> None:
         """Build datastore."""

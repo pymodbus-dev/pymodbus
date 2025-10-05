@@ -8,70 +8,96 @@ from pymodbus.simulator import SimData
 class TestSimData:
     """Test simulator data config."""
 
-    def test_instanciate(self):
+    async def async_dummy_action(self):
+        """Set action."""
+
+    def dummy_action(self):
+        """Set action."""
+
+    @pytest.mark.parametrize("kwargs", [
+        {"address": 0},
+        {"address": 65535},
+        {"address": 65535, "count": 1},
+        {"address": 0, "count": 65536},
+        {"address": 1, "count": 65535},
+        {"address": 1, "count": 10, "invalid": True},
+        {"address": 2, "count": 10, "default": True},
+        {"address": 3, "count": 10, "readonly": True},
+        {"address": 4, "datatype": DataType.INT16, "values": 17},
+        {"address": 5, "datatype": DataType.INT16, "values": [17, 18]},
+        {"address": 6, "count": 10, "datatype": DataType.INT16, "values": [17, 18]},
+        {"address": 7, "datatype": DataType.STRING, "values": "test"},
+        {"address": 8, "count": 10, "datatype": DataType.STRING, "values": "test"},
+        {"address": 9, "action": async_dummy_action},
+        {"address": 0, "datatype": DataType.REGISTERS, "values": 17, "count": 5, "default": True},
+        {"address": 1, "datatype": DataType.INT16, "values": 17, "invalid": True},
+        {"address": 3, "datatype": DataType.INT16, "values": 17, "readonly": True},
+        {"address": 0, "count": 2^16 -1},
+        {"address": 4, "datatype": DataType.BITS},
+        {"address": 4, "datatype": DataType.BITS, "values": 117},
+        {"address": 1, "datatype": DataType.BITS, "values": True},
+        {"address": 4, "datatype": DataType.BITS, "values": [True, True]},
+        {"address": 2, "values": 17, "default": True},
+    ])
+    def test_simdata_instanciate(self, kwargs):
         """Test that simdata can be objects."""
-        SimData(0)
+        SimData(**kwargs)
 
-    @pytest.mark.parametrize("address", ["not ok", 1.0, -1, 70000])
-    def test_simdata_address(self, address):
-        """Test simdata address."""
+    @pytest.mark.parametrize("kwargs", [
+        {"address": "not ok"},
+        {"address": 1.0},
+        {"address": -1},
+        {"address": 70000},
+        {"address": 1, "count": 65536},
+        {"address": 65535, "count": 2},
+        {"address": 1, "count": "not ok"},
+        {"address": 1, "count": 1.0},
+        {"address": 1, "count": -1},
+        {"address": 1, "count": 70000},
+        {"address": 1, "count": 0},
+        {"address": 1, "datatype": "not ok"},
+        {"address": 1, "datatype": 11},
+        {"address": 1, "action": "not ok"},
+        {"address": 1, "action": dummy_action},
+        {"address": 1, "register_count": 117},
+        {"address": 1, "type_size": 117},
+        {"address": 2, "datatype": DataType.INT16, "count": 10, "default": True},
+        {"address": 2, "values": [17], "count": 10, "default": True},
+    ])
+    def test_simdata_not_ok(self, kwargs):
+        """Test that simdata can be objects."""
         with pytest.raises(TypeError):
-            SimData(address)
-        SimData(0)
-        SimData(2^16 -1)
-
-    @pytest.mark.parametrize("count", ["not ok", 1.0, -1, 70000])
-    def test_simdata_count(self, count):
-        """Test simdata count."""
-        with pytest.raises(TypeError):
-            SimData(0, count=count)
-        SimData(0, count=1)
-        SimData(0, count=2^16 -1)
-
-    @pytest.mark.parametrize("datatype", ["not ok", 1.0, 11])
-    def test_simdata_datatype(self, datatype):
-        """Test simdata datatype."""
-        with pytest.raises(TypeError):
-            SimData(0, datatype=datatype)
-        SimData(0, datatype=DataType.BITS)
+            SimData(**kwargs)
 
     @pytest.mark.parametrize(("value", "value_type"), [
         ("ok str", DataType.STRING),
         (1.0, DataType.FLOAT32),
+        ([1.0, 2.0], DataType.FLOAT32),
+        (1, DataType.INT32),
+        ([1, 2], DataType.INT32),
         (11, DataType.REGISTERS),
+        ([11, 12], DataType.REGISTERS),
         (True, DataType.BITS),
         ([True, False], DataType.BITS),
         ])
     def test_simdata_value_ok(self, value, value_type):
         """Test simdata value."""
-        SimData(0, value=value, datatype=value_type)
+        SimData(0, values=value, datatype=value_type)
 
     @pytest.mark.parametrize(("value", "value_type"), [
-        ({0: 1}, DataType.REGISTERS),
-        ((1, 0), DataType.REGISTERS),
-        (123, DataType.STRING),
-        (["ab", "cd"], DataType.STRING),
-        ("", DataType.INT16),
-        ([123, ""], DataType.INT16),
-        (123, DataType.FLOAT32),
-        (123.0, DataType.BITS),
-        (123.0, DataType.REGISTERS),
+        (["ok str", "ok2"], DataType.STRING),
+        (1, DataType.STRING),
+        (1, DataType.FLOAT32),
+        ([1.0, 2], DataType.FLOAT32),
+        (1.0, DataType.INT32),
+        ([1, 2.0], DataType.INT32),
+        ("not ok", DataType.REGISTERS),
+        (1.0, DataType.REGISTERS),
+        ([11, 12.0], DataType.REGISTERS),
+        (1.0, DataType.BITS),
+        ([True, 1.0], DataType.BITS),
         ])
     def test_simdata_value_not_ok(self, value, value_type):
         """Test simdata value."""
         with pytest.raises(TypeError):
-            SimData(0, value=value, datatype=value_type)
-
-    def test_simdata_action(self):
-        """Test simdata action."""
-        async def async_dummy_action():
-            """Set action."""
-
-        def dummy_action():
-            """Set action."""
-
-        with pytest.raises(TypeError):
-            SimData(0, action="not_ok")
-        with pytest.raises(TypeError):
-            SimData(0, action=dummy_action)
-        SimData(0, action=async_dummy_action)
+            SimData(0, values=value, datatype=value_type)

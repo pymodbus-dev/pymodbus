@@ -1,6 +1,7 @@
 """Simulator."""
 
 __all__ = [
+    "SimAction",
     "SimCore",
     "SimData",
     "SimDevice",
@@ -9,6 +10,7 @@ __all__ = [
 
 from .simcore import SimCore
 from .simdata import (
+    SimAction,
     SimData,
     SimValueType,
 )

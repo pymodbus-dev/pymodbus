@@ -3,8 +3,9 @@
 This is the single location for storing default
 values for the servers and clients.
 """
+from __future__ import annotations
+
 import enum
-from typing import Union
 
 
 INTERNAL_ERROR = "Pymodbus internal error"
@@ -161,7 +162,7 @@ class DataType(enum.IntEnum):
    #: Registers == 2 bytes (identical to UINT16)
    REGISTERS = enum.auto()
 
-DATATYPE_STRUCT: dict[DataType, tuple[Union[type, tuple[type, ...]], int]] = {  # pylint: disable=consider-using-namedtuple-or-dataclass
+DATATYPE_STRUCT: dict[DataType, tuple[type | tuple[type, type], int]] = {  # pylint: disable=consider-using-namedtuple-or-dataclass
    DataType.INT16: (int, 1),
    DataType.UINT16: (int, 1),
    DataType.INT32: (int, 2),
@@ -171,6 +172,6 @@ DATATYPE_STRUCT: dict[DataType, tuple[Union[type, tuple[type, ...]], int]] = {  
    DataType.FLOAT32: (float, 2),
    DataType.FLOAT64: (float, 4),
    DataType.STRING: (str, -1),
-   DataType.BITS: ((list, int, bool), -2),
+   DataType.BITS: ((list, int), -2),
    DataType.REGISTERS: (int, 1),
 }

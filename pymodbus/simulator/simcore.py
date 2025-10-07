@@ -1,4 +1,7 @@
-"""Simulator data model implementation."""
+"""Simulator data model implementation.
+
+**REMARK** This code is experimental and not integrated into production.
+"""
 from __future__ import annotations
 
 from .simdata import SimData

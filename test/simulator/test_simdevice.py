@@ -14,6 +14,7 @@ class TestSimDevice:
 
     @pytest.mark.parametrize("kwargs", [
         {"id": 0, "type_check": True, "registers": [simdata1]},
+        {"id": 0, "registers": [simdatadef], "offset_address": (1, 4, 6, 8)},
     ])
     def test_simdevice_instanciate(self, kwargs):
         """Test that simdata can be objects."""
@@ -27,6 +28,17 @@ class TestSimDevice:
         {"id": 256, "registers": [simdata1]},
         {"id": -1, "registers": [simdata1]},
         {"id": 1, "registers": []},
+        {"id": 0, "registers": [SimData(1, 10, default=True), SimData(200)]},
+        {"id": 0, "registers": [SimData(10, 10, default=True), SimData(2)]},
+        {"id": 0, "registers": [SimData(1, 2), SimData(2)]},
+        {"id": 0, "registers": [simdatadef, SimData(2, 10, default=True)]},
+        {"id": 0, "registers": [simdata1], "type_check": "jan"},
+        {"id": 0, "registers": [simdatadef], "offset_address": ()},
+        {"id": 0, "registers": [simdatadef], "offset_address": (1, 2, 3)},
+        {"id": 0, "registers": [simdatadef], "offset_address": (1, 3, 2, 4)},
+        {"id": 0, "registers": [simdatadef], "offset_address": (1, 3, 2, 20)},
+        {"id": 0, "registers": [SimData(1, 10, default=True)], "offset_address": (1, 3, 2, 15)},
+        {"id": 0, "registers": [SimData(10, 10, default=True)], "offset_address": (1, 3, 2, 4)},
     ])
     def test_simdevice_not_ok(self, kwargs):
         """Test that simdata can be objects."""

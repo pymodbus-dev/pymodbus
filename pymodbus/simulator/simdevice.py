@@ -93,6 +93,7 @@ class SimDevice:
         for entry in block:
             if entry.default:
                 if first:
+                    first = False
                     continue
                 raise TypeError("Multiple default SimData, not allowed")
             first = False
@@ -115,10 +116,16 @@ class SimDevice:
             raise TypeError("0 <= id < 255")
         if not isinstance(self.registers, list) or not self.registers:
             raise TypeError("registers= not a list")
+        if not isinstance(self.type_check, bool):
+            raise TypeError("type_check= not a bool")
         super().__setattr__("registers", self.__check_block(self.registers))
         if self.offset_address != OFFSET_NONE:
+            if len(self.offset_address) != 4:
+                raise TypeError("offset_address= must have 4 addresses")
             reg_start = self.registers[0].address
             reg_end = self.registers[0].address + self.registers[0].register_count
             for i in range(4):
                 if not (reg_start < self.offset_address[i] < reg_end):
                     raise TypeError(f"offset_address[{i}] outside defined range")
+                if i and self.offset_address[i-1] >= self.offset_address[i]:
+                    raise TypeError("offset_address= must be ascending addresses")

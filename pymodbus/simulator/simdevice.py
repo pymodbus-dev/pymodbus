@@ -6,39 +6,46 @@ from dataclasses import dataclass
 from .simdata import SimData
 
 
+OFFSET_NONE = (-1, -1, -1, -1)
+
 @dataclass(order=True, frozen=True)
 class SimDevice:
     """Configure a device with parameters and registers.
 
-    Registers can be defined as shared or as 4 separate blocks.
+    Registers are always defined as one block.
 
-    shared_block means all requests access the same registers,
-    e.g. read_input_register and read_holding_register
-    give the same result.
+    Some old devices uses 4 distinct blocks instead of 1 block, to
+    support these devices, define 1 large block consisting of the
+    4 blocks and use the offset_*= parameters.
 
-    .. warning:: Shared block cannot be mixed with non-shared blocks !
-
-    In shared mode, individual coils/direct input are not addressed directly !
-    Instead the register address is used with count and each register contains 16 bit.
-    In non-shared mode coils/direct input can be addressed directly individually and
-    each register contain 1 bit.
+    When using distinct blocks, coils and direct inputs are addressed differently,
+    each register represent 1 coil/relay.
 
     **Device with shared registers**::
 
         SimDevice(
             id=1,
-            block_shared=[SimData(...)]
+            registers=[SimData(...)]
         )
 
     **Device with non-shared registers**::
 
         SimDevice(
             id=1,
-            block_coil=[SimData(...)],
-            block_direct=[SimData(...)],
-            block_holding=[SimData(...)],
-            block_input=[SimData(...)],
+            registers=[SimData(...)],
+            non_shared_mode=True,
+            offset_coil=0,
+            offset_direct=10,
+            offset_holding=20,
+            offset_input=30,
         )
+
+    Meaning registers:
+
+        - 0-9 are coils
+        - 10-19 are relays
+        - 20-29 are holding registers
+        - 30-.. are input registers
 
     A server can contain either a single :class:`SimDevice` or list of :class:`SimDevice`
     to simulate a multipoint line.
@@ -46,10 +53,19 @@ class SimDevice:
     .. warning:: each block is sorted by address !!
     """
 
-    #: Address of device
+    #: Address/id of device
     #:
     #: Default 0 means accept all devices, except those specifically defined.
-    id: int = -1
+    id: int
+
+    #: List of registers.
+    #:
+    registers: list[SimData]
+
+    #: Use this for old devices with 4 blocks.
+    #:
+    #: .. tip:: content is (coil, direct, holding, input)
+    offset_address: tuple[int, int, int, int] = OFFSET_NONE
 
     #: Enforce type checking, if True access are controlled to be conform with datatypes.
     #:
@@ -57,44 +73,16 @@ class SimDevice:
     #: as well as being logged.
     type_check: bool = False
 
-    #: Use this block for shared registers (Modern devices).
-    #:
-    #: Requests accesses all registers in this block.
-    #:
-    #: .. warning:: cannot be used together with other block_* parameters!
-    block_shared: list[SimData] | None = None
 
-    #: Use these blocks for devices which are divided in 4 blocks.
-    #:
-    #: block_coil and block_direct consist of coils/relays which each
-    #: can be addressed.
-    #:
-    #: block_holding and block_input consist of registers.
-    #:
-    #: read/write_coil requests uses block_coil
-    #: read/write_direct_input requests uses block_direct
-    #: read/write_holding requests uses block_holding
-    #: read/write_input requests uses block_input
-    #:
-    #: .. tip:: block_coil/direct/holding/input must all be defined
-    block_coil: list[SimData] | None = None
-    block_direct: list[SimData] | None = None
-    block_holding: list[SimData] | None = None
-    block_input: list[SimData] | None = None
-
-    def __check_block(self, block: list[SimData] | None, name: str) -> list[SimData] | None:
+    def __check_block(self, block: list[SimData]) -> list[SimData]:
         """Check block content."""
-        if not block:
-            return None
-        if not isinstance(block, list):
-            raise TypeError(f"{name} not a list")
-        for entry in block:
+        for inx, entry in enumerate(block):
             if not isinstance(entry, SimData):
-                raise TypeError(f"{name} contains non SimData entries")
+                raise TypeError(f"registers[{inx}]= is a SimData entry")
         block.sort(key=lambda x: x.address)
-        return self.__check_block_entries(block, name)
+        return self.__check_block_entries(block)
 
-    def __check_block_entries(self, block: list[SimData], name: str) -> list[SimData] | None:
+    def __check_block_entries(self, block: list[SimData]) -> list[SimData]:
         """Check block entries."""
         last_address = -1
         if len(block) > 1 and block[1].default:
@@ -106,35 +94,31 @@ class SimDevice:
             if entry.default:
                 if first:
                     continue
-                raise TypeError(f"{name} contains multiple default SimData, not allowed")
+                raise TypeError("Multiple default SimData, not allowed")
             first = False
             if entry.address <= last_address:
-                raise TypeError(f"{name} address {entry.address} is overlapping!")
+                raise TypeError("SimData address {entry.address} is overlapping!")
             last_address = entry.address + entry.register_count -1
         if not block[0].default:
             default = SimData(address=block[0].address, count=last_address - block[0].address +1, default=True)
             block.insert(0, default)
         max_address = block[0].address + block[0].register_count -1
         if last_address > max_address:
-            raise TypeError(f"{name} default set max address {max_address} but {last_address} is defined?")
+            raise TypeError("Default set max address {max_address} but {last_address} is defined?")
         if len(block) > 1 and block[0].address > block[1].address:
-            raise TypeError(f"{name} default set lowest address to {block[0].address} but {block[1].address} is defined?")
+            raise TypeError("Default set lowest address to {block[0].address} but {block[1].address} is defined?")
         return block
 
     def __post_init__(self):
         """Define a device."""
         if not isinstance(self.id, int) or not 0 <= self.id <= 255:
             raise TypeError("0 <= id < 255")
-        non_shared = bool(self.block_coil) + bool(self.block_direct) + bool(self.block_holding) + bool(self.block_input)
-        if self.block_shared and non_shared:
-            raise TypeError("block_shared and non-shared blocks cannot be mixed")
-        if 0 != non_shared != 4:
-            raise TypeError("all 4 non-shared blocks must be defined")
-        if not self.block_shared and not non_shared:
-            raise TypeError("Either block_shared= or 4 non-shared blocks must be defined")
-
-        super().__setattr__("block_shared", self.__check_block(self.block_shared, "block_shared"))
-        super().__setattr__("block_coil", self.__check_block(self.block_coil, "block_coil"))
-        super().__setattr__("block_direct", self.__check_block(self.block_direct, "block_direct"))
-        super().__setattr__("block_holding", self.__check_block(self.block_holding, "block_holding"))
-        super().__setattr__("block_input", self.__check_block(self.block_input, "block_input"))
+        if not isinstance(self.registers, list) or not self.registers:
+            raise TypeError("registers= not a list")
+        super().__setattr__("registers", self.__check_block(self.registers))
+        if self.offset_address != OFFSET_NONE:
+            reg_start = self.registers[0].address
+            reg_end = self.registers[0].address + self.registers[0].register_count
+            for i in range(4):
+                if not (reg_start < self.offset_address[i] < reg_end):
+                    raise TypeError(f"offset_address[{i}] outside defined range")

@@ -63,43 +63,9 @@ class SimSetupRuntime:
         self.configDevices = devices
         self.runtimeDevices: dict[int, SimRuntimeDevice] = {}
 
-    def prepare_block(self, block: list[SimData], name: str, device_id: int) -> tuple[list[SimRuntimeBlock], list[SimRuntimeAction]]:
+    def prepare_block(self, _block: list[SimData], _name: str, _device_id: int) -> tuple[list[SimRuntimeBlock], list[SimRuntimeAction]]:
         """Prepare blocks."""
-        block = sorted(block, key=lambda x: x.address)
-        default = None
-        for entry in block:
-            if entry.default:
-                if default:
-                    raise TypeError(f"device(id={device_id}) {name} contains multiple default SimData")
-                default = SimRuntimeDefault(
-                    start_address=entry.address,
-                    end_address=entry.address + entry.count,
-                    register=entry.values  # type: ignore[arg-type]
-                )
-                if entry.invalid:
-                    default.flags |= FLAG_INVALID
-                if entry.readonly:
-                    default.flags |= FLAG_READONLY
-                continue
-
         return ([], [])
 
     def build_runtime(self):
         """Build runtime classes."""
-        for device in self.configDevices:
-            if device.id in self.runtimeDevices:
-                raise TypeError(f"device id {device.id} defined multiple times.")
-            new_device = SimRuntimeDevice([], device.type_check)
-            for block, name in (
-                (device.block_shared, "block_shared"),
-                (device.block_coil, "block_coil"),
-                (device.block_direct, "block_direct"),
-                (device.block_holding, "block_holding"),
-                (device.block_input, "block_input")
-            ):
-                if not block:
-                    continue
-                _, _ = self.prepare_block(block, name, device.id)
-
-            self.runtimeDevices[device.id] = new_device
-

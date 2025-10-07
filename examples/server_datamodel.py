@@ -49,13 +49,14 @@ def define_datamodel():
 
     # SimDevice can be instantiated with positional or optional parameters:
     assert SimDevice(
-            5,False, [block_def, block5]
+            5,
+            [block_def, block5],
         ) == SimDevice(
-            id=5, type_check=False, block_shared=[block_def, block5]
+            id=5, type_check=False, registers=[block_def, block5]
         )
 
     # SimDevice can define either a shared or a non-shared register model
-    SimDevice(1, False, block_shared=[block_def, block5])
+    SimDevice(id=1, type_check=False, registers=[block_def, block5])
     #SimDevice(2, False,
     #          block_coil=[block1],
     #          block_direct=[block1],

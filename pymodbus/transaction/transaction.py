@@ -8,7 +8,7 @@ from threading import RLock
 from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.framer import FramerAscii, FramerBase, FramerRTU
 from pymodbus.logging import Log
-from pymodbus.pdu import ExceptionResponse, ModbusPDU
+from pymodbus.pdu import ModbusPDU
 from pymodbus.transport import CommParams, ModbusProtocol
 
 
@@ -127,7 +127,7 @@ class TransactionManager(ModbusProtocol):
             while count_retries <= self.retries:
                 self.pdu_send(request)
                 if no_response_expected:
-                    return ExceptionResponse(0xff)
+                    return None  # type: ignore[return-value]
                 try:
                     response = self.sync_get_response(request.dev_id, request.transaction_id)
                     if response.dev_id != request.dev_id:
@@ -170,7 +170,7 @@ class TransactionManager(ModbusProtocol):
                 self.response_future = asyncio.Future()
                 self.pdu_send(request)
                 if no_response_expected:
-                    return ExceptionResponse(0xff)
+                    return None  # type: ignore[return-value]
                 try:
                     response = await asyncio.wait_for(
                         self.response_future, timeout=self.comm_params.timeout_connect

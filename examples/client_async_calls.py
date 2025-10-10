@@ -268,8 +268,7 @@ async def async_execute_diagnostic_requests(client):
     assert not rr.isError()  # test that call was OK
     rr = await client.diag_force_listen_only(device_id=DEVICE_ID, no_response_expected=True)
     assert rr.isError()  # test that call was OK, error indicate no response
-    assert not rr.dev_id
-    assert rr.exception_code == -1
+
 
 # ------------------------
 # Run the calls in groups.

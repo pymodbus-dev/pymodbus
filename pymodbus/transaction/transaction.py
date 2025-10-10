@@ -127,7 +127,7 @@ class TransactionManager(ModbusProtocol):
             while count_retries <= self.retries:
                 self.pdu_send(request)
                 if no_response_expected:
-                    return ExceptionResponse(request.function_code, device_id=0, exception_code=-1)
+                    return ExceptionResponse(0xff)
                 try:
                     response = self.sync_get_response(request.dev_id, request.transaction_id)
                     if response.dev_id != request.dev_id:
@@ -170,7 +170,7 @@ class TransactionManager(ModbusProtocol):
                 self.response_future = asyncio.Future()
                 self.pdu_send(request)
                 if no_response_expected:
-                    return ExceptionResponse(request.function_code, device_id=0, exception_code=-1)
+                    return ExceptionResponse(0xff)
                 try:
                     response = await asyncio.wait_for(
                         self.response_future, timeout=self.comm_params.timeout_connect

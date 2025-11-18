@@ -59,7 +59,7 @@ development = [
     "codespell>=2.3.0",
     "coverage>=7.10.7",
     "mypy>=1.18.2",
-    "pylint>=3.3.0",
+    "pylint>=4.0.0",
     "pytest>=8.4.2",
     "pytest-asyncio>=1.2.0",
     "pytest-cov>=7.0.0",
@@ -125,7 +125,7 @@ load-plugins = [
     "pylint.extensions.typing"
 ]
 jobs = "0"
-py-version = "3.9"
+py-version = "3.10"
 
 [tool.pylint.messages_control]
 enable = "all"

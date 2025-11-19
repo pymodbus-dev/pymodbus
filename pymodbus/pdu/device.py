@@ -223,13 +223,13 @@ class ModbusDeviceIdentification:
     #  Properties
     # -------------------------------------------------------------------------#
     # fmt: off
-    VendorName = dict_property(lambda s: s.__data, 0)  # pylint: disable=protected-access
-    ProductCode = dict_property(lambda s: s.__data, 1)  # pylint: disable=protected-access
-    MajorMinorRevision = dict_property(lambda s: s.__data, 2)  # pylint: disable=protected-access
-    VendorUrl = dict_property(lambda s: s.__data, 3)  # pylint: disable=protected-access
-    ProductName = dict_property(lambda s: s.__data, 4)  # pylint: disable=protected-access
-    ModelName = dict_property(lambda s: s.__data, 5)  # pylint: disable=protected-access
-    UserApplicationName = dict_property(lambda s: s.__data, 6)  # pylint: disable=protected-access
+    VendorName = dict_property(lambda s: s.__data, 0)
+    ProductCode = dict_property(lambda s: s.__data, 1)
+    MajorMinorRevision = dict_property(lambda s: s.__data, 2)
+    VendorUrl = dict_property(lambda s: s.__data, 3)
+    ProductName = dict_property(lambda s: s.__data, 4)
+    ModelName = dict_property(lambda s: s.__data, 5)
+    UserApplicationName = dict_property(lambda s: s.__data, 6)
     # fmt: on
 
 
@@ -415,15 +415,15 @@ class ModbusCountersHandler:
     #  Properties
     # -------------------------------------------------------------------------#
     # fmt: off
-    BusMessage = dict_property(lambda s: s.__data, 0)  # pylint: disable=protected-access
-    BusCommunicationError = dict_property(lambda s: s.__data, 1)  # pylint: disable=protected-access
-    BusExceptionError = dict_property(lambda s: s.__data, 2)  # pylint: disable=protected-access
-    DeviceMessage = dict_property(lambda s: s.__data, 3)  # pylint: disable=protected-access
-    DeviceNoResponse = dict_property(lambda s: s.__data, 4)  # pylint: disable=protected-access
-    DeviceNAK = dict_property(lambda s: s.__data, 5)  # pylint: disable=protected-access
-    DEVICE_BUSY = dict_property(lambda s: s.__data, 6)  # pylint: disable=protected-access
-    BusCharacterOverrun = dict_property(lambda s: s.__data, 7)  # pylint: disable=protected-access
-    Event = dict_property(lambda s: s.__data, 8)  # pylint: disable=protected-access
+    BusMessage = dict_property(lambda s: s.__data, 0)
+    BusCommunicationError = dict_property(lambda s: s.__data, 1)
+    BusExceptionError = dict_property(lambda s: s.__data, 2)
+    DeviceMessage = dict_property(lambda s: s.__data, 3)
+    DeviceNoResponse = dict_property(lambda s: s.__data, 4)
+    DeviceNAK = dict_property(lambda s: s.__data, 5)
+    DEVICE_BUSY = dict_property(lambda s: s.__data, 6)
+    BusCharacterOverrun = dict_property(lambda s: s.__data, 7)
+    Event = dict_property(lambda s: s.__data, 8)
     # fmt: on
 
 

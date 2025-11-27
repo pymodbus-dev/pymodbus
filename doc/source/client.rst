@@ -130,7 +130,7 @@ Synchronous example
     client = ModbusTcpClient('MyDevice.lan')       # Create client object
     client.connect()                               # connect to device
     client.write_coil(1, True, device_id=1)        # set information in device
-    result = client.read_coils(2, 3, device_id=1)  # get information from device
+    result = client.read_coils(2, count=3, device_id=1)  # get information from device
     print(result.bits[0])                          # use information
     client.close()                                 # Disconnect device
 
@@ -150,7 +150,7 @@ Asynchronous example
     client = AsyncModbusTcpClient('MyDevice.lan')        # Create client object
     await client.connect()                               # connect to device, reconnect automatically
     await client.write_coil(1, True, device_id=1)        # set information in device
-    result = await client.read_coils(2, 3, device_id=1)  # get information from device
+    result = await client.read_coils(2, count=3, device_id=1)  # get information from device
     print(result.bits[0])                                # use information
     client.close()                                       # Disconnect device
 

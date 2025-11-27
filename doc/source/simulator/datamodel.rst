@@ -39,20 +39,3 @@ Class definitions
     :undoc-members:
     :show-inheritance:
     :member-order: bysource
-
-
-Action data class examples
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-.. autoclass:: pymodbus.simulator.SimDataMinMax
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :member-order: bysource
-
-.. autoclass:: pymodbus.simulator.SimDataIncrement
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :member-order: bysource

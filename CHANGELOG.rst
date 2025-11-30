@@ -7,6 +7,24 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.11.4
+--------------
+* Prepare 3.11.4 (#2815)
+* Update CodeQL to v4. (#2816)
+* Solve python3.14 problem (and mypy upgrade). (#2814)
+* More doc corrections. (#2813)
+* Correct wrong example in doc. (#2812)
+* update to pylint 4 (#2806)
+* ExceptionResponse for no_response_expected. (#2801)
+* Complete test for SimData / SimDevice. (#2798)
+* SimData and simDevice. (#2796)
+* Avoid windows CI problem with log testing. (#2797)
+* Update doc with 4.0 information. (#2795)
+* Make global DataType. (#2794)
+* Remove test pymodbus.log file. (#2793)
+* Update README. (#2788)
+* Activate ruff indent checking. (#2787)
+
 Version 3.11.3
 --------------
 * Coverage 100% (using no cover, when needed). (#2783)

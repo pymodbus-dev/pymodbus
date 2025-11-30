@@ -41,7 +41,6 @@ Prepare/make release on dev.
    * git checkout v3.7.0dev0
    * rm -rf build/* dist/*
    * python3 -m build
-   * pypi-alias pymodbus_ha_core
    * twine upload dist/*  (upload to pypi)
    * Double check Read me docs are updated
       * trigger build https://readthedocs.org/projects/pymodbus/builds/

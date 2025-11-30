@@ -130,7 +130,7 @@ Synchronous example
     client = ModbusTcpClient('MyDevice.lan')       # Create client object
     client.connect()                               # connect to device
     client.write_coil(1, True, device_id=1)        # set information in device
-    result = client.read_coils(2, 3, device_id=1)  # get information from device
+    result = client.read_coils(2, count=3, device_id=1)  # get information from device
     print(result.bits[0])                          # use information
     client.close()                                 # Disconnect device
 
@@ -150,7 +150,7 @@ Asynchronous example
     client = AsyncModbusTcpClient('MyDevice.lan')        # Create client object
     await client.connect()                               # connect to device, reconnect automatically
     await client.write_coil(1, True, device_id=1)        # set information in device
-    result = await client.read_coils(2, 3, device_id=1)  # get information from device
+    result = await client.read_coils(2, count=3, device_id=1)  # get information from device
     print(result.bits[0])                                # use information
     client.close()                                       # Disconnect device
 
@@ -160,9 +160,9 @@ anything.
 The line :mod:`await client.connect()` connects to the device (or comm port), if this cannot connect successfully within
 the timeout it throws an exception. If connected successfully reconnecting later is handled automatically
 
-The line :mod:`await client.write_coil(1, True, device_id=1)` is an example of a write request, set address 1 to True on device 1.
+The line :mod:`await client.write_coil(1, [True], device_id=1)` is an example of a write request, set address 1 to True on device 1.
 
-The line :mod:`result = await client.read_coils(2, 3, device_id=1)` is an example of a read request, get the value of address 2, 3 and 4 (count = 3) from device 1.
+The line :mod:`result = await client.read_coils(2, count=3, device_id=1)` is an example of a read request, get the value of address 2, 3 and 4 (count = 3) from device 1.
 
 The last line :mod:`client.close()` closes the connection and render the object inactive.
 
@@ -217,7 +217,7 @@ All simple request calls (mixin) return a unified result independent whether itÂ
 The application should evaluate the result generically::
 
     try:
-        rr = await client.read_coils(1, 1, device_id=1)
+        rr = await client.read_coils(1, count=1, device_id=1)
     except ModbusException as exc:
         _logger.error(f"ERROR: exception in pymodbus {exc}")
         raise exc

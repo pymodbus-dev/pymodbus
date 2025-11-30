@@ -23,6 +23,11 @@ Usage examples
 
 Class definitions
 ^^^^^^^^^^^^^^^^^
+.. autoclass:: pymodbus.constants.DataType
+    :members:
+    :undoc-members:
+    :member-order: bysource
+
 .. autoclass:: pymodbus.simulator.SimData
     :members:
     :undoc-members:
@@ -30,24 +35,6 @@ Class definitions
     :member-order: bysource
 
 .. autoclass:: pymodbus.simulator.SimDevice
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :member-order: bysource
-
-.. autoclass:: pymodbus.simulator.SimDataType
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :member-order: bysource
-
-.. autoclass:: pymodbus.simulator.SimValueType
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :member-order: bysource
-
-.. autoclass:: pymodbus.simulator.SimAction
     :members:
     :undoc-members:
     :show-inheritance:

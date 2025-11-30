@@ -20,6 +20,5 @@ Please select a topic in the left hand column.
    source/authors
    source/changelog
    source/internals
-   source/roadmap
 
 .. include:: ../README.rst

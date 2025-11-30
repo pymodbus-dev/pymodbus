@@ -314,8 +314,7 @@ class TestTransaction:
         transact.data_received(data)
         if no_resp:
             result = await resp
-            assert result.isError()
-            assert isinstance(result, ExceptionResponse)
+            assert not result
         else:
             with pytest.raises(ModbusIOException):
                 await resp
@@ -599,7 +598,7 @@ class TestSyncTransaction:
         transact.sync_client.send = mock.Mock()
         result = transact.sync_execute(no_resp, request)
         if no_resp:
-            assert result.isError()
+            assert not result
         else:
             assert not result.isError()
             assert isinstance(response, ReadCoilsResponse)

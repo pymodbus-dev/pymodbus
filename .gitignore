@@ -16,8 +16,8 @@ __pycache__/
 prof/
 dist/pymodbus*
 build/html
+build/lib
 /pymodbus.egg-info/
 venv
 downloaded_files/
-pymodbus.log
 *.lock

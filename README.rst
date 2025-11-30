@@ -35,7 +35,7 @@ as well as the
 `API_changes <https://github.com/pymodbus-dev/pymodbus/blob/dev/API_changes.rst>`_
 files.
 
-Current release is `3.11.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.11.3>`_.
+Current release is `3.11.4 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.11.4>`_.
 
 Bleeding edge (not released) is `dev <https://github.com/pymodbus-dev/pymodbus/tree/dev>`_.
 
@@ -47,25 +47,6 @@ A big thanks to all the `volunteers <https://pymodbus.readthedocs.io/en/latest/s
 Source code on `github <https://github.com/pymodbus-dev/pymodbus>`_
 
 Full documentation for newest releases as well as the bleeding edge (dev) `readthedocs <https://pymodbus.readthedocs.io>`_
-
-pymodbus is maintained in 2 versions:
-- pymodbus, the official library
-- pymodbus_ha_core
-
-Pymodbus_ha_core
-----------------
-`Pymodbus_ha_core <https://pypi.org/project/pymodbus-ha-core/>`_ is
-an alias to pymodbus, available on pypi.org.
-
-Being an alias means it is 100% the same as pymodbus, without any extra
-code, just another name.
-
-This allows home-assistant to use a pymodbus version for the modbus integration,
-while custom_components use another version.
-
-We are offering to make other aliases for projects who need this, please
-open an issue in the pymodbus project, with an explanation of why it is
-needed.
 
 Pymodbus in a nutshell
 ----------------------

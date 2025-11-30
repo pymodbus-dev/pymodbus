@@ -1,9 +1,9 @@
 """Modbus Client Common."""
 from __future__ import annotations
 
+import enum
 import struct
 from abc import abstractmethod
-from enum import Enum
 from typing import Generic, Literal, TypeVar, cast
 
 import pymodbus.pdu.bit_message as pdu_bit
@@ -677,7 +677,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     # Converter methods
     # ------------------
 
-    class DATATYPE(Enum):
+    class DATATYPE(enum.Enum):
         """Datatype enum (name and internal data), used for convert_* calls."""
 
         INT16 = ("h", 1)
@@ -692,7 +692,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         BITS = ("bits", 0)
 
     @classmethod
-    def convert_from_registers(
+    def convert_from_registers(  # noqa: C901
         cls, registers: list[int], data_type: DATATYPE, word_order: Literal["big", "little"] = "big", string_encoding: str = "utf-8"
     ) -> int | float | str | list[bool] | list[int] | list[float]:
         """Convert registers to int/float/str.
@@ -702,9 +702,15 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param word_order: "big"/"little" order of words/registers
         :param string_encoding: The encoding with which to decode the bytearray, only used when data_type=DATATYPE.STRING
         :returns: scalar or array of "data_type"
+        :raises TypeError: when data_type is not DATATYPE
         :raises ModbusException: when size of registers is not a multiple of data_type
         :raises ParameterException: when the specified string encoding is not supported
         """
+        if not isinstance(data_type, cls.DATATYPE):
+            raise TypeError(
+                "Illegal data_type, please use <client>.DATATYPE!"
+            )
+
         if not (data_len := data_type.value[1]):
             byte_list = bytearray()
             if word_order == "little":
@@ -735,7 +741,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         return result if len(result) != 1 else result[0]
 
     @classmethod
-    def convert_to_registers(
+    def convert_to_registers(  # noqa: C901
         cls, value: int | float | str | list[bool] | list[int] | list[float], data_type: DATATYPE, word_order: Literal["big", "little"] = "big", string_encoding: str = "utf-8"
     ) -> list[int]:
         """Convert int/float/str to registers (16/32/64 bit).
@@ -745,9 +751,12 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param word_order: "big"/"little" order of words/registers
         :param string_encoding: The encoding with which to encode the bytearray, only used when data_type=DATATYPE.STRING
         :returns: List of registers, can be used directly in e.g. write_registers()
-        :raises TypeError: when there is a mismatch between data_type and value
+        :raises TypeError: when there is a mismatch between data_type and value or data_type is not DATATYPE
         :raises ParameterException: when the specified string encoding is not supported
         """
+        if not isinstance(data_type, cls.DATATYPE):
+            raise TypeError("Illegal data_type, please use <client>.DATATYPE!")
+
         if data_type == cls.DATATYPE.BITS:
             if not isinstance(value, list):
                 raise TypeError(f"Value should be list of bool but is {type(value)}.")

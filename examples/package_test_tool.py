@@ -103,7 +103,7 @@ class TransportStub(ModbusProtocol):
         return new_stub
 
 
-test_port = 5004  # pylint: disable=invalid-name
+test_port = 5004
 
 class ClientTester:  # pylint: disable=too-few-public-methods
     """Main program."""

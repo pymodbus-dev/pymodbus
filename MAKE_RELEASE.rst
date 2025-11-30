@@ -15,13 +15,12 @@ Prepare/make release on dev.
    * Control / Update API_changes.rst
    * Update CHANGELOG.rst
       * Add commits from last release, but selectively !
-        git log --oneline v3.8.4..HEAD > commit.log
-        git log --pretty="%an" v3.8.4..HEAD | sort -uf > authors.log
+        git log --oneline v3.11.4..HEAD > commit.log
+        git log --pretty="%an" v3.11.4..HEAD | sort -uf > authors.log
         update AUTHORS.rst and CHANGELOG.rst
         cd doc; ./build_html
    * rm -rf build/* dist/*
    * python3 -m build
-   * pypi-alias pymodbus_ha_core
    * twine check dist/*
    * Commit, push and merge.
    * Wait for CI to complete
@@ -42,6 +41,7 @@ Prepare/make release on dev.
    * git checkout v3.7.0dev0
    * rm -rf build/* dist/*
    * python3 -m build
+   * pypi-alias pymodbus_ha_core
    * twine upload dist/*  (upload to pypi)
    * Double check Read me docs are updated
       * trigger build https://readthedocs.org/projects/pymodbus/builds/

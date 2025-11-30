@@ -34,7 +34,7 @@ class ModbusPlusStatistics:
     For more information, see the modbus implementation guide page 87.
     """
 
-    __data = OrderedDict(
+    stat_data = OrderedDict(
         {
             "node_type_id": [0x00] * 2,  # 00
             "software_version_number": [0x00] * 2,  # 01
@@ -95,26 +95,26 @@ class ModbusPlusStatistics:
 
         :returns: An iterator of the modbus plus statistics
         """
-        return iter(self.__data.items())
+        return iter(self.stat_data.items())
 
     def reset(self):
         """Clear all of the modbus plus statistics."""
-        for key in self.__data:
-            self.__data[key] = [0x00] * len(self.__data[key])
+        for key in self.stat_data:
+            self.stat_data[key] = [0x00] * len(self.stat_data[key])
 
     def summary(self):
         """Return a summary of the modbus plus statistics.
 
         :returns: 54 16-bit words representing the status
         """
-        return iter(self.__data.values())
+        return iter(self.stat_data.values())
 
     def encode(self):
         """Return a summary of the modbus plus statistics.
 
         :returns: 54 16-bit words representing the status
         """
-        total, values = [], sum(self.__data.values(), [])  # noqa: RUF017
+        total, values = [], sum(self.stat_data.values(), [])  # noqa: RUF017
         for i in range(0, len(values), 2):
             total.append((values[i] << 8) | values[i + 1])
         return total
@@ -132,7 +132,7 @@ class ModbusDeviceIdentification:
     application protocol.
     """
 
-    __data = {
+    stat_data = {
         0x00: "",  # VendorName
         0x01: "",  # ProductCode
         0x02: "",  # MajorMinorRevision
@@ -166,26 +166,26 @@ class ModbusDeviceIdentification:
         if isinstance(info_name, dict):
             for key in info_name:
                 inx = self.__names.index(key)
-                self.__data[inx] = info_name[key]
+                self.stat_data[inx] = info_name[key]
 
         if isinstance(info, dict):
             for key in info:
                 if (0x06 >= key >= 0x00) or (0xFF >= key >= 0x80):
-                    self.__data[key] = info[key]
+                    self.stat_data[key] = info[key]
 
     def __iter__(self):
         """Iterate over the device information.
 
         :returns: An iterator of the device information
         """
-        return iter(self.__data.items())
+        return iter(self.stat_data.items())
 
     def summary(self):
         """Return a summary of the main items.
 
         :returns: An dictionary of the main items
         """
-        return dict(zip(self.__names, iter(self.__data.values())))
+        return dict(zip(self.__names, iter(self.stat_data.values())))
 
     def update(self, value):
         """Update the values of this identity.
@@ -194,7 +194,7 @@ class ModbusDeviceIdentification:
 
         :param value: The value to copy values from
         """
-        self.__data.update(value)
+        self.stat_data.update(value)
 
     def __setitem__(self, key, value):
         """Access the device information.
@@ -203,14 +203,14 @@ class ModbusDeviceIdentification:
         :param value: The new value for referenced register
         """
         if key not in [0x07, 0x08]:
-            self.__data[key] = value
+            self.stat_data[key] = value
 
     def __getitem__(self, key):
         """Access the device information.
 
         :param key: The register to read
         """
-        return self.__data.setdefault(key, "")
+        return self.stat_data.setdefault(key, "")
 
     def __str__(self):
         """Build a representation of the device.
@@ -223,13 +223,13 @@ class ModbusDeviceIdentification:
     #  Properties
     # -------------------------------------------------------------------------#
     # fmt: off
-    VendorName = dict_property(lambda s: s.__data, 0)
-    ProductCode = dict_property(lambda s: s.__data, 1)
-    MajorMinorRevision = dict_property(lambda s: s.__data, 2)
-    VendorUrl = dict_property(lambda s: s.__data, 3)
-    ProductName = dict_property(lambda s: s.__data, 4)
-    ModelName = dict_property(lambda s: s.__data, 5)
-    UserApplicationName = dict_property(lambda s: s.__data, 6)
+    VendorName = dict_property(lambda s: s.stat_data, 0)
+    ProductCode = dict_property(lambda s: s.stat_data, 1)
+    MajorMinorRevision = dict_property(lambda s: s.stat_data, 2)
+    VendorUrl = dict_property(lambda s: s.stat_data, 3)
+    ProductName = dict_property(lambda s: s.stat_data, 4)
+    ModelName = dict_property(lambda s: s.stat_data, 5)
+    UserApplicationName = dict_property(lambda s: s.stat_data, 6)
     # fmt: on
 
 
@@ -363,7 +363,7 @@ class ModbusCountersHandler:
     .. note:: I threw the event counter in here for convenience
     """
 
-    __data = dict.fromkeys(range(9), 0x00)
+    stat_data = dict.fromkeys(range(9), 0x00)
     __names = [
         "BusMessage",
         "BusCommunicationError",
@@ -380,7 +380,7 @@ class ModbusCountersHandler:
 
         :returns: An iterator of the device counters
         """
-        return zip(self.__names, iter(self.__data.values()))
+        return zip(self.__names, iter(self.stat_data.values()))
 
     def update(self, values):
         """Update the values of this identity.
@@ -397,7 +397,7 @@ class ModbusCountersHandler:
 
     def reset(self):
         """Clear all of the system counters."""
-        self.__data = dict.fromkeys(range(9), 0x00)
+        self.stat_data = dict.fromkeys(range(9), 0x00)
 
     def summary(self):
         """Return a summary of the counters current status.
@@ -405,7 +405,7 @@ class ModbusCountersHandler:
         :returns: A byte with each bit representing each counter
         """
         count, result = 0x01, 0x00
-        for i in iter(self.__data.values()):
+        for i in iter(self.stat_data.values()):
             if i != 0x00:  # pylint: disable=compare-to-zero
                 result |= count
             count <<= 1
@@ -415,15 +415,15 @@ class ModbusCountersHandler:
     #  Properties
     # -------------------------------------------------------------------------#
     # fmt: off
-    BusMessage = dict_property(lambda s: s.__data, 0)
-    BusCommunicationError = dict_property(lambda s: s.__data, 1)
-    BusExceptionError = dict_property(lambda s: s.__data, 2)
-    DeviceMessage = dict_property(lambda s: s.__data, 3)
-    DeviceNoResponse = dict_property(lambda s: s.__data, 4)
-    DeviceNAK = dict_property(lambda s: s.__data, 5)
-    DEVICE_BUSY = dict_property(lambda s: s.__data, 6)
-    BusCharacterOverrun = dict_property(lambda s: s.__data, 7)
-    Event = dict_property(lambda s: s.__data, 8)
+    BusMessage = dict_property(lambda s: s.stat_data, 0)
+    BusCommunicationError = dict_property(lambda s: s.stat_data, 1)
+    BusExceptionError = dict_property(lambda s: s.stat_data, 2)
+    DeviceMessage = dict_property(lambda s: s.stat_data, 3)
+    DeviceNoResponse = dict_property(lambda s: s.stat_data, 4)
+    DeviceNAK = dict_property(lambda s: s.stat_data, 5)
+    DEVICE_BUSY = dict_property(lambda s: s.stat_data, 6)
+    BusCharacterOverrun = dict_property(lambda s: s.stat_data, 7)
+    Event = dict_property(lambda s: s.stat_data, 8)
     # fmt: on
 
 

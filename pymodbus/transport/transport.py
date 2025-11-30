@@ -257,9 +257,10 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.is_closing = False
         self.is_listener = True
         try:
-            self.transport = await self.call_create()
-            if isinstance(self.transport, tuple):
-                self.transport = self.transport[0]
+            new_transport = await self.call_create()
+            if isinstance(new_transport, tuple):
+                new_transport = new_transport[0]
+            self.transport = new_transport
         except OSError as exc:
             Log.warning("Failed to start server {}", exc)
             self.__close()

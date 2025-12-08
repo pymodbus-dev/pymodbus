@@ -161,7 +161,7 @@ class ModbusServerContext:
         :param single: Set to true to treat this as a single context
         """
         self.single = single
-        self._devices = devices or {}
+        self._devices: dict = devices or {}
         if self.single:
             self._devices = {0: self._devices}
 

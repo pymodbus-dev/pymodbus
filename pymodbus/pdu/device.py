@@ -97,7 +97,7 @@ class ModbusPlusStatistics:
         """
         return iter(self.stat_data.items())
 
-    def reset(self):
+    def reset(self) -> None:
         """Clear all of the modbus plus statistics."""
         for key in self.stat_data:
             self.stat_data[key] = [0x00] * len(self.stat_data[key])
@@ -109,14 +109,14 @@ class ModbusPlusStatistics:
         """
         return iter(self.stat_data.values())
 
-    def encode(self):
+    def encode(self) -> list[int]:
         """Return a summary of the modbus plus statistics.
 
-        :returns: 54 16-bit words representing the status
+        :returns: An iterator over lists of 8-bit integers representing each statistic
         """
-        total, values = [], sum(self.stat_data.values(), [])  # noqa: RUF017
-        for i in range(0, len(values), 2):
-            total.append((values[i] << 8) | values[i + 1])
+        values = [v for sublist in self.stat_data.values() for v in sublist]
+        total = [(values[i] << 8) | values[i + 1]
+                 for i in range(0, len(values), 2)]
         return total
 
 
@@ -446,6 +446,8 @@ class ModbusControlBlock:
     _plus = ModbusPlusStatistics()
     _events: list[ModbusEvent] = []
 
+    _inst: ModbusControlBlock | None = None
+
     # -------------------------------------------------------------------------#
     #  Magic
     # -------------------------------------------------------------------------#
@@ -465,7 +467,7 @@ class ModbusControlBlock:
 
     def __new__(cls):
         """Create a new instance."""
-        if "_inst" not in vars(cls):
+        if cls._inst is None:
             cls._inst = object.__new__(cls)
         return cls._inst
 

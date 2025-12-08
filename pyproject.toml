@@ -250,7 +250,7 @@ skip = "./build,./doc/source/_static,venv,.venv,.git,htmlcov,CHANGELOG.rst,.*_ca
 ignore-words-list = "asend"
 
 [tool.ruff]
-target-version="py39"
+target-version="py310"
 extend-exclude = [
     "build",
     "doc",
@@ -312,3 +312,4 @@ line-ending = "auto"
 
 [tool.pyright]
 disableBytesTypePromotions = false
+typeCheckingMode = "standard"

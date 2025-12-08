@@ -74,10 +74,10 @@ jobs:
         run: |
           uv run pylint --recursive=y examples pymodbus test
 
-      - name: mypy
+      - name: Type check with zuban
         if: matrix.run_lint == true
         run: |
-          uv run mypy pymodbus examples
+          uv run zuban check pymodbus examples
 
       - name: ruff
         if: matrix.run_lint == true

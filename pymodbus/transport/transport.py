@@ -126,7 +126,7 @@ class CommParams:
             )
         return new_sslctx
 
-    def copy(self) -> CommParams:
+    def copy(self: CommParams) -> CommParams:
         """Create a copy."""
         return dataclasses.replace(self)
 

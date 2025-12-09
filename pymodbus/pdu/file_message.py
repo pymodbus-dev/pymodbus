@@ -105,7 +105,8 @@ class ReadFileRecordResponse(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode the response."""
-        count, self.records = 1, []
+        count = 1
+        self.records.clear()
         byte_count = int(data[0])
         while count < byte_count:
             calc_length, _ = struct.unpack(
@@ -151,7 +152,8 @@ class WriteFileRecordRequest(ModbusPDU):
     def decode(self, data: bytes) -> None:
         """Decode the incoming request."""
         byte_count = int(data[0])
-        count, self.records = 1, []
+        count = 1
+        self.records.clear()
         while count < byte_count:
             decoded = struct.unpack(">BHHH", data[count : count + 7])
             calc_length = decoded[3] * 2
@@ -204,7 +206,8 @@ class WriteFileRecordResponse(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode the incoming request."""
-        count, self.records = 1, []
+        count = 1
+        self.records.clear()
         byte_count = int(data[0])
         while count < byte_count:
             decoded = struct.unpack(">BHHH", data[count : count + 7])

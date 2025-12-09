@@ -760,9 +760,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         if data_type == cls.DATATYPE.BITS:
             if not isinstance(value, list):
                 raise TypeError(f"Value should be list of bool but is {type(value)}.")
+            value = cast(list[bool], value)
             if (missing := len(value) % 16):
                 value = value + [False] * (16 - missing)
-            byte_list = pack_bitstring(cast(list[bool], value))
+            byte_list = pack_bitstring(value)
         elif data_type == cls.DATATYPE.STRING:
             if not isinstance(value, str):
                 raise TypeError(f"Value should be string but is {type(value)}.")

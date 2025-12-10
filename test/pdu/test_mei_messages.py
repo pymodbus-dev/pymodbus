@@ -150,7 +150,7 @@ class TestMeiMessage:
         message = b"\x0e\x01\x01\x00\x00\x05"
         message += TEST_MESSAGE
         message += b"\x81\x04Test\x81\x08Repeated\x81\x07Another"
-        handle = ReadDeviceInformationResponse(read_code=0x00, information=[])
+        handle = ReadDeviceInformationResponse(read_code=0x00, information={})
         handle.decode(message)
         assert handle.read_code == DeviceInformation.BASIC
         assert handle.conformity == 0x01

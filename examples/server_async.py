@@ -85,7 +85,7 @@ def setup_server(description=None, context=None, cmdline=None):
         elif args.store == "sparse":  # pragma: no cover
             # Continuing, or use a sparse DataBlock which can have gaps
             datablock = lambda : ModbusSparseDataBlock({0x00: 0, 0x05: 1})  # pylint: disable=unnecessary-lambda-assignment
-        elif args.store == "factory":  # pragma: no cover
+        else: # args.store == "factory" # pragma: no cover
             # Alternately, use the factory methods to initialize the DataBlocks
             # or simply do not pass them to have them initialized to 0x00 on the
             # full address range::
@@ -98,15 +98,15 @@ def setup_server(description=None, context=None, cmdline=None):
             # (broadcast mode).
             # However, this can be overloaded by setting the single flag to False and
             # then supplying a dictionary of device id to context mapping::
-            context = {}
-
-            for device_id in range(args.device_ids):
-                context[device_id] = ModbusDeviceContext(
+            context = {
+                device_id : ModbusDeviceContext(
                     di=datablock(),
                     co=datablock(),
                     hr=datablock(),
                     ir=datablock(),
                 )
+                for device_id in range(args.device_ids)
+            }
 
             single = False
         else:

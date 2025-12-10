@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import struct
+from typing import Any
 
 from pymodbus.constants import DeviceInformation, ExcCodes, MoreData
 from pymodbus.datastore import ModbusDeviceContext
@@ -92,7 +93,7 @@ class ReadDeviceInformationResponse(ModbusPDU):
             count -= 1
         return size + 2
 
-    def __init__(self, read_code: int | None = None, information: dict | None = None, dev_id: int = 1, transaction_id: int = 0) -> None:
+    def __init__(self, read_code: int | None = None, information: dict[int, Any] | None = None, dev_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.read_code = read_code or DeviceInformation.BASIC
@@ -150,7 +151,8 @@ class ReadDeviceInformationResponse(ModbusPDU):
         self.sub_function_code, self.read_code = params[0:2]
         self.conformity, self.more_follows = params[2:4]
         self.next_object_id, self.number_of_objects = params[4:6]
-        self.information, count = {}, 6  # skip the header information
+        count = 6  # skip the header information
+        self.information.clear()
 
         while count < len(data):
             object_id, object_length = struct.unpack(">BB", data[count : count + 2])

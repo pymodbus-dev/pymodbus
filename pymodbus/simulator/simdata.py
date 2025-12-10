@@ -1,7 +1,7 @@
 """Simulator data model classes."""
 from __future__ import annotations
 
-import asyncio
+import inspect
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import TypeAlias, cast
@@ -140,7 +140,7 @@ class SimData:
             raise TypeError("1 <= address + count < 65536")
         if not isinstance(self.datatype, DataType):
             raise TypeError("datatype= must by an DataType")
-        if self.action and not (callable(self.action) and asyncio.iscoroutinefunction(self.action)):
+        if self.action and not (callable(self.action) and inspect.iscoroutinefunction(self.action)):
             raise TypeError("action= not a async function")
         if self.register_count != -1:
             raise TypeError("register_count= is illegal")
@@ -166,6 +166,3 @@ class SimData:
                     raise TypeError(f"value= can only contain {x_datatype!s}")
         super().__setattr__("register_count", self.count * x_len)
         super().__setattr__("type_size", x_len)
-
-
-

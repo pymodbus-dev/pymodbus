@@ -46,7 +46,7 @@ class CustomModbusResponse(ModbusPDU):
     def __init__(self, values: list[int] | None = None, device_id=1, transaction=0):
         """Initialize."""
         super().__init__(dev_id=device_id, transaction_id=transaction)
-        self.values = values
+        self.values = values or []
 
     def encode(self):
         """Encode response pdu.

@@ -93,11 +93,11 @@ class ReadDeviceInformationResponse(ModbusPDU):
             count -= 1
         return size + 2
 
-    def __init__(self, read_code: int | None = None, information: dict | None = None, dev_id: int = 1, transaction_id: int = 0) -> None:
+    def __init__(self, read_code: int | None = None, information: dict[int, Any] | None = None, dev_id: int = 1, transaction_id: int = 0) -> None:
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.read_code = read_code or DeviceInformation.BASIC
-        self.information: dict[int, Any] = information or {}
+        self.information = information or {}
         self.number_of_objects = 0
         self.conformity = 0x83  # I support everything right now
         self.next_object_id = 0x00

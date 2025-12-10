@@ -49,6 +49,7 @@ It basically provides a pipe, without caring about the actual data content.
 from __future__ import annotations
 
 import asyncio
+import copy
 import dataclasses
 import ssl
 from abc import abstractmethod
@@ -126,9 +127,9 @@ class CommParams:
             )
         return new_sslctx
 
-    def copy(self: CommParams) -> CommParams:
+    def copy(self) -> CommParams:
         """Create a copy."""
-        return dataclasses.replace(self)
+        return copy.copy(self)
 
 
 class ModbusProtocol(asyncio.BaseProtocol):

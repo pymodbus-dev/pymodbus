@@ -43,7 +43,7 @@ class CustomModbusResponse(ModbusPDU):
     function_code = 55
     rtu_byte_count_pos = 2
 
-    def __init__(self, values=None, device_id=1, transaction=0):
+    def __init__(self, values: list[int] | None = None, device_id=1, transaction=0):
         """Initialize."""
         super().__init__(dev_id=device_id, transaction_id=transaction)
         self.values = values or []

@@ -58,7 +58,6 @@ development = [
     "build>=1.2.2",
     "codespell>=2.3.0",
     "coverage>=7.10.7",
-    "mypy>=1.18.2",
     "pylint>=4.0.0",
     "pytest>=8.4.2",
     "pytest-asyncio>=1.2.0",
@@ -70,7 +69,8 @@ development = [
     "ruff>=0.13.1",
     "twine>=6.2.0",
     "types-Pygments",
-    "types-pyserial"
+    "types-pyserial",
+    "zuban>=0.3.0"
 ]
 all = [
     "pymodbus[serial, simulator, documentation, development]"

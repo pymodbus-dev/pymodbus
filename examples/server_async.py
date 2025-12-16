@@ -85,7 +85,7 @@ def setup_server(description=None, context=None, cmdline=None):
         elif args.store == "sparse":  # pragma: no cover
             # Continuing, or use a sparse DataBlock which can have gaps
             datablock = lambda : ModbusSparseDataBlock({0x00: 0, 0x05: 1})  # pylint: disable=unnecessary-lambda-assignment
-        else: # args.store == "factory" # pragma: no cover
+        elif args.store == "factory" or True:  # pragma: no cover  # pylint: disable=condition-evals-to-constant
             # Alternately, use the factory methods to initialize the DataBlocks
             # or simply do not pass them to have them initialized to 0x00 on the
             # full address range::

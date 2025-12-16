@@ -97,7 +97,7 @@ class ReadDeviceInformationResponse(ModbusPDU):
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.read_code = read_code or DeviceInformation.BASIC
-        self.information = information or {}
+        self.information: dict[int, Any] = information or {}
         self.number_of_objects = 0
         self.conformity = 0x83  # I support everything right now
         self.next_object_id = 0x00

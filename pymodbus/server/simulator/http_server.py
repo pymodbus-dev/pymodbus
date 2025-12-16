@@ -376,10 +376,10 @@ class ModbusSimulatorServer:
         for function in DecodePDU(True).list_function_codes():
             selected = (
                 "selected"
-                if function.function_code == self.call_monitor.function
+                if function == self.call_monitor.function
                 else ""
             )
-            function_codes += f"<option value={function.function_code} {selected}>function code name</option>"
+            function_codes += f"<option value={function} {selected}>function code name</option>"
         simulation_action = (
             "ACTIVE" if self.call_response.active != RESPONSE_INACTIVE else ""
         )

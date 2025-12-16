@@ -282,13 +282,6 @@ class TestSyncClientSerial:
             FramerRTU,
         )
 
-    def test_sync_serial_rtu_client_timeouts(self):
-        """Test sync serial rtu."""
-        client = ModbusSerialClient("/dev/null", framer=FramerType.RTU, baudrate=9600)
-        assert client.silent_interval == round((3.5 * 10 / 9600), 6)
-        client = ModbusSerialClient("/dev/null", framer=FramerType.RTU, baudrate=38400)
-        assert client.silent_interval == round((1.75 / 1000), 6)
-
     @mock.patch("serial.Serial")
     def test_basic_sync_serial_client(self, mock_serial):
         """Test the basic methods for the serial sync client."""

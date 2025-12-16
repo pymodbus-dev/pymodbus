@@ -424,9 +424,6 @@ class TestClientBase:
                 **cur_args["opt_args"],
             )
 
-        # Test information methods
-        client.silent_interval = 2
-
         # a successful execute
         client.transaction = mock.Mock(**{"execute.return_value": True})
 
@@ -632,12 +629,12 @@ class TestClientBase:
         client.framer.decoder.register.assert_called_once_with(CustomRequest)
 
     def test_sync_block(self):
-        """Test idle_time()."""
+        """Test sync block."""
         with lib_client.ModbusTcpClient("127.0.0.1") as client:
             assert not client.connected
 
     def test_sync_execute(self):
-        """Test idle_time()."""
+        """Test sync execute."""
         client = lib_client.ModbusTcpClient("127.0.0.1")
         client.connect = mock.Mock(return_value=False)
         with pytest.raises(ConnectionException):

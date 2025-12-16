@@ -214,13 +214,8 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         self._recv_interval = max(self._recv_interval, 0.001)
 
         self.inter_byte_timeout: float = 0
-        self.silent_interval: float = 0
-        if baudrate > 19200:
-            self.silent_interval = 1.75 / 1000  # ms
-        else:
+        if baudrate <= 19200:
             self.inter_byte_timeout = 1.5 * self._t0
-            self.silent_interval = 3.5 * self._t0
-        self.silent_interval = round(self.silent_interval, 6)
 
     @property
     def connected(self) -> bool:

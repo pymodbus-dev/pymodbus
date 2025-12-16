@@ -102,12 +102,6 @@ class TransportStub(ModbusProtocol):
         new_stub.stub_handle_data = self.stub_handle_data
         return new_stub
 
-<<<<<<< HEAD
-=======
-
-test_port = 5004
-
->>>>>>> 6d161685 (remove last_frame_end.)
 class ClientTester:  # pylint: disable=too-few-public-methods
     """Main program."""
 
@@ -115,40 +109,23 @@ class ClientTester:  # pylint: disable=too-few-public-methods
 
     def __init__(self, comm: CommType):
         """Initialize runtime tester."""
-<<<<<<< HEAD
-=======
-        global test_port  # pylint: disable=global-statement
->>>>>>> 6d161685 (remove last_frame_end.)
         self.comm = comm
         host = NULLMODEM_HOST
         self.client: modbusClient.AsyncModbusTcpClient | modbusClient.AsyncModbusSerialClient
         if comm == CommType.TCP:
             self.client = modbusClient.AsyncModbusTcpClient(
                         host,
-<<<<<<< HEAD
                         port=self.TEST_PORT,
             )
         else:  # if comm == CommType.SERIAL:
             host = f"{NULLMODEM_HOST}:{self.TEST_PORT}"
-=======
-                        port=test_port,
-            )
-        else:  # if comm == CommType.SERIAL:
-            host = f"{NULLMODEM_HOST}:{test_port}"
->>>>>>> 6d161685 (remove last_frame_end.)
             self.client = modbusClient.AsyncModbusSerialClient(
                         host,
             )
         server_params = self.client.ctx.comm_params.copy()
-<<<<<<< HEAD
         server_params.source_address = (host, self.TEST_PORT)
         self.stub = TransportStub(server_params, True, simulate_server)
         self.TEST_PORT += 1
-=======
-        server_params.source_address = (host, test_port)
-        self.stub = TransportStub(server_params, True, simulate_server)
-        test_port += 1
->>>>>>> 6d161685 (remove last_frame_end.)
 
 
     async def run(self):
@@ -171,10 +148,6 @@ class ServerTester:  # pylint: disable=too-few-public-methods
 
     def __init__(self, comm: CommType):
         """Initialize runtime tester."""
-<<<<<<< HEAD
-=======
-        global test_port  # pylint: disable=global-statement
->>>>>>> 6d161685 (remove last_frame_end.)
         self.comm = comm
         self.store = ModbusDeviceContext(
             di=ModbusSequentialDataBlock(0, [17] * 100),
@@ -192,31 +165,19 @@ class ServerTester:  # pylint: disable=too-few-public-methods
                 self.context,
                 framer=FramerType.SOCKET,
                 identity=self.identity,
-<<<<<<< HEAD
                 address=(NULLMODEM_HOST, self.TEST_PORT),
-=======
-                address=(NULLMODEM_HOST, test_port),
->>>>>>> 6d161685 (remove last_frame_end.)
             )
         else:  # if comm == CommType.SERIAL:
             self.server = modbusServer.ModbusSerialServer(
                 self.context,
                 framer=FramerType.SOCKET,
                 identity=self.identity,
-<<<<<<< HEAD
                 port=f"{NULLMODEM_HOST}:{self.TEST_PORT}",
-=======
-                port=f"{NULLMODEM_HOST}:{test_port}",
->>>>>>> 6d161685 (remove last_frame_end.)
             )
         client_params = self.server.comm_params.copy()
         client_params.timeout_connect = 1.0
         self.stub = TransportStub(client_params, False, simulate_client)
-<<<<<<< HEAD
         self.TEST_PORT += 1
-=======
-        test_port += 1
->>>>>>> 6d161685 (remove last_frame_end.)
 
 
     async def run(self):

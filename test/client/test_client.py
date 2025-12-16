@@ -425,9 +425,7 @@ class TestClientBase:
             )
 
         # Test information methods
-        client.last_frame_end = 2
         client.silent_interval = 2
-        client.last_frame_end = None
 
         # a successful execute
         client.transaction = mock.Mock(**{"execute.return_value": True})
@@ -632,13 +630,6 @@ class TestClientBase:
         client.framer = mock.Mock()
         client.register(CustomRequest)
         client.framer.decoder.register.assert_called_once_with(CustomRequest)
-
-    def test_idle_time(self):
-        """Test idle_time()."""
-        client = lib_client.ModbusTcpClient("127.0.0.1")
-        assert not client.idle_time()
-        client.last_frame_end = None
-        assert not client.idle_time()
 
     def test_sync_block(self):
         """Test idle_time()."""

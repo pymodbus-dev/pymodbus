@@ -160,7 +160,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         )
         self.reconnect_delay_current = self.comm_params.reconnect_delay or 0
         self.use_udp = False
-        self.last_frame_end: float | None = 0
         self.silent_interval: float = 0
 
     # ----------------------------------------------------------------------- #
@@ -183,9 +182,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         Applications can call message functions without checking idle_time(),
         this is done automatically.
         """
-        if self.last_frame_end is None or self.silent_interval is None:
-            return 0
-        return self.last_frame_end + self.silent_interval
+        return 0
 
     def execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
         """Execute request and get response (call **sync/async**).

@@ -206,7 +206,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             trace_connect,
         )
         self.socket: serial.Serial | None = None
-        self.last_frame_end = None
         self._t0 = float(1 + bytesize + stopbits) / baudrate
 
         # Check every 4 bytes / 2 registers if the reading is ready
@@ -243,7 +242,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
                 exclusive=True,
             )
             self.socket.inter_byte_timeout = self.inter_byte_timeout
-            self.last_frame_end = None
         # except serial.SerialException as msg:
         # pyserial raises undocumented exceptions like termios
         except Exception as msg:  # pylint: disable=broad-exception-caught
@@ -303,7 +301,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         if size > self._in_waiting():
             self._wait_for_data()
         result = self.socket.read(size)
-        self.last_frame_end = round(time.time(), 6)
         return result
 
     def is_socket_open(self) -> bool:

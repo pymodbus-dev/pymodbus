@@ -275,8 +275,6 @@ class ModbusTcpClient(ModbusBaseSyncClient):
                 break
 
             recv_size = size - data_length
-
-        self.last_frame_end = round(time.time(), 6)
         return b"".join(data)
 
     def _handle_abrupt_socket_close(self, size: int | None, data: list[bytes], duration: float) -> bytes:

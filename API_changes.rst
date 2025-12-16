@@ -5,6 +5,7 @@ Versions (X.Y.Z) where Z > 0 e.g. 3.0.1 do NOT have API changes!
 API changes 3.12.0
 ------------------
 - when using no_response_expected=, the call returns None
+- remove idle_time() from sync client since it is void
 
 API changes 3.11.0
 ------------------

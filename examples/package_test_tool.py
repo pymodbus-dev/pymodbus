@@ -102,32 +102,30 @@ class TransportStub(ModbusProtocol):
         new_stub.stub_handle_data = self.stub_handle_data
         return new_stub
 
-
-TEST_PORT = 5004
-
 class ClientTester:  # pylint: disable=too-few-public-methods
     """Main program."""
 
+    TEST_PORT = 5004
+
     def __init__(self, comm: CommType):
         """Initialize runtime tester."""
-        global TEST_PORT  # pylint: disable=global-statement
         self.comm = comm
         host = NULLMODEM_HOST
         self.client: modbusClient.AsyncModbusTcpClient | modbusClient.AsyncModbusSerialClient
         if comm == CommType.TCP:
             self.client = modbusClient.AsyncModbusTcpClient(
                         host,
-                        port=TEST_PORT,
+                        port=self.TEST_PORT,
             )
         else:  # if comm == CommType.SERIAL:
-            host = f"{NULLMODEM_HOST}:{TEST_PORT}"
+            host = f"{NULLMODEM_HOST}:{self.TEST_PORT}"
             self.client = modbusClient.AsyncModbusSerialClient(
                         host,
             )
         server_params = self.client.ctx.comm_params.copy()
-        server_params.source_address = (host, TEST_PORT)
+        server_params.source_address = (host, self.TEST_PORT)
         self.stub = TransportStub(server_params, True, simulate_server)
-        TEST_PORT += 1
+        self.TEST_PORT += 1
 
 
     async def run(self):
@@ -146,9 +144,10 @@ class ClientTester:  # pylint: disable=too-few-public-methods
 class ServerTester:  # pylint: disable=too-few-public-methods
     """Main program."""
 
+    TEST_PORT = 5020
+
     def __init__(self, comm: CommType):
         """Initialize runtime tester."""
-        global TEST_PORT  # pylint: disable=global-statement
         self.comm = comm
         self.store = ModbusDeviceContext(
             di=ModbusSequentialDataBlock(0, [17] * 100),
@@ -166,19 +165,19 @@ class ServerTester:  # pylint: disable=too-few-public-methods
                 self.context,
                 framer=FramerType.SOCKET,
                 identity=self.identity,
-                address=(NULLMODEM_HOST, TEST_PORT),
+                address=(NULLMODEM_HOST, self.TEST_PORT),
             )
         else:  # if comm == CommType.SERIAL:
             self.server = modbusServer.ModbusSerialServer(
                 self.context,
                 framer=FramerType.SOCKET,
                 identity=self.identity,
-                port=f"{NULLMODEM_HOST}:{TEST_PORT}",
+                port=f"{NULLMODEM_HOST}:{self.TEST_PORT}",
             )
         client_params = self.server.comm_params.copy()
         client_params.timeout_connect = 1.0
         self.stub = TransportStub(client_params, False, simulate_client)
-        TEST_PORT += 1
+        self.TEST_PORT += 1
 
 
     async def run(self):

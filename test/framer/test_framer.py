@@ -414,8 +414,8 @@ class TestFramerType:
 
     @pytest.mark.parametrize(("is_server"), [True])
     @pytest.mark.parametrize(("entry", "msg"), [
-        (FramerType.SOCKET, b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"),
-        (FramerType.TLS, b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"),
+        (FramerType.SOCKET, b"\x00\x01\x00\x00\x00\x06\xff\x02\x01\x02\x00\x08"),
+        (FramerType.TLS, b"\x00\x01\x00\x00\x00\x06\xff\x02\x01\x02\x00\x08"),
         (FramerType.RTU, b"\x00\x01\x00\x00\x00\x01\xfc\x1b"),
         (FramerType.ASCII, b":F7031389000A60\r\n"),
     ])
@@ -470,3 +470,22 @@ class TestFramerType:
 
             actual = test_framer.buildFrame(message)
             assert msg == actual
+
+    def test_invalid_protocol_id_for_framer_socket(self):
+        """Test that ModbusSocketFramer rejects an invalid Protocol ID."""
+        framer = FramerSocket(DecodePDU(False))
+
+        # Construct a Modbus TCP header with invalid Protocol ID (nonzero)
+        # Transaction ID = 1
+        # Protocol ID   = 1 (invalid, expected 0)
+        # Length        = 3
+        # Unit          = 1
+        # Function code = 3
+        data = b"\x00\x01\x00\x01\x00\x03\x01\x03\x00"
+
+        msg_len, dev_id, tid, pdu = framer.decode(data)
+
+        assert msg_len == 0
+        assert dev_id == 0
+        assert tid == 0
+        assert pdu == framer.EMPTY

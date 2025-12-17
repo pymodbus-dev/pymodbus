@@ -25,6 +25,9 @@ class FramerSocket(FramerBase):
           Log.debug("Very short frame (NO MBAP): {} wait for more data", data, ":hex")
           return 0, 0, 0, self.EMPTY
         tid = int.from_bytes(data[0:2], 'big')
+        if (pid := int.from_bytes(data[2:4], 'big')):
+           Log.error("Invalid Modbus protocol id: {}", pid)
+           return 0, 0, 0, self.EMPTY
         msg_len = int.from_bytes(data[4:6], 'big') + 6
         dev_id = int(data[6])
         if data_len < msg_len:

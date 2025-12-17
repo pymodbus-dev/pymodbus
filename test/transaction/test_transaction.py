@@ -285,7 +285,7 @@ class TestTransaction:
         transact.retries = 0
         transact.connection_made(mock.AsyncMock())
 
-        data = b"\x00\x00\x12\x34\x00\x06\x00\x01\x01\x02\x00\x04"
+        data = b"\x00\x00\x00\x00\x00\x06\x00\x01\x01\x02\x00\x04"
         transact.data_received(data)
         response = await transact.response_future
         assert isinstance(response, ReadCoilsResponse)

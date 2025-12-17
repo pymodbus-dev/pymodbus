@@ -470,3 +470,23 @@ class TestFramerType:
 
             actual = test_framer.buildFrame(message)
             assert msg == actual
+
+    def test_invalid_protocol_id_for_framer_socket(self):
+        """Test that ModbusSocketFramer rejects an invalid Protocol ID."""
+        from pymodbus.framer.socket import FramerSocket
+        framer = FramerSocket(DecodePDU(False))
+
+        # Construct a Modbus TCP header with invalid Protocol ID (nonzero)
+        # Transaction ID = 1
+        # Protocol ID   = 1 (invalid, expected 0)
+        # Length        = 3
+        # Unit          = 1
+        # Function code = 3
+        data = b"\x00\x01\x00\x01\x00\x03\x01\x03\x00"
+
+        msg_len, dev_id, tid, pdu = framer.decode(data)
+
+        assert msg_len == 0
+        assert dev_id == 0
+        assert tid == 0
+        assert pdu == framer.EMPTY

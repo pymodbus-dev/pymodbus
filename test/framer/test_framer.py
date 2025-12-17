@@ -414,8 +414,8 @@ class TestFramerType:
 
     @pytest.mark.parametrize(("is_server"), [True])
     @pytest.mark.parametrize(("entry", "msg"), [
-        (FramerType.SOCKET, b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"),
-        (FramerType.TLS, b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"),
+        (FramerType.SOCKET, b"\x00\x01\x00\x00\x00\x06\xff\x02\x01\x02\x00\x08"),
+        (FramerType.TLS, b"\x00\x01\x00\x00\x00\x06\xff\x02\x01\x02\x00\x08"),
         (FramerType.RTU, b"\x00\x01\x00\x00\x00\x01\xfc\x1b"),
         (FramerType.ASCII, b":F7031389000A60\r\n"),
     ])

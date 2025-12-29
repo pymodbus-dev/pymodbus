@@ -223,5 +223,5 @@ class ModbusServerContext:
         )
 
     def device_ids(self):
-        """Define device_ids."""
+        """Get the configured device ids."""
         return list(self._devices.keys())

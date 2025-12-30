@@ -5,8 +5,8 @@ import asyncio
 import struct
 from abc import abstractmethod
 
-from pymodbus.datastore import ModbusDeviceContext
-from pymodbus.exceptions import ModbusIOException, NotImplementedException
+from ..datastore import ModbusDeviceContext
+from ..exceptions import ModbusIOException, NotImplementedException
 
 
 class ModbusPDU:

@@ -3,4 +3,4 @@ __all__ = [
     "TransactionManager",
 ]
 
-from pymodbus.transaction.transaction import TransactionManager
+from .transaction import TransactionManager

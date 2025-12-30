@@ -5,13 +5,13 @@ import asyncio
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable
 
-from pymodbus.client.mixin import ModbusClientMixin
-from pymodbus.exceptions import ConnectionException
-from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
-from pymodbus.logging import Log
-from pymodbus.pdu import DecodePDU, ModbusPDU
-from pymodbus.transaction import TransactionManager
-from pymodbus.transport import CommParams
+from ..exceptions import ConnectionException
+from ..framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
+from ..logging import Log
+from ..pdu import DecodePDU, ModbusPDU
+from ..transaction import TransactionManager
+from ..transport import CommParams
+from .mixin import ModbusClientMixin
 
 
 class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):

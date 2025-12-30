@@ -1,8 +1,8 @@
 """Modbus Socket frame implementation."""
 from __future__ import annotations
 
-from pymodbus.framer.base import FramerBase
-from pymodbus.logging import Log
+from ..logging import Log
+from .base import FramerBase
 
 
 class FramerSocket(FramerBase):

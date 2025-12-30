@@ -4,12 +4,12 @@ from __future__ import annotations
 import asyncio
 import traceback
 
-from pymodbus.constants import ExcCodes
-from pymodbus.exceptions import ModbusIOException, NoSuchIdException
-from pymodbus.logging import Log
-from pymodbus.pdu import ExceptionResponse
-from pymodbus.transaction import TransactionManager
-from pymodbus.transport import CommParams
+from ..constants import ExcCodes
+from ..exceptions import ModbusIOException, NoSuchIdException
+from ..logging import Log
+from ..pdu import ExceptionResponse
+from ..transaction import TransactionManager
+from ..transport import CommParams
 
 
 class ServerRequestHandler(TransactionManager):

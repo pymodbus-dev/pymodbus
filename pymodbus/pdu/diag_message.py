@@ -4,9 +4,8 @@ from __future__ import annotations
 import struct
 from typing import cast
 
-from pymodbus.constants import ModbusPlusOperation
-from pymodbus.datastore import ModbusDeviceContext
-
+from ..constants import ModbusPlusOperation
+from ..datastore import ModbusDeviceContext
 from .decoders import DecodePDU
 from .device import ModbusControlBlock
 from .pdu import ModbusPDU, pack_bitstring

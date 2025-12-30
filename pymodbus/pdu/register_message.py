@@ -6,10 +6,9 @@ import struct
 from collections.abc import Sequence
 from typing import cast
 
-from pymodbus.constants import ExcCodes
-from pymodbus.datastore import ModbusDeviceContext
-from pymodbus.exceptions import ModbusIOException
-
+from ..constants import ExcCodes
+from ..datastore import ModbusDeviceContext
+from ..exceptions import ModbusIOException
 from .decoders import DecodePDU
 from .exceptionresponse import ExceptionResponse
 from .pdu import ModbusPDU

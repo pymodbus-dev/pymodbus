@@ -4,12 +4,12 @@ from __future__ import annotations
 import socket
 from collections.abc import Callable
 
-from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
-from pymodbus.exceptions import ConnectionException
-from pymodbus.framer import FramerType
-from pymodbus.logging import Log
-from pymodbus.pdu import ModbusPDU
-from pymodbus.transport import CommParams, CommType
+from ..exceptions import ConnectionException
+from ..framer import FramerType
+from ..logging import Log
+from ..pdu import ModbusPDU
+from ..transport import CommParams, CommType
+from .base import ModbusBaseClient, ModbusBaseSyncClient
 
 
 DGRAM_TYPE = socket.SOCK_DGRAM

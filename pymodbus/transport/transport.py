@@ -59,8 +59,8 @@ from enum import Enum
 from functools import partial
 from typing import Any
 
-from pymodbus.logging import Log
-from pymodbus.transport.serialtransport import create_serial_connection
+from ..logging import Log
+from .serialtransport import create_serial_connection
 
 
 NULLMODEM_HOST = "__pymodbus_nullmodem"

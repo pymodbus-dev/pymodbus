@@ -4,9 +4,8 @@ from __future__ import annotations
 import struct
 from typing import Any
 
-from pymodbus.constants import DeviceInformation, ExcCodes, MoreData
-from pymodbus.datastore import ModbusDeviceContext
-
+from ..constants import DeviceInformation, ExcCodes, MoreData
+from ..datastore import ModbusDeviceContext
 from .decoders import DecodePDU
 from .device import DeviceInformationFactory, ModbusControlBlock
 from .exceptionresponse import ExceptionResponse

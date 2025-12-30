@@ -130,4 +130,4 @@ def get_certificate(suffix: str):
         path = "examples"
     else:
         raise RuntimeError(f"**Error** Cannot find certificate path={cwd}")
-    return f"{path}/certificates/pymodbus.{suffix}"
+    return f"{path}/certificates/pymodbus_tls.{suffix}"

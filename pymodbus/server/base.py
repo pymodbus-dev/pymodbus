@@ -5,13 +5,12 @@ import asyncio
 from collections.abc import Callable
 from contextlib import suppress
 
-from pymodbus.datastore import ModbusServerContext
-from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType
-from pymodbus.logging import Log
-from pymodbus.pdu import DecodePDU, ModbusPDU
-from pymodbus.pdu.device import ModbusControlBlock, ModbusDeviceIdentification
-from pymodbus.transport import CommParams, ModbusProtocol
-
+from ..datastore import ModbusServerContext
+from ..framer import FRAMER_NAME_TO_CLASS, FramerType
+from ..logging import Log
+from ..pdu import DecodePDU, ModbusPDU
+from ..pdu.device import ModbusControlBlock, ModbusDeviceIdentification
+from ..transport import CommParams, ModbusProtocol
 from .requesthandler import ServerRequestHandler
 
 

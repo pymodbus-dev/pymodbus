@@ -3,12 +3,11 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from pymodbus.datastore import ModbusServerContext
-from pymodbus.framer import FramerType
-from pymodbus.pdu import ModbusPDU
-from pymodbus.pdu.device import ModbusDeviceIdentification
-from pymodbus.transport import CommParams, CommType
-
+from ..datastore import ModbusServerContext
+from ..framer import FramerType
+from ..pdu import ModbusPDU
+from ..pdu.device import ModbusDeviceIdentification
+from ..transport import CommParams, CommType
 from .base import ModbusBaseServer
 
 

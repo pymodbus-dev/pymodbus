@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from pymodbus.constants import ExcCodes
-from pymodbus.exceptions import ParameterException
-
+from ..constants import ExcCodes
+from ..exceptions import ParameterException
 from .store import BaseModbusDataBlock
 
 

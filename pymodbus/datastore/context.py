@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from pymodbus.constants import ExcCodes
-from pymodbus.exceptions import NoSuchIdException
-from pymodbus.logging import Log
-
+from ..constants import ExcCodes
+from ..exceptions import NoSuchIdException
+from ..logging import Log
 from .sequential import ModbusSequentialDataBlock
 from .store import BaseModbusDataBlock
 

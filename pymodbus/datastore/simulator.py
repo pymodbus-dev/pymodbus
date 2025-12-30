@@ -8,8 +8,7 @@ from collections.abc import Callable
 from datetime import datetime
 from typing import Any
 
-from pymodbus.constants import ExcCodes
-
+from ..constants import ExcCodes
 from .context import ModbusBaseDeviceContext
 
 

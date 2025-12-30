@@ -6,8 +6,8 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import TypeAlias, cast
 
-from pymodbus.constants import DATATYPE_STRUCT, DataType
-from pymodbus.pdu import ExceptionResponse
+from ..constants import DATATYPE_STRUCT, DataType
+from ..pdu import ExceptionResponse
 
 
 SimValueTypeSimple: TypeAlias = int | float | str | bytes

@@ -13,12 +13,12 @@ from typing import TYPE_CHECKING
 with contextlib.suppress(ImportError):
     from aiohttp import web
 
-from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
-from pymodbus.datastore.simulator import Label
-from pymodbus.logging import Log
-from pymodbus.pdu import DecodePDU
-from pymodbus.pdu.device import ModbusDeviceIdentification
-from pymodbus.server.server import (
+from ...datastore import ModbusServerContext, ModbusSimulatorContext
+from ...datastore.simulator import Label
+from ...logging import Log
+from ...pdu import DecodePDU
+from ...pdu.device import ModbusDeviceIdentification
+from ..server import (
     ModbusSerialServer,
     ModbusTcpServer,
     ModbusTlsServer,
@@ -96,7 +96,7 @@ class ModbusSimulatorServer:
 
     Example::
 
-        from pymodbus.server import ModbusSimulatorServer
+        from pymodbus import ModbusSimulatorServer
 
         async def run():
             simulator = ModbusSimulatorServer(

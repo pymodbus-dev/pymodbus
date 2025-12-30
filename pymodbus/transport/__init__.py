@@ -6,7 +6,7 @@ __all__ = [
     "ModbusProtocol",
 ]
 
-from pymodbus.transport.transport import (
+from .transport import (
     NULLMODEM_HOST,
     CommParams,
     CommType,

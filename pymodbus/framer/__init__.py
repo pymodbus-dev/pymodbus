@@ -8,11 +8,11 @@ __all__ = [
     "FramerType"
 ]
 
-from pymodbus.framer.ascii import FramerAscii
-from pymodbus.framer.base import FramerBase, FramerType
-from pymodbus.framer.rtu import FramerRTU
-from pymodbus.framer.socket import FramerSocket
-from pymodbus.framer.tls import FramerTLS
+from .ascii import FramerAscii
+from .base import FramerBase, FramerType
+from .rtu import FramerRTU
+from .socket import FramerSocket
+from .tls import FramerTLS
 
 
 FRAMER_NAME_TO_CLASS = {

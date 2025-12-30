@@ -3,9 +3,8 @@ from __future__ import annotations
 
 import copy
 
-from pymodbus.exceptions import MessageRegisterException, ModbusException
-from pymodbus.logging import Log
-
+from ..exceptions import MessageRegisterException, ModbusException
+from ..logging import Log
 from .exceptionresponse import ExceptionResponse
 from .pdu import ModbusPDU
 
@@ -52,8 +51,7 @@ class DecodePDU:
         if not issubclass(custom_class, ModbusPDU):
             raise MessageRegisterException(
                 f'"{custom_class.__class__.__name__}" is Not a valid Modbus Message'
-                ". Class needs to be derived from "
-                "`pymodbus.pdu.ModbusPDU` "
+                ". Class needs to be derived from `ModbusPDU` "
             )
         if "pdu_table" not in self.__dict__:
             self.pdu_table = copy.deepcopy(DecodePDU.pdu_table)

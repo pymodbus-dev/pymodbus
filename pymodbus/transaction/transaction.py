@@ -5,11 +5,11 @@ import asyncio
 from collections.abc import Callable
 from threading import RLock
 
-from pymodbus.exceptions import ConnectionException, ModbusIOException
-from pymodbus.framer import FramerAscii, FramerBase, FramerRTU
-from pymodbus.logging import Log
-from pymodbus.pdu import ModbusPDU
-from pymodbus.transport import CommParams, ModbusProtocol
+from ..exceptions import ConnectionException, ModbusIOException
+from ..framer import FramerAscii, FramerBase, FramerRTU
+from ..logging import Log
+from ..pdu import ModbusPDU
+from ..transport import CommParams, ModbusProtocol
 
 
 class TransactionManager(ModbusProtocol):
@@ -189,7 +189,7 @@ class TransactionManager(ModbusProtocol):
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
                 except asyncio.exceptions.CancelledError as exc:
-                    raise ModbusIOException("Request cancelled outside pymodbus.") from exc
+                    raise ModbusIOException("Request cancelled outside library.") from exc
             if self.count_until_disconnect < 0:
                 self.connection_lost(asyncio.TimeoutError("Server not responding"))
                 raise ModbusIOException(

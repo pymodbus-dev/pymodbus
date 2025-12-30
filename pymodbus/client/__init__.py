@@ -13,8 +13,8 @@ __all__ = [
     "ModbusUdpClient",
 ]
 
-from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
-from pymodbus.client.serial import AsyncModbusSerialClient, ModbusSerialClient
-from pymodbus.client.tcp import AsyncModbusTcpClient, ModbusTcpClient
-from pymodbus.client.tls import AsyncModbusTlsClient, ModbusTlsClient
-from pymodbus.client.udp import AsyncModbusUdpClient, ModbusUdpClient
+from .base import ModbusBaseClient, ModbusBaseSyncClient
+from .serial import AsyncModbusSerialClient, ModbusSerialClient
+from .tcp import AsyncModbusTcpClient, ModbusTcpClient
+from .tls import AsyncModbusTlsClient, ModbusTlsClient
+from .udp import AsyncModbusUdpClient, ModbusUdpClient

@@ -4,8 +4,7 @@ from __future__ import annotations
 import asyncio
 from time import sleep
 
-from pymodbus.datastore import ModbusServerContext
-
+from ..datastore import ModbusServerContext
 from .base import ModbusBaseServer
 from .server import (
     ModbusSerialServer,

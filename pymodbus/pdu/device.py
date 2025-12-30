@@ -16,9 +16,8 @@ __all__ = [
 import struct
 
 # pylint: disable=missing-type-doc
-from pymodbus.constants import DeviceInformation
-from pymodbus.utilities import dict_property
-
+from ..constants import DeviceInformation
+from ..utilities import dict_property
 from .events import ModbusEvent
 
 

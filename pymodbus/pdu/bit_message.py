@@ -3,9 +3,8 @@
 import struct
 from typing import cast
 
-from pymodbus.constants import ExcCodes, ModbusStatus
-from pymodbus.datastore import ModbusDeviceContext
-
+from ..constants import ExcCodes, ModbusStatus
+from ..datastore import ModbusDeviceContext
 from .decoders import DecodePDU
 from .exceptionresponse import ExceptionResponse
 from .pdu import ModbusPDU, pack_bitstring, unpack_bitstring

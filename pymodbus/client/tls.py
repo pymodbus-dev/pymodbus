@@ -5,11 +5,11 @@ import socket
 import ssl
 from collections.abc import Callable
 
-from pymodbus.client.tcp import AsyncModbusTcpClient, ModbusTcpClient
-from pymodbus.framer import FramerType
-from pymodbus.logging import Log
-from pymodbus.pdu import ModbusPDU
-from pymodbus.transport import CommParams, CommType
+from ..framer import FramerType
+from ..logging import Log
+from ..pdu import ModbusPDU
+from ..transport import CommParams, CommType
+from .tcp import AsyncModbusTcpClient, ModbusTcpClient
 
 
 class AsyncModbusTlsClient(AsyncModbusTcpClient):

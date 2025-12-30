@@ -43,9 +43,8 @@ import argparse
 import asyncio
 import os
 
-from pymodbus import pymodbus_apply_logging_config
-from pymodbus.logging import Log
-from pymodbus.server.simulator.http_server import ModbusSimulatorServer
+from ...logging import Log, pymodbus_apply_logging_config
+from .http_server import ModbusSimulatorServer
 
 
 def get_commandline(cmdline=None):

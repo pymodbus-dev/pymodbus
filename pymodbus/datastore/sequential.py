@@ -2,12 +2,9 @@
 # pylint: disable=missing-type-doc
 from __future__ import annotations
 
-from pymodbus.constants import ExcCodes
-
+from ..constants import ExcCodes
 from .store import BaseModbusDataBlock
 
-
-# from pymodbus.pdu.exceptionresponse import ExceptionResponse
 
 class ModbusSequentialDataBlock(BaseModbusDataBlock[list]):
     """Creates a sequential modbus datastore."""

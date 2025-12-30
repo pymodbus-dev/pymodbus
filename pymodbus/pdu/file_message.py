@@ -4,9 +4,8 @@ from __future__ import annotations
 import struct
 from dataclasses import dataclass
 
-from pymodbus.datastore import ModbusDeviceContext
-from pymodbus.exceptions import ModbusException
-
+from ..datastore import ModbusDeviceContext
+from ..exceptions import ModbusException
 from .decoders import DecodePDU
 from .pdu import ModbusPDU
 

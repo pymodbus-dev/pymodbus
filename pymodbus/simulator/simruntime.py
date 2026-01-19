@@ -51,7 +51,7 @@ class SimRuntimeDevice:
     register_blocks: list[SimRuntimeBlock]
     type_check: bool
     offset_coil: int = 0
-    offset_direct: int = 0
+    offset_discrete: int = 0
     offset_holding: int = 0
     offset_input: int = 0
 

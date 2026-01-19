@@ -18,7 +18,7 @@ class SimDevice:
     support these devices, define 1 large block consisting of the
     4 blocks and use the offset_*= parameters.
 
-    When using distinct blocks, coils and direct inputs are addressed differently,
+    When using distinct blocks, coils and discrete inputs are addressed differently,
     each register represent 1 coil/relay.
 
     **Device with shared registers**::
@@ -35,7 +35,7 @@ class SimDevice:
             registers=[SimData(...)],
             non_shared_mode=True,
             offset_coil=0,
-            offset_direct=10,
+            offset_discrete=10,
             offset_holding=20,
             offset_input=30,
         )
@@ -64,7 +64,7 @@ class SimDevice:
 
     #: Use this for old devices with 4 blocks.
     #:
-    #: .. tip:: content is (coil, direct, holding, input)
+    #: .. tip:: content is (coil, discrete, holding, input)
     offset_address: tuple[int, int, int, int] = OFFSET_NONE
 
     #: Enforce type checking, if True access are controlled to be conform with datatypes.

@@ -13,9 +13,9 @@ from pymodbus.simulator import SimData, SimDevice
 def define_datamodel():
     """Define register groups.
 
-    Coils and direct inputs are modeled as bits representing a relay in the device.
-    There are no real difference between coils and direct inputs, but historically
-    they have been divided. Please be aware the coils and direct inputs are addressed differently
+    Coils and discrete inputs are modeled as bits representing a relay in the device.
+    There are no real difference between coils and discrete inputs, but historically
+    they have been divided. Please be aware the coils and discrete inputs are addressed differently
     in shared vs non-shared models.
     - In a non-shared model the address is the bit directly.
       It can be thought of as if 1 register == 1 bit.
@@ -35,9 +35,9 @@ def define_datamodel():
             address=5, values=17, count=10, datatype=DataType.REGISTERS
         )
 
-    # Define a group of coils/direct inputs non-shared (address=15..31 each 1 bit)
+    # Define a group of coils/discrete inputs non-shared (address=15..31 each 1 bit)
     #block1 = SimData(address=15, count=16, values=True, datatype=DataType.BITS)
-    # Define a group of coils/direct inputs shared (address=15..31 each 16 bit)
+    # Define a group of coils/discrete inputs shared (address=15..31 each 16 bit)
     #block2 = SimData(address=15, count=16, values=0xFFFF, datatype=DataType.BITS)
 
     # Define a group of holding/input registers (remark NO difference between shared and non-shared)
@@ -59,7 +59,7 @@ def define_datamodel():
     SimDevice(id=1, type_check=False, registers=[block_def, block5])
     #SimDevice(2, False,
     #          block_coil=[block1],
-    #          block_direct=[block1],
+    #          block_discrete=[block1],
     #          block_holding=[block2],
     #          block_input=[block3, block4])
     # Remark: it is legal to reuse SimData, the object is only used for configuration,

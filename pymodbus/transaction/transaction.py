@@ -176,11 +176,11 @@ class TransactionManager(ModbusProtocol):
                         self.response_future, timeout=self.comm_params.timeout_connect
                     )
                     self.count_until_disconnect= self.max_until_disconnect
-                    if response.dev_id != request.dev_id:
+                    if request.dev_id and response.dev_id != request.dev_id:
                         raise ModbusIOException(
                             f"ERROR: request uses device id={request.dev_id} but received {response.dev_id}."
                         )
-                    if response.transaction_id != request.transaction_id:
+                    if response.transaction_id and response.transaction_id != request.transaction_id:
                         raise ModbusIOException(
                             f"ERROR: request uses transaction id={request.transaction_id} but received {response.transaction_id}."
                        )

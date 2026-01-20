@@ -4,6 +4,9 @@
 This file shows examples of how to configure the datamodel for the server/simulator.
 
 There are different examples showing the flexibility of the datamodel.
+
+**REMARK** This code is experimental and not integrated into production.
+
 """
 
 from pymodbus.constants import DataType
@@ -45,7 +48,7 @@ def define_datamodel():
     #block4 = SimData(17, count=5, values=123, datatype=DataType.INT64)
     block5 = SimData(27, 1, "Hello ", datatype=DataType.STRING)
 
-    block_def = SimData(0, count=1000, datatype=DataType.REGISTERS, default=True)
+    block_def = SimData(0, count=1000, datatype=DataType.REGISTERS)
 
     # SimDevice can be instantiated with positional or optional parameters:
     assert SimDevice(

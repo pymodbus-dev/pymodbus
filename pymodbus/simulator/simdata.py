@@ -1,4 +1,7 @@
-"""Simulator data model classes."""
+"""Simulator data model classes.
+
+**REMARK** This code is experimental and not integrated into production.
+"""
 from __future__ import annotations
 
 import inspect
@@ -25,12 +28,12 @@ class SimData:
         SimData(
             address=100,
             count=5,
-            value=12345678
+            values=12345678
             datatype=DataType.INT32
         )
         SimData(
             address=100,
-            value=[1, 2, 3, 4, 5]
+            values=[1, 2, 3, 4, 5]
             datatype=DataType.INT32
         )
 
@@ -40,29 +43,38 @@ class SimData:
 
         SimData(
             address=100,
-            count=17,
-            value=True
+            count=16,
+            values=True
             datatype=DataType.BITS
         )
         SimData(
             address=100,
-            value=[0xffff, 1]
+            values=[True] * 16
+            datatype=DataType.BITS
+        )
+        SimData(
+            address=100,
+            values=0xffff
+            datatype=DataType.BITS
+        )
+        SimData(
+            address=100,
+            values=[0xffff]
             datatype=DataType.BITS
         )
 
-    Each SimData defines 17 BITS (coils), with value True.
+    Each SimData defines 16 BITS (coils), with value True.
 
-    In block mode (CO and DI) addresses are 100-116 (each 1 bit)
+    Value are stored in registers (16bit is 1 register), the address refer to the register.
 
-    In shared mode BITS are stored in registers (16bit is 1 register), the address refer to the register,
-    addresses are 100-101 (with register 101 being padded with 15 bits set to False)
+    **Remark** when using offsets, only bit 0 of each register is used!
 
     .. code-block:: python
 
         SimData(
             address=0,
             count=1000,
-            value=0x1234
+            values=0x1234
             datatype=DataType.REGISTERS
         )
 
@@ -76,9 +88,10 @@ class SimData:
     #:
     #:    - count=3 datatype=DataType.REGISTERS is 3 registers.
     #:    - count=3 datatype=DataType.INT32 is 6 registers.
-    #:    - count=1 (default), value="ABCD" is 2 registers
+    #:    - count=1 datatype=DataType.STRING, values="ABCD" is 2 registers
+    #:    - count=2 datatype=DataType.STRING, values="ABCD" is 4 registers
     #:
-    #:    Cannot be used if value is a list or datatype is DataType.STRING
+    #: Count cannot be used if values= is a list
     count: int = 1
 
     #: Value/Values of datatype,
@@ -111,25 +124,6 @@ class SimData:
     #: **remark** only to be used with address= and count=
     invalid: bool = False
 
-    #: Use as default for undefined registers
-    #: Define legal register range as:
-    #:
-    #:      address=  <= legal addresses <= address= + count=
-    #:
-    #: **remark** only to be used with address= and count=
-    default: bool = False
-
-    #: The following are internal variables
-    register_count: int = -1
-    type_size: int = -1
-
-    def __check_default(self):
-        """Check use of default=."""
-        if self.datatype != DataType.REGISTERS:
-            raise TypeError("default=True only works with datatype=DataType.REGISTERS")
-        if isinstance(self.values, list):
-            raise TypeError("default=True only works with values=<integer>")
-
     def __check_simple(self):
         """Check simple parameters."""
         if not isinstance(self.address, int) or not 0 <= self.address <= 65535:
@@ -142,23 +136,18 @@ class SimData:
             raise TypeError("datatype= must by an DataType")
         if self.action and not (callable(self.action) and inspect.iscoroutinefunction(self.action)):
             raise TypeError("action= not a async function")
-        if self.register_count != -1:
-            raise TypeError("register_count= is illegal")
-        if self.type_size != -1:
-            raise TypeError("type_size= is illegal")
 
     def __post_init__(self):
         """Define a group of registers."""
         self.__check_simple()
-        if self.default:
-            self.__check_default()
-        x_datatype: type | tuple[type, type]
         if self.datatype == DataType.STRING:
             if not isinstance(self.values, str):
                 raise TypeError("datatype=DataType.STRING only allows values=\"string\"")
             x_datatype, x_len = str, int((len(self.values) +1) / 2)
         else:
-            x_datatype, x_len = DATATYPE_STRUCT[self.datatype]
+            x = DATATYPE_STRUCT[self.datatype]
+            x_len = x[1]
+            x_datatype = cast(type[str], x[0])
             if not isinstance(self.values, list):
                 super().__setattr__("values", [self.values])
             for x_value in cast(list, self.values):

@@ -21,7 +21,6 @@ class TestSimData:
         {"address": 0, "count": 65536},
         {"address": 1, "count": 65535},
         {"address": 1, "count": 10, "invalid": True},
-        {"address": 2, "count": 10, "default": True},
         {"address": 3, "count": 10, "readonly": True},
         {"address": 4, "datatype": DataType.INT16, "values": 17},
         {"address": 5, "datatype": DataType.INT16, "values": [17, 18]},
@@ -29,7 +28,7 @@ class TestSimData:
         {"address": 7, "datatype": DataType.STRING, "values": "test"},
         {"address": 8, "count": 10, "datatype": DataType.STRING, "values": "test"},
         {"address": 9, "action": async_dummy_action},
-        {"address": 0, "datatype": DataType.REGISTERS, "values": 17, "count": 5, "default": True},
+        {"address": 0, "datatype": DataType.REGISTERS, "values": 17, "count": 5},
         {"address": 1, "datatype": DataType.INT16, "values": 17, "invalid": True},
         {"address": 3, "datatype": DataType.INT16, "values": 17, "readonly": True},
         {"address": 0, "count": 2^16 -1},
@@ -37,7 +36,7 @@ class TestSimData:
         {"address": 4, "datatype": DataType.BITS, "values": 117},
         {"address": 1, "datatype": DataType.BITS, "values": True},
         {"address": 4, "datatype": DataType.BITS, "values": [True, True]},
-        {"address": 2, "values": 17, "default": True},
+        {"address": 2, "values": 17},
     ])
     def test_simdata_instanciate(self, kwargs):
         """Test that simdata can be objects."""
@@ -59,10 +58,6 @@ class TestSimData:
         {"address": 1, "datatype": 11},
         {"address": 1, "action": "not ok"},
         {"address": 1, "action": dummy_action},
-        {"address": 1, "register_count": 117},
-        {"address": 1, "type_size": 117},
-        {"address": 2, "datatype": DataType.INT16, "count": 10, "default": True},
-        {"address": 2, "values": [17], "count": 10, "default": True},
     ])
     def test_simdata_not_ok(self, kwargs):
         """Test that simdata can be objects."""

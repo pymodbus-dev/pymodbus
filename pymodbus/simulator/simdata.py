@@ -145,7 +145,9 @@ class SimData:
                 raise TypeError("datatype=DataType.STRING only allows values=\"string\"")
             x_datatype, x_len = str, int((len(self.values) +1) / 2)
         else:
-            x_datatype, x_len = DATATYPE_STRUCT[self.datatype]
+            x = DATATYPE_STRUCT[self.datatype]
+            x_len = x[1]
+            x_datatype = cast(type[str], x[0])
             if not isinstance(self.values, list):
                 super().__setattr__("values", [self.values])
             for x_value in cast(list, self.values):

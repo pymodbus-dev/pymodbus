@@ -276,4 +276,3 @@ class ModbusSerialServer(ModbusBaseServer):
             trace_connect,
             custom_pdu,
         )
-        self.handle_local_echo = kwargs.get("handle_local_echo", False)

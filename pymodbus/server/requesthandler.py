@@ -28,11 +28,13 @@ class ServerRequestHandler(TransactionManager):
             handle_local_echo=owner.comm_params.handle_local_echo,
         )
         self.server = owner
-        self.framer = self.server.framer(self.server.decoder)
         self.running = False
+        framer = owner.framer(owner.decoder)
+        if owner.allow_multiple_devices:
+            framer.setMultidrop(owner.comm_params, owner.device_ids())
         super().__init__(
             params,
-            self.framer,
+            framer,
             0,
             True,
             trace_packet,

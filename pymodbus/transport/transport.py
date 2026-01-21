@@ -88,7 +88,6 @@ class CommParams:
     host: str = "localhost" # On some machines this will now be ::1
     port: int = 0
     source_address: tuple[str, int] | None = None
-    handle_local_echo: bool = False
 
     # tls
     sslctx: ssl.SSLContext | None = None
@@ -98,6 +97,7 @@ class CommParams:
     bytesize: int = -1
     parity: str = ''
     stopbits: int = -1
+    handle_local_echo: bool = False
 
     @classmethod
     def generate_ssl(
@@ -161,6 +161,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.unique_id: str = str(id(self))
         self.reconnect_delay_current = 0.0
         self.sent_buffer: bytes = b""
+        self.inter_msg_time = 0.0
         self.loop: asyncio.AbstractEventLoop
         if is_sync:
             return
@@ -196,6 +197,8 @@ class ModbusProtocol(asyncio.BaseProtocol):
     def init_setup_connect_listen(self, host: str, port: int) -> None:
         """Handle connect/listen handler."""
         if self.comm_params.comm_type == CommType.SERIAL:
+            # time to transmit 3Char with stop bits etc.
+            self.inter_msg_time = 3 * (float(1 + self.comm_params.bytesize + self.comm_params.stopbits) / self.comm_params.baudrate)
             self.call_create = partial(create_serial_connection,
                 self.loop,
                 self.handle_new_connection,

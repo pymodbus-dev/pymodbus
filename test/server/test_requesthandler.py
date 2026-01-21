@@ -9,6 +9,7 @@ from pymodbus.datastore import (
     ModbusServerContext,
 )
 from pymodbus.exceptions import ModbusIOException, NoSuchIdException
+from pymodbus.framer import FramerType
 from pymodbus.pdu import ExceptionResponse
 from pymodbus.server import ModbusBaseServer
 from pymodbus.transport import CommParams, CommType
@@ -33,13 +34,13 @@ class TestRequesthandler:
                 reconnect_delay=0.0,
                 reconnect_delay_max=0.0,
                 timeout_connect=0.0,
-                source_address=(0, 0),
+                source_address=("0", 0),
             ),
             ModbusServerContext(devices=store, single=True),
             False,
             False,
             None,
-            "socket",
+            FramerType.SOCKET,
             None,
             None,
             None,

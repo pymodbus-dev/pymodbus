@@ -55,11 +55,11 @@ def define_datamodel():
             5,
             [block_def, block5],
         ) == SimDevice(
-            id=5, type_check=False, registers=[block_def, block5]
+            id=5, type_check=False, simdata=[block_def, block5]
         )
 
     # SimDevice can define either a shared or a non-shared register model
-    SimDevice(id=1, type_check=False, registers=[block_def, block5])
+    SimDevice(id=1, type_check=False, simdata=[block_def, block5])
     #SimDevice(2, False,
     #          block_coil=[block1],
     #          block_discrete=[block1],

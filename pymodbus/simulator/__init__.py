@@ -8,14 +8,9 @@ __all__ = [
     "SimCore",
     "SimData",
     "SimDevice",
-    "SimDevices",
     "SimValueType",
 ]
 
 from .simcore import SimCore
-from .simdata import (
-    SimAction,
-    SimData,
-    SimValueType,
-)
-from .simdevice import SimDevice, SimDevices
+from .simdata import SimData, SimValueType
+from .simdevice import SimAction, SimDevice

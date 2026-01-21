@@ -17,5 +17,5 @@ class TestSimCore:
 
     def test_build_config(self):
         """Test that simdata can be objects."""
-        device = SimDevice(17, registers=[SimData(0)])
+        device = SimDevice(17, simdata=[SimData(0)])
         SimCore.build_block([device])

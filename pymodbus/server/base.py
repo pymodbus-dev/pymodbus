@@ -49,7 +49,6 @@ class ModbusBaseServer(ModbusProtocol):
         self.trace_packet = trace_packet
         self.trace_pdu = trace_pdu
         self.trace_connect = trace_connect
-        self.handle_local_echo = False
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 

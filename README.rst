@@ -228,10 +228,8 @@ It registers the ``pymodbus`` namespace in your virtual environment using pointe
 source directory. This ensures that any changes you make to the core library are 
 immediately reflected when running examples or tests.
 
-Install git hooks, that helps control the commit and avoid errors when submitting a Pull Request:
+Install git hooks, that helps control the commit and avoid errors when submitting a Pull Request::
    cp githooks/* .git/hooks
-
-The repository contains a number of important branches and tags.
 
 
 The repository contains a number of important branches and tags.
@@ -265,8 +263,8 @@ need, feel free to submit them so others can benefit.
 Also, if you have a question, please `create a post in discussions q&a topic <https://github.com/pymodbus-dev/pymodbus/discussions/new?category=q-a>`_,
 so that others can benefit from the results.
 
-If you think, that something in the code is broken/not running well, please open an issue,
-read the Template-text first and then post your issue with your setup information.
+- If you think, that something in the code is broken/not running well, please `open an issue <https://github.com/pymodbus-dev/pymodbus/issues/new>`_,
+  read the Template-text first and then post your issue with your setup information.
 
 `Example documentation <https://pymodbus.readthedocs.io/en/dev/source/examples.html>`_
 
@@ -275,11 +273,13 @@ Troubleshooting the dev branch
 If you encounter errors while running examples, please check:
 
 1. **Namespace Error** (``*** ERROR --> PyModbus not found``): 
-   The package is not registered. Run ``pip install -e .`` from the project root.
+   The package is not registered. Please ensure you followed the installation 
+   steps in the **Install with github** section above.
 
 2. **Directory Error** (``*** ERROR --> THIS EXAMPLE needs the example directory...``): 
    You are in the wrong folder. You **must** run the script from within the 
-   ``examples/`` directory due to the ``helper.py`` dependency.
+   ``examples/`` directory.
+
 
 Contributing
 ------------

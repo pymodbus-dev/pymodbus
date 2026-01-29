@@ -16,8 +16,8 @@ class SimRuntimeRegister:
     """Datastore for a single register."""
 
     FLAG_REG_SIZE_1 = 0       # datatypes with 1 register e.g. INT16, STRING
-    FLAG_REG_SIZE_2 = 1       # datatypes with 2 register e.g. INT32
-    FLAG_REG_SIZE_4 = 2       # datatypes with 1 register e.g. INT64
+    FLAG_REG_SIZE_2 = 1       # datatypes with 2 registers e.g. INT32
+    FLAG_REG_SIZE_4 = 2       # datatypes with 4 registers e.g. INT64
     FLAG_REGISTERS = 2**2 -1  # bits 0-1 is datatype size
     FLAG_INVALID = 2**2       # bit 2, neither read nor write is allowed
     FLAG_READONLY = 2**3      # bit 3, only read is allowed

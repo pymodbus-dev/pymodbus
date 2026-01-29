@@ -20,7 +20,7 @@ class SimDevice:
 
     Some old devices uses 4 distinct blocks instead of 1 block, to
     support these devices, define 1 large block consisting of the
-    4 blocks and use the offset_*= parameters.
+    4 blocks and use the offset_address= parameter.
 
     When using distinct blocks, coils and discrete inputs are addressed differently,
     each register represent 1 coil/relay.
@@ -37,11 +37,7 @@ class SimDevice:
         SimDevice(
             id=1,
             registers=[SimData(...)],
-            non_shared_mode=True,
-            offset_coil=0,
-            offset_discrete=10,
-            offset_holding=20,
-            offset_input=30,
+            offset_address=(0, 10, 20, 30),
         )
 
     Meaning registers:
@@ -51,7 +47,7 @@ class SimDevice:
         - 20-29 are holding registers
         - 30-.. are input registers
 
-    A server can contain either a single :class:`SimDevice` or list of :class:`SimDevice`
+    A server can contain either a single :class:`SimDevice` or a list of :class:`SimDevice`
     to simulate a multipoint line.
 
     .. warning:: each block is sorted by address !!
@@ -88,7 +84,7 @@ class SimDevice:
     #: Byte order is defined in the modbus standard to be big-endian,
     #: however it is definable to test non-standard modbus devices
     #:
-    #: ..tip:: Content (word_order, byte_order)
+    #: ..tip:: Content (word_order, byte_order), True means big-endian
     endian: tuple[bool, bool] = (True, True)
 
     #: Set device identity

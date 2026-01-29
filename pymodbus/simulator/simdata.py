@@ -65,7 +65,7 @@ class SimData:
 
     Each SimData defines 16 BITS (coils), with value True.
 
-    Value are stored in registers (16bit is 1 register), the address refer to the register.
+    Value are stored in registers (16bit is 1 register), the address refers to the register.
 
     **Remark** when using offsets, only bit 0 of each register is used!
 

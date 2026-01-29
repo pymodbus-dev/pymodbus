@@ -157,8 +157,9 @@ You need to have python3 installed, preferable 3.11.
 Install with pip
 ^^^^^^^^^^^^^^^^
 .. note::
-   This section is for library users. If you want to contribute or run 
-   examples from the source code, please skip to the **Install with github** section below.
+   This section is for library users. For quick usage, check the `Example Code`_ chapter. 
+   If you prefer to contribute or run advanced examples directly from the source code, 
+   please skip to the `Install with github`_ section below.
 
 You can install using pip by issuing the following
 commands in a terminal window::
@@ -274,7 +275,7 @@ If you encounter errors while running examples, please check:
 
 1. **Namespace Error** (``*** ERROR --> PyModbus not found``): 
    The package is not registered. Please ensure you followed the installation 
-   steps in the **Install with github** section above.
+   steps in the `Install with github`_ section above.
 
 2. **Directory Error** (``*** ERROR --> THIS EXAMPLE needs the example directory...``): 
    You are in the wrong folder. You **must** run the script from within the 

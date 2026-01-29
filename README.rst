@@ -157,9 +157,7 @@ You need to have python3 installed, preferable 3.11.
 Install with pip
 ^^^^^^^^^^^^^^^^
 .. note::
-   This section is for library users. For quick usage, check the `Example Code`_ chapter. 
-   If you prefer to contribute or run advanced examples directly from the source code, 
-   please skip to the `Install with github`_ section below.
+   This section is intended for apps that uses the pymodbus library.
 
 You can install using pip by issuing the following
 commands in a terminal window::
@@ -224,10 +222,11 @@ Install all (allows creation of documentation etc) in editable mode::
 
     pip install -e ".[all]"
 
-**NOTE**: The use of the ``-e`` (editable) flag is mandatory when working on the ``dev`` branch. 
-It registers the ``pymodbus`` namespace in your virtual environment using pointers to the 
-source directory. This ensures that any changes you make to the core library are 
-immediately reflected when running examples or tests.
+.. note::
+   The use of the ``-e`` (editable) flag is recommended when working on the ``dev`` branch. 
+   It registers the ``pymodbus`` namespace in your virtual environment using pointers to the 
+   source directory. This ensures that any changes you make to the core library are 
+   immediately reflected when running examples or tests.
 
 Install git hooks, that helps control the commit and avoid errors when submitting a Pull Request::
    cp githooks/* .git/hooks

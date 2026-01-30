@@ -253,8 +253,8 @@ class ModbusSerialServer(ModbusBaseServer):
         :param allow_multiple_devices: True if the rs485 have multiple devices connected.
                     **Remark** only works with baudrates <= 38.400 and with an error free RS485.
         """
-        self.allow_multiple_devices = kwargs.get("allow_multiple_devices", False)
         baudrate = kwargs.get("baudrate", 19200)
+        self.allow_multiple_devices = kwargs.get("allow_multiple_devices", False)
         if self.allow_multiple_devices:
             if baudrate > 38400:
                 raise TypeError("allow_multiple_devices only allowed with baudrate <= 38.400")

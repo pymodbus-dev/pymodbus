@@ -1,6 +1,5 @@
 """Test SimCore."""
 
-import pytest
 
 from pymodbus.simulator import SimCore, SimData, SimDevice
 
@@ -12,15 +11,11 @@ class TestSimCore:
         """Test that simdata can be objects."""
         SimCore()
 
-    @pytest.mark.skip
     def test_build_block(self):
         """Test that simdata can be objects."""
         SimCore.build_block(None)
 
-    @pytest.mark.skip
     def test_build_config(self):
         """Test that simdata can be objects."""
-        device = SimDevice(17, block_shared=[SimData(0)])
-        SimCore.build_config([device])
-        with pytest.raises(TypeError):
-            SimCore.build_config([device, device])
+        device = SimDevice(17, registers=[SimData(0)])
+        SimCore.build_block([device])

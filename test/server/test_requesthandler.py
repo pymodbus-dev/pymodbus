@@ -11,7 +11,7 @@ from pymodbus.datastore import (
 from pymodbus.exceptions import ModbusIOException, NoSuchIdException
 from pymodbus.framer import FramerType
 from pymodbus.pdu import ExceptionResponse
-from pymodbus.server import ModbusBaseServer
+from pymodbus.server import ModbusBaseServer, ModbusSerialServer
 from pymodbus.transport import CommParams, CommType
 
 
@@ -80,4 +80,21 @@ class TestRequesthandler:
         requesthandler.server_send(None, None)
         requesthandler.server_send(ExceptionResponse(17), None)
 
+
+    async def test_serial_server_allow_multiple(self):
+        """Test __init__."""
+        store = ModbusDeviceContext(
+            di=ModbusSequentialDataBlock(0, [17] * 100),
+            co=ModbusSequentialDataBlock(0, [17] * 100),
+            hr=ModbusSequentialDataBlock(0, [17] * 100),
+            ir=ModbusSequentialDataBlock(0, [17] * 100),
+        )
+        server = ModbusSerialServer(
+            ModbusServerContext(devices=store, single=True),
+            framer=FramerType.RTU,
+            baudrate=19200,
+            port="/dev/tty01",
+            allow_multiple_devices=True,
+        )
+        server.callback_new_connection()
 

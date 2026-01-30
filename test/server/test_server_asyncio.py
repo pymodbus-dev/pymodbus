@@ -390,3 +390,39 @@ class TestAsyncioServer:
     async def test_async_serial_server_multipoint(self):
         """Check instantiate serial server."""
         await self.start_server(do_forever=False, do_serial=True)
+
+
+    async def test_serial_server_multipoint_baudrate(self):
+        """Test __init__."""
+        store = ModbusDeviceContext(
+            di=ModbusSequentialDataBlock(0, [17] * 100),
+            co=ModbusSequentialDataBlock(0, [17] * 100),
+            hr=ModbusSequentialDataBlock(0, [17] * 100),
+            ir=ModbusSequentialDataBlock(0, [17] * 100),
+        )
+        with pytest.raises(TypeError):
+            ModbusSerialServer(
+                ModbusServerContext(devices=store, single=True),
+                framer=FramerType.RTU,
+                baudrate=64200,
+                port="/dev/tty01",
+                allow_multiple_devices=True,
+            )
+
+
+    async def test_serial_server_multipoint_framer(self):
+        """Test __init__."""
+        store = ModbusDeviceContext(
+            di=ModbusSequentialDataBlock(0, [17] * 100),
+            co=ModbusSequentialDataBlock(0, [17] * 100),
+            hr=ModbusSequentialDataBlock(0, [17] * 100),
+            ir=ModbusSequentialDataBlock(0, [17] * 100),
+        )
+        with pytest.raises(TypeError):
+            ModbusSerialServer(
+                ModbusServerContext(devices=store, single=True),
+                framer=FramerType.ASCII,
+                baudrate=19200,
+                port="/dev/tty01",
+                allow_multiple_devices=True,
+            )

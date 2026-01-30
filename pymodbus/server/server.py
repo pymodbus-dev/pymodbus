@@ -254,12 +254,6 @@ class ModbusSerialServer(ModbusBaseServer):
                     **Remark** only works with baudrates <= 38.400 and with an error free RS485.
         """
         baudrate = kwargs.get("baudrate", 19200)
-        self.allow_multiple_devices = kwargs.get("allow_multiple_devices", False)
-        if self.allow_multiple_devices:
-            if baudrate > 38400:
-                raise TypeError("allow_multiple_devices only allowed with baudrate <= 38.400")
-            if framer != FramerType.RTU:
-                raise TypeError("allow_multiple_devices only allowed with FramerType.RTU")
         params = CommParams(
             comm_type=CommType.SERIAL,
             comm_name="server_listener",
@@ -285,3 +279,9 @@ class ModbusSerialServer(ModbusBaseServer):
             trace_connect,
             custom_pdu,
         )
+        self.allow_multiple_devices = kwargs.get("allow_multiple_devices", False)
+        if self.allow_multiple_devices:
+            if baudrate > 38400:
+                raise TypeError("allow_multiple_devices only allowed with baudrate <= 38.400")
+            if framer != FramerType.RTU:
+                raise TypeError("allow_multiple_devices only allowed with FramerType.RTU")

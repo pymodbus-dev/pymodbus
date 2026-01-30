@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from ..logging import Log
-from ..pdu import DecodePDU
 from .base import FramerBase
 
 
@@ -59,7 +58,7 @@ class FramerRTU(FramerBase):
     """
 
     MIN_SIZE = 4  # <device id><function code><crc 2 bytes>
-
+    device_ids: list[int] = [] # will be converted to instance variable
 
     @classmethod
     def generate_crc16_table(cls) -> list[int]:
@@ -79,14 +78,6 @@ class FramerRTU(FramerBase):
             result.append(crc)
         return result
     crc16_table: list[int] = [0]
-
-    def __init__(
-        self,
-        decoder: DecodePDU
-    ) -> None:
-        """Initialize a RTU ADU (framer) instance."""
-        super().__init__(decoder)
-        self.device_ids: list[int] = []
 
     def setMultidrop(self, device_ids: list[int]):
         """Activate multidrop support."""

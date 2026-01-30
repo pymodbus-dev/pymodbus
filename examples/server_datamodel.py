@@ -46,7 +46,7 @@ def define_datamodel():
     # Define a group of holding/input registers (remark NO difference between shared and non-shared)
     #block3 = SimData(10, 1, 123.4, datatype=DataType.FLOAT32)
     #block4 = SimData(17, count=5, values=123, datatype=DataType.INT64)
-    block5 = SimData(27, 1, "Hello ", datatype=DataType.STRING)
+    block5 = SimData(1027, 1, "Hello ", datatype=DataType.STRING)
 
     block_def = SimData(0, count=1000, datatype=DataType.REGISTERS)
 

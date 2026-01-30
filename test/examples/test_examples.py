@@ -110,7 +110,6 @@ class TestExamples:
         # Awaiting fix, missing stop of task.
         await run_simulator3()
 
-    @pytest.mark.skip
     def test_server_datamodel(self):
         """Run different simulator configurations."""
         run_main_datamodel()

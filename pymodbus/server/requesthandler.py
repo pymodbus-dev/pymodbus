@@ -31,7 +31,7 @@ class ServerRequestHandler(TransactionManager):
         self.running = False
         framer = owner.framer(owner.decoder)
         if owner.allow_multiple_devices:
-            framer.setMultidrop(owner.comm_params, owner.device_ids())
+            framer.setMultidrop(owner.comm_params, owner.device_ids)
         super().__init__(
             params,
             framer,

@@ -79,3 +79,5 @@ class TestRequesthandler:
         """Test __init__."""
         requesthandler.server_send(None, None)
         requesthandler.server_send(ExceptionResponse(17), None)
+
+

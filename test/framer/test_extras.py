@@ -146,3 +146,15 @@ class TestExtras:
         msg = b"\x00\x90\x02\x9c\x01"
         _, pdu = self._rtu.handleFrame(msg, 0, 0)
         assert pdu
+
+    def test_rtu_dsetMultidrop(self):
+        """Test that the RTU framer can define multidrop."""
+        self._rtu.setMultidrop([1,2,3])
+
+    def test_rtu_dsetMultidrop2(self):
+        """Test that the RTU framer can use multidrop."""
+        self._rtu.setMultidrop([1,2,3])
+        msg = b"\x05\x90\x02\x9c\x01"
+        cut, pdu = self._rtu.handleFrame(msg, 0, 0)
+        assert cut
+        assert not pdu

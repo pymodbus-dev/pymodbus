@@ -139,6 +139,13 @@ class TestTransportProtocol1:
         client.datagram_received(b"abc", "127.0.0.1")
         client.callback_data.assert_called_once()
 
+    async def test_datagram_buffer_overrun(self, client):
+        """Test datagram_received()."""
+        client.callback_data = mock.MagicMock(return_value=0)
+        client.recv_buffer = bytearray([0x01] * 2000)
+        client.datagram_received(b"abc", "127.0.0.1")
+        assert client.recv_buffer == b'abc'
+
     async def test_callback_connected(self, use_clc):
         """Test callbacks."""
         client = ModbusProtocol(use_clc, False)

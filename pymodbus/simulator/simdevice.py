@@ -106,17 +106,17 @@ class SimDevice:
         if self.default and block:
             first_address = block[0].address
             if self.default.address > first_address:
-                raise TypeError("Default address is {self.default.address} but {first_address} is defined?")
+                raise TypeError(f"Default address is {self.default.address} but {first_address} is defined?")
             def_last_address = self.default.address + self.default.count -1
             if last_address > def_last_address:
-                raise TypeError("Default address+count is {def_last_address} but {last_address} is defined?")
+                raise TypeError(f"Default address+count is {def_last_address} but {last_address} is defined?")
         return block
 
     def __check_block_entries(self, last_address: int, entry: SimData) -> int:
         """Check block entries."""
         values = entry.values if isinstance(entry.values, list) else [entry.values]
         if entry.address <= last_address:
-            raise TypeError("SimData address {entry.address} is overlapping!")
+            raise TypeError(f"SimData address {entry.address} is overlapping!")
         if entry.datatype == DataType.BITS:
             if isinstance(values[0], bool):
                 reg_count = int((len(values) + 15) / 16)

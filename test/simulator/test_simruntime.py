@@ -2,12 +2,23 @@
 
 import pytest
 
+from pymodbus.pdu import ExceptionResponse
 from pymodbus.simulator import SimData, SimDevice, SimDevices
 from pymodbus.simulator.simruntime import SimRuntimeRegister, SimSetupRuntime
 
 
 class TestSimRuntime:
     """Test simulator runtime generator."""
+
+    async def my_action(
+            self,
+            function_code: int,
+            address: int,
+            registers: list[int]
+        ) -> list[int] | ExceptionResponse:
+        """Run action."""
+        return registers
+
 
     TOTAL_FLAGS = (
         SimRuntimeRegister.FLAG_ACTION |
@@ -61,3 +72,9 @@ class TestSimRuntime:
                 a.build_runtime(devices)
         else:
             a.build_runtime(devices)
+
+    async def test_simsetupruntime_build_action(self):
+        """Test simSetupRuntime."""
+        await self.my_action(0, 0, [])
+        a = SimSetupRuntime()
+        a.build_runtime(SimDevices([SimDevice(0, [SimData(0, action=self.my_action)])]))

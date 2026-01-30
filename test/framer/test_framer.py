@@ -77,6 +77,10 @@ class TestFramer:
         assert used_len == len(msg)
         assert pdu
 
+    async def test_multidrop_timing(self):
+        """Test bz_bps=."""
+        # assert FramerRTU(DecodePDU(True), multidrop = (8, 2, 9600, []))
+        # assert FramerRTU(DecodePDU(True), multidrop = (8, 2, 38400, []))
 
 class TestFramerType:
     """Test classes."""

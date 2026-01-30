@@ -16,6 +16,7 @@ from pymodbus.datastore import (
 )
 from pymodbus.exceptions import NoSuchIdException
 from pymodbus.server import (
+    ModbusSerialServer,
     ModbusTcpServer,
     ModbusTlsServer,
     ModbusUdpServer,
@@ -146,7 +147,7 @@ class TestAsyncioServer:
             result = result.result()
 
     async def start_server(
-        self, do_forever=True, do_tls=False, do_udp=False, do_ident=False, serv_addr=SERV_ADDR,
+        self, do_forever=True, do_serial=False, do_tls=False, do_udp=False, do_ident=False, serv_addr=SERV_ADDR,
     ):
         """Handle setup and control of tcp server."""
         args = {
@@ -168,6 +169,15 @@ class TestAsyncioServer:
                 framer=FramerType.SOCKET,
                 identity=self.identity,
                 address=serv_addr
+            )
+        elif do_serial:
+            self.server = ModbusSerialServer(
+                self.context,
+                framer=FramerType.RTU,
+                identity=self.identity,
+                port="/dev/ttyb",
+                baudrate=19200,
+                allow_multiple_devices=True
             )
         else:
             self.server = ModbusTcpServer(
@@ -319,10 +329,6 @@ class TestAsyncioServer:
             with pytest.raises(RuntimeError):
                 await self.server.serve_forever()
 
-    # -----------------------------------------------------------------------#
-    # Test ModbusUdpProtocol
-    # -----------------------------------------------------------------------#
-
     async def test_async_start_udp_server_no_loop(self):
         """Test that the modbus udp asyncio server starts correctly."""
         await self.start_server(do_udp=True, do_forever=False, do_ident=True)
@@ -380,3 +386,43 @@ class TestAsyncioServer:
             )
             await asyncio.wait_for(BasicClient.connected, timeout=0.1)
             assert not BasicClient.done.done()
+
+    async def test_async_serial_server_multipoint(self):
+        """Check instantiate serial server."""
+        await self.start_server(do_forever=False, do_serial=True)
+
+
+    async def test_serial_server_multipoint_baudrate(self):
+        """Test __init__."""
+        store = ModbusDeviceContext(
+            di=ModbusSequentialDataBlock(0, [17] * 100),
+            co=ModbusSequentialDataBlock(0, [17] * 100),
+            hr=ModbusSequentialDataBlock(0, [17] * 100),
+            ir=ModbusSequentialDataBlock(0, [17] * 100),
+        )
+        with pytest.raises(TypeError):
+            ModbusSerialServer(
+                ModbusServerContext(devices=store, single=True),
+                framer=FramerType.RTU,
+                baudrate=64200,
+                port="/dev/tty01",
+                allow_multiple_devices=True,
+            )
+
+
+    async def test_serial_server_multipoint_framer(self):
+        """Test __init__."""
+        store = ModbusDeviceContext(
+            di=ModbusSequentialDataBlock(0, [17] * 100),
+            co=ModbusSequentialDataBlock(0, [17] * 100),
+            hr=ModbusSequentialDataBlock(0, [17] * 100),
+            ir=ModbusSequentialDataBlock(0, [17] * 100),
+        )
+        with pytest.raises(TypeError):
+            ModbusSerialServer(
+                ModbusServerContext(devices=store, single=True),
+                framer=FramerType.ASCII,
+                baudrate=19200,
+                port="/dev/tty01",
+                allow_multiple_devices=True,
+            )

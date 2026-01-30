@@ -6,6 +6,8 @@ API changes 3.12.0
 ------------------
 - when using no_response_expected=, the call returns None
 - remove idle_time() from sync client since it is void
+- ModbusSerialServer new parameter "allow_multiple_devices"
+  which gives limited multipoint support with baudrate < 19200 and a good RS485 line.
 
 API changes 3.11.0
 ------------------

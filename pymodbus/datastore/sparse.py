@@ -103,10 +103,15 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
         _process_as_dict(values)
 
     def setValues(self, address, values, use_as_default=False) -> None | ExcCodes:
-        """Set the requested values of the datastore.
+        f"""Set the requested values of the datastore.
 
-        :param address: The starting address
-        :param values: The new values to be set
+        :param address: The register starting address
+        :param values: The new values to be set. Either given as:
+            - a single register value or
+            - a list or tuple of contiguous register values, starting at 
+              given starting register address or
+            - a dictionary of address:value(s) pairs, where value can be a
+              single register or a list or tuple of contiguous registers.
         :param use_as_default: Use the values as default
         :raises ParameterException:
         """
@@ -117,7 +122,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
                     raise ParameterException(f"Offsets {new_offsets} not in range")
                 self._process_values(values)
             else:
-                if not isinstance(values, list):
+                if not isinstance(values, (list, tuple)):
                     values = [values]
                 for idx, val in enumerate(values):
                     if address + idx not in self.values and not self.mutable:

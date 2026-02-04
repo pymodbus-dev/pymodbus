@@ -20,7 +20,7 @@ from pymodbus.pdu.file_message import (
 )
 
 
-TEST_MESSAGE = b"\x00\n\x00\x08\x00\x01\x00\x02\x00\x03\x00\x04"
+TEST_MESSAGE = b"\x00\n\x00\x04\x00\x01\x00\x02\x00\x03\x00\x04"
 
 class TestBitMessage:
     """Modbus bit message tests."""

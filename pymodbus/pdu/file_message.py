@@ -257,7 +257,7 @@ class ReadFifoQueueResponse(ModbusPDU):
         """Calculate the size of the message."""
         hi_byte = int(data[2])
         lo_byte = int(data[3])
-        return (hi_byte << 16) + lo_byte + 6
+        return ((hi_byte << 16) + lo_byte) * 2 + 6
 
     def __init__(self, values: list[int] | None = None, dev_id: int = 1, transaction_id:int  = 0) -> None:
         """Initialize a new instance."""
@@ -266,8 +266,8 @@ class ReadFifoQueueResponse(ModbusPDU):
 
     def encode(self) -> bytes:
         """Encode the response."""
-        length = len(self.values) * 2
-        packet = struct.pack(">HH", 2 + length, length)
+        length = len(self.values)
+        packet = struct.pack(">HH", 2 + length * 2, length)
         for value in self.values:
             packet += struct.pack(">H", value)
         return packet
@@ -276,7 +276,7 @@ class ReadFifoQueueResponse(ModbusPDU):
         """Decode a the response."""
         self.values = []
         _, count = struct.unpack(">HH", data[0:4])
-        for index in range(0, count - 4):
+        for index in range(0, count):
             idx = 4 + index * 2
             self.values.append(struct.unpack(">H", data[idx : idx + 2])[0])
 

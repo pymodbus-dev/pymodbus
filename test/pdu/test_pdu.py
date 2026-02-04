@@ -141,7 +141,7 @@ class TestPdu:
         (diag_msg.GetClearModbusPlusResponse, (), {"message": 0x1010}, b'\x08\x00\x15\x10\x10'),
         (file_msg.ReadFileRecordResponse, (), {"records": [file_msg.FileRecord(), file_msg.FileRecord()]}, b'\x14\x04\x01\x06\x01\x06'),
         (file_msg.WriteFileRecordResponse, (), {"records": [file_msg.FileRecord(), file_msg.FileRecord()]}, b'\x15\x0e\x06\x00\x00\x00\x00\x00\x00\x06\x00\x00\x00\x00\x00\x00'),
-        (file_msg.ReadFifoQueueResponse, (), {"values": [123, 456]}, b'\x18\x00\x06\x00\x04\x00{\x01\xc8'),
+        (file_msg.ReadFifoQueueResponse, (), {"values": [123, 456]}, b'\x18\x00\x06\x00\x02\x00{\x01\xc8'),
         (mei_msg.ReadDeviceInformationResponse, (), {"read_code": 0x17}, b'\x2b\x0e\x17\x83\x00\x00\x00'),
         (o_msg.ReadExceptionStatusResponse, (), {"status": 0x23}, b'\x07\x23'),
         (o_msg.GetCommEventCounterResponse, (), {"count": 123}, b'\x0b\x00\x00\x00\x7b'),

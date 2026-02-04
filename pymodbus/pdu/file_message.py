@@ -266,8 +266,8 @@ class ReadFifoQueueResponse(ModbusPDU):
 
     def encode(self) -> bytes:
         """Encode the response."""
-        length = len(self.values) * 2
-        packet = struct.pack(">HH", 2 + length, len(self.values))
+        length = len(self.values)
+        packet = struct.pack(">HH", 2 + length * 2, length)
         for value in self.values:
             packet += struct.pack(">H", value)
         return packet

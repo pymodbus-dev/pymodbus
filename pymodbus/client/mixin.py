@@ -210,8 +210,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         all of its communications event counters are cleared. If the port is
         currently in Listen Only Mode, no response is returned. This function is
         the only one that brings the port out of Listen Only Mode. If the port is
-        not currently in Listen Only Mode, a normal response is returned. This
-        occurs before the restart is update_datastored.
+        not currently in Listen Only Mode, a normal response is returned.
         """
         msg = ModbusStatus.ON if toggle else ModbusStatus.OFF
         return self.execute(no_response_expected, pdu_diag.RestartCommunicationsOptionRequest(message=msg, dev_id=device_id))

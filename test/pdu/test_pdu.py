@@ -240,18 +240,16 @@ class TestPdu:
 
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests)
     @pytest.mark.usefixtures("frame", "args")
-    async def test_pdu_datastore(self, pdutype, kwargs, mock_context):
+    async def test_pdu_datastore(self, pdutype, kwargs, mock_server_context):
         """Test that all PDU types can be created."""
         pdu = pdutype(**kwargs)
-        context = mock_context()
-        assert await pdu.update_datastore(context)
+        assert await pdu.datastore_update(mock_server_context(), 1)
 
-    async def test_pdu_default_datastore(self, mock_context):
+    async def test_pdu_default_datastore(self, mock_server_context):
         """Test that all PDU types can be created."""
         pdu = ModbusPDU()
-        context = mock_context()
         with pytest.raises(NotImplementedException):
-            assert await pdu.update_datastore(context)
+            assert await pdu.datastore_update(mock_server_context, 1)
 
     @pytest.mark.parametrize(
         ("bytestream", "bitlist"),

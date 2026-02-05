@@ -9,7 +9,7 @@ import pytest
 import pytest_asyncio
 
 from pymodbus.constants import ExcCodes
-from pymodbus.datastore import ModbusBaseDeviceContext
+from pymodbus.datastore import ModbusBaseDeviceContext, ModbusServerContext
 from pymodbus.server import ServerAsyncStop
 from pymodbus.transport import NULLMODEM_HOST, CommParams, CommType
 from pymodbus.transport.transport import NullModem
@@ -228,6 +228,28 @@ def define_mock_context():
 
     return MockContext
 
+@pytest.fixture(name="mock_server_context")
+def define_mock_servercontext():
+    """Define context class."""
+    class MockServerContext(ModbusServerContext):
+        """Mock context."""
+
+        def __init__(self, valid=False, default=True):
+            """Initialize."""
+            super().__init__()
+            self.valid = valid
+            self.default = default
+
+        async def async_getValues(self, _dev_id, _fc, _address, count=0):
+            """Get values."""
+            if count > 0x100:
+                return ExcCodes.ILLEGAL_VALUE
+            return [self.default] * count
+
+        async def async_setValues(self, _dev_id, _fc, _address, _values):
+            """Set values."""
+
+    return MockServerContext
 
 class MockLastValuesContext(ModbusBaseDeviceContext):
     """Mock context."""

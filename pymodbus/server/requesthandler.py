@@ -85,11 +85,9 @@ class ServerRequestHandler(TransactionManager):
                 # if broadcasting then execute on all device contexts,
                 # note response will be ignored
                 for dev_id in self.server.context.device_ids():
-                    await self.last_pdu.update_datastore(self.server.context[dev_id])
+                    await self.last_pdu.datastore_update(self.server.context, dev_id)
                 return
-
-            context = self.server.context[self.last_pdu.dev_id]
-            response = await self.last_pdu.update_datastore(context)
+            response = await self.last_pdu.datastore_update(self.server.context, self.last_pdu.dev_id)
 
         except NoSuchIdException:
             if self.server.ignore_missing_devices:

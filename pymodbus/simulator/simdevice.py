@@ -12,7 +12,7 @@ from .simdata import SimData
 
 
 SimAction: TypeAlias = Callable[[int, int, list[int], list[int] | None], Awaitable[list[int] | None | ExceptionResponse]]
-SimRegs: TypeAlias = tuple[list[int], list[int]]
+SimRegs: TypeAlias = tuple[int, list[int], list[int]]
 TUPLE_NAMES = (
       "coils",
       "discrete inputs",
@@ -235,9 +235,9 @@ class SimDevice:
                 reg_list.append(0)
                 next_address += 1
             self.__create_simdata(entry, flag_list, reg_list)
-        return (reg_list, flag_list)
+        return (start_address, reg_list, flag_list)
 
-    def build_device(self) -> SimRegs | tuple[SimRegs, SimRegs, SimRegs, SimRegs]:
+    def build_device(self) -> SimRegs | list[SimRegs]:
         """Check simdata and built runtime structure."""
         self.__check_parameters()
         if isinstance(self.simdata, list):
@@ -245,4 +245,4 @@ class SimDevice:
         b: list[SimRegs] = []
         for i in range(4):
             b.append(self.__create_block(cast(tuple, self.simdata)[i]))
-        return (b[0], b[1], b[2], b[3])
+        return b

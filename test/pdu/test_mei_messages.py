@@ -39,8 +39,9 @@ class TestMeiMessage:
         assert handle.read_code == DeviceInformation.BASIC
         assert not handle.object_id
 
-    async def test_read_device_information_request(self, modbus_server_context):
+    async def test_read_device_information_request(self, mock_server_context):
         """Test basic bit message encoding/decoding."""
+        context = mock_server_context()
         control = ModbusControlBlock()
         control.Identity.VendorName = "Company"
         control.Identity.ProductCode = "Product"
@@ -48,7 +49,7 @@ class TestMeiMessage:
         control.Identity.update({0x81: ["Test", "Repeated"]})
 
         handle = ReadDeviceInformationRequest()
-        result = await handle.datastore_update(modbus_server_context(), 0)
+        result = await handle.datastore_update(context, 0)
         assert isinstance(result, ReadDeviceInformationResponse)
         assert result.information[0x00] == "Company"
         assert result.information[0x01] == "Product"
@@ -59,20 +60,21 @@ class TestMeiMessage:
         handle = ReadDeviceInformationRequest(
             read_code=DeviceInformation.EXTENDED, object_id=0x80
         )
-        result = await handle.datastore_update(modbus_server_context(), 0)
+        result = await handle.datastore_update(context, 0)
         assert result.information[0x81] == ["Test", "Repeated"]
 
-    async def test_read_device_information_request_error(self, modbus_server_context):
+    async def test_read_device_information_request_error(self, mock_server_context):
         """Test basic bit message encoding/decoding."""
+        context = mock_server_context()
         handle = ReadDeviceInformationRequest()
         handle.read_code = -1
-        assert (await handle.datastore_update(modbus_server_context(), 0)).function_code == 0xAB
+        assert (await handle.datastore_update(context, 0)).function_code == 0xAB
         handle.read_code = 0x05
-        assert (await handle.datastore_update(modbus_server_context(), 0)).function_code == 0xAB
+        assert (await handle.datastore_update(context, 0)).function_code == 0xAB
         handle.object_id = -1
-        assert (await handle.datastore_update(modbus_server_context(), 0)).function_code == 0xAB
+        assert (await handle.datastore_update(context, 0)).function_code == 0xAB
         handle.object_id = 0x100
-        assert (await handle.datastore_update(modbus_server_context(), 0)).function_code == 0xAB
+        assert (await handle.datastore_update(context, 0)).function_code == 0xAB
 
     def test_read_device_information_calc1(self):
         """Test calculateRtuFrameSize, short buffer."""

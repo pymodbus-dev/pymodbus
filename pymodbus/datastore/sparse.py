@@ -103,12 +103,12 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
         _process_as_dict(values)
 
     def setValues(self, address, values, use_as_default=False) -> None | ExcCodes:
-        f"""Set the requested values of the datastore.
+        """Set the requested values of the datastore.
 
         :param address: The register starting address
         :param values: The new values to be set. Either given as:
             - a single register value or
-            - a list or tuple of contiguous register values, starting at 
+            - a list or tuple of contiguous register values, starting at
               given starting register address or
             - a dictionary of address:value(s) pairs, where value can be a
               single register or a list or tuple of contiguous registers.

@@ -240,13 +240,14 @@ def define_mock_servercontext():
             self.valid = valid
             self.default = default
 
-        async def async_getValues(self, _dev_id, _fc, _address, count=0):
+        async def async_getValues(self, device_id, func_code, address, count=0):
             """Get values."""
+            _ = device_id, func_code, address
             if count > 0x100:
                 return ExcCodes.ILLEGAL_VALUE
             return [self.default] * count
 
-        async def async_setValues(self, _dev_id, _fc, _address, _values):
+        async def async_setValues(self, device_id, func_code, address, values):
             """Set values."""
 
     return MockServerContext

@@ -45,7 +45,7 @@ class TestModbusBitMessage:
             (bit_msg.WriteSingleCoilRequest(address=1, bits=[True])),
             (bit_msg.WriteMultipleCoilsRequest(address=1, bits=[True] * 5)),
         ):
-            await pdu.datastore_update(mock_server_context, 0)
+            await pdu.datastore_update(context, 0)
 
     async def test_bit_read_datastore_update_address_errors(self, mock_server_context):
         """Test bit read request encoding."""
@@ -112,12 +112,12 @@ class TestModbusBitMessage:
         result = await request.datastore_update(context, 1)
 
         context.valid = True
-        result = await request.datastore_update(mock_server_context, 0)
+        result = await request.datastore_update(context, 0)
         assert result.encode() == b"\x00\x02\xff\x00"
 
         context = mock_server_context(True, default=False)
         request = bit_msg.WriteSingleCoilRequest(address=2, bits=[False])
-        result = await request.datastore_update(mock_server_context, 0)
+        result = await request.datastore_update(context, 0)
         assert result.encode() == b"\x00\x02\x00\x00"
 
     async def test_write_multiple_coils_datastore_update(self, mock_server_context):
@@ -125,16 +125,16 @@ class TestModbusBitMessage:
         context = mock_server_context(False)
         # too many values
         request = bit_msg.WriteMultipleCoilsRequest(address=2, bits=[])
-        result = await request.datastore_update(mock_server_context, 0)
+        result = await request.datastore_update(context, 0)
 
         # does not verify
         context.valid = False
         request = bit_msg.WriteMultipleCoilsRequest(address=2, bits=[False] * 4)
-        result = await request.datastore_update(mock_server_context, 0)
+        result = await request.datastore_update(context, 0)
 
         # verified request
         context.valid = True
-        result = await request.datastore_update(mock_server_context, 0)
+        result = await request.datastore_update(context, 0)
         assert result.encode() == b"\x00\x02\x00\x04"
 
     @pytest.mark.parametrize(("request_pdu"),
@@ -147,7 +147,7 @@ class TestModbusBitMessage:
         """Test write single coil."""
         context = mock_server_context(True, default=True)
         context.async_setValues = mock.AsyncMock(return_value=1)
-        result = await request_pdu.datastore_update(mock_server_context, 1)
+        result = await request_pdu.datastore_update(context, 1)
         assert result.exception_code == 1
 
     def test_write_multiple_coils_response(self):

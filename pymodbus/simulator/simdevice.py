@@ -8,6 +8,7 @@ from typing import TypeAlias, cast
 
 from ..constants import DataType, RuntimeFlags
 from ..pdu import ExceptionResponse
+from ..pdu.device import ModbusDeviceIdentification
 from .simdata import SimData
 
 
@@ -93,7 +94,7 @@ class SimDevice:
     string_encoding: str = "utf-8"
 
     #: Set device identity
-    identity: str = "pymodbus simulator/server"
+    identity: ModbusDeviceIdentification | None = None
 
     #: Function to call when registers are being accessed.
     #:
@@ -127,8 +128,8 @@ class SimDevice:
             raise TypeError("0 <= id < 255")
         if not isinstance(self.type_check, bool):
             raise TypeError("type_check= not a bool")
-        if not isinstance(self.identity, str):
-            raise TypeError("identity= must be a string")
+        if self.identity and not isinstance(self.identity, ModbusDeviceIdentification):
+            raise TypeError("identity= must be a ModbusDeviceIdentification")
         if self.action and not (callable(self.action) and inspect.iscoroutinefunction(self.action)):
             raise TypeError("action= must be a async function")
         if not (isinstance(self.endian, tuple)

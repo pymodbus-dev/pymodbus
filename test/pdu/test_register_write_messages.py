@@ -76,51 +76,51 @@ class TestWriteRegisterMessages:
         for request in iter(self.write.keys()):
             assert str(request)
 
-    async def test_write_single_register_request(self, mock_context):
+    async def test_write_single_register_request(self, mock_server_context):
         """Test write single register request."""
-        context = mock_context()
+        context = mock_server_context()
         request = WriteSingleRegisterRequest(address=0x00, registers=[0xF0000])
-        result = await request.update_datastore(context)
+        result = await request.datastore_update(context, 1)
         assert result.exception_code == ExcCodes.ILLEGAL_VALUE
 
         request.registers[0] = 0x00FF
-        result = await request.update_datastore(context)
+        result = await request.datastore_update(context, 1)
         # assert result.exception_code == ExcCodes.ILLEGAL_ADDRESS
 
         context.valid = True
-        result = await request.update_datastore(context)
+        result = await request.datastore_update(context, 1)
         assert result.function_code == request.function_code
 
-    async def test_write_multiple_register_request(self, mock_context):
+    async def test_write_multiple_register_request(self, mock_server_context):
         """Test write multiple register request."""
-        context = mock_context()
+        context = mock_server_context()
         request = WriteMultipleRegistersRequest(address=0x00, registers=[0x00] * 10)
-        result = await request.update_datastore(context)
+        result = await request.datastore_update(context, 1)
 
         request.count = 0x800  # outside of range
-        result = await request.update_datastore(context)
+        result = await request.datastore_update(context, 1)
         assert result.exception_code == ExcCodes.ILLEGAL_VALUE
 
         context.valid = True
         request = WriteMultipleRegistersRequest(address=0x00, registers=[0x00] * 10)
-        result = await request.update_datastore(context)
+        result = await request.datastore_update(context, 1)
         assert result.function_code == request.function_code
 
         request = WriteMultipleRegistersRequest(address=0x00, registers=[0x00])
-        result = await request.update_datastore(context)
+        result = await request.datastore_update(context, 1)
         assert result.function_code == request.function_code
 
 
-    async def test_register_write_datastore_exceptions(self, mock_context):
+    async def test_register_write_datastore_exceptions(self, mock_server_context):
         """Test exception response from datastore."""
-        context = mock_context()
+        context = mock_server_context()
         context.async_getValues = mock.AsyncMock(return_value=ExcCodes.ILLEGAL_VALUE)
         for pdu in (
             WriteSingleRegisterRequest(address=0x00, registers=[0xF000]),
             WriteMultipleRegistersRequest(address=0x00, registers=[0x00] * 10),
             MaskWriteRegisterRequest(0x0000, 0x0101, 0x1010),
         ):
-            await pdu.update_datastore(context)
+            await pdu.datastore_update(context, 1)
 
     def test_mask_write_register_request_encode(self):
         """Test basic bit message encoding/decoding."""
@@ -137,7 +137,7 @@ class TestWriteRegisterMessages:
         assert handle.and_mask == 0x00F2
         assert handle.or_mask == 0x0025
 
-    async def test_mask_write_register_request_update_datastore(self):
+    async def test_mask_write_register_request_datastore_update(self):
         """Test write register request valid execution."""
         # The test uses the 4 nibbles of the 16-bit values to test
         # the combinations:
@@ -147,23 +147,23 @@ class TestWriteRegisterMessages:
         #     and_mask=F, or_mask=F
         context = MockLastValuesContext(valid=True, default=0xAA55)
         handle = MaskWriteRegisterRequest(0x0000, 0x0F0F, 0x00FF)
-        result = await handle.update_datastore(context)
+        result = await handle.datastore_update(context, 1)
         assert isinstance(result, MaskWriteRegisterResponse)
         assert context.last_values == [0x0AF5]
 
-    async def test_mask_write_register_request_invalid_update_datastore(self, mock_context):
-        """Test write register request update_datastore with invalid data."""
-        context = mock_context(valid=False, default=0x0000)
+    async def test_mask_write_register_request_invalid_datastore_update(self, mock_server_context):
+        """Test write register request datastore_update with invalid data."""
+        context = mock_server_context(valid=False, default=0x0000)
         handle = MaskWriteRegisterRequest(0x0000, -1, 0x1010)
-        result = await handle.update_datastore(context)
+        result = await handle.datastore_update(context, 1)
         assert result.exception_code == ExcCodes.ILLEGAL_VALUE
 
         handle = MaskWriteRegisterRequest(0x0000, 0x0101, -1)
-        result = await handle.update_datastore(context)
+        result = await handle.datastore_update(context, 1)
         assert result.exception_code == ExcCodes.ILLEGAL_VALUE
 
         handle = MaskWriteRegisterRequest(0x0000, 0x0101, 0x1010)
-        result = await handle.update_datastore(context)
+        result = await handle.datastore_update(context, 1)
 
         # -----------------------------------------------------------------------#
         # Mask Write Register Response
@@ -192,9 +192,9 @@ class TestWriteRegisterMessages:
             MaskWriteRegisterRequest(0x0000, 0x01, 0x1010),
         ]
     )
-    async def test_register_write_exception(self, request_pdu, mock_context):
+    async def test_register_write_exception(self, request_pdu, mock_server_context):
         """Test write single coil."""
-        context = mock_context(True, default=True)
+        context = mock_server_context(True, default=True)
         context.async_setValues = mock.AsyncMock(return_value=1)
-        result = await request_pdu.update_datastore(context)
+        result = await request_pdu.datastore_update(context, 1)
         assert result.exception_code == 1

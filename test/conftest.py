@@ -9,7 +9,7 @@ import pytest
 import pytest_asyncio
 
 from pymodbus.constants import ExcCodes
-from pymodbus.datastore import ModbusBaseDeviceContext
+from pymodbus.datastore import ModbusBaseDeviceContext, ModbusServerContext
 from pymodbus.server import ServerAsyncStop
 from pymodbus.transport import NULLMODEM_HOST, CommParams, CommType
 from pymodbus.transport.transport import NullModem
@@ -228,22 +228,48 @@ def define_mock_context():
 
     return MockContext
 
+@pytest.fixture(name="mock_server_context")
+def define_mock_servercontext():
+    """Define context class."""
+    class MockServerContext(ModbusServerContext):
+        """Mock context."""
 
-class MockLastValuesContext(ModbusBaseDeviceContext):
+        def __init__(self, valid=False, default=True):
+            """Initialize."""
+            super().__init__()
+            self.valid = valid
+            self.default = default
+
+        async def async_getValues(self, device_id, func_code, address, count=0):
+            """Get values."""
+            _ = device_id, func_code, address
+            if count > 0x100:
+                return ExcCodes.ILLEGAL_VALUE
+            return [self.default] * count
+
+        async def async_setValues(self, device_id, func_code, address, values):
+            """Set values."""
+
+    return MockServerContext
+
+class MockLastValuesContext(ModbusServerContext):
     """Mock context."""
 
     def __init__(self, valid=False, default=True):
         """Initialize."""
+        super().__init__()
         self.valid = valid
         self.default = default
         self.last_values = []
 
-    def getValues(self, _fc, _address, count=0):
+    async def async_getValues(self, device_id, func_code, address, count=0):
         """Get values."""
+        _ = device_id, func_code, address
         return [self.default] * count
 
-    def setValues(self, _fc, _address, values):
+    async def async_setValues(self, device_id, func_code, address, values):
         """Set values."""
+        _ = device_id, func_code, address
         self.last_values = values
 
 

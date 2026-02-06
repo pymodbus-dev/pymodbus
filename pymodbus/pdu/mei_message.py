@@ -5,7 +5,7 @@ import struct
 from typing import Any
 
 from ..constants import DeviceInformation, ExcCodes, MoreData
-from ..datastore import ModbusDeviceContext
+from ..datastore import ModbusServerContext
 from .decoders import DecodePDU
 from .device import DeviceInformationFactory, ModbusControlBlock
 from .exceptionresponse import ExceptionResponse
@@ -59,15 +59,16 @@ class ReadDeviceInformationRequest(ModbusPDU):
         """Decode data part of the message."""
         self.sub_function_code, self.read_code, self.object_id = struct.unpack(">BBB", data[:3])
 
-    async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
-        """Run a read exception status request against the store."""
+    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+        """Update diagnostic request on the given device."""
+        _ = context
         if not 0x00 <= self.object_id <= 0xFF:
             return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
         if not 0x00 <= self.read_code <= 0x04:
             return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
 
         information = DeviceInformationFactory.get(_MCB, self.read_code, self.object_id)
-        return ReadDeviceInformationResponse(read_code=self.read_code, information=information, dev_id=self.dev_id, transaction_id=self.transaction_id)
+        return ReadDeviceInformationResponse(read_code=self.read_code, information=information, dev_id=device_id, transaction_id=self.transaction_id)
 
 
 class ReadDeviceInformationResponse(ModbusPDU):

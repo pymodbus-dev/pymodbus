@@ -3,6 +3,7 @@
 
 import pytest
 
+from pymodbus import ModbusDeviceIdentification
 from pymodbus.constants import DataType, RuntimeFlags
 from pymodbus.simulator import SimData, SimDevice
 
@@ -41,7 +42,7 @@ class TestSimDevice:
         {"id": 0, "type_check": True, "simdata": [simdata1]},
         {"id": 0, "simdata": [simdata1], "endian": (False, True)},
         {"id": 0, "simdata": [simdata1], "endian": (True, False)},
-        {"id": 0, "simdata": [simdata1], "identity": "my server"},
+        {"id": 0, "simdata": [simdata1], "identity": ModbusDeviceIdentification()},
     ])
     def test_simdevice_instanciate(self, kwargs):
         """Test that simdata can be objects."""
@@ -65,7 +66,6 @@ class TestSimDevice:
         {"id": 1, "simdata": [simdata1], "word_order_big": "hmm"},
         {"id": 1, "simdata": [simdata1], "byte_order_big": "hmm"},
         {"id": 0, "simdata": [simdata1], "type_check": "hmm"},
-        {"id": 0, "simdata": [simdata1], "identity": None},
         {"id": 0, "simdata": ["not ok"]},
         {"id": 0, "simdata": SimData(1, datatype=DataType.INT16, values=3)},
     ])

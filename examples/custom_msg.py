@@ -89,9 +89,9 @@ class CustomRequest(ModbusPDU):
         """Decode."""
         self.address, self.count = struct.unpack(">HH", data)
 
-    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
-        """Execute."""
-        _ = context
+    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+        """Update diagnostic request on the given device."""
+        _ = context, device_id
         return CustomModbusResponse()
 
 

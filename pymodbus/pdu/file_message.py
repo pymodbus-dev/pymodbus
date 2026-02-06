@@ -4,7 +4,7 @@ from __future__ import annotations
 import struct
 from dataclasses import dataclass
 
-from ..datastore import ModbusDeviceContext
+from ..datastore import ModbusServerContext
 from ..exceptions import ModbusException
 from .decoders import DecodePDU
 from .pdu import ModbusPDU
@@ -74,12 +74,13 @@ class ReadFileRecordRequest(ModbusPDU):
         """
         return 1 + 7 * len(self.records)
 
-    async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
-        """Run a read exception status request against the store."""
+    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+        """Update diagnostic request on the given device."""
+        _ = context
         for record in self.records:
             record.record_data = b'SERVER DUMMY RECORD.'
             record.record_length = len(record.record_data) // 2
-        return ReadFileRecordResponse(records=self.records,dev_id=self.dev_id, transaction_id=self.transaction_id)
+        return ReadFileRecordResponse(records=self.records,dev_id=device_id, transaction_id=self.transaction_id)
 
 
 class ReadFileRecordResponse(ModbusPDU):
@@ -172,9 +173,10 @@ class WriteFileRecordRequest(ModbusPDU):
         """
         return 1 + 7 * len(self.records)
 
-    async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
-        """Run the write file record request against the context."""
-        return WriteFileRecordResponse(records=self.records, dev_id=self.dev_id, transaction_id=self.transaction_id)
+    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+        """Update diagnostic request on the given device."""
+        _ = context
+        return WriteFileRecordResponse(records=self.records, dev_id=device_id, transaction_id=self.transaction_id)
 
 
 class WriteFileRecordResponse(ModbusPDU):
@@ -241,10 +243,11 @@ class ReadFifoQueueRequest(ModbusPDU):
         """Decode the incoming request."""
         self.address = struct.unpack(">H", data[:2])[0]
 
-    async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
-        """Run a read exception status request against the store."""
+    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+        """Update diagnostic request on the given device."""
+        _ = context
         values = [0, 1, 2, 3] # server dummy response (should be in datastore)
-        return ReadFifoQueueResponse(values=values, dev_id=self.dev_id, transaction_id=self.transaction_id)
+        return ReadFifoQueueResponse(values=values, dev_id=device_id, transaction_id=self.transaction_id)
 
 
 class ReadFifoQueueResponse(ModbusPDU):

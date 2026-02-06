@@ -5,7 +5,7 @@ import asyncio
 import struct
 from abc import abstractmethod
 
-from ..datastore import ModbusDeviceContext
+from ..datastore import ModbusServerContext
 from ..exceptions import ModbusIOException, NotImplementedException
 
 
@@ -90,9 +90,9 @@ class ModbusPDU:
     def decode(self, data: bytes) -> None:
         """Decode data part of the message."""
 
-    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
-        """Run request against a datastore."""
-        _ = context
+    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+        """Update diagnostic request on the given device."""
+        _ = context, device_id
         raise NotImplementedException(
             f"update datastore called wrongly {self.__class__.__name__}"
         )

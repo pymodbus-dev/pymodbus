@@ -137,7 +137,7 @@ class TestWriteRegisterMessages:
         assert handle.and_mask == 0x00F2
         assert handle.or_mask == 0x0025
 
-    async def test_mask_write_register_request_datastore_update(self, mock_server_context):
+    async def test_mask_write_register_request_datastore_update(self):
         """Test write register request valid execution."""
         # The test uses the 4 nibbles of the 16-bit values to test
         # the combinations:

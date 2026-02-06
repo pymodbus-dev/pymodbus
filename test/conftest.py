@@ -252,7 +252,7 @@ def define_mock_servercontext():
 
     return MockServerContext
 
-class MockLastValuesContext(ModbusBaseDeviceContext):
+class MockLastValuesContext(ModbusServerContext):
     """Mock context."""
 
     def __init__(self, valid=False, default=True):
@@ -261,12 +261,14 @@ class MockLastValuesContext(ModbusBaseDeviceContext):
         self.default = default
         self.last_values = []
 
-    def getValues(self, _fc, _address, count=0):
+    async def async_getValues(self, device_id, func_code, address, count=0):
         """Get values."""
+        _ = device_id, func_code, address
         return [self.default] * count
 
-    def setValues(self, _fc, _address, values):
+    async def async_setValues(self, device_id, func_code, address, values):
         """Set values."""
+        _ = device_id, func_code, address
         self.last_values = values
 
 

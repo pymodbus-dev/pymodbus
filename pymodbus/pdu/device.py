@@ -137,7 +137,7 @@ class ModbusDeviceIdentification:
         0x06: "",  # UserApplicationName
         0x07: "",  # reserved
         0x08: "",  # reserved
-        # 0x80 -> 0xFF are privatek
+        # 0x80 -> 0xFF are private
     }
 
     __names = [
@@ -155,8 +155,8 @@ class ModbusDeviceIdentification:
 
         (note acceptable range is [0x00-0x06,0x80-0xFF] inclusive)
 
-        :param info: A dictionary of {int:string} of values
-        :param set: A dictionary of {name:string} of values
+        :param info: Device information as {int:string} dictionary
+        :param info_name: Device information as {name:string} dictionary
         """
         if isinstance(info_name, dict):
             for key in info_name:
@@ -288,6 +288,7 @@ class DeviceInformationFactory:  # pylint: disable=too-few-public-methods
         :returns: The requested data (id, length, value)
         """
         return {oid: identity[oid] for oid in object_ids if identity[oid]}
+
 
 # ---------------------------------------------------------------------------#
 #  Counters Handler

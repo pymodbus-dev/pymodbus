@@ -1,10 +1,12 @@
-"""Test framers."""
+"""Test datastore context."""
+import pytest
 
 from pymodbus.datastore import (
     ModbusBaseDeviceContext,
     ModbusDeviceContext,
     ModbusServerContext,
 )
+from pymodbus.exceptions import NoSuchIdException
 
 
 class TestContextDataStore:
@@ -40,3 +42,14 @@ class TestContextDataStore:
         """Test ModbusServerContext."""
         srv = ModbusServerContext()
         assert isinstance(srv.device_ids(), list)
+
+    def test_datastore_get(self):
+        """Test ModbusServerContext."""
+        server = ModbusServerContext(devices={1: {}}, single=False)
+        with pytest.raises(NoSuchIdException):
+            server[5]
+        server = ModbusServerContext(devices={1: {}, 0: {}}, single=False)
+        assert isinstance(server[5], dict)
+        server = ModbusServerContext(devices={1: {}}, single=True)
+        assert isinstance(server[5], dict)
+

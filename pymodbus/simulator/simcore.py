@@ -1,6 +1,6 @@
 """Simulator data model implementation.
 
-**REMARK** This code is experimental and not integrated into production.
+**REMARK** This class is internal to the server/simulator,.
 """
 from __future__ import annotations
 

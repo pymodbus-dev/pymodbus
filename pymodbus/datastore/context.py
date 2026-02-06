@@ -158,6 +158,8 @@ class ModbusServerContext:
         """Return device object."""
         if device_id in self._devices:
             return self._devices[device_id]
+        if 0 in self._devices:
+            return self._devices[0]
         raise NoSuchIdException(
             f"device_id - {device_id} does not exist, or is out of range"
         )

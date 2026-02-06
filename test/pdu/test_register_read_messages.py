@@ -81,12 +81,12 @@ class TestReadRegisterMessages:
         with pytest.raises(ModbusIOException):
             reg.decode(b'\x14\x00\x03\x00\x11')
 
-    async def test_register_read_requests_count_errors(self, modbus_server_context):
+    async def test_register_read_requests_count_errors(self, mock_server_context):
         """This tests that the register request messages.
 
         will break on counts that are out of range
         """
-        context = modbus_server_context()
+        context = mock_server_context()
         requests = [
             ReadHoldingRegistersRequest(address=1, count=0x800),
             ReadInputRegistersRequest(address=1, count=0x800),
@@ -101,12 +101,12 @@ class TestReadRegisterMessages:
             result = await request.datastore_update(context, 0)
             assert result.exception_code == ExcCodes.ILLEGAL_VALUE
 
-    async def test_register_read_requests_verify_errors(self, modbus_server_context):
+    async def test_register_read_requests_verify_errors(self, mock_server_context):
         """This tests that the register request messages.
 
         will break on counts that are out of range
         """
-        context = modbus_server_context()
+        context = mock_server_context()
         requests = [
             ReadHoldingRegistersRequest(address=-1, count=5),
             ReadInputRegistersRequest(address=-1, count=5),
@@ -116,12 +116,12 @@ class TestReadRegisterMessages:
         for request in requests:
             await request.datastore_update(context, 0)
 
-    async def test_register_read_requests_datastore_update(self, modbus_server_context):
+    async def test_register_read_requests_datastore_update(self, mock_server_context):
         """This tests that the register request messages.
 
         will break on counts that are out of range
         """
-        context = modbus_server_context(True)
+        context = mock_server_context(True)
         requests = [
             ReadHoldingRegistersRequest(address=-1, count=5),
             ReadInputRegistersRequest(address=-1, count=5),
@@ -130,18 +130,18 @@ class TestReadRegisterMessages:
             response = await request.datastore_update(context, 1)
             assert request.function_code == response.function_code
 
-    async def test_read_write_multiple_registers_request(self, modbus_server_context):
+    async def test_read_write_multiple_registers_request(self, mock_server_context):
         """Test read/write multiple registers."""
-        context = modbus_server_context(True)
+        context = mock_server_context(True)
         request = ReadWriteMultipleRegistersRequest(
             read_address=1, read_count=10, write_address=1, write_registers=[0x00]
         )
-        response = await request.datastore_update(context(), 0)
+        response = await request.datastore_update(context, 0)
         assert request.function_code == response.function_code
 
-    async def test_read_write_multiple_registers_verify(self, modbus_server_context):
+    async def test_read_write_multiple_registers_verify(self, mock_server_context):
         """Test read/write multiple registers."""
-        context = modbus_server_context()
+        context = mock_server_context()
         request = ReadWriteMultipleRegistersRequest(
             read_address=1, read_count=0x200, write_address=2, write_registers=[0x00]
         )
@@ -155,9 +155,9 @@ class TestReadRegisterMessages:
         await request.datastore_update(context, 0)
         assert response.exception_code == ExcCodes.ILLEGAL_VALUE
 
-    async def test_register_datastore_exceptions(self, modbus_server_context):
+    async def test_register_datastore_exceptions(self, mock_server_context):
         """Test exception response from datastore."""
-        context = modbus_server_context()
+        context = mock_server_context()
         context.async_getValues = mock.AsyncMock(return_value=ExcCodes.ILLEGAL_VALUE)
         for pdu in (
             ReadHoldingRegistersRequest(address=-1, count=5),
@@ -180,9 +180,9 @@ class TestReadRegisterMessages:
             ),
         ]
     )
-    async def test_register_read_exception(self, request_pdu, modbus_server_context):
+    async def test_register_read_exception(self, request_pdu, mock_server_context):
         """Test write single coil."""
-        context = modbus_server_context(True, default=True)
+        context = mock_server_context(True, default=True)
         context.async_setValues = mock.AsyncMock(return_value=1)
         result = await request_pdu.datastore_update(context, 1)
         assert result.exception_code == 1

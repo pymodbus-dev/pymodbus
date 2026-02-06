@@ -257,6 +257,7 @@ class MockLastValuesContext(ModbusServerContext):
 
     def __init__(self, valid=False, default=True):
         """Initialize."""
+        super().__init__()
         self.valid = valid
         self.default = default
         self.last_values = []

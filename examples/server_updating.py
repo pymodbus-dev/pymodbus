@@ -69,9 +69,9 @@ async def updating_task(context):
     count = 6
 
     # set values to zero
-    values = context[device_id].getValues(func_code, address, count=count)
+    values = await context.async_getValues(device_id, func_code, address, count=count)
     values = [0 for v in values]
-    context[device_id].setValues(func_code, address, values)
+    await context.async_setValues(device_id, func_code, address, values)
 
     txt = (
         f"updating_task: started: initialised values: {values!s} at address {address!s}"
@@ -83,9 +83,9 @@ async def updating_task(context):
     while True:
         await asyncio.sleep(2)
 
-        values = context[device_id].getValues(func_code, address, count=count)
+        values = await context.async_getValues(device_id, func_code, address, count=count)
         values = [v + 1 for v in values]
-        context[device_id].setValues(func_code, address, values)
+        await context.async_setValues(device_id, func_code, address, values)
 
         txt = f"updating_task: incremented values: {values!s} at address {address!s}"
         print(txt)

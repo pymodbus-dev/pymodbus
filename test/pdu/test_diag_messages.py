@@ -164,11 +164,11 @@ class TestDataStore:
         for msg, enc, _ in self.requests:
             assert msg().encode() == enc
 
-    async def test_diagnostic_update_datastore(self):
+    async def test_diagnostic_datastore_update(self):
         """Testing diagnostic message execution."""
-        for message, encoded, update_datastored in self.requests:
-            encoded = (await message().update_datastore(None)).encode()
-            assert encoded == update_datastored
+        for message, encoded, datastore_updated in self.requests:
+            encoded = (await message().datastore_update(None, 1)).encode()
+            assert encoded == datastore_updated
 
     def test_return_query_data_request(self):
         """Testing diagnostic message execution."""
@@ -196,13 +196,13 @@ class TestDataStore:
         response = RestartCommunicationsOptionResponse(message=ModbusStatus.OFF)
         assert response.encode() == b"\x00\x01\x00\x00"
 
-    async def test_get_clear_modbus_plus_request_update_datastore(self):
+    async def test_get_clear_modbus_plus_request_datastore_update(self):
         """Testing diagnostic message execution."""
         request = GetClearModbusPlusRequest(message=ModbusPlusOperation.CLEAR_STATISTICS)
-        response = await request.update_datastore(None)
+        response = await request.datastore_update(None, 0)
         assert response.message == ModbusPlusOperation.CLEAR_STATISTICS
 
         request = GetClearModbusPlusRequest(message=ModbusPlusOperation.GET_STATISTICS)
-        response = await request.update_datastore(None)
+        response = await request.datastore_update(None, 0)
         resp = [ModbusPlusOperation.GET_STATISTICS]
         assert response.message == resp + [0x00] * 55

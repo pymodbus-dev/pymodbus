@@ -1,5 +1,5 @@
 """Test SimDevice."""
-
+from typing import cast
 
 import pytest
 
@@ -38,6 +38,7 @@ class TestSimDevice:
     @pytest.mark.parametrize("kwargs", [
         {"id": 0, "simdata": [SimData(2, datatype=DataType.STRING, values="test")], "string_encoding": "utf-8"},
         {"id": 0, "simdata": ([simdata3], [simdata3], [simdata1], [simdata3])},
+        {"id": 0, "simdata": simdata2},
         {"id": 0, "simdata": [simdata2, simdata1]},
         {"id": 0, "type_check": True, "simdata": [simdata1]},
         {"id": 0, "simdata": [simdata1], "endian": (False, True)},
@@ -67,7 +68,6 @@ class TestSimDevice:
         {"id": 1, "simdata": [simdata1], "byte_order_big": "hmm"},
         {"id": 0, "simdata": [simdata1], "type_check": "hmm"},
         {"id": 0, "simdata": ["not ok"]},
-        {"id": 0, "simdata": SimData(1, datatype=DataType.INT16, values=3)},
     ])
     def test_simdevice_not_ok(self, kwargs):
         """Test that simdata can be objects."""
@@ -79,7 +79,7 @@ class TestSimDevice:
         ([SimData(0, values=[0xffff], datatype=DataType.BITS)], 0),
         ([SimData(0, values=[True], datatype=DataType.BITS)], 0),
         ([SimData(0, values="hello", datatype=DataType.STRING)], 0),
-        (SimData(0), 2),
+        (SimData(0), 0),
         ("no valid", 2),
         (["no valid"], 2),
     ])
@@ -193,14 +193,27 @@ class TestSimDevice:
                                  RuntimeFlags.REG_SIZE_4 | RuntimeFlags.REG_NEXT,
                                  RuntimeFlags.REG_SIZE_4 | RuntimeFlags.REG_NEXT,
                                  RuntimeFlags.REG_SIZE_4 | RuntimeFlags.REG_NEXT])),
-        (([SimData(1, values=123, datatype=DataType.BITS)], [SimData(1, values=123, datatype=DataType.BITS)],
-           [SimData(1, values=123, datatype=DataType.INT16)], [SimData(1, values=123, datatype=DataType.INT16)]),
-         (((1, [123], [RuntimeFlags.REG_SIZE_1]), (1, [123], [RuntimeFlags.REG_SIZE_1]),
-           (1, [123], [RuntimeFlags.REG_SIZE_1]), (1, [123], [RuntimeFlags.REG_SIZE_1])))),
         ])
     def test_simdevice_build(self, block, result):
         """Test build_device() ok."""
         sd = SimDevice(id=1, simdata=block)
         lists = sd.build_device()
-        assert lists[0] == result[0]
-        assert lists[1] == result[1]
+        assert cast(tuple, lists)[0] == result[0]
+        assert cast(tuple, lists)[1] == result[1]
+
+    def test_simdevice_build_blocks(self):
+        """Test build_device() ok."""
+        block = (
+            [SimData(1, values=123, datatype=DataType.BITS)],
+            [SimData(1, values=123, datatype=DataType.BITS)],
+            [SimData(1, values=123, datatype=DataType.INT16)],
+            [SimData(1, values=123, datatype=DataType.INT16)])
+        result = {
+            "c": (1, [123], [RuntimeFlags.REG_SIZE_1]),
+            "d": (1, [123], [RuntimeFlags.REG_SIZE_1]),
+            "h": (1, [123], [RuntimeFlags.REG_SIZE_1]),
+            "i": (1, [123], [RuntimeFlags.REG_SIZE_1])
+        }
+        sd = SimDevice(id=1, simdata=block)
+        lists = sd.build_device()
+        assert lists == result

@@ -84,7 +84,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         """
         if not self.ctx.transport:
             raise ConnectionException(f"Not connected[{self!s}]")
-        return self.ctx.execute(no_response_expected, request)
+        return self.ctx.execute(no_response_expected, request)  # type: ignore[unused-coroutine]
 
     def set_max_no_responses(self, max_count: int) -> None:
         """Override default max no request responses.

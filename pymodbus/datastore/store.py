@@ -50,7 +50,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar
 
-from pymodbus.constants import ExcCodes
+from ..constants import ExcCodes
 
 
 # ---------------------------------------------------------------------------#

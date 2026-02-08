@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from pymodbus.constants import ExcCodes
-from pymodbus.exceptions import NoSuchIdException
-from pymodbus.logging import Log
-
+from ..constants import ExcCodes
+from ..exceptions import NoSuchIdException
+from ..logging import Log
 from .sequential import ModbusSequentialDataBlock
 from .store import BaseModbusDataBlock
 
@@ -134,16 +133,6 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
         Log.debug("setValues[{}] address-{}: count-{}", func_code, address, len(values))
         return self.store[self.decode(func_code)].setValues(address, values)
 
-    def register(self, function_code, func_code, datablock=None):
-        """Register a datablock with the device context.
-
-        :param function_code: function code (int)
-        :param func_code: string representation of function code (e.g "cf" )
-        :param datablock: datablock to associate with this function code
-        """
-        self.store[func_code] = datablock or ModbusSequentialDataBlock.create()
-        self._fx_mapper[function_code] = func_code
-
 
 class ModbusServerContext:
     """This represents a master collection of device contexts.
@@ -161,51 +150,42 @@ class ModbusServerContext:
         :param single: Set to true to treat this as a single context
         """
         self.single = single
-        self._devices = devices or {}
+        self._devices: dict = devices or {}
         if self.single:
             self._devices = {0: self._devices}
 
-    def __iter__(self):
-        """Iterate over the current collection of device contexts.
+    def __get_device(self, device_id: int) -> ModbusDeviceContext:
+        """Return device object."""
+        if device_id in self._devices:
+            return self._devices[device_id]
+        if 0 in self._devices:
+            return self._devices[0]
+        raise NoSuchIdException(
+            f"device_id - {device_id} does not exist, or is out of range"
+        )
 
-        :returns: An iterator over the device contexts
+    async def async_getValues(self, device_id: int, func_code: int, address: int, count: int = 1) -> list[int] | list[bool] | ExcCodes:
+        """Get `count` values from datastore.
+
+        :param device_id: the device being addressed
+        :param func_code: The function we are working with
+        :param address: The starting address
+        :param count: The number of values to retrieve
+        :returns: The requested values from a:a+c
         """
-        return iter(self._devices.items())
+        dev = self.__get_device(device_id)
+        return await dev.async_getValues(func_code, address, count)
 
-    def __contains__(self, device_id):
-        """Check if the given device_id is in this list.
+    async def async_setValues(self, device_id: int, func_code: int, address: int, values: list[int] | list[bool] ) -> None | ExcCodes:
+        """Set the datastore with the supplied values.
 
-        :param device_id: device_id The device_id to check for existence
-        :returns: True if the device_id exists, False otherwise
+        :param device_id: the device being addressed
+        :param func_code: The function we are working with
+        :param address: The starting address
+        :param values: The new values to be set
         """
-        if self.single and self._devices:
-            return True
-        return device_id in self._devices
-
-    def __setitem__(self, device_id, context):
-        """Use to set a new device_id context.
-
-        :param device_id: The device_id context to set
-        :param context: The new context to set for this device_id
-        :raises NoSuchIdException:
-        """
-        if self.single:
-            device_id = 0
-        if 0xF7 >= device_id >= 0x00:
-            self._devices[device_id] = context
-        else:
-            raise NoSuchIdException(f"device_id index :{device_id} out of range")
-
-    def __delitem__(self, device_id):
-        """Use to access the device_id context.
-
-        :param device_id: The device context to remove
-        :raises NoSuchIdException:
-        """
-        if not self.single and (0xF7 >= device_id >= 0x00):
-            del self._devices[device_id]
-        else:
-            raise NoSuchIdException(f"device_id index: {device_id} out of range")
+        dev = self.__get_device(device_id)
+        return await dev.async_setValues(func_code, address, values)
 
     def __getitem__(self, device_id):
         """Use to get access to a device_id context.
@@ -216,12 +196,8 @@ class ModbusServerContext:
         """
         if self.single:
             device_id = 0
-        if device_id in self._devices:
-            return self._devices.get(device_id)
-        raise NoSuchIdException(
-            f"device_id - {device_id} does not exist, or is out of range"
-        )
+        return self.__get_device(device_id)
 
     def device_ids(self):
-        """Define device_ids."""
+        """Get the configured device ids."""
         return list(self._devices.keys())

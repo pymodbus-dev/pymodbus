@@ -5,11 +5,11 @@ import asyncio
 from collections.abc import Callable
 from threading import RLock
 
-from pymodbus.exceptions import ConnectionException, ModbusIOException
-from pymodbus.framer import FramerAscii, FramerBase, FramerRTU
-from pymodbus.logging import Log
-from pymodbus.pdu import ModbusPDU
-from pymodbus.transport import CommParams, ModbusProtocol
+from ..exceptions import ConnectionException, ModbusIOException
+from ..framer import FramerAscii, FramerBase, FramerRTU
+from ..logging import Log
+from ..pdu import ModbusPDU
+from ..transport import CommParams, ModbusProtocol
 
 
 class TransactionManager(ModbusProtocol):
@@ -176,11 +176,11 @@ class TransactionManager(ModbusProtocol):
                         self.response_future, timeout=self.comm_params.timeout_connect
                     )
                     self.count_until_disconnect= self.max_until_disconnect
-                    if response.dev_id != request.dev_id:
+                    if request.dev_id and response.dev_id != request.dev_id:
                         raise ModbusIOException(
                             f"ERROR: request uses device id={request.dev_id} but received {response.dev_id}."
                         )
-                    if response.transaction_id != request.transaction_id:
+                    if response.transaction_id and response.transaction_id != request.transaction_id:
                         raise ModbusIOException(
                             f"ERROR: request uses transaction id={request.transaction_id} but received {response.transaction_id}."
                        )
@@ -189,7 +189,7 @@ class TransactionManager(ModbusProtocol):
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
                 except asyncio.exceptions.CancelledError as exc:
-                    raise ModbusIOException("Request cancelled outside pymodbus.") from exc
+                    raise ModbusIOException("Request cancelled outside library.") from exc
             if self.count_until_disconnect < 0:
                 self.connection_lost(asyncio.TimeoutError("Server not responding"))
                 raise ModbusIOException(

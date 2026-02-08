@@ -120,6 +120,16 @@ class MoreData(enum.IntEnum):
     NOTHING = 0x00
     KEEP_READING = 0xFF
 
+class RuntimeFlags(enum.IntEnum):
+   """Represents flags used by server runtime."""
+
+   REG_SIZE_1 = 1       # datatypes with 1 register e.g. INT16, STRING
+   REG_SIZE_2 = 2       # datatypes with 2 registers e.g. INT32
+   REG_SIZE_4 = 4       # datatypes with 4 registers e.g. INT64
+   REG_SIZES  = 2**3 -1 # Isolate number of registers
+   REG_NEXT   = 2**3    # No access with typecheck
+   READONLY   = 2**4    # only read is allowed
+   INVALID    = 2**5    # neither read nor write is allowed
 
 class DataType(enum.IntEnum):
    """Register types, used to define of a group of registers.
@@ -162,16 +172,20 @@ class DataType(enum.IntEnum):
    #: Registers == 2 bytes (identical to UINT16)
    REGISTERS = enum.auto()
 
-DATATYPE_STRUCT: dict[DataType, tuple[type | tuple[type, type], int]] = {  # pylint: disable=consider-using-namedtuple-or-dataclass
-   DataType.INT16: (int, 1),
-   DataType.UINT16: (int, 1),
-   DataType.INT32: (int, 2),
-   DataType.UINT32: (int, 2),
-   DataType.INT64: (int, 4),
-   DataType.UINT64: (int, 4),
-   DataType.FLOAT32: (float, 2),
-   DataType.FLOAT64: (float, 4),
-   DataType.STRING: (str, -1),
-   DataType.BITS: ((list, int), -2),
-   DataType.REGISTERS: (int, 1),
+   #: 1 register
+   INVALID = enum.auto()
+
+DATATYPE_STRUCT: dict[DataType, tuple[type, str, int]] = {  # pylint: disable=consider-using-namedtuple-or-dataclass
+   DataType.REGISTERS: (int, "h", 1),
+   DataType.INT16: (int, "h", 1),
+   DataType.UINT16: (int, "H", 1),
+   DataType.INT32: (int, "i", 2),
+   DataType.UINT32: (int, "I", 2),
+   DataType.INT64: (int, "q", 4),
+   DataType.UINT64: (int, "Q", 4),
+   DataType.FLOAT32: (float, "f", 2),
+   DataType.FLOAT64: (float, "d", 4),
+   DataType.STRING: (str, "s", 0),
+   DataType.BITS: (bool, "bits", 0),
+   DataType.INVALID: (int, "h", 1)
 }

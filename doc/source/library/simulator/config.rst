@@ -121,8 +121,8 @@ Server configuration examples
                 "comm": "tls",
                 "host": "0.0.0.0",
                 "port": 5020,
-                "certfile": "certificates/pymodbus.crt",
-                "keyfile": "certificates/pymodbus.key",
+                "certfile": "certificates/pymodbus_tls.crt",
+                "keyfile": "certificates/pymodbus_tls.key",
                 "ignore_missing_devices": false,
                 "framer": "tls",
                 "identity": {

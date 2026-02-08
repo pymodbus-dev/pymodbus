@@ -5,13 +5,14 @@ import asyncio
 from collections.abc import Callable
 from contextlib import suppress
 
-from pymodbus.datastore import ModbusServerContext
-from pymodbus.framer import FRAMER_NAME_TO_CLASS, FramerType
-from pymodbus.logging import Log
-from pymodbus.pdu import DecodePDU, ModbusPDU
-from pymodbus.pdu.device import ModbusControlBlock, ModbusDeviceIdentification
-from pymodbus.transport import CommParams, ModbusProtocol
-
+from ..datastore import ModbusServerContext
+from ..framer import FRAMER_NAME_TO_CLASS, FramerType
+from ..logging import Log
+from ..pdu import DecodePDU, ModbusPDU
+from ..pdu.device import ModbusControlBlock, ModbusDeviceIdentification
+from ..simulator import SimDevice
+from ..simulator.simcore import SimCore
+from ..transport import CommParams, ModbusProtocol
 from .requesthandler import ServerRequestHandler
 
 
@@ -23,7 +24,7 @@ class ModbusBaseServer(ModbusProtocol):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         params: CommParams,
-        context: ModbusServerContext | None,
+        context: ModbusServerContext | SimDevice | list[SimDevice],
         ignore_missing_devices: bool,
         broadcast_enable: bool,
         identity: ModbusDeviceIdentification | None,
@@ -43,14 +44,18 @@ class ModbusBaseServer(ModbusProtocol):
         if custom_pdu:
             for func in custom_pdu:
                 self.decoder.register(func)
-        self.context = context or ModbusServerContext()
+        self.context: ModbusServerContext | SimCore
+        if isinstance(context, ModbusServerContext):
+            self.context = context
+        else:
+            self.context = SimCore(context)
         self.control = ModbusControlBlock()
         self.ignore_missing_devices = ignore_missing_devices
         self.broadcast_enable = broadcast_enable
         self.trace_packet = trace_packet
         self.trace_pdu = trace_pdu
         self.trace_connect = trace_connect
-        self.handle_local_echo = False
+        self.allow_multiple_devices = False
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 

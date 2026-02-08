@@ -4,9 +4,8 @@ from __future__ import annotations
 import struct
 from dataclasses import dataclass
 
-from pymodbus.datastore import ModbusDeviceContext
-from pymodbus.exceptions import ModbusException
-
+from ..datastore import ModbusServerContext
+from ..exceptions import ModbusException
 from .decoders import DecodePDU
 from .pdu import ModbusPDU
 
@@ -75,12 +74,13 @@ class ReadFileRecordRequest(ModbusPDU):
         """
         return 1 + 7 * len(self.records)
 
-    async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
-        """Run a read exception status request against the store."""
+    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+        """Update diagnostic request on the given device."""
+        _ = context
         for record in self.records:
             record.record_data = b'SERVER DUMMY RECORD.'
             record.record_length = len(record.record_data) // 2
-        return ReadFileRecordResponse(records=self.records,dev_id=self.dev_id, transaction_id=self.transaction_id)
+        return ReadFileRecordResponse(records=self.records,dev_id=device_id, transaction_id=self.transaction_id)
 
 
 class ReadFileRecordResponse(ModbusPDU):
@@ -105,7 +105,8 @@ class ReadFileRecordResponse(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode the response."""
-        count, self.records = 1, []
+        count = 1
+        self.records.clear()
         byte_count = int(data[0])
         while count < byte_count:
             calc_length, _ = struct.unpack(
@@ -151,7 +152,8 @@ class WriteFileRecordRequest(ModbusPDU):
     def decode(self, data: bytes) -> None:
         """Decode the incoming request."""
         byte_count = int(data[0])
-        count, self.records = 1, []
+        count = 1
+        self.records.clear()
         while count < byte_count:
             decoded = struct.unpack(">BHHH", data[count : count + 7])
             calc_length = decoded[3] * 2
@@ -171,9 +173,10 @@ class WriteFileRecordRequest(ModbusPDU):
         """
         return 1 + 7 * len(self.records)
 
-    async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
-        """Run the write file record request against the context."""
-        return WriteFileRecordResponse(records=self.records, dev_id=self.dev_id, transaction_id=self.transaction_id)
+    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+        """Update diagnostic request on the given device."""
+        _ = context
+        return WriteFileRecordResponse(records=self.records, dev_id=device_id, transaction_id=self.transaction_id)
 
 
 class WriteFileRecordResponse(ModbusPDU):
@@ -204,7 +207,8 @@ class WriteFileRecordResponse(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode the incoming request."""
-        count, self.records = 1, []
+        count = 1
+        self.records.clear()
         byte_count = int(data[0])
         while count < byte_count:
             decoded = struct.unpack(">BHHH", data[count : count + 7])
@@ -239,10 +243,11 @@ class ReadFifoQueueRequest(ModbusPDU):
         """Decode the incoming request."""
         self.address = struct.unpack(">H", data[:2])[0]
 
-    async def update_datastore(self, _context: ModbusDeviceContext) -> ModbusPDU:
-        """Run a read exception status request against the store."""
+    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+        """Update diagnostic request on the given device."""
+        _ = context
         values = [0, 1, 2, 3] # server dummy response (should be in datastore)
-        return ReadFifoQueueResponse(values=values, dev_id=self.dev_id, transaction_id=self.transaction_id)
+        return ReadFifoQueueResponse(values=values, dev_id=device_id, transaction_id=self.transaction_id)
 
 
 class ReadFifoQueueResponse(ModbusPDU):
@@ -255,7 +260,7 @@ class ReadFifoQueueResponse(ModbusPDU):
         """Calculate the size of the message."""
         hi_byte = int(data[2])
         lo_byte = int(data[3])
-        return (hi_byte << 16) + lo_byte + 6
+        return ((hi_byte << 16) + lo_byte) * 2 + 6
 
     def __init__(self, values: list[int] | None = None, dev_id: int = 1, transaction_id:int  = 0) -> None:
         """Initialize a new instance."""
@@ -264,8 +269,8 @@ class ReadFifoQueueResponse(ModbusPDU):
 
     def encode(self) -> bytes:
         """Encode the response."""
-        length = len(self.values) * 2
-        packet = struct.pack(">HH", 2 + length, length)
+        length = len(self.values)
+        packet = struct.pack(">HH", 2 + length * 2, length)
         for value in self.values:
             packet += struct.pack(">H", value)
         return packet
@@ -274,7 +279,7 @@ class ReadFifoQueueResponse(ModbusPDU):
         """Decode a the response."""
         self.values = []
         _, count = struct.unpack(">HH", data[0:4])
-        for index in range(0, count - 4):
+        for index in range(0, count):
             idx = 4 + index * 2
             self.values.append(struct.unpack(">H", data[idx : idx + 2])[0])
 

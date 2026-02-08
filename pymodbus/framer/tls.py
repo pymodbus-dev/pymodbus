@@ -1,7 +1,7 @@
 """Modbus TLS frame implementation."""
 from __future__ import annotations
 
-from pymodbus.framer.base import FramerBase
+from .base import FramerBase
 
 
 class FramerTLS(FramerBase):

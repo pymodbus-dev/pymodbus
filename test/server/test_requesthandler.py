@@ -9,8 +9,9 @@ from pymodbus.datastore import (
     ModbusServerContext,
 )
 from pymodbus.exceptions import ModbusIOException, NoSuchIdException
+from pymodbus.framer import FramerType
 from pymodbus.pdu import ExceptionResponse
-from pymodbus.server import ModbusBaseServer
+from pymodbus.server import ModbusBaseServer, ModbusSerialServer
 from pymodbus.transport import CommParams, CommType
 
 
@@ -33,13 +34,13 @@ class TestRequesthandler:
                 reconnect_delay=0.0,
                 reconnect_delay_max=0.0,
                 timeout_connect=0.0,
-                source_address=(0, 0),
+                source_address=("0", 0),
             ),
             ModbusServerContext(devices=store, single=True),
             False,
             False,
             None,
-            "socket",
+            FramerType.SOCKET,
             None,
             None,
             None,
@@ -65,11 +66,11 @@ class TestRequesthandler:
         await requesthandler.handle_request()
         requesthandler.last_pdu = ExceptionResponse(17)
         await requesthandler.handle_request()
-        requesthandler.last_pdu.update_datastore = mock.AsyncMock()
+        requesthandler.last_pdu.datastore_update = mock.AsyncMock()
         requesthandler.server.broadcast_enable = True
         requesthandler.last_pdu.dev_id = 0
         await requesthandler.handle_request()
-        requesthandler.last_pdu.update_datastore.side_effect = NoSuchIdException
+        requesthandler.last_pdu.datastore_update.side_effect = NoSuchIdException
         await requesthandler.handle_request()
         requesthandler.server.ignore_missing_devices = True
         await requesthandler.handle_request()
@@ -78,3 +79,22 @@ class TestRequesthandler:
         """Test __init__."""
         requesthandler.server_send(None, None)
         requesthandler.server_send(ExceptionResponse(17), None)
+
+
+    async def test_serial_server_allow_multiple(self):
+        """Test __init__."""
+        store = ModbusDeviceContext(
+            di=ModbusSequentialDataBlock(0, [17] * 100),
+            co=ModbusSequentialDataBlock(0, [17] * 100),
+            hr=ModbusSequentialDataBlock(0, [17] * 100),
+            ir=ModbusSequentialDataBlock(0, [17] * 100),
+        )
+        server = ModbusSerialServer(
+            ModbusServerContext(devices=store, single=True),
+            framer=FramerType.RTU,
+            baudrate=19200,
+            port="/dev/tty01",
+            allow_multiple_devices=True,
+        )
+        server.callback_new_connection()
+

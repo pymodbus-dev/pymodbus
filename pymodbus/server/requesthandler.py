@@ -4,12 +4,12 @@ from __future__ import annotations
 import asyncio
 import traceback
 
-from pymodbus.constants import ExcCodes
-from pymodbus.exceptions import ModbusIOException, NoSuchIdException
-from pymodbus.logging import Log
-from pymodbus.pdu import ExceptionResponse
-from pymodbus.transaction import TransactionManager
-from pymodbus.transport import CommParams
+from ..constants import ExcCodes
+from ..exceptions import ModbusIOException, NoSuchIdException
+from ..logging import Log
+from ..pdu import ExceptionResponse
+from ..transaction import TransactionManager
+from ..transport import CommParams
 
 
 class ServerRequestHandler(TransactionManager):
@@ -28,11 +28,13 @@ class ServerRequestHandler(TransactionManager):
             handle_local_echo=owner.comm_params.handle_local_echo,
         )
         self.server = owner
-        self.framer = self.server.framer(self.server.decoder)
         self.running = False
+        framer = owner.framer(owner.decoder)
+        if owner.allow_multiple_devices:
+            framer.setMultidrop(owner.context.device_ids())
         super().__init__(
             params,
-            self.framer,
+            framer,
             0,
             True,
             trace_packet,
@@ -83,11 +85,9 @@ class ServerRequestHandler(TransactionManager):
                 # if broadcasting then execute on all device contexts,
                 # note response will be ignored
                 for dev_id in self.server.context.device_ids():
-                    await self.last_pdu.update_datastore(self.server.context[dev_id])
+                    await self.last_pdu.datastore_update(self.server.context, dev_id)
                 return
-
-            context = self.server.context[self.last_pdu.dev_id]
-            response = await self.last_pdu.update_datastore(context)
+            response = await self.last_pdu.datastore_update(self.server.context, self.last_pdu.dev_id)
 
         except NoSuchIdException:
             if self.server.ignore_missing_devices:

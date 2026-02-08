@@ -8,8 +8,8 @@ from __future__ import annotations
 
 from binascii import a2b_hex, b2a_hex
 
-from pymodbus.framer.base import FramerBase
-from pymodbus.logging import Log
+from ..logging import Log
+from .base import FramerBase
 
 
 class FramerAscii(FramerBase):

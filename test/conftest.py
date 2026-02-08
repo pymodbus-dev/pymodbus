@@ -9,7 +9,7 @@ import pytest
 import pytest_asyncio
 
 from pymodbus.constants import ExcCodes
-from pymodbus.datastore import ModbusBaseDeviceContext
+from pymodbus.datastore import ModbusServerContext
 from pymodbus.server import ServerAsyncStop
 from pymodbus.transport import NULLMODEM_HOST, CommParams, CommType
 from pymodbus.transport.transport import NullModem
@@ -205,45 +205,48 @@ async def _check_system_health():
     assert all_clean, error_text
     assert not NullModem.is_dirty()
 
-
-@pytest.fixture(name="mock_context")
-def define_mock_context():
+@pytest.fixture(name="mock_server_context")
+def define_mock_servercontext():
     """Define context class."""
-    class MockContext(ModbusBaseDeviceContext):
+    class MockServerContext(ModbusServerContext):
         """Mock context."""
 
         def __init__(self, valid=False, default=True):
             """Initialize."""
+            super().__init__()
             self.valid = valid
             self.default = default
 
-        def getValues(self, _fc, _address, count=0):
+        async def async_getValues(self, device_id, func_code, address, count=0):
             """Get values."""
+            _ = device_id, func_code, address
             if count > 0x100:
                 return ExcCodes.ILLEGAL_VALUE
             return [self.default] * count
 
-        def setValues(self, _fc, _address, _values):
+        async def async_setValues(self, device_id, func_code, address, values):
             """Set values."""
 
-    return MockContext
+    return MockServerContext
 
-
-class MockLastValuesContext(ModbusBaseDeviceContext):
+class MockLastValuesContext(ModbusServerContext):
     """Mock context."""
 
     def __init__(self, valid=False, default=True):
         """Initialize."""
+        super().__init__()
         self.valid = valid
         self.default = default
         self.last_values = []
 
-    def getValues(self, _fc, _address, count=0):
+    async def async_getValues(self, device_id, func_code, address, count=0):
         """Get values."""
+        _ = device_id, func_code, address
         return [self.default] * count
 
-    def setValues(self, _fc, _address, values):
+    async def async_setValues(self, device_id, func_code, address, values):
         """Set values."""
+        _ = device_id, func_code, address
         self.last_values = values
 
 

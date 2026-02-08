@@ -6,15 +6,15 @@ import struct
 from abc import abstractmethod
 from typing import Generic, Literal, TypeVar, cast
 
-import pymodbus.pdu.bit_message as pdu_bit
-import pymodbus.pdu.diag_message as pdu_diag
-import pymodbus.pdu.file_message as pdu_file_msg
-import pymodbus.pdu.mei_message as pdu_mei
-import pymodbus.pdu.other_message as pdu_other_msg
-import pymodbus.pdu.register_message as pdu_reg
-from pymodbus.constants import ModbusStatus
-from pymodbus.exceptions import ModbusException
-from pymodbus.pdu.pdu import ModbusPDU, pack_bitstring, unpack_bitstring
+from ..constants import ModbusStatus
+from ..exceptions import ModbusException
+from ..pdu import bit_message as pdu_bit
+from ..pdu import diag_message as pdu_diag
+from ..pdu import file_message as pdu_file_msg
+from ..pdu import mei_message as pdu_mei
+from ..pdu import other_message as pdu_other_msg
+from ..pdu import register_message as pdu_reg
+from ..pdu.pdu import ModbusPDU, pack_bitstring, unpack_bitstring
 
 
 T = TypeVar("T", covariant=False)
@@ -210,8 +210,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         all of its communications event counters are cleared. If the port is
         currently in Listen Only Mode, no response is returned. This function is
         the only one that brings the port out of Listen Only Mode. If the port is
-        not currently in Listen Only Mode, a normal response is returned. This
-        occurs before the restart is update_datastored.
+        not currently in Listen Only Mode, a normal response is returned.
         """
         msg = ModbusStatus.ON if toggle else ModbusStatus.OFF
         return self.execute(no_response_expected, pdu_diag.RestartCommunicationsOptionRequest(message=msg, dev_id=device_id))
@@ -760,9 +759,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         if data_type == cls.DATATYPE.BITS:
             if not isinstance(value, list):
                 raise TypeError(f"Value should be list of bool but is {type(value)}.")
+            value = cast(list[bool], value)
             if (missing := len(value) % 16):
                 value = value + [False] * (16 - missing)
-            byte_list = pack_bitstring(cast(list[bool], value))
+            byte_list = pack_bitstring(value)
         elif data_type == cls.DATATYPE.STRING:
             if not isinstance(value, str):
                 raise TypeError(f"Value should be string but is {type(value)}.")

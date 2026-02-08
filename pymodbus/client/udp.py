@@ -2,15 +2,14 @@
 from __future__ import annotations
 
 import socket
-import time
 from collections.abc import Callable
 
-from pymodbus.client.base import ModbusBaseClient, ModbusBaseSyncClient
-from pymodbus.exceptions import ConnectionException
-from pymodbus.framer import FramerType
-from pymodbus.logging import Log
-from pymodbus.pdu import ModbusPDU
-from pymodbus.transport import CommParams, CommType
+from ..exceptions import ConnectionException
+from ..framer import FramerType
+from ..logging import Log
+from ..pdu import ModbusPDU
+from ..transport import CommParams, CommType
+from .base import ModbusBaseClient, ModbusBaseSyncClient
 
 
 DGRAM_TYPE = socket.SOCK_DGRAM
@@ -190,8 +189,10 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         if self.socket:
             return True
         try:
-            self.socket = socket.socket(-1, socket.SOCK_DGRAM)
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.socket.settimeout(self.comm_params.timeout_connect)
+            if self.comm_params.source_address:
+                self.socket.bind(self.comm_params.source_address)
         except OSError as exc:
             Log.error("Unable to create udp socket {}", exc)
             self.close()
@@ -228,7 +229,6 @@ class ModbusUdpClient(ModbusBaseSyncClient):
         if size is None:
             size = 4096
         data = self.socket.recvfrom(size)[0]
-        self.last_frame_end = round(time.time(), 6)
         return data
 
     def is_socket_open(self):

@@ -43,7 +43,7 @@ class TestExtras:
 
     def test_tcp_framer_transaction_half2(self):
         """Test a half completed tcp frame transaction."""
-        msg1 = b"\x00\x01\x12\x34\x00\x06\xff"
+        msg1 = b"\x00\x01\x00\x00\x00\x06\xff"
         msg2 = b"\x02\x01\x02\x00\x08"
         used_len, pdu = self._tcp.handleFrame(msg1, 0, 0)
         assert not pdu
@@ -55,7 +55,7 @@ class TestExtras:
 
     def test_tcp_framer_transaction_half3(self):
         """Test a half completed tcp frame transaction."""
-        msg1 = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00"
+        msg1 = b"\x00\x01\x00\x00\x00\x06\xff\x02\x01\x02\x00"
         msg2 = b"\x08"
         used_len, pdu = self._tcp.handleFrame(msg1, 0, 0)
         assert not pdu
@@ -68,7 +68,7 @@ class TestExtras:
     def test_tcp_framer_transaction_short(self):
         """Test that we can get back on track after an invalid message."""
         msg1 = b''
-        msg2 = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
+        msg2 = b"\x00\x01\x00\x00\x00\x06\xff\x02\x01\x02\x00\x08"
         used_len, pdu = self._tcp.handleFrame(msg1, 0, 0)
         assert not pdu
         assert not used_len
@@ -79,21 +79,21 @@ class TestExtras:
 
     def test_tcp_framer_transaction_wrong_id(self):
         """Test a half completed tcp frame transaction."""
-        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
+        msg = b"\x00\x01\x00\x00\x00\x06\xff\x02\x01\x02\x00\x08"
         used_len, pdu = self._tcp.handleFrame(msg, 1, 0)
         assert not pdu
         assert used_len == len(msg)
 
     def test_tcp_framer_transaction_wrong_tid(self):
         """Test a half completed tcp frame transaction."""
-        msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
+        msg = b"\x00\x01\x00\x00\x00\x06\xff\x02\x01\x02\x00\x08"
         used_len, pdu = self._tcp.handleFrame(msg, 0, 10)
         assert not pdu
         assert used_len == len(msg)
 
     def test_tcp_framer_transaction_wrong_fc(self):
         """Test a half completed tcp frame transaction."""
-        msg = b"\x00\x01\x12\x34\x00\x06\xff\x70\x01\x02\x00\x08"
+        msg = b"\x00\x01\x00\x00\x00\x06\xff\x70\x01\x02\x00\x08"
         with pytest.raises(ModbusIOException):
             self._tcp.handleFrame(msg, 0, 0)
 
@@ -146,3 +146,15 @@ class TestExtras:
         msg = b"\x00\x90\x02\x9c\x01"
         _, pdu = self._rtu.handleFrame(msg, 0, 0)
         assert pdu
+
+    def test_rtu_dsetMultidrop(self):
+        """Test that the RTU framer can define multidrop."""
+        self._rtu.setMultidrop([1,2,3])
+
+    def test_rtu_dsetMultidrop2(self):
+        """Test that the RTU framer can use multidrop."""
+        self._rtu.setMultidrop([1,2,3])
+        msg = b"\x05\x90\x02\x9c\x01"
+        cut, pdu = self._rtu.handleFrame(msg, 0, 0)
+        assert cut
+        assert not pdu

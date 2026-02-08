@@ -29,12 +29,18 @@ from test.conftest import mockSocket
 class TestSyncClientUdp:
     """Unittest for the pymodbus.client module."""
 
+    def test_basic_syn_udp_bind(self):
+        """Test the basic methods for the udp sync client."""
+        client = ModbusUdpClient("127.0.0.1", source_address=('', 4096))
+        client.connect()
+
+
     def test_basic_syn_udp_client(self):
         """Test the basic methods for the udp sync client."""
         # receive/send
         client = ModbusUdpClient("127.0.0.1")
         client.socket = mockSocket()
-        assert not client.send(None)
+        assert not client.send(b'')
         assert client.send(b"\x50") == 1
         assert client.recv(1) == b"\x50"
 
@@ -44,7 +50,7 @@ class TestSyncClientUdp:
         client.close()
 
         # already closed socket
-        client.socket = False
+        client.socket = None
         client.close()
 
         assert str(client) == "ModbusUdpClient 127.0.0.1:502"
@@ -281,13 +287,10 @@ class TestSyncClientSerial:
             ModbusSerialClient("/dev/null", framer=FramerType.RTU).framer,
             FramerRTU,
         )
-
-    def test_sync_serial_rtu_client_timeouts(self):
-        """Test sync serial rtu."""
-        client = ModbusSerialClient("/dev/null", framer=FramerType.RTU, baudrate=9600)
-        assert client.silent_interval == round((3.5 * 10 / 9600), 6)
-        client = ModbusSerialClient("/dev/null", framer=FramerType.RTU, baudrate=38400)
-        assert client.silent_interval == round((1.75 / 1000), 6)
+        assert isinstance(
+            ModbusSerialClient("/dev/null", baudrate=38400, framer=FramerType.RTU).framer,
+            FramerRTU,
+        )
 
     @mock.patch("serial.Serial")
     def test_basic_sync_serial_client(self, mock_serial):
@@ -300,7 +303,7 @@ class TestSyncClientSerial:
         client = ModbusSerialClient("/dev/null")
         client.socket = mock_serial
         client.state = 0
-        assert not client.send(None)
+        assert not client.send(b'')
         client.state = 0
         assert client.send(b"\x00") == 1
         assert client.recv(1) == b"\x00"

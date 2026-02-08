@@ -4,8 +4,8 @@ from __future__ import annotations
 import asyncio
 from time import sleep
 
-from pymodbus.datastore import ModbusServerContext
-
+from ..datastore import ModbusServerContext
+from ..simulator import SimDevice
 from .base import ModbusBaseServer
 from .server import (
     ModbusSerialServer,
@@ -16,7 +16,7 @@ from .server import (
 
 
 async def StartAsyncTcpServer(
-    context: ModbusServerContext,
+    context: ModbusServerContext | SimDevice | list[SimDevice],
     **kwargs,
 ) -> None:
     """Start and run a tcp modbus server.
@@ -33,7 +33,7 @@ async def StartAsyncTcpServer(
 
 
 def StartTcpServer(
-    context: ModbusServerContext,
+    context: ModbusServerContext | SimDevice | list[SimDevice],
     **kwargs
 ) -> None:
     """Start and run a modbus TCP server.
@@ -50,7 +50,7 @@ def StartTcpServer(
 
 
 async def StartAsyncTlsServer(
-    context: ModbusServerContext,
+    context: ModbusServerContext | SimDevice | list[SimDevice],
     **kwargs,
 ) -> None:
     """Start and run a tls modbus server.
@@ -67,7 +67,7 @@ async def StartAsyncTlsServer(
 
 
 def StartTlsServer(
-    context: ModbusServerContext,
+    context: ModbusServerContext | SimDevice | list[SimDevice],
     **kwargs
 ) -> None:
     """Start and run a modbus TLS server.
@@ -84,7 +84,7 @@ def StartTlsServer(
 
 
 async def StartAsyncUdpServer(
-    context: ModbusServerContext,
+    context: ModbusServerContext | SimDevice | list[SimDevice],
     **kwargs,
 ) -> None:
     """Start and run a udp modbus server.
@@ -101,7 +101,7 @@ async def StartAsyncUdpServer(
 
 
 def StartUdpServer(
-    context: ModbusServerContext,
+    context: ModbusServerContext | SimDevice | list[SimDevice],
     **kwargs
 ) -> None:
     """Start and run a modbus UDP server.
@@ -118,7 +118,7 @@ def StartUdpServer(
 
 
 async def StartAsyncSerialServer(
-    context: ModbusServerContext,
+    context: ModbusServerContext | SimDevice | list[SimDevice],
     **kwargs,
 ) -> None:
     """Start and run a serial modbus server.
@@ -135,7 +135,7 @@ async def StartAsyncSerialServer(
 
 
 def StartSerialServer(
-    context: ModbusServerContext,
+    context: ModbusServerContext | SimDevice | list[SimDevice],
     **kwargs
 ) -> None:
     """Start and run a modbus serial server.

@@ -7,23 +7,27 @@ import dataclasses
 import importlib
 import json
 import os
+from typing import TYPE_CHECKING
 
 
 with contextlib.suppress(ImportError):
     from aiohttp import web
 
-from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
-from pymodbus.datastore.simulator import Label
-from pymodbus.logging import Log
-from pymodbus.pdu import DecodePDU
-from pymodbus.pdu.device import ModbusDeviceIdentification
-from pymodbus.server.server import (
+from ...datastore import ModbusServerContext, ModbusSimulatorContext
+from ...datastore.simulator import Label
+from ...logging import Log
+from ...pdu import DecodePDU
+from ...pdu.device import ModbusDeviceIdentification
+from ..server import (
     ModbusSerialServer,
     ModbusTcpServer,
     ModbusTlsServer,
     ModbusUdpServer,
 )
 
+
+if TYPE_CHECKING:
+    from aiohttp import web
 
 MAX_FILTER = 1000
 
@@ -92,7 +96,7 @@ class ModbusSimulatorServer:
 
     Example::
 
-        from pymodbus.server import ModbusSimulatorServer
+        from pymodbus import ModbusSimulatorServer
 
         async def run():
             simulator = ModbusSimulatorServer(
@@ -137,7 +141,7 @@ class ModbusSimulatorServer:
             del server["port"]
         device = setup["device_list"][modbus_device]
         self.datastore_context = ModbusSimulatorContext(
-            device, custom_actions_dict or {}
+            device, custom_actions_dict or None
         )
         datastore = None
         if "device_id" in server:
@@ -251,7 +255,7 @@ class ModbusSimulatorServer:
             self.serving.set_result(True)
         await asyncio.sleep(0)
 
-    async def handle_html_static(self, request):  # pragma: no cover
+    async def handle_html_static(self, request: web.Request):  # pragma: no cover
         """Handle static html."""
         if not (page := request.path[1:]):
             page = "index.html"
@@ -264,7 +268,7 @@ class ModbusSimulatorServer:
         except (FileNotFoundError, IsADirectoryError) as exc:
             raise web.HTTPNotFound(reason="File not found") from exc
 
-    async def handle_html(self, request):  # pragma: no cover
+    async def handle_html(self, request: web.Request):  # pragma: no cover
         """Handle html."""
         page_type = request.path.split("/")[-1]
         params = dict(request.query)
@@ -280,7 +284,7 @@ class ModbusSimulatorServer:
         new_page = self.generator_html[page_type][1](params, html)
         return web.Response(text=new_page, content_type="text/html")
 
-    async def handle_json(self, request):
+    async def handle_json(self, request: web.Request):
         """Handle api registers."""
         command = request.path.split("/")[-1]
         params = await request.json()
@@ -372,10 +376,10 @@ class ModbusSimulatorServer:
         for function in DecodePDU(True).list_function_codes():
             selected = (
                 "selected"
-                if function.function_code == self.call_monitor.function
+                if function == self.call_monitor.function
                 else ""
             )
-            function_codes += f"<option value={function.function_code} {selected}>function code name</option>"
+            function_codes += f"<option value={function} {selected}>function code name</option>"
         simulation_action = (
             "ACTIVE" if self.call_response.active != RESPONSE_INACTIVE else ""
         )

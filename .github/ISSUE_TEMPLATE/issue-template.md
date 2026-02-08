@@ -1,3 +1,12 @@
+---
+name: issue template
+about: Procedure to follow for creating an issue.
+title: ''
+labels: ''
+assignees: ''
+
+---
+
 <!--
 Before opening a new issue, make sure you do the following:
 

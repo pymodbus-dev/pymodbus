@@ -6,10 +6,9 @@ import struct
 from collections.abc import Sequence
 from typing import cast
 
-from pymodbus.constants import ExcCodes
-from pymodbus.datastore import ModbusDeviceContext
-from pymodbus.exceptions import ModbusIOException
-
+from ..constants import ExcCodes
+from ..datastore import ModbusServerContext
+from ..exceptions import ModbusIOException
 from .decoders import DecodePDU
 from .exceptionresponse import ExceptionResponse
 from .pdu import ModbusPDU
@@ -38,10 +37,10 @@ class ReadHoldingRegistersRequest(ModbusPDU):
         """
         return 1 + 1 + 2 * self.count
 
-    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
-        """Run a read holding request against a datastore."""
+    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+        """Update diagnostic request on the given device."""
         values = await context.async_getValues(
-            self.function_code, self.address, self.count
+            device_id, self.function_code, self.address, self.count
         )
         if isinstance(values, ExcCodes):
             return ExceptionResponse(self.function_code, values)
@@ -52,7 +51,7 @@ class ReadHoldingRegistersRequest(ModbusPDU):
         )
         return response_class(
             registers=cast(list[int], values),
-            dev_id=self.dev_id,
+            dev_id=device_id,
             transaction_id=self.transaction_id,
         )
 
@@ -151,8 +150,8 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
             register = struct.unpack(">H", data[i : i + 2])[0]
             self.write_registers.append(register)
 
-    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
-        """Run a write single register request against a datastore."""
+    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+        """Update diagnostic request on the given device."""
         if not (1 <= self.read_count <= 0x07D):
             return ExceptionResponse(
                 self.function_code, ExcCodes.ILLEGAL_VALUE
@@ -162,18 +161,18 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
                 self.function_code, ExcCodes.ILLEGAL_VALUE
             )
         rc = await context.async_setValues(
-            self.function_code, self.write_address, self.write_registers
+            device_id, self.function_code, self.write_address, self.write_registers
         )
         if rc:
             return ExceptionResponse(self.function_code, rc)
         registers = await context.async_getValues(
-            self.function_code, self.read_address, self.read_count
+            device_id, self.function_code, self.read_address, self.read_count
         )
         if isinstance(registers, ExcCodes):
             return ExceptionResponse(self.function_code, registers)
         return ReadWriteMultipleRegistersResponse(
             registers=cast(list[int], registers),
-            dev_id=self.dev_id,
+            dev_id=device_id,
             transaction_id=self.transaction_id,
         )
 
@@ -210,18 +209,18 @@ class WriteSingleRegisterResponse(ModbusPDU):
 class WriteSingleRegisterRequest(WriteSingleRegisterResponse):
     """WriteSingleRegisterRequest."""
 
-    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
-        """Run a write single register request against a datastore."""
+    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+        """Update diagnostic request on the given device."""
         if not 0 <= self.registers[0] <= 0xFFFF:
             return ExceptionResponse(
                 self.function_code, ExcCodes.ILLEGAL_VALUE
             )
         rc = await context.async_setValues(
-            self.function_code, self.address, self.registers
+            device_id, self.function_code, self.address, self.registers
         )
         if rc:
             return ExceptionResponse(self.function_code, rc)
-        values = await context.async_getValues(self.function_code, self.address, 1)
+        values = await context.async_getValues(device_id, self.function_code, self.address, 1)
         if isinstance(values, ExcCodes):
             return ExceptionResponse(self.function_code, values)
         return WriteSingleRegisterResponse(
@@ -257,21 +256,21 @@ class WriteMultipleRegistersRequest(ModbusPDU):
         for idx in range(5, (self.count * 2) + 5, 2):
             self.registers.append(struct.unpack(">H", data[idx : idx + 2])[0])
 
-    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
-        """Run a write single register request against a datastore."""
+    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+        """Update diagnostic request on the given device."""
         if not 1 <= self.count <= 0x07B:
             return ExceptionResponse(
                 self.function_code, ExcCodes.ILLEGAL_VALUE
             )
         rc = await context.async_setValues(
-            self.function_code, self.address, self.registers
+            device_id, self.function_code, self.address, self.registers
         )
         if rc:
             return ExceptionResponse(self.function_code, rc)
         return WriteMultipleRegistersResponse(
             address=self.address,
             count=self.count,
-            dev_id=self.dev_id,
+            dev_id=device_id,
             transaction_id=self.transaction_id,
         )
 
@@ -325,8 +324,8 @@ class MaskWriteRegisterRequest(ModbusPDU):
         """Decode the incoming request."""
         self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data[:6])
 
-    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
-        """Run a mask write register request against the store."""
+    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+        """Update diagnostic request on the given device."""
         if not 0x0000 <= self.and_mask <= 0xFFFF:
             return ExceptionResponse(
                 self.function_code, ExcCodes.ILLEGAL_VALUE
@@ -335,14 +334,14 @@ class MaskWriteRegisterRequest(ModbusPDU):
             return ExceptionResponse(
                 self.function_code, ExcCodes.ILLEGAL_VALUE
             )
-        values = await context.async_getValues(self.function_code, self.address, 1)
+        values = await context.async_getValues(device_id, self.function_code, self.address, 1)
         if isinstance(values, ExcCodes):
             return ExceptionResponse(self.function_code, values)
         values = (cast(Sequence[int | bool], values)[0] & self.and_mask) | (
             self.or_mask & ~self.and_mask
         )
         rc = await context.async_setValues(
-            self.function_code, self.address, cast(list[int], [values])
+            device_id, self.function_code, self.address, cast(list[int], [values])
         )
         if rc:
             return ExceptionResponse(self.function_code, rc)
@@ -350,7 +349,7 @@ class MaskWriteRegisterRequest(ModbusPDU):
             address=self.address,
             and_mask=self.and_mask,
             or_mask=self.or_mask,
-            dev_id=self.dev_id,
+            dev_id=device_id,
             transaction_id=self.transaction_id,
         )
 

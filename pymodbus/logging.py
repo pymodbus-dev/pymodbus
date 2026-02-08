@@ -8,7 +8,7 @@ import logging
 from binascii import b2a_hex
 from logging import NullHandler as __null
 
-from pymodbus.utilities import hexlify_packets
+from .utilities import hexlify_packets
 
 
 # ---------------------------------------------------------------------------#

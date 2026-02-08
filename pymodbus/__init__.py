@@ -13,12 +13,12 @@ __all__ = [
     "pymodbus_apply_logging_config"
 ]
 
-from pymodbus.exceptions import ModbusException
-from pymodbus.framer import FramerType
-from pymodbus.logging import pymodbus_apply_logging_config
-from pymodbus.pdu import ExceptionResponse
-from pymodbus.pdu.device import ModbusDeviceIdentification
+from .exceptions import ModbusException
+from .framer import FramerType
+from .logging import pymodbus_apply_logging_config
+from .pdu import ExceptionResponse
+from .pdu.device import ModbusDeviceIdentification
 
 
-__version__ = "3.11.4"
+__version__ = "4.0.0dev7"
 __version_full__ = f"[pymodbus, version {__version__}]"

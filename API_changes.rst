@@ -5,6 +5,10 @@ Versions (X.Y.Z) where Z > 0 e.g. 3.0.1 do NOT have API changes!
 API changes 3.12.0
 ------------------
 - when using no_response_expected=, the call returns None
+- remove idle_time() from sync client since it is void
+- ModbusSerialServer new parameter "allow_multiple_devices"
+  which gives limited multipoint support with baudrate < 19200 and a good RS485 line.
+- SimData / SimDevice are now integrated in the server (and will mid-term replace other datastores).
 
 API changes 3.11.0
 ------------------

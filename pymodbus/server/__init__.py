@@ -20,16 +20,16 @@ __all__ = [
     "get_simulator_commandline",
 ]
 
-from pymodbus.server.base import ModbusBaseServer
-from pymodbus.server.server import (
+from .base import ModbusBaseServer
+from .server import (
     ModbusSerialServer,
     ModbusTcpServer,
     ModbusTlsServer,
     ModbusUdpServer,
 )
-from pymodbus.server.simulator.http_server import ModbusSimulatorServer
-from pymodbus.server.simulator.main import get_commandline as get_simulator_commandline
-from pymodbus.server.startstop import (
+from .simulator.http_server import ModbusSimulatorServer
+from .simulator.main import get_commandline as get_simulator_commandline
+from .startstop import (
     ServerAsyncStop,
     ServerStop,
     StartAsyncSerialServer,

@@ -43,10 +43,10 @@ class CustomModbusResponse(ModbusPDU):
     function_code = 55
     rtu_byte_count_pos = 2
 
-    def __init__(self, values=None, device_id=1, transaction=0):
+    def __init__(self, values: list[int] | None = None, device_id=1, transaction=0):
         """Initialize."""
         super().__init__(dev_id=device_id, transaction_id=transaction)
-        self.values = values or []
+        self.values: list[int] = values or []
 
     def encode(self):
         """Encode response pdu.
@@ -89,9 +89,9 @@ class CustomRequest(ModbusPDU):
         """Decode."""
         self.address, self.count = struct.unpack(">HH", data)
 
-    async def update_datastore(self, context: ModbusDeviceContext) -> ModbusPDU:
-        """Execute."""
-        _ = context
+    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+        """Update diagnostic request on the given device."""
+        _ = context, device_id
         return CustomModbusResponse()
 
 

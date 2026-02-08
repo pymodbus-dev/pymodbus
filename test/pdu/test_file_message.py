@@ -20,7 +20,7 @@ from pymodbus.pdu.file_message import (
 )
 
 
-TEST_MESSAGE = b"\x00\n\x00\x08\x00\x01\x00\x02\x00\x03\x00\x04"
+TEST_MESSAGE = b"\x00\n\x00\x04\x00\x01\x00\x02\x00\x03\x00\x04"
 
 class TestBitMessage:
     """Modbus bit message tests."""
@@ -37,11 +37,11 @@ class TestBitMessage:
         handle.decode(b"\x12\x34")
         assert handle.address == 0x1234
 
-    async def test_read_fifo_queue_request(self, mock_context):
+    async def test_read_fifo_queue_request(self, mock_server_context):
         """Test basic bit message encoding/decoding."""
-        context = mock_context()
+        context = mock_server_context()
         handle = ReadFifoQueueRequest(0x1234)
-        result = await handle.update_datastore(context)
+        result = await handle.datastore_update(context, 0)
         assert isinstance(result, ReadFifoQueueResponse)
 
     def test_read_fifo_queue_response_encode(self):
@@ -106,10 +106,10 @@ class TestBitMessage:
         size = handle.calculateRtuFrameSize(request)
         assert size == 0x0E + 5
 
-    async def test_read_file_record_request_update_datastore(self):
+    async def test_read_file_record_request_datastore_update(self, mock_server_context):
         """Test basic bit message encoding/decoding."""
         handle = ReadFileRecordRequest()
-        result = await handle.update_datastore(None)
+        result = await handle.datastore_update(mock_server_context(), 0)
         assert isinstance(result, ReadFileRecordResponse)
 
     # -----------------------------------------------------------------------#
@@ -179,10 +179,10 @@ class TestBitMessage:
         size = handle.calculateRtuFrameSize(request)
         assert size == 0x0D + 5
 
-    async def test_write_file_record_request_update_datastore(self):
+    async def test_write_file_record_request_datastore_update(self, mock_server_context):
         """Test basic bit message encoding/decoding."""
         handle = WriteFileRecordRequest()
-        result = await handle.update_datastore(None)
+        result = await handle.datastore_update(mock_server_context(), 0)
         assert isinstance(result, WriteFileRecordResponse)
 
     # -----------------------------------------------------------------------#

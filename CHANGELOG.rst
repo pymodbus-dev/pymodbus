@@ -7,6 +7,40 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.12.0
+--------------
+* Upgrade library versions installed by pip. (#2868)
+* SimData/Device integrate in server. (#2866)
+* Add bind to ModbusUdpClient. (#2867)
+* Solve Zuban problem. (#2864)
+* Fix wrong parameter name in function docstring. Fix set_values does not accept tuple. (#2858)
+* Add context.async_get/setValues with device_id. (#2863)
+* SimData/SimDevice ready for server integration. (#2857)
+* Reactivate pytest coverage. (#2862)
+* No blank issue template.
+* Update issue templates
+* Fix ReadFifoQueueResponse count (#2861)
+* Limited support for multiple devices on RS485. (#2846)
+* Simulator DataBlock docstring corrections (#2853)
+* fix README.rst and troubleshooting (#2851)
+* Solve DoS vulnerability. (#2852)
+* server handle_local_echo only in comm_params. (#2847)
+* di is for discrete input (#2842)
+* Allow any dev_id, when requesting dev_id 0. (#2845)
+* Allow response transaction_id 0. (#2844)
+* Use relative import. (#2836)
+* ModbusServerContext.device_ids() docstring (#2835)
+* Include ModbusSequentialDataBlock into the documentation (#2833)
+* Fix Modbus TCP protocol ID validation in FramerSocket (#2830)
+* Remove idle_time() from sync client, which anyhow was void. (#2828)
+* Correct check_ci.sh. (#2829)
+* Replace mypy with zuban (#2825)
+* Fix monitoring of functions (#2826)
+* Improve types (#2824)
+* dicts have preserved insertion order since 3.7 (#2823)
+* asyncio.iscoroutinefunction() is deprecated (#2822)
+* Remove pypi-alias. (#2818)
+
 Version 3.11.4
 --------------
 * Prepare 3.11.4 (#2815)

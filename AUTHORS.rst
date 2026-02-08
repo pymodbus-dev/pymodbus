@@ -25,6 +25,7 @@ Thanks to
 - andrew-harness
 - banana-sun
 - Blaise Thompson
+- brambo123
 - Breina
 - brherger
 - CapraTheBest
@@ -47,6 +48,7 @@ Thanks to
 - Erlend E. Aasland
 - Esco441-91
 - Farzad Panahi
+- FedericoMusa
 - Fredo70
 - Gao Fang
 - Ghostkeeper
@@ -55,6 +57,7 @@ Thanks to
 - igorbga
 - Iktek
 - Ilkka Ollakka
+- Ivan
 - Jakob Ruhe
 - Jakob Schlyter
 - James Braza
@@ -96,6 +99,7 @@ Thanks to
 - Szewcson
 - Thijs W
 - Totally a booplicate
+- ul-gh
 - WouterTuinstra
 - wriswith
 - Yash Jani

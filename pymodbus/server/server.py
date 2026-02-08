@@ -7,6 +7,7 @@ from ..datastore import ModbusServerContext
 from ..framer import FramerType
 from ..pdu import ModbusPDU
 from ..pdu.device import ModbusDeviceIdentification
+from ..simulator import SimDevice
 from ..transport import CommParams, CommType
 from .base import ModbusBaseServer
 
@@ -20,7 +21,7 @@ class ModbusTcpServer(ModbusBaseServer):
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        context: ModbusServerContext,
+        context: ModbusServerContext | SimDevice | list[SimDevice],
         *,
         framer=FramerType.SOCKET,
         identity: ModbusDeviceIdentification | None = None,
@@ -84,7 +85,7 @@ class ModbusTlsServer(ModbusTcpServer):
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        context: ModbusServerContext,
+        context: ModbusServerContext | SimDevice | list[SimDevice],
         *,
         framer=FramerType.TLS,
         identity: ModbusDeviceIdentification | None = None,
@@ -155,7 +156,7 @@ class ModbusUdpServer(ModbusBaseServer):
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        context: ModbusServerContext,
+        context: ModbusServerContext | SimDevice | list[SimDevice],
         *,
         framer=FramerType.SOCKET,
         identity: ModbusDeviceIdentification | None = None,
@@ -216,7 +217,7 @@ class ModbusSerialServer(ModbusBaseServer):
 
     def __init__(
         self,
-        context: ModbusServerContext,
+        context: ModbusServerContext | SimDevice | list[SimDevice],
         *,
         framer: FramerType = FramerType.RTU,
         ignore_missing_devices: bool = False,

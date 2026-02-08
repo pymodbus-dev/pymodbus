@@ -10,6 +10,7 @@ from ..framer import FRAMER_NAME_TO_CLASS, FramerType
 from ..logging import Log
 from ..pdu import DecodePDU, ModbusPDU
 from ..pdu.device import ModbusControlBlock, ModbusDeviceIdentification
+from ..simulator import SimDevice
 from ..transport import CommParams, ModbusProtocol
 from .requesthandler import ServerRequestHandler
 
@@ -22,7 +23,7 @@ class ModbusBaseServer(ModbusProtocol):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         params: CommParams,
-        context: ModbusServerContext | None,
+        context: ModbusServerContext  | SimDevice | list[SimDevice],
         ignore_missing_devices: bool,
         broadcast_enable: bool,
         identity: ModbusDeviceIdentification | None,

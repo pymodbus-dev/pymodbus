@@ -11,6 +11,7 @@ from ..logging import Log
 from ..pdu import DecodePDU, ModbusPDU
 from ..pdu.device import ModbusControlBlock, ModbusDeviceIdentification
 from ..simulator import SimDevice
+from ..simulator.simcore import SimCore
 from ..transport import CommParams, ModbusProtocol
 from .requesthandler import ServerRequestHandler
 
@@ -23,7 +24,7 @@ class ModbusBaseServer(ModbusProtocol):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         params: CommParams,
-        context: ModbusServerContext  | SimDevice | list[SimDevice],
+        context: ModbusServerContext | SimDevice | list[SimDevice],
         ignore_missing_devices: bool,
         broadcast_enable: bool,
         identity: ModbusDeviceIdentification | None,
@@ -43,7 +44,11 @@ class ModbusBaseServer(ModbusProtocol):
         if custom_pdu:
             for func in custom_pdu:
                 self.decoder.register(func)
-        self.context = context or ModbusServerContext()
+        self.context: ModbusServerContext | SimCore
+        if isinstance(context, ModbusServerContext):
+            self.context = context
+        else:
+            self.context = SimCore(context)
         self.control = ModbusControlBlock()
         self.ignore_missing_devices = ignore_missing_devices
         self.broadcast_enable = broadcast_enable

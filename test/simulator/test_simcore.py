@@ -48,3 +48,13 @@ class TestSimCore:
         """Test that simdata can be objects."""
         core = SimCore(devices=SimDevice(0, simdata=self.simdata2))
         await core.async_setValues(**kwargs)
+
+    @pytest.mark.parametrize(("block", "expect"), [
+        ((3, [1], [0xffff]), (3, [1]*16, [1]*16)),
+        ((3, [1], [0x0000]), (3, [1]*16, [0]*16)),
+        ((3, [1], [0xffff, 0xffff]), (3, [1]*32, [1]*32)),
+    ])
+    async def test_simdcore_convert_bit(self, block, expect):
+        """Test that simdata can be objects."""
+        result = SimCore.Runtime.convert_to_bit(block)
+        assert result == expect

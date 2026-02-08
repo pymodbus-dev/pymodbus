@@ -5,12 +5,10 @@
 
 __all__ = [
     "SimAction",
-    "SimCore",
     "SimData",
     "SimDevice",
     "SimValueType",
 ]
 
-from .simcore import SimCore
 from .simdata import SimData, SimValueType
 from .simdevice import SimAction, SimDevice

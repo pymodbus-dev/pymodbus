@@ -70,7 +70,7 @@ class SimDevice:
     #:
     #: ..tip:: addresses not defined are invalid and will produce an ExceptionResponse
     #: ..warning:: lists are sorted on starting address.
-    simdata: list[SimData] | tuple[list[SimData], list[SimData], list[SimData], list[SimData]]
+    simdata: SimData | list[SimData] | tuple[list[SimData], list[SimData], list[SimData], list[SimData]]
 
     #: Enforce type checking, if True access are controlled to be conform with datatypes.
     #:
@@ -146,23 +146,29 @@ class SimDevice:
 
     def __check_simple2(self):
         """Check simple parameters."""
+        if isinstance(self.simdata, SimData):
+            self.simdata = [self.simdata]
         if isinstance(self.simdata, list):
             for inx, entry in enumerate(self.simdata):
                 if not isinstance(entry, SimData):
                     raise TypeError(f"simdata=list[{inx}] is not a SimData entry")
         else:
-            if not (isinstance(self.simdata, tuple)
-                    and len(self.simdata) == 4):
-                raise TypeError("simdata= must list or tuple")
-            for i in range(4):
-                sim_list = cast(tuple, self.simdata)[i]
-                if not isinstance(sim_list, list):
-                    raise TypeError(f"simdata=tuple[{TUPLE_NAMES[i]}] -> must be a list")
-                for inx, entry in enumerate(sim_list):
-                    if not isinstance(entry, SimData):
-                        raise TypeError(f"simdata[{inx}]=tuple[{TUPLE_NAMES[i]}] -> list[{inx}] is not a SimData entry")
-                    if i < 2 and entry.datatype != DataType.BITS:
-                        raise TypeError(f"simdata[{inx}]=tuple[{TUPLE_NAMES[i]}] -> list[{inx}] not DataType.BITS, not allowed")
+            self.__check_simple_blocks()
+
+    def __check_simple_blocks(self):
+        """Check simple parameters."""
+        if not (isinstance(self.simdata, tuple)
+                and len(self.simdata) == 4):
+            raise TypeError("simdata= must list or tuple")
+        for i in range(4):
+            sim_list = cast(tuple, self.simdata)[i]
+            if not isinstance(sim_list, list):
+                raise TypeError(f"simdata=tuple[{TUPLE_NAMES[i]}] -> must be a list")
+            for inx, entry in enumerate(sim_list):
+                if not isinstance(entry, SimData):
+                    raise TypeError(f"simdata[{inx}]=tuple[{TUPLE_NAMES[i]}] -> list[{inx}] is not a SimData entry")
+                if i < 2 and entry.datatype != DataType.BITS:
+                    raise TypeError(f"simdata[{inx}]=tuple[{TUPLE_NAMES[i]}] -> list[{inx}] not DataType.BITS, not allowed")
 
     def __check_block(self, block: list[SimData], name: str):
         """Check block content."""
@@ -188,7 +194,7 @@ class SimDevice:
             self.__check_block(self.simdata, "list")
         else:
             for i in range(4):
-                self.__check_block(self.simdata[i], TUPLE_NAMES[i])
+                self.__check_block(cast(tuple,self.simdata)[i], TUPLE_NAMES[i])
 
     def __post_init__(self):
         """Define a device."""
@@ -238,12 +244,14 @@ class SimDevice:
             self.__create_simdata(entry, flag_list, reg_list)
         return (start_address, reg_list, flag_list)
 
-    def build_device(self) -> SimRegs | list[SimRegs]:
+    def build_device(self) -> SimRegs | dict[str, SimRegs]:
         """Check simdata and built runtime structure."""
         self.__check_parameters()
         if isinstance(self.simdata, list):
             return self.__create_block(self.simdata)
-        b: list[SimRegs] = []
+        b: dict[str, SimRegs] = {}
+        #  (<coils>, <discrete inputs>, <holding registers>, <input registers>)
+        convert = {0: "c", 1: "d", 2: "h", 3: "i"}
         for i in range(4):
-            b.append(self.__create_block(cast(tuple, self.simdata)[i]))
+            b[convert[i]] = self.__create_block(cast(tuple, self.simdata)[i])
         return b

@@ -187,13 +187,6 @@ class ModbusServerContext:
         dev = self.__get_device(device_id)
         return await dev.async_setValues(func_code, address, values)
 
-    def __iter__(self):
-        """Iterate over the current collection of device contexts.
-
-        :returns: An iterator over the device contexts
-        """
-        return iter(self._devices.items())
-
     def __getitem__(self, device_id):
         """Use to get access to a device_id context.
 

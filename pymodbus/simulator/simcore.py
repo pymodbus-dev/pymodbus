@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from ..constants import ExcCodes
+from ..pdu.pdu import unpack_bitstring
 from .simdevice import SimDevice, SimRegs
 
 
@@ -22,10 +23,15 @@ class SimCore:
                         for i in (1, 5, 15)])
 
 
-        def __convert_to_bit(self, block: SimRegs):
+        @classmethod
+        def convert_to_bit(cls, block: SimRegs) -> SimRegs:
             """Convert registers to bits."""
-            new_flags = block[1]
-            new_registers = block[2]
+            new_registers: list[int] = []
+            for entry in block[2]:
+                bool_list = unpack_bitstring(entry.to_bytes(2, byteorder="big"))
+                for x in bool_list:
+                    new_registers.append(1 if x else 0)
+            new_flags: list[int] = [block[1][0]]*len(new_registers)
             return (block[0], new_flags, new_registers)
 
         def __init__(self, device: SimDevice):
@@ -39,8 +45,8 @@ class SimCore:
                 return
             self.shared = False
             self.block: dict[str, SimRegs] = {
-                "c": self.__convert_to_bit(build["c"]),
-                "d":  self.__convert_to_bit(build["d"]),
+                "c": self.convert_to_bit(build["c"]),
+                "d":  self.convert_to_bit(build["d"]),
                 "h": build["h"],
                 "i": build["i"],
             }

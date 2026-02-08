@@ -3,8 +3,10 @@ from unittest import mock
 
 import pytest
 
+from pymodbus.datastore import ModbusServerContext
 from pymodbus.pdu import ReadHoldingRegistersRequest
 from pymodbus.server import ModbusBaseServer
+from pymodbus.simulator import SimData, SimDevice
 from pymodbus.transport import CommParams, CommType
 
 
@@ -22,7 +24,7 @@ class TestBaseServer:
                 reconnect_delay_max=0.0,
                 timeout_connect=0.0,
             ),
-            None,
+            ModbusServerContext(),
             False,
             False,
             None,
@@ -36,6 +38,27 @@ class TestBaseServer:
 
     async def test_base(self, baseserver):
         """Test __init__."""
+
+    async def test_base_simcore(self):
+        """Test __init___ with SimCore."""
+        ModbusBaseServer(
+            CommParams(
+                comm_type=CommType.TCP,
+                comm_name="server_listener",
+                reconnect_delay=0.0,
+                reconnect_delay_max=0.0,
+                timeout_connect=0.0,
+            ),
+            SimDevice(0, SimData(0)),
+            False,
+            False,
+            None,
+            "socket",
+            None,
+            None,
+            None,
+            [ReadHoldingRegistersRequest],
+        )
 
     async def test_base_serve_forever1(self, baseserver):
         """Test serve_forever."""

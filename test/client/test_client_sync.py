@@ -29,6 +29,11 @@ from test.conftest import mockSocket
 class TestSyncClientUdp:
     """Unittest for the pymodbus.client module."""
 
+    def test_basic_syn_udp_bind(self):
+        """Test the basic methods for the udp sync client."""
+        # receive/send
+        client = ModbusUdpClient("127.0.0.1", source_address=('', 4096))
+
     def test_basic_syn_udp_client(self):
         """Test the basic methods for the udp sync client."""
         # receive/send

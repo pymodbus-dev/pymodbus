@@ -268,6 +268,14 @@ so that others can benefit from the results.
 
 `Example documentation <https://pymodbus.readthedocs.io/en/dev/source/examples.html>`_
 
+Ready to go simulator
+^^^^^^^^^^^^^^^^^^^^^
+To start the simulator and explore the Web UI, run the following command from the root directory::
+
+    python examples/simulator.py
+
+Once started, the Modbus server will listen on port 5020 and the Web UI will be available at http://localhost:8081.
+
 Troubleshooting the dev branch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 If you encounter errors while running examples, please check:

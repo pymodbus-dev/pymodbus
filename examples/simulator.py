@@ -82,13 +82,10 @@ async def run_simulator():
     _logger.info("### run calls")
     await run_calls(client, 1)
 
-    _logger.info("### shutdown client")
-    client.close()
-
-    _logger.info("### shutdown server")
-    await task.stop()
     _logger.info("### Thanks for now.")
 
-
+    _logger.info("### Simulator is ALIVE. Access Web UI at http://localhost:8081")
+    _logger.info("### Press Ctrl+C to stop.")
+    await asyncio.Event().wait()  
 if __name__ == "__main__":
     asyncio.run(run_simulator(), debug=True)

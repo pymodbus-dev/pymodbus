@@ -1,8 +1,7 @@
 """Test SimData."""
 import pytest
 
-from pymodbus.constants import DataType
-from pymodbus.simulator import SimData
+from pymodbus.simulator import DataType, SimData
 
 
 class TestSimData:

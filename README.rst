@@ -270,11 +270,21 @@ so that others can benefit from the results.
 
 Ready to go simulator
 ^^^^^^^^^^^^^^^^^^^^^
-To start the simulator and explore the Web UI, run the following command from the root directory::
+The simulator can be started directly using the installed entry point::
 
-    python examples/simulator.py
+    pymodbus.simulator --modbus_device device_try
 
-Once started, the Modbus server will listen on port 5020 and the Web UI will be available at http://localhost:8081.
+**Configuration Parameters:**
+
+To ensure the simulator starts with the correct data context, use the following flags:
+
+* ``--json_file``: Path to the configuration JSON (defaults to the internal ``setup.json``).
+* ``--modbus_server``: Selects the server type from the JSON ``server_list``.
+* ``--modbus_device``: Selects the device registers from the JSON ``device_list``.
+* ``--http_port``: Port for the Web UI (default: 8081).
+* ``--log``: Sets the log level (default: info).
+
+.. note:: Starting the simulator without explicit parameters may load an internal default configuration.
 
 Troubleshooting the dev branch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -268,6 +268,24 @@ so that others can benefit from the results.
 
 `Example documentation <https://pymodbus.readthedocs.io/en/dev/source/examples.html>`_
 
+Ready to go simulator
+^^^^^^^^^^^^^^^^^^^^^
+The simulator can be started directly using the installed entry point::
+
+    pymodbus.simulator --modbus_device device_try
+
+**Configuration Parameters:**
+
+To ensure the simulator starts with the correct data context, use the following flags:
+
+* ``--json_file``: Path to the configuration JSON (defaults to the internal ``setup.json``).
+* ``--modbus_server``: Selects the server type from the JSON ``server_list``.
+* ``--modbus_device``: Selects the device registers from the JSON ``device_list``.
+* ``--http_port``: Port for the Web UI (default: 8081).
+* ``--log``: Sets the log level (default: info).
+
+.. note:: Starting the simulator without explicit parameters may load an internal default configuration.
+
 Troubleshooting the dev branch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 If you encounter errors while running examples, please check:

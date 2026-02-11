@@ -42,6 +42,7 @@ options:
 import argparse
 import asyncio
 import os
+import sys
 
 from ...logging import Log, pymodbus_apply_logging_config
 from .http_server import ModbusSimulatorServer
@@ -105,9 +106,14 @@ def get_commandline(cmdline=None):
             continue
         if args.__dict__[argument] is not None:
             cmd_args[argument] = args.__dict__[argument]
+        if not os.path.exists(args.json_file):
+        # Configuramos un log básico para asegurar que el error fatal sea visible
+            pymodbus_apply_logging_config("ERROR") 
+            Log.error(f"FATAL: Configuration file '{args.json_file}' not found.")
+            Log.error("The simulator cannot start without a valid configuration file.")
+            Log.error("Please provide a path with --json_file or ensure setup.json exists.")
+            sys.exit(1)
     return cmd_args
-
-
 async def run_main(cmdline=None):
     """Run server async."""
     cmd_args = get_commandline(cmdline=cmdline)

@@ -99,6 +99,11 @@ def get_commandline(cmdline=None):
     )
     args = parser.parse_args(cmdline)
     pymodbus_apply_logging_config(args.log.upper())
+    # En main.py, dentro de get_commandline o run_main
+    default_json = os.path.join(os.path.dirname(__file__), "setup.json")
+    if args.json_file == default_json:
+        Log.warning("No custom configuration provided. Using internal default 'setup.json'.")
+        Log.warning("To interact with your own registers, please provide a JSON file using --json_file.")
     Log.info("Start simulator")
     cmd_args = {}
     for argument in args.__dict__:

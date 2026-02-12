@@ -102,7 +102,10 @@ def get_commandline(cmdline=None):
 
     default_json = os.path.join(os.path.dirname(__file__), "setup.json")
     if args.json_file == default_json:
-        Log.warning("No custom configuration provided, using internal default 'setup.json'. To interact with your own registers, use --json_file.")
+        Log.warning(
+            "No custom configuration provided. Using internal default 'setup.json'.\n"
+            "To interact with your own registers, please provide a JSON file using --json_file."
+        )
     if not os.path.exists(args.json_file):
         pymodbus_apply_logging_config("ERROR") 
         Log.error(f"FATAL: Configuration file '{args.json_file}' not found. Please provide a valid path or ensure setup.json exists.")

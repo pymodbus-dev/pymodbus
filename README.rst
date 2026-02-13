@@ -12,7 +12,8 @@ PyModbus - A Python Modbus Stack
    :target: https://gurubase.io/g/pymodbus
    :alt: PyModbus Guru
 
-Pymodbus is a full Modbus protocol implementation offering a client and server with synchronous/asynchronous API and simulators.
+Pymodbus is a full Modbus protocol implementation offering a client, server and simulator with synchronous/asynchronous API.
+Please observe that pymodbus follows the standard modbus and have only limited support for non-standard devices.
 
 Our releases follow the pattern `X.Y.Z`. We have strict rules for what different version number updates mean:
 
@@ -22,9 +23,9 @@ Our releases follow the pattern `X.Y.Z`. We have strict rules for what different
 
 Upgrade examples:
 
-- 3.9.0 -> 3.9.2: just plugin the new version, no changes needed.
+- 3.12.0 -> 3.12.2: just plugin the new version, no changes needed.
                   Remark fixing bugs, can lead to a different behaviors/returns
-- 3.8.0 -> 3.9.0: Smaller changes to the pymodbus calls might be needed
+- 3.10.0 -> 3.12.0: Smaller changes to the pymodbus calls might be needed (Check `API_changes <https://github.com/pymodbus-dev/pymodbus/blob/dev/API_changes.rst>`_)
 - 2.5.4 -> 3.0.0: Major changes in the application might be needed
 
 **REMARK**: As can be seen from the above Pymodbus do NOT follow the semver.org standard.
@@ -44,7 +45,7 @@ and all API changes are `documented <https://pymodbus.readthedocs.io/en/latest/s
 
 A big thanks to all the `volunteers <https://pymodbus.readthedocs.io/en/latest/source/authors.html>`_ that helps make pymodbus a great project.
 
-Source code on `github <https://github.com/pymodbus-dev/pymodbus>`_
+Source code is available on `github <https://github.com/pymodbus-dev/pymodbus>`_
 
 Full documentation for newest releases as well as the bleeding edge (dev) `readthedocs <https://pymodbus.readthedocs.io>`_
 
@@ -53,9 +54,9 @@ Pymodbus in a nutshell
 Pymodbus consist of 5 parts:
 
 - **client**, connect to your favorite device(s)
-- **server**, simulate your favorite device(s)
+- **server**, create your own device(s)
 - **simulator**, an html based server simulator
-- **examples**, showing both simple and advances usage
+- **examples**, showing both simple and advanced usage
 
 Common features
 ^^^^^^^^^^^^^^^
@@ -66,7 +67,7 @@ Common features
 * Does not have third party dependencies, apart from pyserial (optional)
 * Very lightweight project
 * Requires Python >= 3.10
-* Thorough test suite, that test all corners of the library
+* Thorough test suite, that test all corners of the library (100% test coverage)
 * Automatically tested on Windows, Linux and MacOS combined with python 3.10 - 3.14
 * Strongly typed API (py.typed present)
 
@@ -78,8 +79,7 @@ Client Features
 ^^^^^^^^^^^^^^^
 * Asynchronous API and synchronous API for applications
 * Very simple setup and call sequence (just 6 lines of code)
-* Utilities to convert int/float to/from multiple registers
-* Encoder/decoder to help with standard python data types
+* Utilities to convert python data types to/from multiple registers
 
 `Client documentation <https://pymodbus.readthedocs.io/en/latest/source/client.html>`_
 
@@ -87,12 +87,12 @@ Client Features
 Server Features
 ^^^^^^^^^^^^^^^
 * Asynchronous implementation for high performance
-* Synchronous API classes for convenience
-* Simulate real life devices
+* Synchronous API classes for convenience (runs async internally)
+* Emulate real life devices
 * Full server control context (device information, counters, etc)
 * Different backend datastores to manage register values
 * Callback to intercept requests/responses
-* Work on RS485 in parallel with other devices
+* Work limited on RS485 in parallel with other devices
 
 `Server documentation <https://pymodbus.readthedocs.io/en/latest/source/server.html>`_
 
@@ -198,7 +198,7 @@ Clone the source, and make a virtual environment::
    cd pymodbus
    python3 -m venv .venv
 
-Activate the virtual environment, this command needs repeated in every new terminal::
+Activate the virtual environment, this command needs to be repeated in every new terminal::
 
    source .venv/bin/activate
 
@@ -210,9 +210,9 @@ or the bleeding edge::
 
    git checkout dev
 
-Some distributions have an old pip, which needs to be upgraded:
-
-   pip install --upgrade pip
+.. note::
+   Please always make your changes in a branch, and never submit a pull request
+   from dev.
 
 Install required development tools in editable mode::
 
@@ -223,7 +223,7 @@ Install all (allows creation of documentation etc) in editable mode::
     pip install -e ".[all]"
 
 .. note::
-   The use of the ``-e`` (editable) flag is recommended when working on the ``dev`` branch. 
+   The use of the ``-e`` (editable) flag is recommended when making changes. 
    It registers the ``pymodbus`` namespace in your virtual environment using pointers to the 
    source directory. This ensures that any changes you make to the core library are 
    immediately reflected when running examples or tests.
@@ -263,8 +263,8 @@ need, feel free to submit them so others can benefit.
 Also, if you have a question, please `create a post in discussions q&a topic <https://github.com/pymodbus-dev/pymodbus/discussions/new?category=q-a>`_,
 so that others can benefit from the results.
 
-- If you think, that something in the code is broken/not running well, please `open an issue <https://github.com/pymodbus-dev/pymodbus/issues/new>`_,
-  read the Template-text first and then post your issue with your setup information.
+If you think, that something in the code is broken/not running well, please `open an issue <https://github.com/pymodbus-dev/pymodbus/issues/new>`_,
+read the Template-text first and then post your issue with your setup information.
 
 `Example documentation <https://pymodbus.readthedocs.io/en/dev/source/examples.html>`_
 
@@ -286,12 +286,12 @@ To ensure the simulator starts with the correct data context, use the following 
 
 .. note:: Starting the simulator without explicit parameters may load an internal default configuration.
 
-Troubleshooting the dev branch
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Troubleshooting examples
+^^^^^^^^^^^^^^^^^^^^^^^^
 If you encounter errors while running examples, please check:
 
 1. **Namespace Error** (``*** ERROR --> PyModbus not found``): 
-   The package is not registered. Please ensure you followed the installation 
+   The pymodbus package is not registered/installed. Please ensure you followed the installation 
    steps in the `Install with github`_ section above.
 
 2. **Directory Error** (``*** ERROR --> THIS EXAMPLE needs the example directory...``): 
@@ -301,7 +301,8 @@ If you encounter errors while running examples, please check:
 
 Contributing
 ------------
-Just fork the repo and raise your Pull Request against :code:`dev` branch.
+Just fork the repo and raise your Pull Request against :code:`dev` branch, but please never
+make your changes on the :code:`dev` branch
 
 We always have more work than time, so feel free to open a discussion / issue on a theme you want to solve.
 
@@ -347,6 +348,11 @@ Test your changes::
 
    cd test
    pytest
+
+or
+   ./check_ci.sh
+
+This command also generates the coverage files, which are stored in :code:`build/cov``
 
 you can also do extended testing::
 

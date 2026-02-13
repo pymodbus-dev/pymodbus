@@ -17,7 +17,6 @@ from pymodbus.transaction import TransactionManager
 class TestTransaction:
     """Test the pymodbus.transaction module."""
 
-
     async def test_transaction_instance(self, use_clc):
         """Test instantiate class."""
         TransactionManager(
@@ -410,10 +409,11 @@ class TestTransaction:
 class TestSyncTransaction:
     """Test the pymodbus.transaction module."""
 
-    def dummy_client(self, parms):
-        """Create dummy client"""
+    def dummy_client(self, params):
+        """Create dummy client."""
         class dummy_class(ModbusBaseSyncClient):
             """Allow creation."""
+
             def send(self, request: bytes, addr: tuple | None = None) -> int:
                 """Send request."""
                 return 0
@@ -425,7 +425,7 @@ class TestSyncTransaction:
         return dummy_class(
             FramerType.SOCKET,
             5,
-            parms,
+            params,
             None,
             None,
             None,

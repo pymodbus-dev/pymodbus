@@ -9,7 +9,6 @@ import pytest
 from pymodbus.logging import Log
 from pymodbus.transport import (
     CommType,
-    ModbusProtocol,
 )
 from pymodbus.transport.serialtransport import SerialTransport
 

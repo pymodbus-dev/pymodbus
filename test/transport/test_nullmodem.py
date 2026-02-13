@@ -214,7 +214,7 @@ class TestTransportNullModem:
     async def test_flow_not_connected(self, dummy_protocol):
         """Test flow not connected."""
         modem = NullModem(dummy_protocol())
-        modem.sendto("no connection".encode("utf-8"))
+        modem.sendto(b"no connection")
         assert modem.protocol.recv_buffer == b''
         modem.close()
 

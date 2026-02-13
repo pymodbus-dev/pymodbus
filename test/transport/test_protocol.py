@@ -6,7 +6,6 @@ import pytest
 
 from pymodbus.transport import (
     CommType,
-    ModbusProtocol,
 )
 
 

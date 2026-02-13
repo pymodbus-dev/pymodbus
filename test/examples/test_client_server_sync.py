@@ -47,8 +47,8 @@ class TestClientServerSyncExamples:
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
         """Return next port."""
-        base_ports[__class__.__name__] += 1
-        return base_ports[__class__.__name__]
+        base_ports[__class__.__name__] += 1  # type: ignore[index, name-defined]
+        return base_ports[__class__.__name__]  # type: ignore[index, name-defined]
 
     def test_combinations(
         self,

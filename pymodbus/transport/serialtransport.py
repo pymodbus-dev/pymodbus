@@ -15,6 +15,7 @@ class SerialTransport(asyncio.Transport):
     """An asyncio serial transport."""
 
     force_poll: bool = os.name == "nt"
+    # async_loop: asyncio.AbstractEventLoop
 
     def __init__(self, loop, protocol, url, baudrate, bytesize, parity, stopbits, timeout) -> None:
         """Initialize."""

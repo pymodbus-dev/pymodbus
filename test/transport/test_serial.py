@@ -47,20 +47,20 @@ class TestTransportSerial:
             partial(comm.resume_reading),
             partial(comm.is_closing),
         ]
-        methods[inx]()
+        methods[inx]()  # type: ignore[operator]
 
     @pytest.mark.parametrize("inx", range(0, 4))
     async def test_external_methods(self, inx):
         """Test external methods."""
         comm = SerialTransport(mock.MagicMock(), mock.Mock(), "dummy", None, None, None, None, None)
-        comm.sync_serial.read = mock.MagicMock(return_value="abcd")
-        comm.sync_serial.write = mock.MagicMock(return_value=4)
-        comm.sync_serial.fileno = mock.MagicMock(return_value=2)
-        comm.sync_serial.async_loop.add_writer = mock.MagicMock()
-        comm.sync_serial.async_loop.add_reader = mock.MagicMock()
-        comm.sync_serial.async_loop.remove_writer = mock.MagicMock()
-        comm.sync_serial.async_loop.remove_reader = mock.MagicMock()
-        comm.sync_serial.in_waiting = False
+        comm.sync_serial.read = mock.MagicMock(return_value="abcd")  # type: ignore[method-assign]
+        comm.sync_serial.write = mock.MagicMock(return_value=4)  # type: ignore[method-assign]
+        comm.sync_serial.fileno = mock.MagicMock(return_value=2)  # type: ignore[method-assign]
+        comm.async_loop.add_writer = mock.MagicMock()
+        comm.async_loop.add_reader = mock.MagicMock()
+        comm.async_loop.remove_writer = mock.MagicMock()
+        comm.async_loop.remove_reader = mock.MagicMock()
+        comm.sync_serial.in_waiting = False  # type: ignore[misc]
 
         methods = [
             partial(comm.write, b"abcd"),
@@ -109,7 +109,7 @@ class TestTransportSerial:
     async def test_close(self):
         """Test close."""
         comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy", None, None, None, None, None)
-        comm.sync_serial = None
+        comm.sync_serial = None # type: ignore[assignment]
         comm.close()
 
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
@@ -174,7 +174,7 @@ class TestTransportSerial:
     async def test_write_force(self):
         """Test write exception."""
         comm = SerialTransport(asyncio.get_running_loop(), mock.Mock(), "dummy", None, None, None, None, None)
-        comm.poll_task = True
+        comm.poll_task = True # type: ignore[assignment]
         comm.sync_serial = mock.MagicMock()
         comm.sync_serial.write.return_value = 3
         comm.intern_write_buffer.append(b"abcd")

@@ -115,7 +115,7 @@ class TestSimDevice:
         with pytest.raises(TypeError):
             SimDevice(1, simdata=[SimData(1)], action=self.my_sync_action)
         with pytest.raises(TypeError):
-            SimDevice(1, simdata=[SimData(1)], action="no good")
+            SimDevice(1, simdata=[SimData(1)], action="no good")  # type: ignore[arg-type]
 
     @pytest.mark.parametrize(("block", "result"), [
         ([SimData(1, values=123, readonly=True, datatype=DataType.INT16)],

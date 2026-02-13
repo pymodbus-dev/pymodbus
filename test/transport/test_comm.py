@@ -9,7 +9,6 @@ import pytest
 from pymodbus.logging import Log
 from pymodbus.transport import (
     CommType,
-    ModbusProtocol,
 )
 from pymodbus.transport.serialtransport import SerialTransport
 
@@ -24,8 +23,8 @@ class TestTransportComm:
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
         """Return next port."""
-        base_ports[__class__.__name__] += 1
-        return base_ports[__class__.__name__]
+        base_ports[__class__.__name__] += 1  # type: ignore[name-defined,index]
+        return base_ports[__class__.__name__]  # type: ignore[name-defined,index]
 
     @pytest.mark.parametrize(
         ("use_comm_type", "use_host"),
@@ -200,7 +199,7 @@ class TestTransportComm:
             # (CommType.SERIAL, "socket://localhost:7301"), no multipoint
         ],
     )
-    async def test_connected_multiple(self, client, server, use_port):
+    async def test_connected_multiple(self, client, server, use_port, dummy_protocol):
         """Test connection and data exchange."""
         Log.debug("test_connected {}", use_port)
         client.comm_params.reconnect_delay = 0.0
@@ -210,10 +209,10 @@ class TestTransportComm:
         assert len(server.active_connections) == 1
         server_connected = list(server.active_connections.values())[0]
 
-        client2 = ModbusProtocol(client.comm_params, False)
-        client2.callback_connected = mock.Mock()
-        client2.callback_disconnected = mock.Mock()
-        client2.callback_data = mock.Mock(return_value=0)
+        client2 = dummy_protocol(client.comm_params, False)
+        client2.callback_connected = mock.Mock()  # type: ignore[method-assign]
+        client2.callback_disconnected = mock.Mock()  # type: ignore[method-assign]
+        client2.callback_data = mock.Mock(return_value=0)  # type: ignore[method-assign]
         assert await client2.connect()
         await asyncio.sleep(0.5)
         assert len(server.active_connections) == 2

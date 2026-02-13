@@ -40,8 +40,8 @@ class TestExamples:
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
         """Return next port."""
-        base_ports[__class__.__name__] += 1
-        return base_ports[__class__.__name__]
+        base_ports[__class__.__name__] += 1  # type: ignore[index, name-defined]
+        return base_ports[__class__.__name__]  # type: ignore[index, name-defined]
 
     @pytest.mark.parametrize("framer", ["socket", "rtu", "ascii"])
     def test_message_parser(self, framer):
@@ -137,8 +137,8 @@ class TestAsyncExamples:
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
         """Return next port."""
-        base_ports[__class__.__name__] += 1
-        return base_ports[__class__.__name__]
+        base_ports[__class__.__name__] += 1  # type: ignore[index, name-defined]
+        return base_ports[__class__.__name__]  # type: ignore[index, name-defined]
 
     async def test_client_async_calls(self, mock_server):
         """Test client_async_calls."""
@@ -207,8 +207,8 @@ class TestSyncExamples:
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
         """Return next port."""
-        base_ports[__class__.__name__] += 1
-        return base_ports[__class__.__name__]
+        base_ports[__class__.__name__] += 1  # type: ignore[index, name-defined]
+        return base_ports[__class__.__name__]  # type: ignore[index, name-defined]
 
     def test_client_calls(self, mock_clc, mock_cls):
         """Test client_calls."""

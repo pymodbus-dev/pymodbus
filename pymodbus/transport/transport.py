@@ -608,8 +608,9 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
         if self.protocol:
             self.protocol.connection_lost(None)
 
-    def sendto(self, data: bytes, _addr: Any = None) -> None:
+    def sendto(self, data: bytes, addr: Any = None) -> None:
         """Send datagrame."""
+        _ = addr
         self.write(data)
 
     def write(self, data: bytes) -> None:

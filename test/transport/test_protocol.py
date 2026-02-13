@@ -25,8 +25,8 @@ class TestTransportProtocol1:
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
         """Return next port."""
-        base_ports[__class__.__name__] += 1
-        return base_ports[__class__.__name__]
+        base_ports[__class__.__name__] += 1  # type: ignore[name-defined,index]
+        return base_ports[__class__.__name__]  # type: ignore[name-defined,index]
 
 
     @pytest.mark.parametrize("use_comm_type", COMM_TYPES)
@@ -46,20 +46,20 @@ class TestTransportProtocol1:
         """Test init client id."""
         assert client.unique_id == str(id(client))
 
-    async def test_init_source_addr(self, use_clc):
+    async def test_init_source_addr(self, use_clc, dummy_protocol):
         """Test callbacks."""
         use_clc.source_address = ("localhost", 112)
-        ModbusProtocol(use_clc, True)
+        dummy_protocol(use_clc, True)
 
-    def test_init_sync(self, use_clc):
+    def test_init_sync(self, use_clc, dummy_protocol):
         """Test callbacks."""
         use_clc.source_address = ("localhost", 112)
-        ModbusProtocol(use_clc, True, is_sync=True)
+        dummy_protocol(use_clc, True, is_sync=True)
 
-    async def test_init_source_addr_none(self, use_clc):
+    async def test_init_source_addr_none(self, use_clc, dummy_protocol):
         """Test callbacks."""
         use_clc.source_address = None
-        ModbusProtocol(use_clc, True)
+        dummy_protocol(use_clc, True)
 
     async def test_loop_connect(self, client, dummy_protocol):
         """Test properties."""
@@ -146,19 +146,19 @@ class TestTransportProtocol1:
         client.datagram_received(b"abc", "127.0.0.1")
         assert client.recv_buffer == b'abc'
 
-    async def test_callback_connected(self, use_clc):
+    async def test_callback_connected(self, use_clc, dummy_protocol):
         """Test callbacks."""
-        client = ModbusProtocol(use_clc, False)
+        client = dummy_protocol(use_clc, False)
         client.callback_connected()
 
-    async def test_callback_disconnected(self, use_clc):
+    async def test_callback_disconnected(self, use_clc, dummy_protocol):
         """Test callbacks."""
-        client = ModbusProtocol(use_clc, False)
+        client = dummy_protocol(use_clc, False)
         client.callback_disconnected(Exception("test"))
 
-    async def test_callback_data(self, use_clc):
+    async def test_callback_data(self, use_clc, dummy_protocol):
         """Test callbacks."""
-        client = ModbusProtocol(use_clc, False)
+        client = dummy_protocol(use_clc, False)
         client.callback_data(b"abcd")
 
     async def test_handle_local_echo(self, client):
@@ -220,8 +220,8 @@ class TestTransportProtocol2:
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
         """Return next port."""
-        base_ports[__class__.__name__] += 1
-        return base_ports[__class__.__name__]
+        base_ports[__class__.__name__] += 1  # type: ignore[name-defined,index]
+        return base_ports[__class__.__name__]  # type: ignore[name-defined,index]
 
 
     async def test_eof_received(self, client):
@@ -358,23 +358,23 @@ class TestTransportProtocol2:
 
     @pytest.mark.parametrize("use_host", ["socket://localhost:5005", "/dev/tty"])
     @pytest.mark.parametrize("use_comm_type", [CommType.SERIAL])
-    async def test_init_serial(self, use_cls):
+    async def test_init_serial(self, use_cls, dummy_protocol):
         """Test server serial with socket."""
-        ModbusProtocol(use_cls, True)
+        dummy_protocol(use_cls, True)
 
     @pytest.mark.parametrize("use_host", ["socket://localhost:5006"])
     @pytest.mark.parametrize("use_comm_type", [CommType.SERIAL])
-    async def test_init_create_serial(self, use_cls):
+    async def test_init_create_serial(self, use_cls, dummy_protocol):
         """Test server serial with socket."""
-        protocol = ModbusProtocol(use_cls, True)
+        protocol = dummy_protocol(use_cls, True)
         await protocol.listen()
 
     @pytest.mark.parametrize("use_host", ["localhost"])
     @pytest.mark.parametrize("use_comm_type", [CommType.UDP])
     @pytest.mark.parametrize("is_server", [True, False])
-    async def test_init_udp(self, is_server, use_cls, use_clc):
+    async def test_init_udp(self, is_server, use_cls, use_clc, dummy_protocol):
         """Test server/client udp."""
         if is_server:
-            ModbusProtocol(use_cls, True)
+            dummy_protocol(use_cls, True)
         else:
-            ModbusProtocol(use_clc, False)
+            dummy_protocol(use_clc, False)

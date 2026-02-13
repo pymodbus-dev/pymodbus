@@ -106,9 +106,13 @@ def get_commandline(cmdline=None):
             "No custom configuration provided. Using internal default 'setup.json'.\n"
             "To interact with your own registers, please provide a JSON file using --json_file."
         )
+
     if not os.path.exists(args.json_file):
-        pymodbus_apply_logging_config("ERROR") 
-        Log.error(f"FATAL: Configuration file '{args.json_file}' not found. Please provide a valid path or ensure setup.json exists.")
+        pymodbus_apply_logging_config("ERROR")
+        Log.error(
+            f"FATAL: Configuration file '{args.json_file}' not found. "
+            "Please provide a valid path or ensure setup.json exists."
+        )
         sys.exit(1)
 
     Log.info("Start simulator")

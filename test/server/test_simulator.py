@@ -301,4 +301,13 @@ class TestSimulator:
         with mock.patch("pymodbus.server.simulator.http_server.ModbusSimulatorServer.run_forever") as server:
             server.return_value = True
             await run_main(cmdline={})
+    async def test_simulator_main_file_not_found(self):
+        """Test main with missing configuration file."""
+        with mock.patch("os.path.exists") as mock_exists:
+            mock_exists.return_value = False
+            # Usamos side_effect para que sys.exit REALMENTE lance una excepción
+            with mock.patch("sys.exit", side_effect=SystemExit(1)) as mock_exit:
+                with pytest.raises(SystemExit):
+                    await run_main(cmdline=["--json_file", "non_existent.json"])
+                mock_exit.assert_called_once_with(1)
 

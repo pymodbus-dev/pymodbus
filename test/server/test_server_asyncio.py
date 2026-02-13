@@ -33,14 +33,14 @@ TEST_DATA = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01"
 class BasicClient(asyncio.BaseProtocol):
     """Basic client."""
 
-    connected = None
-    data = None
-    dataTo = None
-    received_data = None
-    done = None
-    eof = None
-    transport = None
-    protocol = None
+    connected: asyncio.Future
+    data: bytes
+    dataTo: bytes
+    received_data: bytes
+    done: asyncio.Future
+    eof: asyncio.Future
+    transport: asyncio.BaseTransport | None = None
+    protocol: asyncio.BaseProtocol | None = None
 
     def connection_made(self, transport):
         """Get Connection made."""

@@ -66,7 +66,7 @@ class TestRequesthandler:
         await requesthandler.handle_request()
         requesthandler.last_pdu = ExceptionResponse(17)
         await requesthandler.handle_request()
-        requesthandler.last_pdu.datastore_update = mock.AsyncMock()
+        requesthandler.last_pdu.datastore_update = mock.AsyncMock()  # type: ignore[method-assign]
         requesthandler.server.broadcast_enable = True
         requesthandler.last_pdu.dev_id = 0
         await requesthandler.handle_request()

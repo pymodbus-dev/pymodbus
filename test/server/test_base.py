@@ -4,6 +4,7 @@ from unittest import mock
 import pytest
 
 from pymodbus.datastore import ModbusServerContext
+from pymodbus.framer import FramerType
 from pymodbus.pdu import ReadHoldingRegistersRequest
 from pymodbus.server import ModbusBaseServer
 from pymodbus.simulator import SimData, SimDevice
@@ -28,7 +29,7 @@ class TestBaseServer:
             False,
             False,
             None,
-            "socket",
+            FramerType.SOCKET,
             None,
             None,
             None,
@@ -53,7 +54,7 @@ class TestBaseServer:
             False,
             False,
             None,
-            "socket",
+            FramerType.SOCKET,
             None,
             None,
             None,

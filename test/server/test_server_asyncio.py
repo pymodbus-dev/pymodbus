@@ -2,7 +2,7 @@
 import asyncio
 import logging
 import ssl
-from asyncio import CancelledError
+from asyncio import CancelledError, Task
 from contextlib import suppress
 from unittest import mock
 
@@ -20,6 +20,7 @@ from pymodbus.server import (
     ModbusTcpServer,
     ModbusTlsServer,
     ModbusUdpServer,
+    ModbusBaseServer,
 )
 
 
@@ -51,10 +52,10 @@ class BasicClient(asyncio.BaseProtocol):
         self.transport = transport
         if BasicClient.data is not None:
             _logger.debug("TEST Client write data")
-            self.transport.write(BasicClient.data)
+            self.transport.write(BasicClient.data)  # type: ignore[union-attr]
         if BasicClient.dataTo is not None:
             _logger.debug("TEST Client sendTo data")
-            self.transport.sendto(BasicClient.dataTo)
+            self.transport.sendto(BasicClient.dataTo)  # type: ignore[union-attr]
 
     def data_received(self, data):
         """Get Data received."""
@@ -69,7 +70,7 @@ class BasicClient(asyncio.BaseProtocol):
         BasicClient.received_data = data
         if BasicClient.done is not None:  # pragma: no cover
             BasicClient.done.set_result(True)
-        self.transport.close()
+        self.transport.close()  # type: ignore[union-attr]
 
     def connection_lost(self, exc):
         """EOF received."""
@@ -87,12 +88,12 @@ class BasicClient(asyncio.BaseProtocol):
         if BasicClient.transport:
             BasicClient.transport.close()
             BasicClient.transport = None
-        BasicClient.data = None
-        BasicClient.connected = None
-        BasicClient.done = None
-        BasicClient.received_data = None
-        BasicClient.eof = None
-        BasicClient.my_protocol = None
+        BasicClient.data = None  # type: ignore[assignment]
+        BasicClient.connected = None # type: ignore[assignment]
+        BasicClient.done = None # type: ignore[assignment]
+        BasicClient.received_data = None # type: ignore[assignment]
+        BasicClient.eof = None # type: ignore[assignment]
+        BasicClient.my_protocol = None  # type: ignore[attr-defined]
 
 
 class TestAsyncioServer:
@@ -104,12 +105,12 @@ class TestAsyncioServer:
     This test suite does not attempt to test any of the underlying protocol details
     """
 
-    server = None
-    task = None
-    loop = None
-    store = None
-    context = None
-    identity = None
+    server: ModbusBaseServer | None = None
+    task: Task | None = None
+    loop: asyncio.AbstractEventLoop | None = None
+    store: ModbusDeviceContext | None = None
+    context: ModbusServerContext | None = None
+    identity: ModbusDeviceIdentification | None = None
 
     @pytest.fixture(autouse=True)
     async def _setup_teardown(self):
@@ -206,13 +207,13 @@ class TestAsyncioServer:
         BasicClient.connected = asyncio.Future()
         BasicClient.done = asyncio.Future()
         BasicClient.eof = asyncio.Future()
-        random_port = self.server.transport.sockets[0].getsockname()[
+        random_port = self.server.transport.sockets[0].getsockname()[  # type: ignore[union-attr]
             1
         ]  # get the random server port
         (
             BasicClient.transport,
             BasicClient.my_protocol,
-        ) = await self.loop.create_connection(
+        ) = await self.loop.create_connection(  # type: ignore[union-attr]
             BasicClient, host="127.0.0.1", port=random_port
         )
         await asyncio.wait_for(BasicClient.connected, timeout=0.1)
@@ -230,7 +231,7 @@ class TestAsyncioServer:
         """Call on serve_forever() twice should result in a runtime error."""
         await self.start_server()
         with pytest.raises(RuntimeError):
-            await self.server.serve_forever()
+            await self.server.serve_forever()  # type: ignore[union-attr]
 
     async def test_async_tcp_server_receive_data(self):
         """Test data sent on socket is received by internals - doesn't not process data."""
@@ -257,12 +258,12 @@ class TestAsyncioServer:
         """Test connect/disconnect trace handler."""
         trace_connect = mock.Mock()
         await self.start_server()
-        self.server.trace_connect = trace_connect
+        self.server.trace_connect = trace_connect  # type: ignore[union-attr]
         await self.connect_server()
         trace_connect.assert_called_once_with(True)
         trace_connect.reset_mock()
 
-        BasicClient.transport.close()
+        BasicClient.transport.close()  # type: ignore[union-attr]
         await asyncio.sleep(0.2)  # so we have to wait a bit
         trace_connect.assert_called_once_with(False)
 
@@ -271,7 +272,7 @@ class TestAsyncioServer:
         await self.start_server()
         await self.connect_server()
 
-        BasicClient.transport.close()
+        BasicClient.transport.close()  # type: ignore[union-attr]
         await asyncio.sleep(0.2)  # so we have to wait a bit
 
     async def test_async_tcp_server_shutdown_connection(self):
@@ -282,7 +283,7 @@ class TestAsyncioServer:
         # On Windows we seem to need to give this an extra chance to finish,
         # otherwise there ends up being an active connection at the assert.
         await asyncio.sleep(0.5)
-        await self.server.shutdown()
+        await self.server.shutdown()  # type: ignore[union-attr]
 
     async def test_async_tcp_server_no_device(self):
         """Test unknown device exception."""
@@ -293,7 +294,7 @@ class TestAsyncioServer:
         await self.start_server()
         await self.connect_server()
         assert not BasicClient.eof.done()
-        await self.server.shutdown()
+        await self.server.shutdown()  # type: ignore[union-attr]
         self.server = None
 
     async def test_async_tcp_server_modbus_error(self):
@@ -314,44 +315,44 @@ class TestAsyncioServer:
         """Test that the modbus tls asyncio server starts correctly."""
         with mock.patch.object(ssl.SSLContext, "load_cert_chain"):
             await self.start_server(do_tls=True, do_forever=False, do_ident=True)
-            assert self.server.control.Identity.VendorName == "VendorName"
+            assert self.server.control.Identity.VendorName == "VendorName"  # type: ignore[union-attr]
 
     async def test_async_start_tls_server(self):
         """Test that the modbus tls asyncio server starts correctly."""
         with mock.patch.object(ssl.SSLContext, "load_cert_chain"):
             await self.start_server(do_tls=True, do_ident=True)
-            assert self.server.control.Identity.VendorName == "VendorName"
+            assert self.server.control.Identity.VendorName == "VendorName"  # type: ignore[union-attr]
 
     async def test_async_tls_server_serve_forever_twice(self):
         """Call on serve_forever() twice should result in a runtime error."""
         with mock.patch.object(ssl.SSLContext, "load_cert_chain"):
             await self.start_server(do_tls=True)
             with pytest.raises(RuntimeError):
-                await self.server.serve_forever()
+                await self.server.serve_forever()  # type: ignore[union-attr]
 
     async def test_async_start_udp_server_no_loop(self):
         """Test that the modbus udp asyncio server starts correctly."""
         await self.start_server(do_udp=True, do_forever=False, do_ident=True)
-        assert self.server.control.Identity.VendorName == "VendorName"
-        assert not self.server.transport
+        assert self.server.control.Identity.VendorName == "VendorName"  # type: ignore[union-attr]
+        assert not self.server.transport  # type: ignore[union-attr]
 
     async def test_async_start_udp_server(self):
         """Test that the modbus udp asyncio server starts correctly."""
         await self.start_server(do_udp=True, do_ident=True)
-        assert self.server.control.Identity.VendorName == "VendorName"
-        assert self.server.transport
+        assert self.server.control.Identity.VendorName == "VendorName"  # type: ignore[union-attr]
+        assert self.server.transport  # type: ignore[union-attr]
 
     async def test_async_udp_server_serve_forever_close(self):
         """Test StarAsyncUdpServer serve_forever() method."""
         await self.start_server(do_udp=True)
-        await self.server.shutdown()
+        await self.server.shutdown()  # type: ignore[union-attr]
         self.server = None
 
     async def test_async_udp_server_serve_forever_twice(self):
         """Call on serve_forever() twice should result in a runtime error."""
         await self.start_server(do_udp=True, do_ident=True)
         with pytest.raises(RuntimeError):
-            await self.server.serve_forever()
+            await self.server.serve_forever()  # type: ignore[union-attr]
 
     async def test_async_udp_server_roundtrip(self):
         """Test sending and receiving data on udp socket."""
@@ -361,8 +362,8 @@ class TestAsyncioServer:
         BasicClient.dataTo = TEST_DATA  # device 1, read register
         BasicClient.done = asyncio.Future()
         await self.start_server(do_udp=True)
-        random_port = self.server.transport._sock.getsockname()[1]  # pylint: disable=protected-access
-        transport, _ = await self.loop.create_datagram_endpoint(
+        random_port = self.server.transport._sock.getsockname()[1]    # type: ignore[union-attr] # pylint: disable=protected-access
+        transport, _ = await self.loop.create_datagram_endpoint(  # type: ignore[union-attr]
             BasicClient, remote_addr=("127.0.0.1", random_port)
         )
         await asyncio.wait_for(BasicClient.done, timeout=0.1)
@@ -380,8 +381,8 @@ class TestAsyncioServer:
             new_callable=lambda: mock.Mock(side_effect=Exception),
         ):
             # get the random server port pylint: disable=protected-access
-            random_port = self.server.transport._sock.getsockname()[1]
-            _, _ = await self.loop.create_datagram_endpoint(
+            random_port = self.server.transport._sock.getsockname()[1]  # type: ignore[union-attr]
+            _, _ = await self.loop.create_datagram_endpoint(  # type: ignore[union-attr]
                 BasicClient, remote_addr=("127.0.0.1", random_port)
             )
             await asyncio.wait_for(BasicClient.connected, timeout=0.1)

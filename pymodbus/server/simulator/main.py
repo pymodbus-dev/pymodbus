@@ -109,10 +109,9 @@ def get_commandline(cmdline=None):
 
     if not os.path.exists(args.json_file):
         pymodbus_apply_logging_config("ERROR")
-        Log.error(
-            f"FATAL: Configuration file '{args.json_file}' not found. "
-            "Please provide a valid path or ensure setup.json exists."
-        )
+        Log.error(f"FATAL: Configuration file '{args.json_file}' not found.")
+        Log.error("The simulator cannot start without a valid configuration file.")
+        Log.error("Please provide a path with --json_file or ensure setup.json exists.")
         sys.exit(1)
 
     Log.info("Start simulator")

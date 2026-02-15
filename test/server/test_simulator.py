@@ -298,7 +298,10 @@ class TestSimulator:
 
     async def test_simulator_main(self):
         """Test main."""
-        with mock.patch("pymodbus.server.simulator.http_server.ModbusSimulatorServer.run_forever") as server:
-            server.return_value = True
+        with mock.patch("pymodbus.server.simulator.http_server.ModbusSimulatorServer.run_forever", return_value=True):
             await run_main(cmdline={})
 
+    async def test_simulator_main_file_not_found(self):
+        """Test main with missing configuration file."""
+        with mock.patch("os.path.exists", return_value=False), pytest.raises(SystemExit):
+            await run_main(cmdline=["--json_file", "non_existent.json"])

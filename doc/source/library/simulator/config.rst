@@ -5,6 +5,27 @@ Configuring the pymodbus simulator is done with a json file, or if only
 using the datastore simulator a python dict (same structure as the
 device part of the json file).
 
+
+Starting the Simulator
+----------------------
+
+The simulator is invoked via the command line entry point. The following parameters allow you to select your configuration and control the server behavior:
+
+* ``--json_file``: 
+    Path to the JSON configuration file. 
+    **Note:** The simulator will validate the existence of this file and fail to start with an error message if it is missing.
+* ``--modbus_server``: 
+    Selects which server configuration to load from the ``server_list``.
+* ``--modbus_device``: 
+    Selects which device registers to load from the ``device_list``.
+* ``--http_host`` / ``--http_port``: 
+    Defines the binding address and port for the Web UI (default port: 8081).
+* ``--log``: 
+    Sets the logging level (choices: critical, error, warning, info, debug).
+* ``--custom_actions_module``: 
+    Optional Python file for custom register behaviors.
+
+
 Json file layout
 ----------------
 

@@ -28,4 +28,5 @@ class TestCOntextDataStore:
     def test_datastore_Sequential_iter(self):
         """Test check frame."""
         block = ModbusSequentialDataBlock(0x01, [17])
+        str(block)
         _ = list(block)

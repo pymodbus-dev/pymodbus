@@ -54,9 +54,8 @@ class BasicClient(asyncio.BaseProtocol):
         if BasicClient.data is not None:
             _logger.debug("TEST Client write data")
             self.transport.write(BasicClient.data)  # type: ignore[union-attr]
-        if BasicClient.dataTo is not None:
-            _logger.debug("TEST Client sendTo data")
-            self.transport.sendto(BasicClient.dataTo)  # type: ignore[union-attr]
+        _logger.debug("TEST Client sendTo data")
+        self.transport.sendto(BasicClient.dataTo)  # type: ignore[union-attr]
 
     def data_received(self, data):
         """Get Data received."""

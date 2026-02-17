@@ -164,6 +164,13 @@ class TestPdu:
         pdu = pdutype()
         assert pdu
 
+    def test_pdu_base_instance(self):
+        """Test that all PDU types can be created."""
+        pdu = ModbusPDU(4)
+        str(pdu)
+        assert pdu
+        assert pdu.encode() == b''
+
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests + responses)
     @pytest.mark.usefixtures("frame", "args")
     def test_pdu_instance_args(self, pdutype, kwargs):

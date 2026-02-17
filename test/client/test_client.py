@@ -307,6 +307,12 @@ class TestMixin:
         with pytest.raises(TypeError):
             ModbusClientMixin.convert_from_registers([123], ("d", 4))  # type: ignore[arg-type]
 
+    def test_client_mixin_execute(self):
+        """Test mixin execute."""
+        a = ModbusClientMixin()
+        a.execute(False, cast(ModbusPDU, None))
+
+
 
 class TestClientBase:
     """Test client code."""

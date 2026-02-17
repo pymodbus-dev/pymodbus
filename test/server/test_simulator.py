@@ -238,7 +238,8 @@ class TestSimulator:
     def test_simulator_commandline(self):
         """Test commandline."""
         assert get_commandline()
-        assert get_commandline(["--json_file", "got it"])
+        with mock.patch("os.path.exists", return_value=True):
+            assert get_commandline(["--json_file", "got it"])
 
     async def test_simulator_server_tcp(self, simulator_server):
         """Test init simulator server."""

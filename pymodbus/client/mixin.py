@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import enum
 import struct
-from abc import abstractmethod
 from typing import Generic, Literal, TypeVar, cast
 
 from ..constants import ModbusStatus
@@ -49,9 +48,9 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     def __init__(self):
         """Initialize."""
 
-    @abstractmethod
     def execute(self, no_response_expected: bool, request: ModbusPDU) -> T:
         """Execute request."""
+        return cast(T, None)
 
     def read_coils(self, address: int, *, count: int = 1, device_id: int = 1, no_response_expected: bool = False) -> T:
         """Read coils (code 0x01).

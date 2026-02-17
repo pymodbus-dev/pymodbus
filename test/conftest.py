@@ -237,7 +237,7 @@ class MockLastValuesContext(ModbusServerContext):
         super().__init__()
         self.valid = valid
         self.default = default
-        self.last_values = []
+        self.last_values: list = []
 
     async def async_getValues(self, device_id, func_code, address, count=0):
         """Get values."""

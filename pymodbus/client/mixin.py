@@ -50,6 +50,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
     def execute(self, no_response_expected: bool, request: ModbusPDU) -> T:
         """Execute request."""
+        _ = no_response_expected, request
         return cast(T, None)
 
     def read_coils(self, address: int, *, count: int = 1, device_id: int = 1, no_response_expected: bool = False) -> T:

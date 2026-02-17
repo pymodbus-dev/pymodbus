@@ -77,7 +77,7 @@ jobs:
       - name: Type check with zuban
         if: matrix.run_lint == true
         run: |
-          uv run zuban check pymodbus examples
+          uv run zuban check pymodbus examples test
 
       - name: ruff
         if: matrix.run_lint == true

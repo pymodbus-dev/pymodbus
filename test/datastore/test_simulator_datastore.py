@@ -1,5 +1,5 @@
+#  zuban: ignore
 """Test datastore."""
-
 import copy
 
 import pytest

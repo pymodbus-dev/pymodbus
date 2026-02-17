@@ -17,7 +17,7 @@ from pymodbus import pymodbus_apply_logging_config
 _logger = logging.getLogger(__file__)
 
 
-def get_commandline(server: bool = False, description: str | None = None, extras: Any = None, cmdline: str | None = None):
+def get_commandline(server: bool = False, description: str | None = None, extras: Any = None, cmdline: list[str] | None = None):
     """Read and check command line arguments."""
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(

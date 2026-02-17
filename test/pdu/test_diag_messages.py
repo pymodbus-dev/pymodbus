@@ -129,7 +129,7 @@ class TestDataStore:
     def test_diagnostic_encode_error(self):
         """Testing diagnostic request/response can be decoded and encoded."""
         msg_obj = DiagnosticBase()
-        msg_obj.message = b"not allowed"
+        msg_obj.message = "not allowed"  # type: ignore[assignment]
         with pytest.raises(TypeError):
             msg_obj.encode()
 

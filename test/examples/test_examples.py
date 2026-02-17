@@ -147,11 +147,11 @@ class TestAsyncExamples:
     async def test_client_async_calls_errors(self, mock_server):
         """Test client_async_calls."""
         client = setup_async_client(cmdline=mock_server)
-        client.read_coils = mock.AsyncMock(side_effect=ModbusException("test"))
+        client.read_coils = mock.AsyncMock(side_effect=ModbusException("test"))  # type: ignore[method-assign]
         with pytest.raises(ModbusException):
             await run_async_client(client, modbus_calls=async_template_call)
         client.close()
-        client.read_coils = mock.AsyncMock(return_value=ExceptionResponse(0x05, 0x10))
+        client.read_coils = mock.AsyncMock(return_value=ExceptionResponse(0x05, 0x10))  # type: ignore[method-assign]
         with pytest.raises(ModbusException):
             await run_async_client(client, modbus_calls=async_template_call)
         client.close()
@@ -159,11 +159,11 @@ class TestAsyncExamples:
     async def test_client_calls_errors(self, mock_server):
         """Test client_calls."""
         client = setup_async_client(cmdline=mock_server)
-        client.read_coils = mock.Mock(side_effect=ModbusException("test"))
+        client.read_coils = mock.Mock(side_effect=ModbusException("test"))  # type: ignore[method-assign]
         with pytest.raises(ModbusException):
             await run_async_client(client, modbus_calls=async_template_call)
         client.close()
-        client.read_coils = mock.Mock(return_value=ExceptionResponse(0x05, 0x10))
+        client.read_coils = mock.Mock(return_value=ExceptionResponse(0x05, 0x10))  # type: ignore[method-assign]
         with pytest.raises(ModbusException):
             await run_async_client(client, modbus_calls=template_call)
         client.close()

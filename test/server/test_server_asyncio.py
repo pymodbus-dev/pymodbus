@@ -4,6 +4,7 @@ import logging
 import ssl
 from asyncio import CancelledError, Task
 from contextlib import suppress
+from typing import Any
 from unittest import mock
 
 import pytest
@@ -16,11 +17,11 @@ from pymodbus.datastore import (
 )
 from pymodbus.exceptions import NoSuchIdException
 from pymodbus.server import (
+    ModbusBaseServer,
     ModbusSerialServer,
     ModbusTcpServer,
     ModbusTlsServer,
     ModbusUdpServer,
-    ModbusBaseServer,
 )
 
 
@@ -109,7 +110,7 @@ class TestAsyncioServer:
     task: Task | None = None
     loop: asyncio.AbstractEventLoop | None = None
     store: ModbusDeviceContext | None = None
-    context: ModbusServerContext | None = None
+    context: Any = None
     identity: ModbusDeviceIdentification | None = None
 
     @pytest.fixture(autouse=True)
@@ -151,7 +152,7 @@ class TestAsyncioServer:
         self, do_forever=True, do_serial=False, do_tls=False, do_udp=False, do_ident=False, serv_addr=SERV_ADDR,
     ):
         """Handle setup and control of tcp server."""
-        args = {
+        args: dict[str, Any] = {
             "context": self.context,
             "address": SERV_ADDR,
         }
@@ -212,7 +213,7 @@ class TestAsyncioServer:
         ]  # get the random server port
         (
             BasicClient.transport,
-            BasicClient.my_protocol,
+            BasicClient.protocol,
         ) = await self.loop.create_connection(  # type: ignore[union-attr]
             BasicClient, host="127.0.0.1", port=random_port
         )

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import asyncio
 import struct
-from abc import abstractmethod
 
 from ..datastore import ModbusServerContext
 from ..exceptions import ModbusIOException, NotImplementedException
@@ -82,11 +81,10 @@ class ModbusPDU:
         """Calculate response pdu size."""
         return 0
 
-    @abstractmethod
     def encode(self) -> bytes:
         """Encode the message."""
+        return b''
 
-    @abstractmethod
     def decode(self, data: bytes) -> None:
         """Decode data part of the message."""
 

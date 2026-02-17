@@ -3,6 +3,8 @@
 This fixture tests the functionality of all the
 mei based request/response messages:
 """
+from typing import cast
+
 import pytest
 
 from pymodbus.constants import DeviceInformation
@@ -61,7 +63,7 @@ class TestMeiMessage:
             read_code=DeviceInformation.EXTENDED, object_id=0x80
         )
         result = await handle.datastore_update(context, 0)
-        assert result.information[0x81] == ["Test", "Repeated"]
+        assert cast(ReadDeviceInformationResponse, result).information[0x81] == ["Test", "Repeated"]
 
     async def test_read_device_information_request_error(self, mock_server_context):
         """Test basic bit message encoding/decoding."""
@@ -87,8 +89,8 @@ class TestMeiMessage:
         """Test calculateRtuFrameSize, short buffer."""
         handle = ReadDeviceInformationResponse()
         assert handle.decode_sub_function_code(b"\x0e\x01\x83") == 0x83
-        handle = ReadDeviceInformationRequest()
-        assert handle.decode_sub_function_code(b"\x0e\x01\x83") == 0x83
+        handle2 = ReadDeviceInformationRequest()
+        assert handle2.decode_sub_function_code(b"\x0e\x01\x83") == 0x83
 
     def test_read_device_information_encode(self):
         """Test that the read fifo queue response can encode."""

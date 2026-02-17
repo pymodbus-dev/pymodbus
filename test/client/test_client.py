@@ -1,6 +1,7 @@
 """Test client sync."""
 import socket
 import ssl
+from typing import cast
 from unittest import mock
 
 import pytest
@@ -250,7 +251,7 @@ class TestMixin:
             if isinstance(result, list):
                 result = [round(v, 6) for v in result]
             else:
-                result = round(result, 6)
+                result = round(cast(float, result), 6)
         assert result == value
 
     @pytest.mark.parametrize(
@@ -283,7 +284,7 @@ class TestMixin:
         regs = ModbusClientMixin.convert_to_registers(value, datatype)
         result = ModbusClientMixin.convert_from_registers(regs, datatype)
         if datatype == ModbusClientMixin.DATATYPE.FLOAT32 or datatype == ModbusClientMixin.DATATYPE.FLOAT64:
-            result = round(result, 6)
+            result = round(cast(float, result), 6)
         assert result == value
         assert regs == registers
 
@@ -296,15 +297,21 @@ class TestMixin:
             ModbusClientMixin.convert_from_registers([123], ModbusClientMixin.DATATYPE.FLOAT64)
 
         with pytest.raises(TypeError):
-            ModbusClientMixin.convert_to_registers(bool, ModbusClientMixin.DATATYPE.BITS)
+            ModbusClientMixin.convert_to_registers(bool, ModbusClientMixin.DATATYPE.BITS)  # type: ignore[arg-type]
 
     def test_client_mixin_convert_datatype_fail(self):
         """Test convert fail."""
         with pytest.raises(TypeError):
-            ModbusClientMixin.convert_to_registers(123, ("s", 0))
+            ModbusClientMixin.convert_to_registers(123, ("s", 0))  # type: ignore[arg-type]
 
         with pytest.raises(TypeError):
-            ModbusClientMixin.convert_from_registers([123], ("d", 4))
+            ModbusClientMixin.convert_from_registers([123], ("d", 4))  # type: ignore[arg-type]
+
+    def test_client_mixin_execute(self):
+        """Test mixin execute."""
+        a = ModbusClientMixin()
+        a.execute(False, cast(ModbusPDU, None))
+
 
 
 class TestClientBase:
@@ -618,7 +625,7 @@ class TestClientBase:
     def test_tcp_client_register(self):
         """Test tcp client."""
 
-        class CustomRequest:  # pylint: disable=too-few-public-methods
+        class CustomRequest(ModbusPDU):  # pylint: disable=too-few-public-methods
             """Dummy custom request."""
 
             function_code = 79
@@ -636,12 +643,12 @@ class TestClientBase:
     def test_sync_execute(self):
         """Test sync execute."""
         client = lib_client.ModbusTcpClient("127.0.0.1")
-        client.connect = mock.Mock(return_value=False)
+        client.connect = mock.Mock(return_value=False)  # type: ignore[method-assign]
         with pytest.raises(ConnectionException):
-            client.execute(False, None)
+            client.execute(False, None)  # type: ignore[arg-type]
         client.transaction = mock.Mock()
         client.connect.return_value = True
-        client.execute(False, None)
+        client.execute(False, None)  # type: ignore[arg-type]
 
     @pytest.mark.parametrize(
         ("client_class"),

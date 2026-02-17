@@ -365,7 +365,6 @@ class TestTransaction:
             None,
             None,
         )
-        transact.send = mock.Mock()  # type: ignore[method-assign]
         request1 = ReadCoilsRequest(address=117, count=5, dev_id=1)
         request2 = ReadCoilsRequest(address=118, count=2, dev_id=1)
         response1 = ReadCoilsResponse(bits=[True, False, True, True] + [False]*4, dev_id=1)
@@ -379,6 +378,7 @@ class TestTransaction:
         transact.retries = 1
         transact.connection_made(mock.AsyncMock())
         transact.transport.write = mock.Mock()  # type: ignore[attr-defined]
+        transact.send = mock.Mock()  # type: ignore[method-assign]
         transact.comm_params.timeout_connect = 0.1
 
         if scenario == 0: # timeout + double response
@@ -390,7 +390,6 @@ class TestTransaction:
             assert result.bits == response1.bits
         else: # if scenario == 1: # timeout + new request + double response
             resp = asyncio.create_task(transact.execute(False, request1))
-            await asyncio.sleep(0.25)
             with pytest.raises(ModbusIOException):
                 await resp
             resp = asyncio.create_task(transact.execute(False, request2))

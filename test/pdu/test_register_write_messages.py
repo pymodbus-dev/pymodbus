@@ -30,11 +30,6 @@ class TestWriteRegisterMessages:
     * Read Holding Registers
     """
 
-    value = None
-    values = None
-    builder = None
-    write = None
-
     def setup_method(self):
         """Initialize the test environment and builds request/result encoding pairs."""
         self.value = 0xABCD

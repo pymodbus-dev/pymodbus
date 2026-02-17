@@ -123,12 +123,14 @@ class TestModbusPDU:
     def test_client_decode(self, code, frame):
         """Test lookup for responses."""
         pdu = self.client.decode(frame)
+        assert pdu
         assert pdu.function_code == code
 
     @pytest.mark.parametrize(("code", "frame"), list(requests))
     def test_server_decode(self, code, frame):
         """Test lookup for requests."""
         pdu = self.server.decode(frame)
+        assert pdu
         assert pdu.function_code == code
 
     @pytest.mark.parametrize(("frame"), [b'', b'NO FRAME'])

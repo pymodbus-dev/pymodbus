@@ -2,6 +2,11 @@ API changes
 ===========
 Versions (X.Y.Z) where Z > 0 e.g. 3.0.1 do NOT have API changes!
 
+API changes 3.13.0
+------------------
+- removed RemoteDeviceContext, because it only is a partial forwarder
+  a proper forwarder should be made at frame level.
+
 API changes 3.12.0
 ------------------
 - when using no_response_expected=, the call returns None

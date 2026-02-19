@@ -123,7 +123,7 @@ class TestSimulatorApi:
             http_host = "localhost",
             http_port = 18080,
             log_file = "simulator.log",
-            json_file = config_path
+            json_file = str(config_path)
         )
 
         # this will finish almost immediately; no need to keep a task

@@ -7,6 +7,19 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.12.1
+--------------
+* SimDevice / SimRuntime fixes. (#2871)
+* No inter_frame_time check for baudrate > 38000. (#2882)
+* Fix smaller bugs in test, part 2. (#2880)
+* simulator startup armoring and update 3.x docs (#2877)
+* Fix smaller bugs in test, part 1. (#2879)
+* Update README.rst. (#2878)
+* Coverage limit is 99.95% (to allow a little margin).
+* Removed simulator README, due to unused.
+* fix: add warning log when using internal default simulator config (#2874)
+* Document simulator entrypoint in README (#2873)
+
 Version 3.12.0
 --------------
 * Upgrade library versions installed by pip. (#2868)

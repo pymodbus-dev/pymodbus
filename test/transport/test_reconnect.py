@@ -14,8 +14,8 @@ class TestTransportReconnect:
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
         """Return next port."""
-        base_ports[__class__.__name__] += 1
-        return base_ports[__class__.__name__]
+        base_ports[__class__.__name__] += 1  # type: ignore[name-defined,index]
+        return base_ports[__class__.__name__]  # type: ignore[name-defined,index]
 
     async def test_no_reconnect_call(self, client):
         """Test connection_lost()."""

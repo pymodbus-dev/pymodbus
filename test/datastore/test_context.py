@@ -16,7 +16,7 @@ class TestContextDataStore:
         """Test ModbusDeviceContext."""
         dev = ModbusBaseDeviceContext()
         dev.getValues(0x01, 0x01)
-        dev.setValues(0x05, 0x01, None)
+        dev.setValues(0x05, 0x01, [0])
 
     def test_datastore_device(self):
         """Test ModbusDeviceContext."""

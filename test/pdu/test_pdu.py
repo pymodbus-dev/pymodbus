@@ -1,4 +1,6 @@
 """Test pdu."""
+from typing import Any
+
 import pytest
 
 import pymodbus.pdu.bit_message as bit_msg
@@ -47,7 +49,7 @@ class TestPdu:
             ModbusPDU.calculateRtuFrameSize(b"")
         ModbusPDU.rtu_frame_size = 5
         assert ModbusPDU.calculateRtuFrameSize(b"") == 5
-        ModbusPDU.rtu_frame_size = None
+        ModbusPDU.rtu_frame_size = 0
         ModbusPDU.rtu_byte_count_pos = 2
         assert (
             ModbusPDU.calculateRtuFrameSize(
@@ -56,12 +58,12 @@ class TestPdu:
             == 0x05 + 5
         )
         assert not ModbusPDU.calculateRtuFrameSize(b"\x11")
-        ModbusPDU.rtu_byte_count_pos = None
+        ModbusPDU.rtu_byte_count_pos = 0
         with pytest.raises(NotImplementedException):
             ModbusPDU.calculateRtuFrameSize(b"")
         ModbusPDU.rtu_frame_size = 12
         assert ModbusPDU.calculateRtuFrameSize(b"") == 12
-        ModbusPDU.rtu_frame_size = None
+        ModbusPDU.rtu_frame_size = 0
         ModbusPDU.rtu_byte_count_pos = 2
         assert (
             ModbusPDU.calculateRtuFrameSize(
@@ -69,13 +71,13 @@ class TestPdu:
             )
             == 0x05 + 5
         )
-        ModbusPDU.rtu_byte_count_pos = None
+        ModbusPDU.rtu_byte_count_pos = 0
 
     # --------------------------
     # Test PDU types generically
     # --------------------------
 
-    requests = [
+    requests: list[tuple[type[ModbusPDU], tuple[()], dict[str, Any], bytes]] = [
         (bit_msg.ReadCoilsRequest, (), {"address": 117, "count": 3}, b'\x01\x00\x75\x00\x03'),
         (bit_msg.ReadDiscreteInputsRequest, (), {"address": 117, "count": 3}, b'\x02\x00\x75\x00\x03'),
         (bit_msg.WriteSingleCoilRequest, (), {"address": 117, "bits": [True]}, b'\x05\x00\x75\xff\x00'),
@@ -115,7 +117,7 @@ class TestPdu:
         (reg_msg.MaskWriteRegisterRequest, (), {"address": 0x0104, "and_mask": 0xE1D2, "or_mask": 0x1234}, b'\x16\x01\x04\xe1\xd2\x12\x34'),
     ]
 
-    responses = [
+    responses: list[tuple[type[ModbusPDU], tuple[()], dict[str, Any], bytes]] = [
         (bit_msg.ReadCoilsResponse, (), {"bits": [True, True] + [False] * 6, "address": 17}, b'\x01\x01\x03'),
         (bit_msg.ReadDiscreteInputsResponse, (), {"bits": [True, True], "address": 17}, b'\x02\x01\x03'),
         (bit_msg.WriteSingleCoilResponse, (), {"address": 117, "bits": [True]}, b'\x05\x00\x75\xff\x00'),
@@ -162,6 +164,13 @@ class TestPdu:
         pdu = pdutype()
         assert pdu
 
+    def test_pdu_base_instance(self):
+        """Test that all PDU types can be created."""
+        pdu = ModbusPDU(4)
+        str(pdu)
+        assert pdu
+        assert pdu.encode() == b''
+
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests + responses)
     @pytest.mark.usefixtures("frame", "args")
     def test_pdu_instance_args(self, pdutype, kwargs):
@@ -185,12 +194,12 @@ class TestPdu:
 
     def test_pdu_register_as_byte(self):
         """Test verify functions."""
-        registers =[b'ab', b'cd']
+        registers =[int.from_bytes(b'ab', 'big'), int.from_bytes(b'cd', 'big')]
         # NOT ALLOWED, NO conversion.
         req = reg_msg.ReadHoldingRegistersRequest(address=117, registers=registers, count=3)
         assert len(req.registers) == 2
-        assert req.registers[0] != 24930
-        assert req.registers[1] != 25444
+        assert req.registers[0] == 24930
+        assert req.registers[1] == 25444
 
     def test_pdu_verify_address(self):
         """Test verify functions."""

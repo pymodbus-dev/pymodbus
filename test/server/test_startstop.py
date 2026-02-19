@@ -80,7 +80,7 @@ class TestStartStopServer:
         thread.start()
         while not ModbusBaseServer.active_server:  # pragma: no cover
             sleep(0.1)
-        ServerStop()
+        ServerStop()  # type: ignore[unreachable]
         assert not ModbusBaseServer.active_server
         thread.join()
 

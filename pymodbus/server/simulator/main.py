@@ -42,6 +42,7 @@ options:
 import argparse
 import asyncio
 import os
+import sys
 
 from ...logging import Log, pymodbus_apply_logging_config
 from .http_server import ModbusSimulatorServer
@@ -98,6 +99,21 @@ def get_commandline(cmdline=None):
     )
     args = parser.parse_args(cmdline)
     pymodbus_apply_logging_config(args.log.upper())
+
+    default_json = os.path.join(os.path.dirname(__file__), "setup.json")
+    if args.json_file == default_json:
+        Log.warning(
+            "No custom configuration provided. Using internal default 'setup.json'.\n"
+            "To interact with your own registers, please provide a JSON file using --json_file."
+        )
+
+    if not os.path.exists(args.json_file):
+        pymodbus_apply_logging_config("ERROR")
+        Log.error(f"FATAL: Configuration file '{args.json_file}' not found.")
+        Log.error("The simulator cannot start without a valid configuration file.")
+        Log.error("Please provide a path with --json_file or ensure setup.json exists.")
+        sys.exit(1)
+
     Log.info("Start simulator")
     cmd_args = {}
     for argument in args.__dict__:
@@ -105,6 +121,7 @@ def get_commandline(cmdline=None):
             continue
         if args.__dict__[argument] is not None:
             cmd_args[argument] = args.__dict__[argument]
+
     return cmd_args
 
 
@@ -114,9 +131,11 @@ async def run_main(cmdline=None):
     task = ModbusSimulatorServer(**cmd_args)
     await task.run_forever()
 
+
 def main():  # pragma: no cover
     """Run simulator."""
     asyncio.run(run_main(), debug=True)
+
 
 if __name__ == "__main__":
     asyncio.run(run_main(), debug=True)

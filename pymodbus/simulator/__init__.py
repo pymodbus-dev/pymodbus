@@ -4,6 +4,7 @@
 """
 
 __all__ = [
+    "DataType",
     "SimAction",
     "SimData",
     "SimDevice",
@@ -12,3 +13,5 @@ __all__ = [
 
 from .simdata import SimData, SimValueType
 from .simdevice import SimAction, SimDevice
+from .simutils import DataType
+

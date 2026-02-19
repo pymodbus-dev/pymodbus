@@ -14,8 +14,8 @@ class TestTransportNullModem:
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
         """Return next port."""
-        base_ports[__class__.__name__] += 2
-        return base_ports[__class__.__name__]
+        base_ports[__class__.__name__] += 2  # type: ignore[index, name-defined]
+        return base_ports[__class__.__name__]  # type: ignore[index, name-defined]
 
     async def test_init(self, dummy_protocol):
         """Test initialize."""
@@ -42,9 +42,9 @@ class TestTransportNullModem:
         NullModem(prot)
 
 
-    async def test_close_no_protocol(self):
+    async def test_close_no_protocol(self, dummy_protocol):
         """Test close no protocol."""
-        modem = NullModem(None)
+        modem = NullModem(None)  # type: ignore[arg-type]
         modem.close()
 
     async def test_close_twice(self, dummy_protocol):
@@ -214,7 +214,7 @@ class TestTransportNullModem:
     async def test_flow_not_connected(self, dummy_protocol):
         """Test flow not connected."""
         modem = NullModem(dummy_protocol())
-        modem.sendto("no connection")
+        modem.sendto(b"no connection")
         assert modem.protocol.recv_buffer == b''
         modem.close()
 
@@ -290,7 +290,7 @@ class TestTransportNullModem:
         modem.set_write_buffer_limits(1024, 1)
         modem.write_eof()
         modem.get_protocol()
-        modem.set_protocol(None)
+        modem.set_protocol(dummy_protocol)
         modem.is_closing()
         modem.is_reading()
         modem.pause_reading()

@@ -23,7 +23,7 @@ Usage examples
 
 Class definitions
 ^^^^^^^^^^^^^^^^^
-.. autoclass:: pymodbus.constants.DataType
+.. autoclass:: pymodbus.simulator.DataType
     :members:
     :undoc-members:
     :member-order: bysource

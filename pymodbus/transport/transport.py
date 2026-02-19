@@ -199,8 +199,11 @@ class ModbusProtocol(asyncio.BaseProtocol):
     def init_setup_connect_listen(self, host: str, port: int) -> None:
         """Handle connect/listen handler."""
         if self.comm_params.comm_type == CommType.SERIAL:
-            # time to transmit 3Char with stop bits etc.
-            self.inter_frame_time = int(1e9 * 3.0 * (float(1 + self.comm_params.bytesize + self.comm_params.stopbits) / self.comm_params.baudrate))
+            if self.comm_params.baudrate > 38000:
+                self.inter_frame_time = 1e9
+            else:
+                # time to transmit 3Char with stop bits etc.
+                self.inter_frame_time = int(1e9 * 3.0 * (float(1 + self.comm_params.bytesize + self.comm_params.stopbits) / self.comm_params.baudrate))
             self.call_create = partial(create_serial_connection,
                 self.loop,
                 self.handle_new_connection,
@@ -608,8 +611,9 @@ class NullModem(asyncio.DatagramTransport, asyncio.Transport):
         if self.protocol:
             self.protocol.connection_lost(None)
 
-    def sendto(self, data: bytes, _addr: Any = None) -> None:
+    def sendto(self, data: bytes, addr: Any = None) -> None:
         """Send datagrame."""
+        _ = addr
         self.write(data)
 
     def write(self, data: bytes) -> None:

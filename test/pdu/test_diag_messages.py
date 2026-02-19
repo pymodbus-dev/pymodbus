@@ -1,7 +1,10 @@
 """Test diag messages."""
+from typing import cast
+
 import pytest
 
 from pymodbus.constants import ModbusPlusOperation, ModbusStatus
+from pymodbus.datastore import ModbusServerContext
 from pymodbus.pdu.diag_message import (
     ChangeAsciiInputDelimiterRequest,
     ChangeAsciiInputDelimiterResponse,
@@ -126,7 +129,7 @@ class TestDataStore:
     def test_diagnostic_encode_error(self):
         """Testing diagnostic request/response can be decoded and encoded."""
         msg_obj = DiagnosticBase()
-        msg_obj.message = "not allowed"
+        msg_obj.message = "not allowed"  # type: ignore[assignment]
         with pytest.raises(TypeError):
             msg_obj.encode()
 
@@ -167,7 +170,7 @@ class TestDataStore:
     async def test_diagnostic_datastore_update(self):
         """Testing diagnostic message execution."""
         for message, encoded, datastore_updated in self.requests:
-            encoded = (await message().datastore_update(None, 1)).encode()
+            encoded = (await message().datastore_update(cast(ModbusServerContext, None), 1)).encode()
             assert encoded == datastore_updated
 
     def test_return_query_data_request(self):
@@ -199,10 +202,10 @@ class TestDataStore:
     async def test_get_clear_modbus_plus_request_datastore_update(self):
         """Testing diagnostic message execution."""
         request = GetClearModbusPlusRequest(message=ModbusPlusOperation.CLEAR_STATISTICS)
-        response = await request.datastore_update(None, 0)
-        assert response.message == ModbusPlusOperation.CLEAR_STATISTICS
+        response = await request.datastore_update(cast(ModbusServerContext, None), 0)
+        assert cast(GetClearModbusPlusResponse, response).message == ModbusPlusOperation.CLEAR_STATISTICS
 
         request = GetClearModbusPlusRequest(message=ModbusPlusOperation.GET_STATISTICS)
-        response = await request.datastore_update(None, 0)
+        response = await request.datastore_update(cast(ModbusServerContext, None), 0)
         resp = [ModbusPlusOperation.GET_STATISTICS]
-        assert response.message == resp + [0x00] * 55
+        assert cast(GetClearModbusPlusResponse, response).message == resp + [0x00] * 55

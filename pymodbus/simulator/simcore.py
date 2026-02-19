@@ -4,63 +4,13 @@
 """
 from __future__ import annotations
 
-from ..constants import ExcCodes
-from ..pdu.pdu import unpack_bitstring
-from .simdevice import SimDevice, SimRegs
+from ..pdu import ExceptionResponse
+from .simdevice import SimDevice
+from .simruntime import SimRuntime
 
 
 class SimCore:
     """Handler for the simulator/server."""
-
-    class Runtime:
-        """Memory setup for device."""
-
-        _fx_mapper = {2: "d",  # Direct input
-                    4: "i"}  # Input registers
-        _fx_mapper.update([(i, "h")
-                        for i in (3, 6, 16, 22, 23)])
-        _fx_mapper.update([(i, "c")
-                        for i in (1, 5, 15)])
-
-
-        @classmethod
-        def convert_to_bit(cls, block: SimRegs) -> SimRegs:
-            """Convert registers to bits."""
-            new_registers: list[int] = []
-            for entry in block[2]:
-                bool_list = unpack_bitstring(entry.to_bytes(2, byteorder="big"))
-                for x in bool_list:
-                    new_registers.append(1 if x else 0)
-            new_flags: list[int] = [block[1][0]]*len(new_registers)
-            return (block[0], new_flags, new_registers)
-
-        def __init__(self, device: SimDevice):
-            """Build device memory."""
-            build = device.build_device()
-            if not isinstance(build, dict):
-                self.shared = True
-                self.start_address = build[0]
-                self.flags = build[1]
-                self.registers = build[2]
-                return
-            self.shared = False
-            self.block: dict[str, SimRegs] = {
-                "c": self.convert_to_bit(build["c"]),
-                "d":  self.convert_to_bit(build["d"]),
-                "h": build["h"],
-                "i": build["i"],
-            }
-
-        async def async_getValues(self, func_code: int, address: int, count: int = 1) -> list[int] | list[bool] | ExcCodes:
-            """Get `count` values from datastore."""
-            _ = func_code, address, count
-            return [1]
-
-        async def async_setValues(self, func_code: int, address: int, values: list[int] | list[bool] ) -> None | ExcCodes:
-            """Set the datastore with the supplied values."""
-            _ = func_code, address, values
-            return None
-
 
     def __init__(self, devices: SimDevice | list[SimDevice]) -> None:
         """Build datastore."""
@@ -68,22 +18,22 @@ class SimCore:
             if not isinstance(devices, SimDevice):
                 raise TypeError("devices= is not a SimDevice or list of SimDevice entry")
             devices = [devices]
-        self.devices: dict[int, SimCore.Runtime] = {}
+        self.devices: dict[int, SimRuntime] = {}
         for inx, device in enumerate(devices):
             if not isinstance(device, SimDevice):
                 raise TypeError(f"devices=list[{inx}] is not a SimDevice entry")
             if device.id in self.devices:
                 raise TypeError(f"devices= device_id: {device.id} in multiple SimDevice entries")
-            self.devices[device.id] = SimCore.Runtime(device)
+            self.devices[device.id] = SimRuntime(device)
 
-    def __get_device(self, device_id: int) -> Runtime:
+    def __get_device(self, device_id: int) -> SimRuntime:
         """Return device object."""
         return self.devices[device_id] if device_id in self.devices else self.devices[0]
 
-    async def async_getValues(self,device_id: int, func_code: int, address: int, count: int = 1) -> list[int] | list[bool] | ExcCodes:
+    async def async_getValues(self,device_id: int, func_code: int, address: int, count: int = 1) -> list[int] | ExceptionResponse:
         """Get `count` values from datastore."""
         return await self.__get_device(device_id).async_getValues(func_code, address, count)
 
-    async def async_setValues(self, device_id: int, func_code: int, address: int, values: list[int] | list[bool] ) -> None | ExcCodes:
+    async def async_setValues(self, device_id: int, func_code: int, address: int, values: list[int] ) -> None | ExceptionResponse:
         """Set the datastore with the supplied values."""
         return await self.__get_device(device_id).async_setValues(func_code, address, values)

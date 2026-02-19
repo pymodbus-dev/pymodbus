@@ -11,7 +11,7 @@ from pymodbus.exceptions import ParameterException
 class TestRemoteDataStore:
     """Unittest for the pymodbus.datastore.remote module."""
 
-    data_in_block = {
+    data_in_block: dict[int, int | list[int]] = {
         1: 6720,
         2: 130,
         30: [0x0D, 0xFE],
@@ -32,7 +32,6 @@ class TestRemoteDataStore:
     async def test_sparse_datastore_async(self):
         """Test check frame."""
         datablock = ModbusSparseDataBlock(self.data_in_block)
-        _ = str(datablock)
         for key, entry in self.data_in_block.items():
             if isinstance(entry, int):
                 entry = [entry]
@@ -81,7 +80,7 @@ class TestRemoteDataStore:
     async def test_sparse_datastore_async_set(self):
         """Test check frame."""
         datablock = ModbusSparseDataBlock(self.data_in_block)
-        assert not await datablock.async_setValues(1, {1: 5})
+        assert not await datablock.async_setValues(1, [5])
 
     def test_sparse_datastore_set_not_ok(self):
         """Test check frame."""
@@ -91,7 +90,7 @@ class TestRemoteDataStore:
         with pytest.raises(ParameterException):
             datablock.setValues(1, [2, 3, 4])
         datablock = ModbusSparseDataBlock(self.data_in_block)
-        datablock._process_values = mock.Mock(side_effect=KeyError)
+        datablock._process_values = mock.Mock(side_effect=KeyError)  # type: ignore[method-assign]
         assert datablock.setValues(30, {17: 0}) == ExcCodes.ILLEGAL_ADDRESS
 
     def test_sparse_datastore_iter(self):

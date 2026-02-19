@@ -10,7 +10,7 @@ import pytest
 from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.datastore.simulator import Cell, CellType
 from pymodbus.server import ModbusSimulatorServer
-from pymodbus.server.simulator.main import run_main
+from pymodbus.server.simulator.main import get_commandline, run_main
 from pymodbus.transport import NULLMODEM_HOST
 
 
@@ -177,8 +177,8 @@ class TestSimulator:
     @pytest.fixture(name="use_port")
     def get_port_in_class(base_ports):
         """Return next port."""
-        base_ports[__class__.__name__] += 1
-        return base_ports[__class__.__name__]
+        base_ports[__class__.__name__] += 1  # type: ignore[index, name-defined]
+        return base_ports[__class__.__name__]  # type: ignore[index, name-defined]
 
     @classmethod
     def custom_action1(cls, _inx, _cell):
@@ -234,6 +234,12 @@ class TestSimulator:
                 yield task
                 await task.stop()
                 await task_future
+
+    def test_simulator_commandline(self):
+        """Test commandline."""
+        assert get_commandline()
+        with mock.patch("os.path.exists", return_value=True):
+            assert get_commandline(["--json_file", "got it"])
 
     async def test_simulator_server_tcp(self, simulator_server):
         """Test init simulator server."""
@@ -298,7 +304,10 @@ class TestSimulator:
 
     async def test_simulator_main(self):
         """Test main."""
-        with mock.patch("pymodbus.server.simulator.http_server.ModbusSimulatorServer.run_forever") as server:
-            server.return_value = True
+        with mock.patch("pymodbus.server.simulator.http_server.ModbusSimulatorServer.run_forever", return_value=True):
             await run_main(cmdline={})
 
+    async def test_simulator_main_file_not_found(self):
+        """Test main with missing configuration file."""
+        with mock.patch("os.path.exists", return_value=False), pytest.raises(SystemExit):
+            await run_main(cmdline=["--json_file", "non_existent.json"])

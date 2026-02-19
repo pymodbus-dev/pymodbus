@@ -12,13 +12,7 @@ from .store import BaseModbusDataBlock
 # pylint: disable=missing-type-doc
 
 class ModbusBaseDeviceContext:
-    """Interface for a modbus device data context.
-
-    Derived classes must implemented the following methods:
-            reset(self)
-            getValues/async_getValues(self, func_code, address, count=1)
-            setValues/async_setValues(self, func_code, address, values)
-    """
+    """Interface for a modbus device data context."""
 
     _fx_mapper = {2: "d", 4: "i"}
     _fx_mapper.update([(i, "h") for i in (3, 6, 16, 22, 23)])
@@ -40,29 +34,10 @@ class ModbusBaseDeviceContext:
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         """
-        return self.getValues(func_code, address, count)
-
-    async def async_setValues(self, func_code: int, address: int, values: list[int] | list[bool] ) -> None | ExcCodes:
-        """Set the datastore with the supplied values.
-
-        :param func_code: The function we are working with
-        :param address: The starting address
-        :param values: The new values to be set
-        """
-        return self.setValues(func_code, address, values)
-
-    def getValues(self, func_code: int, address: int, count: int = 1) -> list[int] | list[bool] | ExcCodes:
-        """Get `count` values from datastore.
-
-        :param func_code: The function we are working with
-        :param address: The starting address
-        :param count: The number of values to retrieve
-        :returns: The requested values from a:a+c
-        """
         Log.error("getValues({},{},{}) not implemented!", func_code, address, count)
         return ExcCodes.ILLEGAL_FUNCTION
 
-    def setValues(self, func_code: int, address: int, values: list[int] | list[bool]) -> None | ExcCodes:
+    async def async_setValues(self, func_code: int, address: int, values: list[int] | list[bool] ) -> None | ExcCodes:
         """Set the datastore with the supplied values.
 
         :param func_code: The function we are working with
@@ -110,7 +85,7 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
         for datastore in iter(self.store.values()):
             datastore.reset()
 
-    def getValues(self, func_code, address, count=1) -> list[int] | list[bool] | ExcCodes:
+    async def async_getValues(self, func_code, address, count=1) -> list[int] | list[bool] | ExcCodes:
         """Get `count` values from datastore.
 
         :param func_code: The function we are working with
@@ -120,9 +95,9 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
         """
         address += 1
         Log.debug("getValues: fc-[{}] address-{}: count-{}", func_code, address, count)
-        return self.store[self.decode(func_code)].getValues(address, count)
+        return await self.store[self.decode(func_code)].async_getValues(address, count)
 
-    def setValues(self, func_code, address, values) -> None | ExcCodes:
+    async def async_setValues(self, func_code, address, values) -> None | ExcCodes:
         """Set the datastore with the supplied values.
 
         :param func_code: The function we are working with
@@ -131,7 +106,7 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
         """
         address += 1
         Log.debug("setValues[{}] address-{}: count-{}", func_code, address, len(values))
-        return self.store[self.decode(func_code)].setValues(address, values)
+        return await self.store[self.decode(func_code)].async_setValues(address, values)
 
 
 class ModbusServerContext:

@@ -46,7 +46,7 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock[list]):
         """Reset the datastore to the initialized default value."""
         self.values = [self.default_value] * len(self.values)
 
-    def getValues(self, address, count=1) -> list[int] | list[bool] | ExcCodes:
+    async def async_getValues(self, address, count=1) -> list[int] | list[bool] | ExcCodes:
         """Return the requested values of the datastore.
 
         :param address: The starting address
@@ -58,7 +58,7 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock[list]):
             return ExcCodes.ILLEGAL_ADDRESS
         return self.values[start : start + count]
 
-    def setValues(self, address, values) -> None | ExcCodes:
+    async def async_setValues(self, address, values) -> None | ExcCodes:
         """Set the requested values of the datastore.
 
         :param address: The starting address

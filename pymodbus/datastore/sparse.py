@@ -10,41 +10,10 @@ from .store import BaseModbusDataBlock
 
 
 class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
-    """A sparse modbus datastore.
-
-    E.g Usage.
-    sparse = ModbusSparseDataBlock({10: [3, 5, 6, 8], 30: 1, 40: [0]*20})
-
-    This would create a datablock with 3 blocks
-    One starts at offset 10 with length 4, one at 30 with length 1, and one at 40 with length 20
-
-    sparse = ModbusSparseDataBlock([10]*100)
-    Creates a sparse datablock of length 100 starting at offset 0 and default value of 10
-
-    sparse = ModbusSparseDataBlock() --> Create empty datablock
-    sparse.setValues(0, [10]*10)  --> Add block 1 at offset 0 with length 10 (default value 10)
-    sparse.setValues(30, [20]*5)  --> Add block 2 at offset 30 with length 5 (default value 20)
-
-    Unless 'mutable' is set to True during initialization, the datablock cannot be altered with
-    setValues (new datablocks cannot be added)
-    """
+    """A sparse modbus datastore, silently redirected to ModbusSequentialBlock."""
 
     def __init__(self, values=None, mutable=True):
-        """Initialize a sparse datastore.
-
-        Will only answer to addresses registered,
-        either initially here, or later via setValues()
-
-        :param values: Either a list or a dictionary of values
-        :param mutable: Whether the data-block can be altered later with setValues (i.e add more blocks)
-
-        If values is a list, a sequential datablock will be created.
-
-        If values is a dictionary, it should be in {offset: <int | list>} format
-        For each list, a sparse datablock is created, starting at 'offset' with the length of the list
-        For each integer, the value is set for the corresponding offset.
-
-        """
+        """Initialize a sparse datastore."""
         self.values = {}
         self._process_values(values)
         self.mutable = mutable
@@ -65,7 +34,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
         """Reset the store to the initially provided defaults."""
         self.values = self.default_value.copy()
 
-    def getValues(self, address, count=1) -> list[int] | list[bool] | ExcCodes:
+    async def async_getValues(self, address, count=1) -> list[int] | list[bool] | ExcCodes:
         """Return the requested values of the datastore.
 
         :param address: The starting address
@@ -102,7 +71,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
             )
         _process_as_dict(values)
 
-    def setValues(self, address, values, use_as_default=False) -> None | ExcCodes:
+    async def async_setValues(self, address, values, use_as_default=False) -> None | ExcCodes:
         """Set the requested values of the datastore.
 
         :param address: The register starting address

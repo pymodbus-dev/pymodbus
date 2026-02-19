@@ -6,6 +6,7 @@ API changes 3.13.0
 ------------------
 - removed RemoteDeviceContext, because it only is a partial forwarder
   a proper forwarder should be made at frame level.
+- datastore get/setValues only exist as async_get/set
 
 API changes 3.12.0
 ------------------

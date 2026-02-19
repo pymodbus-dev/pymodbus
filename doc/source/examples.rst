@@ -99,15 +99,6 @@ Source: :github:`examples/server_async.py`
     :noindex:
 
 
-Server callback
-^^^^^^^^^^^^^^^
-Source: :github:`examples/server_callback.py`
-
-.. automodule:: examples.server_callback
-    :undoc-members:
-    :noindex:
-
-
 Server tracer
 ^^^^^^^^^^^^^
 Source: :github:`examples/server_hook.py`

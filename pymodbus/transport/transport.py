@@ -199,8 +199,11 @@ class ModbusProtocol(asyncio.BaseProtocol):
     def init_setup_connect_listen(self, host: str, port: int) -> None:
         """Handle connect/listen handler."""
         if self.comm_params.comm_type == CommType.SERIAL:
-            # time to transmit 3Char with stop bits etc.
-            self.inter_frame_time = int(1e9 * 3.0 * (float(1 + self.comm_params.bytesize + self.comm_params.stopbits) / self.comm_params.baudrate))
+            if self.comm_params.baudrate > 38000:
+                self.inter_frame_time = 1e9
+            else:
+                # time to transmit 3Char with stop bits etc.
+                self.inter_frame_time = int(1e9 * 3.0 * (float(1 + self.comm_params.bytesize + self.comm_params.stopbits) / self.comm_params.baudrate))
             self.call_create = partial(create_serial_connection,
                 self.loop,
                 self.handle_new_connection,

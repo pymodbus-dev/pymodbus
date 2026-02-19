@@ -6,10 +6,10 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import TypeAlias, cast
 
-from ..constants import DataType, RuntimeFlags
 from ..pdu import ExceptionResponse
 from ..pdu.device import ModbusDeviceIdentification
 from .simdata import SimData
+from .simutils import DataType, SimUtils
 
 
 SimAction: TypeAlias = Callable[[int, int, list[int], list[int] | None], Awaitable[list[int] | None | ExceptionResponse]]
@@ -72,12 +72,6 @@ class SimDevice:
     #: ..warning:: lists are sorted on starting address.
     simdata: SimData | list[SimData] | tuple[list[SimData], list[SimData], list[SimData], list[SimData]]
 
-    #: Enforce type checking, if True access are controlled to be conform with datatypes.
-    #:
-    #: Type violations like e.g. reading INT32 as INT16 are returned as ExceptionResponses,
-    #: as well as being logged.
-    type_check: bool = False
-
     #: Change endianness.
     #:
     #: Word order is not defined in the modbus standard and thus a device that
@@ -126,8 +120,6 @@ class SimDevice:
         """Check simple parameters."""
         if not isinstance(self.id, int) or not 0 <= self.id <= 255:
             raise TypeError("0 <= id < 255")
-        if not isinstance(self.type_check, bool):
-            raise TypeError("type_check= not a bool")
         if self.identity and not isinstance(self.identity, ModbusDeviceIdentification):
             raise TypeError("identity= must be a ModbusDeviceIdentification")
         if self.action and not (callable(self.action) and inspect.iscoroutinefunction(self.action)):
@@ -154,6 +146,8 @@ class SimDevice:
                     raise TypeError(f"simdata=list[{inx}] is not a SimData entry")
         else:
             self.__check_simple_blocks()
+            if self.action:
+                raise TypeError("action= id only supported with shared blocks")
 
     def __check_simple_blocks(self):
         """Check simple parameters."""
@@ -200,24 +194,16 @@ class SimDevice:
         """Define a device."""
         self.__check_parameters()
 
-    def __build_flags(self, simdata: SimData) -> tuple[int, int]:
+    def __build_flags(self, simdata: SimData) -> int:
         """Create flags from SimData."""
-        flag_normal = 0
-        if simdata.datatype in (DataType.INT16, DataType.UINT16, DataType.BITS, DataType.STRING, DataType.INVALID, DataType.REGISTERS):
-            flag_normal |= RuntimeFlags.REG_SIZE_1
-        elif simdata.datatype in (DataType.INT32, DataType.UINT32, DataType.FLOAT32):
-            flag_normal |= RuntimeFlags.REG_SIZE_2
-        else: # simdata.datatype in (DataType.INT64, DataType.UINT64, DataType.FLOAT64):
-            flag_normal |= RuntimeFlags.REG_SIZE_4
-        if simdata.datatype == DataType.INVALID:
-            flag_normal |= RuntimeFlags.INVALID
+        flag_normal: int = simdata.datatype
         if simdata.readonly:
-            flag_normal |= RuntimeFlags.READONLY
-        return flag_normal, flag_normal | RuntimeFlags.REG_NEXT
+            flag_normal |= SimUtils.RunTimeFlag_READONLY
+        return flag_normal
 
     def __create_simdata(self, simdata: SimData, flag_list: list[int],  reg_list: list[int]):
         """Build registers for single SimData."""
-        flag_normal, flag_next = self.__build_flags(simdata)
+        flag_normal  = self.__build_flags(simdata)
         blocks_regs = simdata.build_registers(self.endian, self.string_encoding)
         for registers in blocks_regs:
             first = True
@@ -226,7 +212,7 @@ class SimDevice:
                     flag_list.append(flag_normal)
                     first = False
                 else:
-                    flag_list.append(flag_next)
+                    flag_list.append(flag_normal & ~SimUtils.RunTimeFlag_TYPE)
                 reg_list.append(reg)
 
     def __create_block(self, simdata: list[SimData]) -> SimRegs:
@@ -234,14 +220,15 @@ class SimDevice:
         flag_list: list[int] = []
         reg_list: list[int] = []
         start_address = simdata[0].address
-        flag_fill = RuntimeFlags.REG_SIZE_1 | RuntimeFlags.INVALID
         for entry in simdata:
             next_address = start_address + len(reg_list)
             while next_address < entry.address:
-                flag_list.append(flag_fill)
+                flag_list.append(DataType.INVALID)
                 reg_list.append(0)
                 next_address += 1
             self.__create_simdata(entry, flag_list, reg_list)
+        flag_list.append(DataType.INVALID)
+        reg_list.append(0)
         return (start_address, reg_list, flag_list)
 
     def build_device(self) -> SimRegs | dict[str, SimRegs]:

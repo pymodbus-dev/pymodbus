@@ -319,7 +319,7 @@ class TestDatastoreSimulator:
         with pytest.raises(RuntimeError):
             ModbusSimulatorContext(device, None)
 
-    def test_simulator_get_values(self, simulator):
+    async def test_simulator_get_values(self, simulator):
         """Test simulator get values."""
         for entry in (
             (FX_READ_BIT, 194, 1, [False]),
@@ -329,45 +329,45 @@ class TestDatastoreSimulator:
             (FX_READ_REG, 19, 1, [14662]),
             (FX_READ_REG, 16, 2, [3124, 5678]),
         ):
-            values = simulator.getValues(entry[0], entry[1], entry[2])
+            values = await simulator.async_getValues(entry[0], entry[1], entry[2])
             assert entry[3] == values, f"at entry {entry}"
 
-    def test_simulator_get_values_not(self, simulator):
+    async def test_simulator_get_values_not(self, simulator):
         """Test simulator get values."""
-        rc = simulator.getValues(FX_READ_REG, 25000, 2)
+        rc = await simulator.async_getValues(FX_READ_REG, 25000, 2)
         assert rc == ExcCodes.ILLEGAL_ADDRESS
 
-    def test_simulator_set_values(self, device):
+    async def test_simulator_set_values(self, device):
         """Test simulator set values."""
         exc_simulator = ModbusSimulatorContext(device, None)
         value = [31234]
-        exc_simulator.setValues(FX_WRITE_REG, 16, value)
-        result = exc_simulator.getValues(FX_READ_REG, 16, 1)
+        await exc_simulator.async_setValues(FX_WRITE_REG, 16, value)
+        result = await exc_simulator.async_getValues(FX_READ_REG, 16, 1)
         assert value == result
         value = [31234, 189]
-        exc_simulator.setValues(FX_WRITE_REG, 16, value)
-        result = exc_simulator.getValues(FX_READ_REG, 16, 2)
+        await exc_simulator.async_setValues(FX_WRITE_REG, 16, value)
+        result = await exc_simulator.async_getValues(FX_READ_REG, 16, 2)
         assert value == result
 
         exc_simulator.registers[5].value = 0
-        exc_simulator.setValues(FX_WRITE_BIT, 80, [True])
-        exc_simulator.setValues(FX_WRITE_BIT, 82, [True])
-        exc_simulator.setValues(FX_WRITE_BIT, 84, [True])
-        exc_simulator.setValues(FX_WRITE_BIT, 86, [True, False, True])
-        result = exc_simulator.getValues(FX_READ_BIT, 80, 8)
+        await exc_simulator.async_setValues(FX_WRITE_BIT, 80, [True])
+        await exc_simulator.async_setValues(FX_WRITE_BIT, 82, [True])
+        await exc_simulator.async_setValues(FX_WRITE_BIT, 84, [True])
+        await exc_simulator.async_setValues(FX_WRITE_BIT, 86, [True, False, True])
+        result = await exc_simulator.async_getValues(FX_READ_BIT, 80, 8)
         assert result == [True, False] * 4
-        exc_simulator.setValues(FX_WRITE_BIT, 88, [False])
-        result = exc_simulator.getValues(FX_READ_BIT, 86, 3)
+        await exc_simulator.async_setValues(FX_WRITE_BIT, 88, [False])
+        result = await exc_simulator.async_getValues(FX_READ_BIT, 86, 3)
         assert result == [True, False, False]
-        exc_simulator.setValues(FX_WRITE_BIT, 80, [True] * 17)
+        await exc_simulator.async_setValues(FX_WRITE_BIT, 80, [True] * 17)
 
-    def test_simulator_set_values_not(self, device):
+    async def test_simulator_set_values_not(self, device):
         """Test simulator set values."""
         exc_simulator = ModbusSimulatorContext(device, None)
         value = [31234]
-        rc = exc_simulator.setValues(FX_WRITE_REG, 5000, value)
+        rc = await exc_simulator.async_setValues(FX_WRITE_REG, 5000, value)
         assert rc == ExcCodes.ILLEGAL_ADDRESS
-        rc = exc_simulator.setValues(FX_WRITE_BIT, 5000, value)
+        rc = await exc_simulator.async_setValues(FX_WRITE_BIT, 5000, value)
         assert rc == ExcCodes.ILLEGAL_ADDRESS
 
     def test_simulator_get_text(self, simulator):
@@ -414,7 +414,7 @@ class TestDatastoreSimulator:
             Label.uptime,
         ],
     )
-    def test_simulator_actions(self, func, addr, action, device):
+    async def test_simulator_actions(self, func, addr, action, device):
         """Test actions."""
         exc_simulator = ModbusSimulatorContext(device, None)
         reg1 = exc_simulator.registers[addr]
@@ -424,19 +424,19 @@ class TestDatastoreSimulator:
         reg2.value = 0
         if func == FX_READ_BIT:
             addr = addr * 16 - 16 + 14
-        values = exc_simulator.getValues(func, addr, 2)
+        values = await exc_simulator.async_getValues(func, addr, 2)
         assert values[0] or values[1]
 
-    def test_simulator_action_timestamp(self, device):
+    async def test_simulator_action_timestamp(self, device):
         """Test action timestamp."""
         exc_simulator = ModbusSimulatorContext(device, None)
         addr = 12
         exc_simulator.registers[addr].action = exc_simulator.action_name_to_id[
             Label.timestamp
         ]
-        exc_simulator.getValues(FX_READ_REG, addr, 1)
+        await exc_simulator.async_getValues(FX_READ_REG, addr, 1)
 
-    def test_simulator_action_reset(self, device):
+    async def test_simulator_action_reset(self, device):
         """Test action reset."""
         exc_simulator = ModbusSimulatorContext(device, None)
         addr = 12
@@ -444,7 +444,7 @@ class TestDatastoreSimulator:
             Label.reset
         ]
         with pytest.raises(RuntimeError):
-            exc_simulator.getValues(FX_READ_REG, addr, 1)
+            await exc_simulator.async_getValues(FX_READ_REG, addr, 1)
 
     @pytest.mark.parametrize(
         ("celltype", "minval", "maxval", "value", "expected"),
@@ -459,7 +459,7 @@ class TestDatastoreSimulator:
             (CellType.FLOAT32, 27.0, 75.5, 24.0, (27.0, 28.0, 29.0)),
         ],
     )
-    def test_simulator_action_increment(
+    async def test_simulator_action_increment(
         self, celltype, minval, maxval, value, expected, device
     ):
         """Test action increment."""
@@ -485,9 +485,9 @@ class TestDatastoreSimulator:
         exc_simulator.registers[31].value = regs[1]
         for expect_value in expected:
             if celltype != CellType.BITS:
-                regs = exc_simulator.getValues(FX_READ_REG, 30, reg_count)
+                regs = await exc_simulator.async_getValues(FX_READ_REG, 30, reg_count)
             else:
-                reg_bits = exc_simulator.getValues(FX_READ_BIT, 30 * 16, 16)
+                reg_bits = await exc_simulator.async_getValues(FX_READ_BIT, 30 * 16, 16)
                 reg_value = sum(bit * 2 ** i for i, bit in enumerate(reg_bits))
                 regs = [reg_value]
             if reg_count == 1:
@@ -508,7 +508,7 @@ class TestDatastoreSimulator:
             (CellType.FLOAT32, 65.0, 78.0),
         ],
     )
-    def test_simulator_action_random(self, celltype, minval, maxval, device):
+    async def test_simulator_action_random(self, celltype, minval, maxval, device):
         """Test action random."""
         exc_simulator = ModbusSimulatorContext(device, None)
         action = exc_simulator.action_name_to_id[Label.random]
@@ -524,9 +524,9 @@ class TestDatastoreSimulator:
         reg_count = 1 if celltype in (CellType.BITS, CellType.UINT16) else 2
         for _i in range(100):
             if celltype != CellType.BITS:
-                regs = exc_simulator.getValues(FX_READ_REG, 30, reg_count)
+                regs = await exc_simulator.async_getValues(FX_READ_REG, 30, reg_count)
             else:
-                reg_bits = exc_simulator.getValues(FX_READ_BIT, 30 * 16, 16)
+                reg_bits = await exc_simulator.async_getValues(FX_READ_BIT, 30 * 16, 16)
                 reg_value = sum(bit * 2 ** i for i, bit in enumerate(reg_bits))
                 regs = [reg_value]
             if reg_count == 1:

@@ -13,17 +13,17 @@ class TestCOntextDataStore:
         ModbusSequentialDataBlock(0x01, 17)
         ModbusSequentialDataBlock(0x01, 17).default(112)
 
-    def test_datastore_Sequential_get(self):
+    async def test_datastore_Sequential_get(self):
         """Test ModbusDeviceContext."""
         block = ModbusSequentialDataBlock(0x01, [17])
-        assert block.getValues(13) == ExcCodes.ILLEGAL_ADDRESS
+        assert await block.async_getValues(13) == ExcCodes.ILLEGAL_ADDRESS
 
-    def test_datastore_Sequential_set(self):
+    async def test_datastore_Sequential_set(self):
         """Test ModbusDeviceContext."""
         block = ModbusSequentialDataBlock(0x01, [17])
-        block.setValues(1, [19])
-        block.setValues(1, 19)
-        assert block.setValues(13, [17]) == ExcCodes.ILLEGAL_ADDRESS
+        await block.async_setValues(1, [19])
+        await block.async_setValues(1, 19)
+        assert await block.async_setValues(13, [17]) == ExcCodes.ILLEGAL_ADDRESS
 
     def test_datastore_Sequential_iter(self):
         """Test check frame."""

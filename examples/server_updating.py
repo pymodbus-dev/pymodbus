@@ -60,7 +60,7 @@ async def updating_task(context):
     This task runs continuously beside the server
     It will increment some values each two seconds.
 
-    It should be noted that getValues and setValues are not safe
+    It should be noted that async_getValues and async_setValues are not safe
     against concurrent use.
     """
     func_code = 3

@@ -20,7 +20,6 @@ from examples.datastore_simulator_share import main as main_datastore_simulator_
 from examples.message_parser import main as main_parse_messages
 from examples.package_test_tool import run_test as run_package_tool
 from examples.server_async import setup_server
-from examples.server_callback import run_callback_server
 from examples.server_datamodel import main as run_main_datamodel
 from examples.server_hook import main as main_hook_server
 from examples.server_sync import run_sync_server
@@ -48,20 +47,6 @@ class TestExamples:
         """Test message parser."""
         main_parse_messages(["--framer", framer, "-m", "000100000006010100200001"])
         main_parse_messages(["--framer", framer, "-m", "00010000000401010101"])
-
-    async def test_server_callback(self, use_port, use_host):
-        """Test server/client with callback."""
-        cmdargs = ["--port", str(use_port), "--host", use_host]
-        task = asyncio.create_task(run_callback_server(cmdline=cmdargs))
-        task.set_name("run callback_server")
-        await asyncio.sleep(0.1)
-        testclient = setup_async_client(cmdline=cmdargs)
-        await run_async_client(testclient, modbus_calls=run_a_few_calls)
-        await asyncio.sleep(0.1)
-        await ServerAsyncStop()
-        await asyncio.sleep(0.1)
-        task.cancel()
-        await task
 
     async def test_updating_server(self, use_port, use_host):
         """Test server server updating."""

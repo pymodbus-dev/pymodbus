@@ -167,11 +167,3 @@ Source: :github:`examples/contrib/solar.py`
     :undoc-members:
     :noindex:
 
-
-Serial Forwarder
-^^^^^^^^^^^^^^^^
-Source: :github:`examples/contrib/serial_forwarder.py`
-
-.. automodule:: examples.contrib.serial_forwarder
-    :undoc-members:
-    :noindex:

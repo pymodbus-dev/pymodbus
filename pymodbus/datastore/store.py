@@ -37,22 +37,3 @@ class BaseModbusDataBlock(ABC, Generic[V]):
         :param values: The values to store
         :raises TypeError:
         """
-
-    def reset(self):
-        """Reset the datastore to the initialized default value."""
-
-    def __str__(self):
-        """Build a representation of the datastore.
-
-        :returns: A string representation of the datastore
-        """
-        return f"DataStore({len(self.values)}, {self.default_value})"
-
-    def __iter__(self):
-        """Iterate over the data block data.
-
-        :returns: An iterator of the data block data
-        """
-        if isinstance(self.values, dict):
-            return iter(self.values.items())
-        return enumerate(self.values, self.address)

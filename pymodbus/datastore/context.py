@@ -5,7 +5,6 @@ from __future__ import annotations
 from ..constants import ExcCodes
 from ..exceptions import NoSuchIdException
 from ..logging import Log
-from .sequential import ModbusSequentialDataBlock
 from .store import BaseModbusDataBlock
 
 
@@ -67,23 +66,12 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
                     hr: BaseModbusDataBlock | None = None,
                 ):
         """Initialize the datastores."""
-        self.store = {}
-        self.store["d"] = di if di is not None else ModbusSequentialDataBlock.create()
-        self.store["c"] = co if co is not None else ModbusSequentialDataBlock.create()
-        self.store["i"] = ir if ir is not None else ModbusSequentialDataBlock.create()
-        self.store["h"] = hr if hr is not None else ModbusSequentialDataBlock.create()
-
-    def __str__(self):
-        """Return a string representation of the context.
-
-        :returns: A string representation of the context
-        """
-        return "Modbus device Context"
-
-    def reset(self):
-        """Reset all the datastores to their default values."""
-        for datastore in iter(self.store.values()):
-            datastore.reset()
+        self.store = {
+            "d": di,
+            "c": co,
+            "i": ir,
+            "h": hr,
+        }
 
     async def async_getValues(self, func_code, address, count=1) -> list[int] | list[bool] | ExcCodes:
         """Get `count` values from datastore.
@@ -95,7 +83,9 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
         """
         address += 1
         Log.debug("getValues: fc-[{}] address-{}: count-{}", func_code, address, count)
-        return await self.store[self.decode(func_code)].async_getValues(address, count)
+        if dt := self.store[self.decode(func_code)]:
+            return await dt.async_getValues(address, count)
+        return ExcCodes.ILLEGAL_ADDRESS
 
     async def async_setValues(self, func_code, address, values) -> None | ExcCodes:
         """Set the datastore with the supplied values.
@@ -106,7 +96,9 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
         """
         address += 1
         Log.debug("setValues[{}] address-{}: count-{}", func_code, address, len(values))
-        return await self.store[self.decode(func_code)].async_setValues(address, values)
+        if dt := self.store[self.decode(func_code)]:
+            return await dt.async_setValues(address, values)
+        return ExcCodes.ILLEGAL_ADDRESS
 
 
 class ModbusServerContext:
@@ -161,17 +153,6 @@ class ModbusServerContext:
         """
         dev = self.__get_device(device_id)
         return await dev.async_setValues(func_code, address, values)
-
-    def __getitem__(self, device_id):
-        """Use to get access to a device_id context.
-
-        :param device_id: The device context to get
-        :returns: The requested device context
-        :raises NoSuchIdException:
-        """
-        if self.single:
-            device_id = 0
-        return self.__get_device(device_id)
 
     def device_ids(self):
         """Get the configured device ids."""

@@ -89,7 +89,7 @@ def setup_server(description=None, context=None, cmdline=None):
             # Alternately, use the factory methods to initialize the DataBlocks
             # or simply do not pass them to have them initialized to 0x00 on the
             # full address range::
-            datablock = lambda : ModbusSequentialDataBlock.create()  # pylint: disable=unnecessary-lambda-assignment,unnecessary-lambda
+            datablock = lambda : ModbusSequentialDataBlock(0x00, [0x00] * 65536)  # pylint: disable=unnecessary-lambda-assignment
 
         if args.device_ids > 1:  # pragma: no cover
             # The server then makes use of a server context that allows the server
@@ -197,7 +197,7 @@ async def run_async_server(args) -> None:
             certfile=helper.get_certificate(
                 "crt"
             ),  # The cert file path for TLS (used if sslctx is None)
-            # sslctx=sslctx,  # The SSLContext to use for TLS (default None and auto create)
+            # sslctx=sslctx,  # The SSLContext to use for TLS (default None and auto)
             keyfile=helper.get_certificate(
                 "key"
             ),  # The key file path for TLS (used if sslctx is None)

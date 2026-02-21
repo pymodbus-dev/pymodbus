@@ -11,7 +11,6 @@ class TestCOntextDataStore:
         """Test ModbusDeviceContext."""
         ModbusSequentialDataBlock(0x01, [17])
         ModbusSequentialDataBlock(0x01, 17)
-        ModbusSequentialDataBlock(0x01, 17).default(112)
 
     async def test_datastore_Sequential_get(self):
         """Test ModbusDeviceContext."""
@@ -24,9 +23,3 @@ class TestCOntextDataStore:
         await block.async_setValues(1, [19])
         await block.async_setValues(1, 19)
         assert await block.async_setValues(13, [17]) == ExcCodes.ILLEGAL_ADDRESS
-
-    def test_datastore_Sequential_iter(self):
-        """Test check frame."""
-        block = ModbusSequentialDataBlock(0x01, [17])
-        str(block)
-        _ = list(block)

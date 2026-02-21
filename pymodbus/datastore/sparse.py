@@ -17,22 +17,6 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
         self.values = {}
         self._process_values(values)
         self.mutable = mutable
-        self.default_value = self.values.copy()
-
-    @classmethod
-    def create(cls, values=None):
-        """Create sparse datastore.
-
-        Use setValues to initialize registers.
-
-        :param values: Either a list or a dictionary of values
-        :returns: An initialized datastore
-        """
-        return cls(values)
-
-    def reset(self):
-        """Reset the store to the initially provided defaults."""
-        self.values = self.default_value.copy()
 
     async def async_getValues(self, address, count=1) -> list[int] | list[bool] | ExcCodes:
         """Return the requested values of the datastore.
@@ -71,12 +55,11 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
             )
         _process_as_dict(values)
 
-    async def async_setValues(self, address, values, use_as_default=False) -> None | ExcCodes:
+    async def async_setValues(self, address, values) -> None | ExcCodes:
         """Set the requested values of the datastore.
 
         :param address: The register starting address
         :param values: The new values to be set.
-        :param use_as_default: Use the values as default
 
         Values can be given in different formats:
             - a single register value or
@@ -98,9 +81,6 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
                     if address + idx not in self.values and not self.mutable:
                         raise ParameterException("Offset {address+idx} not in range")
                     self.values[address + idx] = val
-            if use_as_default:
-                for idx, val in iter(self.values.items()):
-                    self.default_value[idx] = val
         except KeyError:
             return ExcCodes.ILLEGAL_ADDRESS
         return None

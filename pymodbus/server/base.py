@@ -103,3 +103,28 @@ class ModbusBaseServer(ModbusProtocol):
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
         raise RuntimeError("callback_data should never be called")
+
+    async def async_getValues(self, device_id: int, func_code: int, address: int, count: int = 1) -> list[int] | list[bool]:
+        """Get `count` values from datastore.
+
+        :param device_id: the device being addressed
+        :param func_code: The function we are working with
+        :param address: The starting address
+        :param count: The number of values to retrieve
+        :returns: The requested values from a:a+c
+        """
+        res = await self.context.async_getValues(device_id, func_code, address, count)
+        if not isinstance(res, list):
+            raise TypeError("Illegal external call to server.async_getValues")
+        return res
+
+    async def async_setValues(self, device_id: int, func_code: int, address: int, values: list[int] | list[bool] ) -> None:
+        """Set the datastore with the supplied values.
+
+        :param device_id: the device being addressed
+        :param func_code: The function we are working with
+        :param address: The starting address
+        :param values: The new values to be set
+        """
+        if not await self.context.async_setValues(device_id, func_code, address, values):
+            raise TypeError("Illegal external call to server.async_setValues")

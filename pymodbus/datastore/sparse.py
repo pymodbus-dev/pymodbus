@@ -2,23 +2,20 @@
 # pylint: disable=missing-type-doc
 from __future__ import annotations
 
-from typing import Any
-
 from ..constants import ExcCodes
 from ..exceptions import ParameterException
-from .store import BaseModbusDataBlock
 
 
-class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
+class ModbusSparseDataBlock:
     """A sparse modbus datastore, silently redirected to ModbusSequentialBlock."""
 
     def __init__(self, values=None, mutable=True):
         """Initialize a sparse datastore."""
-        self.values = {}
+        self.values: dict[int, list[int]] = {}
         self._process_values(values)
         self.mutable = mutable
 
-    async def async_getValues(self, address, count=1) -> list[int] | list[bool] | ExcCodes:
+    async def async_OLD_getValues(self, address, count=1) -> list[int] | list[bool] | ExcCodes:
         """Return the requested values of the datastore.
 
         :param address: The starting address
@@ -29,7 +26,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
             values = [self.values[i] for i in range(address, address + count)]
         except KeyError:
             return ExcCodes.ILLEGAL_ADDRESS
-        return values
+        return values  # type: ignore[return-value]
 
     def _process_values(self, values):
         """Process values."""
@@ -40,7 +37,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
                     for i, v_item in enumerate(val):
                         self.values[idx + i] = v_item
                 else:
-                    self.values[idx] = int(val)
+                    self.values[idx] = int(val)  # type: ignore[assignment]
 
         if isinstance(values, dict):
             _process_as_dict(values)
@@ -55,7 +52,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock[dict[int, Any]]):
             )
         _process_as_dict(values)
 
-    async def async_setValues(self, address, values) -> None | ExcCodes:
+    async def async_OLD_setValues(self, address, values) -> None | ExcCodes:
         """Set the requested values of the datastore.
 
         :param address: The register starting address

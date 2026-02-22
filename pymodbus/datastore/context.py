@@ -5,52 +5,13 @@ from __future__ import annotations
 from ..constants import ExcCodes
 from ..exceptions import NoSuchIdException
 from ..logging import Log
-from .store import BaseModbusDataBlock
+from .sequential import ModbusSequentialDataBlock
+from .sparse import ModbusSparseDataBlock
 
 
 # pylint: disable=missing-type-doc
 
-class ModbusBaseDeviceContext:
-    """Interface for a modbus device data context."""
-
-    _fx_mapper = {2: "d", 4: "i"}
-    _fx_mapper.update([(i, "h") for i in (3, 6, 16, 22, 23)])
-    _fx_mapper.update([(i, "c") for i in (1, 5, 15)])
-
-    def decode(self, fx):
-        """Convert the function code to the datastore to.
-
-        :param fx: The function we are working with
-        :returns: one of [d(iscretes),i(nputs),h(olding),c(oils)
-        """
-        return self._fx_mapper.get(fx, "x")
-
-    async def async_getValues(self, func_code: int, address: int, count: int = 1) -> list[int] | list[bool] | ExcCodes:
-        """Get `count` values from datastore.
-
-        :param func_code: The function we are working with
-        :param address: The starting address
-        :param count: The number of values to retrieve
-        :returns: The requested values from a:a+c
-        """
-        Log.error("getValues({},{},{}) not implemented!", func_code, address, count)
-        return ExcCodes.ILLEGAL_FUNCTION
-
-    async def async_setValues(self, func_code: int, address: int, values: list[int] | list[bool] ) -> None | ExcCodes:
-        """Set the datastore with the supplied values.
-
-        :param func_code: The function we are working with
-        :param address: The starting address
-        :param values: The new values to be set
-        """
-        Log.error("setValues({},{},{}) not implemented!", func_code, address, values)
-        return ExcCodes.ILLEGAL_FUNCTION
-
-
-# ---------------------------------------------------------------------------#
-#  Device Contexts
-# ---------------------------------------------------------------------------#
-class ModbusDeviceContext(ModbusBaseDeviceContext):
+class ModbusDeviceContext:
     """Create a modbus data model with data stored in a block.
 
     :param di: discrete inputs initializer ModbusDataBlock
@@ -59,11 +20,15 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
     :param ir: input registers initializer ModbusDataBlock
     """
 
+    _fx_mapper = {2: "d", 4: "i"}
+    _fx_mapper.update([(i, "h") for i in (3, 6, 16, 22, 23)])
+    _fx_mapper.update([(i, "c") for i in (1, 5, 15)])
+
     def __init__(self, *_args,
-                    di: BaseModbusDataBlock | None = None,
-                    co: BaseModbusDataBlock | None = None,
-                    ir: BaseModbusDataBlock | None = None,
-                    hr: BaseModbusDataBlock | None = None,
+                    di: ModbusSequentialDataBlock | ModbusSparseDataBlock | None = None,
+                    co: ModbusSequentialDataBlock | ModbusSparseDataBlock | None = None,
+                    ir: ModbusSequentialDataBlock | ModbusSparseDataBlock | None = None,
+                    hr: ModbusSequentialDataBlock | ModbusSparseDataBlock | None = None,
                 ):
         """Initialize the datastores."""
         self.store = {
@@ -73,7 +38,7 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
             "h": hr,
         }
 
-    async def async_getValues(self, func_code, address, count=1) -> list[int] | list[bool] | ExcCodes:
+    async def async_OLD_getValues(self, func_code, address, count=1) -> list[int] | list[bool] | ExcCodes:
         """Get `count` values from datastore.
 
         :param func_code: The function we are working with
@@ -83,11 +48,11 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
         """
         address += 1
         Log.debug("getValues: fc-[{}] address-{}: count-{}", func_code, address, count)
-        if dt := self.store[self.decode(func_code)]:
-            return await dt.async_getValues(address, count)
+        if dt := self.store[self._fx_mapper.get(func_code, "x")]:
+            return await dt.async_OLD_getValues(address, count)
         return ExcCodes.ILLEGAL_ADDRESS
 
-    async def async_setValues(self, func_code, address, values) -> None | ExcCodes:
+    async def async_OLD_setValues(self, func_code, address, values) -> None | ExcCodes:
         """Set the datastore with the supplied values.
 
         :param func_code: The function we are working with
@@ -96,8 +61,8 @@ class ModbusDeviceContext(ModbusBaseDeviceContext):
         """
         address += 1
         Log.debug("setValues[{}] address-{}: count-{}", func_code, address, len(values))
-        if dt := self.store[self.decode(func_code)]:
-            return await dt.async_setValues(address, values)
+        if dt := self.store[self._fx_mapper.get(func_code, "x")]:
+            return await dt.async_OLD_setValues(address, values)
         return ExcCodes.ILLEGAL_ADDRESS
 
 
@@ -141,7 +106,7 @@ class ModbusServerContext:
         :returns: The requested values from a:a+c
         """
         dev = self.__get_device(device_id)
-        return await dev.async_getValues(func_code, address, count)
+        return await dev.async_OLD_getValues(func_code, address, count)
 
     async def async_setValues(self, device_id: int, func_code: int, address: int, values: list[int] | list[bool] ) -> None | ExcCodes:
         """Set the datastore with the supplied values.
@@ -152,7 +117,7 @@ class ModbusServerContext:
         :param values: The new values to be set
         """
         dev = self.__get_device(device_id)
-        return await dev.async_setValues(func_code, address, values)
+        return await dev.async_OLD_setValues(func_code, address, values)
 
     def device_ids(self):
         """Get the configured device ids."""

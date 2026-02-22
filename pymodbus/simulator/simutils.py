@@ -70,7 +70,7 @@ class SimUtils:  # pylint: disable=too-few-public-methods
     RunTimeFlag_READONLY = 2**4    # only read is allowed
 
     @classmethod
-    def convert_bytes_registers(cls, byte_list: bytearray, word_order: str, byte_order: bool, data_type_len: int) -> list[int]:
+    def convert_bytes_registers(cls, byte_list: bytearray, word_order: bool, byte_order: bool, data_type_len: int) -> list[int]:
         """Convert bytearray to registers."""
         if byte_order:
             regs = [
@@ -82,7 +82,7 @@ class SimUtils:  # pylint: disable=too-few-public-methods
                 int.from_bytes([byte_list[x+1],  byte_list[x]], "big")
                 for x in range(0, len(byte_list), 2)
             ]
-        if word_order == "big":
+        if word_order:
             return regs
         reversed_regs: list[int] = []
         for x in range(0, len(regs), data_type_len):

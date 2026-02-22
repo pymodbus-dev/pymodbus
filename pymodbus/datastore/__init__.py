@@ -1,7 +1,6 @@
 """Datastore."""
 
 __all__ = [
-    "ModbusBaseDeviceContext",
     "ModbusDeviceContext",
     "ModbusSequentialDataBlock",
     "ModbusServerContext",
@@ -10,7 +9,6 @@ __all__ = [
 ]
 
 from .context import (
-    ModbusBaseDeviceContext,
     ModbusDeviceContext,
     ModbusServerContext,
 )

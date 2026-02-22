@@ -9,7 +9,6 @@ from datetime import datetime
 from typing import Any
 
 from ..constants import ExcCodes
-from .context import ModbusBaseDeviceContext
 
 
 WORD_SIZE = 16
@@ -378,7 +377,7 @@ class Setup:
             raise RuntimeError(f"INVALID key in setup: {self.config}")
 
 
-class ModbusSimulatorContext(ModbusBaseDeviceContext):
+class ModbusSimulatorContext:
     """Modbus simulator.
 
     :param config: A dict with structure as shown below.
@@ -587,7 +586,7 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
         fx_write = func_code in self._write_func_code
         return self.loop_validate(real_address, real_address + count, fx_write)
 
-    async def async_getValues(self, func_code, address, count=1) -> list[int] | list[bool] | ExcCodes:
+    async def async_OLD_getValues(self, func_code, address, count=1) -> list[int] | list[bool] | ExcCodes:
         """Return the requested values of the datastore.
 
         :meta private:
@@ -624,7 +623,7 @@ class ModbusSimulatorContext(ModbusBaseDeviceContext):
                 bit_index = 0
         return result
 
-    async def async_setValues(self, func_code, address, values) -> None | ExcCodes:
+    async def async_OLD_setValues(self, func_code, address, values) -> None | ExcCodes:
         """Set the requested values of the datastore.
 
         :meta private:

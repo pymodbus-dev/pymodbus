@@ -5,6 +5,7 @@ import pytest
 
 from pymodbus import ModbusDeviceIdentification
 from pymodbus.simulator import DataType, SimData, SimDevice
+from pymodbus.simulator.simdevice import SimRegs
 from pymodbus.simulator.simruntime import SimUtils
 
 
@@ -75,7 +76,7 @@ class TestSimDevice:
     @pytest.mark.parametrize(("block", "expect"), [
         ([SimData(0, values=0xffff, datatype=DataType.BITS)], 0),
         ([SimData(0, values=[0xffff], datatype=DataType.BITS)], 0),
-        ([SimData(0, values=[True], datatype=DataType.BITS)], 0),
+        ([SimData(0, values=[True]*16, datatype=DataType.BITS)], 0),
         ([SimData(0, values="hello", datatype=DataType.STRING)], 0),
         (SimData(0), 0),
         ("no valid", 2),
@@ -197,3 +198,22 @@ class TestSimDevice:
         sd = SimDevice(id=1, simdata=block)
         lists = sd.build_device()
         assert lists == result
+
+    def test_simdevice_build_bits(self):
+        """Test build_device() ok."""
+        sd = SimDevice(id=1, simdata=SimData(1, values=123, datatype=DataType.BITS))
+        result_shared = cast(SimRegs, sd.build_device())
+        assert len(result_shared[1]) == 2
+
+        sd = SimDevice(id=1, simdata= (
+            [SimData(1, values=123, datatype=DataType.BITS)],
+            [SimData(1, values=123, datatype=DataType.BITS)],
+            [SimData(1, values=123, datatype=DataType.INT16)],
+            [SimData(1, values=123, datatype=DataType.INT16)]
+        ))
+        result_block = cast(dict[str, SimRegs], sd.build_device())
+        assert len(result_block["c"][1]) == 2
+        assert len(result_block["d"][1]) == 2
+        assert len(result_block["h"][1]) == 2
+        assert len(result_block["i"][1]) == 2
+

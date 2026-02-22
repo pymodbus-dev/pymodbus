@@ -175,10 +175,8 @@ class SimDevice:
         """Check block entries."""
         if entry.address <= last_address:
             raise TypeError(f"SimData address {entry.address} is overlapping!")
-        blocks_regs = entry.build_registers(self.endian, self.string_encoding)
-        for registers in blocks_regs:
-            last_address += len(registers)
-        return last_address
+        blocks_regs = entry.build_registers(self.endian, self.string_encoding, False) * entry.count
+        return last_address + len(blocks_regs)
 
     def __check_parameters(self):
         """Check all parameters."""
@@ -204,16 +202,15 @@ class SimDevice:
     def __create_simdata(self, simdata: SimData, flag_list: list[int],  reg_list: list[int]):
         """Build registers for single SimData."""
         flag_normal  = self.__build_flags(simdata)
-        blocks_regs = simdata.build_registers(self.endian, self.string_encoding)
-        for registers in blocks_regs:
-            first = True
-            for reg in registers:
-                if first:
-                    flag_list.append(flag_normal)
-                    first = False
-                else:
-                    flag_list.append(flag_normal & ~SimUtils.RunTimeFlag_TYPE)
-                reg_list.append(reg)
+        blocks_regs = simdata.build_registers(self.endian, self.string_encoding, False)
+        first = True
+        for register in blocks_regs:
+            if first:
+                flag_list.append(flag_normal)
+                first = False
+            else:
+                flag_list.append(flag_normal & ~SimUtils.RunTimeFlag_TYPE)
+            reg_list.append(register)
 
     def __create_block(self, simdata: list[SimData]) -> SimRegs:
         """Create registers for device."""

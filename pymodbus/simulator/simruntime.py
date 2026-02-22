@@ -58,7 +58,7 @@ class SimRuntime:
         return (block[0], len(new_flags), new_flags, new_registers)
 
 
-    async def get_block(self, func_code: int, address: int, count: int, values: list[int] | None) -> list[int] | ExceptionResponse:
+    async def get_block(self, func_code: int, address: int, count: int, values: list[int] | list[bool] | None) -> list[int] | list[bool] | ExceptionResponse:
         """Calculate offset."""
         block_id = "x" if self.shared else self._fx_mapper[func_code]
         start_address, register_count, registers, flags = self.block[block_id]
@@ -83,11 +83,11 @@ class SimRuntime:
                 registers[addr] = values[i]
         return registers[offset:offset+count]
 
-    async def async_getValues(self, func_code: int, address: int, count: int) -> list[int] | ExceptionResponse:
+    async def async_getValues(self, func_code: int, address: int, count: int) -> list[int] | list[bool] | ExceptionResponse:
         """Get `count` values from datastore."""
         return await self.get_block(func_code, address, count, None)
 
-    async def async_setValues(self, func_code: int, address: int, values: list[int] ) -> None | ExceptionResponse:
+    async def async_setValues(self, func_code: int, address: int, values: list[int] | list[bool] ) -> None | ExceptionResponse:
         """Set the datastore with the supplied values."""
         count = len(values)
         block = await self.get_block(func_code, address, count, values)

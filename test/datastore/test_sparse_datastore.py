@@ -36,7 +36,7 @@ class TestRemoteDataStore:
             if isinstance(entry, int):
                 entry = [entry]
             for value in entry:
-                assert await datablock.async_getValues(key, 1) == [value]
+                assert await datablock.async_OLD_getValues(key, 1) == [value]
                 key += 1
 
     async def test_sparse_datastore_check(self):
@@ -46,33 +46,33 @@ class TestRemoteDataStore:
             if isinstance(entry, int):
                 entry = [entry]
             for value in entry:
-                assert await datablock.async_getValues(key, 1) == [value]
+                assert await datablock.async_OLD_getValues(key, 1) == [value]
                 key += 1
 
     async def test_sparse_datastore_get(self):
         """Test check frame."""
         datablock = ModbusSparseDataBlock()
-        assert await datablock.async_getValues(117) == ExcCodes.ILLEGAL_ADDRESS
+        assert await datablock.async_OLD_getValues(117) == ExcCodes.ILLEGAL_ADDRESS
 
     async def test_sparse_datastore_set(self):
         """Test check frame."""
         datablock = ModbusSparseDataBlock(self.data_in_block)
-        assert not await datablock.async_setValues(1, {1: 5})
-        assert not await datablock.async_setValues(1, [5])
-        assert not await datablock.async_setValues(1, 5)
+        assert not await datablock.async_OLD_setValues(1, {1: 5})
+        assert not await datablock.async_OLD_setValues(1, [5])
+        assert not await datablock.async_OLD_setValues(1, 5)
 
     async def test_sparse_datastore_async_set(self):
         """Test check frame."""
         datablock = ModbusSparseDataBlock(self.data_in_block)
-        assert not await datablock.async_setValues(1, [5])
+        assert not await datablock.async_OLD_setValues(1, [5])
 
     async def test_sparse_datastore_set_not_ok(self):
         """Test check frame."""
         datablock = ModbusSparseDataBlock(self.data_in_block, mutable=False)
         with pytest.raises(ParameterException):
-            await datablock.async_setValues(1, {7: 5})
+            await datablock.async_OLD_setValues(1, {7: 5})
         with pytest.raises(ParameterException):
-            await datablock.async_setValues(1, [2, 3, 4])
+            await datablock.async_OLD_setValues(1, [2, 3, 4])
         datablock = ModbusSparseDataBlock(self.data_in_block)
         datablock._process_values = mock.Mock(side_effect=KeyError)  # type: ignore[method-assign]
-        assert await datablock.async_setValues(30, {17: 0}) == ExcCodes.ILLEGAL_ADDRESS
+        assert await datablock.async_OLD_setValues(30, {17: 0}) == ExcCodes.ILLEGAL_ADDRESS

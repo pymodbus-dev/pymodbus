@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 from ..constants import ExcCodes
-from .store import BaseModbusDataBlock
 
 
-class ModbusSequentialDataBlock(BaseModbusDataBlock[list]):
+class ModbusSequentialDataBlock:
     """Creates a sequential modbus datastore."""
 
     def __init__(self, address, values):
@@ -21,7 +20,7 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock[list]):
         else:
             self.values = [values]
 
-    async def async_getValues(self, address, count=1) -> list[int] | list[bool] | ExcCodes:
+    async def async_OLD_getValues(self, address, count=1) -> list[int] | list[bool] | ExcCodes:
         """Return the requested values of the datastore.
 
         :param address: The starting address
@@ -33,7 +32,7 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock[list]):
             return ExcCodes.ILLEGAL_ADDRESS
         return self.values[start : start + count]
 
-    async def async_setValues(self, address, values) -> None | ExcCodes:
+    async def async_OLD_setValues(self, address, values) -> None | ExcCodes:
         """Set the requested values of the datastore.
 
         :param address: The starting address

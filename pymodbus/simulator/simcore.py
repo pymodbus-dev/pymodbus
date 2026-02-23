@@ -4,7 +4,7 @@
 """
 from __future__ import annotations
 
-from ..pdu import ExceptionResponse
+from ..constants import ExcCodes
 from .simdevice import SimDevice
 from .simruntime import SimRuntime
 
@@ -30,10 +30,10 @@ class SimCore:
         """Return device object."""
         return self.devices[device_id] if device_id in self.devices else self.devices[0]
 
-    async def async_getValues(self,device_id: int, func_code: int, address: int, count: int = 1) -> list[int] | list[bool] | ExceptionResponse:
+    async def async_getValues(self,device_id: int, func_code: int, address: int, count: int = 1) -> list[int] | list[bool] | ExcCodes:
         """Get `count` values from datastore."""
         return await self.__get_device(device_id).async_getValues(func_code, address, count)
 
-    async def async_setValues(self, device_id: int, func_code: int, address: int, values: list[int] | list[bool]) -> None | ExceptionResponse:
+    async def async_setValues(self, device_id: int, func_code: int, address: int, values: list[int] | list[bool]) -> None | ExcCodes:
         """Set the datastore with the supplied values."""
         return await self.__get_device(device_id).async_setValues(func_code, address, values)

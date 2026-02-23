@@ -54,6 +54,7 @@ class TestSimDevice:
         {"id": 0, "simdata": [simdata1], "identity": 123},
         {"simdata": []},
         {"id": 0, "simdata": (simdata3, [simdata3], [simdata1], [simdata3])},
+        {"id": 0, "simdata": ([simdata3], [simdata1], [simdata3])},
         {"id": 0, "simdata": (["not ok"], [simdata3], [simdata1], [simdata3])},
         {"id": 0, "simdata": ([simdata1], [simdata3], [simdata1], [simdata1])},
         {"id": 0, "simdata": ([simdata3], [simdata1], [simdata1], [simdata1])},
@@ -119,6 +120,9 @@ class TestSimDevice:
             SimDevice(0, simdata=([self.simdata3], [self.simdata3], [self.simdata1], [self.simdata3]), action=self.my_action),
 
     @pytest.mark.parametrize(("block", "result"), [
+        ([SimData(2, values=125, datatype=DataType.REGISTERS), SimData(1, values=123, datatype=DataType.REGISTERS),],
+         (1, [123, 125, 0],
+            [DataType.INT16, DataType.INT16, DataType.INVALID])),
         ([SimData(1, values=123, readonly=True, datatype=DataType.INT16)],
          (1, [123, 0],
             [DataType.INT16 | SimUtils.RunTimeFlag_READONLY, DataType.INVALID])),
@@ -217,3 +221,18 @@ class TestSimDevice:
         assert len(result_block["h"][1]) == 2
         assert len(result_block["i"][1]) == 2
 
+    @pytest.mark.parametrize("count", range(1,4))
+    @pytest.mark.parametrize("data_count", range(1,4))
+    def test_simdevice_build_count(self, count, data_count):
+        """Test build_device() ok."""
+        list_data = []
+        start_addr = 1
+        regs = [123]
+        flags = [DataType.REGISTERS]
+        for _ in range(data_count):
+            list_data.append(SimData(start_addr, count=count, values=123, datatype=DataType.REGISTERS))
+            start_addr += count
+        sd = SimDevice(id=1, simdata=list_data)
+        lists = sd.build_device()
+        result = (1, regs*count*data_count + [0], flags*count*data_count + [DataType.INVALID])
+        assert lists == result

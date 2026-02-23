@@ -6,13 +6,13 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import TypeAlias, cast
 
-from ..pdu import ExceptionResponse
+from ..constants import ExcCodes
 from ..pdu.device import ModbusDeviceIdentification
 from .simdata import SimData
 from .simutils import DataType, SimUtils
 
 
-SimAction: TypeAlias = Callable[[int, int, list[int], list[int] | None], Awaitable[list[int] | None | ExceptionResponse]]
+SimAction: TypeAlias = Callable[[int, int, list[int], list[int] | None], Awaitable[list[int] | None | ExcCodes]]
 SimRegs: TypeAlias = tuple[int, list[int], list[int]]
 TUPLE_NAMES = (
       "coils",
@@ -69,7 +69,6 @@ class SimDevice:
     #:       count is number of coils, so registers returned are count +15 / 16.
     #:
     #: ..tip:: addresses not defined are invalid and will produce an ExceptionResponse
-    #: ..warning:: lists are sorted on starting address.
     simdata: SimData | list[SimData] | tuple[list[SimData], list[SimData], list[SimData], list[SimData]]
 
     #: Change endianness.
@@ -138,22 +137,21 @@ class SimDevice:
 
     def __check_simple2(self):
         """Check simple parameters."""
-        if isinstance(self.simdata, SimData):
-            self.simdata = [self.simdata]
-        if isinstance(self.simdata, list):
-            for inx, entry in enumerate(self.simdata):
-                if not isinstance(entry, SimData):
-                    raise TypeError(f"simdata=list[{inx}] is not a SimData entry")
-        else:
+        if isinstance(self.simdata, tuple):
             self.__check_simple_blocks()
             if self.action:
                 raise TypeError("action= id only supported with shared blocks")
+        else:
+            x_simdata = self.simdata if isinstance(self.simdata, list) else [self.simdata]
+            for inx, entry in enumerate(x_simdata):
+                if not isinstance(entry, SimData):
+                    raise TypeError(f"simdata=list[{inx}] is not a SimData entry")
 
     def __check_simple_blocks(self):
         """Check simple parameters."""
         if not (isinstance(self.simdata, tuple)
                 and len(self.simdata) == 4):
-            raise TypeError("simdata= must list or tuple")
+            raise TypeError("simdata= must be SimData, list of SimData or tuple with 4 list of SimData")
         for i in range(4):
             sim_list = cast(tuple, self.simdata)[i]
             if not isinstance(sim_list, list):
@@ -166,9 +164,9 @@ class SimDevice:
 
     def __check_block(self, block: list[SimData], name: str):
         """Check block content."""
-        block.sort(key=lambda x: x.address)
-        last_address = block[0].address -1
-        for entry in block:
+        x_block = sorted(block, key=lambda x: x.address)
+        last_address = x_block[0].address -1
+        for entry in x_block:
             last_address = self.__check_block_entries(last_address, entry, name)
 
     def __check_block_entries(self, last_address: int, entry: SimData, _name: str) -> int:
@@ -182,11 +180,12 @@ class SimDevice:
         """Check all parameters."""
         self.__check_simple()
         self.__check_simple2()
-        if isinstance(self.simdata, list):
-            self.__check_block(self.simdata, "list")
-        else:
+        if isinstance(self.simdata, tuple):
             for i in range(4):
                 self.__check_block(cast(tuple,self.simdata)[i], TUPLE_NAMES[i])
+        else:
+            x_simdata = self.simdata if isinstance(self.simdata, list) else [self.simdata]
+            self.__check_block(x_simdata, "list")
 
     def __post_init__(self):
         """Define a device."""
@@ -203,14 +202,15 @@ class SimDevice:
         """Build registers for single SimData."""
         flag_normal  = self.__build_flags(simdata)
         blocks_regs = simdata.build_registers(self.endian, self.string_encoding, False)
-        first = True
-        for register in blocks_regs:
-            if first:
-                flag_list.append(flag_normal)
-                first = False
-            else:
-                flag_list.append(flag_normal & ~SimUtils.RunTimeFlag_TYPE)
-            reg_list.append(register)
+        for _ in range(simdata.count):
+            first = True
+            for register in blocks_regs:
+                if first:
+                    flag_list.append(flag_normal)
+                    first = False
+                else:
+                    flag_list.append(flag_normal & ~SimUtils.RunTimeFlag_TYPE)
+                reg_list.append(register)
 
     def __create_block(self, simdata: list[SimData]) -> SimRegs:
         """Create registers for device."""
@@ -231,11 +231,15 @@ class SimDevice:
     def build_device(self) -> SimRegs | dict[str, SimRegs]:
         """Check simdata and built runtime structure."""
         self.__check_parameters()
-        if isinstance(self.simdata, list):
-            return self.__create_block(self.simdata)
+        if not isinstance(self.simdata, tuple):
+            x_simdata = self.simdata if isinstance(self.simdata, list) else [self.simdata]
+            x_simdata.sort(key=lambda x: x.address)
+            return self.__create_block(x_simdata)
         b: dict[str, SimRegs] = {}
         #  (<coils>, <discrete inputs>, <holding registers>, <input registers>)
         convert = {0: "c", 1: "d", 2: "h", 3: "i"}
         for i in range(4):
-            b[convert[i]] = self.__create_block(cast(tuple, self.simdata)[i])
+            x_simdata = cast(tuple, self.simdata)[i]
+            x_simdata.sort(key=lambda x: x.address)
+            b[convert[i]] = self.__create_block(x_simdata)
         return b

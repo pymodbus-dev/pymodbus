@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from ..constants import ExcCodes
-from ..pdu import ExceptionResponse
 from ..pdu.pdu import unpack_bitstring
 from .simdevice import SimDevice, SimRegs
 from .simutils import DataType, SimUtils
@@ -58,7 +57,7 @@ class SimRuntime:
         return (block[0], len(new_flags), new_flags, new_registers)
 
 
-    async def get_block(self, func_code: int, address: int, count: int, values: list[int] | list[bool] | None) -> list[int] | list[bool] | ExceptionResponse:
+    async def get_block(self, func_code: int, address: int, count: int, values: list[int] | list[bool] | None) -> list[int] | list[bool] | ExcCodes:
         """Calculate offset."""
         block_id = "x" if self.shared else self._fx_mapper[func_code]
         start_address, register_count, registers, flags = self.block[block_id]
@@ -66,30 +65,30 @@ class SimRuntime:
         if values:
             count = len(values)
         if address > start_address + register_count or address < start_address or offset + count > register_count:
-            return ExceptionResponse(func_code, ExcCodes.ILLEGAL_ADDRESS)
+            return ExcCodes.ILLEGAL_ADDRESS
         if self.action:
             result = await self.action(func_code, address, registers, None)
-            if isinstance(result, ExceptionResponse):
+            if isinstance(result, ExcCodes):
                 return result
             if result:
                 values = result
         for i in range(count):
             addr = offset + i
             if flags[addr] & SimUtils.RunTimeFlag_TYPE == DataType.INVALID:
-                return ExceptionResponse(func_code, ExcCodes.ILLEGAL_ADDRESS)
+                return ExcCodes.ILLEGAL_ADDRESS
             if values:
                 if flags[addr] & SimUtils.RunTimeFlag_READONLY:
-                    return ExceptionResponse(func_code, ExcCodes.ILLEGAL_ADDRESS)
+                    return ExcCodes.ILLEGAL_ADDRESS
                 registers[addr] = values[i]
         return registers[offset:offset+count]
 
-    async def async_getValues(self, func_code: int, address: int, count: int) -> list[int] | list[bool] | ExceptionResponse:
+    async def async_getValues(self, func_code: int, address: int, count: int) -> list[int] | list[bool] | ExcCodes:
         """Get `count` values from datastore."""
         return await self.get_block(func_code, address, count, None)
 
-    async def async_setValues(self, func_code: int, address: int, values: list[int] | list[bool] ) -> None | ExceptionResponse:
+    async def async_setValues(self, func_code: int, address: int, values: list[int] | list[bool] ) -> None | ExcCodes:
         """Set the datastore with the supplied values."""
         count = len(values)
         block = await self.get_block(func_code, address, count, values)
-        return block if isinstance(block, ExceptionResponse) else None
+        return block if isinstance(block, ExcCodes) else None
 

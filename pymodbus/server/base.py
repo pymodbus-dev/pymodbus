@@ -126,5 +126,5 @@ class ModbusBaseServer(ModbusProtocol):
         :param address: The starting address
         :param values: The new values to be set
         """
-        if not await self.context.async_setValues(device_id, func_code, address, values):
+        if await self.context.async_setValues(device_id, func_code, address, values):
             raise TypeError("Illegal external call to server.async_setValues")

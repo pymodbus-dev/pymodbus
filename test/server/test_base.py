@@ -7,7 +7,7 @@ from pymodbus.datastore import ModbusServerContext
 from pymodbus.framer import FramerType
 from pymodbus.pdu import ReadHoldingRegistersRequest
 from pymodbus.server import ModbusBaseServer
-from pymodbus.simulator import SimData, SimDevice
+from pymodbus.simulator import DataType, SimData, SimDevice
 from pymodbus.transport import CommParams, CommType
 
 
@@ -60,6 +60,57 @@ class TestBaseServer:
             None,
             [ReadHoldingRegistersRequest],
         )
+
+    async def test_base_getValues(self):
+        """Test __init___ with SimCore."""
+        bs = ModbusBaseServer(
+            CommParams(
+                comm_type=CommType.TCP,
+                comm_name="server_listener",
+                reconnect_delay=0.0,
+                reconnect_delay_max=0.0,
+                timeout_connect=0.0,
+            ),
+            SimDevice(0, SimData(0, values=15, datatype=DataType.REGISTERS)),
+            False,
+            False,
+            None,
+            FramerType.SOCKET,
+            None,
+            None,
+            None,
+            [ReadHoldingRegistersRequest],
+        )
+        result = await bs.async_getValues(0, 0x03, 0)
+        assert result == [15]
+        with pytest.raises(TypeError):
+            await bs.async_getValues(0, 0x03, 15)
+
+    async def test_base_setValues(self):
+        """Test __init___ with SimCore."""
+        bs = ModbusBaseServer(
+            CommParams(
+                comm_type=CommType.TCP,
+                comm_name="server_listener",
+                reconnect_delay=0.0,
+                reconnect_delay_max=0.0,
+                timeout_connect=0.0,
+            ),
+            SimDevice(1, SimData(1, values=15, datatype=DataType.REGISTERS)),
+            False,
+            False,
+            None,
+            FramerType.SOCKET,
+            None,
+            None,
+            None,
+            [ReadHoldingRegistersRequest],
+        )
+        await bs.async_setValues(1, 0x10, 1, [1])
+        result = await bs.async_getValues(1, 0x03, 1)
+        assert result == [1]
+        with pytest.raises(TypeError):
+            await bs.async_setValues(1, 0x10, 15, [1])
 
     async def test_base_serve_forever1(self, baseserver):
         """Test serve_forever."""

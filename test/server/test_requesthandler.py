@@ -3,15 +3,11 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.datastore import (
-    ModbusDeviceContext,
-    ModbusSequentialDataBlock,
-    ModbusServerContext,
-)
 from pymodbus.exceptions import ModbusIOException, NoSuchIdException
 from pymodbus.framer import FramerType
 from pymodbus.pdu import ExceptionResponse
 from pymodbus.server import ModbusBaseServer, ModbusSerialServer
+from pymodbus.simulator import DataType, SimData, SimDevice
 from pymodbus.transport import CommParams, CommType
 
 
@@ -21,12 +17,6 @@ class TestRequesthandler:
     @pytest.fixture
     async def requesthandler(self):
         """Fixture to provide base_server."""
-        store = ModbusDeviceContext(
-            di=ModbusSequentialDataBlock(0, [17] * 100),
-            co=ModbusSequentialDataBlock(0, [17] * 100),
-            hr=ModbusSequentialDataBlock(0, [17] * 100),
-            ir=ModbusSequentialDataBlock(0, [17] * 100),
-        )
         server = ModbusBaseServer(
             CommParams(
                 comm_type=CommType.TCP,
@@ -36,7 +26,7 @@ class TestRequesthandler:
                 timeout_connect=0.0,
                 source_address=("0", 0),
             ),
-            ModbusServerContext(devices=store, single=True),
+            SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100)),
             False,
             False,
             None,
@@ -83,14 +73,8 @@ class TestRequesthandler:
 
     async def test_serial_server_allow_multiple(self):
         """Test __init__."""
-        store = ModbusDeviceContext(
-            di=ModbusSequentialDataBlock(0, [17] * 100),
-            co=ModbusSequentialDataBlock(0, [17] * 100),
-            hr=ModbusSequentialDataBlock(0, [17] * 100),
-            ir=ModbusSequentialDataBlock(0, [17] * 100),
-        )
         server = ModbusSerialServer(
-            ModbusServerContext(devices=store, single=True),
+            SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100)),
             framer=FramerType.RTU,
             baudrate=19200,
             port="/dev/tty01",

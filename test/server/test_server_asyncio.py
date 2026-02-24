@@ -10,11 +10,6 @@ from unittest import mock
 import pytest
 
 from pymodbus import FramerType, ModbusDeviceIdentification
-from pymodbus.datastore import (
-    ModbusDeviceContext,
-    ModbusSequentialDataBlock,
-    ModbusServerContext,
-)
 from pymodbus.exceptions import NoSuchIdException
 from pymodbus.server import (
     ModbusBaseServer,
@@ -23,6 +18,7 @@ from pymodbus.server import (
     ModbusTlsServer,
     ModbusUdpServer,
 )
+from pymodbus.simulator import DataType, SimData, SimDevice
 
 
 _logger = logging.getLogger()
@@ -108,7 +104,7 @@ class TestAsyncioServer:
     server: ModbusBaseServer | None = None
     task: Task | None = None
     loop: asyncio.AbstractEventLoop | None = None
-    store: ModbusDeviceContext | None = None
+    store: SimDevice | None = None
     context: Any = None
     identity: ModbusDeviceIdentification | None = None
 
@@ -116,13 +112,7 @@ class TestAsyncioServer:
     async def _setup_teardown(self):
         """Initialize the test environment by setting up a dummy store and context."""
         self.loop = asyncio.get_running_loop()
-        self.store = ModbusDeviceContext(
-            di=ModbusSequentialDataBlock(0, [17] * 100),
-            co=ModbusSequentialDataBlock(0, [17] * 100),
-            hr=ModbusSequentialDataBlock(0, [17] * 100),
-            ir=ModbusSequentialDataBlock(0, [17] * 100),
-        )
-        self.context = ModbusServerContext(devices=self.store, single=True)
+        self.context = SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100))
         self.identity = ModbusDeviceIdentification(
             info_name={"VendorName": "VendorName"}
         )
@@ -287,9 +277,7 @@ class TestAsyncioServer:
 
     async def test_async_tcp_server_no_device(self):
         """Test unknown device exception."""
-        self.context = ModbusServerContext(
-            devices={0x01: self.store, 0x02: self.store}, single=False
-        )
+        self.context = SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100))
         BasicClient.data = b"\x01\x00\x00\x00\x00\x06\x05\x03\x00\x00\x00\x01"
         await self.start_server()
         await self.connect_server()
@@ -395,15 +383,9 @@ class TestAsyncioServer:
 
     async def test_serial_server_multipoint_baudrate(self):
         """Test __init__."""
-        store = ModbusDeviceContext(
-            di=ModbusSequentialDataBlock(0, [17] * 100),
-            co=ModbusSequentialDataBlock(0, [17] * 100),
-            hr=ModbusSequentialDataBlock(0, [17] * 100),
-            ir=ModbusSequentialDataBlock(0, [17] * 100),
-        )
         with pytest.raises(TypeError):
             ModbusSerialServer(
-                ModbusServerContext(devices=store, single=True),
+                SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100)),
                 framer=FramerType.RTU,
                 baudrate=64200,
                 port="/dev/tty01",
@@ -413,15 +395,9 @@ class TestAsyncioServer:
 
     async def test_serial_server_multipoint_framer(self):
         """Test __init__."""
-        store = ModbusDeviceContext(
-            di=ModbusSequentialDataBlock(0, [17] * 100),
-            co=ModbusSequentialDataBlock(0, [17] * 100),
-            hr=ModbusSequentialDataBlock(0, [17] * 100),
-            ir=ModbusSequentialDataBlock(0, [17] * 100),
-        )
         with pytest.raises(TypeError):
             ModbusSerialServer(
-                ModbusServerContext(devices=store, single=True),
+                SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100)),
                 framer=FramerType.ASCII,
                 baudrate=19200,
                 port="/dev/tty01",

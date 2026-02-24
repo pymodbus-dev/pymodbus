@@ -30,6 +30,13 @@ class SimCore:
         """Return device object."""
         return self.devices[device_id] if device_id in self.devices else self.devices[0]
 
+    def device_ids(self) -> list[int]:
+        """Return list of device ids."""
+        dev_ids: list[int] =  []
+        for dev_id in self.devices:
+            dev_ids.append(dev_id)
+        return dev_ids
+
     async def async_getValues(self,device_id: int, func_code: int, address: int, count: int = 1) -> list[int] | list[bool] | ExcCodes:
         """Get `count` values from datastore."""
         return await self.__get_device(device_id).async_getValues(func_code, address, count)

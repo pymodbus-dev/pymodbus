@@ -1,9 +1,11 @@
 """Test datastore context."""
+import pytest
 
 from pymodbus.datastore import (
     ModbusDeviceContext,
     ModbusServerContext,
 )
+from pymodbus.datastore.context import NoSuchIdException
 
 
 class TestContextDataStore:
@@ -28,3 +30,9 @@ class TestContextDataStore:
         srv = ModbusServerContext()
         assert isinstance(srv.device_ids(), list)
 
+    async def test_datastore_server_device_id(self):
+        """Test ModbusServerContext."""
+        dev = ModbusServerContext(devices={1: {}}, single=False)
+        assert dev.device_ids() == [1]
+        with pytest.raises(NoSuchIdException):
+            await dev.async_getValues(15, 0, 0)

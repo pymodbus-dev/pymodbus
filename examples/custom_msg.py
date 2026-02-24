@@ -15,15 +15,12 @@ import struct
 
 from pymodbus import FramerType
 from pymodbus.client import AsyncModbusTcpClient as ModbusClient
-from pymodbus.datastore import (
-    ModbusDeviceContext,
-    ModbusSequentialDataBlock,
-    ModbusServerContext,
-)
+from pymodbus.datastore import ModbusServerContext
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.pdu import ModbusPDU
 from pymodbus.pdu.bit_message import ReadCoilsRequest
 from pymodbus.server import ServerAsyncStop, StartAsyncTcpServer
+from pymodbus.simulator import DataType, SimData, SimDevice
 
 
 # --------------------------------------------------------------------------- #
@@ -121,16 +118,8 @@ class Read16CoilsRequest(ReadCoilsRequest):
 
 async def main(host="localhost", port=5020):
     """Run versions of read coil."""
-    store = ModbusServerContext(devices=ModbusDeviceContext(
-            di=ModbusSequentialDataBlock(0, [17] * 100),
-            co=ModbusSequentialDataBlock(0, [17] * 100),
-            hr=ModbusSequentialDataBlock(0, [17] * 100),
-            ir=ModbusSequentialDataBlock(0, [17] * 100),
-        ),
-        single=True
-    )
     task = asyncio.create_task(StartAsyncTcpServer(
-        context=store,
+        context=SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100)),
         address=(host, port),
         custom_pdu=[CustomRequest])
     )

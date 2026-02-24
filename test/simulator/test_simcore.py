@@ -47,3 +47,8 @@ class TestSimCore:
         """Test that simdata can be objects."""
         core = SimCore(devices=SimDevice(0, simdata=self.simdata2))
         await core.async_setValues(**kwargs)
+
+    def test_simcore_device_ids(self):
+        """Test that simdata can be objects."""
+        core = SimCore(devices=SimDevice(1, simdata=self.simdata2))
+        assert core.device_ids() == [1]

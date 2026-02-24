@@ -7,15 +7,12 @@ a task that runs continuously alongside the server and updates values.
 usage::
 
     server_updating.py [-h]
+                       [--log {critical,error,warning,info,debug}]
                        [--port PORT]
                        [--host HOST]
 
     -h, --help
         show this help message and exit
-    -c, --comm {tcp,udp,serial,tls}
-        set communication, default is tcp
-    -f, --framer {ascii,rtu,socket,tls}
-        set framer, default depends on --comm
     -l, --log {critical,error,warning,info,debug}
         set log level, default is info
     -p, --port PORT
@@ -27,36 +24,20 @@ usage::
 The corresponding client can be started as:
     python3 client_sync.py
 """
+import argparse
 import asyncio
 import logging
-import argparse
 
-
-from pymodbus.simulator import DataType, SimData, SimDevice
 from pymodbus import pymodbus_apply_logging_config
+from pymodbus.server import ModbusTcpServer
+from pymodbus.simulator import DataType, SimData, SimDevice
+
 
 _logger = logging.getLogger(__name__)
 
-def get_commandline(server: bool = False, description: str | None = None, extras: Any = None, cmdline: list[str] | None = None):
+def get_commandline(cmdline: list[str] | None = None):
     """Read and check command line arguments."""
-    parser = argparse.ArgumentParser(description=description)
-    parser.add_argument(
-        "-c",
-        "--comm",
-        choices=["tcp", "udp", "serial", "tls", "unknown"],
-        help="set communication, default is tcp",
-        dest="comm",
-        default="tcp",
-        type=str,
-    )
-    parser.add_argument(
-        "-f",
-        "--framer",
-        choices=["ascii", "rtu", "socket", "tls"],
-        help="set framer, default depends on --comm",
-        dest="framer",
-        type=str,
-    )
+    parser = argparse.ArgumentParser(description="server_update")
     parser.add_argument(
         "-l",
         "--log",
@@ -74,58 +55,16 @@ def get_commandline(server: bool = False, description: str | None = None, extras
         type=str,
     )
     parser.add_argument(
-        "--baudrate",
-        help="set serial device baud rate",
-        default=9600,
-        type=int,
-    )
-    parser.add_argument(
         "--host",
         help="set host, default is 127.0.0.1",
         dest="host",
         default=None,
         type=str,
     )
-    if server:
-        parser.add_argument(
-            "--device_ids",
-            help="set number of device_ids, default is 0 (any)",
-            default=0,
-            type=int,
-        )
-        parser.add_argument(
-            "--context",
-            help="ADVANCED USAGE: set datastore context object",
-            default=None,
-        )
-    else:
-        parser.add_argument(
-            "--timeout",
-            help="ADVANCED USAGE: set client timeout",
-            default=10,
-            type=float,
-        )
-    if extras:  # pragma: no cover
-        for extra in extras:
-            parser.add_argument(extra[0], **extra[1])
     args = parser.parse_args(cmdline)
-
-    # set defaults
-    comm_defaults: dict[str, list[int | str]] = {
-        "tcp": ["socket", 5020],
-        "udp": ["socket", 5020],
-        "serial": ["rtu", "/dev/ptyp0"],
-        "tls": ["tls", 5020],
-    }
     pymodbus_apply_logging_config(args.log.upper())
     _logger.setLevel(args.log.upper())
-    if not args.framer:
-        args.framer = comm_defaults[args.comm][0]
-    args.port = args.port or comm_defaults[args.comm][1]
-    if args.comm != "serial" and args.port:
-        args.port = int(args.port)
-    if not args.host:
-        args.host = "" if server else "127.0.0.1"
+    args.port = args.port or 5020
     return args
 
 
@@ -140,7 +79,7 @@ async def updating_task(server):
     against concurrent use.
     """
     func_code = 3
-    device_id = 0x00
+    device_id = 0x01
     address = 0x10
     count = 6
 
@@ -174,24 +113,26 @@ def setup_updating_server(cmdline=None):
     # If you initialize a DataBlock to addresses of 0x00 to 0xFF, a request to
     # 0x100 will respond with an invalid address exception.
     # This is because many devices exhibit this kind of behavior (but not all)
-    context = SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100))
-    return server_async.setup_server(
-        description="Run asynchronous server.", context=context, cmdline=cmdline
+    args = get_commandline(cmdline=cmdline)
+    server = ModbusTcpServer(
+        SimDevice(1, SimData(0, datatype=DataType.REGISTERS, values=[17]*100)),
+        address=(args.host if args.host else "", args.port if args.port else 0)
     )
+    return server
 
 
-async def run_updating_server(args):
+async def run_updating_server(server):
     """Start updating_task concurrently with the current task."""
-    task = asyncio.create_task(updating_task(args.context))
+    task = asyncio.create_task(updating_task(server))
     task.set_name("example updating task")
-    await server_async.run_async_server(args)  # start the server
+    await server.serve_forever()  # start the server
     task.cancel()
 
 
 async def main(cmdline=None):
     """Combine setup and run."""
-    run_args = setup_updating_server(cmdline=cmdline)
-    await run_updating_server(run_args)
+    server = setup_updating_server(cmdline=cmdline)
+    await run_updating_server(server)
 
 
 if __name__ == "__main__":

@@ -61,9 +61,9 @@ _logger.setLevel(logging.INFO)
 def setup_server(description=None, context=None, cmdline=None):
     """Run server setup."""
     args = helper.get_commandline(server=True, description=description, cmdline=cmdline)
-    if context:
+    if context:  # pragma: no cover
         args.context = context
-    if not args.context:
+    if not args.context:  # pragma: no cover
         _logger.info("### Create datastore")
 
         # Build data storage

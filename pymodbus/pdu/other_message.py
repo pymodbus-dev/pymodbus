@@ -196,10 +196,9 @@ class ReportDeviceIdResponse(ModbusPDU):
     def encode(self) -> bytes:
         """Encode the response."""
         status = ID_ON if self.status else ID_OFF
-        length = len(self.identifier) + 1
-        packet = struct.pack(">B", length)
+        length = len(self.identifier) + 2
+        packet = struct.pack(">BBB", length, dev_id, status)
         packet += self.identifier  # we assume it is already encoded
-        packet += struct.pack(">B", status)
         return packet
 
     def decode(self, data: bytes) -> None:
@@ -208,10 +207,11 @@ class ReportDeviceIdResponse(ModbusPDU):
         Since the identifier is device dependent, we just return the
         raw value that a user can decode to whatever it should be.
         """
-        self.byte_count = int(data[0])
-        self.identifier = data[1 : self.byte_count + 1]
-        status = int(data[-1])
+        self.byte_count, self.dev_id, status = struct.unpack(">BBB",
+                                                                  data[:3])
         self.status = status == ID_ON
+        self.identifier = data[3:3 + self.byte_count - 1]
+
 
 DecodePDU.add_pdu(ReadExceptionStatusRequest, ReadExceptionStatusResponse)
 DecodePDU.add_pdu(GetCommEventCounterRequest, GetCommEventCounterResponse)

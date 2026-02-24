@@ -11,13 +11,9 @@ import logging
 import sys
 
 from pymodbus import FramerType, pymodbus_apply_logging_config
-from pymodbus.datastore import (
-    ModbusDeviceContext,
-    ModbusSequentialDataBlock,
-    ModbusServerContext,
-)
 from pymodbus.pdu import ModbusPDU
 from pymodbus.server import ModbusTcpServer
+from pymodbus.simulator import DataType, SimData, SimDevice
 
 
 try:
@@ -57,16 +53,9 @@ class Manipulator:
         """Prepare server."""
         args = helper.get_commandline(server=True, description="server hooks", cmdline=cmdline)
         pymodbus_apply_logging_config(logging.DEBUG)
-        datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
-        context = ModbusServerContext(
-            devices=ModbusDeviceContext(
-                di=datablock, co=datablock, hr=datablock, ir=datablock
-            ),
-            single=True,
-        )
         address: tuple[str, int] = (args.host if args.host else "", args.port if args.port else 0)
         self.server = ModbusTcpServer(
-            context,
+            SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100)),
             framer=FramerType.SOCKET,
             identity=None,
             address=address,

@@ -55,12 +55,8 @@ from pymodbus import (
     ModbusException,
     pymodbus_apply_logging_config,
 )
-from pymodbus.datastore import (
-    ModbusDeviceContext,
-    ModbusSequentialDataBlock,
-    ModbusServerContext,
-)
 from pymodbus.logging import Log
+from pymodbus.simulator import DataType, SimData, SimDevice
 from pymodbus.transport import NULLMODEM_HOST, CommParams, CommType, ModbusProtocol
 
 
@@ -149,13 +145,7 @@ class ServerTester:  # pylint: disable=too-few-public-methods
     def __init__(self, comm: CommType):
         """Initialize runtime tester."""
         self.comm = comm
-        self.store = ModbusDeviceContext(
-            di=ModbusSequentialDataBlock(0, [17] * 100),
-            co=ModbusSequentialDataBlock(0, [17] * 100),
-            hr=ModbusSequentialDataBlock(0, [17] * 100),
-            ir=ModbusSequentialDataBlock(0, [17] * 100),
-        )
-        self.context = ModbusServerContext(devices=self.store, single=True)
+        self.context = SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100))
         self.identity = ModbusDeviceIdentification(
             info_name={"VendorName": "VendorName"}
         )

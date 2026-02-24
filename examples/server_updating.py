@@ -9,7 +9,7 @@ usage::
     server_updating.py [-h] [--comm {tcp,udp,serial,tls}]
                        [--framer {ascii,rtu,socket,tls}]
                        [--log {critical,error,warning,info,debug}]
-                       [--port PORT] [--store {sequential,sparse,none}]
+                       [--port PORT] [--store {sparse,none}]
                        [--device_ids DEVICE_IDS]
 
     -h, --help
@@ -23,7 +23,7 @@ usage::
     -p, --port PORT
         set port
         set serial device baud rate
-    --store {sequential,sparse,none}
+    --store {sparse,none}
         set datastore type
     --device_ids DEVICE_IDS
         set number of devices to respond to
@@ -44,11 +44,7 @@ except ImportError:
           for more information.")
     sys.exit(-1)
 
-from pymodbus.datastore import (
-    ModbusDeviceContext,
-    ModbusSequentialDataBlock,
-    ModbusServerContext,
-)
+from pymodbus.simulator import DataType, SimData, SimDevice
 
 
 _logger = logging.getLogger(__name__)
@@ -98,11 +94,7 @@ def setup_updating_server(cmdline=None):
     # If you initialize a DataBlock to addresses of 0x00 to 0xFF, a request to
     # 0x100 will respond with an invalid address exception.
     # This is because many devices exhibit this kind of behavior (but not all)
-
-    # Continuing, use a sequential block without gaps.
-    datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
-    device_context = ModbusDeviceContext(di=datablock, co=datablock, hr=datablock, ir=datablock)
-    context = ModbusServerContext(devices=device_context, single=True)
+    context = SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100))
     return server_async.setup_server(
         description="Run asynchronous server.", context=context, cmdline=cmdline
     )

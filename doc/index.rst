@@ -12,7 +12,6 @@ Please select a topic in the left hand column.
    source/api_changes
    source/client
    source/server
-   source/repl
    source/simulator3
    source/simulator
    source/simulator/simulator

@@ -1,7 +1,7 @@
 Simulator (3.x)
 ===============
 
-.. warning:: Beginning with v3.9.0 and ending with v4.0.0 this simulator will be replaced by a new version.
+.. warning:: Beginning with v3.9.0 and ending with v4.0.0 this simulator will be removed by a new version.
 
 The simulator is a full fledged modbus simulator, which is
 constantly being evolved with user ideas / amendments.

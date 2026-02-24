@@ -24,3 +24,8 @@ applications to use the server as if it was synchronous.
     :members:
     :undoc-members:
     :show-inheritance:
+
+Datastore for server
+--------------------
+
+:ref:`Datastore definitions`

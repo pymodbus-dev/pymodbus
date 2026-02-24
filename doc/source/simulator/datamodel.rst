@@ -21,8 +21,8 @@ Usage examples
     :language: python
 
 
-Class definitions
-^^^^^^^^^^^^^^^^^
+Datastore definitions
+^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: pymodbus.simulator.DataType
     :members:
     :undoc-members:

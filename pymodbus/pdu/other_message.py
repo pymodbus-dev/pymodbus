@@ -197,7 +197,7 @@ class ReportDeviceIdResponse(ModbusPDU):
         """Encode the response."""
         status = ID_ON if self.status else ID_OFF
         length = len(self.identifier) + 2
-        packet = struct.pack(">BBB", length, dev_id, status)
+        packet = struct.pack(">BBB", length, self.dev_id, status)
         packet += self.identifier  # we assume it is already encoded
         return packet
 

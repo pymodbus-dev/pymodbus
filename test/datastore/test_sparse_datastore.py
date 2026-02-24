@@ -8,7 +8,7 @@ from pymodbus.datastore import ModbusSparseDataBlock
 from pymodbus.exceptions import ParameterException
 
 
-class TestRemoteDataStore:
+class TestSparseDataStore:
     """Unittest for the pymodbus.datastore.remote module."""
 
     data_in_block: dict[int, int | list[int]] = {

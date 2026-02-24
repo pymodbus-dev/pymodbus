@@ -12,6 +12,11 @@ class TestCOntextDataStore:
         ModbusSequentialDataBlock(0x01, [17])
         ModbusSequentialDataBlock(0x01, 17)
 
+    async def test_datastore_Sequential_get_0K(self):
+        """Test ModbusDeviceContext."""
+        block = ModbusSequentialDataBlock(0x01, [17])
+        assert await block.async_OLD_getValues(1) == [17]
+
     async def test_datastore_Sequential_get(self):
         """Test ModbusDeviceContext."""
         block = ModbusSequentialDataBlock(0x01, [17])

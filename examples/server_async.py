@@ -8,7 +8,7 @@ usage::
     server_async.py [-h] [--comm {tcp,udp,serial,tls}]
                     [--framer {ascii,rtu,socket,tls}]
                     [--log {critical,error,warning,info,debug}]
-                    [--port PORT] [--store {sparse,none}]
+                    [--port PORT]
                     [--device_ids DEVICE_IDS]
 
     -h, --help
@@ -22,8 +22,6 @@ usage::
     -p, --port PORT
         set port
         set serial device baud rate
-    --store {sparse,none}
-        set datastore type
     --device_ids DEVICE IDs
         set list of devices to respond to
 

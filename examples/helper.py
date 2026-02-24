@@ -68,13 +68,6 @@ def get_commandline(server: bool = False, description: str | None = None, extras
     )
     if server:
         parser.add_argument(
-            "--store",
-            choices=["sequential", "sparse", "none"],
-            help="set type of datastore",
-            default="sequential",
-            type=str,
-        )
-        parser.add_argument(
             "--device_ids",
             help="set number of device_ids, default is 0 (any)",
             default=0,

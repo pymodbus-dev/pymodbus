@@ -17,7 +17,6 @@ class TestHelperExamples:
         assert args.baudrate == 9600
         assert args.framer
         assert args.port
-        assert args.store
         assert not args.device_ids
         assert not args.context
 

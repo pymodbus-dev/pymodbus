@@ -27,5 +27,7 @@ applications to use the server as if it was synchronous.
 
 Datastore for server
 --------------------
+.. note::
+   The legacy datastores will be replaced in v4.0.0 by SimData/SimDevice (already available) to provide a more flexible data definition.
 
 :ref:`Datastore definitions`

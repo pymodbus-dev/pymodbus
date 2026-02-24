@@ -3,18 +3,19 @@ Simulator (3.x)
 
 .. warning:: Beginning with v3.9.0 and ending with v4.0.0 this simulator will be removed by a new version.
 
-The simulator is a full fledged modbus simulator, which is
-constantly being evolved with user ideas / amendments.
+**REMARK**: A simulator is a standard server with an additional http interface.
 
-The purpose of the simulator is to provide support for client
-application test harnesses with end-to-end testing simulating real life
-modbus devices.
+The core logic of the simulator (SimDevice/SimData) is fully integrated into the server to provide a more flexible data definition.
 
-The datastore simulator allows the user to (all automated)
+The purpose of the simulator is to:
+- Provide a flexible data definition for both standard servers and simulation environments.
+- Allow users to test how a client handles modbus exceptions.
+- Allow users to test a client app's correct use of the simulated device.
 
-- simulate a modbus device by adding a simple configuration,
-- test how a client handles modbus exceptions,
-- test a client apps correct use of the simulated device.
+The datamodel allows the user to:
+
+- Define a modbus device using the ``SimDevice`` architecture.
+- Handle data using ``SimData`` with specific ``DataType`` (Registers, Coils, etc.).
 
 The web interface allows the user to (online / manual)
 

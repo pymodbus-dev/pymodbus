@@ -69,7 +69,7 @@ def get_commandline(server: bool = False, description: str | None = None, extras
     if server:
         parser.add_argument(
             "--store",
-            choices=["sequential", "sparse", "factory", "none"],
+            choices=["sequential", "sparse", "none"],
             help="set type of datastore",
             default="sequential",
             type=str,

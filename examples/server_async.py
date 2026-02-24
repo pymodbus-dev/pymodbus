@@ -8,7 +8,7 @@ usage::
     server_async.py [-h] [--comm {tcp,udp,serial,tls}]
                     [--framer {ascii,rtu,socket,tls}]
                     [--log {critical,error,warning,info,debug}]
-                    [--port PORT] [--store {sequential,sparse,factory,none}]
+                    [--port PORT] [--store {sequential,sparse,none}]
                     [--device_ids DEVICE_IDS]
 
     -h, --help
@@ -22,7 +22,7 @@ usage::
     -p, --port PORT
         set port
         set serial device baud rate
-    --store {sequential,sparse,factory,none}
+    --store {sequential,sparse,none}
         set datastore type
     --device_ids DEVICE IDs
         set list of devices to respond to
@@ -85,11 +85,6 @@ def setup_server(description=None, context=None, cmdline=None):
         elif args.store == "sparse":  # pragma: no cover
             # Continuing, or use a sparse DataBlock which can have gaps
             datablock = lambda : ModbusSparseDataBlock({0x00: 0, 0x05: 1})  # pylint: disable=unnecessary-lambda-assignment
-        elif args.store == "factory" or True:  # pragma: no cover  # pylint: disable=condition-evals-to-constant
-            # Alternately, use the factory methods to initialize the DataBlocks
-            # or simply do not pass them to have them initialized to 0x00 on the
-            # full address range::
-            datablock = lambda : ModbusSequentialDataBlock(0x00, [0x00] * 65536)  # pylint: disable=unnecessary-lambda-assignment
 
         if args.device_ids > 1:  # pragma: no cover
             # The server then makes use of a server context that allows the server

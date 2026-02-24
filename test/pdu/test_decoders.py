@@ -1,4 +1,4 @@
-"""Test factory."""
+"""Test decoders."""
 import pytest
 
 from pymodbus.exceptions import MessageRegisterException

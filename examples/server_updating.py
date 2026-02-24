@@ -9,7 +9,7 @@ usage::
     server_updating.py [-h] [--comm {tcp,udp,serial,tls}]
                        [--framer {ascii,rtu,socket,tls}]
                        [--log {critical,error,warning,info,debug}]
-                       [--port PORT] [--store {sequential,sparse,factory,none}]
+                       [--port PORT] [--store {sequential,sparse,none}]
                        [--device_ids DEVICE_IDS]
 
     -h, --help
@@ -23,7 +23,7 @@ usage::
     -p, --port PORT
         set port
         set serial device baud rate
-    --store {sequential,sparse,factory,none}
+    --store {sequential,sparse,none}
         set datastore type
     --device_ids DEVICE_IDS
         set number of devices to respond to

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from ..constants import ExcCodes
 from ..exceptions import ParameterException
+from ..simulator.simdata import DataType, SimData
 
 
 class ModbusSparseDataBlock:
@@ -12,6 +13,7 @@ class ModbusSparseDataBlock:
     def __init__(self, values=None, mutable=True):
         """Initialize a sparse datastore."""
         self.values: dict[int, list[int]] = {}
+        self.simdata: list[SimData] = []
         self._process_values(values)
         self.mutable = mutable
 
@@ -33,6 +35,7 @@ class ModbusSparseDataBlock:
 
         def _process_as_dict(values):
             for idx, val in iter(values.items()):
+                self.simdata.append(SimData(idx, values=val, datatype=DataType.REGISTERS))
                 if isinstance(val, (list, tuple)):
                     for i, v_item in enumerate(val):
                         self.values[idx + i] = v_item

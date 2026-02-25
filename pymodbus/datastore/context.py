@@ -5,6 +5,8 @@ from __future__ import annotations
 from ..constants import ExcCodes
 from ..exceptions import NoSuchIdException
 from ..logging import Log
+from ..simulator.simdata import DataType
+from ..simulator.simdevice import SimDevice
 from .sequential import ModbusSequentialDataBlock
 from .sparse import ModbusSparseDataBlock
 
@@ -37,6 +39,23 @@ class ModbusDeviceContext:
             "i": ir,
             "h": hr,
         }
+        if not di:
+            di = ModbusSequentialDataBlock(0, values=0)
+        if not co:
+            co = ModbusSequentialDataBlock(0, values=0)
+        if not ir:
+            ir = ModbusSequentialDataBlock(0, values=0)
+        if not hr:
+            hr = ModbusSequentialDataBlock(0, values=0)
+        for entry in di.simdata:
+            entry.datatype = DataType.BITS
+        for entry in co.simdata:
+            entry.datatype = DataType.BITS
+        self.simdevice = SimDevice(0, simdata=(
+            di.simdata,
+            co.simdata,
+            ir.simdata,
+            hr.simdata))
 
     async def async_OLD_getValues(self, func_code, address, count=1) -> list[int] | list[bool] | ExcCodes:
         """Get `count` values from datastore.
@@ -48,7 +67,7 @@ class ModbusDeviceContext:
         """
         address += 1
         Log.debug("getValues: fc-[{}] address-{}: count-{}", func_code, address, count)
-        if dt := self.store[self._fx_mapper.get(func_code, "x")]:
+        if dt := self.store[self._fx_mapper[func_code]]:
             return await dt.async_OLD_getValues(address, count)
         return ExcCodes.ILLEGAL_ADDRESS
 
@@ -79,12 +98,19 @@ class ModbusServerContext:
         """Initialize a new instance of a modbus server context.
 
         :param devices: A dictionary of client contexts
-        :param single: Set to true to treat this as a single context
+        :param single: Deprecated
+
+        dev_id=0 is automatically used when devices= is a ModbusDeviceContext
+        and not a dict.
         """
-        self.single = single
-        self._devices: dict = devices or {}
-        if self.single:
-            self._devices = {0: self._devices}
+        _ = single
+        if not devices:
+            raise TypeError("devices= cannot be None")
+        self._devices: dict[int, ModbusDeviceContext]
+        if isinstance(devices, dict):
+            self._devices = devices
+        else:
+            self._devices = {0: devices}
 
     def __get_device(self, device_id: int) -> ModbusDeviceContext:
         """Return device object."""

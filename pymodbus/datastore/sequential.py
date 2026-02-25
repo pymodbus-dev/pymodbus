@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ..constants import ExcCodes
+from ..simulator.simdata import DataType, SimData
 
 
 class ModbusSequentialDataBlock:
@@ -19,6 +20,7 @@ class ModbusSequentialDataBlock:
             self.values = list(values)
         else:
             self.values = [values]
+        self.simdata = [SimData(address, values=values, datatype=DataType.REGISTERS)]
 
     async def async_OLD_getValues(self, address, count=1) -> list[int] | list[bool] | ExcCodes:
         """Return the requested values of the datastore.

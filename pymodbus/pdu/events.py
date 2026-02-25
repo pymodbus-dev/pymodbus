@@ -8,7 +8,7 @@ can be any one of four types. The type is defined by bit 7
 from abc import ABC, abstractmethod
 
 from ..exceptions import ParameterException
-from .pdu import pack_bitstring, unpack_bitstring
+from .utils import pack_bitstring, unpack_bitstring
 
 
 class ModbusEvent(ABC):

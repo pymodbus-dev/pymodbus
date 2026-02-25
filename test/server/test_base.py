@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from pymodbus.datastore import ModbusServerContext
+from pymodbus.datastore import ModbusDeviceContext, ModbusServerContext
 from pymodbus.framer import FramerType
 from pymodbus.pdu import ReadHoldingRegistersRequest
 from pymodbus.server import ModbusBaseServer
@@ -25,7 +25,7 @@ class TestBaseServer:
                 reconnect_delay_max=0.0,
                 timeout_connect=0.0,
             ),
-            ModbusServerContext(),
+            ModbusServerContext(devices=ModbusDeviceContext()),
             False,
             False,
             None,

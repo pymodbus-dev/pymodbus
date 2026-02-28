@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from ..constants import ExcCodes
 from ..exceptions import NoSuchIdException
+from ..logging import Log
 from ..simulator.simdata import DataType
 from ..simulator.simdevice import SimDevice
 from .sequential import ModbusSequentialDataBlock
@@ -54,6 +55,10 @@ class ModbusDeviceContext:   # pylint: disable=too-few-public-methods
             co.simdata,
             ir.simdata,
             hr.simdata))
+        Log.warning("ModbusDeviceContext is depreacated "
+                    "and will be removed in v4.\n"
+                    "Please convert to SimData/SimDevice.\n"
+                    "Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice")
 
 
 class ModbusServerContext:
@@ -89,6 +94,10 @@ class ModbusServerContext:
             self._devices = {0: devices}
             if not isinstance(devices, ModbusSimulatorContext):
                 self.simdevices = [devices.simdevice]
+        Log.warning("ModbusServerContext is depreacated "
+                    "and will be removed in v4.\n"
+                    "Please convert to SimData/SimDevice.\n"
+                    "Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice")
 
     def __get_device(self, device_id: int) -> ModbusDeviceContext:
         """Return device object."""

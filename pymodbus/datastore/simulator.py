@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import Any
 
 from ..constants import ExcCodes
+from ..logging import Log
 
 
 WORD_SIZE = 16
@@ -487,6 +488,10 @@ class ModbusSimulatorContext:
         self.registerType_id_to_name: list[str] = []
         if config:
             Setup(self).setup(config, custom_actions)
+        Log.warning("ModbusSimulatorContext is depreacated "
+                    "and will be removed in v4.\n"
+                    "Please convert to SimData/SimDevice.\n"
+                    "Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice")
 
     # --------------------------------------------
     # Simulator server interface

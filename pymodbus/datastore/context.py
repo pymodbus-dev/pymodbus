@@ -8,6 +8,7 @@ from ..logging import Log
 from ..simulator.simdata import DataType
 from ..simulator.simdevice import SimDevice
 from .sequential import ModbusSequentialDataBlock
+from .simulator import ModbusSimulatorContext
 from .sparse import ModbusSparseDataBlock
 
 
@@ -107,10 +108,16 @@ class ModbusServerContext:
         if not devices:
             raise TypeError("devices= cannot be None")
         self._devices: dict[int, ModbusDeviceContext]
+        self.simdevices: list[SimDevice] = []
         if isinstance(devices, dict):
             self._devices = devices
+            for dev_id, entry in devices.items():
+                entry.id = dev_id
+                self.simdevices.append(entry)
         else:
             self._devices = {0: devices}
+            if not isinstance(devices, ModbusSimulatorContext):
+                self.simdevices = [devices.simdevice]
 
     def __get_device(self, device_id: int) -> ModbusDeviceContext:
         """Return device object."""

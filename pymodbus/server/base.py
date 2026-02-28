@@ -45,10 +45,10 @@ class ModbusBaseServer(ModbusProtocol):
             for func in custom_pdu:
                 self.decoder.register(func)
         self.context: ModbusServerContext | SimCore
-        if isinstance(context, ModbusServerContext):
-            self.context = context
-        else:
+        if not isinstance(context, ModbusServerContext):
             self.context = SimCore(context)
+        else:
+            self.context = context
         self.control = ModbusControlBlock()
         self.ignore_missing_devices = ignore_missing_devices
         self.broadcast_enable = broadcast_enable

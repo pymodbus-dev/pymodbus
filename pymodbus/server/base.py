@@ -5,7 +5,7 @@ import asyncio
 from collections.abc import Callable
 from contextlib import suppress
 
-from ..datastore import ModbusServerContext, ModbusSimulatorContext
+from ..datastore import ModbusServerContext
 from ..framer import FRAMER_NAME_TO_CLASS, FramerType
 from ..logging import Log
 from ..pdu import DecodePDU, ModbusPDU
@@ -47,10 +47,10 @@ class ModbusBaseServer(ModbusProtocol):
         self.context: ModbusServerContext | SimCore
         if not isinstance(context, ModbusServerContext):
             self.context = SimCore(context)
-        elif isinstance(context, ModbusSimulatorContext):
-            self.context = context
-        else:
+        elif context.simdevices:
             self.context = SimCore(context.simdevices)
+        else:
+            self.context = context
         self.control = ModbusControlBlock()
         self.ignore_missing_devices = ignore_missing_devices
         self.broadcast_enable = broadcast_enable

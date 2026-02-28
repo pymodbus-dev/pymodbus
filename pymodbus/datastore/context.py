@@ -112,8 +112,9 @@ class ModbusServerContext:
         if isinstance(devices, dict):
             self._devices = devices
             for dev_id, entry in devices.items():
-                entry.id = dev_id
-                self.simdevices.append(entry)
+                if not isinstance(entry, ModbusSimulatorContext):
+                    entry.id = dev_id
+                    self.simdevices.append(entry)
         else:
             self._devices = {0: devices}
             if not isinstance(devices, ModbusSimulatorContext):

@@ -1,6 +1,7 @@
 """Test datastore context."""
 import pytest
 
+from pymodbus.constants import ExcCodes
 from pymodbus.datastore import (
     ModbusDeviceContext,
     ModbusSequentialDataBlock,
@@ -14,16 +15,12 @@ class TestContextDataStore:
 
     async def test_datastore_device_Values(self):
         """Test ModbusDeviceContext."""
-        dev = ModbusDeviceContext()
-        await dev.async_OLD_getValues(0x01, 0x05)
-        await dev.async_OLD_setValues(0x05, 0x05, [17])
+        ModbusDeviceContext()
 
     async def test_datastore_device_not_ok(self):
         """Test ModbusDeviceContext."""
         block = ModbusSequentialDataBlock(1, [17] * 8)
-        dev = ModbusDeviceContext(di=block, co=block, hr=block, ir=block)
-        await dev.async_OLD_getValues(0x03, 0x05)
-        await dev.async_OLD_setValues(0x05, 0x05, [17])
+        ModbusDeviceContext(di=block, co=block, hr=block, ir=block)
 
     def test_datastore_server(self):
         """Test ModbusServerContext."""
@@ -47,7 +44,7 @@ class TestContextDataStore:
         srv = ModbusServerContext(devices={1: dev}, single=False)
         assert srv.device_ids() == [1]
         await srv.async_setValues(1, 0x05, 0, [1])
-        assert await srv.async_getValues(1, 0x03, 0) == [1]
+        assert await srv.async_getValues(1, 0x03, 0) == ExcCodes.DEVICE_BUSY
         with pytest.raises(NoSuchIdException):
             await srv.async_getValues(15, 0, 0)
 

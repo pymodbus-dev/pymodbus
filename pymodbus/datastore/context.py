@@ -55,7 +55,7 @@ class ModbusDeviceContext:   # pylint: disable=too-few-public-methods
             co.simdata,
             ir.simdata,
             hr.simdata))
-        Log.warning("ModbusDeviceContext is depreacated "
+        Log.warning("ModbusDeviceContext is deprecated "
                     "and will be removed in v4.\n"
                     "Please convert to SimData/SimDevice.\n"
                     "Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice")
@@ -94,7 +94,7 @@ class ModbusServerContext:
             self._devices = {0: devices}
             if not isinstance(devices, ModbusSimulatorContext):
                 self.simdevices = [devices.simdevice]
-        Log.warning("ModbusServerContext is depreacated "
+        Log.warning("ModbusServerContext is deprecated "
                     "and will be removed in v4.\n"
                     "Please convert to SimData/SimDevice.\n"
                     "Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice")

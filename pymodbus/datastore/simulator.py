@@ -488,7 +488,7 @@ class ModbusSimulatorContext:
         self.registerType_id_to_name: list[str] = []
         if config:
             Setup(self).setup(config, custom_actions)
-        Log.warning("ModbusSimulatorContext is depreacated "
+        Log.warning("ModbusSimulatorContext is deprecated "
                     "and will be removed in v4.\n"
                     "Please convert to SimData/SimDevice.\n"
                     "Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice")

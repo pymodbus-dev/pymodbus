@@ -13,7 +13,8 @@ from ..pdu import file_message as pdu_file_msg
 from ..pdu import mei_message as pdu_mei
 from ..pdu import other_message as pdu_other_msg
 from ..pdu import register_message as pdu_reg
-from ..pdu.pdu import ModbusPDU, pack_bitstring, unpack_bitstring
+from ..pdu.pdu import ModbusPDU
+from ..pdu.utils import pack_bitstring, unpack_bitstring
 
 
 T = TypeVar("T", covariant=False)

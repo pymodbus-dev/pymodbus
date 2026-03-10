@@ -15,7 +15,7 @@ from pymodbus.pdu import (
     ExceptionResponse,
     ModbusPDU,
 )
-from pymodbus.pdu.pdu import pack_bitstring, unpack_bitstring
+from pymodbus.pdu.utils import pack_bitstring, unpack_bitstring
 
 
 class TestPdu:

@@ -1,43 +1,30 @@
 """Modbus Sparse Datastore."""
-# pylint: disable=missing-type-doc
 from __future__ import annotations
 
-from ..constants import ExcCodes
 from ..exceptions import ParameterException
+from ..logging import Log
+from ..simulator.simdata import DataType, SimData
 
 
-class ModbusSparseDataBlock:
+class ModbusSparseDataBlock:  # pylint: disable=too-few-public-methods
     """A sparse modbus datastore, silently redirected to ModbusSequentialBlock."""
 
     def __init__(self, values=None, mutable=True):
         """Initialize a sparse datastore."""
-        self.values: dict[int, list[int]] = {}
+        _ = mutable
+        self.simdata: list[SimData] = []
         self._process_values(values)
-        self.mutable = mutable
-
-    async def async_OLD_getValues(self, address, count=1) -> list[int] | list[bool] | ExcCodes:
-        """Return the requested values of the datastore.
-
-        :param address: The starting address
-        :param count: The number of values to retrieve
-        :returns: The requested values from a:a+c
-        """
-        try:
-            values = [self.values[i] for i in range(address, address + count)]
-        except KeyError:
-            return ExcCodes.ILLEGAL_ADDRESS
-        return values  # type: ignore[return-value]
+        Log.warning("ModbusSparseDataBlock is deprecated "
+                    "and will be removed in v4.\n"
+                    "Please convert to SimData/SimDevice.\n"
+                    "Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice")
 
     def _process_values(self, values):
         """Process values."""
 
         def _process_as_dict(values):
             for idx, val in iter(values.items()):
-                if isinstance(val, (list, tuple)):
-                    for i, v_item in enumerate(val):
-                        self.values[idx + i] = v_item
-                else:
-                    self.values[idx] = int(val)  # type: ignore[assignment]
+                self.simdata.append(SimData(idx, values=val, datatype=DataType.REGISTERS))
 
         if isinstance(values, dict):
             _process_as_dict(values)
@@ -51,34 +38,4 @@ class ModbusSparseDataBlock:
                 "Values for datastore must be a list or dictionary"
             )
         _process_as_dict(values)
-
-    async def async_OLD_setValues(self, address, values) -> None | ExcCodes:
-        """Set the requested values of the datastore.
-
-        :param address: The register starting address
-        :param values: The new values to be set.
-
-        Values can be given in different formats:
-            - a single register value or
-            - a list or tuple of contiguous register values, starting at
-                given starting register address or
-            - a dictionary of address:value(s) pairs, where value can be a
-                single register or a list or tuple of contiguous registers.
-        """
-        try:
-            if isinstance(values, dict):
-                new_offsets = list(set(values.keys()) - set(self.values.keys()))
-                if new_offsets and not self.mutable:
-                    raise ParameterException(f"Offsets {new_offsets} not in range")
-                self._process_values(values)
-            else:
-                if not isinstance(values, (list, tuple)):
-                    values = [values]
-                for idx, val in enumerate(values):
-                    if address + idx not in self.values and not self.mutable:
-                        raise ParameterException("Offset {address+idx} not in range")
-                    self.values[address + idx] = val
-        except KeyError:
-            return ExcCodes.ILLEGAL_ADDRESS
-        return None
 

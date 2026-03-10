@@ -5,7 +5,7 @@ import struct
 from dataclasses import dataclass
 from typing import TypeAlias, cast
 
-from ..pdu.pdu import pack_bitstring, unpack_bitstring
+from ..pdu.utils import pack_bitstring, unpack_bitstring
 from .simutils import DataType, SimUtils
 
 

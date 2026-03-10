@@ -2,6 +2,8 @@ Simulator
 =========
 
 **WORK IN PROGRESS, do NOT use**
+Will be fully released in v4.0.0, until then please use
+:ref:`Simulator (3.x)`
 
 The simulator is a full fledged modbus server/simulator.
 

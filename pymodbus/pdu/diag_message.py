@@ -8,7 +8,8 @@ from ..constants import ModbusPlusOperation
 from ..datastore import ModbusServerContext
 from .decoders import DecodePDU
 from .device import ModbusControlBlock
-from .pdu import ModbusPDU, pack_bitstring
+from .pdu import ModbusPDU
+from .utils import pack_bitstring
 
 
 _MCB = ModbusControlBlock()

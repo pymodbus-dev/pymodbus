@@ -7,7 +7,8 @@ from ..constants import ExcCodes, ModbusStatus
 from ..datastore import ModbusServerContext
 from .decoders import DecodePDU
 from .exceptionresponse import ExceptionResponse
-from .pdu import ModbusPDU, pack_bitstring, unpack_bitstring
+from .pdu import ModbusPDU
+from .utils import pack_bitstring, unpack_bitstring
 
 
 class ReadCoilsRequest(ModbusPDU):

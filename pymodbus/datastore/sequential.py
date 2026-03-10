@@ -1,11 +1,11 @@
 """Modbus Sequential Datastore."""
-# pylint: disable=missing-type-doc
 from __future__ import annotations
 
-from ..constants import ExcCodes
+from ..logging import Log
+from ..simulator.simdata import DataType, SimData
 
 
-class ModbusSequentialDataBlock:
+class ModbusSequentialDataBlock:  # pylint: disable=too-few-public-methods
     """Creates a sequential modbus datastore."""
 
     def __init__(self, address, values):
@@ -14,35 +14,8 @@ class ModbusSequentialDataBlock:
         :param address: The starting address of the datastore
         :param values: Either a list or a dictionary of values
         """
-        self.address = address
-        if hasattr(values, "__iter__"):
-            self.values = list(values)
-        else:
-            self.values = [values]
-
-    async def async_OLD_getValues(self, address, count=1) -> list[int] | list[bool] | ExcCodes:
-        """Return the requested values of the datastore.
-
-        :param address: The starting address
-        :param count: The number of values to retrieve
-        :returns: The requested values from a:a+c
-        """
-        start = address - self.address
-        if start < 0 or len(self.values) < start+count:
-            return ExcCodes.ILLEGAL_ADDRESS
-        return self.values[start : start + count]
-
-    async def async_OLD_setValues(self, address, values) -> None | ExcCodes:
-        """Set the requested values of the datastore.
-
-        :param address: The starting address
-        :param values: The new values to be set
-        """
-        if not isinstance(values, list):
-            values = [values]
-        start = address - self.address
-        if start < 0 or len(self.values) < start+len(values):
-            return ExcCodes.ILLEGAL_ADDRESS
-        self.values[start : start + len(values)] = values
-        return None
-
+        Log.warning("ModbusSequentialDataBlock is deprecated "
+                    "and will be removed in v4.\n"
+                    "Please convert to SimData/SimDevice.\n"
+                    "Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice")
+        self.simdata = [SimData(address, values=values, datatype=DataType.REGISTERS)]

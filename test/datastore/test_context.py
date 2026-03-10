@@ -1,6 +1,7 @@
 """Test datastore context."""
 import pytest
 
+from pymodbus.constants import ExcCodes
 from pymodbus.datastore import (
     ModbusDeviceContext,
     ModbusSequentialDataBlock,
@@ -14,28 +15,26 @@ class TestContextDataStore:
 
     async def test_datastore_device_Values(self):
         """Test ModbusDeviceContext."""
-        dev = ModbusDeviceContext()
-        await dev.async_OLD_getValues(0x01, 0x05)
-        await dev.async_OLD_setValues(0x05, 0x05, [17])
+        ModbusDeviceContext()
 
     async def test_datastore_device_not_ok(self):
         """Test ModbusDeviceContext."""
         block = ModbusSequentialDataBlock(1, [17] * 8)
-        dev = ModbusDeviceContext(di=block, co=block, hr=block, ir=block)
-        await dev.async_OLD_getValues(0x03, 0x05)
-        await dev.async_OLD_setValues(0x05, 0x05, [17])
+        ModbusDeviceContext(di=block, co=block, hr=block, ir=block)
 
     def test_datastore_server(self):
         """Test ModbusServerContext."""
-        dev = ModbusServerContext()
+        dev = ModbusServerContext(devices=ModbusDeviceContext())
         str(dev)
-        dev = ModbusServerContext(devices={})
-        dev = ModbusServerContext(single=False)
-        dev = ModbusServerContext(devices={1: {}}, single=False)
+        dev = ModbusServerContext(devices=ModbusDeviceContext())
+        dev = ModbusServerContext(devices=ModbusDeviceContext(), single=False)
+        dev = ModbusServerContext(devices={1: ModbusDeviceContext()}, single=False)
+        with pytest.raises(TypeError):
+            ModbusServerContext()
 
     def test_datastore_server_ids(self):
         """Test ModbusServerContext."""
-        srv = ModbusServerContext()
+        srv = ModbusServerContext(devices=ModbusDeviceContext())
         assert isinstance(srv.device_ids(), list)
 
     async def test_datastore_server_device_id(self):
@@ -45,6 +44,14 @@ class TestContextDataStore:
         srv = ModbusServerContext(devices={1: dev}, single=False)
         assert srv.device_ids() == [1]
         await srv.async_setValues(1, 0x05, 0, [1])
-        assert await srv.async_getValues(1, 0x03, 0) == [1]
+        assert await srv.async_getValues(1, 0x03, 0) == ExcCodes.DEVICE_BUSY
         with pytest.raises(NoSuchIdException):
             await srv.async_getValues(15, 0, 0)
+
+
+    async def test_datastore_server_device_id_0(self):
+        """Test ModbusServerContext."""
+        block = ModbusSequentialDataBlock(1, [17] * 8)
+        dev = ModbusDeviceContext(di=block, co=block, hr=block, ir=block)
+        srv = ModbusServerContext(devices={0: dev}, single=False)
+        await srv.async_getValues(15, 0x03, 0)

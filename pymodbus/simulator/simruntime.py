@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from ..constants import ExcCodes
-from ..pdu.pdu import unpack_bitstring
+from ..pdu.utils import unpack_bitstring
 from .simdevice import SimDevice, SimRegs
 from .simutils import DataType, SimUtils
 

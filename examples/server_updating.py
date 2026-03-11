@@ -4,6 +4,10 @@
 An example of an asynchronous server and
 a task that runs continuously alongside the server and updates values.
 
+A real world example controlling a heatpump can be found at
+
+    examples/heatpump.py
+
 usage::
 
     server_updating.py [-h]

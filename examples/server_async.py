@@ -9,6 +9,7 @@ usage::
                     [--framer {ascii,rtu,socket,tls}]
                     [--log {critical,error,warning,info,debug}]
                     [--port PORT]
+                    [--baudrate BAUDRATE]
                     [--device_ids DEVICE_IDS]
 
     -h, --help
@@ -21,6 +22,7 @@ usage::
         set log level, default is info
     -p, --port PORT
         set port
+    --baudrate BAUDRATE
         set serial device baud rate
     --device_ids DEVICE IDs
         set list of devices to respond to

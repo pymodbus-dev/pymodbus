@@ -9,6 +9,7 @@ usage::
     server_updating.py [-h]
                        [--log {critical,error,warning,info,debug}]
                        [--port PORT]
+                       [--baudrate BAUDRATE]
                        [--host HOST]
 
     -h, --help
@@ -17,6 +18,7 @@ usage::
         set log level, default is info
     -p, --port PORT
         set port
+    --baudrate BAUDRATE
         set serial device baud rate
     --host HOST
         set HOST

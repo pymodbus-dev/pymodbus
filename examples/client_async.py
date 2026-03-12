@@ -44,8 +44,7 @@ except ImportError:
 import pymodbus.client as modbusClient
 
 
-_logger = logging.getLogger(__file__)
-_logger.setLevel("DEBUG")
+_logger = logging.getLogger(__name__)
 
 
 def setup_async_client(description: str | None =None, cmdline: list[str] | None = None) -> modbusClient.ModbusBaseClient:

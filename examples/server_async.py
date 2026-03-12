@@ -55,7 +55,6 @@ from pymodbus.simulator import DataType, SimData, SimDevice
 
 
 _logger = logging.getLogger(__file__)
-_logger.setLevel(logging.INFO)
 
 
 def setup_server(description=None, context=None, cmdline=None):

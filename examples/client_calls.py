@@ -46,7 +46,6 @@ except ImportError:
 
 
 _logger = logging.getLogger(__file__)
-_logger.setLevel("DEBUG")
 
 
 DEVICE_ID = 0x01

@@ -49,7 +49,6 @@ from pymodbus import ModbusException
 
 
 _logger = logging.getLogger(__file__)
-_logger.setLevel("DEBUG")
 
 
 def setup_sync_client(description=None, cmdline=None):

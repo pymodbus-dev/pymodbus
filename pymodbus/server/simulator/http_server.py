@@ -171,7 +171,7 @@ class ModbusSimulatorServer:
             [
                 web.get("/api/{tail:[a-z]*}", self.handle_html),
                 web.post("/restapi/{tail:[a-z]*}", self.handle_json),
-                web.get("/{tail:[a-z0-9.]*}", self.handle_html_static),
+                web.get("/{tail:[a-z0-9_.]*}", self.handle_html_static),
                 web.get("/", self.handle_html_static),
             ]
         )

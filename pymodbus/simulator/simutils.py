@@ -48,7 +48,7 @@ class DataType(enum.IntEnum):
     #: Registers == 2 bytes (identical to UINT16)
     REGISTERS = enum.auto()
 
-class SimUtils:  # pylint: disable=too-few-public-methods
+class SimUtils:
     """Define common set of utilitites."""
 
     DATATYPE_STRUCT: dict[DataType, tuple[type, str, int]] = {
@@ -69,24 +69,53 @@ class SimUtils:  # pylint: disable=too-few-public-methods
     RunTimeFlag_TYPE     = 2**4 -1 # Isolate number of registers
     RunTimeFlag_READONLY = 2**4    # only read is allowed
 
+
+    def __init__(self):
+        """Ensure that class is not instantiated."""
+        raise RuntimeError("SimUtils may not be instantiated.")
+
     @classmethod
-    def convert_bytes_registers(cls, byte_list: bytearray, word_order: bool, byte_order: bool, data_type_len: int) -> list[int]:
-        """Convert bytearray to registers."""
-        if byte_order:
-            regs = [
-                int.from_bytes(byte_list[x : x + 2], "big")
-                for x in range(0, len(byte_list), 2)
-            ]
-        else:
-            regs = [
-                int.from_bytes([byte_list[x+1],  byte_list[x]], "big")
-                for x in range(0, len(byte_list), 2)
-            ]
-        if word_order:
-            return regs
-        reversed_regs: list[int] = []
-        for x in range(0, len(regs), data_type_len):
-            single_value_regs = regs[x: x + data_type_len]
-            single_value_regs.reverse()
-            reversed_regs = reversed_regs + single_value_regs
-        return reversed_regs
+    def registersToBits(cls, registers: list[int]) -> list[bool]:
+        """Convert list of registers to list of bool (bit 0 first)."""
+        bits: list[bool] = []
+        for entry in registers:
+            bit_str = format(entry, '016b')
+            new_bits = []
+            for i in bit_str:
+                new_bits.append(i == "1")
+            new_bits.reverse()
+            bits.extend(new_bits)
+        return bits
+
+    @classmethod
+    def bitsToRegisters(cls, bits: list[bool]) -> list[int]:
+        """Convert list  of bits to registers (bit 0 first, divided in 16bits)."""
+        bit_len = len(bits)
+        if bit_len % 16:
+            raise TypeError("bits must be a multiple of 16")
+        registers = []
+        for i in range(int(bit_len / 16)):
+            offset = i*16
+            reg = 0
+            for i, x in enumerate(bits[offset:offset+16]):
+                if x:
+                    reg += 1 << i
+            registers.append(reg)
+        return registers
+
+    @classmethod
+    def mergeBitsToRegisters(cls, bit_offset: int, registers: list[int], bits: list[bool]) -> None:
+        """Merge list of bits into registers in place."""
+        new_bits = cls.registersToBits(registers)
+        new_bits[bit_offset:bit_offset+len(bits)] = bits
+        registers[0:] = cls.bitsToRegisters(new_bits)
+
+    @classmethod
+    def bytesToRegisters(cls, byte_list: bytes) -> list[int]:
+        """Convert bytes into registers."""
+        if len(byte_list) % 2:
+            byte_list += b"\x00"
+        return[
+            int.from_bytes(byte_list[x : x + 2], "big")
+            for x in range(0, len(byte_list), 2)
+        ]

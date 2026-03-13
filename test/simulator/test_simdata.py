@@ -20,6 +20,7 @@ class TestSimData:
         {"address": 6, "count": 10, "datatype": DataType.INT16, "values": [17, 18]},
         {"address": 7, "datatype": DataType.STRING, "values": "test"},
         {"address": 8, "count": 10, "datatype": DataType.STRING, "values": "test"},
+        {"address": 8, "count": 10, "datatype": DataType.STRING, "values": "test", "string_encoding": "utf-8"},
         {"address": 0, "datatype": DataType.REGISTERS, "values": 17, "count": 5},
         {"address": 3, "datatype": DataType.INT16, "values": 17, "readonly": True},
         {"address": 0, "count": 2^16 -1},
@@ -45,6 +46,7 @@ class TestSimData:
         {"address": 1, "datatype": "not ok"},
         {"address": 1, "datatype": 11},
         {"address": 2, "values": 17},
+        {"address": 8, "count": 10, "datatype": DataType.STRING, "values": "test", "string_encoding": "not ok"},
     ])
     def test_simdata_not_ok(self, kwargs):
         """Test that simdata can be objects."""
@@ -80,6 +82,8 @@ class TestSimData:
         ([11, 12.0], DataType.REGISTERS),
         (1.0, DataType.BITS),
         ([True, 1.0], DataType.BITS),
+        ([True, 1], DataType.BITS),
+        ([1, True], DataType.BITS),
         ])
     def test_simdata_value_not_ok(self, value, value_type):
         """Test simdata value."""
@@ -92,39 +96,36 @@ class TestSimData:
         with pytest.raises(TypeError):
             SimData(0, values=values, datatype=DataType.INVALID)
 
-    @pytest.mark.parametrize(("value", "value_type", "order", "regs"), [
-        # test word order
-        (-27123, DataType.INT16, (True, True), [0x960D]),
-        ([-27123, 27123], DataType.INT16, (True, True), [0x960D, 0x69F3]),
-        ([-27123, 27123], DataType.INT16, (False, True), [0x960D, 0x69F3]),
-        ([32145678, -32145678], DataType.INT32, (True, True), [0x01EA, 0x810E, 0xFE15, 0x7EF2]),
-        ([32145678, -32145678], DataType.INT32, (False, True), [0x810E, 0x01EA, 0x7EF2, 0xFE15]),
-        # test byte order
-        ([-27123, 27123], DataType.REGISTERS, (True, False), [0x0D96, 0xF369]),
-        ([32145678, -32145678], DataType.INT32, (True, False), [0xEA01, 0x0E81, 0x15FE, 0xF27E]),
-        # test data types
-        (27123, DataType.REGISTERS, (True, True), [0x69F3]),
-        (-27124, DataType.INT16, (True, True), [0x960C]),
-        (27123, DataType.UINT16, (True, True), [0x69F3]),
-        (-32145678, DataType.INT32, (True, True), [0xFE15, 0x7EF2]),
-        (32145678, DataType.UINT32, (True, True), [0x01EA, 0x810E]),
-        (-1234567890123456789, DataType.INT64, (True, True), [0xEEDD, 0xEF0B, 0x8216, 0x7EEB]),
-        (1234567890123456789, DataType.UINT64, (True, True), [0x1122, 0x10F4, 0x7DE9, 0x8115]),
-        (27123.5, DataType.FLOAT32, (True, True), [0x46D3, 0xE700]),
-        (3.141592, DataType.FLOAT32, (True, True), [0x4049, 0x0FD8]),
-        (-3.141592, DataType.FLOAT32, (True, True), [0xC049, 0x0FD8]),
-        (27123.5, DataType.FLOAT64, (True, True), [0x40DA, 0x7CE0, 0x0000, 0x0000]),
-        (3.14159265358979, DataType.FLOAT64, (True, True), [0x4009, 0x21FB, 0x5444, 0x2D11]),
-        (-3.14159265358979, DataType.FLOAT64, (True, True), [0xC009, 0x21FB, 0x5444, 0x2D11]),
-        ([True] + [False] * 15, DataType.BITS, (True, True), [256]),
-        (0x0100, DataType.BITS, (True, True), [256]),
-        ([0x0100, 0x0001], DataType.BITS, (True, True), [256, 1]),
-
+    @pytest.mark.parametrize(("value", "value_type", "regs"), [
+        (27123, DataType.INT16, [27123]),
+        (-27123, DataType.INT16, [0x960d]),
+        ([-27123, 27123], DataType.INT16, [0x960D, 0x69F3]),
+        ([32145678, -32145678], DataType.INT32, [0x01EA, 0x810E, 0xFE15, 0x7EF2]),
+        (27123, DataType.REGISTERS, [0x69F3]),
+        (-27124, DataType.INT16, [0x960C]),
+        (27123, DataType.UINT16, [0x69F3]),
+        (-32145678, DataType.INT32, [0xFE15, 0x7EF2]),
+        (32145678, DataType.UINT32, [0x01EA, 0x810E]),
+        (-1234567890123456789, DataType.INT64, [0xEEDD, 0xEF0B, 0x8216, 0x7EEB]),
+        (1234567890123456789, DataType.UINT64, [0x1122, 0x10F4, 0x7DE9, 0x8115]),
+        (27123.5, DataType.FLOAT32, [0x46D3, 0xE700]),
+        (3.141592, DataType.FLOAT32, [0x4049, 0x0FD8]),
+        (-3.141592, DataType.FLOAT32, [0xC049, 0x0FD8]),
+        (27123.5, DataType.FLOAT64, [0x40DA, 0x7CE0, 0x0000, 0x0000]),
+        (3.14159265358979, DataType.FLOAT64, [0x4009, 0x21FB, 0x5444, 0x2D11]),
+        (-3.14159265358979, DataType.FLOAT64, [0xC009, 0x21FB, 0x5444, 0x2D11]),
+        (0x0100, DataType.BITS, [256]),
+        (123, DataType.BITS, [123]),
+        ([123], DataType.BITS, [123]),
+        ([0x0100, 0x0001], DataType.BITS, [256, 1]),
+        ([True] + [False] * 15, DataType.BITS, [1]),
+        ([True] + [False] * 8 + [True] + [False] * 6, DataType.BITS, [513]),
+        ([True] + [False] * 15 + [False] * 8 + [True] + [False] * 7, DataType.BITS, [1, 256]),
         ])
-    def test_simdata_build_registers(self, value, value_type, order, regs):
+    def test_simdata_build_registers(self, value, value_type, regs):
         """Test simdata value."""
         sd = SimData(0, values=value, datatype=value_type)
-        build_regs = sd.build_registers((order[0], order[1]), "utf-8", False)
+        build_regs = sd.build_registers(False)
         assert build_regs == regs
 
     @pytest.mark.parametrize(("value", "code", "expect"), [
@@ -135,34 +136,36 @@ class TestSimData:
         ])
     def test_simdata_build_string(self, value, code, expect):
         """Test simdata value."""
-        sd = SimData(0, values=value, datatype=DataType.STRING)
-        build_regs = sd.build_registers((True, True), code, False)
+        sd = SimData(0, values=value, datatype=DataType.STRING, string_encoding=code)
+        build_regs = sd.build_registers(False)
         assert build_regs == expect
 
     @pytest.mark.parametrize(("value", "regs"), [
-        ([True, False, True], [1, 0, 1]),
-        (0x0100, [1] + [0]*15),
-        ([256, 1], [1] +  [0]*23 + [1] + [0]*7),
+        ([True, False, True], [True, False, True]),
+        ([True] + [False] * 14 + [True, False], [True] + [False] * 14 + [True, False]),
+        (0x0001, [True] + [False]*15),
+        (0x0100, [False]*8 + [True] + [False]*7),
+        ([256, 1], [False]*8 + [True] + [False]*7 + [True] + [False]*15),
         ])
     def test_simdata_build_bit_block(self, value, regs):
         """Test simdata value."""
         sd = SimData(0, values=value, datatype=DataType.BITS)
-        build_regs = sd.build_registers((True, True), "utf-8", True)
+        build_regs = sd.build_registers(True)
         assert build_regs == regs
 
     def test_simdata_build_updated_simdata(self):
         """Test simdata value."""
         sd = SimData(0, values="ABC", datatype=DataType.STRING)
-        build_regs = sd.build_registers((True, True), "utf-8", False)
+        build_regs = sd.build_registers(False)
         assert build_regs == [0x4142, 0x4300]
         sd.values="ABCDEF"
-        build_regs = sd.build_registers((True, True), "utf-8", False)
+        build_regs = sd.build_registers(False)
         assert build_regs == [0x4142, 0x4344, 0x4546]
 
         sd.values=123
         with pytest.raises(TypeError):
-            sd.build_registers((True, True), "utf-8", False)
+            sd.build_registers(False)
         sd = SimData(0, values=[True, True], datatype=DataType.BITS)
         with pytest.raises(TypeError):
-            sd.build_registers((True, True), "utf-8", False)
+            sd.build_registers(False)
 

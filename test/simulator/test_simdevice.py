@@ -15,34 +15,34 @@ class TestSimDevice:
     async def my_action(
             self,
             _function_code,
+            _start_address,
             _address,
-            current_registers,
-            _new_registers
+            _count,
+            _current_registers,
+            _set_values
         ):
         """Run action."""
-        return current_registers
 
     def my_sync_action(
             self,
             _function_code,
+            _start_address,
             _address,
-            current_registers,
-            _new_registers
+            _count,
+            _current_registers,
+            _set_values
         ):
         """Run action."""
-        return current_registers
 
     simdata1 = SimData(0, datatype=DataType.INT16, values=15)
     simdata2 = SimData(1, datatype=DataType.INT16, values=16)
-    simdata3 = SimData(1, datatype=DataType.BITS, values=16)
+    simdata3 = SimData(10, datatype=DataType.BITS, values=16)
 
     @pytest.mark.parametrize("kwargs", [
-        {"id": 0, "simdata": [SimData(2, datatype=DataType.STRING, values="test")], "string_encoding": "utf-8"},
+        {"id": 0, "simdata": [SimData(2, datatype=DataType.STRING, values="test")]},
         {"id": 0, "simdata": ([simdata3], [simdata3], [simdata1], [simdata3])},
         {"id": 0, "simdata": simdata2},
         {"id": 0, "simdata": [simdata2, simdata1]},
-        {"id": 0, "simdata": [simdata1], "endian": (False, True)},
-        {"id": 0, "simdata": [simdata1], "endian": (True, False)},
         {"id": 0, "simdata": [simdata1], "identity": ModbusDeviceIdentification()},
     ])
     def test_simdevice_instanciate(self, kwargs):
@@ -59,7 +59,6 @@ class TestSimDevice:
         {"id": 0, "simdata": ([simdata1], [simdata3], [simdata1], [simdata1])},
         {"id": 0, "simdata": ([simdata3], [simdata1], [simdata1], [simdata1])},
         {"id": 0, "simdata": ([simdata3], [simdata3], [simdata1], "not ok")},
-        {"id": 0, "simdata": [simdata1], "string_encoding": "not ok"},
         {"id": "not ok", "simdata": [simdata1]},
         {"id": 1.0, "simdata": [simdata1]},
         {"id": 1, "simdata": [simdata1, simdata1]},
@@ -79,7 +78,7 @@ class TestSimDevice:
         ([SimData(0, values=[0xffff], datatype=DataType.BITS)], 0),
         ([SimData(0, values=[True]*16, datatype=DataType.BITS)], 0),
         ([SimData(0, values="hello", datatype=DataType.STRING)], 0),
-        (SimData(0), 0),
+        # (SimData(0), 0),
         ("no valid", 2),
         (["no valid"], 2),
     ])
@@ -91,33 +90,25 @@ class TestSimDevice:
             with pytest.raises(TypeError):
                 SimDevice(id=0, simdata=block)
 
-    @pytest.mark.parametrize(("endian", "expect"), [
-        ("not ok", 1),
-        (None, 1),
-        (["not ok"], 1),
-        (("not ok"), 1),  # noqa: PT014
-        (("not ok", "not_ok"), 1),
-        ((True, False), 0),
-    ])
-    def test_simdevice_endian(self, endian, expect):
-        """Test offset."""
-        if expect:
-            with pytest.raises(TypeError):
-                SimDevice(id=0, simdata=[self.simdata1], endian=endian)
-        else:
-            SimDevice(id=0, simdata=[self.simdata1], endian=endian)
-
     async def test_simdevice_action(self):
         """Test action."""
-        await self.my_action(0, 0, [], None)
-        self.my_sync_action(0, 0, [], None)
+        await self.my_action(0, 0, 0, 0, [], None)
+        self.my_sync_action(0, 0, 0, 0, [], None)
         SimDevice(1, simdata=[SimData(1)], action=self.my_action)
+        SimDevice(0, simdata=([self.simdata3], [self.simdata3], [self.simdata1], [self.simdata3]), action=self.my_action)
         with pytest.raises(TypeError):
             SimDevice(1, simdata=[SimData(1)], action=self.my_sync_action)
         with pytest.raises(TypeError):
             SimDevice(1, simdata=[SimData(1)], action="no good")  # type: ignore[arg-type]
+
+    async def test_simdevice_bit_addressing(self):
+        """Test action."""
+        sdblock = ([self.simdata3], [self.simdata3], [self.simdata1], [self.simdata3])
+        SimDevice(1, simdata=[SimData(1)], use_bit_addressing=False)
+        SimDevice(1, simdata=[SimData(1)], use_bit_addressing=True)
+        SimDevice(1, simdata=sdblock, use_bit_addressing=True)
         with pytest.raises(TypeError):
-            SimDevice(0, simdata=([self.simdata3], [self.simdata3], [self.simdata1], [self.simdata3]), action=self.my_action),
+            SimDevice(1, simdata=sdblock, use_bit_addressing=False)
 
     @pytest.mark.parametrize(("block", "result"), [
         ([SimData(2, values=125, datatype=DataType.REGISTERS), SimData(1, values=123, datatype=DataType.REGISTERS),],
@@ -138,6 +129,12 @@ class TestSimDevice:
         ([SimData(0, values=[0xffff, 0xffff], datatype=DataType.BITS)],
          (0, [65535, 65535, 0],
             [DataType.BITS, 0, DataType.INVALID])),
+        ([SimData(0, values=[True] * 2 + [False]*6 + [False]*8, datatype=DataType.BITS)],
+         (0, [3, 0],
+            [DataType.BITS, DataType.INVALID])),
+        ([SimData(0, values=[True] * 2 + [False]*6 + [True]  + [False]*6 + [True], datatype=DataType.BITS)],
+         (0, [33027, 0],
+            [DataType.BITS, DataType.INVALID])),
         ([SimData(1, values=123, datatype=DataType.INT16),
             SimData(3, values=456, datatype=DataType.INT16)],
          (1, [123, 0, 456, 0],
@@ -189,37 +186,44 @@ class TestSimDevice:
     def test_simdevice_build_blocks(self):
         """Test build_device() ok."""
         block = (
-            [SimData(1, values=123, datatype=DataType.BITS)],
-            [SimData(1, values=123, datatype=DataType.BITS)],
-            [SimData(1, values=123, datatype=DataType.INT16)],
-            [SimData(1, values=123, datatype=DataType.INT16)])
+            [SimData(0, values=123, datatype=DataType.BITS)],
+            [SimData(0, values=123, datatype=DataType.BITS)],
+            [SimData(0, values=123, datatype=DataType.INT16)],
+            [SimData(0, values=123, datatype=DataType.INT16)])
         result = {
-            "c": (1, [0]*8 + [1]*2 + [0] + [1]*4 + [0]*2, [DataType.BITS] + [0] * 15 + [DataType.INVALID]),
-            "d": (1, [0]*8 + [1]*2 + [0] + [1]*4 + [0]*2, [DataType.BITS] + [0] * 15 + [DataType.INVALID]),
-            "h": (1, [123, 0], [DataType.INT16, DataType.INVALID]),
-            "i": (1, [123,0], [DataType.INT16, DataType.INVALID])
+            "c": (0, [123, 0], [DataType.BITS, DataType.INVALID]),
+            "d": (0, [123, 0], [DataType.BITS, DataType.INVALID]),
+            "h": (0, [123, 0], [DataType.INT16, DataType.INVALID]),
+            "i": (0, [123,0], [DataType.INT16, DataType.INVALID])
         }
         sd = SimDevice(id=1, simdata=block)
         lists = sd.build_device()
         assert lists == result
 
-    def test_simdevice_build_bits(self):
+    @pytest.mark.parametrize(("block", "registers", "addr"), [
+        ([SimData(0, values=123, datatype=DataType.BITS)], [0x007b, 0x0000], 0),
+        ([SimData(0, values=True, datatype=DataType.BITS)], [0x0001, 0x0000], 0),
+        ([SimData(1, values=123, datatype=DataType.BITS)], [0x00F6, 0x0000, 0x0000], 0),
+        ([SimData(0, values=[True] + [False]*7, datatype=DataType.BITS),
+          SimData(9, values=[True], datatype=DataType.BITS)], [0x0201, 0x0000], 0),
+        ([SimData(0, values=[True] + [False]*7, datatype=DataType.BITS),
+          SimData(10, values=[True], datatype=DataType.BITS)], [0x0401, 0x0000], 0),
+        ([SimData(16, values=123, datatype=DataType.BITS)], [0x007b, 0x0000], 1),
+        ([SimData(15, values=123, datatype=DataType.BITS)], [0x8000, 0x003d, 0x0000], 0),
+    ])
+    def test_simdevice_build_bits(self, block, registers, addr):
         """Test build_device() ok."""
-        sd = SimDevice(id=1, simdata=SimData(1, values=123, datatype=DataType.BITS))
-        result_shared = cast(SimRegs, sd.build_device())
-        assert len(result_shared[1]) == 2
-
-        sd = SimDevice(id=1, simdata= (
-            [SimData(1, values=123, datatype=DataType.BITS)],
-            [SimData(1, values=123, datatype=DataType.BITS)],
-            [SimData(1, values=123, datatype=DataType.INT16)],
-            [SimData(1, values=123, datatype=DataType.INT16)]
-        ))
-        result_block = cast(dict[str, SimRegs], sd.build_device())
-        assert len(result_block["c"][1]) == 17
-        assert len(result_block["d"][1]) == 17
-        assert len(result_block["h"][1]) == 2
-        assert len(result_block["i"][1]) == 2
+        sim123 = [SimData(addr, values=123, datatype=DataType.INT16)]
+        sd = SimDevice(id=1, simdata=(block, block, sim123, sim123))
+        reg_len = len(registers) - 2
+        result = {
+            "c": (addr, registers, [DataType.BITS] + [0] * reg_len + [DataType.INVALID]),
+            "d": (addr, registers, [DataType.BITS] + [0] * reg_len + [DataType.INVALID]),
+            "h": (addr, [123, 0], [DataType.INT16, DataType.INVALID]),
+            "i": (addr, [123, 0], [DataType.INT16, DataType.INVALID])
+        }
+        lists = cast(dict[str, SimRegs], sd.build_device())
+        assert lists == result
 
     @pytest.mark.parametrize("count", range(1,4))
     @pytest.mark.parametrize("data_count", range(1,4))

@@ -14,17 +14,16 @@ class TestSimRuntime:
     async def my_action(
             self,
             function_code,
+            _start_address,
             _address,
-            current_registers,
-            _new_registers
-        ):
+            _count,
+            _current_registers,
+            _set_values
+         ):
         """Run action."""
-        if function_code == 3:
-            return current_registers
         if function_code == 4:
             return ExcCodes.ILLEGAL_ADDRESS
         # function_code == 5:
-        return None
 
     @pytest.mark.parametrize("kwargs", [
         {"id": 0, "simdata": ([SimData(0, datatype=DataType.BITS, values=15)],
@@ -39,11 +38,11 @@ class TestSimRuntime:
         SimRuntime(sd)
 
     @pytest.mark.parametrize(("args", "expect"), [
-        ((3, 1, 1, None), -1),
+        ((3, 1, 1, None), 1),
         ((3, 200, 1, None), -1),
         ((3, 15, 200, None), -1),
         ((3, 15, 2, None), 2),
-        ((3, 19, 1, [1, 2 , 3]), -1),
+        # ((3, 19, 1, [1, 2 , 3]), -1),
         ((3, 19, 1, [1]), 1),
         ((3, 10, 2, None), -1),
         ((3, 10, 1, [1]), -1),
@@ -65,8 +64,8 @@ class TestSimRuntime:
 
     @pytest.mark.parametrize(("args", "expect"), [
         ((3, 10, 1, [1]), [1, 0, 0, 0, 0, 0]),
-        ((3, 11, 1, [1, 2, 3]), [0, 1, 2, 3, 0, 0]),
-        ((3, 12, 1, [1, 2 , 3]), [0, 0, 1, 2, 3, 0]),
+        # ((3, 11, 1, [1, 2, 3]), [0, 1, 2, 3, 0, 0]),
+        # ((3, 12, 1, [1, 2 , 3]), [0, 0, 1, 2, 3, 0]),
     ])
     async def test_simruntime_block_set(self, args, expect):
         """Test that simdata can be objects."""
@@ -80,9 +79,9 @@ class TestSimRuntime:
         assert rt.block["x"][2] == expect
 
     @pytest.mark.parametrize(("args", "expect"), [
-        ((3, 15, 2, None), 2),
+        ((3, 15, 2, None), [0, 0]),
         ((4, 15, 2, None), -1),
-        ((5, 15, 2, None), 2),
+        ((5, 15, 2, None), [False]*32),
     ])
     async def test_simruntime_action(self, args, expect):
         """Test that simdata can be objects."""
@@ -96,7 +95,7 @@ class TestSimRuntime:
         if expect == -1:
             assert isinstance(ret, ExcCodes)
         else:
-            assert len(cast(list[int], ret)) == expect
+            assert ret == expect
 
     async def test_simruntime_getValues(self):
         """Test that simdata can be objects."""

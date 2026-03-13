@@ -5,7 +5,6 @@ import struct
 from dataclasses import dataclass
 from typing import TypeAlias, cast
 
-from ..pdu.utils import pack_bitstring, unpack_bitstring
 from .simutils import DataType, SimUtils
 
 
@@ -73,18 +72,25 @@ class SimData:
         SimData(
             address=100,
             values=0xffff,
-            datatype=DataType.BITS
+            datatype=DataType.REGISTERS
         )
         SimData(
             address=100,
             values=[0xffff],
-            datatype=DataType.BITS
+            datatype=DataType.REGISTERS
         )
 
     Each SimData defines 16 BITS (coils), with value True.
 
-    Value are stored in registers (16bit is 1 register), the address refers to the register, unless
-    in non-shared mode where the address refers to the coil.
+    Value are stored in registers (16bit is 1 register).
+
+    In shared mode (coil and discrete inputs requests):
+        - address refers to the register, containing individual bits,
+          Individual bits within the register cannot be addressed,
+          unless "use_bit_as_address" is set on the device.
+
+    In non-shared mode (coil and discrete inputs requests)
+        - address refers to the bit.
     """
 
     #: Address of first register, starting with 0 (identical to the requests)
@@ -111,6 +117,11 @@ class SimData:
     #: Used to check access and convert value to/from registers or mark as invalid.
     datatype: DataType = DataType.INVALID
 
+    #: String encoding
+    #:
+    #: Used to convert a SimData(DataType.STRING) to registers.
+    string_encoding: str = "utf-8"
+
     #: Mark register(s) as readonly.
     readonly: bool = False
 
@@ -129,6 +140,10 @@ class SimData:
             raise TypeError("values= cannot be used with invalid=True")
         if isinstance(self.values, list) and not self.values:
             raise TypeError("values= list cannot be empty")
+        try:
+            "test string".encode(self.string_encoding)
+        except (UnicodeEncodeError, LookupError) as exc:
+            raise TypeError("string_encoding= not valid") from exc
 
     def __check_parameters(self):
         """Check all parameters."""
@@ -136,8 +151,10 @@ class SimData:
         x_values = self.values if isinstance(self.values, list) else [self.values]
         x_datatype, _x_struct, _x_len = SimUtils.DATATYPE_STRUCT[self.datatype]
         if self.datatype == DataType.BITS:
-            x_datatype = int if isinstance(x_values[0], int) else bool
+            x_datatype = bool if isinstance(x_values[0], bool) else int
         for x_value in x_values:
+            if self.datatype == DataType.BITS and x_datatype is int and isinstance(x_value, bool):
+                raise TypeError(f"values= {x_value} int and bool cannot be mixed")
             if not isinstance(x_value, x_datatype):
                 raise TypeError(f"values= {x_value} is not {x_datatype!s}")
             if x_datatype is str and not x_value:
@@ -147,60 +164,47 @@ class SimData:
         """Define a group of registers."""
         self.__check_parameters()
 
-    def build_registers_bits_block(self) -> list[int]:
+    def build_registers_bits_block(self) -> list[bool]:
         """Convert values= to registers from bits (1 bit in each register)."""
         x_values = self.values if isinstance(self.values, list) else [self.values]
-        regs: list[int] = []
         if isinstance(x_values[0], bool):
-            for v in x_values:
-                regs.append(1 if v else 0)
-        else:
-            for v in cast(list[int], x_values):
-                bool_list = unpack_bitstring(v.to_bytes(2, byteorder="big"))
-                for i in bool_list:
-                    regs.append(1 if i else 0)
-        return regs
+            return cast(list[bool], x_values)
+        return SimUtils.registersToBits(cast(list[int], x_values))
 
-    def build_registers_bits_shared(self, endian: tuple[bool, bool]) -> list[int]:
+    def build_registers_bits_shared(self) -> list[int]:
         """Convert values= to registers from bits (16 bits in each register)."""
         x_values = self.values if isinstance(self.values, list) else [self.values]
-        if isinstance(x_values[0], bool):
-            if len(x_values) % 16:
-                raise TypeError(f"SimData address={self.address} values= must be a multiple of 16")
-            bytes_bits = bytearray(pack_bitstring(cast(list[bool], x_values)))
-        else:
-            bytes_bits = bytearray()
-            for v in x_values:
-                bytes_bits.extend(struct.pack(">H", v))
-        return SimUtils.convert_bytes_registers(bytes_bits, endian[0], endian[1], 1)
+        if not isinstance(x_values[0], bool):
+            return cast(list[int], x_values)
+        if len(x_values) % 16:
+            raise TypeError(f"SimData address={self.address} values= must be a multiple of 16")
+        return SimUtils.bitsToRegisters(cast(list[bool], x_values))
 
-    def build_registers_string(self, endian: tuple[bool, bool], string_encoding: str) -> list[int]:
+    def build_registers_string(self) -> list[int]:
         """Convert values= to registers from string(s)."""
         x_values = self.values if isinstance(self.values, list) else [self.values]
         blocks_regs: list[int] = []
         for value in x_values:
-            bytes_string = cast(str, value).encode(string_encoding)
-            if len(bytes_string) % 2:
-                bytes_string += b"\x00"
-            blocks_regs.extend(SimUtils.convert_bytes_registers(bytearray(bytes_string), endian[0], endian[1], 1))
+            bytes_string = cast(str, value).encode(self.string_encoding)
+            regs = SimUtils.bytesToRegisters(bytes_string)
+            blocks_regs.extend(regs)
         return blocks_regs
 
 
-    def build_registers(self, endian: tuple[bool, bool], string_encoding: str, block_bits: bool) -> list[int]:
+    def build_registers(self, block_bits: bool) -> list[int] | list[bool]:
         """Convert values= to registers."""
         self.__check_parameters()
         if self.datatype == DataType.STRING:
-            block_regs = self.build_registers_string(endian, string_encoding)
-            return block_regs * self.count
+            return self.build_registers_string() * self.count
+        if block_bits:
+            return self.build_registers_bits_block() * self.count
         if self.datatype == DataType.BITS:
-            if block_bits:
-                return self.build_registers_bits_block()
-            return self.build_registers_bits_shared(endian)
+            return self.build_registers_bits_shared() * self.count
 
         x_values = self.values if isinstance(self.values, list) else [self.values]
-        _x_datatype, x_struct, x_len = SimUtils.DATATYPE_STRUCT[self.datatype]
+        _x_datatype, x_struct, _x_len = SimUtils.DATATYPE_STRUCT[self.datatype]
         blocks_regs: list[int] = []
         for v in x_values:
             byte_list = struct.pack(f">{x_struct}", v)
-            blocks_regs.extend(SimUtils.convert_bytes_registers(bytearray(byte_list), endian[0], endian[1], x_len))
+            blocks_regs.extend(SimUtils.bytesToRegisters(byte_list))
         return blocks_regs

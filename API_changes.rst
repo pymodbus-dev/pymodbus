@@ -1,6 +1,6 @@
 API changes
 ===========
-Versions (X.Y.Z) where Z > 0 e.g. 3.0.1 do NOT have API changes!
+Versions (X.Y.Z) where Z == 0 e.g. 3.0.1 do NOT have API changes!
 
 API changes 3.13.0
 ------------------
@@ -8,6 +8,8 @@ API changes 3.13.0
   a proper forwarder should be made at frame level.
 - datastore get/setValues is removed,
   please use server.async_get/setValues instead.
+- datastore show a deprecation warning
+- SimData/SimDevice have been updated
 
 API changes 3.12.0
 ------------------

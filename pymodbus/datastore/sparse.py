@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from ..exceptions import ParameterException
-from ..logging import Log
 from ..simulator.simdata import DataType, SimData
 
 
@@ -14,10 +13,6 @@ class ModbusSparseDataBlock:  # pylint: disable=too-few-public-methods
         _ = mutable
         self.simdata: list[SimData] = []
         self._process_values(values)
-        Log.warning("ModbusSparseDataBlock is deprecated "
-                    "and will be removed in v4.\n"
-                    "Please convert to SimData/SimDevice.\n"
-                    "Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice")
 
     def _process_values(self, values):
         """Process values."""

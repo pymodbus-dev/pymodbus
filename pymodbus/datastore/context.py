@@ -46,16 +46,17 @@ class ModbusDeviceContext:   # pylint: disable=too-few-public-methods
             ir = ModbusSequentialDataBlock(0, values=0)
         if not hr:
             hr = ModbusSequentialDataBlock(0, values=0)
-        for entry in di.simdata:
-            entry.datatype = DataType.BITS
         for entry in co.simdata:
             entry.datatype = DataType.BITS
+        for entry in di.simdata:
+            entry.datatype = DataType.BITS
         self.simdevice = SimDevice(0, simdata=(
-            di.simdata,
             co.simdata,
+            di.simdata,
             ir.simdata,
             hr.simdata))
-        Log.warning("ModbusDeviceContext is deprecated "
+        Log.warning("ModbusDeviceContext, ModbusSequentialDataBlock, "
+                    "ModbusSparseDataBlock are deprecated "
                     "and will be removed in v4.\n"
                     "Please convert to SimData/SimDevice.\n"
                     "Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice")

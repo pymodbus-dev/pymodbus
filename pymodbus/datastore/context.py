@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
+
 from ..constants import ExcCodes
 from ..exceptions import NoSuchIdException
 from ..logging import Log
@@ -25,36 +27,41 @@ class ModbusDeviceContext:   # pylint: disable=too-few-public-methods
     _fx_mapper.update([(i, "h") for i in (3, 6, 16, 22, 23)])
     _fx_mapper.update([(i, "c") for i in (1, 5, 15)])
 
+    def __build_data(self, simdata):
+        """Build and/or correct values."""
+        for entry in simdata:
+            entry.datatype = DataType.BITS
+            if not isinstance(entry.values, list):
+                entry.values = [entry.values]
+            for i, _value in enumerate(entry.values):
+                entry.values[i] = bool(entry.values[i])
+
     def __init__(self, *_args,
                     di: ModbusSequentialDataBlock | ModbusSparseDataBlock | None = None,
                     co: ModbusSequentialDataBlock | ModbusSparseDataBlock | None = None,
                     ir: ModbusSequentialDataBlock | ModbusSparseDataBlock | None = None,
                     hr: ModbusSequentialDataBlock | ModbusSparseDataBlock | None = None,
                 ):
-        """Initialize the datastores."""
-        self.store = {
-            "d": di,
-            "c": co,
-            "i": ir,
-            "h": hr,
-        }
+        """Define device."""
         if not di:
-            di = ModbusSequentialDataBlock(0, values=0)
+            di = ModbusSequentialDataBlock(1, values=False)
         if not co:
-            co = ModbusSequentialDataBlock(0, values=0)
+            co = ModbusSequentialDataBlock(1, values=False)
         if not ir:
-            ir = ModbusSequentialDataBlock(0, values=0)
+            ir = ModbusSequentialDataBlock(1, values=0)
         if not hr:
-            hr = ModbusSequentialDataBlock(0, values=0)
-        for entry in co.simdata:
-            entry.datatype = DataType.BITS
-        for entry in di.simdata:
-            entry.datatype = DataType.BITS
+            hr = ModbusSequentialDataBlock(1, values=0)
+        co_simdata = deepcopy(co.simdata)
+        di_simdata = deepcopy(di.simdata)
+        ir_simdata = deepcopy(ir.simdata)
+        hr_simdata = deepcopy(hr.simdata)
+        self.__build_data(co_simdata)
+        self.__build_data(di_simdata)
         self.simdevice = SimDevice(0, simdata=(
-            co.simdata,
-            di.simdata,
-            ir.simdata,
-            hr.simdata))
+            co_simdata,
+            di_simdata,
+            ir_simdata,
+            hr_simdata))
         Log.warning("ModbusDeviceContext, ModbusSequentialDataBlock, "
                     "ModbusSparseDataBlock are deprecated "
                     "and will be removed in v4.\n"

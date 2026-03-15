@@ -194,8 +194,8 @@ class TestSimDevice:
             [SimData(1, values=123, datatype=DataType.INT16)],
             [SimData(1, values=123, datatype=DataType.INT16)])
         result = {
-            "c": (1, [123, 0], [DataType.BITS, DataType.INVALID]),
-            "d": (1, [123, 0], [DataType.BITS, DataType.INVALID]),
+            "c": (1, [0]*8 + [1]*2 + [0] + [1]*4 + [0]*2, [DataType.BITS] + [0] * 15 + [DataType.INVALID]),
+            "d": (1, [0]*8 + [1]*2 + [0] + [1]*4 + [0]*2, [DataType.BITS] + [0] * 15 + [DataType.INVALID]),
             "h": (1, [123, 0], [DataType.INT16, DataType.INVALID]),
             "i": (1, [123,0], [DataType.INT16, DataType.INVALID])
         }
@@ -216,8 +216,8 @@ class TestSimDevice:
             [SimData(1, values=123, datatype=DataType.INT16)]
         ))
         result_block = cast(dict[str, SimRegs], sd.build_device())
-        assert len(result_block["c"][1]) == 2
-        assert len(result_block["d"][1]) == 2
+        assert len(result_block["c"][1]) == 17
+        assert len(result_block["d"][1]) == 17
         assert len(result_block["h"][1]) == 2
         assert len(result_block["i"][1]) == 2
 

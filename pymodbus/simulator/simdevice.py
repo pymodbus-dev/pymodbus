@@ -162,18 +162,18 @@ class SimDevice:
                 if i < 2 and entry.datatype != DataType.BITS:
                     raise TypeError(f"simdata[{inx}]=tuple[{TUPLE_NAMES[i]}] -> list[{inx}] not DataType.BITS, not allowed")
 
-    def __check_block(self, block: list[SimData], name: str):
+    def __check_block(self, block: list[SimData], use_bits, name: str):
         """Check block content."""
         x_block = sorted(block, key=lambda x: x.address)
         last_address = x_block[0].address -1
         for entry in x_block:
-            last_address = self.__check_block_entries(last_address, entry, name)
+            last_address = self.__check_block_entries(last_address, entry, use_bits, name)
 
-    def __check_block_entries(self, last_address: int, entry: SimData, _name: str) -> int:
+    def __check_block_entries(self, last_address: int, entry: SimData, use_bits: bool, _name: str) -> int:
         """Check block entries."""
         if entry.address <= last_address:
             raise TypeError(f"SimData address {entry.address} is overlapping!")
-        blocks_regs = entry.build_registers(self.endian, self.string_encoding, False) * entry.count
+        blocks_regs = entry.build_registers(self.endian, self.string_encoding, use_bits) * entry.count
         return last_address + len(blocks_regs)
 
     def __check_parameters(self):
@@ -182,10 +182,10 @@ class SimDevice:
         self.__check_simple2()
         if isinstance(self.simdata, tuple):
             for i in range(4):
-                self.__check_block(cast(tuple,self.simdata)[i], TUPLE_NAMES[i])
+                self.__check_block(cast(tuple,self.simdata)[i], (i in {0,1}), TUPLE_NAMES[i])
         else:
             x_simdata = self.simdata if isinstance(self.simdata, list) else [self.simdata]
-            self.__check_block(x_simdata, "list")
+            self.__check_block(x_simdata, False, "list")
 
     def __post_init__(self):
         """Define a device."""
@@ -198,10 +198,10 @@ class SimDevice:
             flag_normal |= SimUtils.RunTimeFlag_READONLY
         return flag_normal
 
-    def __create_simdata(self, simdata: SimData, flag_list: list[int],  reg_list: list[int]):
+    def __create_simdata(self, simdata: SimData, flag_list: list[int],  reg_list: list[int], use_bits: bool):
         """Build registers for single SimData."""
         flag_normal  = self.__build_flags(simdata)
-        blocks_regs = simdata.build_registers(self.endian, self.string_encoding, False)
+        blocks_regs = simdata.build_registers(self.endian, self.string_encoding, use_bits)
         for _ in range(simdata.count):
             first = True
             for register in blocks_regs:
@@ -212,7 +212,7 @@ class SimDevice:
                     flag_list.append(flag_normal & ~SimUtils.RunTimeFlag_TYPE)
                 reg_list.append(register)
 
-    def __create_block(self, simdata: list[SimData]) -> SimRegs:
+    def __create_block(self, simdata: list[SimData], use_bits: bool) -> SimRegs:
         """Create registers for device."""
         flag_list: list[int] = []
         reg_list: list[int] = []
@@ -223,7 +223,7 @@ class SimDevice:
                 flag_list.append(DataType.INVALID)
                 reg_list.append(0)
                 next_address += 1
-            self.__create_simdata(entry, flag_list, reg_list)
+            self.__create_simdata(entry, flag_list, reg_list, use_bits)
         flag_list.append(DataType.INVALID)
         reg_list.append(0)
         return (start_address, reg_list, flag_list)
@@ -234,12 +234,12 @@ class SimDevice:
         if not isinstance(self.simdata, tuple):
             x_simdata = self.simdata if isinstance(self.simdata, list) else [self.simdata]
             x_simdata.sort(key=lambda x: x.address)
-            return self.__create_block(x_simdata)
+            return self.__create_block(x_simdata, False)
         b: dict[str, SimRegs] = {}
         #  (<coils>, <discrete inputs>, <holding registers>, <input registers>)
         convert = {0: "c", 1: "d", 2: "h", 3: "i"}
         for i in range(4):
             x_simdata = cast(tuple, self.simdata)[i]
             x_simdata.sort(key=lambda x: x.address)
-            b[convert[i]] = self.__create_block(x_simdata)
+            b[convert[i]] = self.__create_block(x_simdata, (i in {0,1}))
         return b

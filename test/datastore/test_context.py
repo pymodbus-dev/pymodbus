@@ -19,7 +19,7 @@ class TestContextDataStore:
 
     async def test_datastore_device_not_ok(self):
         """Test ModbusDeviceContext."""
-        block = ModbusSequentialDataBlock(1, [17] * 8)
+        block = ModbusSequentialDataBlock(1, [17] * 16)
         ModbusDeviceContext(di=block, co=block, hr=block, ir=block)
 
     def test_datastore_server(self):
@@ -37,9 +37,24 @@ class TestContextDataStore:
         srv = ModbusServerContext(devices=ModbusDeviceContext())
         assert isinstance(srv.device_ids(), list)
 
+    async def test_datastore_build(self):
+        """Test ModbusServerContext."""
+        block = ModbusSequentialDataBlock(1, 17)
+        dev = ModbusDeviceContext(di=block, co=block, hr=block, ir=block)
+        srv = ModbusServerContext(devices={1: dev}, single=False)
+        assert srv.device_ids() == [1]
+        await srv.async_setValues(1, 0x05, 0, [1])
+        assert await srv.async_getValues(1, 0x03, 0) == ExcCodes.DEVICE_BUSY
+        with pytest.raises(NoSuchIdException):
+            await srv.async_getValues(15, 0, 0)
+
+    async def test_datastore_build2(self):
+        """Test ModbusServerContext."""
+        ModbusServerContext(devices=ModbusDeviceContext(), single=True)
+
     async def test_datastore_server_device_id(self):
         """Test ModbusServerContext."""
-        block = ModbusSequentialDataBlock(1, [17] * 8)
+        block = ModbusSequentialDataBlock(1, [17] * 16)
         dev = ModbusDeviceContext(di=block, co=block, hr=block, ir=block)
         srv = ModbusServerContext(devices={1: dev}, single=False)
         assert srv.device_ids() == [1]
@@ -51,7 +66,7 @@ class TestContextDataStore:
 
     async def test_datastore_server_device_id_0(self):
         """Test ModbusServerContext."""
-        block = ModbusSequentialDataBlock(1, [17] * 8)
+        block = ModbusSequentialDataBlock(1, [17] * 16)
         dev = ModbusDeviceContext(di=block, co=block, hr=block, ir=block)
         srv = ModbusServerContext(devices={0: dev}, single=False)
         await srv.async_getValues(15, 0x03, 0)

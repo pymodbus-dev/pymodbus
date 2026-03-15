@@ -5,8 +5,7 @@
 from __future__ import annotations
 
 from ..constants import ExcCodes
-from ..pdu.utils import unpack_bitstring
-from .simdevice import SimDevice, SimRegs
+from .simdevice import SimDevice
 from .simutils import DataType, SimUtils
 
 
@@ -36,26 +35,10 @@ class SimRuntime:
             )
             return
         self.shared = False
-        b_h = build["h"]
-        b_i = build["i"]
-        self.block = {
-            "c": self.convert_to_bit(build["c"]),
-            "d":  self.convert_to_bit(build["d"]),
-            "h": (b_h[0], len(b_h[1]), b_h[1],  b_h[2]),
-            "i": (b_i[0], len(b_i[1]), b_i[1],  b_i[2]),
-        }
-
-    @classmethod
-    def convert_to_bit(cls, block: SimRegs) -> tuple[int, int, list[int], list[int]]:
-        """Convert registers to bits."""
-        new_registers: list[int] = []
-        for entry in block[2]:
-            bool_list = unpack_bitstring(entry.to_bytes(2, byteorder="big"))
-            for x in bool_list:
-                new_registers.append(1 if x else 0)
-        new_flags: list[int] = [block[1][0]]*len(new_registers)
-        return (block[0], len(new_flags), new_flags, new_registers)
-
+        self.block = {}
+        for i in ("c", "d", "h", "i"):
+            x = build[i]
+            self.block[i] =  (x[0], len(x[1]), x[1],  x[2])
 
     async def get_block(self, func_code: int, address: int, count: int, values: list[int] | list[bool] | None) -> list[int] | list[bool] | ExcCodes:
         """Calculate offset."""

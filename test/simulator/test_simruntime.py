@@ -38,16 +38,6 @@ class TestSimRuntime:
         sd = SimDevice(**kwargs)
         SimRuntime(sd)
 
-    @pytest.mark.parametrize(("block", "expect"), [
-        ((3, [1], [0xffff]), (3, 16, [1]*16, [1]*16)),
-        ((3, [1], [0x0000]), (3, 16, [1]*16, [0]*16)),
-        ((3, [1], [0xffff, 0xffff]), (3, 32, [1]*32, [1]*32)),
-    ])
-    async def test_simruntime_convert_bit(self, block, expect):
-        """Test that simdata can be objects."""
-        result = SimRuntime.convert_to_bit(block)
-        assert result == expect
-
     @pytest.mark.parametrize(("args", "expect"), [
         ((3, 1, 1, None), -1),
         ((3, 200, 1, None), -1),

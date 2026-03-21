@@ -4,6 +4,8 @@
 """
 from __future__ import annotations
 
+from typing import cast
+
 from ..constants import ExcCodes
 from .simdevice import SimDevice
 from .simutils import DataType, SimUtils
@@ -48,32 +50,43 @@ class SimRuntime:
             if values:
                 if flags[addr] & SimUtils.RunTimeFlag_READONLY:
                     return ExcCodes.ILLEGAL_ADDRESS
-                registers[addr] = values[i]
         return None
+
+    async def get_bit_block(self, block_id: str, func_code: int, address: int, count: int, values: list[bool] | None) -> list[bool] | ExcCodes:
+        """Handle coils and discrete input."""
+        start_address, register_count, registers, _ = self.block[block_id]
+        offset = (int(address / 16) if self.use_bit_addressing else address) - start_address
+        reg_count = int(count / 16) + 1
+        if register_count <= offset < 0 or offset + reg_count > register_count:
+            return ExcCodes.ILLEGAL_ADDRESS
+        if (result := await self.__check_block(func_code, block_id, address, reg_count, offset, values)):
+            return result
+        list_bools = SimUtils.registersToBits(registers[offset:offset+count])
+        bit_offset = address % 16
+        if values:
+            list_bools[bit_offset:bit_offset+count] = values
+            registers[offset:offset+reg_count] = SimUtils.bitsToRegisters(list_bools)      
+        return list_bools[bit_offset:bit_offset+count]
+
+    async def get_reg_block(self, block_id: str, func_code: int, address: int, count: int, values: list[int] | None) -> list[int] | ExcCodes:
+        """Handle holding registers and input registers."""
+        start_address, register_count, registers, _ = self.block[block_id]
+        offset = address - start_address
+        if register_count <= offset < 0 or offset + count > register_count:
+            return ExcCodes.ILLEGAL_ADDRESS
+        if (result := await self.__check_block(func_code, block_id, address, count, offset, values)):
+            return result
+        if values:
+            registers[offset:offset+count] = values
+        return registers[offset:offset+count]
 
     async def get_block(self, func_code: int, address: int, count: int, values: list[int] | list[bool] | None) -> list[int] | list[bool] | ExcCodes:
         """Calculate offset."""
         fc_block = self._fx_mapper.get(func_code, "x")
         block_id = "x" if "x" in self.block else fc_block
-        use_bits =  fc_block in {"c", "d"} and self.use_bit_addressing
-        start_address, register_count, registers, _ = self.block[block_id]
-        if use_bits:
-            offset = int(address / 16) - start_address
-            effective_count = int(count / 16) + 1
-        else:
-            offset = address - start_address
-            effective_count = count
-        if register_count <= offset < 0 or offset + effective_count > register_count:
-            return ExcCodes.ILLEGAL_ADDRESS
-        if (result := await self.__check_block(func_code, block_id, address, count, offset, values)):
-            return result
         if fc_block in {"c", "d"}:
-            list_bools = SimUtils.registersToBits(registers[offset:offset+count])
-            if not use_bits:
-                return list_bools
-            bit_offset = address % 16
-            return list_bools[bit_offset:bit_offset+count]
-        return registers[offset:offset+count]
+            return await self.get_bit_block(block_id, func_code, address, count, cast(list[bool], values))
+        return await self.get_reg_block(block_id, func_code, address, count, cast(list[int], values))
 
     async def async_getValues(self, func_code: int, address: int, count: int) -> list[int] | list[bool] | ExcCodes:
         """Get `count` values from datastore."""

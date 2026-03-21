@@ -17,26 +17,82 @@ class TestSimRuntime:
             _start_address,
             _address,
             _count,
-            _current_registers,
-            _set_values
+            current_registers,
+            set_values
          ):
         """Run action."""
+        if function_code in {1, 2, 3}:
+            current_registers[1] = 17
         if function_code == 4:
             return ExcCodes.ILLEGAL_ADDRESS
-        # function_code == 5:
+        elif function_code == 15:
+            set_values[0] = False
+        elif function_code == 16:
+            set_values[0] = 17
+    sd_block = (
+        [SimData(0, count=2, values=15, datatype=DataType.BITS)],
+        [SimData(0, count=2, values=15, datatype=DataType.BITS)],
+        [SimData(0, count=2, values=15, datatype=DataType.REGISTERS)],
+        [SimData(0, count=2, values=15, datatype=DataType.REGISTERS)],
+    )
+    sd_shared = SimData(0, count=2, datatype=DataType.REGISTERS, values=15)
 
-    @pytest.mark.parametrize("kwargs", [
-        {"id": 0, "simdata": ([SimData(0, datatype=DataType.BITS, values=15)],
-                              [SimData(0, datatype=DataType.BITS, values=15)],
-                              [SimData(0, datatype=DataType.INT16, values=15)],
-                              [SimData(0, datatype=DataType.INT16, values=15)])},
-        {"id": 0, "simdata": SimData(0, datatype=DataType.INT16, values=15)},
-    ])
-    def test_simruntime_instanciate(self, kwargs):
+    def test_simruntime_instanciate(self):
         """Test that simdata can be objects."""
-        sd = SimDevice(**kwargs)
-        SimRuntime(sd)
+        SimRuntime(SimDevice(0, self.sd_block))
+        SimRuntime(SimDevice(0, self.sd_shared))
 
+    @pytest.mark.parametrize("block", [False, True])
+    @pytest.mark.parametrize("fc", range(1, 25))
+    async def test_simruntime_fc(self, fc, block):
+        """Test that simdata can be objects."""
+        sd = SimDevice(1, simdata=(self.sd_block if block else self.sd_shared))
+        rt = SimRuntime(sd)
+        if fc in (1,2,3,4,5,6,15,16,22,23):
+            ret = await rt.get_block(fc, 1, 1, None)
+            assert not isinstance(ret, ExcCodes)
+        else:
+            with pytest.raises(RuntimeError):
+                await rt.get_block(fc, 1, 1, None)
+
+    @pytest.mark.parametrize(("block", "fc", "values", "expect"), [
+        (False, 1, None, [15, 17, 0]),
+        (True, 1, None, [15, 17, 0]),
+        (False, 2, None, [15, 17, 0]),
+        (True, 2, None, [15, 17, 0]),
+        (False, 3, None, [15, 17, 0]),
+        (True, 3, None, [15, 17, 0]),
+        (False, 4, None, -1),
+        (True, 4, None, -1),
+        (False, 15, [True, False], [15, 9, 0]),
+        (True, 15, [True, False], [9, 15, 0]),
+        (False, 16, [12], [15, 17, 0]),
+        (True, 16, [12], [15, 17, 0]),
+        ])
+    async def test_simruntime_action(self, block, fc, values, expect):
+        """Test that simdata can be objects."""
+        rt = SimRuntime(SimDevice(1,
+            action=self.my_action,
+            simdata=(self.sd_block if block else self.sd_shared))
+        )
+        if block:
+            block_id = {
+                1: "c",
+                2: "d",
+                3: "h",
+                4: "i",
+                15: "c",
+                16: "h"
+                }[fc]
+        else:
+            block_id = "x"
+        count = len(values) if values else 2
+        ret = await rt.get_block(fc, 1, count, values)
+        if expect == -1:
+            assert ret == ExcCodes.ILLEGAL_ADDRESS
+        else:
+            assert rt.block[block_id][2] == expect
+   
     @pytest.mark.parametrize(("args", "expect"), [
         ((3, 1, 1, None), 1),
         ((3, 200, 1, None), -1),
@@ -78,24 +134,6 @@ class TestSimRuntime:
         assert ret == args[3]
         assert rt.block["x"][2] == expect
 
-    @pytest.mark.parametrize(("args", "expect"), [
-        ((3, 15, 2, None), [0, 0]),
-        ((4, 15, 2, None), -1),
-        ((5, 15, 2, None), [False]*32),
-    ])
-    async def test_simruntime_action(self, args, expect):
-        """Test that simdata can be objects."""
-        sd = SimDevice(0, action=self.my_action, simdata=[
-            SimData(10, count=1, values=0, datatype=DataType.REGISTERS, readonly=True),
-            SimData(11, count=1, values=0, datatype=DataType.INVALID),
-            SimData(12, count=8, values=0, datatype=DataType.REGISTERS),
-        ])
-        rt = SimRuntime(sd)
-        ret = await rt.get_block(*args)
-        if expect == -1:
-            assert isinstance(ret, ExcCodes)
-        else:
-            assert ret == expect
 
     async def test_simruntime_getValues(self):
         """Test that simdata can be objects."""

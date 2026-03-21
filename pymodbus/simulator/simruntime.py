@@ -14,7 +14,7 @@ from .simutils import DataType, SimUtils
 class SimRuntime:
     """Memory setup for device."""
 
-    _fx_mapper = {2: "d", 4: "i"} # Direct input and Input registers
+    _fx_mapper = {2: "d", 4: "i"} # Discrete input and Input registers
     _fx_mapper.update([(i, "h") # Holding registers
                     for i in (3, 6, 16, 22, 23)])
     _fx_mapper.update([(i, "c") # Coils
@@ -61,11 +61,11 @@ class SimRuntime:
             return ExcCodes.ILLEGAL_ADDRESS
         if (result := await self.__check_block(func_code, block_id, address, reg_count, offset, values)):
             return result
-        list_bools = SimUtils.registersToBits(registers[offset:offset+count])
+        list_bools = SimUtils.registersToBits(registers[offset:offset+reg_count])
         bit_offset = address % 16
         if values:
             list_bools[bit_offset:bit_offset+count] = values
-            registers[offset:offset+reg_count] = SimUtils.bitsToRegisters(list_bools)      
+            registers[offset:offset+reg_count] = SimUtils.bitsToRegisters(list_bools)
         return list_bools[bit_offset:bit_offset+count]
 
     async def get_reg_block(self, block_id: str, func_code: int, address: int, count: int, values: list[int] | None) -> list[int] | ExcCodes:
@@ -82,7 +82,10 @@ class SimRuntime:
 
     async def get_block(self, func_code: int, address: int, count: int, values: list[int] | list[bool] | None) -> list[int] | list[bool] | ExcCodes:
         """Calculate offset."""
-        fc_block = self._fx_mapper.get(func_code, "x")
+        if values:
+            values = values if isinstance(values, list) else [values]
+        if (fc_block := self._fx_mapper.get(func_code, "z")) == "z":
+            raise RuntimeError("Datastore, not supported function code")
         block_id = "x" if "x" in self.block else fc_block
         if fc_block in {"c", "d"}:
             return await self.get_bit_block(block_id, func_code, address, count, cast(list[bool], values))

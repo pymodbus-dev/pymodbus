@@ -57,7 +57,6 @@ from collections.abc import Callable, Coroutine
 from contextlib import suppress
 from enum import Enum
 from functools import partial
-from time import time_ns
 from typing import Any
 
 from ..logging import Log
@@ -162,7 +161,6 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.unique_id: str = str(id(self))
         self.reconnect_delay_current = 0.0
         self.sent_buffer: bytes = b""
-        self.inter_frame_time: float = 0.0
         self.last_frame: int = 0
         self.loop: asyncio.AbstractEventLoop
         if is_sync:
@@ -199,11 +197,6 @@ class ModbusProtocol(asyncio.BaseProtocol):
     def init_setup_connect_listen(self, host: str, port: int) -> None:
         """Handle connect/listen handler."""
         if self.comm_params.comm_type == CommType.SERIAL:
-            if self.comm_params.baudrate > 38000:
-                self.inter_frame_time = 1e9
-            else:
-                # time to transmit 3Char with stop bits etc.
-                self.inter_frame_time = int(1e9 * 3.0 * (float(1 + self.comm_params.bytesize + self.comm_params.stopbits) / self.comm_params.baudrate))
             self.call_create = partial(create_serial_connection,
                 self.loop,
                 self.handle_new_connection,
@@ -337,12 +330,6 @@ class ModbusProtocol(asyncio.BaseProtocol):
             if not data:
                 return
         Log.transport_dump(Log.RECV_DATA, data, self.recv_buffer)
-        if self.inter_frame_time:
-            t_now = time_ns()
-            if t_now - self.last_frame >= self.inter_frame_time:
-                Log.debug("End Of Frame detected, clearing buffer: {}", self.recv_buffer, ":hex")
-                self.recv_buffer = b''
-            self.last_frame = t_now
         if len(self.recv_buffer) > 1024:
             self.recv_buffer = b''
         self.recv_buffer += data

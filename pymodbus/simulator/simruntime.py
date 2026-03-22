@@ -83,7 +83,7 @@ class SimRuntime:
     async def get_block(self, func_code: int, address: int, count: int, values: list[int] | list[bool] | None) -> list[int] | list[bool] | ExcCodes:
         """Calculate offset."""
         if values:
-            values = values if isinstance(values, list) else [values]
+            values = cast(list[int], values if isinstance(values, list) else [values])
         if (fc_block := self._fx_mapper.get(func_code, "z")) == "z":
             raise RuntimeError("Datastore, not supported function code")
         block_id = "x" if "x" in self.block else fc_block

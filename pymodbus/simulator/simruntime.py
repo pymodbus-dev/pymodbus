@@ -85,7 +85,7 @@ class SimRuntime:
         if values:
             values = cast(list[int], values if isinstance(values, list) else [values])
         if (fc_block := self._fx_mapper.get(func_code, "z")) == "z":
-            raise RuntimeError("Datastore, not supported function code")
+            raise AttributeError("Datastore, not supported function code")
         block_id = "x" if "x" in self.block else fc_block
         if fc_block in {"c", "d"}:
             return await self.get_bit_block(block_id, func_code, address, count, cast(list[bool], values))

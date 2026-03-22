@@ -187,7 +187,7 @@ class TestSimDevice:
         """Test build_device() ok."""
         block = (
             [SimData(0, values=123, datatype=DataType.BITS)],
-            [SimData(0, values=123, datatype=DataType.BITS)],
+            [SimData(0, values=123, readonly=True, datatype=DataType.BITS)],
             [SimData(0, values=123, datatype=DataType.INT16)],
             [SimData(0, values=123, datatype=DataType.INT16)])
         result = {

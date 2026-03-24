@@ -149,7 +149,7 @@ class TestSimData:
         ])
     def test_simdata_build_bit_block(self, value, regs):
         """Test simdata value."""
-        sd = SimData(0, values=value, datatype=DataType.BITS)
+        sd = SimData(11, values=value, datatype=DataType.BITS)
         build_regs = sd.build_registers(True)
         assert build_regs == regs
 

@@ -17,6 +17,7 @@ from examples.client_calls import main as main_client_calls
 from examples.client_calls import template_call
 from examples.custom_msg import main as main_custom_client
 from examples.datastore_simulator_share import main as main_datastore_simulator_share3
+from examples.heatpump import main as run_heatpump
 from examples.message_parser import main as main_parse_messages
 from examples.package_test_tool import run_test as run_package_tool
 from examples.server_async import setup_server
@@ -102,6 +103,10 @@ class TestExamples:
     async def test_package_tool(self):
         """Run package test tool."""
         await run_package_tool()
+
+    async def test_heatpump(self, use_port):
+        """Test client with custom message."""
+        await run_heatpump(cmdline=["-p",  str(use_port), "-t", "5"])
 
 
 @pytest.mark.parametrize(

@@ -120,12 +120,13 @@ class Heatpump:
         args = parser.parse_args(cmdline)
         self.test_time = args.test_time
         pymodbus_apply_logging_config(args.log.upper())
+        Log.info("Start heatpump monitor.")
 
         device = SimDevice(DEVICE_ID,
             simdata=[
-                SimData(BITS_ADDR, DataType.BITS, readonly=True),
-                SimData(THERMO_ADDR[0], count=len(THERMO_ADDR), datatype=DataType.FLOAT32, readonly=True),
-                SimData(ALIVE_ADDR[0], count=len(ALIVE_ADDR), datatype=DataType.INT16, readonly=True),
+                SimData(BITS_ADDR, datatype=DataType.BITS),
+                SimData(THERMO_ADDR[0], values=0.0, count=len(THERMO_ADDR), datatype=DataType.FLOAT32),
+                SimData(ALIVE_ADDR[0], values=0, count=len(ALIVE_ADDR), datatype=DataType.INT16),
             ],
             use_bit_addressing=True,
             action=self.catch_requests
@@ -153,9 +154,10 @@ class Heatpump:
         """Update thermometro reading, as well as a keepalive counter."""
         Log.debug("updating_task: started")
         while True:
-            if self.serving.done() or self.serving.cancelled() or self.serving.exception():
+            if self.serving.done() or self.serving.cancelled():
                 return
             await asyncio.sleep(1)
+            Log.debug("Update values.")
 
             if (sec := int(time())) >= self.last_keepalive +60:
                 keepalive = cast(list[int], await self.server.async_getValues(DEVICE_ID, 3, ALIVE_ADDR[1], count=1))
@@ -169,28 +171,31 @@ class Heatpump:
                 regs.extend(client.convert_to_registers(value, data_type=client.DATATYPE.FLOAT32))
             await self.server.async_setValues(DEVICE_ID, 0x16, THERMO_ADDR[0], regs)
 
-    async def shutdown(self, delayed):
+    async def shutdown(self, delayed):  # pragma: no cover
         """Close server."""
         if delayed:
             await asyncio.sleep(delayed)
+        Log.debug("Shutdown initiated.")
         if not self.serving.done():
             self.serving.set_result(True)
             await asyncio.sleep(1)
         await self.server.shutdown()
         if self.server_task:
-            if not self.server_task.cancelled():  # pragma: no cover
+            if not self.server_task.cancelled():
                 self.server_task.cancel()
             with suppress(asyncio.CancelledError):
                 await self.server_task
 
     async def run_updating_server(self):
         """Start updating_task concurrently with the current task."""
+        Log.info("Starting tasks.")
         self.server_task = asyncio.create_task(self.server.serve_forever())
         self.server_task.set_name("server task")
         await asyncio.sleep(1)
         shutdown_task: asyncio.Task | None = None
-        if self.test_time:
+        if self.test_time:  # pragma: no cover
             shutdown_task = asyncio.create_task(self.shutdown(self.test_time))
+        Log.debug("Forever loop.")
         await self.serve_forever()
         if shutdown_task:
             if not shutdown_task.cancelled():  # pragma: no cover

@@ -139,7 +139,7 @@ class Log:
                 elif args[i + 1] == ":str":
                     string_args.append(str(args[i]))
                 else: # args[i + 1] == ":b2a":
-                    string_args.append(b2a_hex(args[i]))
+                    string_args.append(b2a_hex(args[i]).decode("utf-8"))
                 skip = True
             else:
                 string_args.append(args[i])

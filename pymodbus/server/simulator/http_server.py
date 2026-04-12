@@ -7,7 +7,7 @@ import dataclasses
 import importlib
 import json
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 
 with contextlib.suppress(ImportError):
@@ -183,13 +183,13 @@ class ModbusSimulatorServer:
             "calls": ["", self.build_html_calls],
             "server": ["", self.build_html_server],
         }
-        self.generator_json = {
+        self.generator_json: dict[str, Any] = {
             "log": self.build_json_log,
             "registers": self.build_json_registers,
             "calls": self.build_json_calls,
             "server": self.build_json_server,
         }
-        self.submit_html = {
+        self.submit_html: dict[str, Any] = {
             "Clear": self.action_clear,
             "Stop": self.action_stop,
             "Reset": self.action_reset,
@@ -202,13 +202,13 @@ class ModbusSimulatorServer:
             html_file = os.path.join(self.web_path, "generator", entry)
             with open(html_file, encoding="utf-8") as handle:
                 self.generator_html[entry][0] = handle.read()
-        self.refresh_rate = 0
+        self.refresh_rate: int = 0
         self.register_filter: list[int] = []
         self.call_list: list[CallTracer] = []
         self.call_monitor = CallTypeMonitor()
         self.call_response = CallTypeResponse()
         app_key = getattr(web, 'AppKey', str)  # fall back to str for aiohttp < 3.9.0
-        self.api_key = app_key("modbus_server")
+        self.api_key: str = app_key("modbus_server")
         self.ready_event = asyncio.Event()
 
     async def start_modbus_server(self, app):

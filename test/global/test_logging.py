@@ -45,7 +45,7 @@ class TestLogging:
         [
             ("string {} {} {}", "string 101 102 103", (101, 102, 103)),
             ("string {}", "string 0x41 0x42 0x43 0x44", (b"ABCD", ":hex")),
-            ("string {}", "string b'41424344'", (b"ABCD", ":b2a")),
+            ("string {}", "string 41424344", (b"ABCD", ":b2a")),
             ("string {}", "string 125", (125, ":str")),
         ],
     )

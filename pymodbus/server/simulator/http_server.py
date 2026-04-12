@@ -120,6 +120,12 @@ class ModbusSimulatorServer:
         custom_actions_module: str | None = None,
     ):
         """Initialize http interface."""
+        self.refresh_rate: int = 0
+        self.register_filter: list[int] = []
+        self.call_list: list[CallTracer] = []
+        self.call_monitor = CallTypeMonitor()
+        self.call_response = CallTypeResponse()
+
         with open(json_file, encoding="utf-8") as file:
             setup = json.load(file)
 
@@ -202,11 +208,6 @@ class ModbusSimulatorServer:
             html_file = os.path.join(self.web_path, "generator", entry)
             with open(html_file, encoding="utf-8") as handle:
                 self.generator_html[entry][0] = handle.read()
-        self.refresh_rate: int = 0
-        self.register_filter: list[int] = []
-        self.call_list: list[CallTracer] = []
-        self.call_monitor = CallTypeMonitor()
-        self.call_response = CallTypeResponse()
         app_key = getattr(web, 'AppKey', str)  # fall back to str for aiohttp < 3.9.0
         self.api_key: str = app_key("modbus_server")
         self.ready_event = asyncio.Event()

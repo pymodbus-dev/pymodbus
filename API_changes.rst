@@ -9,6 +9,7 @@ API changes 3.13.0
 - datastore get/setValues is removed,
   please use server.async_get/setValues instead.
 - datastore show a deprecation warning
+  please use simData instead.
 - SimData/SimDevice have been updated
 
 API changes 3.12.0

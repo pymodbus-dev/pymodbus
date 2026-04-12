@@ -24,6 +24,7 @@ This datastore makes sequential registers, corresponding to old style devices.
 
 Example:
 .. code-block::
+
     dev = ModbusDeviceContext(
                 co=ModbusSequentialDataBlock(0x01, 15),
                 di=ModbusSequentialDataBlock(0x01, [16]),
@@ -41,6 +42,7 @@ Device_id = 0 is at "catch-all", that handles all devices not defined.
 This is very easily converted to SimData/SimDevice
 
 .. code-block::
+
     from pymodbus.simulator import SimData, SimDevice, DataType
 
     devices = [SimDevice(1, simdata=(
@@ -89,6 +91,7 @@ Device_id = 0 is at "catch-all", that handles all devices not defined.
 This is very easily converted to SimData/SimDevice
 
 .. code-block::
+
     from pymodbus.simulator import SimData, SimDevice, DataType
 
     devices = [SimDevice(1, simdata=(

@@ -7,6 +7,32 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.13.0
+--------------
+* Correct missing types. (#2914)
+* Altherma heat pump control, with Home Assistant and updating server. (#2907)
+* SimDevice, use_bit_address allows different addressing for BITS. (#2908)
+* Remove 3.5char frame time check. (#2912)
+* Fixed Modbus*Context. (#2910)
+* Fix bug in ModbusDeviceContext. (#2909)
+* Fix log level in examples (#2902)
+* Fix CSS lookup for simulator server (#2904)
+* Fix usage docs in examples: add missing option --baudrate (#2903)
+* Doc:Finalice server/simulator narrative (#2896)
+* Fix codespell bug. (#2900)
+* Datastores uses SimData/SimDevice. (#2897)
+* Doc on how to convert to SimData/SimDevice. (#2899)
+* Fix Read Fifo Query RTU Frame Size (#2898)
+* Update server documentation (datstore). (#2895)
+* Update server examples to use SimData/SimDevice. (#2893)
+* Add server.async_get/setValues. (#2889)
+* Solve codeql caching problem. (#2890)
+* Remove unused methods in datastore. (#2888)
+* Remove datastore get/setValues (async_get/set exist) (#2886)
+* Revert "Combine ModbusSparseDataBlock with ModbusSequentialDataBlock."
+* Combine ModbusSparseDataBlock with ModbusSequentialDataBlock.
+* Remove RemoteDeviceContext datastore. (#2885)
+
 Version 3.12.1
 --------------
 * SimDevice / SimRuntime fixes. (#2871)

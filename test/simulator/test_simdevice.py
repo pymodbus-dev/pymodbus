@@ -14,23 +14,23 @@ class TestSimDevice:
 
     async def my_action(
             self,
-            _function_code,
-            _start_address,
-            _address,
-            _count,
-            _current_registers,
-            _set_values
+            _function_code: int,
+            _start_address: int,
+            _address: int,
+            _count: int,
+            _current_registers: list[int],
+            _set_values: list[int] | list[bool] | None
         ):
         """Run action."""
 
     def my_sync_action(
             self,
-            _function_code,
-            _start_address,
-            _address,
-            _count,
-            _current_registers,
-            _set_values
+            _function_code: int,
+            _start_address: int,
+            _address: int,
+            _count: int,
+            _current_registers: list[int],
+            _set_values: list[int] | list[bool] | None
         ):
         """Run action."""
 
@@ -97,7 +97,7 @@ class TestSimDevice:
         SimDevice(1, simdata=[SimData(1)], action=self.my_action)
         SimDevice(0, simdata=([self.simdata3], [self.simdata3], [self.simdata1], [self.simdata3]), action=self.my_action)
         with pytest.raises(TypeError):
-            SimDevice(1, simdata=[SimData(1)], action=self.my_sync_action)  # type: ignore[method-assign]
+            SimDevice(1, simdata=[SimData(1)], action=self.my_sync_action)  # type: ignore[arg-type]
         with pytest.raises(TypeError):
             SimDevice(1, simdata=[SimData(1)], action="no good")  # type: ignore[arg-type]
 

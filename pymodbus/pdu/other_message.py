@@ -108,7 +108,7 @@ class GetCommEventLogRequest(ModbusPDU):
             status=True,
             message_count=_MCB.Counter.BusMessage,
             event_count=_MCB.Counter.Event,
-            events=_MCB.getEvents(),
+            events=list(_MCB.getEvents()),
             dev_id=device_id, transaction_id=self.transaction_id)
 
 

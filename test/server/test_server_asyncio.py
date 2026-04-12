@@ -197,7 +197,7 @@ class TestAsyncioServer:
         BasicClient.connected = asyncio.Future()
         BasicClient.done = asyncio.Future()
         BasicClient.eof = asyncio.Future()
-        random_port = self.server.transport.sockets[0].getsockname()[  # type: ignore[union-attr]
+        random_port = self.server.transport.sockets[0].getsockname()[  # type: ignore[union-attr, attr-defined]
             1
         ]  # get the random server port
         (
@@ -350,7 +350,7 @@ class TestAsyncioServer:
         BasicClient.dataTo = TEST_DATA  # device 1, read register
         BasicClient.done = asyncio.Future()
         await self.start_server(do_udp=True)
-        random_port = self.server.transport._sock.getsockname()[1]    # type: ignore[union-attr] # pylint: disable=protected-access
+        random_port = self.server.transport._sock.getsockname()[1]    # type: ignore[union-attr,attr-defined] # pylint: disable=protected-access
         transport, _ = await self.loop.create_datagram_endpoint(  # type: ignore[union-attr]
             BasicClient, remote_addr=("127.0.0.1", random_port)
         )
@@ -369,7 +369,7 @@ class TestAsyncioServer:
             new_callable=lambda: mock.Mock(side_effect=Exception),
         ):
             # get the random server port pylint: disable=protected-access
-            random_port = self.server.transport._sock.getsockname()[1]  # type: ignore[union-attr]
+            random_port = self.server.transport._sock.getsockname()[1]  # type: ignore[union-attr,attr-defined]
             _, _ = await self.loop.create_datagram_endpoint(  # type: ignore[union-attr]
                 BasicClient, remote_addr=("127.0.0.1", random_port)
             )

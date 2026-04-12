@@ -661,7 +661,7 @@ class TestSyncTransaction:
             None,
             sync_client=client,
         )
-        client.recv = mock.Mock()
+        client.recv = mock.Mock()  # type: ignore[method-assign]
         request = transact.framer.buildFrame(ReadCoilsRequest(address=117, count=5, dev_id=1))
         response = transact.framer.buildFrame(ReadCoilsResponse(bits=[True]*8, dev_id=1))
         transact.sent_buffer = request

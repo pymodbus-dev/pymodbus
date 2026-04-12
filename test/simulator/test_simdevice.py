@@ -97,7 +97,7 @@ class TestSimDevice:
         SimDevice(1, simdata=[SimData(1)], action=self.my_action)
         SimDevice(0, simdata=([self.simdata3], [self.simdata3], [self.simdata1], [self.simdata3]), action=self.my_action)
         with pytest.raises(TypeError):
-            SimDevice(1, simdata=[SimData(1)], action=self.my_sync_action)
+            SimDevice(1, simdata=[SimData(1)], action=self.my_sync_action)  # type: ignore[method-assign]
         with pytest.raises(TypeError):
             SimDevice(1, simdata=[SimData(1)], action="no good")  # type: ignore[arg-type]
 

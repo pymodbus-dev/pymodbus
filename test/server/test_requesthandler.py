@@ -37,7 +37,7 @@ class TestRequesthandler:
             [],
         )
         conn = server.callback_new_connection()
-        conn.pdu_send = mock.Mock(return_value=True)
+        conn.pdu_send = mock.Mock(return_value=True)  # type: ignore[method-assign]
         return conn
 
     async def test_requesthandler(self, requesthandler):

@@ -172,7 +172,7 @@ class TransactionManager(ModbusProtocol):
                 if no_response_expected:
                     return None  # type: ignore[return-value]
                 try:
-                    response = await asyncio.wait_for(
+                    response: ModbusPDU = await asyncio.wait_for(
                         self.response_future, timeout=self.comm_params.timeout_connect
                     )
                     self.count_until_disconnect= self.max_until_disconnect

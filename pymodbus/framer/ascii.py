@@ -52,9 +52,13 @@ class FramerAscii(FramerBase):
                 Log.debug("Incomplete frame: {} wait for more data", data, ":hex")
                 return used_len, 0, 0, self.EMPTY
             dev_id = int(buffer[1:3], 16)
-            lrc = int(buffer[end - 2: end], 16)
-            msg = a2b_hex(buffer[1 : end - 2])
             used_len += end + 2
+            try:
+                lrc = int(buffer[end - 2: end], 16)
+                msg = a2b_hex(buffer[1 : end - 2])
+            except:
+                Log.debug("Frame cannot be converted to hex: {} skipping", data, ":hex")
+                return used_len, dev_id, 0, self.EMPTY
             if not self.check_LRC(msg, lrc):
                 Log.debug("LRC wrong in frame: {} skipping", data, ":hex")
                 continue

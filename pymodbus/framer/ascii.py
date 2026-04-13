@@ -30,7 +30,7 @@ class FramerAscii(FramerBase):
 
     START = b':'
     END = b'\r\n'
-    MIN_SIZE = 10
+    MIN_SIZE = 8
 
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:

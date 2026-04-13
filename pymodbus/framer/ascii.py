@@ -56,7 +56,7 @@ class FramerAscii(FramerBase):
             try:
                 lrc = int(buffer[end - 2: end], 16)
                 msg = a2b_hex(buffer[1 : end - 2])
-            except:
+            except:  # pylint: disable=bare-except
                 Log.debug("Frame cannot be converted to hex: {} skipping", data, ":hex")
                 return used_len, dev_id, 0, self.EMPTY
             if not self.check_LRC(msg, lrc):

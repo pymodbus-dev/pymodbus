@@ -498,8 +498,9 @@ class TestFramerType:
     def test_framer_ascii_decode(self, test_framer, msg):
         """Test a tcp frame transaction."""
         used_len, pdu = test_framer.handleFrame(msg, 1, 0)
-        assert not used_len
+        assert used_len == len(msg)
         assert not pdu
-        used_len, pdu = test_framer.handleFrame(msg + b':0003007C00027F\r\n', 1, 0)
-        assert used_len >= 8
+        msg2 = msg + b':0003007C00027F\r\n'
+        used_len, pdu = test_framer.handleFrame(msg2, 1, 0)
+        assert used_len == len(msg2)
         assert not pdu

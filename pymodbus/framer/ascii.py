@@ -58,7 +58,7 @@ class FramerAscii(FramerBase):
                 msg = a2b_hex(buffer[1 : end - 2])
             except ValueError:
                 Log.debug("Frame cannot be converted to hex: {} skipping", data, ":hex")
-                return used_len, dev_id, 0, self.EMPTY
+                return data_len, dev_id, 0, self.EMPTY
             if not self.check_LRC(msg, lrc):
                 Log.debug("LRC wrong in frame: {} skipping", data, ":hex")
                 continue

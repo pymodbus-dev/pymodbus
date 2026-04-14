@@ -64,6 +64,68 @@ class FramerAscii(FramerBase):
                 continue
             return used_len, dev_id, 0, msg[1:]
 
+    def decode2(self, data: bytes) -> tuple[int, int, int, bytes]:
+        """Decode ADU."""
+        used_len = 0
+        data_len = len(data)
+        while True:
+            if data_len - used_len < self.MIN_SIZE:
+                Log.debug("Short frame: {} wait for more data", data, ":hex")
+                return used_len, 0, 0, self.EMPTY
+            buffer = data[used_len:]
+            if buffer[0:1] != self.START:
+                if (i := buffer.find(self.START)) == -1:
+                    Log.debug("No frame start in data: {}, wait for data", data, ":hex")
+                    return data_len, 0, 0, self.EMPTY
+                used_len += i
+                continue
+            if (end := buffer.find(self.END)) == -1:
+                Log.debug("Incomplete frame: {} wait for more data", data, ":hex")
+                return used_len, 0, 0, self.EMPTY
+            dev_id = int(buffer[1:3], 16)
+            used_len += end + 2
+            try:
+                lrc = int(buffer[end - 2: end], 16)
+                msg = a2b_hex(buffer[1 : end - 2])
+            except ValueError:
+                Log.debug("Frame cannot be converted to hex: {} skipping", data, ":hex")
+                return data_len, dev_id, 0, self.EMPTY
+            if not self.check_LRC(msg, lrc):
+                Log.debug("LRC wrong in frame: {} skipping", data, ":hex")
+                continue
+            return used_len, dev_id, 0, msg[1:]
+
+    def decode3(self, data: bytes) -> tuple[int, int, int, bytes]:
+        """Decode ADU."""
+        used_len = 0
+        data_len = len(data)
+        while True:
+            if data_len - used_len < self.MIN_SIZE:
+                Log.debug("Short frame: {} wait for more data", data, ":hex")
+                return used_len, 0, 0, self.EMPTY
+            buffer = data[used_len:]
+            if buffer[0:1] != self.START:
+                if (i := buffer.find(self.START)) == -1:
+                    Log.debug("No frame start in data: {}, wait for data", data, ":hex")
+                    return data_len, 0, 0, self.EMPTY
+                used_len += i
+                continue
+            if (end := buffer.find(self.END)) == -1:
+                Log.debug("Incomplete frame: {} wait for more data", data, ":hex")
+                return used_len, 0, 0, self.EMPTY
+            dev_id = int(buffer[1:3], 16)
+            used_len += end + 2
+            try:
+                lrc = int(buffer[end - 2: end], 16)
+                msg = a2b_hex(buffer[1 : end - 2])
+            except ValueError:
+                Log.debug("Frame cannot be converted to hex: {} skipping", data, ":hex")
+                return data_len, dev_id, 0, self.EMPTY
+            if not self.check_LRC(msg, lrc):
+                Log.debug("LRC wrong in frame: {} skipping", data, ":hex")
+                continue
+            return used_len, dev_id, 0, msg[1:]
+
     def encode(self, payload: bytes, device_id: int, _tid: int) -> bytes:
         """Encode ADU."""
         dev_id = device_id.to_bytes(1,'big')

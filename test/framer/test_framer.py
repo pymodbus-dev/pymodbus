@@ -494,7 +494,7 @@ class TestFramerType:
         framer = FramerTLS(DecodePDU(False))
         data = b"\x00\x01\x00\x00\x00"
         data_len, dev_id, tid, pdu = framer.decode(data)
-        assert data_len == 0
+        assert data_len == len(data)
         assert dev_id == 0
         assert tid == 0
         assert pdu == framer.EMPTY

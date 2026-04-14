@@ -489,6 +489,16 @@ class TestFramerType:
         assert tid == 0
         assert pdu == framer.EMPTY
 
+    def test_short_packet_for_framer_tls(self):
+        """Test that FramerTLS handles short packets without raising."""
+        framer = FramerTLS(DecodePDU(False))
+        data = b"\x00\x01\x00\x00\x00"
+        msg_len, dev_id, tid, pdu = framer.decode(data)
+        assert msg_len == 0
+        assert dev_id == 0
+        assert tid == 0
+        assert pdu == framer.EMPTY
+
     @pytest.mark.parametrize(("entry"), [FramerType.ASCII])
     @pytest.mark.parametrize(("is_server"), [False, True])
     @pytest.mark.parametrize(("msg"), [

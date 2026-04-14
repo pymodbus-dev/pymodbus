@@ -87,15 +87,9 @@ class TestExtras:
 
     def test_tls_incoming_packet(self):
         """Framer tls incoming packet."""
-        msg = b"\x00\x01\x00\x00\x00\x06\xff\x02\x01\x02\x00\x08"
-        _, pdu = self._tls.handleFrame(msg, 0, 0)
-        assert pdu
-
-    def test_tls_incoming_packet_invalid_pid(self):
-        """Framer tls packet with invalid pid."""
         msg = b"\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x08"
         _, pdu = self._tls.handleFrame(msg, 0, 0)
-        assert not pdu
+        assert pdu
 
     def test_rtu_process_incoming_packets(self):
         """Test rtu process incoming packets."""

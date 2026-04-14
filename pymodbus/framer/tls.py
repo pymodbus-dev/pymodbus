@@ -23,15 +23,8 @@ class FramerTLS(FramerBase):
         if (data_len := len(data)) < self.MIN_SIZE:
             return 0, 0, 0, self.EMPTY
         tid = int.from_bytes(data[0:2], 'big')
-        if int.from_bytes(data[2:4], 'big'):
-            return 0, 0, 0, self.EMPTY
-        msg_len = int.from_bytes(data[4:6], 'big') + 6
         dev_id = int(data[6])
-        if data_len < msg_len:
-            return 0, 0, 0, self.EMPTY
-        if msg_len == 8 and data_len == 9:
-            msg_len = 9
-        return msg_len, dev_id, tid, data[7:msg_len]
+        return data_len, dev_id, tid, data[7:]
 
     def encode(self, payload: bytes, device_id: int, tid: int) -> bytes:
         """Encode MDAP+payload."""

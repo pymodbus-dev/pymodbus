@@ -56,13 +56,13 @@ class SimRuntime:
         """Handle coils and discrete input."""
         start_address, register_count, registers, _ = self.block[block_id]
         offset = (int(address / 16) if self.use_bit_addressing else address) - start_address
-        reg_count = int(count / 16) + 1
-        if register_count <= offset < 0 or offset + reg_count > register_count:
+        bit_offset = address % 16
+        reg_count = (bit_offset + count + 15) // 16
+        if offset < 0 or offset + reg_count > register_count:
             return ExcCodes.ILLEGAL_ADDRESS
         if (result := await self.__check_block(func_code, block_id, address, reg_count, offset, values)):
             return result
         list_bools = SimUtils.registersToBits(registers[offset:offset+reg_count])
-        bit_offset = address % 16
         if values:
             list_bools[bit_offset:bit_offset+count] = values
             registers[offset:offset+reg_count] = SimUtils.bitsToRegisters(list_bools)

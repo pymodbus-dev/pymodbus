@@ -72,7 +72,7 @@ class SimRuntime:
         """Handle holding registers and input registers."""
         start_address, register_count, registers, _ = self.block[block_id]
         offset = address - start_address
-        if register_count <= offset < 0 or offset + count > register_count:
+        if offset < 0 or offset + count > register_count:
             return ExcCodes.ILLEGAL_ADDRESS
         if (result := await self.__check_block(func_code, block_id, address, count, offset, values)):
             return result

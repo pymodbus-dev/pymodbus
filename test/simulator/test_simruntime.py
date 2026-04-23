@@ -135,6 +135,14 @@ class TestSimRuntime:
         rt = SimRuntime(sd)
         result = await rt.async_getValues(0x03, 10, 1)
         assert result == [15]
+        result = await rt.async_getValues(0x03, 8, 1)
+        assert isinstance(result, ExcCodes)
+        result = await rt.async_getValues(0x03, 9, 1)
+        assert isinstance(result, ExcCodes)
+        result = await rt.async_getValues(0x03, 11, 1)
+        assert isinstance(result, ExcCodes)
+        result = await rt.async_getValues(0x03, 12, 1)
+        assert isinstance(result, ExcCodes)
         result = await rt.async_getValues(0x03, 15, 1)
         assert isinstance(result, ExcCodes)
 

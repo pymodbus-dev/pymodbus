@@ -262,24 +262,28 @@ class mockSocket:  # pylint: disable=invalid-name
         """Initialize."""
         self.packets = deque()
         self.buffer = None
-        self.in_waiting = 0
+        self._num_unread_bytes = 0
         self.copy_send = copy_send
 
     def mock_prepare_receive(self, msg):
         """Store message."""
         self.packets.append(msg)
-        self.in_waiting += len(msg)
+        self._num_unread_bytes += len(msg)
 
     def close(self):
         """Close."""
         return True
+
+    def num_unread_bytes(self):
+        """Return waiting byte count."""
+        return self._num_unread_bytes
 
     def recv(self, size):
         """Receive."""
         if not self.packets or not size:
             return b""
         retval = self.packets.popleft()
-        self.in_waiting -= len(retval)
+        self._num_unread_bytes -= len(retval)
         return retval
 
     def read(self, size):
@@ -299,7 +303,7 @@ class mockSocket:  # pylint: disable=invalid-name
         if not self.copy_send:
             return len(msg)
         self.packets.append(msg)
-        self.in_waiting += len(msg)
+        self._num_unread_bytes += len(msg)
         return len(msg)
 
     def sendto(self, msg, *_args):

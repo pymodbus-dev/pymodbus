@@ -228,7 +228,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         try:
             self.socket = serialx.serial_for_url(
                 self.comm_params.host,
-                timeout=self.comm_params.timeout_connect,
+                read_timeout=self.comm_params.timeout_connect,
                 bytesize=self.comm_params.bytesize,
                 stopbits=self.comm_params.stopbits,
                 baudrate=self.comm_params.baudrate,

@@ -20,7 +20,7 @@ with contextlib.suppress(ImportError):
 # Buffer size for a single `read()` syscall when the caller didn't specify how many
 # bytes to read. Larger than any Modbus frame, so one syscall returns whatever's
 # currently in the kernel buffer without truncation.
-DEFAULT_RECV_SIZE = 4096
+DEFAULT_RECV_SIZE = 1024
 
 
 class AsyncModbusSerialClient(ModbusBaseClient):

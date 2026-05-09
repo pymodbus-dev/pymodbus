@@ -43,7 +43,7 @@ Homepage = "https://github.com/pymodbus-dev/pymodbus/"
 
 [project.optional-dependencies]
 serial = [
-    "pyserial>=3.5"
+    "serialx>=1.6.0"
 ]
 simulator = [
     "aiohttp>=3.8.6;python_version<'3.12'",
@@ -71,7 +71,6 @@ development = [
     "pyserial>=3.5",
     "twine>=6.2.0",
     "types-Pygments",
-    "types-pyserial",
     "zuban>=0.9.0"
 ]
 all = [

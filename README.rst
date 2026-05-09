@@ -64,7 +64,7 @@ Common features
 * Support for custom function codes
 * Support serial (rs-485), tcp, tls and udp communication
 * Support all standard frames: socket, rtu, rtu-over-tcp, tcp and ascii
-* Does not have third party dependencies, apart from pyserial (optional)
+* Does not have third party dependencies, apart from serialx (optional)
 * Very lightweight project
 * Requires Python >= 3.10
 * Thorough test suite, that test all corners of the library (100% test coverage)
@@ -168,7 +168,7 @@ If you want to use the serial interface::
 
    pip install pymodbus[serial]
 
-This will install pymodbus with the pyserial dependency.
+This will install pymodbus with the serialx dependency.
 
 Pymodbus offers a number of extra options:
 

@@ -150,7 +150,7 @@ class Log:
         if not cls.repeat_log:
             cls.repeat_log = True
             return "Repeating...."
-        return cls.last_log_text
+        return None
 
     @classmethod
     def info(cls, txt, *args):

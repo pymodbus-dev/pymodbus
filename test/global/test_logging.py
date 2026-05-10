@@ -1,4 +1,5 @@
 """Test datastore."""
+import contextlib
 import logging
 import os
 from unittest import mock
@@ -21,7 +22,8 @@ class TestLogging:
     def teardown_class(cls):
         """Remove test file."""
         if "CI" not in os.environ:  # pragma: no cover
-            os.remove(cls.LOG_FILE)
+            with contextlib.suppress(FileNotFoundError):
+                os.remove(cls.LOG_FILE)
 
     def test_log_dont_call_build_msg(self):
         """Verify that build_msg is not called unnecessary."""
@@ -116,6 +118,13 @@ class TestLogging:
         for _ in range(100):
             Log.transport_dump(Log.SEND_DATA, b'678', b'9')
         pymodbus_get_last_frames()
+
+    def test_log_repeat(self):
+        """Test repeating log Frames."""
+        text = "msg being repeated."
+        assert text == Log.build_msg(text)
+        assert Log.build_msg(text) == "Repeating...."
+        assert not Log.build_msg(text)
 
     def test_transport_dump(self):
         """Test transport_dump."""

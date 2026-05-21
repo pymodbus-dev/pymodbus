@@ -557,7 +557,7 @@ Version 3.6.5
 * Allow slave=0 in serial communication. (#2023)
 * Client package test tool. (#2022)
 * Add REPL documentation back with links to REPL repo (#2017)
-* Move repl to a seperate repo (#2009)
+* Move repl to a separate repo (#2009)
 * solve more mypy issues with client (#2013)
 * solve more mypy issues with datastore (#2010)
 * Remove useless. (#2011)
@@ -986,7 +986,7 @@ Version 3.1.2
 * Updated datastore Simulator. (#1255)
 * Update links to pydmodbus-dev (#1291)
 * Change riptideio to pymodbus-dev. (#1292)
-* #1258 Avoid showing unit as a seperate command line argument (#1288)
+* #1258 Avoid showing unit as a separate command line argument (#1288)
 * Solve docker cache problem. (#1287)
 
 
@@ -1323,7 +1323,7 @@ Version 1.4.0
 * Payload builder and decoder can now deal with the wordorder as well of 32/64 bit data.
 * Support Database slave contexts (SqlStore and RedisStore)
 * Custom handlers could be passed to Modbus TCP servers
-* Asynchronous Server could now be stopped when running on a seperate thread (StopServer)
+* Asynchronous Server could now be stopped when running on a separate thread (StopServer)
 * Signal handlers on Asynchronous servers are now handled based on current thread
 * Registers in Database datastore could now be read from remote clients
 * Fix examples in contrib (message_parser.py/message_generator.py/remote_server_context)
@@ -1336,7 +1336,7 @@ Version 1.4.0
 
 Version 1.3.2
 -------------
-* ModbusSerialServer could now be stopped when running on a seperate thread.
+* ModbusSerialServer could now be stopped when running on a separate thread.
 * Fix issue with server and client where in the frame buffer had values from previous unsuccesful transaction
 * Fix response length calculation for ModbusASCII protocol
 * Fix response length calculation ReportSlaveIdResponse, DiagnosticStatusResponse

@@ -70,7 +70,7 @@ class FramerBase:
             if used_len >= len(data):
                 return used_len, None
             Log.debug("Processing: {}", data, ":hex")
-            data_len, dev_id, tid, frame_data = self.decode(data)
+            data_len, dev_id, tid, frame_data = self.decode(data[used_len:])
             used_len += data_len
             if not data_len or not frame_data:
                 return used_len, None

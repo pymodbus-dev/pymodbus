@@ -146,3 +146,40 @@ class TestExtras:
         cut, pdu = self._rtu.handleFrame(msg, 0, 0)
         assert cut
         assert not pdu
+
+    def test_tcp_framer_skip_wrong_dev_id_then_decode(self):
+        """A frame for another device followed by a valid one: the valid one must be returned.
+
+        Regression test for handleFrame() not advancing its decode window after
+        skipping a frame addressed to a different device. Without the fix the
+        valid second frame is silently dropped.
+        """
+        wrong = b"\x00\x01\x00\x00\x00\x06\x10\x02\x00\x01\x00\x02"   # dev_id 0x10
+        right = b"\x00\x02\x00\x00\x00\x06\xff\x02\x00\x03\x00\x04"   # dev_id 0xff
+        used_len, pdu = self._tcp.handleFrame(wrong + right, 0xff, 0)
+        assert pdu is not None
+        assert pdu.dev_id == 0xff
+        assert used_len == len(wrong) + len(right)
+
+    def test_tcp_framer_skip_wrong_tid_then_decode(self):
+        """A stale-tid frame followed by a fresh-tid frame: the fresh one must be returned."""
+        stale = b"\x00\x01\x00\x00\x00\x06\xff\x02\x00\x01\x00\x02"   # tid 1
+        fresh = b"\x00\x05\x00\x00\x00\x06\xff\x02\x00\x03\x00\x04"   # tid 5
+        used_len, pdu = self._tcp.handleFrame(stale + fresh, 0, 5)
+        assert pdu is not None
+        assert pdu.transaction_id == 5
+        assert used_len == len(stale) + len(fresh)
+
+    def test_ascii_framer_skip_wrong_dev_id_then_decode(self):
+        """Same regression for the ASCII framer.
+
+        We build the frames via encode() to keep the LRC correct without
+        hard-coding bytes that would silently rot if the LRC algorithm
+        ever changed.
+        """
+        wrong = self._ascii.encode(b"\x02\x00\x01\x00\x02", 0x10, 0)  # dev_id 0x10
+        right = self._ascii.encode(b"\x02\x00\x03\x00\x04", 0xff, 0)  # dev_id 0xff
+        used_len, pdu = self._ascii.handleFrame(wrong + right, 0xff, 0)
+        assert pdu is not None
+        assert pdu.dev_id == 0xff
+        assert used_len == len(wrong) + len(right)

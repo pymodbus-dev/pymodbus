@@ -55,6 +55,7 @@ Thanks to
 - Ghostkeeper
 - Hangyu Fan
 - Hayden Roche
+- Ifrah Neria
 - igorbga
 - Iktek
 - Ilkka Ollakka
@@ -88,11 +89,14 @@ Thanks to
 - Maxime LEURENT
 - Michel F
 - Mickaël Schoentgen
+- MrAlaskan
 - Pavel Kostromitinov
 - peufeu2
 - Philip Couling
+- Philip Jägenstedt
 - Philip Jones
 - Robin Trabert
+- rubenmendes-eaton
 - Qi Li
 - Sebastian Machuca
 - Sefa Keleş

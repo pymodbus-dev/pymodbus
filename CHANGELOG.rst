@@ -7,6 +7,18 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.13.1
+--------------
+* Update CI Workflows.
+* Fix dropping the next frame after a skipped one (#2934)
+* Correct Log repeat. (#2931)
+* Fix address bounds check in get_reg_block (#2926)
+* Fix reg_count calc (#2924)
+* guard short frames and validate mbap in TLS framer (#2921)
+* Use latest uv in CI. (#2922)
+* Change MIN_SIZE in ascii frame. (#2920)
+* Harden ASCII framer. (#2918)
+
 Version 3.13.0
 --------------
 * Correct missing types. (#2914)

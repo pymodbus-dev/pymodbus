@@ -52,7 +52,7 @@ class SimUtils:
     """Define common set of utilitites."""
 
     DATATYPE_STRUCT: dict[DataType, tuple[type, str, int]] = {
-        DataType.REGISTERS: (int, "h", 1),
+        DataType.REGISTERS: (int, "H", 1),
         DataType.INT16: (int, "h", 1),
         DataType.UINT16: (int, "H", 1),
         DataType.INT32: (int, "i", 2),

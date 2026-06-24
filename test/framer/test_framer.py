@@ -11,8 +11,8 @@ from pymodbus.framer import (
     FramerTLS,
     FramerType,
 )
-from pymodbus.pdu.device import ModbusControlBlock
 from pymodbus.pdu import DecodePDU, ModbusPDU
+from pymodbus.pdu.device import ModbusControlBlock
 from test.framer.generator import set_calls
 
 

@@ -12,6 +12,7 @@ from ..logging import Log
 from ..pdu.device import ModbusControlBlock
 from .base import FramerBase
 
+
 _MCB = ModbusControlBlock()
 
 

@@ -78,7 +78,14 @@ class ModbusServerContext:
     device contexts.
     """
 
-    def __init__(self, devices=None, single=True):
+    def __init__(
+        self,
+        devices: dict[int, ModbusDeviceContext | ModbusSimulatorContext]
+        | ModbusDeviceContext
+        | ModbusSimulatorContext
+        | None = None,
+        single=True,
+    ) -> None:
         """Initialize a new instance of a modbus server context.
 
         :param devices: A dictionary of client contexts
@@ -90,7 +97,7 @@ class ModbusServerContext:
         _ = single
         if not devices:
             raise TypeError("devices= cannot be None")
-        self._devices: dict[int, ModbusDeviceContext]
+        self._devices: dict[int, ModbusDeviceContext | ModbusSimulatorContext]
         self.simdevices: list[SimDevice] = []
         if isinstance(devices, dict):
             self._devices = devices
@@ -108,7 +115,7 @@ class ModbusServerContext:
                     "Please convert to SimData/SimDevice.\n"
                     "Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice")
 
-    def __get_device(self, device_id: int) -> ModbusDeviceContext:
+    def __get_device(self, device_id: int) -> ModbusDeviceContext | ModbusSimulatorContext:
         """Return device object."""
         if device_id in self._devices:
             return self._devices[device_id]

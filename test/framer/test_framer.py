@@ -81,18 +81,16 @@ class TestFramer:
     def test_ascii_framer_uses_configured_delimiter_on_encode(self):
         """Test ASCII framer encode uses the configured delimiter."""
         control = ModbusControlBlock()
-        original_delimiter = control.Delimiter
         control.Delimiter = b"="
         try:
             framer = FramerAscii(DecodePDU(False))
             assert framer.encode(b"\x03\x00\x7c\x00\x02", 0, 0) == b":0003007C00027F\r="
         finally:
-            control.Delimiter = original_delimiter
+            control.Delimiter = b"\n"
 
     def test_ascii_framer_uses_configured_delimiter_on_decode(self):
         """Test ASCII framer decode uses the configured delimiter."""
         control = ModbusControlBlock()
-        original_delimiter = control.Delimiter
         control.Delimiter = b"="
         try:
             framer = FramerAscii(DecodePDU(True))
@@ -102,7 +100,7 @@ class TestFramer:
             assert tr_id == 0
             assert payload == b"\x03\x00\x7c\x00\x02"
         finally:
-            control.Delimiter = original_delimiter
+            control.Delimiter = b"\n"
 
 class TestFramerType:
     """Test classes."""

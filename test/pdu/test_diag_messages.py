@@ -171,13 +171,12 @@ class TestDataStore:
     async def test_diagnostic_datastore_update(self):
         """Testing diagnostic message execution."""
         control = ModbusControlBlock()
-        original_delimiter = control.Delimiter
         try:
             for message, encoded, datastore_updated in self.requests:
                 encoded = (await message().datastore_update(cast(ModbusServerContext, None), 1)).encode()
                 assert encoded == datastore_updated
         finally:
-            control.Delimiter = original_delimiter
+            control.Delimiter = b"\n"
 
     def test_return_query_data_request(self):
         """Testing diagnostic message execution."""

@@ -96,8 +96,9 @@ class ModbusServerContext:
             self._devices = devices
             for dev_id, entry in devices.items():
                 if not isinstance(entry, ModbusSimulatorContext):
-                    entry.id = dev_id
-                    self.simdevices.append(entry)
+                    simdevice = entry.simdevice
+                    simdevice.id = dev_id
+                    self.simdevices.append(simdevice)
         else:
             self._devices = {0: devices}
             if not isinstance(devices, ModbusSimulatorContext):

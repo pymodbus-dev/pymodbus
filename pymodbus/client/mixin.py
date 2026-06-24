@@ -242,7 +242,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(no_response_expected, pdu_diag.ChangeAsciiInputDelimiterRequest(message=delimiter, dev_id=device_id))
 
-    def diag_force_listen_only(self, *, device_id: int = 1, no_response_expected: bool = False) -> T:
+    def diag_force_listen_only(self, *, device_id: int = 1, no_response_expected: bool = True) -> T:
         """Diagnose force listen only (code 0x08 sub 0x04).
 
         :param device_id: (optional) Modbus device ID

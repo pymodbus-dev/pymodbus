@@ -11,6 +11,7 @@ from pymodbus.framer import (
     FramerTLS,
     FramerType,
 )
+from pymodbus.pdu.device import ModbusControlBlock
 from pymodbus.pdu import DecodePDU, ModbusPDU
 from test.framer.generator import set_calls
 
@@ -76,6 +77,32 @@ class TestFramer:
         used_len, pdu = test_framer.handleFrame(msg, 0, 0)
         assert used_len == len(msg)
         assert pdu
+
+    def test_ascii_framer_uses_configured_delimiter_on_encode(self):
+        """Test ASCII framer encode uses the configured delimiter."""
+        control = ModbusControlBlock()
+        original_delimiter = control.Delimiter
+        control.Delimiter = b"="
+        try:
+            framer = FramerAscii(DecodePDU(False))
+            assert framer.encode(b"\x03\x00\x7c\x00\x02", 0, 0) == b":0003007C00027F\r="
+        finally:
+            control.Delimiter = original_delimiter
+
+    def test_ascii_framer_uses_configured_delimiter_on_decode(self):
+        """Test ASCII framer decode uses the configured delimiter."""
+        control = ModbusControlBlock()
+        original_delimiter = control.Delimiter
+        control.Delimiter = b"="
+        try:
+            framer = FramerAscii(DecodePDU(True))
+            used_len, dev_id, tr_id, payload = framer.decode(b":0003007C00027F\r=")
+            assert used_len == len(b":0003007C00027F\r=")
+            assert dev_id == 0
+            assert tr_id == 0
+            assert payload == b"\x03\x00\x7c\x00\x02"
+        finally:
+            control.Delimiter = original_delimiter
 
 class TestFramerType:
     """Test classes."""

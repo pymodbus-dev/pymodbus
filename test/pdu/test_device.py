@@ -252,12 +252,16 @@ class TestDataStore:
 
     def test_modbus_control_block_delimiter(self):
         """Tests the MCB delimiter setting methods."""
-        self.control.Delimiter = b"\r"
-        assert self.control.Delimiter == b"\r"
-        self.control.Delimiter = "="
-        assert self.control.Delimiter == b"="  # type: ignore[comparison-overlap]
-        self.control.Delimiter = 61
-        assert self.control.Delimiter == b"="  # type: ignore[comparison-overlap]
+        original_delimiter = self.control.Delimiter
+        try:
+            self.control.Delimiter = b"\r"
+            assert self.control.Delimiter == b"\r"
+            self.control.Delimiter = "="
+            assert self.control.Delimiter == b"="  # type: ignore[comparison-overlap]
+            self.control.Delimiter = 61
+            assert self.control.Delimiter == b"="  # type: ignore[comparison-overlap]
+        finally:
+            self.control.Delimiter = original_delimiter
 
     def test_modbus_control_block_diagnostic(self):
         """Tests the MCB delimiter setting methods."""

@@ -29,6 +29,7 @@ The corresponding server must be started before e.g. as:
 
     ./server_async.py
 """
+
 import asyncio
 import logging
 import sys
@@ -41,9 +42,11 @@ from pymodbus.pdu import FileRecord
 try:
     import client_async  # type: ignore[import-not-found]
 except ImportError:
-    print("*** ERROR --> THIS EXAMPLE needs to be run in the example directory, please see \n\
+    print(
+        "*** ERROR --> THIS EXAMPLE needs to be run in the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
-          for more information.")
+          for more information."
+    )
     sys.exit(-1)
 
 _logger = logging.getLogger(__file__)
@@ -148,7 +151,9 @@ async def async_handle_holding_registers(client):
     value_int32 = 13211
     registers = client.convert_to_registers(value_int32, client.DATATYPE.INT32)
     await client.write_registers(1, registers, device_id=DEVICE_ID)
-    rr = await client.read_holding_registers(1, count=len(registers), device_id=DEVICE_ID)
+    rr = await client.read_holding_registers(
+        1, count=len(registers), device_id=DEVICE_ID
+    )
     assert not rr.isError()  # test that call was OK
     value = client.convert_from_registers(rr.registers, client.DATATYPE.INT32)
     assert value_int32 == value
@@ -164,6 +169,7 @@ async def async_handle_holding_registers(client):
     rr = await client.read_holding_registers(1, count=8, device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
     assert rr.registers == arguments["values"]
+
 
 async def async_write_registers_mypy(client: ModbusBaseClient) -> None:
     """Read/write holding registers."""
@@ -192,21 +198,21 @@ async def async_handle_file_records(client):
     rr = await client.read_file_record([record, record], device_id=DEVICE_ID)
     assert not rr.isError()
     assert len(rr.records) == 2
-    assert rr.records[0].record_data == b'SERVER DUMMY RECORD.'
-    assert rr.records[1].record_data == b'SERVER DUMMY RECORD.'
-    record.record_data = b'Pure test '
+    assert rr.records[0].record_data == b"SERVER DUMMY RECORD."
+    assert rr.records[1].record_data == b"SERVER DUMMY RECORD."
+    record.record_data = b"Pure test "
     record.record_length = len(record.record_data) // 2
-    record = FileRecord(file_number=14, record_number=12, record_data=b'Pure test ')
+    record = FileRecord(file_number=14, record_number=12, record_data=b"Pure test ")
     rr = await client.write_file_record([record], device_id=1)
     assert not rr.isError()
-
-
 
 
 async def async_execute_information_requests(client):
     """Execute extended information requests."""
     _logger.info("### Running information requests.")
-    rr = await client.read_device_information(device_id=DEVICE_ID, read_code=1, object_id=0)
+    rr = await client.read_device_information(
+        device_id=DEVICE_ID, read_code=1, object_id=0
+    )
     assert not rr.isError()  # test that call was OK
     assert rr.information[0] == b"Pymodbus"
 
@@ -265,8 +271,11 @@ async def async_execute_diagnostic_requests(client):
     assert not rr.isError()  # test that call was OK
     rr = await client.diag_getclear_modbus_response(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
-    rr = await client.diag_force_listen_only(device_id=DEVICE_ID, no_response_expected=True)
+    rr = await client.diag_force_listen_only(
+        device_id=DEVICE_ID, no_response_expected=True
+    )
     assert not rr
+
 
 # ------------------------
 # Run the calls in groups.

@@ -1,4 +1,5 @@
 """Test register read messages."""
+
 from unittest import mock
 
 import pytest
@@ -16,6 +17,7 @@ from pymodbus.pdu.register_message import (
 
 
 TEST_MESSAGE = b"\x06\x00\x0a\x00\x0b\x00\x0c"
+
 
 class TestReadRegisterMessages:
     """Register Message Test Fixture.
@@ -51,7 +53,7 @@ class TestReadRegisterMessages:
             ReadWriteMultipleRegistersRequest(
                 write_registers=[0xAB],
                 **arguments,
-            ): b"\x00\x01\x00\x05\x00\x01\x00" b"\x01\x02\x00\xAB",
+            ): b"\x00\x01\x00\x05\x00\x01\x00\x01\x02\x00\xab",
         }
         self.response_read = {
             ReadHoldingRegistersResponse(registers=self.values): TEST_MESSAGE,
@@ -77,9 +79,9 @@ class TestReadRegisterMessages:
 
     def test_register_read_response_decode_error(self):
         """Test register read response."""
-        reg = ReadHoldingRegistersResponse(count = 5)
+        reg = ReadHoldingRegistersResponse(count=5)
         with pytest.raises(ModbusIOException):
-            reg.decode(b'\x14\x00\x03\x00\x11')
+            reg.decode(b"\x14\x00\x03\x00\x11")
 
     async def test_register_read_requests_count_errors(self, mock_server_context):
         """This tests that the register request messages.
@@ -110,8 +112,8 @@ class TestReadRegisterMessages:
         requests = [
             ReadHoldingRegistersRequest(address=-1, count=5),
             ReadInputRegistersRequest(address=-1, count=5),
-            ReadWriteMultipleRegistersRequest(-1,5,1,[5]),
-            ReadWriteMultipleRegistersRequest(1,5,-1,[5]),
+            ReadWriteMultipleRegistersRequest(-1, 5, 1, [5]),
+            ReadWriteMultipleRegistersRequest(1, 5, -1, [5]),
         ]
         for request in requests:
             await request.datastore_update(context, 0)
@@ -173,12 +175,13 @@ class TestReadRegisterMessages:
         for request in iter(self.response_read.keys()):
             assert str(request)
 
-    @pytest.mark.parametrize(("request_pdu"),
+    @pytest.mark.parametrize(
+        ("request_pdu"),
         [
             ReadWriteMultipleRegistersRequest(
                 read_address=1, read_count=5, write_address=1, write_registers=[5]
             ),
-        ]
+        ],
     )
     async def test_register_read_exception(self, request_pdu, mock_server_context):
         """Test write single coil."""

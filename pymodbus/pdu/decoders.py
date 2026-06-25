@@ -1,4 +1,5 @@
 """Modbus Request/Response Decoders."""
+
 from __future__ import annotations
 
 import copy
@@ -15,7 +16,6 @@ class DecodePDU:
     pdu_table: dict[int, tuple[type[ModbusPDU], type[ModbusPDU]]] = {}
     pdu_sub_table: dict[int, dict[int, tuple[type[ModbusPDU], type[ModbusPDU]]]] = {}
 
-
     def __init__(self, is_server: bool) -> None:
         """Initialize function_tables."""
         self.pdu_inx = 0 if is_server else 1
@@ -28,7 +28,9 @@ class DecodePDU:
             return None
         if (sub_func_code := pdu.decode_sub_function_code(data)) < 0:
             return pdu
-        return self.pdu_sub_table[func_code].get(sub_func_code, (None, None))[self.pdu_inx]
+        return self.pdu_sub_table[func_code].get(sub_func_code, (None, None))[
+            self.pdu_inx
+        ]
 
     def list_function_codes(self):
         """Return list of function codes."""
@@ -64,17 +66,28 @@ class DecodePDU:
                 pdu_exp = ExceptionResponse(function_code & 0x7F)
                 pdu_exp.decode(frame[1:])
                 return pdu_exp
-            if not (pdu_class := self.pdu_table.get(function_code, (None, None))[self.pdu_inx]):
+            if not (
+                pdu_class := self.pdu_table.get(function_code, (None, None))[
+                    self.pdu_inx
+                ]
+            ):
                 Log.debug("decode PDU failed for function code {}", function_code)
                 raise ModbusException(f"Unknown response {function_code}")
             pdu = pdu_class()
             pdu.decode(frame[1:])
             if pdu.sub_function_code >= 0:
                 lookup = self.pdu_sub_table.get(pdu.function_code, {})
-                if sub_class := lookup.get(pdu.sub_function_code, (None,None))[self.pdu_inx]:
+                if sub_class := lookup.get(pdu.sub_function_code, (None, None))[
+                    self.pdu_inx
+                ]:
                     pdu = sub_class()
                     pdu.decode(frame[1:])
-            Log.debug("decoded PDU function_code({} sub {}) -> {} ", pdu.function_code, pdu.sub_function_code, str(pdu))
+            Log.debug(
+                "decoded PDU function_code({} sub {}) -> {} ",
+                pdu.function_code,
+                pdu.sub_function_code,
+                str(pdu),
+            )
             return pdu
         except (ModbusException, ValueError, IndexError) as exc:
             Log.warning("Unable to decode frame {}", exc)

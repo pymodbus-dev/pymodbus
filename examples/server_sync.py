@@ -34,6 +34,7 @@ The corresponding client can be started as:
 is just a thin cover on top of the async server and is in some aspects
 a lot slower.
 """
+
 import logging
 import sys
 
@@ -42,9 +43,11 @@ try:
     import helper  # type: ignore[import-not-found]
     import server_async  # type: ignore[import-not-found]
 except ImportError:
-    print("*** ERROR --> THIS EXAMPLE needs to be run in the example directory, please see \n\
+    print(
+        "*** ERROR --> THIS EXAMPLE needs to be run in the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
-          for more information.")
+          for more information."
+    )
     sys.exit(-1)
 
 # --------------------------------------------------------------------------- #

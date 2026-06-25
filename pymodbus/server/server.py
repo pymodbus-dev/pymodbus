@@ -1,4 +1,5 @@
 """Implementation of a Threaded Modbus Server."""
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -227,7 +228,7 @@ class ModbusSerialServer(ModbusBaseServer):
         trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
         custom_pdu: list[type[ModbusPDU]] | None = None,
-        **kwargs
+        **kwargs,
     ):
         """Initialize the socket server.
 
@@ -283,6 +284,10 @@ class ModbusSerialServer(ModbusBaseServer):
         self.allow_multiple_devices = kwargs.get("allow_multiple_devices", False)
         if self.allow_multiple_devices:
             if baudrate > 38400:
-                raise TypeError("allow_multiple_devices only allowed with baudrate <= 38.400")
+                raise TypeError(
+                    "allow_multiple_devices only allowed with baudrate <= 38.400"
+                )
             if framer != FramerType.RTU:
-                raise TypeError("allow_multiple_devices only allowed with FramerType.RTU")
+                raise TypeError(
+                    "allow_multiple_devices only allowed with FramerType.RTU"
+                )

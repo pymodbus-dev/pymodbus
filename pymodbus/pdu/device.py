@@ -4,6 +4,7 @@ These are the device management handlers.  They should be
 maintained in the server context and the various methods
 should be inserted in the correct locations.
 """
+
 from __future__ import annotations
 
 
@@ -110,8 +111,7 @@ class ModbusPlusStatistics:
         :returns: An iterator over lists of 8-bit integers representing each statistic
         """
         values = [v for sublist in self.stat_data.values() for v in sublist]
-        total = [(values[i] << 8) | values[i + 1]
-                 for i in range(0, len(values), 2)]
+        total = [(values[i] << 8) | values[i + 1] for i in range(0, len(values), 2)]
         return total
 
 

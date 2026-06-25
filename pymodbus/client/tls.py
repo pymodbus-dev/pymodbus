@@ -1,4 +1,5 @@
 """Modbus client async TLS communication."""
+
 from __future__ import annotations
 
 import socket
@@ -118,6 +119,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
             False, certfile=certfile, keyfile=keyfile, password=password
         )
 
+
 class ModbusTlsClient(ModbusTcpClient):
     """**ModbusTlsClient**.
 
@@ -215,7 +217,10 @@ class ModbusTlsClient(ModbusTcpClient):
         - verify_mode is set to ssl.NONE
         """
         return CommParams.generate_ssl(
-            False, certfile=certfile, keyfile=keyfile, password=password,
+            False,
+            certfile=certfile,
+            keyfile=keyfile,
+            password=password,
         )
 
     @property

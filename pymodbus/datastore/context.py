@@ -14,7 +14,7 @@ from .simulator import ModbusSimulatorContext
 from .sparse import ModbusSparseDataBlock
 
 
-class ModbusDeviceContext:   # pylint: disable=too-few-public-methods
+class ModbusDeviceContext:  # pylint: disable=too-few-public-methods
     """Create a modbus data model with data stored in a block.
 
     :param di: discrete inputs initializer ModbusDataBlock
@@ -36,12 +36,14 @@ class ModbusDeviceContext:   # pylint: disable=too-few-public-methods
             for i, _value in enumerate(entry.values):
                 entry.values[i] = bool(entry.values[i])
 
-    def __init__(self, *_args,
-                    di: ModbusSequentialDataBlock | ModbusSparseDataBlock | None = None,
-                    co: ModbusSequentialDataBlock | ModbusSparseDataBlock | None = None,
-                    ir: ModbusSequentialDataBlock | ModbusSparseDataBlock | None = None,
-                    hr: ModbusSequentialDataBlock | ModbusSparseDataBlock | None = None,
-                ):
+    def __init__(
+        self,
+        *_args,
+        di: ModbusSequentialDataBlock | ModbusSparseDataBlock | None = None,
+        co: ModbusSequentialDataBlock | ModbusSparseDataBlock | None = None,
+        ir: ModbusSequentialDataBlock | ModbusSparseDataBlock | None = None,
+        hr: ModbusSequentialDataBlock | ModbusSparseDataBlock | None = None,
+    ):
         """Define device."""
         if not di:
             di = ModbusSequentialDataBlock(1, values=False)
@@ -57,16 +59,16 @@ class ModbusDeviceContext:   # pylint: disable=too-few-public-methods
         hr_simdata = deepcopy(hr.simdata)
         self.__build_data(co_simdata)
         self.__build_data(di_simdata)
-        self.simdevice = SimDevice(0, simdata=(
-            co_simdata,
-            di_simdata,
-            ir_simdata,
-            hr_simdata))
-        Log.warning("ModbusDeviceContext, ModbusSequentialDataBlock, "
-                    "ModbusSparseDataBlock are deprecated "
-                    "and will be removed in v4.\n"
-                    "Please convert to SimData/SimDevice.\n"
-                    "Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice")
+        self.simdevice = SimDevice(
+            0, simdata=(co_simdata, di_simdata, ir_simdata, hr_simdata)
+        )
+        Log.warning(
+            "ModbusDeviceContext, ModbusSequentialDataBlock, "
+            "ModbusSparseDataBlock are deprecated "
+            "and will be removed in v4.\n"
+            "Please convert to SimData/SimDevice.\n"
+            "Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice"
+        )
 
 
 class ModbusServerContext:
@@ -110,12 +112,16 @@ class ModbusServerContext:
             self._devices = {0: devices}
             if not isinstance(devices, ModbusSimulatorContext):
                 self.simdevices = [devices.simdevice]
-        Log.warning("ModbusServerContext is deprecated "
-                    "and will be removed in v4.\n"
-                    "Please convert to SimData/SimDevice.\n"
-                    "Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice")
+        Log.warning(
+            "ModbusServerContext is deprecated "
+            "and will be removed in v4.\n"
+            "Please convert to SimData/SimDevice.\n"
+            "Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice"
+        )
 
-    def __get_device(self, device_id: int) -> ModbusDeviceContext | ModbusSimulatorContext:
+    def __get_device(
+        self, device_id: int
+    ) -> ModbusDeviceContext | ModbusSimulatorContext:
         """Return device object."""
         if device_id in self._devices:
             return self._devices[device_id]
@@ -125,7 +131,9 @@ class ModbusServerContext:
             f"device_id - {device_id} does not exist, or is out of range"
         )
 
-    async def async_getValues(self, device_id: int, func_code: int, address: int, count: int = 1) -> list[int] | list[bool] | ExcCodes:
+    async def async_getValues(
+        self, device_id: int, func_code: int, address: int, count: int = 1
+    ) -> list[int] | list[bool] | ExcCodes:
         """Get `count` values from datastore.
 
         :param device_id: the device being addressed
@@ -139,7 +147,13 @@ class ModbusServerContext:
             return await dev.async_OLD_getValues(func_code, address, count)
         return ExcCodes.DEVICE_BUSY
 
-    async def async_setValues(self, device_id: int, func_code: int, address: int, values: list[int] | list[bool] ) -> None | ExcCodes:
+    async def async_setValues(
+        self,
+        device_id: int,
+        func_code: int,
+        address: int,
+        values: list[int] | list[bool],
+    ) -> None | ExcCodes:
         """Set the datastore with the supplied values.
 
         :param device_id: the device being addressed

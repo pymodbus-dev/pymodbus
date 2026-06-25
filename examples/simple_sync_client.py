@@ -89,7 +89,9 @@ def run_sync_simple_client(comm, host, port, framer=FramerType.SOCKET):
         # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
         client.close()
         return
-    value_int32 = client.convert_from_registers(rr.registers, data_type=client.DATATYPE.INT32)
+    value_int32 = client.convert_from_registers(
+        rr.registers, data_type=client.DATATYPE.INT32
+    )
     print(f"Got int32: {value_int32}")
 
     print("close connection")

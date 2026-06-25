@@ -1,4 +1,5 @@
 """Bit Message Test Fixture."""
+
 from unittest import mock
 
 import pytest
@@ -22,7 +23,10 @@ class TestModbusBitMessage:
         """Test bit read request encoding."""
         for pdu, expected in (
             (bit_msg.ReadCoilsRequest(address=12, count=14), b"\x00\x0c\x00\x0e"),
-            (bit_msg.ReadCoilsResponse(bits=[True, False, True, True, False]), b"\x01\x0d"),
+            (
+                bit_msg.ReadCoilsResponse(bits=[True, False, True, True, False]),
+                b"\x01\x0d",
+            ),
         ):
             assert pdu.encode() == expected
 
@@ -71,24 +75,49 @@ class TestModbusBitMessage:
     def test_bit_write_base_requests(self):
         """Test bit write base."""
         for pdu, expected in (
-            (bit_msg.WriteSingleCoilRequest(address=1, bits=[True]), b"\x00\x01\xff\x00"),
-            (bit_msg.WriteMultipleCoilsRequest(address=1, bits=[True] * 5), b"\x00\x01\x00\x05\x01\x1f"),
-            (bit_msg.WriteMultipleCoilsRequest(address=1, bits=[True]), b"\x00\x01\x00\x01\x01\x01"),
-            (bit_msg.WriteMultipleCoilsResponse(address=1, count=5), b"\x00\x01\x00\x05"),
-            (bit_msg.WriteMultipleCoilsResponse(address=1, count=1), b"\x00\x01\x00\x01"),
+            (
+                bit_msg.WriteSingleCoilRequest(address=1, bits=[True]),
+                b"\x00\x01\xff\x00",
+            ),
+            (
+                bit_msg.WriteMultipleCoilsRequest(address=1, bits=[True] * 5),
+                b"\x00\x01\x00\x05\x01\x1f",
+            ),
+            (
+                bit_msg.WriteMultipleCoilsRequest(address=1, bits=[True]),
+                b"\x00\x01\x00\x01\x01\x01",
+            ),
+            (
+                bit_msg.WriteMultipleCoilsResponse(address=1, count=5),
+                b"\x00\x01\x00\x05",
+            ),
+            (
+                bit_msg.WriteMultipleCoilsResponse(address=1, count=1),
+                b"\x00\x01\x00\x01",
+            ),
         ):
             assert pdu.encode() == expected
 
     def test_write_message_get_response_pdu(self):
         """Test bit write message."""
         pdu = bit_msg.WriteSingleCoilRequest(address=1, bits=[True])
-        assert pdu.get_response_pdu_size()  == 5
+        assert pdu.get_response_pdu_size() == 5
 
     def test_write_multiple_coils_request(self):
         """Test write multiple coils."""
         for request, frame, values, expected in (
-            (bit_msg.WriteMultipleCoilsRequest(address=1, bits=[True] * 5), b"\x00\x01\x00\x05\x01\x1f", [True] * 5, 5),
-            (bit_msg.WriteMultipleCoilsRequest(address=1, bits=[True]), b"\x00\x01\x00\x01\x01\x01", [True], 5),
+            (
+                bit_msg.WriteMultipleCoilsRequest(address=1, bits=[True] * 5),
+                b"\x00\x01\x00\x05\x01\x1f",
+                [True] * 5,
+                5,
+            ),
+            (
+                bit_msg.WriteMultipleCoilsRequest(address=1, bits=[True]),
+                b"\x00\x01\x00\x01\x01\x01",
+                [True],
+                5,
+            ),
         ):
             request.decode(frame)
             assert request.address == 1
@@ -137,11 +166,12 @@ class TestModbusBitMessage:
         result = await request.datastore_update(context, 0)
         assert result.encode() == b"\x00\x02\x00\x04"
 
-    @pytest.mark.parametrize(("request_pdu"),
+    @pytest.mark.parametrize(
+        ("request_pdu"),
         [
             bit_msg.WriteSingleCoilRequest(address=2, bits=[True]),
             bit_msg.WriteMultipleCoilsRequest(address=2, bits=[]),
-        ]
+        ],
     )
     async def test_write_coil_exception(self, request_pdu, mock_server_context):
         """Test write single coil."""

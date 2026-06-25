@@ -1,4 +1,5 @@
 """Test transport."""
+
 import asyncio
 from unittest import mock
 
@@ -100,4 +101,3 @@ class TestTransportReconnect:
         server.connection_lost(RuntimeError("Listener disconnected lost"))
         assert server.reconnect_task
         server.close()
-

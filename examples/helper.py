@@ -4,6 +4,7 @@ Contains common functions get get_command_line() to avoid duplicating
 code that are not relevant for the code as such, like e.g.
 get_command_line
 """
+
 from __future__ import annotations
 
 import argparse
@@ -17,7 +18,12 @@ from pymodbus import pymodbus_apply_logging_config
 _logger = logging.getLogger(__file__)
 
 
-def get_commandline(server: bool = False, description: str | None = None, extras: Any = None, cmdline: list[str] | None = None):
+def get_commandline(
+    server: bool = False,
+    description: str | None = None,
+    extras: Any = None,
+    cmdline: list[str] | None = None,
+):
     """Read and check command line arguments."""
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(

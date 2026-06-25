@@ -29,6 +29,7 @@ The corresponding server must be started before e.g. as:
 
     ./server_async.py
 """
+
 import logging
 import sys
 
@@ -38,11 +39,12 @@ from pymodbus.pdu import FileRecord
 try:
     import client_sync  # type: ignore[import-not-found]
 except ImportError:
-    print("*** ERROR --> THIS EXAMPLE needs to be run in the example directory, please see \n\
+    print(
+        "*** ERROR --> THIS EXAMPLE needs to be run in the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
-          for more information.")
+          for more information."
+    )
     sys.exit(-1)
-
 
 
 _logger = logging.getLogger(__file__)
@@ -170,11 +172,11 @@ def handle_file_records(client):
     rr = client.read_file_record([record, record], device_id=DEVICE_ID)
     assert not rr.isError()
     assert len(rr.records) == 2
-    assert rr.records[0].record_data == b'SERVER DUMMY RECORD.'
-    assert rr.records[1].record_data == b'SERVER DUMMY RECORD.'
-    record.record_data = b'Pure test '
+    assert rr.records[0].record_data == b"SERVER DUMMY RECORD."
+    assert rr.records[1].record_data == b"SERVER DUMMY RECORD."
+    record.record_data = b"Pure test "
     record.record_length = len(record.record_data) // 2
-    record = FileRecord(file_number=14, record_number=12, record_data=b'Pure test ')
+    record = FileRecord(file_number=14, record_number=12, record_data=b"Pure test ")
     rr = client.write_file_record([record], device_id=1)
     assert not rr.isError()
 
@@ -244,7 +246,6 @@ def execute_diagnostic_requests(client):
     assert not rr.isError()  # test that call was OK
     # NOT WORKING: rr = client.diag_force_listen_only(device_id=DEVICE_ID)
     assert not rr.isError()  # test that call was OK
-
 
 
 # ------------------------

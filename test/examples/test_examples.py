@@ -3,6 +3,7 @@
 This is a thorough test of the clientexamples.
 
 """
+
 import asyncio
 from threading import Thread
 from time import sleep
@@ -106,7 +107,7 @@ class TestExamples:
 
     async def test_heatpump(self, use_port):
         """Test client with custom message."""
-        await run_heatpump(cmdline=["-p",  str(use_port), "-t", "5"])
+        await run_heatpump(cmdline=["-p", str(use_port), "-t", "5"])
 
 
 @pytest.mark.parametrize(
@@ -177,6 +178,7 @@ class TestAsyncExamples:
         if use_comm == "serial":
             use_port = f"socket://{use_host}:{use_port}"
         await run_async_simple_client(use_comm, use_host, use_port, framer=use_framer)
+
 
 @pytest.mark.parametrize("use_host", ["localhost"])
 @pytest.mark.parametrize(

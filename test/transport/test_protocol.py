@@ -1,4 +1,5 @@
 """Test transport."""
+
 import asyncio
 from unittest import mock
 
@@ -27,12 +28,10 @@ class TestTransportProtocol1:
         base_ports[__class__.__name__] += 1  # type: ignore[name-defined,index]
         return base_ports[__class__.__name__]  # type: ignore[name-defined,index]
 
-
     @pytest.mark.parametrize("use_comm_type", COMM_TYPES)
     async def test_init_client(self, client):
         """Test init client."""
         assert not client.is_server
-
 
     @pytest.mark.parametrize("use_comm_type", COMM_TYPES)
     async def test_init_server(self, server):
@@ -143,7 +142,7 @@ class TestTransportProtocol1:
         client.callback_data = mock.MagicMock(return_value=0)
         client.recv_buffer = bytearray([0x01] * 2000)
         client.datagram_received(b"abc", "127.0.0.1")
-        assert client.recv_buffer == b'abc'
+        assert client.recv_buffer == b"abc"
 
     async def test_callback_connected(self, use_clc, dummy_protocol):
         """Test callbacks."""
@@ -221,7 +220,6 @@ class TestTransportProtocol2:
         """Return next port."""
         base_ports[__class__.__name__] += 1  # type: ignore[name-defined,index]
         return base_ports[__class__.__name__]  # type: ignore[name-defined,index]
-
 
     async def test_eof_received(self, client):
         """Test eof_received."""

@@ -42,6 +42,7 @@ There are 4 functions which can be modified to test the client/server functional
     Called when data is received from the server (remark data is frame+request)
 
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -76,7 +77,7 @@ class TransportStub(ModbusProtocol):
 
     async def start_run(self):
         """Call need functions to start server/client."""
-        if  self.is_server:
+        if self.is_server:
             return await self.listen()
         return await self.connect()
 
@@ -98,6 +99,7 @@ class TransportStub(ModbusProtocol):
         new_stub.stub_handle_data = self.stub_handle_data
         return new_stub
 
+
 class ClientTester:  # pylint: disable=too-few-public-methods
     """Main program."""
 
@@ -107,22 +109,23 @@ class ClientTester:  # pylint: disable=too-few-public-methods
         """Initialize runtime tester."""
         self.comm = comm
         host = NULLMODEM_HOST
-        self.client: modbusClient.AsyncModbusTcpClient | modbusClient.AsyncModbusSerialClient
+        self.client: (
+            modbusClient.AsyncModbusTcpClient | modbusClient.AsyncModbusSerialClient
+        )
         if comm == CommType.TCP:
             self.client = modbusClient.AsyncModbusTcpClient(
-                        host,
-                        port=self.TEST_PORT,
+                host,
+                port=self.TEST_PORT,
             )
         else:  # if comm == CommType.SERIAL:
             host = f"{NULLMODEM_HOST}:{self.TEST_PORT}"
             self.client = modbusClient.AsyncModbusSerialClient(
-                        host,
+                host,
             )
         server_params = self.client.ctx.comm_params.copy()
         server_params.source_address = (host, self.TEST_PORT)
         self.stub = TransportStub(server_params, True, simulate_server)
         self.TEST_PORT += 1
-
 
     async def run(self):
         """Execute test run."""
@@ -145,7 +148,9 @@ class ServerTester:  # pylint: disable=too-few-public-methods
     def __init__(self, comm: CommType):
         """Initialize runtime tester."""
         self.comm = comm
-        self.context = SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100))
+        self.context = SimDevice(
+            0, SimData(0, datatype=DataType.REGISTERS, values=[17] * 100)
+        )
         self.identity = ModbusDeviceIdentification(
             info_name={"VendorName": "VendorName"}
         )
@@ -168,7 +173,6 @@ class ServerTester:  # pylint: disable=too-few-public-methods
         client_params.timeout_connect = 1.0
         self.stub = TransportStub(client_params, False, simulate_client)
         self.TEST_PORT += 1
-
 
     async def run(self):
         """Execute test run."""
@@ -194,6 +198,7 @@ async def main(comm: CommType, use_server: bool):
 
 # -------------- USER CHANGES --------------
 
+
 async def client_calls(client):
     """Test client API."""
     Log.debug("--> Client calls starting.")
@@ -210,30 +215,32 @@ async def client_calls(client):
     client.close()
     print("---> CLIENT all done")
 
+
 async def server_calls(transport: ModbusProtocol, is_tcp: bool):
     """Test server functionality."""
     Log.debug("--> Server calls starting.")
 
     if is_tcp:
-        request = b'\x00\x02\x00\x00\x00\x06\x00\x03\x00\x00\x00\x01'
+        request = b"\x00\x02\x00\x00\x00\x06\x00\x03\x00\x00\x00\x01"
     else:
         # 2 responses:
         # response = b'\x00\x02\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01' +
         #    b'\x07\x00\x03\x00\x00\x06\x01\x03\x00\x00\x00\x01')
         # 1 response:
-        request = b'\x00\x02\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01'
+        request = b"\x00\x02\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01"
     transport.send(request)
     await asyncio.sleep(1)
     transport.close()
     print("---> SERVER all done")
 
+
 def simulate_server(transport: ModbusProtocol, is_tcp: bool, request: bytes):
     """Respond to request at transport level."""
     Log.debug("--> Server simulator called with request {}.", request, ":hex")
     if is_tcp:
-        response = b'\x00\x01\x00\x00\x00\x06\x01\x03\x00\x7c\x00\x04'
+        response = b"\x00\x01\x00\x00\x00\x06\x01\x03\x00\x7c\x00\x04"
     else:
-        response = b'\x01\x03\x08\x00\x05\x00\x05\x00\x00\x00\x00\x0c\xd7'
+        response = b"\x01\x03\x08\x00\x05\x00\x05\x00\x00\x00\x00\x0c\xd7"
 
     # Multiple send is allowed, to test fragmentation
     #  for data in response:
@@ -244,7 +251,10 @@ def simulate_server(transport: ModbusProtocol, is_tcp: bool, request: bytes):
 
 def simulate_client(_transport: ModbusProtocol, _is_tcp: bool, response: bytes):
     """Respond to request at transport level."""
-    Log.debug("--> Client simulator called with response {}.", response, ":hex")  # pragma: no cover
+    Log.debug(
+        "--> Client simulator called with response {}.", response, ":hex"
+    )  # pragma: no cover
+
 
 async def run_test():
     """Run whole test."""
@@ -252,6 +262,7 @@ async def run_test():
     await main(CommType.SERIAL, True)
     await main(CommType.TCP, False)
     await main(CommType.TCP, True)
+
 
 if __name__ == "__main__":
     # True for Server test, False for Client test

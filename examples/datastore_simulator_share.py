@@ -28,6 +28,7 @@ The corresponding client can be started as:
 
 .. tip:: This is NOT the pymodbus simulator, that is started as pymodbus.simulator.
 """
+
 import argparse
 import asyncio
 import logging
@@ -135,7 +136,9 @@ def get_commandline(cmdline=None):
     )
     parser.add_argument("--port", help="set port", type=str, default="5020")
     parser.add_argument("--host", help="set interface", type=str, default="localhost")
-    parser.add_argument("--test_client", help="start client to test", action="store_true")
+    parser.add_argument(
+        "--test_client", help="start client to test", action="store_true"
+    )
     args = parser.parse_args(cmdline)
     return args
 
@@ -143,9 +146,9 @@ def get_commandline(cmdline=None):
 def setup_simulator(setup=None, actions=None, cmdline=None):
     """Run server setup."""
     if not setup:  # pragma: no cover
-        setup=demo_config
+        setup = demo_config
     if not actions:  # pragma: no cover
-        actions=demo_actions
+        actions = demo_actions
     args = get_commandline(cmdline=cmdline)
     pymodbus_apply_logging_config(args.log.upper())
     _logger.setLevel(args.log.upper())

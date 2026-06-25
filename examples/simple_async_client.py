@@ -9,6 +9,7 @@ All options must be adapted in the code
 The corresponding server must be started before e.g. as:
     python3 server_sync.py
 """
+
 import asyncio
 
 import pymodbus.client as ModbusClient
@@ -90,13 +91,13 @@ async def run_async_simple_client(comm, host, port, framer=FramerType.SOCKET):
         # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
         client.close()
         return
-    value_int32 = client.convert_from_registers(rr.registers, data_type=client.DATATYPE.INT32)
+    value_int32 = client.convert_from_registers(
+        rr.registers, data_type=client.DATATYPE.INT32
+    )
     print(f"Got int32: {value_int32}")
     print("close connection")
     client.close()
 
 
 if __name__ == "__main__":
-    asyncio.run(
-        run_async_simple_client("tcp", "127.0.0.1", 5020), debug=True
-    )
+    asyncio.run(run_async_simple_client("tcp", "127.0.0.1", 5020), debug=True)

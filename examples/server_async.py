@@ -32,6 +32,7 @@ The corresponding client can be started as:
     python3 client_sync.py
 
 """
+
 import asyncio
 import logging
 import sys
@@ -40,9 +41,11 @@ import sys
 try:
     import helper  # type: ignore[import-not-found]
 except ImportError:
-    print("*** ERROR --> THIS EXAMPLE needs to be run in the example directory, please see \n\
+    print(
+        "*** ERROR --> THIS EXAMPLE needs to be run in the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
-          for more information.")
+          for more information."
+    )
     sys.exit(-1)
 
 from pymodbus import ModbusDeviceIdentification
@@ -69,10 +72,17 @@ def setup_server(description=None, context=None, cmdline=None):
 
         # Build data storage
         if args.device_ids > 1:  # pragma: no cover
-            args.context = [SimDevice(device_id, SimData(0, datatype=DataType.REGISTERS, values=[17]*100))
-                            for device_id in range(args.device_ids)]
+            args.context = [
+                SimDevice(
+                    device_id,
+                    SimData(0, datatype=DataType.REGISTERS, values=[17] * 100),
+                )
+                for device_id in range(args.device_ids)
+            ]
         else:
-            args.context = SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100))
+            args.context = SimDevice(
+                0, SimData(0, datatype=DataType.REGISTERS, values=[17] * 100)
+            )
 
     # ----------------------------------------------------------------------- #
     # initialize the server information

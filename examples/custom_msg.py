@@ -10,6 +10,7 @@ implementation from pymodbus::
         print result
 
 """
+
 import asyncio
 import struct
 
@@ -86,7 +87,9 @@ class CustomRequest(ModbusPDU):
         """Decode."""
         self.address, self.count = struct.unpack(">HH", data)
 
-    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+    async def datastore_update(
+        self, context: ModbusServerContext, device_id: int
+    ) -> ModbusPDU:
         """Update diagnostic request on the given device."""
         _ = context, device_id
         return CustomModbusResponse()
@@ -105,7 +108,9 @@ class Read16CoilsRequest(ReadCoilsRequest):
 
         :param address: The address to start reading from
         """
-        super().__init__(address=address, count=16, dev_id=device_id, transaction_id=transaction)
+        super().__init__(
+            address=address, count=16, dev_id=device_id, transaction_id=transaction
+        )
 
 
 # --------------------------------------------------------------------------- #
@@ -118,10 +123,14 @@ class Read16CoilsRequest(ReadCoilsRequest):
 
 async def main(host="localhost", port=5020):
     """Run versions of read coil."""
-    task = asyncio.create_task(StartAsyncTcpServer(
-        context=SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100)),
-        address=(host, port),
-        custom_pdu=[CustomRequest])
+    task = asyncio.create_task(
+        StartAsyncTcpServer(
+            context=SimDevice(
+                0, SimData(0, datatype=DataType.REGISTERS, values=[17] * 100)
+            ),
+            address=(host, port),
+            custom_pdu=[CustomRequest],
+        )
     )
     await asyncio.sleep(0.1)
     async with ModbusClient(host=host, port=port, framer=FramerType.SOCKET) as client:
@@ -129,7 +138,7 @@ async def main(host="localhost", port=5020):
 
         # add new modbus function code.
         client.register(CustomModbusResponse)
-        device_id=1
+        device_id = 1
         request1 = CustomRequest(32, device_id=device_id)
         try:
             result = await client.execute(False, request1)

@@ -1,4 +1,5 @@
 """Framer."""
+
 __all__ = [
     "DecodePDU",
     "DiagnosticBase",
@@ -20,5 +21,3 @@ from .mei_message import ReadDeviceInformationRequest
 from .other_message import ReadExceptionStatusRequest
 from .pdu import ModbusPDU
 from .register_message import ReadHoldingRegistersRequest
-
-

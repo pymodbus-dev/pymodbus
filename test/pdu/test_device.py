@@ -1,4 +1,5 @@
 """Test device."""
+
 from pymodbus.constants import DeviceInformation
 from pymodbus.pdu.device import (
     DeviceInformationFactory,
@@ -365,7 +366,6 @@ class TestDataStore:
         stats_summary = list(statistics.summary())
         assert sorted(summary) == sorted(stats_summary)
         assert not sum(sum(value[1]) for value in statistics)
-
 
     def test_device_info_name(self):
         """Test setting of info_name."""

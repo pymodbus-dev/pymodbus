@@ -1,4 +1,5 @@
 """Contains base classes for modbus request/response/error packets."""
+
 from __future__ import annotations
 
 import asyncio
@@ -15,15 +16,16 @@ class ModbusPDU:
     rtu_frame_size: int = 0
     rtu_byte_count_pos: int = 0
 
-    def __init__(self,
-            dev_id: int = 0,
-            transaction_id: int = 0,
-            address: int = 0,
-            count: int = 0,
-            bits: list[bool] | None = None,
-            registers: list[int] | None = None,
-            status: int = 1,
-        ) -> None:
+    def __init__(
+        self,
+        dev_id: int = 0,
+        transaction_id: int = 0,
+        address: int = 0,
+        count: int = 0,
+        bits: list[bool] | None = None,
+        registers: list[int] | None = None,
+        status: int = 1,
+    ) -> None:
         """Initialize the base data for a modbus request."""
         self.dev_id: int = dev_id
         if dev_id > 255:
@@ -82,12 +84,14 @@ class ModbusPDU:
 
     def encode(self) -> bytes:
         """Encode the message."""
-        return b''
+        return b""
 
     def decode(self, data: bytes) -> None:
         """Decode data part of the message."""
 
-    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+    async def datastore_update(
+        self, context: ModbusServerContext, device_id: int
+    ) -> ModbusPDU:
         """Update diagnostic request on the given device."""
         _ = context, device_id
         raise NotImplementedException(
@@ -100,7 +104,7 @@ class ModbusPDU:
         if cls.rtu_frame_size:
             return cls.rtu_frame_size
         if cls.rtu_byte_count_pos:
-            if len(data) < cls.rtu_byte_count_pos +1:
+            if len(data) < cls.rtu_byte_count_pos + 1:
                 return 0
             return int(data[cls.rtu_byte_count_pos]) + cls.rtu_byte_count_pos + 3
         raise NotImplementedException(

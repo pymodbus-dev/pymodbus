@@ -1,4 +1,5 @@
 """Contains exceptionResponse class for modbus."""
+
 from __future__ import annotations
 
 import struct
@@ -12,11 +13,12 @@ class ExceptionResponse(ModbusPDU):
     rtu_frame_size = 5
 
     def __init__(
-            self,
-            function_code: int,
-            exception_code: int = 0,
-            device_id: int = 1,
-            transaction: int = 0) -> None:
+        self,
+        function_code: int,
+        exception_code: int = 0,
+        device_id: int = 1,
+        transaction: int = 0,
+    ) -> None:
         """Initialize the modbus exception response."""
         super().__init__(transaction_id=transaction, dev_id=device_id)
         self.function_code = function_code | 0x80

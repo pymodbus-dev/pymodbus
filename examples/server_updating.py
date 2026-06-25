@@ -30,6 +30,7 @@ usage::
 The corresponding client can be started as:
     python3 client_sync.py
 """
+
 import argparse
 import asyncio
 import logging
@@ -40,6 +41,7 @@ from pymodbus.simulator import DataType, SimData, SimDevice
 
 
 _logger = logging.getLogger(__name__)
+
 
 def get_commandline(cmdline: list[str] | None = None):
     """Read and check command line arguments."""
@@ -74,7 +76,6 @@ def get_commandline(cmdline: list[str] | None = None):
     return args
 
 
-
 async def updating_task(server):
     """Update values in server.
 
@@ -104,7 +105,9 @@ async def updating_task(server):
     while True:
         await asyncio.sleep(2)
 
-        values = await server.async_getValues(device_id, func_code, address, count=count)
+        values = await server.async_getValues(
+            device_id, func_code, address, count=count
+        )
         values = [v + 1 for v in values]
         await server.async_setValues(device_id, func_code, address, values)
 
@@ -121,8 +124,8 @@ def setup_updating_server(cmdline=None):
     # This is because many devices exhibit this kind of behavior (but not all)
     args = get_commandline(cmdline=cmdline)
     server = ModbusTcpServer(
-        SimDevice(1, SimData(0, datatype=DataType.REGISTERS, values=[17]*100)),
-        address=(args.host if args.host else "", args.port if args.port else 0)
+        SimDevice(1, SimData(0, datatype=DataType.REGISTERS, values=[17] * 100)),
+        address=(args.host if args.host else "", args.port if args.port else 0),
     )
     return server
 

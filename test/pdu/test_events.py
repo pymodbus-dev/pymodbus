@@ -1,4 +1,5 @@
 """Test events."""
+
 import pytest
 
 from pymodbus.exceptions import ParameterException

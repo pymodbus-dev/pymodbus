@@ -3,6 +3,7 @@
 A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
 """
+
 from __future__ import annotations
 
 

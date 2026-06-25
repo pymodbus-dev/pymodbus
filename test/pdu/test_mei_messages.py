@@ -3,6 +3,7 @@
 This fixture tests the functionality of all the
 mei based request/response messages:
 """
+
 from typing import cast
 
 import pytest
@@ -63,7 +64,10 @@ class TestMeiMessage:
             read_code=DeviceInformation.EXTENDED, object_id=0x80
         )
         result = await handle.datastore_update(context, 0)
-        assert cast(ReadDeviceInformationResponse, result).information[0x81] == ["Test", "Repeated"]
+        assert cast(ReadDeviceInformationResponse, result).information[0x81] == [
+            "Test",
+            "Repeated",
+        ]
 
     async def test_read_device_information_request_error(self, mock_server_context):
         """Test basic bit message encoding/decoding."""
@@ -83,7 +87,6 @@ class TestMeiMessage:
         handle = ReadDeviceInformationResponse()
         assert handle.calculateRtuFrameSize(b"\x0e\x01\x83") == 999
         assert handle.calculateRtuFrameSize(b"\x0e\x01\x83\x00\x00\x03\x01\x03") == 998
-
 
     def test_read_device_information_sub_fc(self):
         """Test calculateRtuFrameSize, short buffer."""
@@ -133,7 +136,7 @@ class TestMeiMessage:
             "elit, vehicula tempus tempus sed. "
         )
 
-        message = b"\x0e\x01\x83\xFF\x80\x03"
+        message = b"\x0e\x01\x83\xff\x80\x03"
         message += TEST_MESSAGE
         dataset = {
             0x00: "Company",
@@ -165,10 +168,10 @@ class TestMeiMessage:
     def test_frame_size(self):
         """Test that the read device information response can decode."""
         message = (
-            b"\x04\x2B\x0E\x01\x81\x00\x01\x01\x00\x06\x66\x6F\x6F\x62\x61\x72\xD7\x3B"
+            b"\x04\x2b\x0e\x01\x81\x00\x01\x01\x00\x06\x66\x6f\x6f\x62\x61\x72\xd7\x3b"
         )
         result = ReadDeviceInformationResponse.calculateRtuFrameSize(message)
         assert result == 18
-        message = b"\x00\x2B\x0E\x02\x00\x4D\x47"
+        message = b"\x00\x2b\x0e\x02\x00\x4d\x47"
         result = ReadDeviceInformationRequest.calculateRtuFrameSize(message)
         assert result == 7

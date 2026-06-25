@@ -1,4 +1,5 @@
 """Implementation of a Threaded Modbus Server."""
+
 from __future__ import annotations
 
 import asyncio
@@ -68,10 +69,7 @@ class ModbusBaseServer(ModbusProtocol):
     def callback_new_connection(self):
         """Handle incoming connect."""
         return ServerRequestHandler(
-            self,
-            self.trace_packet,
-            self.trace_pdu,
-            self.trace_connect
+            self, self.trace_packet, self.trace_pdu, self.trace_connect
         )
 
     async def shutdown(self):
@@ -106,7 +104,9 @@ class ModbusBaseServer(ModbusProtocol):
         """Handle received data."""
         raise RuntimeError("callback_data should never be called")
 
-    async def async_getValues(self, device_id: int, func_code: int, address: int, count: int = 1) -> list[int] | list[bool]:
+    async def async_getValues(
+        self, device_id: int, func_code: int, address: int, count: int = 1
+    ) -> list[int] | list[bool]:
         """Get `count` values from datastore.
 
         :param device_id: the device being addressed
@@ -120,7 +120,13 @@ class ModbusBaseServer(ModbusProtocol):
             raise TypeError("Illegal external call to server.async_getValues")
         return res
 
-    async def async_setValues(self, device_id: int, func_code: int, address: int, values: list[int] | list[bool] ) -> None:
+    async def async_setValues(
+        self,
+        device_id: int,
+        func_code: int,
+        address: int,
+        values: list[int] | list[bool],
+    ) -> None:
         """Set the datastore with the supplied values.
 
         :param device_id: the device being addressed

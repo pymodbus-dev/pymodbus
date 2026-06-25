@@ -1,4 +1,5 @@
 """Test transport."""
+
 import asyncio
 from unittest import mock
 
@@ -40,7 +41,6 @@ class TestTransportNullModem:
         """Test no close."""
         prot = dummy_protocol()
         NullModem(prot)
-
 
     async def test_close_no_protocol(self, dummy_protocol):
         """Test close no protocol."""
@@ -196,7 +196,6 @@ class TestTransportNullModem:
         modem.close()
         listen.close()
 
-
     async def test_flow_sendto(self, dummy_protocol, use_port):
         """Test flow sendto."""
         listen = NullModem.set_listener(use_port, dummy_protocol(is_server=True))
@@ -215,9 +214,8 @@ class TestTransportNullModem:
         """Test flow not connected."""
         modem = NullModem(dummy_protocol())
         modem.sendto(b"no connection")
-        assert modem.protocol.recv_buffer == b''
+        assert modem.protocol.recv_buffer == b""
         modem.close()
-
 
     async def test_triangle_flow(self, dummy_protocol, use_port):
         """Test triangle flow."""

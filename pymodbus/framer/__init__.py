@@ -1,11 +1,12 @@
 """Framer."""
+
 __all__ = [
     "FramerAscii",
     "FramerBase",
     "FramerRTU",
     "FramerSocket",
     "FramerTLS",
-    "FramerType"
+    "FramerType",
 ]
 
 from .ascii import FramerAscii

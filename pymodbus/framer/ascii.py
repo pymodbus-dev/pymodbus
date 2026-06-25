@@ -4,6 +4,7 @@ is extending ModbusProtocol to handle receiving and sending of messsagees.
 
 ModbusMessage provides a unified interface to send/receive Modbus requests/responses.
 """
+
 from __future__ import annotations
 
 from binascii import a2b_hex, b2a_hex
@@ -32,15 +33,14 @@ class FramerAscii(FramerBase):
     the data in this framer is transferred in plain text ascii.
     """
 
-    START = b':'
-    END = b'\r\n'
+    START = b":"
+    END = b"\r\n"
     MIN_SIZE = 8
 
     @property
     def end(self) -> bytes:
         """Return the configured end-of-frame delimiter."""
         return b"\r" + _MCB.Delimiter
-
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU."""
@@ -64,7 +64,7 @@ class FramerAscii(FramerBase):
             dev_id = int(buffer[1:3], 16)
             used_len += end + len(end_marker)
             try:
-                lrc = int(buffer[end - 2: end], 16)
+                lrc = int(buffer[end - 2 : end], 16)
                 msg = a2b_hex(buffer[1 : end - 2])
             except ValueError:
                 Log.debug("Frame cannot be converted to hex: {} skipping", data, ":hex")
@@ -76,14 +76,14 @@ class FramerAscii(FramerBase):
 
     def encode(self, payload: bytes, device_id: int, _tid: int) -> bytes:
         """Encode ADU."""
-        dev_id = device_id.to_bytes(1,'big')
+        dev_id = device_id.to_bytes(1, "big")
         checksum = self.compute_LRC(dev_id + payload)
         frame = (
-            self.START +
-            f"{device_id:02x}".encode() +
-            b2a_hex(payload) +
-            f"{checksum:02x}".encode() +
-            self.end
+            self.START
+            + f"{device_id:02x}".encode()
+            + b2a_hex(payload)
+            + f"{checksum:02x}".encode()
+            + self.end
         ).upper()
         return frame
 

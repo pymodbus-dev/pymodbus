@@ -1,4 +1,5 @@
 """Simulator data model classes."""
+
 from __future__ import annotations
 
 import struct
@@ -8,7 +9,17 @@ from typing import TypeAlias, cast
 from .simutils import DataType, SimUtils
 
 
-SimValueType: TypeAlias = int | float | str | bytes | list[int] | list[float] | list[str] | list[bytes] | list[bool]
+SimValueType: TypeAlias = (
+    int
+    | float
+    | str
+    | bytes
+    | list[int]
+    | list[float]
+    | list[str]
+    | list[bytes]
+    | list[bool]
+)
 
 
 @dataclass
@@ -125,14 +136,13 @@ class SimData:
     #: Mark register(s) as readonly.
     readonly: bool = False
 
-
     def __check_simple(self):
         """Check simple parameters."""
         if not isinstance(self.address, int) or not 0 <= self.address <= 65535:
             raise TypeError("0 <= address < 65535")
         if not isinstance(self.count, int) or not 1 <= self.count <= 65536:
             raise TypeError("1 <= count < 65536")
-        if self.address + self.count -1 > 65535:
+        if self.address + self.count - 1 > 65535:
             raise TypeError("address= + count= outside address range")
         if not isinstance(self.datatype, DataType):
             raise TypeError("datatype= must by a DataType")
@@ -153,7 +163,11 @@ class SimData:
         if self.datatype == DataType.BITS:
             x_datatype = bool if isinstance(x_values[0], bool) else int
         for x_value in x_values:
-            if self.datatype == DataType.BITS and x_datatype is int and isinstance(x_value, bool):
+            if (
+                self.datatype == DataType.BITS
+                and x_datatype is int
+                and isinstance(x_value, bool)
+            ):
                 raise TypeError(f"values= {x_value} int and bool cannot be mixed")
             if not isinstance(x_value, x_datatype):
                 raise TypeError(f"values= {x_value} is not {x_datatype!s}")
@@ -177,7 +191,9 @@ class SimData:
         if not isinstance(x_values[0], bool):
             return cast(list[int], x_values)
         if len(x_values) % 16:
-            raise TypeError(f"SimData address={self.address} values= must be a multiple of 16")
+            raise TypeError(
+                f"SimData address={self.address} values= must be a multiple of 16"
+            )
         return SimUtils.bitsToRegisters(cast(list[bool], x_values))
 
     def build_registers_string(self) -> list[int]:
@@ -189,7 +205,6 @@ class SimData:
             regs = SimUtils.bytesToRegisters(bytes_string)
             blocks_regs.extend(regs)
         return blocks_regs
-
 
     def build_registers(self, block_bits: bool) -> list[int] | list[bool]:
         """Convert values= to registers."""

@@ -1,4 +1,5 @@
 """Test server asyncio."""
+
 from unittest import mock
 
 import pytest
@@ -26,7 +27,7 @@ class TestRequesthandler:
                 timeout_connect=0.0,
                 source_address=("0", 0),
             ),
-            SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100)),
+            SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17] * 100)),
             False,
             False,
             None,
@@ -45,8 +46,10 @@ class TestRequesthandler:
 
     async def test_rh_callback_data(self, requesthandler):
         """Test __init__."""
-        with mock.patch("pymodbus.transaction.TransactionManager.callback_data") as cb_data:
-            cb_data.side_effect=ModbusIOException
+        with mock.patch(
+            "pymodbus.transaction.TransactionManager.callback_data"
+        ) as cb_data:
+            cb_data.side_effect = ModbusIOException
             data = b"012"
             assert len(data) == requesthandler.callback_data(data, None)
 
@@ -70,15 +73,13 @@ class TestRequesthandler:
         requesthandler.server_send(None, None)
         requesthandler.server_send(ExceptionResponse(17), None)
 
-
     async def test_serial_server_allow_multiple(self):
         """Test __init__."""
         server = ModbusSerialServer(
-            SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100)),
+            SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17] * 100)),
             framer=FramerType.RTU,
             baudrate=19200,
             port="/dev/tty01",
             allow_multiple_devices=True,
         )
         server.callback_new_connection()
-

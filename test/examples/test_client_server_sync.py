@@ -7,6 +7,7 @@ examples.
 
 These are basis for most examples and thus tested separately
 """
+
 import os
 from threading import Thread
 from time import sleep
@@ -74,7 +75,9 @@ class TestClientServerSyncExamples:
         ServerStop()
 
     @pytest.mark.skip
-    def test_server_client_twice(self, mock_cls, mock_clc, use_comm):  # pragma: no cover
+    def test_server_client_twice(
+        self, mock_cls, mock_clc, use_comm
+    ):  # pragma: no cover
         """Run async server without client."""
         if use_comm == "serial":
             # cannot open the usb port multiple times

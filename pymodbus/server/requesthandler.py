@@ -1,4 +1,5 @@
 """Implementation of a Threaded Modbus Server."""
+
 from __future__ import annotations
 
 import asyncio
@@ -62,12 +63,9 @@ class ServerRequestHandler(TransactionManager):
         try:
             used_len = super().callback_data(data, addr)
         except ModbusIOException:
-            response = ExceptionResponse(
-                40,
-                exception_code=ExcCodes.ILLEGAL_FUNCTION
-            )
+            response = ExceptionResponse(40, exception_code=ExcCodes.ILLEGAL_FUNCTION)
             self.server_send(response, 0)
-            return(len(data))
+            return len(data)
         if self.last_pdu:
             self.loop.call_soon(self.handle_later)
         return used_len
@@ -87,21 +85,29 @@ class ServerRequestHandler(TransactionManager):
                 for dev_id in self.server.context.device_ids():
                     await self.last_pdu.datastore_update(self.server.context, dev_id)
                 return
-            response = await self.last_pdu.datastore_update(self.server.context, self.last_pdu.dev_id)
+            response = await self.last_pdu.datastore_update(
+                self.server.context, self.last_pdu.dev_id
+            )
 
         except NoSuchIdException:
             if self.server.ignore_missing_devices:
-                Log.debug("ignoring request for unknown device id: {}", self.last_pdu.dev_id)
+                Log.debug(
+                    "ignoring request for unknown device id: {}", self.last_pdu.dev_id
+                )
                 return  # the client will simply timeout waiting for a response
             Log.error("requested device id does not exist: {}", self.last_pdu.dev_id)
-            response = ExceptionResponse(self.last_pdu.function_code, ExcCodes.GATEWAY_NO_RESPONSE)
+            response = ExceptionResponse(
+                self.last_pdu.function_code, ExcCodes.GATEWAY_NO_RESPONSE
+            )
         except Exception as exc:  # pylint: disable=broad-except
             Log.error(
                 "Datastore unable to fulfill request: {}; {}",
                 exc,
                 traceback.format_exc(),
             )
-            response = ExceptionResponse(self.last_pdu.function_code, ExcCodes.DEVICE_FAILURE)
+            response = ExceptionResponse(
+                self.last_pdu.function_code, ExcCodes.DEVICE_FAILURE
+            )
         response.transaction_id = self.last_pdu.transaction_id
         response.dev_id = self.last_pdu.dev_id
         self.server_send(response, self.last_addr)

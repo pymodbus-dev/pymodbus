@@ -1,5 +1,6 @@
 #  zuban: ignore
 """Test datastore."""
+
 import copy
 
 import pytest
@@ -146,7 +147,9 @@ class TestDatastoreSimulator:
         Cell(type=CellType.UINT32, value=5, action=1),
         Cell(type=CellType.NEXT, value=17320),  # 30
         Cell(
-            type=CellType.UINT32, action=2, action_parameters={"minval": 10, "maxval": 80}
+            type=CellType.UINT32,
+            action=2,
+            action_parameters={"minval": 10, "maxval": 80},
         ),
         Cell(type=CellType.NEXT, value=50),
         Cell(type=CellType.FLOAT32, access=True, value=17731),
@@ -219,15 +222,15 @@ class TestDatastoreSimulator:
                 assert reg.access == test_cell.access, f"at index {i} - {offset}"
                 assert reg.value == test_cell.value, f"at index {i} - {offset}"
                 assert reg.action == test_cell.action, f"at index {i} - {offset}"
-                assert (
-                    reg.action_parameters == test_cell.action_parameters
-                ), f"at index {i} - {offset}"
-                assert (
-                    reg.count_read == test_cell.count_read
-                ), f"at index {i} - {offset}"
-                assert (
-                    reg.count_write == test_cell.count_write
-                ), f"at index {i} - {offset}"
+                assert reg.action_parameters == test_cell.action_parameters, (
+                    f"at index {i} - {offset}"
+                )
+                assert reg.count_read == test_cell.count_read, (
+                    f"at index {i} - {offset}"
+                )
+                assert reg.count_write == test_cell.count_write, (
+                    f"at index {i} - {offset}"
+                )
 
     def test_simulator_config_verify2(self, device):
         """Test basic configuration."""
@@ -282,9 +285,9 @@ class TestDatastoreSimulator:
 
     def test_simulator_invalid_config5(self, device):
         """Test exception for invalid configuration."""
-        device[Label.setup][Label.defaults][Label.action][
-            Label.type_bits
-        ] = "bad action"
+        device[Label.setup][Label.defaults][Label.action][Label.type_bits] = (
+            "bad action"
+        )
         with pytest.raises(RuntimeError):
             ModbusSimulatorContext(device, None)
 
@@ -485,10 +488,14 @@ class TestDatastoreSimulator:
         exc_simulator.registers[31].value = regs[1]
         for expect_value in expected:
             if celltype != CellType.BITS:
-                regs = await exc_simulator.async_OLD_getValues(FX_READ_REG, 30, reg_count)
+                regs = await exc_simulator.async_OLD_getValues(
+                    FX_READ_REG, 30, reg_count
+                )
             else:
-                reg_bits = await exc_simulator.async_OLD_getValues(FX_READ_BIT, 30 * 16, 16)
-                reg_value = sum(bit * 2 ** i for i, bit in enumerate(reg_bits))
+                reg_bits = await exc_simulator.async_OLD_getValues(
+                    FX_READ_BIT, 30 * 16, 16
+                )
+                reg_value = sum(bit * 2**i for i, bit in enumerate(reg_bits))
                 regs = [reg_value]
             if reg_count == 1:
                 assert expect_value == regs[0], f"type({celltype})"
@@ -524,10 +531,14 @@ class TestDatastoreSimulator:
         reg_count = 1 if celltype in (CellType.BITS, CellType.UINT16) else 2
         for _i in range(100):
             if celltype != CellType.BITS:
-                regs = await exc_simulator.async_OLD_getValues(FX_READ_REG, 30, reg_count)
+                regs = await exc_simulator.async_OLD_getValues(
+                    FX_READ_REG, 30, reg_count
+                )
             else:
-                reg_bits = await exc_simulator.async_OLD_getValues(FX_READ_BIT, 30 * 16, 16)
-                reg_value = sum(bit * 2 ** i for i, bit in enumerate(reg_bits))
+                reg_bits = await exc_simulator.async_OLD_getValues(
+                    FX_READ_BIT, 30 * 16, 16
+                )
+                reg_value = sum(bit * 2**i for i, bit in enumerate(reg_bits))
                 regs = [reg_value]
             if reg_count == 1:
                 new_value = regs[0]

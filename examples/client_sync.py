@@ -30,6 +30,7 @@ The corresponding server must be started before e.g. as:
     python3 server_sync.py
 
 """
+
 from __future__ import annotations
 
 import logging
@@ -39,9 +40,11 @@ import sys
 try:
     import helper  # type: ignore[import-not-found]
 except ImportError:
-    print("*** ERROR --> THIS EXAMPLE needs to be run in the example directory, please see \n\
+    print(
+        "*** ERROR --> THIS EXAMPLE needs to be run in the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
-          for more information.")
+          for more information."
+    )
     sys.exit(-1)
 
 import pymodbus.client as modbusClient
@@ -108,7 +111,7 @@ def setup_sync_client(description=None, cmdline=None):
             sslctx=modbusClient.ModbusTlsClient.generate_ssl(
                 certfile=helper.get_certificate("crt"),
                 keyfile=helper.get_certificate("key"),
-            #    password=None,
+                #    password=None,
             ),
         )
     return client
@@ -134,6 +137,7 @@ def run_a_few_calls(client):
         assert rr.registers[1] == 17
     except ModbusException as exc:
         raise exc
+
 
 def main(cmdline=None):
     """Combine setup and run."""

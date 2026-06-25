@@ -1,4 +1,5 @@
 """Test client sync."""
+
 from itertools import count
 from typing import cast
 from unittest import mock
@@ -32,16 +33,15 @@ class TestSyncClientUdp:
 
     def test_basic_syn_udp_bind(self):
         """Test the basic methods for the udp sync client."""
-        client = ModbusUdpClient("127.0.0.1", source_address=('', 4096))
+        client = ModbusUdpClient("127.0.0.1", source_address=("", 4096))
         client.connect()
-
 
     def test_basic_syn_udp_client(self):
         """Test the basic methods for the udp sync client."""
         # receive/send
         client = ModbusUdpClient("127.0.0.1")
         client.socket = mockSocket()  # type: ignore[assignment]
-        assert not client.send(b'')
+        assert not client.send(b"")
         assert client.send(b"\x50") == 1
         assert client.recv(1) == b"\x50"
 
@@ -65,9 +65,9 @@ class TestSyncClientUdp:
         """Test the udp client send method."""
         client = ModbusUdpClient("127.0.0.1")
         with pytest.raises(ConnectionException):
-            client.send(b'')
+            client.send(b"")
         client.socket = mockSocket()  # type: ignore[assignment]
-        assert not client.send(b'')
+        assert not client.send(b"")
         assert client.send(b"1234") == 4
 
     def test_udp_client_recv(self):
@@ -118,7 +118,7 @@ class TestSyncClientTcp:
         mock_select.select.return_value = [True]
         client = ModbusTcpClient("127.0.0.1")
         client.socket = mockSocket()  # type: ignore[assignment]
-        assert not client.send(b'')
+        assert not client.send(b"")
         assert client.send(b"\x45") == 1
         assert client.recv(1) == b"\x45"
 
@@ -145,9 +145,9 @@ class TestSyncClientTcp:
         """Test the tcp client send method."""
         client = ModbusTcpClient("127.0.0.1")
         with pytest.raises(ConnectionException):
-            client.send(b'')
+            client.send(b"")
         client.socket = mockSocket()  # type: ignore[assignment]
-        assert not client.send(b'')
+        assert not client.send(b"")
         assert client.send(b"1234") == 4
 
     @mock.patch("pymodbus.client.tcp.time")
@@ -197,6 +197,7 @@ class TestSyncClientTcp:
         assert repr(client) == rep
         client.set_max_no_responses(110)
 
+
 class TestSyncClientTls:
     """Unittest for the pymodbus.client module."""
 
@@ -215,7 +216,7 @@ class TestSyncClientTls:
         mock_select.select.return_value = [True]
         client = ModbusTlsClient("localhost")
         client.socket = mockSocket()  # type: ignore[assignment]
-        assert not client.send(b'')
+        assert not client.send(b"")
         assert client.send(b"\x45") == 1
         assert client.recv(1) == b"\x45"
 
@@ -231,7 +232,7 @@ class TestSyncClientTls:
 
         client2 = ModbusTcpClient("127.0.0.1")
         client2.socket = mockSocket()  # type: ignore[assignment]
-        assert not client2.send(b'')
+        assert not client2.send(b"")
         assert client2.send(b"\x45") == 1
         assert client2.recv(1) == b"\x45"
 
@@ -239,9 +240,9 @@ class TestSyncClientTls:
         """Test the tls client send method."""
         client = ModbusTlsClient("127.0.0.1")
         with pytest.raises(ConnectionException):
-            client.send(b'')
+            client.send(b"")
         client.socket = mockSocket()  # type: ignore[assignment]
-        assert not client.send(b'')
+        assert not client.send(b"")
         assert client.send(b"1234") == 4
 
     @mock.patch("pymodbus.client.tcp.time")
@@ -273,6 +274,7 @@ class TestSyncClientTls:
         )
         assert repr(client) == rep
 
+
 class TestSyncClientSerial:
     """Unittest for the pymodbus.client module."""
 
@@ -289,7 +291,9 @@ class TestSyncClientSerial:
             FramerRTU,
         )
         assert isinstance(
-            ModbusSerialClient("/dev/null", baudrate=38400, framer=FramerType.RTU).framer,
+            ModbusSerialClient(
+                "/dev/null", baudrate=38400, framer=FramerType.RTU
+            ).framer,
             FramerRTU,
         )
 
@@ -303,7 +307,7 @@ class TestSyncClientSerial:
         mock_serial.read = lambda size: b"\x00" * size
         client = ModbusSerialClient("/dev/null")
         client.socket = mock_serial
-        assert not client.send(b'')
+        assert not client.send(b"")
         assert client.send(b"\x00") == 1
         assert client.recv(1) == b"\x00"
 
@@ -349,11 +353,10 @@ class TestSyncClientSerial:
         mock_serial.write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
         client = ModbusSerialClient("/dev/null")
         with pytest.raises(ConnectionException):
-            client.send(b'')
+            client.send(b"")
         client.socket = mock_serial
-        assert not client.send(b'')
+        assert not client.send(b"")
         assert client.send(b"1234") == 4
-
 
     @mock.patch("serial.Serial")
     def test_serial_client_cleanup_buffer_before_send(self, mock_serial):
@@ -363,9 +366,9 @@ class TestSyncClientSerial:
         mock_serial.write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
         client = ModbusSerialClient("/dev/null")
         with pytest.raises(ConnectionException):
-            client.send(b'')
+            client.send(b"")
         client.socket = mock_serial
-        assert not client.send(b'')
+        assert not client.send(b"")
         assert client.send(b"1234") == 4
 
     def test_serial_client_recv(self):
@@ -388,14 +391,15 @@ class TestSyncClientSerial:
         with pytest.raises(ConnectionException):
             client.recv(1024)
         client.socket = mockSocket(copy_send=False)  # type: ignore[assignment]
-        cast(mockSocket, client.socket).mock_prepare_receive(b'')
-        cast(mockSocket, client.socket).mock_prepare_receive(b'\x11\x03\x06\xAE')
-        cast(mockSocket, client.socket).mock_prepare_receive(b'\x41\x56\x52\x43\x40\x49')
-        cast(mockSocket, client.socket).mock_prepare_receive(b'\xAD')
+        cast(mockSocket, client.socket).mock_prepare_receive(b"")
+        cast(mockSocket, client.socket).mock_prepare_receive(b"\x11\x03\x06\xae")
+        cast(mockSocket, client.socket).mock_prepare_receive(
+            b"\x41\x56\x52\x43\x40\x49"
+        )
+        cast(mockSocket, client.socket).mock_prepare_receive(b"\xad")
         reply_ok = client.read_input_registers(0x820, count=3, device_id=17)
         assert not reply_ok.isError()
         client.close()
-
 
     def test_serial_client_repr(self):
         """Test serial client."""
@@ -408,6 +412,9 @@ class TestSyncClientSerial:
 
     def test_serial_client_with(self):
         """Test with block."""
-        with mock.patch("pymodbus.client.serial.ModbusSerialClient.connect"), ModbusSerialClient("/dev/null") as client:
-                assert client
-                client.socket = mockSocket()  # type: ignore[assignment]
+        with (
+            mock.patch("pymodbus.client.serial.ModbusSerialClient.connect"),
+            ModbusSerialClient("/dev/null") as client,
+        ):
+            assert client
+            client.socket = mockSocket()  # type: ignore[assignment]

@@ -1,4 +1,5 @@
 """Modbus client async serial communication."""
+
 from __future__ import annotations
 
 import contextlib
@@ -252,7 +253,11 @@ class ModbusSerialClient(ModbusBaseSyncClient):
 
     def _in_waiting(self):
         """Return waiting bytes."""
-        return getattr(self.socket, "in_waiting") if hasattr(self.socket, "in_waiting") else getattr(self.socket, "inWaiting")()
+        return (
+            getattr(self.socket, "in_waiting")
+            if hasattr(self.socket, "in_waiting")
+            else getattr(self.socket, "inWaiting")()
+        )
 
     def send(self, request: bytes, addr: tuple | None = None) -> int:
         """Send data on the underlying socket."""

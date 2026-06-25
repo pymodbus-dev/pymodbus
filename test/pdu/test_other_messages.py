@@ -1,4 +1,5 @@
 """Test other messages."""
+
 from typing import cast
 from unittest import mock
 
@@ -19,7 +20,7 @@ class TestOtherMessage:
         pymodbus_message.ReadExceptionStatusResponse(0x12),
         pymodbus_message.GetCommEventCounterResponse(0x12),
         pymodbus_message.GetCommEventLogResponse,
-        pymodbus_message.ReportDeviceIdResponse(b'\x12'),
+        pymodbus_message.ReportDeviceIdResponse(b"\x12"),
     ]
 
     def test_other_messages_to_string(self):
@@ -37,8 +38,7 @@ class TestOtherMessage:
         assert not request.encode()
         assert (await request.datastore_update(context, 0)).function_code == 0x07
 
-        response = pymodbus_message.ReadExceptionStatusResponse(status=
-                                                                0x12)
+        response = pymodbus_message.ReadExceptionStatusResponse(status=0x12)
         assert response.encode() == b"\x12"
         response.decode(b"\x12")
         assert response.status == 0x12
@@ -58,7 +58,7 @@ class TestOtherMessage:
         assert response.count == 0x12
 
         response.status = False
-        assert response.encode() == b"\xFF\xFF\x00\x12"
+        assert response.encode() == b"\xff\xff\x00\x12"
 
     async def test_get_comm_event_log(self, mock_server_context):
         """Test get comm event log."""
@@ -110,7 +110,10 @@ class TestOtherMessage:
 
             request = pymodbus_message.ReportDeviceIdRequest()
             response = await request.datastore_update(context, 1)
-            assert cast(pymodbus_message.ReportDeviceIdResponse, response).identifier == expected_identity
+            assert (
+                cast(pymodbus_message.ReportDeviceIdResponse, response).identifier
+                == expected_identity
+            )
 
             # Change to byte strings and test again (final result should be the same)
             identity2 = {
@@ -128,7 +131,10 @@ class TestOtherMessage:
 
             request = pymodbus_message.ReportDeviceIdRequest()
             response = await request.datastore_update(context, 0)
-            assert cast(pymodbus_message.ReportDeviceIdResponse, response).identifier == expected_identity
+            assert (
+                cast(pymodbus_message.ReportDeviceIdResponse, response).identifier
+                == expected_identity
+            )
 
     async def test_report_device_id(self, mock_server_context):
         """Test report device_id."""
@@ -141,7 +147,11 @@ class TestOtherMessage:
             assert (await request.datastore_update(context, 0)).function_code == 0x11
 
             response = pymodbus_message.ReportDeviceIdResponse(
-                cast(pymodbus_message.ReportDeviceIdResponse, await request.datastore_update(context, 0)).identifier, True
+                cast(
+                    pymodbus_message.ReportDeviceIdResponse,
+                    await request.datastore_update(context, 0),
+                ).identifier,
+                True,
             )
 
             assert response.encode() == b"\tPymodbus\xff"

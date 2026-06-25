@@ -1,4 +1,5 @@
 """Contains base classes for modbus request/response/error packets."""
+
 from __future__ import annotations
 
 import struct
@@ -20,10 +21,10 @@ def pack_bitstring(bits: list[bool], align_byte=True) -> bytes:
     i = packed = 0
     t_bits = bits
     bits_extra = 8 if align_byte else 16
-    if (extra := len(bits) % bits_extra):
+    if extra := len(bits) % bits_extra:
         t_bits += [False] * (bits_extra - extra)
     for byte_inx in range(0, len(t_bits), 8):
-        for bit in reversed(t_bits[byte_inx:byte_inx+8]):
+        for bit in reversed(t_bits[byte_inx : byte_inx + 8]):
             packed <<= 1
             if bit:
                 packed += 1

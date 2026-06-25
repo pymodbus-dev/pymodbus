@@ -2,6 +2,7 @@
 
 Released under the BSD license
 """
+
 from __future__ import annotations
 
 import logging
@@ -31,9 +32,11 @@ def pymodbus_apply_logging_config(
         level = level.upper()
     Log.apply_logging_config(level, log_file_name)
 
+
 def pymodbus_get_last_frames() -> str:
     """Prepare and return last frames, for automatic debugging."""
     return Log.get_last_frames()
+
 
 class Log:
     """Class to hide logging complexity.
@@ -102,7 +105,7 @@ class Log:
     def get_last_frames(cls):
         """Prepare and return last frames, for automatic debugging."""
         log_text = ""
-        for (data_type, data, old_data) in cls.frame_dump:
+        for data_type, data, old_data in cls.frame_dump:
             log_text += f"\n>>>>> {cls.build_frame_log_line(data_type, data, old_data)}"
         cls.frame_dump = []
         return log_text
@@ -117,7 +120,9 @@ class Log:
             return
 
         cls.frame_dump = []
-        cls._logger.debug(cls.build_frame_log_line(data_type, data, old_data), stacklevel=2)
+        cls._logger.debug(
+            cls.build_frame_log_line(data_type, data, old_data), stacklevel=2
+        )
 
     @classmethod
     def build_msg(cls, txt, *args):
@@ -138,7 +143,7 @@ class Log:
                     string_args.append(hexlify_packets(args[i]))
                 elif args[i + 1] == ":str":
                     string_args.append(str(args[i]))
-                else: # args[i + 1] == ":b2a":
+                else:  # args[i + 1] == ":b2a":
                     string_args.append(b2a_hex(args[i]).decode("utf-8"))
                 skip = True
             else:
@@ -156,28 +161,28 @@ class Log:
     def info(cls, txt, *args):
         """Log info messages."""
         if cls._logger.isEnabledFor(logging.INFO):
-            if (log_text := cls.build_msg(txt, *args)):
+            if log_text := cls.build_msg(txt, *args):
                 cls._logger.info(log_text, stacklevel=2)
 
     @classmethod
     def debug(cls, txt, *args):
         """Log debug messages."""
         if cls._logger.isEnabledFor(logging.DEBUG):
-            if (log_text := cls.build_msg(txt, *args)):
+            if log_text := cls.build_msg(txt, *args):
                 cls._logger.debug(log_text, stacklevel=2)
 
     @classmethod
     def warning(cls, txt, *args):
         """Log warning messages."""
         if cls._logger.isEnabledFor(logging.WARNING):
-            if (log_text := cls.build_msg(txt, *args)):
+            if log_text := cls.build_msg(txt, *args):
                 cls._logger.warning(log_text, stacklevel=2)
 
     @classmethod
     def error(cls, txt, *args):
         """Log error messages."""
         if cls._logger.isEnabledFor(logging.ERROR):
-            if (log_text := cls.build_msg(txt, *args)):
+            if log_text := cls.build_msg(txt, *args):
                 if not cls._logger.isEnabledFor(logging.DEBUG):
                     log_text += cls.get_last_frames()
                 cls._logger.error(log_text, stacklevel=2)
@@ -185,7 +190,7 @@ class Log:
     @classmethod
     def critical(cls, txt, *args):
         """Log critical messages."""
-        if (log_text := cls.build_msg(txt, *args)):
+        if log_text := cls.build_msg(txt, *args):
             if not cls._logger.isEnabledFor(logging.DEBUG):
                 log_text += cls.get_last_frames()
             cls._logger.critical(log_text, stacklevel=2)

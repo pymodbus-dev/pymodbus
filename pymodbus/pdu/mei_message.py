@@ -1,4 +1,5 @@
 """Encapsulated Interface (MEI) Transport Messages."""
+
 from __future__ import annotations
 
 import struct
@@ -37,7 +38,13 @@ class ReadDeviceInformationRequest(ModbusPDU):
     sub_function_code = 0x0E
     rtu_frame_size = 7
 
-    def __init__(self, read_code: int | None = None, object_id: int = 0, dev_id: int = 1, transaction_id: int = 0) -> None:
+    def __init__(
+        self,
+        read_code: int | None = None,
+        object_id: int = 0,
+        dev_id: int = 1,
+        transaction_id: int = 0,
+    ) -> None:
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.read_code = read_code or DeviceInformation.BASIC
@@ -57,9 +64,13 @@ class ReadDeviceInformationRequest(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode data part of the message."""
-        self.sub_function_code, self.read_code, self.object_id = struct.unpack(">BBB", data[:3])
+        self.sub_function_code, self.read_code, self.object_id = struct.unpack(
+            ">BBB", data[:3]
+        )
 
-    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+    async def datastore_update(
+        self, context: ModbusServerContext, device_id: int
+    ) -> ModbusPDU:
         """Update diagnostic request on the given device."""
         _ = context
         if not 0x00 <= self.object_id <= 0xFF:
@@ -68,7 +79,12 @@ class ReadDeviceInformationRequest(ModbusPDU):
             return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
 
         information = DeviceInformationFactory.get(_MCB, self.read_code, self.object_id)
-        return ReadDeviceInformationResponse(read_code=self.read_code, information=information, dev_id=device_id, transaction_id=self.transaction_id)
+        return ReadDeviceInformationResponse(
+            read_code=self.read_code,
+            information=information,
+            dev_id=device_id,
+            transaction_id=self.transaction_id,
+        )
 
 
 class ReadDeviceInformationResponse(ModbusPDU):
@@ -86,14 +102,20 @@ class ReadDeviceInformationResponse(ModbusPDU):
         count = int(data[7])
 
         while count > 0:
-            if data_len < size+2:
+            if data_len < size + 2:
                 return 998
             _, object_length = struct.unpack(">BB", data[size : size + 2])
             size += object_length + 2
             count -= 1
         return size + 2
 
-    def __init__(self, read_code: int | None = None, information: dict[int, Any] | None = None, dev_id: int = 1, transaction_id: int = 0) -> None:
+    def __init__(
+        self,
+        read_code: int | None = None,
+        information: dict[int, Any] | None = None,
+        dev_id: int = 1,
+        transaction_id: int = 0,
+    ) -> None:
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.read_code = read_code or DeviceInformation.BASIC
@@ -166,6 +188,7 @@ class ReadDeviceInformationResponse(ModbusPDU):
                     self.information[object_id],
                     data[count - object_length : count],
                 ]
+
 
 DecodePDU.add_pdu(ReadDeviceInformationRequest, ReadDeviceInformationResponse)
 DecodePDU.add_sub_pdu(ReadDeviceInformationRequest, ReadDeviceInformationResponse)

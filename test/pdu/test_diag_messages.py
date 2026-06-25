@@ -1,4 +1,5 @@
 """Test diag messages."""
+
 from typing import cast
 
 import pytest
@@ -97,8 +98,8 @@ class TestDataStore:
     ]
 
     responses = [
-        (DiagnosticBase,                     b"\x00\x00\x00\x00"),
-        (DiagnosticBase,               b"\x00\x00\x00\x00"),
+        (DiagnosticBase, b"\x00\x00\x00\x00"),
+        (DiagnosticBase, b"\x00\x00\x00\x00"),
         (ReturnQueryDataResponse, b"\x00\x00\x00\x00"),
         (RestartCommunicationsOptionResponse, b"\x00\x01\x00\x00"),
         (ReturnDiagnosticRegisterResponse, b"\x00\x02\x00\x00"),
@@ -173,7 +174,9 @@ class TestDataStore:
         control = ModbusControlBlock()
         try:
             for message, encoded, datastore_updated in self.requests:
-                encoded = (await message().datastore_update(cast(ModbusServerContext, None), 1)).encode()
+                encoded = (
+                    await message().datastore_update(cast(ModbusServerContext, None), 1)
+                ).encode()
                 assert encoded == datastore_updated
         finally:
             control.Delimiter = b"\n"
@@ -206,9 +209,14 @@ class TestDataStore:
 
     async def test_get_clear_modbus_plus_request_datastore_update(self):
         """Testing diagnostic message execution."""
-        request = GetClearModbusPlusRequest(message=ModbusPlusOperation.CLEAR_STATISTICS)
+        request = GetClearModbusPlusRequest(
+            message=ModbusPlusOperation.CLEAR_STATISTICS
+        )
         response = await request.datastore_update(cast(ModbusServerContext, None), 0)
-        assert cast(GetClearModbusPlusResponse, response).message == ModbusPlusOperation.CLEAR_STATISTICS
+        assert (
+            cast(GetClearModbusPlusResponse, response).message
+            == ModbusPlusOperation.CLEAR_STATISTICS
+        )
 
         request = GetClearModbusPlusRequest(message=ModbusPlusOperation.GET_STATISTICS)
         response = await request.datastore_update(cast(ModbusServerContext, None), 0)

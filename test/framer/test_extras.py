@@ -1,4 +1,5 @@
 """Test transaction."""
+
 from unittest.mock import patch
 
 import pytest
@@ -14,7 +15,7 @@ from pymodbus.pdu import DecodePDU
 from pymodbus.pdu.device import ModbusControlBlock
 
 
-TEST_MESSAGE = b"\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d"
+TEST_MESSAGE = b"\x7b\x01\x03\x00\x00\x00\x05\x85\xc9\x7d"
 
 
 class TestExtras:
@@ -30,7 +31,6 @@ class TestExtras:
         self._rtu = FramerRTU(self.decoder)
         self._ascii = FramerAscii(self.decoder)
 
-
     def test_tcp_framer_transaction_half2(self):
         """Test a half completed tcp frame transaction."""
         msg1 = b"\x00\x01\x00\x00\x00\x06\xff"
@@ -38,10 +38,10 @@ class TestExtras:
         used_len, pdu = self._tcp.handleFrame(msg1, 0, 0)
         assert not pdu
         assert not used_len
-        used_len, pdu = self._tcp.handleFrame(msg1+msg2, 0, 0)
+        used_len, pdu = self._tcp.handleFrame(msg1 + msg2, 0, 0)
         assert pdu
         assert used_len == len(msg1) + len(msg2)
-        assert pdu.function_code.to_bytes(1,'big') + pdu.encode() == msg2
+        assert pdu.function_code.to_bytes(1, "big") + pdu.encode() == msg2
 
     def test_tcp_framer_transaction_half3(self):
         """Test a half completed tcp frame transaction."""
@@ -50,22 +50,22 @@ class TestExtras:
         used_len, pdu = self._tcp.handleFrame(msg1, 0, 0)
         assert not pdu
         assert not used_len
-        used_len, pdu = self._tcp.handleFrame(msg1+msg2, 0, 0)
+        used_len, pdu = self._tcp.handleFrame(msg1 + msg2, 0, 0)
         assert pdu
         assert used_len == len(msg1) + len(msg2)
-        assert pdu.function_code.to_bytes(1,'big') + pdu.encode() == msg1[7:] + msg2
+        assert pdu.function_code.to_bytes(1, "big") + pdu.encode() == msg1[7:] + msg2
 
     def test_tcp_framer_transaction_short(self):
         """Test that we can get back on track after an invalid message."""
-        msg1 = b''
+        msg1 = b""
         msg2 = b"\x00\x01\x00\x00\x00\x06\xff\x02\x01\x02\x00\x08"
         used_len, pdu = self._tcp.handleFrame(msg1, 0, 0)
         assert not pdu
         assert not used_len
-        used_len, pdu = self._tcp.handleFrame(msg1+msg2, 0, 0)
+        used_len, pdu = self._tcp.handleFrame(msg1 + msg2, 0, 0)
         assert pdu
         assert used_len == len(msg1) + len(msg2)
-        assert pdu.function_code.to_bytes(1,'big') + pdu.encode() == msg2[7:]
+        assert pdu.function_code.to_bytes(1, "big") + pdu.encode() == msg2[7:]
 
     def test_tcp_framer_transaction_wrong_id(self):
         """Test a half completed tcp frame transaction."""
@@ -106,14 +106,16 @@ class TestExtras:
         used_len, pdu = self._rtu.handleFrame(msg1, 0, 0)
         assert not used_len
         assert not pdu
-        used_len, pdu = self._rtu.handleFrame(msg1+msg2, 0, 0)
+        used_len, pdu = self._rtu.handleFrame(msg1 + msg2, 0, 0)
         assert used_len == len(msg1) + len(msg2)
         assert pdu
 
     def test_rtu_calculate(self):
         """Test rtu process incoming packets."""
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
-        with patch("pymodbus.pdu.ReadCoilsRequest.calculateRtuFrameSize", return_value=0):
+        with patch(
+            "pymodbus.pdu.ReadCoilsRequest.calculateRtuFrameSize", return_value=0
+        ):
             used_len, pdu = self._rtu.handleFrame(msg, 0, 0)
             assert not used_len
             assert not pdu
@@ -139,11 +141,11 @@ class TestExtras:
 
     def test_rtu_dsetMultidrop(self):
         """Test that the RTU framer can define multidrop."""
-        self._rtu.setMultidrop([1,2,3])
+        self._rtu.setMultidrop([1, 2, 3])
 
     def test_rtu_dsetMultidrop2(self):
         """Test that the RTU framer can use multidrop."""
-        self._rtu.setMultidrop([1,2,3])
+        self._rtu.setMultidrop([1, 2, 3])
         msg = b"\x05\x90\x02\x9c\x01"
         cut, pdu = self._rtu.handleFrame(msg, 0, 0)
         assert cut
@@ -156,17 +158,17 @@ class TestExtras:
         skipping a frame addressed to a different device. Without the fix the
         valid second frame is silently dropped.
         """
-        wrong = b"\x00\x01\x00\x00\x00\x06\x10\x02\x00\x01\x00\x02"   # dev_id 0x10
-        right = b"\x00\x02\x00\x00\x00\x06\xff\x02\x00\x03\x00\x04"   # dev_id 0xff
-        used_len, pdu = self._tcp.handleFrame(wrong + right, 0xff, 0)
+        wrong = b"\x00\x01\x00\x00\x00\x06\x10\x02\x00\x01\x00\x02"  # dev_id 0x10
+        right = b"\x00\x02\x00\x00\x00\x06\xff\x02\x00\x03\x00\x04"  # dev_id 0xff
+        used_len, pdu = self._tcp.handleFrame(wrong + right, 0xFF, 0)
         assert pdu is not None
-        assert pdu.dev_id == 0xff
+        assert pdu.dev_id == 0xFF
         assert used_len == len(wrong) + len(right)
 
     def test_tcp_framer_skip_wrong_tid_then_decode(self):
         """A stale-tid frame followed by a fresh-tid frame: the fresh one must be returned."""
-        stale = b"\x00\x01\x00\x00\x00\x06\xff\x02\x00\x01\x00\x02"   # tid 1
-        fresh = b"\x00\x05\x00\x00\x00\x06\xff\x02\x00\x03\x00\x04"   # tid 5
+        stale = b"\x00\x01\x00\x00\x00\x06\xff\x02\x00\x01\x00\x02"  # tid 1
+        fresh = b"\x00\x05\x00\x00\x00\x06\xff\x02\x00\x03\x00\x04"  # tid 5
         used_len, pdu = self._tcp.handleFrame(stale + fresh, 0, 5)
         assert pdu is not None
         assert pdu.transaction_id == 5
@@ -180,8 +182,8 @@ class TestExtras:
         ever changed.
         """
         wrong = self._ascii.encode(b"\x02\x00\x01\x00\x02", 0x10, 0)  # dev_id 0x10
-        right = self._ascii.encode(b"\x02\x00\x03\x00\x04", 0xff, 0)  # dev_id 0xff
-        used_len, pdu = self._ascii.handleFrame(wrong + right, 0xff, 0)
+        right = self._ascii.encode(b"\x02\x00\x03\x00\x04", 0xFF, 0)  # dev_id 0xff
+        used_len, pdu = self._ascii.handleFrame(wrong + right, 0xFF, 0)
         assert pdu is not None
-        assert pdu.dev_id == 0xff
+        assert pdu.dev_id == 0xFF
         assert used_len == len(wrong) + len(right)

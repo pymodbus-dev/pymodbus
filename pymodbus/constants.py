@@ -3,6 +3,7 @@
 This is the single location for storing default
 values for the servers and clients.
 """
+
 from __future__ import annotations
 
 import enum
@@ -40,18 +41,18 @@ class ModbusStatus(enum.IntEnum):
 
 
 class ExcCodes(enum.IntEnum):
-   """Represents the allowed exception codes."""
+    """Represents the allowed exception codes."""
 
-   ILLEGAL_FUNCTION = 0x01
-   ILLEGAL_ADDRESS = 0x02
-   ILLEGAL_VALUE = 0x03
-   DEVICE_FAILURE = 0x04
-   ACKNOWLEDGE = 0x05
-   DEVICE_BUSY = 0x06
-   NEGATIVE_ACKNOWLEDGE = 0x07
-   MEMORY_PARITY_ERROR = 0x08
-   GATEWAY_PATH_UNAVIABLE = 0x0A
-   GATEWAY_NO_RESPONSE = 0x0B
+    ILLEGAL_FUNCTION = 0x01
+    ILLEGAL_ADDRESS = 0x02
+    ILLEGAL_VALUE = 0x03
+    DEVICE_FAILURE = 0x04
+    ACKNOWLEDGE = 0x05
+    DEVICE_BUSY = 0x06
+    NEGATIVE_ACKNOWLEDGE = 0x07
+    MEMORY_PARITY_ERROR = 0x08
+    GATEWAY_PATH_UNAVIABLE = 0x0A
+    GATEWAY_NO_RESPONSE = 0x0B
 
 
 class ModbusPlusOperation(enum.IntEnum):
@@ -119,4 +120,3 @@ class MoreData(enum.IntEnum):
 
     NOTHING = 0x00
     KEEP_READING = 0xFF
-

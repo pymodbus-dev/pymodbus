@@ -1,4 +1,5 @@
 """Collection of transaction based abstractions."""
+
 from __future__ import annotations
 
 import asyncio
@@ -40,8 +41,8 @@ class TransactionManager(ModbusProtocol):
         trace_packet: Callable[[bool, bytes], bytes] | None,
         trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None,
         trace_connect: Callable[[bool], None] | None,
-        sync_client = None,
-        ) -> None:
+        sync_client=None,
+    ) -> None:
         """Initialize an instance of the ModbusTransactionManager."""
         self.is_sync = bool(sync_client)
         super().__init__(params, is_server, is_sync=self.is_sync)
@@ -81,7 +82,7 @@ class TransactionManager(ModbusProtocol):
 
     def sync_get_response(self, dev_id, tid) -> ModbusPDU:
         """Receive until PDU is correct or timeout."""
-        databuffer = b''
+        databuffer = b""
         while True:
             if not (data := self.sync_client.recv(None)):
                 raise asyncio.exceptions.TimeoutError()
@@ -108,7 +109,9 @@ class TransactionManager(ModbusProtocol):
                     continue
 
             databuffer += data
-            used_len, pdu = self.framer.handleFrame(self.trace_packet(False, databuffer), dev_id, tid)
+            used_len, pdu = self.framer.handleFrame(
+                self.trace_packet(False, databuffer), dev_id, tid
+            )
             databuffer = databuffer[used_len:]
             if pdu:
                 return self.trace_pdu(False, pdu)
@@ -120,7 +123,9 @@ class TransactionManager(ModbusProtocol):
                 any changes in either method MUST be mirrored !!!
         """
         if not self.sync_client.connect():
-            raise ConnectionException("Client cannot connect (automatic retry continuing) !!")
+            raise ConnectionException(
+                "Client cannot connect (automatic retry continuing) !!"
+            )
         with self._sync_lock:
             request.transaction_id = self.getNextTID()
             count_retries = 0
@@ -129,7 +134,9 @@ class TransactionManager(ModbusProtocol):
                 if no_response_expected:
                     return None  # type: ignore[return-value]
                 try:
-                    response = self.sync_get_response(request.dev_id, request.transaction_id)
+                    response = self.sync_get_response(
+                        request.dev_id, request.transaction_id
+                    )
                     if response.dev_id != request.dev_id:
                         raise ModbusIOException(
                             f"ERROR: request uses device id={request.dev_id} but received {response.dev_id}."
@@ -137,7 +144,7 @@ class TransactionManager(ModbusProtocol):
                     if response.transaction_id != request.transaction_id:
                         raise ModbusIOException(
                             f"ERROR: request uses transaction id={request.transaction_id} but received {response.transaction_id}."
-                       )
+                        )
                     response.retries = count_retries
                     return response
                 except asyncio.exceptions.TimeoutError:
@@ -152,7 +159,9 @@ class TransactionManager(ModbusProtocol):
             Log.error(txt)
             raise ModbusIOException(txt)
 
-    async def execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
+    async def execute(
+        self, no_response_expected: bool, request: ModbusPDU
+    ) -> ModbusPDU:
         """Execute requests asynchronously.
 
         REMARK: this method is identical to sync_execute, apart from the lock and try/except.
@@ -161,7 +170,9 @@ class TransactionManager(ModbusProtocol):
         if not self.transport:
             Log.warning("Not connected, trying to connect!")
             if not await self.connect():
-                raise ConnectionException("Client cannot connect (automatic retry continuing) !!")
+                raise ConnectionException(
+                    "Client cannot connect (automatic retry continuing) !!"
+                )
         async with self._lock:
             request.transaction_id = self.getNextTID()
             count_retries = 0
@@ -175,21 +186,26 @@ class TransactionManager(ModbusProtocol):
                     response: ModbusPDU = await asyncio.wait_for(
                         self.response_future, timeout=self.comm_params.timeout_connect
                     )
-                    self.count_until_disconnect= self.max_until_disconnect
+                    self.count_until_disconnect = self.max_until_disconnect
                     if request.dev_id and response.dev_id != request.dev_id:
                         raise ModbusIOException(
                             f"ERROR: request uses device id={request.dev_id} but received {response.dev_id}."
                         )
-                    if response.transaction_id and response.transaction_id != request.transaction_id:
+                    if (
+                        response.transaction_id
+                        and response.transaction_id != request.transaction_id
+                    ):
                         raise ModbusIOException(
                             f"ERROR: request uses transaction id={request.transaction_id} but received {response.transaction_id}."
-                       )
+                        )
                     response.retries = count_retries
                     return response
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
                 except asyncio.exceptions.CancelledError as exc:
-                    raise ModbusIOException("Request cancelled outside library.") from exc
+                    raise ModbusIOException(
+                        "Request cancelled outside library."
+                    ) from exc
             if self.count_until_disconnect < 0:
                 self.connection_lost(asyncio.TimeoutError("Server not responding"))
                 raise ModbusIOException(
@@ -226,13 +242,19 @@ class TransactionManager(ModbusProtocol):
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
         self.last_pdu = self.last_addr = None
-        used_len, pdu = self.framer.handleFrame(self.trace_packet(False, data), self.request_dev_id, self.request_transaction_id)
+        used_len, pdu = self.framer.handleFrame(
+            self.trace_packet(False, data),
+            self.request_dev_id,
+            self.request_transaction_id,
+        )
         if pdu:
             self.last_pdu = self.trace_pdu(False, pdu)
             self.last_addr = addr
             if not self.is_server:
                 if self.response_future.done():
-                    Log.warning("ERROR: received pdu without a corresponding request, IGNORING")
+                    Log.warning(
+                        "ERROR: received pdu without a corresponding request, IGNORING"
+                    )
                 else:
                     self.response_future.set_result(self.last_pdu)
         return used_len
@@ -240,7 +262,7 @@ class TransactionManager(ModbusProtocol):
     def getNextTID(self) -> int:
         """Retrieve the next transaction identifier."""
         if isinstance(self.framer, (FramerAscii, FramerRTU)):
-          self.next_tid = 0
+            self.next_tid = 0
         elif self.next_tid >= 65000:
             self.next_tid = 1
         else:

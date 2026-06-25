@@ -5,6 +5,7 @@ import pytest
 
 from pymodbus.constants import ModbusPlusOperation, ModbusStatus
 from pymodbus.datastore import ModbusServerContext
+from pymodbus.pdu.device import ModbusControlBlock
 from pymodbus.pdu.diag_message import (
     ChangeAsciiInputDelimiterRequest,
     ChangeAsciiInputDelimiterResponse,
@@ -169,9 +170,13 @@ class TestDataStore:
 
     async def test_diagnostic_datastore_update(self):
         """Testing diagnostic message execution."""
-        for message, encoded, datastore_updated in self.requests:
-            encoded = (await message().datastore_update(cast(ModbusServerContext, None), 1)).encode()
-            assert encoded == datastore_updated
+        control = ModbusControlBlock()
+        try:
+            for message, encoded, datastore_updated in self.requests:
+                encoded = (await message().datastore_update(cast(ModbusServerContext, None), 1)).encode()
+                assert encoded == datastore_updated
+        finally:
+            control.Delimiter = b"\n"
 
     def test_return_query_data_request(self):
         """Testing diagnostic message execution."""

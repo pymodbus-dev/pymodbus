@@ -9,7 +9,11 @@ from __future__ import annotations
 from binascii import a2b_hex, b2a_hex
 
 from ..logging import Log
+from ..pdu.device import ModbusControlBlock
 from .base import FramerBase
+
+
+_MCB = ModbusControlBlock()
 
 
 class FramerAscii(FramerBase):
@@ -32,11 +36,17 @@ class FramerAscii(FramerBase):
     END = b'\r\n'
     MIN_SIZE = 8
 
+    @property
+    def end(self) -> bytes:
+        """Return the configured end-of-frame delimiter."""
+        return b"\r" + _MCB.Delimiter
+
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU."""
         used_len = 0
         data_len = len(data)
+        end_marker = self.end
         while True:
             if data_len - used_len < self.MIN_SIZE:
                 Log.debug("Short frame: {} wait for more data", data, ":hex")
@@ -48,11 +58,11 @@ class FramerAscii(FramerBase):
                     return data_len, 0, 0, self.EMPTY
                 used_len += i
                 continue
-            if (end := buffer.find(self.END)) == -1:
+            if (end := buffer.find(end_marker)) == -1:
                 Log.debug("Incomplete frame: {} wait for more data", data, ":hex")
                 return used_len, 0, 0, self.EMPTY
             dev_id = int(buffer[1:3], 16)
-            used_len += end + 2
+            used_len += end + len(end_marker)
             try:
                 lrc = int(buffer[end - 2: end], 16)
                 msg = a2b_hex(buffer[1 : end - 2])
@@ -73,7 +83,7 @@ class FramerAscii(FramerBase):
             f"{device_id:02x}".encode() +
             b2a_hex(payload) +
             f"{checksum:02x}".encode() +
-            self.END
+            self.end
         ).upper()
         return frame
 

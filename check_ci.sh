@@ -7,6 +7,7 @@ trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
 
 codespell
 ruff check --fix --exit-non-zero-on-fix .
+ruff format .
 pylint --recursive=y examples pymodbus test
 zuban check pymodbus examples test
 if [ $1 ]; then

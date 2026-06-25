@@ -66,7 +66,7 @@ Common features
 * Support all standard frames: socket, rtu, rtu-over-tcp, tcp and ascii
 * Does not have third party dependencies, apart from pyserial (optional)
 * Very lightweight project
-* Requires Python >= 3.10
+* Requires Python >= 3.12
 * Thorough test suite, that test all corners of the library (100% test coverage)
 * Automatically tested on Windows, Linux and MacOS combined with python 3.10 - 3.14
 * Strongly typed API (py.typed present)

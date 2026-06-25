@@ -22,7 +22,7 @@ class ModbusBaseServer(ModbusProtocol):
 
     active_server: ModbusBaseServer | None = None
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         params: CommParams,
         context: ModbusServerContext | SimDevice | list[SimDevice],

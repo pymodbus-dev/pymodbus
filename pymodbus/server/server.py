@@ -20,7 +20,7 @@ class ModbusTcpServer(ModbusBaseServer):
         Remember to call serve_forever to start server.
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         context: ModbusServerContext | SimDevice | list[SimDevice],
         *,
@@ -155,7 +155,7 @@ class ModbusUdpServer(ModbusBaseServer):
         Remember to call serve_forever to start server.
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         context: ModbusServerContext | SimDevice | list[SimDevice],
         *,

@@ -79,7 +79,12 @@ jobs:
         run: |
           uv run zuban check pymodbus examples test
 
-      - name: ruff
+      - name: ruff (format check)
+        if: matrix.run_lint == true
+        run: |
+          uv run ruff format --check .
+
+      - name: ruff (lint check)
         if: matrix.run_lint == true
         run: |
           uv run ruff check .

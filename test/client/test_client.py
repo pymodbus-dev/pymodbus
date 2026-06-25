@@ -380,7 +380,8 @@ class TestMixin:
 
         with pytest.raises(TypeError):
             ModbusClientMixin.convert_to_registers(
-                bool, ModbusClientMixin.DATATYPE.BITS  # type: ignore[arg-type]
+                bool,  # type: ignore[arg-type]
+                ModbusClientMixin.DATATYPE.BITS,
             )
 
     def test_client_mixin_convert_datatype_fail(self):

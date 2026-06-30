@@ -927,7 +927,9 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         if not (data_len := data_type.value[1]):
             byte_list = bytearray()
             if word_order == "little":
-                registers.reverse()
+                # Reverse a copy; the numeric branch below also works on a
+                # slice copy, so decoding must not mutate the caller's list.
+                registers = list(reversed(registers))
             for x in registers:
                 byte_list.extend(int.to_bytes(x, 2, "big"))
             if data_type == cls.DATATYPE.STRING:

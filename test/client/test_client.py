@@ -366,6 +366,41 @@ class TestMixin:
         assert result == value
         assert regs == registers
 
+    @pytest.mark.parametrize("word_order", ["big", "little"])
+    @pytest.mark.parametrize(
+        ("datatype", "value"),
+        [
+            (ModbusClientMixin.DATATYPE.STRING, "Hello"),
+            (ModbusClientMixin.DATATYPE.STRING, "abcdefghij"),
+            (ModbusClientMixin.DATATYPE.BITS, [True, False, True] + [False] * 17),
+            (ModbusClientMixin.DATATYPE.INT32, 123456),
+            (ModbusClientMixin.DATATYPE.INT32, [1, 2, 3, 4]),
+        ],
+    )
+    def test_client_mixin_convert_from_registers_no_mutation(
+        self, datatype, value, word_order
+    ):
+        """convert_from_registers must not mutate input and stay deterministic.
+
+        Regression: for STRING/BITS with word_order="little" the registers list
+        was reversed in place, corrupting the caller's data so a second identical
+        call decoded garbage (non-deterministic output).
+        """
+        registers = ModbusClientMixin.convert_to_registers(
+            value, datatype, word_order=word_order
+        )
+        snapshot = list(registers)
+        first = ModbusClientMixin.convert_from_registers(
+            registers, datatype, word_order=word_order
+        )
+        # Decoding must leave the caller's list untouched ...
+        assert registers == snapshot
+        # ... so repeating the identical call yields the identical result.
+        second = ModbusClientMixin.convert_from_registers(
+            registers, datatype, word_order=word_order
+        )
+        assert first == second
+
     def test_client_mixin_convert_fail(self):
         """Test convert fail."""
         with pytest.raises(TypeError):

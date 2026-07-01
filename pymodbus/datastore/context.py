@@ -60,7 +60,7 @@ class ModbusDeviceContext:  # pylint: disable=too-few-public-methods
         self.__build_data(co_simdata)
         self.__build_data(di_simdata)
         self.simdevice = SimDevice(
-            0, simdata=(co_simdata, di_simdata, ir_simdata, hr_simdata)
+            0, simdata=(co_simdata, di_simdata, hr_simdata, ir_simdata)
         )
         Log.warning(
             "ModbusDeviceContext, ModbusSequentialDataBlock, "

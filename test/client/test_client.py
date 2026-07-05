@@ -380,12 +380,7 @@ class TestMixin:
     def test_client_mixin_convert_from_registers_no_mutation(
         self, datatype, value, word_order
     ):
-        """convert_from_registers must not mutate input and stay deterministic.
-
-        Regression: for STRING/BITS with word_order="little" the registers list
-        was reversed in place, corrupting the caller's data so a second identical
-        call decoded garbage (non-deterministic output).
-        """
+        """convert_from_registers must not mutate input and stay deterministic."""
         registers = ModbusClientMixin.convert_to_registers(
             value, datatype, word_order=word_order
         )
@@ -393,9 +388,7 @@ class TestMixin:
         first = ModbusClientMixin.convert_from_registers(
             registers, datatype, word_order=word_order
         )
-        # Decoding must leave the caller's list untouched ...
         assert registers == snapshot
-        # ... so repeating the identical call yields the identical result.
         second = ModbusClientMixin.convert_from_registers(
             registers, datatype, word_order=word_order
         )

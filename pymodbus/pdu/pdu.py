@@ -49,14 +49,14 @@ class ModbusPDU:
         if count == -1:
             count = self.count
         if not 1 <= count <= max_count:
-            raise ValueError(f"1 < count {count} < {max_count} !")
+            raise ValueError(f"1 <= count {count} <= {max_count} !")
 
     def verifyAddress(self, address: int = -1) -> None:
         """Validate API supplied address."""
         if address == -1:
             address = self.address
         if not 0 <= address <= 65535:
-            raise ValueError(f"0 < address {address} < 65535 !")
+            raise ValueError(f"0 <= address {address} <= 65535 !")
 
     @classmethod
     def decode_sub_function_code(cls, data: bytes) -> int:

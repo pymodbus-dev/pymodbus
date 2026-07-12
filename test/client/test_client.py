@@ -14,7 +14,7 @@ import pymodbus.pdu.file_message as pdu_file_msg
 import pymodbus.pdu.mei_message as pdu_mei
 import pymodbus.pdu.other_message as pdu_other_msg
 import pymodbus.pdu.register_message as pdu_reg
-from examples.helper import get_certificate
+from examples.helper import generate_ssl, get_certificate
 from pymodbus import FramerType
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.mixin import ModbusClientMixin
@@ -696,12 +696,14 @@ class TestClientBase:
     def test_client_tls_connect(self, use_async):
         """Test the tls client connection method."""
         if use_async:
-            sslctx = lib_client.AsyncModbusTlsClient.generate_ssl(
+            sslctx = generate_ssl(
+                False,
                 certfile=get_certificate("crt"),
                 keyfile=get_certificate("key"),
             )
         else:
-            sslctx = lib_client.ModbusTlsClient.generate_ssl(
+            sslctx = generate_ssl(
+                False,
                 certfile=get_certificate("crt"),
                 keyfile=get_certificate("key"),
             )
@@ -719,7 +721,8 @@ class TestClientBase:
 
     def test_client_tls_connect2(self):
         """Test the tls client connection method."""
-        sslctx = lib_client.ModbusTlsClient.generate_ssl(
+        sslctx = generate_ssl(
+            False,
             certfile=get_certificate("crt"),
             keyfile=get_certificate("key"),
         )

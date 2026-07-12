@@ -105,7 +105,8 @@ def setup_async_client(
             timeout=args.timeout,
             #    retries=3,
             # TLS setup parameters
-            sslctx=modbusClient.AsyncModbusTlsClient.generate_ssl(
+            sslctx=helper.generate_ssl(
+                False,
                 certfile=helper.get_certificate("crt"),
                 keyfile=helper.get_certificate("key"),
                 #    password="none",

@@ -329,30 +329,6 @@ class TestTransportProtocol2:
         """Test magic."""
         assert str(client) == f"DummyProtocol({use_clc.comm_name})"
 
-    def test_generate_ssl_cert(self, use_clc):
-        """Test ssl generation."""
-        with mock.patch("pymodbus.transport.transport.ssl.SSLContext"):
-            sslctx = use_clc.generate_ssl(True, "cert_file", "key_file")
-        assert sslctx
-
-    def test_generate_ssl_ctx(self, use_clc):
-        """Test ssl generation."""
-        test_value = "test igen"
-        assert test_value == use_clc.generate_ssl(
-            True, "cert_file", "key_file", sslctx=test_value
-        )
-
-    def test_generate_ssl_client(self, use_clc):
-        """Test ssl generation."""
-        test_value = "test igen"
-        assert test_value == use_clc.generate_ssl(
-            False, "cert_file", "key_file", sslctx=test_value
-        )
-
-    def test_generate_ssl_no_file(self, use_clc):
-        """Test ssl generation."""
-        assert use_clc.generate_ssl(True, None, None)
-
     @pytest.mark.parametrize("use_host", ["socket://localhost:5005", "/dev/tty"])
     @pytest.mark.parametrize("use_comm_type", [CommType.SERIAL])
     async def test_init_serial(self, use_cls, dummy_protocol):

@@ -153,6 +153,19 @@ async def run_async_server(args) -> None:
         )
     elif args.comm == "tls":  # pragma: no cover
         address = (args.host if args.host else "", args.port if args.port else None)
+        _logger.warning(
+            "DO NOT use the test cerficitcate for production, it is self-signed and not considered secure!"
+        )
+        sslctx = helper.generate_ssl(
+            True,
+            helper.get_certificate(
+                "crt"
+            ),  # The cert file path for TLS (used if sslctx is None)
+            helper.get_certificate(
+                "key"
+            ),  # The key file path for TLS (used if sslctx is None)
+            None,
+        )  # # The password for for decrypting the private key file
         await StartAsyncTlsServer(
             context=args.context,  # Data storage
             # port=port,  # on which port
@@ -160,14 +173,7 @@ async def run_async_server(args) -> None:
             # custom_functions=[],  # allow custom handling
             address=address,  # listen address
             framer=args.framer,  # The framer strategy to use
-            certfile=helper.get_certificate(
-                "crt"
-            ),  # The cert file path for TLS (used if sslctx is None)
-            # sslctx=sslctx,  # The SSLContext to use for TLS (default None and auto)
-            keyfile=helper.get_certificate(
-                "key"
-            ),  # The key file path for TLS (used if sslctx is None)
-            # password="none",  # The password for for decrypting the private key file
+            sslctx=sslctx,
             # ignore_missing_devices=True,  # ignore request to a missing device
             # broadcast_enable=False,  # treat device_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete

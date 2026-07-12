@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import logging
 import os
+import ssl
 from typing import Any
 
 from pymodbus import pymodbus_apply_logging_config
@@ -131,3 +132,30 @@ def get_certificate(suffix: str):
     else:
         raise RuntimeError(f"**Error** Cannot find certificate path={cwd}")
     return f"{path}/certificates/pymodbus_tls.{suffix}"
+
+
+def generate_ssl(
+    is_server: bool,
+    certfile: str | None = None,
+    keyfile: str | None = None,
+    password: str | None = None,
+    sslctx: ssl.SSLContext | None = None,
+) -> ssl.SSLContext:
+    """Generate sslctx from cert/key/password.
+
+    MODBUS/TCP Security Protocol Specification demands TLSv2 at least
+    """
+    if sslctx:
+        return sslctx
+    new_sslctx = ssl.SSLContext(
+        ssl.PROTOCOL_TLS_SERVER if is_server else ssl.PROTOCOL_TLS_CLIENT
+    )
+    new_sslctx.check_hostname = False
+    new_sslctx.verify_mode = ssl.CERT_NONE
+    new_sslctx.minimum_version = ssl.TLSVersion.TLSv1_2
+    new_sslctx.maximum_version = ssl.TLSVersion.TLSv1_3
+    if certfile:
+        new_sslctx.load_cert_chain(
+            certfile=certfile, keyfile=keyfile, password=password
+        )
+    return new_sslctx

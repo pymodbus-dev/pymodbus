@@ -98,27 +98,6 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
             trace_connect=trace_connect,
         )
 
-    @classmethod
-    def generate_ssl(
-        cls,
-        certfile: str | None = None,
-        keyfile: str | None = None,
-        password: str | None = None,
-    ) -> ssl.SSLContext:
-        """Generate sslctx from cert/key/password.
-
-        :param certfile: Cert file path for TLS server request
-        :param keyfile: Key file path for TLS server request
-        :param password: Password for for decrypting private key file
-
-        Remark:
-        - MODBUS/TCP Security Protocol Specification demands TLSv2 at least
-        - verify_mode is set to ssl.NONE
-        """
-        return CommParams.generate_ssl(
-            False, certfile=certfile, keyfile=keyfile, password=password
-        )
-
 
 class ModbusTlsClient(ModbusTcpClient):
     """**ModbusTlsClient**.
@@ -197,30 +176,6 @@ class ModbusTlsClient(ModbusTcpClient):
             trace_packet=trace_packet,
             trace_pdu=trace_pdu,
             trace_connect=trace_connect,
-        )
-
-    @classmethod
-    def generate_ssl(
-        cls,
-        certfile: str | None = None,
-        keyfile: str | None = None,
-        password: str | None = None,
-    ) -> ssl.SSLContext:
-        """Generate sslctx from cert/key/password.
-
-        :param certfile: Cert file path for TLS server request
-        :param keyfile: Key file path for TLS server request
-        :param password: Password for for decrypting private key file
-
-        Remark:
-        - MODBUS/TCP Security Protocol Specification demands TLSv2 at least
-        - verify_mode is set to ssl.NONE
-        """
-        return CommParams.generate_ssl(
-            False,
-            certfile=certfile,
-            keyfile=keyfile,
-            password=password,
         )
 
     @property

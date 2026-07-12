@@ -7,6 +7,7 @@ from unittest import mock
 
 import pytest
 
+from examples.helper import generate_ssl
 from pymodbus.logging import Log
 from pymodbus.transport import CommParams, CommType, ModbusProtocol
 
@@ -46,9 +47,7 @@ async def prepare_protocol(use_clc):
     """Prepare transport object."""
     if use_clc.comm_type == CommType.TLS:
         cwd = os.path.dirname(__file__) + "/../../examples/certificates/pymodbus_tls."
-        use_clc.sslctx = use_clc.generate_ssl(
-            False, certfile=cwd + "crt", keyfile=cwd + "key"
-        )
+        use_clc.sslctx = generate_ssl(False, certfile=cwd + "crt", keyfile=cwd + "key")
     transport = DummyProtocol(params=use_clc, is_server=False)
     transport.callback_connected = mock.Mock()  # type: ignore[method-assign]
     transport.callback_disconnected = mock.Mock()  # type: ignore[method-assign]
@@ -63,9 +62,7 @@ async def prepare_transport_server(use_cls):
     """Prepare transport object."""
     if use_cls.comm_type == CommType.TLS:
         cwd = os.path.dirname(__file__) + "/../../examples/certificates/pymodbus_tls."
-        use_cls.sslctx = use_cls.generate_ssl(
-            True, certfile=cwd + "crt", keyfile=cwd + "key"
-        )
+        use_cls.sslctx = generate_ssl(True, certfile=cwd + "crt", keyfile=cwd + "key")
     transport = DummyProtocol(params=use_cls, is_server=True)
     transport.callback_connected = mock.Mock()  # type: ignore[method-assign]
     transport.callback_disconnected = mock.Mock()  # type: ignore[method-assign]

@@ -7,6 +7,23 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.14.0
+--------------
+* Remove self signed certificate from production. (#2954)
+* Correct inequality in validation error message (#2953)
+* Fix non-deterministic convert_from_registers (#2951)
+* Fix swapped SimDevice in ModbusDeviceContext (#2952)
+* Update CI actions and pyproject. (#2938)
+* Add ruff format check to ci.yml (#2947)
+* Remove 'useless-suppression' pylint (#2949)
+* Format test_client.py with ruff (#2948)
+* Update clean_workflows CI (node@20 problem). (#2946)
+* Ruff format (due to ruff upgrade). (#2945)
+* Fix `ModbusServerContext` initialization with dict `devices` parameter (#2944)
+* Support configured ASCII input delimiter (#2942)
+* Fix default no-response behavior for force listen only (#2941)
+* Use correct format character for `DataType.REGISTERS` 'h' -> 'H' (#2940)
+
 Version 3.13.1
 --------------
 * Update CI Workflows.

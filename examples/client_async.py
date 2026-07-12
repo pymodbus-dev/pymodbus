@@ -26,6 +26,7 @@ usage::
 The corresponding server must be started before e.g. as:
     python3 server_sync.py
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -36,9 +37,11 @@ import sys
 try:
     import helper  # type: ignore[import-not-found]
 except ImportError:
-    print("*** ERROR --> THIS EXAMPLE needs to be run in the example directory, please see \n\
+    print(
+        "*** ERROR --> THIS EXAMPLE needs to be run in the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
-          for more information.")
+          for more information."
+    )
     sys.exit(-1)
 
 import pymodbus.client as modbusClient
@@ -47,7 +50,9 @@ import pymodbus.client as modbusClient
 _logger = logging.getLogger(__name__)
 
 
-def setup_async_client(description: str | None =None, cmdline: list[str] | None = None) -> modbusClient.ModbusBaseClient:
+def setup_async_client(
+    description: str | None = None, cmdline: list[str] | None = None
+) -> modbusClient.ModbusBaseClient:
     """Run client setup."""
     args = helper.get_commandline(
         server=False, description=description, cmdline=cmdline
@@ -100,10 +105,11 @@ def setup_async_client(description: str | None =None, cmdline: list[str] | None 
             timeout=args.timeout,
             #    retries=3,
             # TLS setup parameters
-            sslctx=modbusClient.AsyncModbusTlsClient.generate_ssl(
+            sslctx=helper.generate_ssl(
+                False,
                 certfile=helper.get_certificate("crt"),
                 keyfile=helper.get_certificate("key"),
-            #    password="none",
+                #    password="none",
             ),
         )
     else:
@@ -129,6 +135,7 @@ async def run_a_few_calls(client):
     rr = await client.read_holding_registers(4, count=2, device_id=1)
     assert rr.registers[0] == 17
     assert rr.registers[1] == 17
+
 
 async def main(cmdline=None):
     """Combine setup and run."""

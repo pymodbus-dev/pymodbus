@@ -1,4 +1,5 @@
 """Test device."""
+
 from pymodbus.constants import DeviceInformation
 from pymodbus.pdu.device import (
     DeviceInformationFactory,
@@ -252,12 +253,15 @@ class TestDataStore:
 
     def test_modbus_control_block_delimiter(self):
         """Tests the MCB delimiter setting methods."""
-        self.control.Delimiter = b"\r"
-        assert self.control.Delimiter == b"\r"
-        self.control.Delimiter = "="
-        assert self.control.Delimiter == b"="  # type: ignore[comparison-overlap]
-        self.control.Delimiter = 61
-        assert self.control.Delimiter == b"="  # type: ignore[comparison-overlap]
+        try:
+            self.control.Delimiter = b"\r"
+            assert self.control.Delimiter == b"\r"
+            self.control.Delimiter = "="
+            assert self.control.Delimiter == b"="  # type: ignore[comparison-overlap]
+            self.control.Delimiter = 61
+            assert self.control.Delimiter == b"="  # type: ignore[comparison-overlap]
+        finally:
+            self.control.Delimiter = b"\n"
 
     def test_modbus_control_block_diagnostic(self):
         """Tests the MCB delimiter setting methods."""
@@ -362,7 +366,6 @@ class TestDataStore:
         stats_summary = list(statistics.summary())
         assert sorted(summary) == sorted(stats_summary)
         assert not sum(sum(value[1]) for value in statistics)
-
 
     def test_device_info_name(self):
         """Test setting of info_name."""

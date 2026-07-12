@@ -1,4 +1,5 @@
 """Test transport."""
+
 import asyncio
 from unittest import mock
 
@@ -53,7 +54,7 @@ class TestTransportReconnect:
         assert client.call_create.call_count == 2
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay * 2
         await asyncio.sleep(client.reconnect_delay_current * 1.8)
-        assert client.call_create.call_count == 3
+        assert client.call_create.call_count >= 3
         assert client.reconnect_delay_current == client.comm_params.reconnect_delay_max
         await asyncio.sleep(client.reconnect_delay_current * 1.8)
         assert client.call_create.call_count >= 4
@@ -100,4 +101,3 @@ class TestTransportReconnect:
         server.connection_lost(RuntimeError("Listener disconnected lost"))
         assert server.reconnect_task
         server.close()
-

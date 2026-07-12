@@ -1,4 +1,5 @@
 """Modbus Sparse Datastore."""
+
 from __future__ import annotations
 
 from ..exceptions import ParameterException
@@ -19,7 +20,9 @@ class ModbusSparseDataBlock:  # pylint: disable=too-few-public-methods
 
         def _process_as_dict(values):
             for idx, val in iter(values.items()):
-                self.simdata.append(SimData(idx, values=val, datatype=DataType.REGISTERS))
+                self.simdata.append(
+                    SimData(idx, values=val, datatype=DataType.REGISTERS)
+                )
 
         if isinstance(values, dict):
             _process_as_dict(values)
@@ -33,4 +36,3 @@ class ModbusSparseDataBlock:  # pylint: disable=too-few-public-methods
                 "Values for datastore must be a list or dictionary"
             )
         _process_as_dict(values)
-

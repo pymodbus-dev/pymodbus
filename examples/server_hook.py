@@ -4,6 +4,7 @@
 This is an example of using the builtin request/response tracer to
 manipulate the messages to/from the modbus server
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -19,9 +20,11 @@ from pymodbus.simulator import DataType, SimData, SimDevice
 try:
     import helper  # type: ignore[import-not-found]
 except ImportError:
-    print("*** ERROR --> THIS EXAMPLE needs to be run in the example directory, please see \n\
+    print(
+        "*** ERROR --> THIS EXAMPLE needs to be run in the example directory, please see \n\
           https://pymodbus.readthedocs.io/en/latest/source/examples.html\n\
-          for more information.")
+          for more information."
+    )
     sys.exit(-1)
 
 
@@ -51,11 +54,16 @@ class Manipulator:
 
     async def setup(self, cmdline):
         """Prepare server."""
-        args = helper.get_commandline(server=True, description="server hooks", cmdline=cmdline)
+        args = helper.get_commandline(
+            server=True, description="server hooks", cmdline=cmdline
+        )
         pymodbus_apply_logging_config(logging.DEBUG)
-        address: tuple[str, int] = (args.host if args.host else "", args.port if args.port else 0)
+        address: tuple[str, int] = (
+            args.host if args.host else "",
+            args.port if args.port else 0,
+        )
         self.server = ModbusTcpServer(
-            SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100)),
+            SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17] * 100)),
             framer=FramerType.SOCKET,
             identity=None,
             address=address,

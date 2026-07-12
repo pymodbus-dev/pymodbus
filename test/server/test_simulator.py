@@ -151,7 +151,9 @@ class TestSimulator:
         Cell(type=CellType.UINT32, value=5, action=1),
         Cell(type=CellType.NEXT, value=17320),  # 30
         Cell(
-            type=CellType.UINT32, action=2, action_parameters={"minval": 10, "maxval": 80}
+            type=CellType.UINT32,
+            action=2,
+            action_parameters={"minval": 10, "maxval": 80},
         ),
         Cell(type=CellType.NEXT, value=50),
         Cell(type=CellType.FLOAT32, access=True, value=17731),
@@ -211,7 +213,9 @@ class TestSimulator:
         return False
 
     @pytest.fixture(name="simulator_server")
-    async def setup_simulator_server(self, server, device, unused_tcp_port, only_object):
+    async def setup_simulator_server(
+        self, server, device, unused_tcp_port, only_object
+    ):
         """Mock open for simulator server."""
         with mock.patch(
             "builtins.open",
@@ -222,7 +226,7 @@ class TestSimulator:
                         "device_list": {"device": device},
                     }
                 )
-            )
+            ),
         ):
             task = ModbusSimulatorServer(http_port=unused_tcp_port)
             if only_object:
@@ -256,9 +260,12 @@ class TestSimulator:
                         "device_list": {"device": device},
                     }
                 )
-            )
+            ),
         ):
-            ModbusSimulatorServer(http_port=unused_tcp_port, custom_actions_module="pymodbus.server.simulator.custom_actions")
+            ModbusSimulatorServer(
+                http_port=unused_tcp_port,
+                custom_actions_module="pymodbus.server.simulator.custom_actions",
+            )
 
     @pytest.mark.parametrize("only_object", [True])
     async def test_simulator_server_exc(self, simulator_server):
@@ -304,10 +311,16 @@ class TestSimulator:
 
     async def test_simulator_main(self):
         """Test main."""
-        with mock.patch("pymodbus.server.simulator.http_server.ModbusSimulatorServer.run_forever", return_value=True):
+        with mock.patch(
+            "pymodbus.server.simulator.http_server.ModbusSimulatorServer.run_forever",
+            return_value=True,
+        ):
             await run_main(cmdline={})
 
     async def test_simulator_main_file_not_found(self):
         """Test main with missing configuration file."""
-        with mock.patch("os.path.exists", return_value=False), pytest.raises(SystemExit):
+        with (
+            mock.patch("os.path.exists", return_value=False),
+            pytest.raises(SystemExit),
+        ):
             await run_main(cmdline=["--json_file", "non_existent.json"])

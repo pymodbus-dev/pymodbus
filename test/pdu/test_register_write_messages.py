@@ -1,4 +1,5 @@
 """Test register write messages."""
+
 from unittest import mock
 
 import pytest
@@ -35,12 +36,18 @@ class TestWriteRegisterMessages:
         self.value = 0xABCD
         self.values = [0xA, 0xB, 0xC]
         self.write = {
-            WriteSingleRegisterRequest(address=1, registers=[self.value]): b"\x00\x01\xab\xcd",
-            WriteSingleRegisterResponse(address=1, registers=[self.value]): b"\x00\x01\xab\xcd",
+            WriteSingleRegisterRequest(
+                address=1, registers=[self.value]
+            ): b"\x00\x01\xab\xcd",
+            WriteSingleRegisterResponse(
+                address=1, registers=[self.value]
+            ): b"\x00\x01\xab\xcd",
             WriteMultipleRegistersRequest(
                 address=1, registers=self.values
             ): b"\x00\x01\x00\x03\x06\x00\x0a\x00\x0b\x00\x0c",
-            WriteMultipleRegistersRequest(address=1, registers=[0xD]): b"\x00\x01\x00\x01\x02\x00\x0D",
+            WriteMultipleRegistersRequest(
+                address=1, registers=[0xD]
+            ): b"\x00\x01\x00\x01\x02\x00\x0d",
             WriteMultipleRegistersResponse(address=1, count=5): b"\x00\x01\x00\x05",
         }
 
@@ -105,7 +112,6 @@ class TestWriteRegisterMessages:
         result = await request.datastore_update(context, 1)
         assert result.function_code == request.function_code
 
-
     async def test_register_write_datastore_exceptions(self, mock_server_context):
         """Test exception response from datastore."""
         context = mock_server_context()
@@ -146,7 +152,9 @@ class TestWriteRegisterMessages:
         assert isinstance(result, MaskWriteRegisterResponse)
         assert context.last_values == [0x0AF5]
 
-    async def test_mask_write_register_request_invalid_datastore_update(self, mock_server_context):
+    async def test_mask_write_register_request_invalid_datastore_update(
+        self, mock_server_context
+    ):
         """Test write register request datastore_update with invalid data."""
         context = mock_server_context(valid=False, default=0x0000)
         handle = MaskWriteRegisterRequest(0x0000, -1, 0x1010)
@@ -179,13 +187,13 @@ class TestWriteRegisterMessages:
         assert handle.and_mask == 0x00F2
         assert handle.or_mask == 0x0025
 
-
-    @pytest.mark.parametrize(("request_pdu"),
+    @pytest.mark.parametrize(
+        ("request_pdu"),
         [
             WriteSingleRegisterRequest(address=0x00, registers=[5]),
             WriteMultipleRegistersRequest(address=0x00, registers=[0x00] * 10),
             MaskWriteRegisterRequest(0x0000, 0x01, 0x1010),
-        ]
+        ],
     )
     async def test_register_write_exception(self, request_pdu, mock_server_context):
         """Test write single coil."""

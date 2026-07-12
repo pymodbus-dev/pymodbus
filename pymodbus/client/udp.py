@@ -1,4 +1,5 @@
 """Modbus client async UDP communication."""
+
 from __future__ import annotations
 
 import socket

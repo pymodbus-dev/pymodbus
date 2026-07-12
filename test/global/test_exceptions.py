@@ -1,4 +1,5 @@
 """Test exceptions."""
+
 import pytest
 
 from pymodbus.exceptions import (

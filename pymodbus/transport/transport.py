@@ -46,6 +46,7 @@ The class is designed to take care of differences between the different
 transport mediums, and provide a neutral interface for the upper layers.
 It basically provides a pipe, without caring about the actual data content.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -85,7 +86,7 @@ class CommParams:
     reconnect_delay: float | None = None
     reconnect_delay_max: float = 0.0
     timeout_connect: float = 0.0
-    host: str = "localhost" # On some machines this will now be ::1
+    host: str = "localhost"  # On some machines this will now be ::1
     port: int = 0
     source_address: tuple[str, int] | None = None
 
@@ -95,37 +96,9 @@ class CommParams:
     # serial
     baudrate: int = -1
     bytesize: int = -1
-    parity: str = ''
+    parity: str = ""
     stopbits: int = -1
     handle_local_echo: bool = False
-
-    @classmethod
-    def generate_ssl(
-        cls,
-        is_server: bool,
-        certfile: str | None = None,
-        keyfile: str | None = None,
-        password: str | None = None,
-        sslctx: ssl.SSLContext | None = None,
-    ) -> ssl.SSLContext:
-        """Generate sslctx from cert/key/password.
-
-        MODBUS/TCP Security Protocol Specification demands TLSv2 at least
-        """
-        if sslctx:
-            return sslctx
-        new_sslctx = ssl.SSLContext(
-            ssl.PROTOCOL_TLS_SERVER if is_server else ssl.PROTOCOL_TLS_CLIENT
-        )
-        new_sslctx.check_hostname = False
-        new_sslctx.verify_mode = ssl.CERT_NONE
-        new_sslctx.minimum_version = ssl.TLSVersion.TLSv1_2
-        new_sslctx.maximum_version = ssl.TLSVersion.TLSv1_3
-        if certfile:
-            new_sslctx.load_cert_chain(
-                certfile=certfile, keyfile=keyfile, password=password
-            )
-        return new_sslctx
 
     def copy(self: CommParams) -> CommParams:
         """Create a copy."""
@@ -136,10 +109,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
     """Protocol layer including transport."""
 
     def __init__(
-        self,
-        params: CommParams,
-        is_server: bool,
-        is_sync: bool = False
+        self, params: CommParams, is_server: bool, is_sync: bool = False
     ) -> None:
         """Initialize a transport instance.
 
@@ -173,8 +143,8 @@ class ModbusProtocol(asyncio.BaseProtocol):
             else:
                 # This behaviour isn't quite right.
                 # It listens on any IPv4 address rather than the more natural default of any address (v6 or v4).
-                host = "0.0.0.0" # Any IPv4 host
-                port = 502 # Server will listen on standard modbus port
+                host = "0.0.0.0"  # Any IPv4 host
+                port = 502  # Server will listen on standard modbus port
         else:
             host = self.comm_params.host
             port = int(self.comm_params.port)
@@ -197,7 +167,8 @@ class ModbusProtocol(asyncio.BaseProtocol):
     def init_setup_connect_listen(self, host: str, port: int) -> None:
         """Handle connect/listen handler."""
         if self.comm_params.comm_type == CommType.SERIAL:
-            self.call_create = partial(create_serial_connection,
+            self.call_create = partial(
+                create_serial_connection,
                 self.loop,
                 self.handle_new_connection,
                 host,
@@ -210,19 +181,22 @@ class ModbusProtocol(asyncio.BaseProtocol):
             return
         if self.comm_params.comm_type == CommType.UDP:
             if self.is_server:
-                self.call_create = partial(self.loop.create_datagram_endpoint,
+                self.call_create = partial(
+                    self.loop.create_datagram_endpoint,
                     self.handle_new_connection,
                     local_addr=(host, port),
                 )
             else:
-                self.call_create = partial(self.loop.create_datagram_endpoint,
+                self.call_create = partial(
+                    self.loop.create_datagram_endpoint,
                     self.handle_new_connection,
                     remote_addr=(host, port),
                 )
             return
         # TLS and TCP
         if self.is_server:
-            self.call_create = partial(self.loop.create_server,
+            self.call_create = partial(
+                self.loop.create_server,
                 self.handle_new_connection,
                 host,
                 port,
@@ -231,7 +205,8 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 start_serving=True,
             )
         else:
-            self.call_create = partial(self.loop.create_connection,
+            self.call_create = partial(
+                self.loop.create_connection,
                 self.handle_new_connection,
                 host,
                 port,
@@ -331,7 +306,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 return
         Log.transport_dump(Log.RECV_DATA, data, self.recv_buffer)
         if len(self.recv_buffer) > 1024:
-            self.recv_buffer = b''
+            self.recv_buffer = b""
         self.recv_buffer += data
         cut = self.callback_data(self.recv_buffer, addr=addr)
         self.recv_buffer = self.recv_buffer[cut:]

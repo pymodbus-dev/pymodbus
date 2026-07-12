@@ -1,4 +1,5 @@
 """Base for all clients."""
+
 from __future__ import annotations
 
 import asyncio
@@ -118,9 +119,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
 
         :returns: The string representation
         """
-        return (
-            f"{self.__class__.__name__} {self.ctx.comm_params.host}:{self.ctx.comm_params.port}"
-        )
+        return f"{self.__class__.__name__} {self.ctx.comm_params.host}:{self.ctx.comm_params.port}"
 
 
 class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):

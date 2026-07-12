@@ -47,6 +47,7 @@ Thanks to
 - embedded-bed
 - Erlend E. Aasland
 - Esco441-91
+- fafan999
 - Farzad Panahi
 - Federico
 - FedericoMusa
@@ -74,6 +75,7 @@ Thanks to
 - julian
 - Julian Lunz
 - Justin Standring
+- Karim Malik
 - Kenny Johansson
 - Kevin W Matthews
 - Kürşat Aktaş
@@ -151,6 +153,7 @@ Thanks to
 - Thor Michael Støre
 - Tim Gates
 - Ville Skyttä
+- Vincent Gao
 - Wild Stray
 - Yegor Yefremov
 

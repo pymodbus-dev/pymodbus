@@ -7,6 +7,7 @@ examples.
 
 These are basis for most examples and thus tested separately
 """
+
 import asyncio
 
 import pytest
@@ -73,8 +74,10 @@ class TestClientServerAsyncExamples:
         with pytest.raises((AssertionError, asyncio.TimeoutError)):
             await run_async_client(test_client, modbus_calls=run_a_few_calls)
 
+
 async def test_illegal_commtype():
-        """Run async client and server."""
-        with pytest.raises(RuntimeError):
-            setup_async_client(cmdline=["--comm", "unknown", "--framer", "rtu", "--port", "5912"]
-)
+    """Run async client and server."""
+    with pytest.raises(RuntimeError):
+        setup_async_client(
+            cmdline=["--comm", "unknown", "--framer", "rtu", "--port", "5912"]
+        )

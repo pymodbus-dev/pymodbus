@@ -1,4 +1,5 @@
 """Test server asyncio."""
+
 from unittest import mock
 
 import pytest
@@ -124,7 +125,6 @@ class TestBaseServer:
         await baseserver.serve_forever(background=True)
         baseserver.serving.set_result(True)
         await baseserver.serve_forever()
-
 
     async def test_base_connected(self, baseserver):
         """Test serve_forever."""

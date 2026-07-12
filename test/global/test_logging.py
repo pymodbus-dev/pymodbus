@@ -1,4 +1,5 @@
 """Test datastore."""
+
 import contextlib
 import logging
 import os
@@ -96,7 +97,6 @@ class TestLogging:
         Log.info("test 5")
         logging.shutdown()
 
-
     def test_apply_build_no(self):
         """Test pymodbus_apply_logging_config."""
         with mock.patch("pymodbus.logging.Log.build_msg") as build:
@@ -116,7 +116,7 @@ class TestLogging:
         """Test get_frames."""
         pymodbus_get_last_frames()
         for _ in range(100):
-            Log.transport_dump(Log.SEND_DATA, b'678', b'9')
+            Log.transport_dump(Log.SEND_DATA, b"678", b"9")
         pymodbus_get_last_frames()
 
     def test_log_repeat(self):
@@ -129,15 +129,14 @@ class TestLogging:
     def test_transport_dump(self):
         """Test transport_dump."""
         pymodbus_apply_logging_config("error")
-        Log.transport_dump(Log.SEND_DATA, b'123', b'4')
+        Log.transport_dump(Log.SEND_DATA, b"123", b"4")
         for _ in range(100):
-            Log.transport_dump(Log.SEND_DATA, b'678', b'9')
+            Log.transport_dump(Log.SEND_DATA, b"678", b"9")
         pymodbus_apply_logging_config("debug")
-        Log.transport_dump(Log.SEND_DATA, b'123', b'4')
+        Log.transport_dump(Log.SEND_DATA, b"123", b"4")
 
     def test_build_frame_log_line(self):
         """Test build_frame_log_line."""
-        Log.build_frame_log_line(Log.SEND_DATA, b'123', b'4')
-        Log.build_frame_log_line(Log.RECV_DATA, b'123', b'4')
-        Log.build_frame_log_line("Unknown", b'123', b'4')
-
+        Log.build_frame_log_line(Log.SEND_DATA, b"123", b"4")
+        Log.build_frame_log_line(Log.RECV_DATA, b"123", b"4")
+        Log.build_frame_log_line("Unknown", b"123", b"4")

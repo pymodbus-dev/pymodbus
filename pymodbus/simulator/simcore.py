@@ -2,6 +2,7 @@
 
 **REMARK** This class is internal to the server/simulator,.
 """
+
 from __future__ import annotations
 
 from ..constants import ExcCodes
@@ -16,14 +17,18 @@ class SimCore:
         """Build datastore."""
         if not isinstance(devices, list):
             if not isinstance(devices, SimDevice):
-                raise TypeError("devices= is not a SimDevice or list of SimDevice entry")
+                raise TypeError(
+                    "devices= is not a SimDevice or list of SimDevice entry"
+                )
             devices = [devices]
         self.devices: dict[int, SimRuntime] = {}
         for inx, device in enumerate(devices):
             if not isinstance(device, SimDevice):
                 raise TypeError(f"devices=list[{inx}] is not a SimDevice entry")
             if device.id in self.devices:
-                raise TypeError(f"devices= device_id: {device.id} in multiple SimDevice entries")
+                raise TypeError(
+                    f"devices= device_id: {device.id} in multiple SimDevice entries"
+                )
             self.devices[device.id] = SimRuntime(device)
 
     def __get_device(self, device_id: int) -> SimRuntime:
@@ -32,15 +37,27 @@ class SimCore:
 
     def device_ids(self) -> list[int]:
         """Return list of device ids."""
-        dev_ids: list[int] =  []
+        dev_ids: list[int] = []
         for dev_id in self.devices:
             dev_ids.append(dev_id)
         return dev_ids
 
-    async def async_getValues(self,device_id: int, func_code: int, address: int, count: int = 1) -> list[int] | list[bool] | ExcCodes:
+    async def async_getValues(
+        self, device_id: int, func_code: int, address: int, count: int = 1
+    ) -> list[int] | list[bool] | ExcCodes:
         """Get `count` values from datastore."""
-        return await self.__get_device(device_id).async_getValues(func_code, address, count)
+        return await self.__get_device(device_id).async_getValues(
+            func_code, address, count
+        )
 
-    async def async_setValues(self, device_id: int, func_code: int, address: int, values: list[int] | list[bool]) -> None | ExcCodes:
+    async def async_setValues(
+        self,
+        device_id: int,
+        func_code: int,
+        address: int,
+        values: list[int] | list[bool],
+    ) -> None | ExcCodes:
         """Set the datastore with the supplied values."""
-        return await self.__get_device(device_id).async_setValues(func_code, address, values)
+        return await self.__get_device(device_id).async_setValues(
+            func_code, address, values
+        )

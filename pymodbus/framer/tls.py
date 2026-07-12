@@ -1,4 +1,5 @@
 """Modbus TLS frame implementation."""
+
 from __future__ import annotations
 
 from .base import FramerBase
@@ -22,17 +23,17 @@ class FramerTLS(FramerBase):
         """Decode MDAP+payload."""
         if (data_len := len(data)) < self.MIN_SIZE:
             return data_len, 0, 0, self.EMPTY
-        tid = int.from_bytes(data[0:2], 'big')
+        tid = int.from_bytes(data[0:2], "big")
         dev_id = int(data[6])
         return data_len, dev_id, tid, data[7:]
 
     def encode(self, payload: bytes, device_id: int, tid: int) -> bytes:
         """Encode MDAP+payload."""
         frame = (
-           tid.to_bytes(2, 'big') +
-           b'\x00\x00' +
-           (len(payload) + 1).to_bytes(2, 'big') +
-           device_id.to_bytes(1, 'big') +
-           payload
+            tid.to_bytes(2, "big")
+            + b"\x00\x00"
+            + (len(payload) + 1).to_bytes(2, "big")
+            + device_id.to_bytes(1, "big")
+            + payload
         )
         return frame

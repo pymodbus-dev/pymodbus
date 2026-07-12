@@ -1,4 +1,5 @@
 """Test simulator API."""
+
 import json
 
 import pytest
@@ -99,7 +100,7 @@ class TestSimulatorApi:
                 ],
                 "repeat": [{"addr": [0, 48], "to": [49, 147]}],
             }
-        }
+        },
     }
 
     # Fixture to set up the aiohttp app
@@ -118,12 +119,12 @@ class TestSimulatorApi:
             json.dump(self.default_config, file)
 
         simulator = ModbusSimulatorServer(
-            modbus_server = "test-device-server",
-            modbus_device = "test-device",
-            http_host = "localhost",
-            http_port = 18080,
-            log_file = "simulator.log",
-            json_file = str(config_path)
+            modbus_server="test-device-server",
+            modbus_device="test-device",
+            http_host="localhost",
+            http_port=18080,
+            log_file="simulator.log",
+            json_file=str(config_path),
         )
 
         # this will finish almost immediately; no need to keep a task
@@ -279,20 +280,26 @@ class TestSimulatorApi:
             # Do not check for error content. It is currently
             # unhandled, so it is not guaranteed to be consistent.
 
-    @pytest.mark.parametrize("response_type", [
-        http_server.RESPONSE_NORMAL,
-        http_server.RESPONSE_ERROR,
-        http_server.RESPONSE_EMPTY,
-        http_server.RESPONSE_JUNK
-    ])
-    @pytest.mark.parametrize("call", [
-        ("split_delay", 1),
-        ("response_cr_pct", 1),
-        ("response_delay", 1),
-        ("response_error", 1),
-        ("response_junk_datalen", 1),
-        ("response_clear_after", 1),
-    ])
+    @pytest.mark.parametrize(
+        "response_type",
+        [
+            http_server.RESPONSE_NORMAL,
+            http_server.RESPONSE_ERROR,
+            http_server.RESPONSE_EMPTY,
+            http_server.RESPONSE_JUNK,
+        ],
+    )
+    @pytest.mark.parametrize(
+        "call",
+        [
+            ("split_delay", 1),
+            ("response_cr_pct", 1),
+            ("response_delay", 1),
+            ("response_error", 1),
+            ("response_junk_datalen", 1),
+            ("response_clear_after", 1),
+        ],
+    )
     @pytest.mark.asyncio
     async def test_calls_json_simulate(self, client, simulator, response_type, call):
         """
@@ -324,7 +331,6 @@ class TestSimulatorApi:
 
             json_response = await resp.json()
             assert json_response["result"] == "ok"
-
 
     @pytest.mark.asyncio
     async def test_calls_json_simulate_reset_no_simulation(self, client, simulator):

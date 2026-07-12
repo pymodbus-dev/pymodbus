@@ -1,4 +1,5 @@
 """Test example helper function."""
+
 from unittest import mock
 
 import pytest
@@ -47,7 +48,8 @@ class TestHelperExamples:
 
     def test_certificate_illegal(self):
         """Test illegal path."""
-        with mock.patch(
-            "examples.helper.os.getcwd", return_value="no/good/path"
-        ), pytest.raises(RuntimeError):
+        with (
+            mock.patch("examples.helper.os.getcwd", return_value="no/good/path"),
+            pytest.raises(RuntimeError),
+        ):
             helper.get_certificate("crt")

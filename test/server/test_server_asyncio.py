@@ -1,4 +1,5 @@
 """Test server asyncio."""
+
 import asyncio
 import logging
 import ssl
@@ -85,10 +86,10 @@ class BasicClient(asyncio.BaseProtocol):
             BasicClient.transport.close()
             BasicClient.transport = None
         BasicClient.data = None  # type: ignore[assignment]
-        BasicClient.connected = None # type: ignore[assignment]
-        BasicClient.done = None # type: ignore[assignment]
-        BasicClient.received_data = None # type: ignore[assignment]
-        BasicClient.eof = None # type: ignore[assignment]
+        BasicClient.connected = None  # type: ignore[assignment]
+        BasicClient.done = None  # type: ignore[assignment]
+        BasicClient.received_data = None  # type: ignore[assignment]
+        BasicClient.eof = None  # type: ignore[assignment]
         BasicClient.my_protocol = None  # type: ignore[attr-defined]
 
 
@@ -112,7 +113,9 @@ class TestAsyncioServer:
     async def _setup_teardown(self):
         """Initialize the test environment by setting up a dummy store and context."""
         self.loop = asyncio.get_running_loop()
-        self.context = SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100))
+        self.context = SimDevice(
+            0, SimData(0, datatype=DataType.REGISTERS, values=[17] * 100)
+        )
         self.identity = ModbusDeviceIdentification(
             info_name={"VendorName": "VendorName"}
         )
@@ -138,7 +141,13 @@ class TestAsyncioServer:
             result = result.result()
 
     async def start_server(
-        self, do_forever=True, do_serial=False, do_tls=False, do_udp=False, do_ident=False, serv_addr=SERV_ADDR,
+        self,
+        do_forever=True,
+        do_serial=False,
+        do_tls=False,
+        do_udp=False,
+        do_ident=False,
+        serv_addr=SERV_ADDR,
     ):
         """Handle setup and control of tcp server."""
         args: dict[str, Any] = {
@@ -152,14 +161,14 @@ class TestAsyncioServer:
                 self.context,
                 framer=FramerType.TLS,
                 identity=self.identity,
-                address=serv_addr
+                address=serv_addr,
             )
         elif do_udp:
             self.server = ModbusUdpServer(
                 self.context,
                 framer=FramerType.SOCKET,
                 identity=self.identity,
-                address=serv_addr
+                address=serv_addr,
             )
         elif do_serial:
             self.server = ModbusSerialServer(
@@ -168,14 +177,14 @@ class TestAsyncioServer:
                 identity=self.identity,
                 port="/dev/ttyb",
                 baudrate=19200,
-                allow_multiple_devices=True
+                allow_multiple_devices=True,
             )
         else:
             self.server = ModbusTcpServer(
                 self.context,
                 framer=FramerType.SOCKET,
                 identity=self.identity,
-                address=serv_addr
+                address=serv_addr,
             )
         assert self.server
         if do_forever:
@@ -277,7 +286,9 @@ class TestAsyncioServer:
 
     async def test_async_tcp_server_no_device(self):
         """Test unknown device exception."""
-        self.context = SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100))
+        self.context = SimDevice(
+            0, SimData(0, datatype=DataType.REGISTERS, values=[17] * 100)
+        )
         BasicClient.data = b"\x01\x00\x00\x00\x00\x06\x05\x03\x00\x00\x00\x01"
         await self.start_server()
         await self.connect_server()
@@ -344,13 +355,11 @@ class TestAsyncioServer:
 
     async def test_async_udp_server_roundtrip(self):
         """Test sending and receiving data on udp socket."""
-        expected_response = (
-            b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"
-        )  # value of 17 as per context
+        expected_response = b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"  # value of 17 as per context
         BasicClient.dataTo = TEST_DATA  # device 1, read register
         BasicClient.done = asyncio.Future()
         await self.start_server(do_udp=True)
-        random_port = self.server.transport._sock.getsockname()[1]    # type: ignore[union-attr,attr-defined] # pylint: disable=protected-access
+        random_port = self.server.transport._sock.getsockname()[1]  # type: ignore[union-attr,attr-defined] # pylint: disable=protected-access
         transport, _ = await self.loop.create_datagram_endpoint(  # type: ignore[union-attr]
             BasicClient, remote_addr=("127.0.0.1", random_port)
         )
@@ -360,7 +369,7 @@ class TestAsyncioServer:
 
     async def test_async_udp_server_exception(self):
         """Test sending garbage data on a TCP socket should drop the connection."""
-        BasicClient.dataTo = b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
+        BasicClient.dataTo = b"\xff\xff\xff\xff\xff\xff\xff\xff"
         BasicClient.connected = asyncio.Future()
         BasicClient.done = asyncio.Future()
         await self.start_server(do_udp=True)
@@ -380,24 +389,26 @@ class TestAsyncioServer:
         """Check instantiate serial server."""
         await self.start_server(do_forever=False, do_serial=True)
 
-
     async def test_serial_server_multipoint_baudrate(self):
         """Test __init__."""
         with pytest.raises(TypeError):
             ModbusSerialServer(
-                SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100)),
+                SimDevice(
+                    0, SimData(0, datatype=DataType.REGISTERS, values=[17] * 100)
+                ),
                 framer=FramerType.RTU,
                 baudrate=64200,
                 port="/dev/tty01",
                 allow_multiple_devices=True,
             )
 
-
     async def test_serial_server_multipoint_framer(self):
         """Test __init__."""
         with pytest.raises(TypeError):
             ModbusSerialServer(
-                SimDevice(0, SimData(0, datatype=DataType.REGISTERS, values=[17]*100)),
+                SimDevice(
+                    0, SimData(0, datatype=DataType.REGISTERS, values=[17] * 100)
+                ),
                 framer=FramerType.ASCII,
                 baudrate=19200,
                 port="/dev/tty01",

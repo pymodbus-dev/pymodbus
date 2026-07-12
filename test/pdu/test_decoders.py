@@ -1,4 +1,5 @@
 """Test decoders."""
+
 import pytest
 
 from pymodbus.exceptions import MessageRegisterException
@@ -90,11 +91,10 @@ class TestModbusPDU:
         (0x81, b"\x81\x00\x00\x00"),  # error message
     )
 
-
     @pytest.mark.parametrize(("code", "frame"), list(responses) + list(exceptions))
     def test_client_lookup(self, code, frame):
         """Test lookup for responses."""
-        data = b'\x01' + frame
+        data = b"\x01" + frame
         pdu = self.client.lookupPduClass(data)
         assert pdu
         if not code & 0x80:
@@ -102,7 +102,7 @@ class TestModbusPDU:
 
     def test_client_lookup_no_fc(self):
         """Test lookup for responses."""
-        data = b'\x01\x70'
+        data = b"\x01\x70"
         pdu = self.client.lookupPduClass(data)
         assert not pdu
 
@@ -114,7 +114,7 @@ class TestModbusPDU:
     @pytest.mark.parametrize(("code", "frame"), list(requests))
     def test_server_lookup(self, code, frame):
         """Test lookup for requests."""
-        data = b'\x01' + frame
+        data = b"\x01" + frame
         pdu = self.client.lookupPduClass(data)
         assert pdu
         assert pdu.function_code == code
@@ -133,7 +133,7 @@ class TestModbusPDU:
         assert pdu
         assert pdu.function_code == code
 
-    @pytest.mark.parametrize(("frame"), [b'', b'NO FRAME'])
+    @pytest.mark.parametrize(("frame"), [b"", b"NO FRAME"])
     @pytest.mark.parametrize(("decoder"), [server, client])
     def test_decode_bad_frame(self, decoder, frame):
         """Test lookup bad frames."""
@@ -141,7 +141,7 @@ class TestModbusPDU:
 
     def test_decode_unknown_sub(self):
         """Test for unknown sub code."""
-        assert self.client.decode(b"\x08\x00\xF0\xF0\x00")
+        assert self.client.decode(b"\x08\x00\xf0\xf0\x00")
 
     @pytest.mark.parametrize(("decoder"), [server, client])
     def test_register_custom_request(self, decoder):
@@ -154,7 +154,7 @@ class TestModbusPDU:
 
             def encode(self):
                 """Encode."""
-                return self.function_code.to_bytes(1, 'big') + b'123'
+                return self.function_code.to_bytes(1, "big") + b"123"
 
             def decode(self, _data):
                 """Decode."""
@@ -171,13 +171,13 @@ class TestModbusPDU:
                 """Decode."""
 
         decoder.register(CustomRequestResponse)
-        data = b'\x01' + CustomRequestResponse().encode()
+        data = b"\x01" + CustomRequestResponse().encode()
         assert decoder.lookupPduClass(data)
         CustomRequestResponse.sub_function_code = 0xF7
         decoder.register(CustomRequestResponse)
         CustomRequestResponse.sub_function_code = 0xF4
         decoder.register(CustomRequestResponse)
-        data = b'\x01' + CustomRequestResponse().encode()
+        data = b"\x01" + CustomRequestResponse().encode()
         assert self.server.lookupPduClass(data)
         with pytest.raises(MessageRegisterException):
             decoder.register(NoCustomRequestResponse)

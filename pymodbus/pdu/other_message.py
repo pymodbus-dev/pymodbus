@@ -1,4 +1,5 @@
 """Diagnostic record read/write."""
+
 from __future__ import annotations
 
 import struct
@@ -26,11 +27,15 @@ class ReadExceptionStatusRequest(ModbusPDU):
     def decode(self, data: bytes) -> None:
         """Decode data part of the message."""
 
-    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+    async def datastore_update(
+        self, context: ModbusServerContext, device_id: int
+    ) -> ModbusPDU:
         """Update diagnostic request on the given device."""
         _ = context
         status = _MCB.Counter.summary()
-        return ReadExceptionStatusResponse(status=status, dev_id=device_id, transaction_id=self.transaction_id)
+        return ReadExceptionStatusResponse(
+            status=status, dev_id=device_id, transaction_id=self.transaction_id
+        )
 
 
 class ReadExceptionStatusResponse(ModbusPDU):
@@ -51,6 +56,7 @@ class ReadExceptionStatusResponse(ModbusPDU):
 # Encapsulate interface transport 43, 14
 # CANopen general reference 43, 13
 
+
 class GetCommEventCounterRequest(ModbusPDU):
     """GetCommEventCounterRequest."""
 
@@ -64,11 +70,15 @@ class GetCommEventCounterRequest(ModbusPDU):
     def decode(self, data: bytes) -> None:
         """Decode data part of the message."""
 
-    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+    async def datastore_update(
+        self, context: ModbusServerContext, device_id: int
+    ) -> ModbusPDU:
         """Update diagnostic request on the given device."""
         _ = context
         count = _MCB.Counter.Event
-        return GetCommEventCounterResponse(count=count, dev_id=device_id, transaction_id=self.transaction_id)
+        return GetCommEventCounterResponse(
+            count=count, dev_id=device_id, transaction_id=self.transaction_id
+        )
 
 
 class GetCommEventCounterResponse(ModbusPDU):
@@ -101,7 +111,9 @@ class GetCommEventLogRequest(ModbusPDU):
     def decode(self, data: bytes) -> None:
         """Decode data part of the message."""
 
-    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+    async def datastore_update(
+        self, context: ModbusServerContext, device_id: int
+    ) -> ModbusPDU:
         """Update diagnostic request on the given device."""
         _ = context
         return GetCommEventLogResponse(
@@ -109,7 +121,9 @@ class GetCommEventLogRequest(ModbusPDU):
             message_count=_MCB.Counter.BusMessage,
             event_count=_MCB.Counter.Event,
             events=list(_MCB.getEvents()),
-            dev_id=device_id, transaction_id=self.transaction_id)
+            dev_id=device_id,
+            transaction_id=self.transaction_id,
+        )
 
 
 class GetCommEventLogResponse(ModbusPDU):
@@ -118,7 +132,15 @@ class GetCommEventLogResponse(ModbusPDU):
     function_code = 0x0C
     rtu_byte_count_pos = 2
 
-    def __init__(self, status: bool = True, message_count: int = 0, event_count: int = 0, events: list[int] | None = None, dev_id: int = 1, transaction_id: int = 0) -> None:
+    def __init__(
+        self,
+        status: bool = True,
+        message_count: int = 0,
+        event_count: int = 0,
+        events: list[int] | None = None,
+        dev_id: int = 1,
+        transaction_id: int = 0,
+    ) -> None:
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, dev_id=dev_id, status=status)
         self.message_count = message_count
@@ -163,7 +185,9 @@ class ReportDeviceIdRequest(ModbusPDU):
     def decode(self, data: bytes) -> None:
         """Decode data part of the message."""
 
-    async def datastore_update(self, context: ModbusServerContext, device_id: int) -> ModbusPDU:
+    async def datastore_update(
+        self, context: ModbusServerContext, device_id: int
+    ) -> ModbusPDU:
         """Update diagnostic request on the given device."""
         _ = context
         information = DeviceInformationFactory.get(_MCB)
@@ -176,10 +200,14 @@ class ReportDeviceIdRequest(ModbusPDU):
 
         identifier = b"-".join(id_data)
         identifier = identifier or b"Pymodbus"
-        return ReportDeviceIdResponse(identifier=identifier, dev_id=device_id, transaction_id=self.transaction_id)
+        return ReportDeviceIdResponse(
+            identifier=identifier, dev_id=device_id, transaction_id=self.transaction_id
+        )
+
 
 ID_ON = 0xFF
 ID_OFF = 0x00
+
 
 class ReportDeviceIdResponse(ModbusPDU):
     """ReportDeviceIdRequeste."""
@@ -187,7 +215,13 @@ class ReportDeviceIdResponse(ModbusPDU):
     function_code = 0x11
     rtu_byte_count_pos = 2
 
-    def __init__(self, identifier: bytes = b"\x00", status: bool = True, dev_id: int = 1, transaction_id: int = 0) -> None:
+    def __init__(
+        self,
+        identifier: bytes = b"\x00",
+        status: bool = True,
+        dev_id: int = 1,
+        transaction_id: int = 0,
+    ) -> None:
         """Initialize a new instance."""
         super().__init__(transaction_id=transaction_id, dev_id=dev_id, status=status)
         self.identifier = identifier
@@ -212,6 +246,7 @@ class ReportDeviceIdResponse(ModbusPDU):
         self.identifier = data[1 : self.byte_count + 1]
         status = int(data[-1])
         self.status = status == ID_ON
+
 
 DecodePDU.add_pdu(ReadExceptionStatusRequest, ReadExceptionStatusResponse)
 DecodePDU.add_pdu(GetCommEventCounterRequest, GetCommEventCounterResponse)

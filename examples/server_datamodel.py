@@ -31,35 +31,31 @@ def define_datamodel():
     16 bit for accuracy (e.g. a INT32).
     """
     # SimData can be instantiated with positional or optional parameters:
-    assert SimData(
-            5, 10, 17, DataType.REGISTERS
-        ) == SimData(
-            address=5, values=17, count=10, datatype=DataType.REGISTERS
-        )
+    assert SimData(5, 10, 17, DataType.REGISTERS) == SimData(
+        address=5, values=17, count=10, datatype=DataType.REGISTERS
+    )
 
     # Define a group of coils/discrete inputs non-shared (address=15..31 each 1 bit)
-    #block1 = SimData(address=15, count=16, values=True, datatype=DataType.BITS)
+    # block1 = SimData(address=15, count=16, values=True, datatype=DataType.BITS)
     # Define a group of coils/discrete inputs shared (address=15..31 each 16 bit)
-    #block2 = SimData(address=15, count=16, values=0xFFFF, datatype=DataType.BITS)
+    # block2 = SimData(address=15, count=16, values=0xFFFF, datatype=DataType.BITS)
 
     # Define a group of holding/input registers (remark NO difference between shared and non-shared)
-    #block3 = SimData(10, 1, 123.4, datatype=DataType.FLOAT32)
-    #block4 = SimData(17, count=5, values=123, datatype=DataType.INT64)
+    # block3 = SimData(10, 1, 123.4, datatype=DataType.FLOAT32)
+    # block4 = SimData(17, count=5, values=123, datatype=DataType.INT64)
     block5 = SimData(1027, 1, "Hello ", datatype=DataType.STRING)
 
     block_def = SimData(0, count=1000, datatype=DataType.REGISTERS)
 
     # SimDevice can be instantiated with positional or optional parameters:
     assert SimDevice(
-            5,
-            [block_def, block5],
-        ) == SimDevice(
-            id=5, simdata=[block_def, block5]
-        )
+        5,
+        [block_def, block5],
+    ) == SimDevice(id=5, simdata=[block_def, block5])
 
     # SimDevice can define either a shared or a non-shared register model
     SimDevice(id=1, simdata=[block_def, block5])
-    #SimDevice(2, False,
+    # SimDevice(2, False,
     #          block_coil=[block1],
     #          block_discrete=[block1],
     #          block_holding=[block2],
@@ -68,12 +64,13 @@ def define_datamodel():
     # not for runtime.
 
     # id=0 in a SimDevice act as a "catch all". Requests to an unknown id is executed in this SimDevice.
-    #SimDevice(0, block_shared=[block2])
+    # SimDevice(0, block_shared=[block2])
 
 
 def main():
     """Combine setup and run."""
     define_datamodel()
+
 
 if __name__ == "__main__":
     main()

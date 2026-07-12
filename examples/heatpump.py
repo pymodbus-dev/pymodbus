@@ -58,6 +58,7 @@ usage::
     -p, --port PORT
         set port to listen on
 """
+
 import argparse
 import asyncio
 from contextlib import suppress
@@ -73,8 +74,8 @@ from pymodbus.simulator import DataType, SimData, SimDevice
 
 DEVICE_ID = 1
 BITS_ADDR = 0
-THERMO_ADDR = (1, 3, 5, 7, 9) # Thermometros A-E
-ALIVE_ADDR = (11, 12) # Call count, 1 minute counter
+THERMO_ADDR = (1, 3, 5, 7, 9)  # Thermometros A-E
+ALIVE_ADDR = (11, 12)  # Call count, 1 minute counter
 
 
 class OneWire:  # pylint: disable=(too-few-public-methods
@@ -83,7 +84,6 @@ class OneWire:  # pylint: disable=(too-few-public-methods
     def read_all(self) -> list[float]:
         """Read 1wire."""
         return [31.2, 32.3, 33.4, 34.5, 35.6]
-
 
 
 class Heatpump:
@@ -122,14 +122,25 @@ class Heatpump:
         pymodbus_apply_logging_config(args.log.upper())
         Log.info("Start heatpump monitor.")
 
-        device = SimDevice(DEVICE_ID,
+        device = SimDevice(
+            DEVICE_ID,
             simdata=[
                 SimData(BITS_ADDR, datatype=DataType.BITS),
-                SimData(THERMO_ADDR[0], values=0.0, count=len(THERMO_ADDR), datatype=DataType.FLOAT32),
-                SimData(ALIVE_ADDR[0], values=0, count=len(ALIVE_ADDR), datatype=DataType.INT16),
+                SimData(
+                    THERMO_ADDR[0],
+                    values=0.0,
+                    count=len(THERMO_ADDR),
+                    datatype=DataType.FLOAT32,
+                ),
+                SimData(
+                    ALIVE_ADDR[0],
+                    values=0,
+                    count=len(ALIVE_ADDR),
+                    datatype=DataType.INT16,
+                ),
             ],
             use_bit_addressing=True,
-            action=self.catch_requests
+            action=self.catch_requests,
         )
         self.server = ModbusTcpServer(device, address=("", args.port))
         self.serving: asyncio.Future = asyncio.Future()
@@ -138,16 +149,18 @@ class Heatpump:
         self.server_task: asyncio.Task | None = None
 
     async def catch_requests(
-            self,
-            _function_code: int,
-            _start_address: int,
-            _address: int,
-            _count: int,
-            registers: list[int],
-            _set_values: list[int] | list[bool] | None
-        ) -> None | ExcCodes:
+        self,
+        _function_code: int,
+        _start_address: int,
+        _address: int,
+        _count: int,
+        registers: list[int],
+        _set_values: list[int] | list[bool] | None,
+    ) -> None | ExcCodes:
         """Run action."""
-        registers[ALIVE_ADDR[0]] = 0 if registers[ALIVE_ADDR[0]] > 32000 else registers[ALIVE_ADDR[0]] + 1
+        registers[ALIVE_ADDR[0]] = (
+            0 if registers[ALIVE_ADDR[0]] > 32000 else registers[ALIVE_ADDR[0]] + 1
+        )
         return None
 
     async def serve_forever(self):
@@ -159,16 +172,27 @@ class Heatpump:
             await asyncio.sleep(1)
             Log.debug("Update values.")
 
-            if (sec := int(time())) >= self.last_keepalive +60:
-                keepalive = cast(list[int], await self.server.async_getValues(DEVICE_ID, 3, ALIVE_ADDR[1], count=1))
+            if (sec := int(time())) >= self.last_keepalive + 60:
+                keepalive = cast(
+                    list[int],
+                    await self.server.async_getValues(
+                        DEVICE_ID, 3, ALIVE_ADDR[1], count=1
+                    ),
+                )
                 keepalive[0] = 0 if keepalive[0] > 32000 else keepalive[0] + 1
-                await self.server.async_setValues(DEVICE_ID, 16, ALIVE_ADDR[1], keepalive)
+                await self.server.async_setValues(
+                    DEVICE_ID, 16, ALIVE_ADDR[1], keepalive
+                )
                 self.last_keepalive = sec
 
             values = self.one_wire.read_all()
             regs: list[int] = []
             for value in values:
-                regs.extend(client.convert_to_registers(value, data_type=client.DATATYPE.FLOAT32))
+                regs.extend(
+                    client.convert_to_registers(
+                        value, data_type=client.DATATYPE.FLOAT32
+                    )
+                )
             await self.server.async_setValues(DEVICE_ID, 0x16, THERMO_ADDR[0], regs)
 
     async def shutdown(self, delayed):  # pragma: no cover
@@ -202,7 +226,6 @@ class Heatpump:
                 shutdown_task.cancel()
             with suppress(asyncio.CancelledError):
                 await shutdown_task
-
 
 
 async def main(cmdline=None):

@@ -6,6 +6,7 @@ bit based request/response messages:
 * Read/Write Discretes
 * Read Coils
 """
+
 import pytest
 
 from pymodbus.exceptions import ModbusException
@@ -21,6 +22,7 @@ from pymodbus.pdu.file_message import (
 
 
 TEST_MESSAGE = b"\x00\n\x00\x04\x00\x01\x00\x02\x00\x03\x00\x04"
+
 
 class TestBitMessage:
     """Modbus bit message tests."""
@@ -179,7 +181,9 @@ class TestBitMessage:
         size = handle.calculateRtuFrameSize(request)
         assert size == 0x0D + 5
 
-    async def test_write_file_record_request_datastore_update(self, mock_server_context):
+    async def test_write_file_record_request_datastore_update(
+        self, mock_server_context
+    ):
         """Test basic bit message encoding/decoding."""
         handle = WriteFileRecordRequest()
         result = await handle.datastore_update(mock_server_context(), 0)

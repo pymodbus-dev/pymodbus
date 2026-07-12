@@ -1,4 +1,5 @@
 """HTTP server for modbus simulator."""
+
 from __future__ import annotations
 
 import asyncio
@@ -152,7 +153,9 @@ class ModbusSimulatorServer:
         datastore = None
         if "device_id" in server:
             # Designated ModBus unit address. Will only serve data if the address matches
-            datastore = ModbusServerContext(devices={int(server["device_id"]): self.datastore_context}, single=False)
+            datastore = ModbusServerContext(
+                devices={int(server["device_id"]): self.datastore_context}, single=False
+            )
             del server["device_id"]
         else:
             # Will server any request regardless of addressing
@@ -208,15 +211,13 @@ class ModbusSimulatorServer:
             html_file = os.path.join(self.web_path, "generator", entry)
             with open(html_file, encoding="utf-8") as handle:
                 self.generator_html[entry][0] = handle.read()
-        app_key = getattr(web, 'AppKey', str)  # fall back to str for aiohttp < 3.9.0
+        app_key = getattr(web, "AppKey", str)  # fall back to str for aiohttp < 3.9.0
         self.api_key: str = app_key("modbus_server")
         self.ready_event = asyncio.Event()
 
     async def start_modbus_server(self, app):
         """Start Modbus server as asyncio task."""
-        app[self.api_key] = asyncio.create_task(
-            self.modbus_server.serve_forever()
-        )
+        app[self.api_key] = asyncio.create_task(self.modbus_server.serve_forever())
         app[self.api_key].set_name("simulator modbus server")
         Log.info(
             "Modbus server started on {}", self.modbus_server.comm_params.source_address
@@ -293,7 +294,9 @@ class ModbusSimulatorServer:
             result = self.generator_json[command](params)
         except (KeyError, ValueError, TypeError, IndexError) as exc:
             Log.error("Unhandled error during json request: {}", exc)
-            return web.json_response({"result": "error", "error": f"Unhandled error Error: {exc}"})
+            return web.json_response(
+                {"result": "error", "error": f"Unhandled error Error: {exc}"}
+            )
         return web.json_response(result)
 
     def build_html_registers(self, params, html):  # pragma: no cover
@@ -375,12 +378,10 @@ class ModbusSimulatorServer:
         )
         function_codes = ""
         for function in DecodePDU(True).list_function_codes():
-            selected = (
-                "selected"
-                if function == self.call_monitor.function
-                else ""
+            selected = "selected" if function == self.call_monitor.function else ""
+            function_codes += (
+                f"<option value={function} {selected}>function code name</option>"
             )
-            function_codes += f"<option value={function} {selected}>function code name</option>"
         simulation_action = (
             "ACTIVE" if self.call_response.active != RESPONSE_INACTIVE else ""
         )
@@ -451,9 +452,12 @@ class ModbusSimulatorServer:
     def build_json_registers(self, params):
         """Build json registers response."""
         # Process params using the helper function
-        result_txt, foot = self.helper_handle_submit(params, {
-            "Set": self.action_set,
-        })
+        result_txt, foot = self.helper_handle_submit(
+            params,
+            {
+                "Set": self.action_set,
+            },
+        )
 
         if not result_txt:  # pragma: no cover
             result_txt = "ok"
@@ -478,7 +482,7 @@ class ModbusSimulatorServer:
                 "action": reg.action,
                 "value": reg.value,
                 "count_read": reg.count_read,
-                "count_write": reg.count_write
+                "count_write": reg.count_write,
             }
             register_rows.append(row)
 
@@ -499,11 +503,14 @@ class ModbusSimulatorServer:
 
     def build_json_calls(self, params: dict) -> dict:
         """Build json calls response."""
-        result_txt, foot = self.helper_handle_submit(params, {
-            "Reset": self.action_reset,
-            "Add": self.action_add,
-            "Simulate": self.action_simulate,
-        })
+        result_txt, foot = self.helper_handle_submit(
+            params,
+            {
+                "Reset": self.action_reset,
+                "Add": self.action_add,
+                "Simulate": self.action_simulate,
+            },
+        )
         if not foot:  # pragma: no cover
             foot = "Monitoring active" if self.call_monitor.active else "not active"
         if not result_txt:  # pragma: no cover
@@ -521,11 +528,13 @@ class ModbusSimulatorServer:
             (10, "GATEWAY_PATH_UNAVIABLE"),
             (11, "GATEWAY_NO_RESPONSE"),
         ):
-            function_error.append({
-                "value": i,
-                "text": txt,
-                "selected": i == self.call_response.error_response
-            })
+            function_error.append(
+                {
+                    "value": i,
+                    "text": txt,
+                    "selected": i == self.call_response.error_response,
+                }
+            )
 
         range_start = (
             self.call_monitor.range_start
@@ -533,33 +542,37 @@ class ModbusSimulatorServer:
             else None
         )
         range_stop = (
-            self.call_monitor.range_stop
-            if self.call_monitor.range_stop != -1
-            else None
+            self.call_monitor.range_stop if self.call_monitor.range_stop != -1 else None
         )
 
         function_codes = []
         for function in DecodePDU(True).list_function_codes():
-            function_codes.append({
-                "value": function,
-                "text": "function code name",
-                "selected": function == self.call_monitor.function
-            })
+            function_codes.append(
+                {
+                    "value": function,
+                    "text": "function code name",
+                    "selected": function == self.call_monitor.function,
+                }
+            )
 
-        simulation_action = "ACTIVE" if self.call_response.active != RESPONSE_INACTIVE else ""
+        simulation_action = (
+            "ACTIVE" if self.call_response.active != RESPONSE_INACTIVE else ""
+        )
 
         max_len = MAX_FILTER if self.call_monitor.active else 0
         while len(self.call_list) > max_len:  # pragma: no cover
             del self.call_list[0]
         call_rows = []
         for entry in reversed(self.call_list):  # pragma: no cover
-            call_rows.append({
-                "call": entry.call,
-                "fc": entry.fc,
-                "address": entry.address,
-                "count": entry.count,
-                "data": entry.data.decode()
-            })
+            call_rows.append(
+                {
+                    "call": entry.call,
+                    "fc": entry.fc,
+                    "address": entry.address,
+                    "count": entry.count,
+                    "data": entry.data.decode(),
+                }
+            )
 
         json_response = {
             "simulation_action": simulation_action,
@@ -568,10 +581,14 @@ class ModbusSimulatorServer:
             "function_codes": function_codes,
             "function_show_hex_checked": self.call_monitor.hex,
             "function_show_decoded_checked": self.call_monitor.decode,
-            "function_response_normal_checked": self.call_response.active == RESPONSE_NORMAL,
-            "function_response_error_checked": self.call_response.active == RESPONSE_ERROR,
-            "function_response_empty_checked": self.call_response.active == RESPONSE_EMPTY,
-            "function_response_junk_checked": self.call_response.active == RESPONSE_JUNK,
+            "function_response_normal_checked": self.call_response.active
+            == RESPONSE_NORMAL,
+            "function_response_error_checked": self.call_response.active
+            == RESPONSE_ERROR,
+            "function_response_empty_checked": self.call_response.active
+            == RESPONSE_EMPTY,
+            "function_response_junk_checked": self.call_response.active
+            == RESPONSE_JUNK,
             "function_response_split_checked": self.call_response.split > 0,
             "function_response_split_delay": self.call_response.split,
             "function_response_cr_checked": self.call_response.change_rate > 0,
@@ -582,18 +599,26 @@ class ModbusSimulatorServer:
             "function_response_clear_after": self.call_response.clear_after,
             "call_rows": call_rows,
             "foot": foot,
-            "result": result_txt
+            "result": result_txt,
         }
 
         return json_response
 
     def build_json_log(self, params):
         """Build json log page."""
-        return {"result": "error", "error": "log endpoint not implemented", "params": params}
+        return {
+            "result": "error",
+            "error": "log endpoint not implemented",
+            "params": params,
+        }
 
     def build_json_server(self, params):
         """Build html server page."""
-        return {"result": "error", "error": "server endpoint not implemented", "params": params}
+        return {
+            "result": "error",
+            "error": "server endpoint not implemented",
+            "params": params,
+        }
 
     def helper_handle_submit(self, params, submit_actions):
         """Build html register submit."""

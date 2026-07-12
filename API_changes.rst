@@ -2,6 +2,15 @@ API changes
 ===========
 Versions (X.Y.Z) where Z == 0 e.g. 3.0.1 do NOT have API changes!
 
+
+API changes 3.14.0
+------------------
+- ModbusTlsServer, removed parameters certfile=,keyfile=,password=, only accept sslctx=
+  * This is due to complaints that the development certificate is self signed, and thus insecure for production.
+- ModbusTlsClient, removed generate_ssl()
+  * This is due to complaints that the development certificate is self signed, and thus insecure for production.
+- Upgraded 3rd party libraries (only relevant for developing pymodbus)
+
 API changes 3.13.0
 ------------------
 - removed RemoteDeviceContext, because it only is a partial forwarder

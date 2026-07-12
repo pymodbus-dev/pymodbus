@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Delete old workflow runs
-        uses: Mattraks/delete-workflow-runs@v2
+        uses: Mattraks/delete-workflow-runs@v2.1.0
         with:
           token: ${{ github.token }}
           repository: ${{ github.repository }}
@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clear cache
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             console.log("About to clear")

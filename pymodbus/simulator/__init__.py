@@ -14,4 +14,3 @@ __all__ = [
 from .simdata import SimData, SimValueType
 from .simdevice import SimAction, SimDevice
 from .simutils import DataType
-

@@ -1,4 +1,5 @@
 """Pymodbus ModbusSimulatorContext."""
+
 from __future__ import annotations
 
 import dataclasses
@@ -359,13 +360,13 @@ class Setup:
             Label.invalid: CellType.INVALID,
         }
         self.runtime.registerType_id_to_name = [
-            "invalid",    # 0
-            "bits",       # 1
-            "uint16",     # 2
-            "uint32",     # 3
-            "float32",    # 4
-            "string",     # 5
-            "next",       # 6
+            "invalid",  # 0
+            "bits",  # 1
+            "uint16",  # 2
+            "uint32",  # 3
+            "float32",  # 4
+            "string",  # 5
+            "next",  # 6
         ]
 
         self.config = config
@@ -488,10 +489,12 @@ class ModbusSimulatorContext:
         self.registerType_id_to_name: list[str] = []
         if config:
             Setup(self).setup(config, custom_actions)
-        Log.warning("ModbusSimulatorContext is deprecated "
-                    "and will be removed in v4.\n"
-                    "Please convert to SimData/SimDevice.\n"
-                    "Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice")
+        Log.warning(
+            "ModbusSimulatorContext is deprecated "
+            "and will be removed in v4.\n"
+            "Please convert to SimData/SimDevice.\n"
+            "Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice"
+        )
 
     # --------------------------------------------
     # Simulator server interface
@@ -591,7 +594,9 @@ class ModbusSimulatorContext:
         fx_write = func_code in self._write_func_code
         return self.loop_validate(real_address, real_address + count, fx_write)
 
-    async def async_OLD_getValues(self, func_code, address, count=1) -> list[int] | list[bool] | ExcCodes:
+    async def async_OLD_getValues(
+        self, func_code, address, count=1
+    ) -> list[int] | list[bool] | ExcCodes:
         """Return the requested values of the datastore.
 
         :meta private:
@@ -605,7 +610,9 @@ class ModbusSimulatorContext:
                 reg = self.registers[i]
                 parameters = reg.action_parameters if reg.action_parameters else {}
                 if reg.action:
-                    self.action_methods[reg.action](self.registers, i, reg, **parameters)
+                    self.action_methods[reg.action](
+                        self.registers, i, reg, **parameters
+                    )
                 self.registers[i].count_read += 1
                 result.append(reg.value)
         else:
@@ -714,7 +721,7 @@ class ModbusSimulatorContext:
             new_regs = cls.build_registers_from_value(value, False)
             reg.value = new_regs[0]
             reg2.value = new_regs[1]
-        else: # if cell.type == CellType.UINT32:
+        else:  # if cell.type == CellType.UINT32:
             tmp_reg = [reg.value, reg2.value]
             value = cls.build_value_from_registers(tmp_reg, True)
             value += 1
@@ -763,7 +770,7 @@ class ModbusSimulatorContext:
             regs = cls.build_registers_from_value(value, False)
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]
-        else: # if cell.type == CellType.UINT32:
+        else:  # if cell.type == CellType.UINT32:
             regs = cls.build_registers_from_value(value, True)
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]

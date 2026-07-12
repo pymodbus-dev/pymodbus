@@ -1,4 +1,5 @@
 """Implementation of a Threaded Modbus Server."""
+
 from __future__ import annotations
 
 import asyncio
@@ -33,8 +34,7 @@ async def StartAsyncTcpServer(
 
 
 def StartTcpServer(
-    context: ModbusServerContext | SimDevice | list[SimDevice],
-    **kwargs
+    context: ModbusServerContext | SimDevice | list[SimDevice], **kwargs
 ) -> None:
     """Start and run a modbus TCP server.
 
@@ -67,8 +67,7 @@ async def StartAsyncTlsServer(
 
 
 def StartTlsServer(
-    context: ModbusServerContext | SimDevice | list[SimDevice],
-    **kwargs
+    context: ModbusServerContext | SimDevice | list[SimDevice], **kwargs
 ) -> None:
     """Start and run a modbus TLS server.
 
@@ -101,8 +100,7 @@ async def StartAsyncUdpServer(
 
 
 def StartUdpServer(
-    context: ModbusServerContext | SimDevice | list[SimDevice],
-    **kwargs
+    context: ModbusServerContext | SimDevice | list[SimDevice], **kwargs
 ) -> None:
     """Start and run a modbus UDP server.
 
@@ -135,8 +133,7 @@ async def StartAsyncSerialServer(
 
 
 def StartSerialServer(
-    context: ModbusServerContext | SimDevice | list[SimDevice],
-    **kwargs
+    context: ModbusServerContext | SimDevice | list[SimDevice], **kwargs
 ) -> None:
     """Start and run a modbus serial server.
 
@@ -150,6 +147,7 @@ def StartSerialServer(
     """
     asyncio.run(StartAsyncSerialServer(context, **kwargs))
 
+
 async def ServerAsyncStop() -> None:
     """Terminate server."""
     if not ModbusBaseServer.active_server:
@@ -157,10 +155,13 @@ async def ServerAsyncStop() -> None:
     await ModbusBaseServer.active_server.shutdown()
     ModbusBaseServer.active_server = None
 
+
 def ServerStop() -> None:
     """Terminate server."""
     if not ModbusBaseServer.active_server:
         raise RuntimeError("Modbus server not running.")
-    future = asyncio.run_coroutine_threadsafe(ServerAsyncStop(), ModbusBaseServer.active_server.loop)
+    future = asyncio.run_coroutine_threadsafe(
+        ServerAsyncStop(), ModbusBaseServer.active_server.loop
+    )
     while not future.done():
         sleep(0.1)

@@ -1,4 +1,5 @@
 """Transport."""
+
 __all__ = [
     "NULLMODEM_HOST",
     "CommParams",

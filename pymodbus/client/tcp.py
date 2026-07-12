@@ -1,4 +1,5 @@
 """Modbus client async TCP communication."""
+
 from __future__ import annotations
 
 import select
@@ -75,7 +76,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
-        if not hasattr(self,"comm_params"):
+        if not hasattr(self, "comm_params"):
             if framer not in [FramerType.SOCKET, FramerType.RTU, FramerType.ASCII]:
                 raise TypeError("Only FramerType SOCKET/RTU/ASCII allowed.")
             self.comm_params = CommParams(
@@ -154,7 +155,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Modbus TCP Client."""
-        if not hasattr(self,"comm_params"):
+        if not hasattr(self, "comm_params"):
             if framer not in [FramerType.SOCKET, FramerType.RTU, FramerType.ASCII]:
                 raise TypeError("Only FramerType SOCKET/RTU/ASCII allowed.")
             self.comm_params = CommParams(
@@ -277,7 +278,9 @@ class ModbusTcpClient(ModbusBaseSyncClient):
             recv_size = size - data_length
         return b"".join(data)
 
-    def _handle_abrupt_socket_close(self, size: int | None, data: list[bytes], duration: float) -> bytes:
+    def _handle_abrupt_socket_close(
+        self, size: int | None, data: list[bytes], duration: float
+    ) -> bytes:
         """Handle unexpected socket close by remote end.
 
         Intended to be invoked after determining that the remote end

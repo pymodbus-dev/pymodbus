@@ -1,4 +1,5 @@
 """Modbus Socket frame implementation."""
+
 from __future__ import annotations
 
 from ..logging import Log
@@ -22,17 +23,17 @@ class FramerSocket(FramerBase):
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU."""
         if (data_len := len(data)) < self.MIN_SIZE:
-          Log.debug("Very short frame (NO MBAP): {} wait for more data", data, ":hex")
-          return 0, 0, 0, self.EMPTY
-        tid = int.from_bytes(data[0:2], 'big')
-        if (pid := int.from_bytes(data[2:4], 'big')):
-           Log.error("Invalid Modbus protocol id: {}", pid)
-           return 0, 0, 0, self.EMPTY
-        msg_len = int.from_bytes(data[4:6], 'big') + 6
+            Log.debug("Very short frame (NO MBAP): {} wait for more data", data, ":hex")
+            return 0, 0, 0, self.EMPTY
+        tid = int.from_bytes(data[0:2], "big")
+        if pid := int.from_bytes(data[2:4], "big"):
+            Log.error("Invalid Modbus protocol id: {}", pid)
+            return 0, 0, 0, self.EMPTY
+        msg_len = int.from_bytes(data[4:6], "big") + 6
         dev_id = int(data[6])
         if data_len < msg_len:
-          Log.debug("Short frame: {} wait for more data", data, ":hex")
-          return 0, 0, 0, self.EMPTY
+            Log.debug("Short frame: {} wait for more data", data, ":hex")
+            return 0, 0, 0, self.EMPTY
         if msg_len == 8 and data_len == 9:
             msg_len = 9
         return msg_len, dev_id, tid, data[7:msg_len]
@@ -40,10 +41,10 @@ class FramerSocket(FramerBase):
     def encode(self, payload: bytes, device_id: int, tid: int) -> bytes:
         """Encode ADU."""
         frame = (
-           tid.to_bytes(2, 'big') +
-           b'\x00\x00' +
-           (len(payload) + 1).to_bytes(2, 'big') +
-           device_id.to_bytes(1, 'big') +
-           payload
+            tid.to_bytes(2, "big")
+            + b"\x00\x00"
+            + (len(payload) + 1).to_bytes(2, "big")
+            + device_id.to_bytes(1, "big")
+            + payload
         )
         return frame

@@ -1,4 +1,5 @@
 """Test datastore context."""
+
 import pytest
 
 from pymodbus.constants import ExcCodes
@@ -62,7 +63,6 @@ class TestContextDataStore:
         assert await srv.async_getValues(1, 0x03, 0) == ExcCodes.DEVICE_BUSY
         with pytest.raises(NoSuchIdException):
             await srv.async_getValues(15, 0, 0)
-
 
     async def test_datastore_server_device_id_0(self):
         """Test ModbusServerContext."""

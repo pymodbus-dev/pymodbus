@@ -1,4 +1,5 @@
 """Implementation of a Threaded Modbus Server."""
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -19,7 +20,7 @@ class ModbusTcpServer(ModbusBaseServer):
         Remember to call serve_forever to start server.
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         context: ModbusServerContext | SimDevice | list[SimDevice],
         *,
@@ -91,9 +92,6 @@ class ModbusTlsServer(ModbusTcpServer):
         identity: ModbusDeviceIdentification | None = None,
         address: tuple[str, int] = ("", 502),
         sslctx=None,
-        certfile=None,
-        keyfile=None,
-        password=None,
         ignore_missing_devices=False,
         broadcast_enable=False,
         trace_packet: Callable[[bool, bytes], bytes] | None = None,
@@ -110,11 +108,7 @@ class ModbusTlsServer(ModbusTcpServer):
         :param framer: The framer strategy to use
         :param identity: An optional identify structure
         :param address: An optional (interface, port) to bind to.
-        :param sslctx: The SSLContext to use for TLS (default None and auto
-                       create)
-        :param certfile: The cert file path for TLS (used if sslctx is None)
-        :param keyfile: The key file path for TLS (used if sslctx is None)
-        :param password: The password for for decrypting the private key file
+        :param sslctx: The SSLContext to use for TLS
         :param ignore_missing_devices: True to not send errors on a  missing device
         :param broadcast_enable: True to treat dev_id 0 as broadcast address,
                         False to treat 0 as any other dev_id
@@ -129,9 +123,7 @@ class ModbusTlsServer(ModbusTcpServer):
             reconnect_delay=0.0,
             reconnect_delay_max=0.0,
             timeout_connect=0.0,
-            sslctx=CommParams.generate_ssl(
-                True, certfile, keyfile, password, sslctx=sslctx
-            ),
+            sslctx=sslctx,
         )
         super().__init__(
             context,
@@ -154,7 +146,7 @@ class ModbusUdpServer(ModbusBaseServer):
         Remember to call serve_forever to start server.
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         context: ModbusServerContext | SimDevice | list[SimDevice],
         *,
@@ -227,7 +219,7 @@ class ModbusSerialServer(ModbusBaseServer):
         trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
         custom_pdu: list[type[ModbusPDU]] | None = None,
-        **kwargs
+        **kwargs,
     ):
         """Initialize the socket server.
 
@@ -283,6 +275,10 @@ class ModbusSerialServer(ModbusBaseServer):
         self.allow_multiple_devices = kwargs.get("allow_multiple_devices", False)
         if self.allow_multiple_devices:
             if baudrate > 38400:
-                raise TypeError("allow_multiple_devices only allowed with baudrate <= 38.400")
+                raise TypeError(
+                    "allow_multiple_devices only allowed with baudrate <= 38.400"
+                )
             if framer != FramerType.RTU:
-                raise TypeError("allow_multiple_devices only allowed with FramerType.RTU")
+                raise TypeError(
+                    "allow_multiple_devices only allowed with FramerType.RTU"
+                )

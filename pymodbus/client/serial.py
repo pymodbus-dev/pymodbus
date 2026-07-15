@@ -33,7 +33,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
     :param baudrate: Bits per second.
     :param bytesize: Number of bits per byte 7-8.
     :param parity: 'E'ven, 'O'dd or 'N'one
-    :param stopbits: Number of stop bits 1, 1.5, 2.
+    :param stopbits: Number of stop bits 1, 1.5, 2. (Note: 1.5 falls back to 2 on POSIX systems)
     :param handle_local_echo: Discard local echo from dongle.
     :param name: Set communication name, used in logging
     :param reconnect_delay: Minimum delay when reconnecting, in seconds (use decimals for milliseconds).
@@ -130,7 +130,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     :param baudrate: Bits per second.
     :param bytesize: Number of bits per byte 7-8.
     :param parity: 'E'ven, 'O'dd or 'N'one
-    :param stopbits: Number of stop bits 1, 1.5, 2.
+    :param stopbits: Number of stop bits 1, 1.5, 2. (Note: 1.5 falls back to 2 on POSIX systems)
     :param handle_local_echo: Discard local echo from dongle.
     :param name: Set communication name, used in logging
     :param reconnect_delay: Not used in the sync client

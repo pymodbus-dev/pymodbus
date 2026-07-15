@@ -229,7 +229,7 @@ class ModbusSerialServer(ModbusBaseServer):
         :param framer: The framer strategy to use, default FramerType.RTU
         :param identity: An optional identify structure
         :param port: The serial port to attach to
-        :param stopbits: The number of stop bits to use
+        :param stopbits: The number of stop bits to use 1, 1.5, 2. (Note: 1.5 falls back to 2 on POSIX systems)
         :param bytesize: The bytesize of the serial messages
         :param parity: Which kind of parity to use
         :param baudrate: The baud rate to use for the serial device

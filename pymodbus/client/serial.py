@@ -130,7 +130,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     :param baudrate: Bits per second.
     :param bytesize: Number of bits per byte 7-8.
     :param parity: 'E'ven, 'O'dd or 'N'one
-    :param stopbits: Number of stop bits 0-2.
+    :param stopbits: Number of stop bits 1, 1.5, 2.
     :param handle_local_echo: Discard local echo from dongle.
     :param name: Set communication name, used in logging
     :param reconnect_delay: Not used in the sync client

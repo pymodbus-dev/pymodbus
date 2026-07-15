@@ -633,6 +633,27 @@ class TestPdu:
         assert pack_bitstring(bitlist) == bytestream
 
     @pytest.mark.parametrize(
+        ("align_byte", "expected"),
+        [
+            (True, b"\x05"),
+            (False, b"\x05\x00"),
+        ],
+    )
+    def test_pack_bitstring_does_not_mutate_input(
+        self,
+        align_byte,
+        expected,
+    ):
+        """Test that pack_bitstring leaves the input list unchanged."""
+        bits = [True, False, True]
+        original = bits.copy()
+
+        result = pack_bitstring(bits, align_byte=align_byte)
+
+        assert result == expected
+        assert bits == original
+
+    @pytest.mark.parametrize(
         ("bytestream", "bitlist"),
         [
             (b"\x01", [True] + [False] * 7),

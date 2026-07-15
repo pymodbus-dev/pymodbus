@@ -15,9 +15,10 @@ class TestModbusBitMessage:
         """Test basic bit message encoding/decoding."""
         for i in range(1, 20):
             data = [True] * i
+            expected = data + [False] * (-len(data) % 8)
             pdu = bit_msg.ReadCoilsResponse(bits=data)
             pdu.decode(pdu.encode())
-            assert pdu.bits == data
+            assert pdu.bits == expected
 
     def test_bit_read_base_requests(self):
         """Test bit read request encoding."""

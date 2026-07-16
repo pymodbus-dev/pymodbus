@@ -49,7 +49,8 @@ jobs:
         uses: astral-sh/setup-uv@v8.2.0
         with:
           python-version: ${{ matrix.python }}
-          enable-cache: true
+          enable-cache: false
+          if-use-cache: false
 
       - name: Create virtualenv and sync dependencies
         run: |

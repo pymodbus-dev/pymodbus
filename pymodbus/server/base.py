@@ -25,7 +25,7 @@ class ModbusBaseServer(ModbusProtocol):
     def __init__(
         self,
         params: CommParams,
-        context: ModbusServerContext | SimDevice | list[SimDevice],
+        context: ModbusServerContext | SimDevice | list[SimDevice] | SimCore,
         ignore_missing_devices: bool,
         broadcast_enable: bool,
         identity: ModbusDeviceIdentification | None,
@@ -46,7 +46,9 @@ class ModbusBaseServer(ModbusProtocol):
             for func in custom_pdu:
                 self.decoder.register(func)
         self.context: ModbusServerContext | SimCore
-        if not isinstance(context, ModbusServerContext):
+        if isinstance(context, SimCore):
+            self.context = context
+        elif not isinstance(context, ModbusServerContext):
             self.context = SimCore(context)
         elif context.simdevices:
             self.context = SimCore(context.simdevices)

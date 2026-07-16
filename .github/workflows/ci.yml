@@ -50,7 +50,6 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           enable-cache: false
-          if-use-cache: false
 
       - name: Create virtualenv and sync dependencies
         run: |

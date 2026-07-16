@@ -227,7 +227,7 @@ class ModbusSerialServer(ModbusBaseServer):
         stopbits: int = 1,
         handle_local_echo: bool = False,
         allow_multiple_devices: bool = False,
-        port: str = 0,  # type: ignore[assignment]
+        port: str = "",
     ):
         """Initialize the socket server.
 

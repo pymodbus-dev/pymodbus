@@ -149,7 +149,7 @@ class SimDevice:
                 "simdata= must be SimData, list of SimData or tuple with 4 list of SimData"
             )
         for i in range(4):
-            sim_list = cast(tuple, self.simdata)[i]
+            sim_list = self.simdata[i]
             if not isinstance(sim_list, list):
                 raise TypeError(f"simdata=tuple[{TUPLE_NAMES[i]}] -> must be a list")
             for inx, entry in enumerate(sim_list):
@@ -186,9 +186,7 @@ class SimDevice:
         self.__check_simple2()
         if isinstance(self.simdata, tuple):
             for i in range(4):
-                self.__check_block(
-                    cast(tuple, self.simdata)[i], (i in {0, 1}), TUPLE_NAMES[i]
-                )
+                self.__check_block(self.simdata[i], (i in {0, 1}), TUPLE_NAMES[i])
         else:
             x_simdata = (
                 self.simdata if isinstance(self.simdata, list) else [self.simdata]
@@ -279,7 +277,7 @@ class SimDevice:
         #  (<coils>, <discrete inputs>, <holding registers>, <input registers>)
         convert = {0: "c", 1: "d", 2: "h", 3: "i"}
         for i in range(4):
-            x_simdata = cast(tuple, self.simdata)[i]
+            x_simdata = self.simdata[i]
             x_simdata.sort(key=lambda x: x.address)
             if i in {0, 1}:
                 b[convert[i]] = self.__create_block_bits(x_simdata)

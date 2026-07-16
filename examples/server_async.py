@@ -161,10 +161,10 @@ async def run_async_server(args) -> None:
             helper.get_certificate(
                 "crt"
             ),  # The cert file path for TLS (used if sslctx is None)
-            helper.get_certificate(
+            keyfile=helper.get_certificate(
                 "key"
             ),  # The key file path for TLS (used if sslctx is None)
-            None,
+            password=None,
         )  # # The password for for decrypting the private key file
         await StartAsyncTlsServer(
             context=args.context,  # Data storage

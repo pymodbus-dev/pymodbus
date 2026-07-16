@@ -135,7 +135,8 @@ disable = [
     "file-ignored",       # ONLY to be used with extreme care.
     "format",             # NOT wanted, handled by ruff
     "locally-disabled",   # NOT wanted
-    "suppressed-message"  # NOT wanted"""
+    "suppressed-message", # NOT wanted"""
+    "too-many-arguments",
 ]
 
 [tool.pylint.reports]

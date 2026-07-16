@@ -227,7 +227,7 @@ class ModbusSerialServer(ModbusBaseServer):
         stopbits: int = 1,
         handle_local_echo: bool = False,
         allow_multiple_devices: bool = False,
-        **kwargs,
+        port: str = 0,  # type: ignore[assignment]
     ):
         """Initialize the socket server.
 
@@ -260,7 +260,7 @@ class ModbusSerialServer(ModbusBaseServer):
             reconnect_delay=reconnect_delay,
             reconnect_delay_max=0.0,
             timeout_connect=timeout,
-            source_address=(kwargs.get("port", 0), 0),
+            source_address=(port, 0),
             bytesize=bytesize,
             parity=parity,
             baudrate=baudrate,

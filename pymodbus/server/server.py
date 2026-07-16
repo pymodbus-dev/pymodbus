@@ -219,6 +219,14 @@ class ModbusSerialServer(ModbusBaseServer):
         trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
         custom_pdu: list[type[ModbusPDU]] | None = None,
+        baudrate: int = 19200,
+        reconnect_delay: float = 2,
+        timeout: float = 3,
+        bytesize: int = 8,
+        parity: str = "N",
+        stopbits: int = 1,
+        handle_local_echo: bool = False,
+        allow_multiple_devices: bool = False,
         **kwargs,
     ):
         """Initialize the socket server.
@@ -246,19 +254,18 @@ class ModbusSerialServer(ModbusBaseServer):
         :param allow_multiple_devices: True if the rs485 have multiple devices connected.
                     **Remark** only works with baudrates <= 38.400 and with an error free RS485.
         """
-        baudrate = kwargs.get("baudrate", 19200)
         params = CommParams(
             comm_type=CommType.SERIAL,
             comm_name="server_listener",
-            reconnect_delay=kwargs.get("reconnect_delay", 2),
+            reconnect_delay=reconnect_delay,
             reconnect_delay_max=0.0,
-            timeout_connect=kwargs.get("timeout", 3),
+            timeout_connect=timeout,
             source_address=(kwargs.get("port", 0), 0),
-            bytesize=kwargs.get("bytesize", 8),
-            parity=kwargs.get("parity", "N"),
+            bytesize=bytesize,
+            parity=parity,
             baudrate=baudrate,
-            stopbits=kwargs.get("stopbits", 1),
-            handle_local_echo=kwargs.get("handle_local_echo", False),
+            stopbits=stopbits,
+            handle_local_echo=handle_local_echo,
         )
         super().__init__(
             params,
@@ -272,7 +279,7 @@ class ModbusSerialServer(ModbusBaseServer):
             trace_connect,
             custom_pdu,
         )
-        self.allow_multiple_devices = kwargs.get("allow_multiple_devices", False)
+        self.allow_multiple_devices = allow_multiple_devices
         if self.allow_multiple_devices:
             if baudrate > 38400:
                 raise TypeError(

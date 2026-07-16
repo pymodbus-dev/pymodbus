@@ -57,7 +57,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         host: str,
         *,
@@ -138,7 +138,7 @@ class ModbusTlsClient(ModbusTcpClient):
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         host: str,
         *,

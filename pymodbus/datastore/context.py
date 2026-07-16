@@ -99,6 +99,7 @@ class ModbusServerContext:
         _ = single
         if not devices:
             raise TypeError("devices= cannot be None")
+        self.old_simulator = False
         self._devices: dict[int, ModbusDeviceContext | ModbusSimulatorContext]
         self.simdevices: list[SimDevice] = []
         if isinstance(devices, dict):
@@ -108,10 +109,14 @@ class ModbusServerContext:
                     simdevice = entry.simdevice
                     simdevice.id = dev_id
                     self.simdevices.append(simdevice)
+                else:
+                    self.old_simulator = True
         else:
             self._devices = {0: devices}
             if not isinstance(devices, ModbusSimulatorContext):
                 self.simdevices = [devices.simdevice]
+            else:
+                self.old_simulator = True
         Log.warning(
             "ModbusServerContext is deprecated "
             "and will be removed in v4.\n"

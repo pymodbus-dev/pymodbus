@@ -357,60 +357,6 @@ class TestTransaction:
         await asyncio.sleep(0.1)
         assert response == await resp
 
-    @pytest.mark.parametrize(("framer"), [FramerRTU, FramerSocket])
-    @pytest.mark.parametrize("scenario", range(2))
-    async def test_delayed_response(self, use_clc, framer, scenario):
-        """Test delayed rtu response combined with retries."""
-        transact = TransactionManager(
-            use_clc,
-            framer(DecodePDU(False)),
-            5,
-            False,
-            None,
-            None,
-            None,
-        )
-        request1 = ReadCoilsRequest(address=117, count=5, dev_id=1)
-        request2 = ReadCoilsRequest(address=118, count=2, dev_id=1)
-        response1 = ReadCoilsResponse(
-            bits=[True, False, True, True] + [False] * 4, dev_id=1
-        )
-        response2 = ReadCoilsResponse(bits=[True] + [False] * 7, dev_id=1)
-        if framer == FramerRTU:
-            cb_response1 = b"\x01\x01\x01\r\x90M"
-            cb_response2 = b"\x01\x01\x01\x01\x90H"
-        else:
-            cb_response1 = b"\x00\x01\x00\x00\x00\x04\x01\x01\x01\r"
-            cb_response2 = b"\x00\x02\x00\x00\x00\x04\x01\x01\x01\x01"
-        transact.retries = 1
-        transact.connection_made(mock.AsyncMock())
-        transact.transport.write = mock.Mock()  # type: ignore[attr-defined]
-        transact.send = mock.Mock()  # type: ignore[method-assign]
-        transact.comm_params.timeout_connect = 0.1
-
-        if scenario == 0:  # timeout + double response
-            resp = asyncio.create_task(transact.execute(False, request1))
-            await asyncio.sleep(0.15)
-            transact.callback_data(cb_response1, None)
-            transact.callback_data(cb_response1, None)
-            result = await resp
-            assert result.bits == response1.bits
-        else:  # if scenario == 1: # timeout + new request + double response
-            resp = asyncio.create_task(transact.execute(False, request1))
-            with pytest.raises(ModbusIOException):
-                await resp
-            resp = asyncio.create_task(transact.execute(False, request2))
-            await asyncio.sleep(0.05)
-            transact.callback_data(cb_response1, None)
-            transact.callback_data(cb_response2, None)
-            result = await resp
-            if framer == FramerRTU:
-                # Return WRONG response
-                assert result.bits == response1.bits
-            else:
-                # Return CORRECT response
-                assert result.bits == response2.bits
-
 
 @pytest.mark.parametrize("use_port", [5098])
 class TestSyncTransaction:

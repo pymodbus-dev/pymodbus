@@ -7,6 +7,7 @@ from collections.abc import Callable
 from contextlib import suppress
 
 from ..datastore import ModbusServerContext
+from ..exceptions import ParameterException
 from ..framer import FRAMER_NAME_TO_CLASS, FramerType
 from ..logging import Log
 from ..pdu import DecodePDU, ModbusPDU
@@ -50,8 +51,10 @@ class ModbusBaseServer(ModbusProtocol):
             self.context = SimCore(context)
         elif context.simdevices:
             self.context = SimCore(context.simdevices)
-        else:
+        elif context.old_simulator:
             self.context = context
+        else:
+            raise ParameterException("context= contains unknown object.")
         self.control = ModbusControlBlock()
         self.ignore_missing_devices = ignore_missing_devices
         self.broadcast_enable = broadcast_enable

@@ -119,7 +119,9 @@ def define_commandline_client(
 ):
     """Define commandline."""
     my_port = str(use_port)
-    cmdline = ["--comm", use_comm, "--framer", use_framer, "--timeout", "0.1"]
+    # Socket-backed serial can take seconds to complete long RTU frames under load.
+    timeout = "10" if use_comm == "serial" else "0.1"
+    cmdline = ["--comm", use_comm, "--framer", use_framer, "--timeout", timeout]
     if use_comm == "serial":
         if use_host == NULLMODEM_HOST:
             use_host = f"{use_host}:{my_port}"

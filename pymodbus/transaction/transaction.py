@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Callable
 from threading import RLock
+from time import monotonic
 
 from ..exceptions import ConnectionException, ModbusIOException
 from ..framer import FramerAscii, FramerBase, FramerRTU
@@ -83,6 +84,7 @@ class TransactionManager(ModbusProtocol):
     def sync_get_response(self, dev_id, tid) -> ModbusPDU:
         """Receive until PDU is correct or timeout."""
         databuffer = b""
+        deadline = monotonic() + self.comm_params.timeout_connect
         while True:
             if not (data := self.sync_client.recv(None)):
                 raise asyncio.exceptions.TimeoutError()
@@ -115,6 +117,8 @@ class TransactionManager(ModbusProtocol):
             databuffer = databuffer[used_len:]
             if pdu:
                 return self.trace_pdu(False, pdu)
+            if monotonic() >= deadline:
+                raise asyncio.exceptions.TimeoutError()
 
     def sync_execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
         """Execute requests asynchronously.

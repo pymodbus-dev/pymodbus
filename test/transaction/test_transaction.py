@@ -648,3 +648,30 @@ class TestSyncTransaction:
         client.recv.side_effect = [response]
         pdu = transact.sync_get_response(1, 0)
         assert isinstance(pdu, ReadCoilsResponse)
+
+    def test_transaction_sync_get_response_garbage_timeout(self, use_clc):
+        """Test continuous invalid input cannot bypass the response timeout."""
+        client = self.dummy_client(use_clc)
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+            sync_client=client,
+        )
+        transact.comm_params.timeout_connect = 0.01
+        client.recv = mock.Mock(return_value=b" Busy ")  # type: ignore[method-assign]
+
+        with (
+            mock.patch(
+                "pymodbus.transaction.transaction.monotonic",
+                side_effect=[0.0, 0.02],
+            ),
+            pytest.raises(asyncio.exceptions.TimeoutError),
+        ):
+            transact.sync_get_response(1, 0)
+
+        client.recv.assert_called_once_with(None)

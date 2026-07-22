@@ -523,6 +523,35 @@ class TestSyncTransaction:
         resp = transact.sync_execute(False, request)
         assert response.bits == resp.bits
 
+    def test_sync_execute_resets_count_until_disconnect(self, use_clc):
+        """Successful sync response must reset the disconnect counter like async."""
+        client = self.dummy_client(use_clc)
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            5,
+            False,
+            None,
+            None,
+            None,
+            sync_client=client,
+        )
+        transact.sync_client.connect = mock.Mock(return_value=True)
+        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
+        response = ReadCoilsResponse(
+            bits=[True, False, True, True, False, False, False, False], dev_id=1
+        )
+        transact.retries = 0
+        transact.transport = 1  # type: ignore[assignment]
+        transact.count_until_disconnect = 1
+        resp_bytes = transact.framer.buildFrame(response)
+        transact.sync_client.recv = mock.Mock(return_value=resp_bytes)
+        transact.sync_client.send = mock.Mock()
+        transact.comm_params.timeout_connect = 0.2
+        resp = transact.sync_execute(False, request)
+        assert response.bits == resp.bits
+        assert transact.count_until_disconnect == transact.max_until_disconnect
+
     @pytest.mark.parametrize("no_resp", [False, True])
     def test_sync_client_protocol_execute_outside(self, use_clc, no_resp):
         """Test the transaction execute method."""

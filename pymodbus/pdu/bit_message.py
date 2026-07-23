@@ -136,6 +136,27 @@ class WriteMultipleCoilsRequest(ModbusPDU):
 
     function_code = 15
     rtu_byte_count_pos = 6
+    count: int
+    byte_count: int | None
+    data_byte_count: int
+
+    def __init__(
+        self,
+        address: int = 0,
+        bits: list[bool] | None = None,
+        dev_id: int = 0,
+        transaction_id: int = 0,
+    ) -> None:
+        """Initialize a write multiple coils request."""
+        super().__init__(
+            address=address,
+            bits=bits,
+            dev_id=dev_id,
+            transaction_id=transaction_id,
+        )
+        self.count = len(self.bits)
+        self.byte_count = None
+        self.data_byte_count = 0
 
     def encode(self) -> bytes:
         """Encode write coils request."""
@@ -149,14 +170,23 @@ class WriteMultipleCoilsRequest(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode a write coils request."""
-        self.address, count, _byte_count = struct.unpack(">HHB", data[0:5])
-        self.bits = unpack_bitstring(data[5:])[:count]
+        self.address, self.count, self.byte_count = struct.unpack(">HHB", data[0:5])
+        self.data_byte_count = len(data) - 5
+        self.bits = unpack_bitstring(data[5 : 5 + self.byte_count])[: self.count]
 
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
     ) -> ModbusPDU:
         """Run a request against a datastore."""
-        count = len(self.bits)
+        if self.byte_count is None:
+            self.count = len(self.bits)
+        else:
+            expected_byte_count = (self.count + 7) // 8
+            if (
+                self.byte_count != expected_byte_count
+                or self.data_byte_count != self.byte_count
+            ):
+                return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
         rc = await context.async_setValues(
             device_id, self.function_code, self.address, self.bits
         )
@@ -165,7 +195,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
 
         return WriteMultipleCoilsResponse(
             address=self.address,
-            count=count,
+            count=self.count,
             dev_id=self.dev_id,
             transaction_id=self.transaction_id,
         )

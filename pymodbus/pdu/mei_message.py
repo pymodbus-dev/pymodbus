@@ -79,6 +79,10 @@ class ReadDeviceInformationRequest(ModbusPDU):
             return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
 
         information = DeviceInformationFactory.get(_MCB, self.read_code, self.object_id)
+        if self.read_code == DeviceInformation.SPECIFIC and (
+            0x07 <= self.object_id < 0x80 or not information.get(self.object_id)
+        ):
+            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_ADDRESS)
         return ReadDeviceInformationResponse(
             read_code=self.read_code,
             information=information,

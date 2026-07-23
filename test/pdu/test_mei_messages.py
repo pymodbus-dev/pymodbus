@@ -8,7 +8,7 @@ from typing import cast
 
 import pytest
 
-from pymodbus.constants import DeviceInformation
+from pymodbus.constants import DeviceInformation, ExcCodes
 from pymodbus.pdu.device import ModbusControlBlock
 from pymodbus.pdu.mei_message import (
     ReadDeviceInformationRequest,
@@ -61,6 +61,14 @@ class TestMeiMessage:
             _ = result.information[0x81]
 
         handle = ReadDeviceInformationRequest(
+            read_code=DeviceInformation.SPECIFIC, object_id=0x00
+        )
+        result = await handle.datastore_update(context, 0)
+        assert cast(ReadDeviceInformationResponse, result).information == {
+            0x00: "Company"
+        }
+
+        handle = ReadDeviceInformationRequest(
             read_code=DeviceInformation.EXTENDED, object_id=0x80
         )
         result = await handle.datastore_update(context, 0)
@@ -81,6 +89,17 @@ class TestMeiMessage:
         assert (await handle.datastore_update(context, 0)).function_code == 0xAB
         handle.object_id = 0x100
         assert (await handle.datastore_update(context, 0)).function_code == 0xAB
+        handle = ReadDeviceInformationRequest(
+            read_code=DeviceInformation.SPECIFIC, object_id=0x54
+        )
+        result = await handle.datastore_update(context, 0)
+        assert result.exception_code == ExcCodes.ILLEGAL_ADDRESS
+        ModbusControlBlock().Identity[0xFE] = ""
+        handle = ReadDeviceInformationRequest(
+            read_code=DeviceInformation.SPECIFIC, object_id=0xFE
+        )
+        result = await handle.datastore_update(context, 0)
+        assert result.exception_code == ExcCodes.ILLEGAL_ADDRESS
 
     def test_read_device_information_calc1(self):
         """Test calculateRtuFrameSize, short buffer."""

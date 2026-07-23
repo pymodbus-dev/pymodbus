@@ -136,6 +136,8 @@ class WriteMultipleCoilsRequest(ModbusPDU):
 
     function_code = 15
     rtu_byte_count_pos = 6
+    byte_count: int | None = None
+    data_byte_count = 0
 
     def encode(self) -> bytes:
         """Encode write coils request."""
@@ -149,14 +151,23 @@ class WriteMultipleCoilsRequest(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode a write coils request."""
-        self.address, count, _byte_count = struct.unpack(">HHB", data[0:5])
-        self.bits = unpack_bitstring(data[5:])[:count]
+        self.address, self.count, self.byte_count = struct.unpack(">HHB", data[0:5])
+        self.data_byte_count = len(data) - 5
+        self.bits = unpack_bitstring(data[5 : 5 + self.byte_count])[: self.count]
 
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
     ) -> ModbusPDU:
         """Run a request against a datastore."""
         count = len(self.bits)
+        if self.byte_count is not None:
+            expected_byte_count = (self.count + 7) // 8
+            if (
+                self.byte_count != expected_byte_count
+                or self.data_byte_count != self.byte_count
+            ):
+                return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
+            count = self.count
         rc = await context.async_setValues(
             device_id, self.function_code, self.address, self.bits
         )

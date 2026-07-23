@@ -31,6 +31,28 @@ class _OutOfSpaceException(Exception):
         self.oid = oid
 
 
+class _EncapsulatedInterfaceTransport(ModbusPDU):
+    """Base PDU for dispatching Encapsulated Interface Transport messages."""
+
+    function_code = 0x2B
+
+    @classmethod
+    def decode_sub_function_code(cls, data: bytes) -> int:
+        """Decode the MEI type."""
+        return int(data[2])
+
+    def decode(self, data: bytes) -> None:
+        """Decode the MEI type."""
+        self.sub_function_code = int(data[0])
+
+    async def datastore_update(
+        self, context: ModbusServerContext, device_id: int
+    ) -> ModbusPDU:
+        """Reject unsupported MEI types."""
+        _ = context, device_id
+        return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_FUNCTION)
+
+
 class ReadDeviceInformationRequest(ModbusPDU):
     """ReadDeviceInformationRequest."""
 
@@ -190,5 +212,5 @@ class ReadDeviceInformationResponse(ModbusPDU):
                 ]
 
 
-DecodePDU.add_pdu(ReadDeviceInformationRequest, ReadDeviceInformationResponse)
+DecodePDU.add_pdu(_EncapsulatedInterfaceTransport, _EncapsulatedInterfaceTransport)
 DecodePDU.add_sub_pdu(ReadDeviceInformationRequest, ReadDeviceInformationResponse)

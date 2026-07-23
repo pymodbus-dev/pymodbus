@@ -73,6 +73,46 @@ class TestWriteRegisterMessages:
         request = WriteMultipleRegistersRequest(address=0, registers=None)
         assert not request.registers
 
+    @pytest.mark.parametrize(
+        "frame",
+        [
+            b"\x00\x01\x00\x02\x02\x00\x0a",
+            b"\x00\x01\x00\x01\x04\x00\x0a\x00\x0b",
+            b"\x00\x01\x00\x01\x02\x00",
+            b"\x00\x01\x00\x01\x02\x00\x0a\x00",
+            b"\x00\x01\x00\x01\x01\x00",
+        ],
+    )
+    async def test_write_multiple_registers_rejects_invalid_byte_count(
+        self, frame, mock_server_context
+    ):
+        """Test inconsistent byte counts are rejected before writing."""
+        request = WriteMultipleRegistersRequest()
+        request.decode(frame)
+        context = mock_server_context()
+        context.async_setValues = mock.AsyncMock()
+
+        result = await request.datastore_update(context, 1)
+
+        assert result.exception_code == ExcCodes.ILLEGAL_VALUE
+        context.async_setValues.assert_not_awaited()
+
+    async def test_write_multiple_registers_accepts_valid_byte_count(
+        self, mock_server_context
+    ):
+        """Test a consistent byte count reaches the datastore."""
+        request = WriteMultipleRegistersRequest()
+        request.decode(b"\x00\x01\x00\x02\x04\x00\x0a\x00\x0b")
+        context = mock_server_context()
+        context.async_setValues = mock.AsyncMock(return_value=0)
+
+        result = await request.datastore_update(context, 1)
+
+        assert result.count == 2
+        context.async_setValues.assert_awaited_once_with(
+            1, request.function_code, 1, [0x0A, 0x0B]
+        )
+
     def test_serializing_to_string(self):
         """Test serializing to string."""
         for request in iter(self.write.keys()):

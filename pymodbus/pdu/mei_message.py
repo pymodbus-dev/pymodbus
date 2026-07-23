@@ -211,5 +211,6 @@ class ReadDeviceInformationResponse(ModbusPDU):
                     data[count - object_length : count],
                 ]
 
+
 DecodePDU.add_pdu(_EncapsulatedInterfaceTransport, _EncapsulatedInterfaceTransport)
 DecodePDU.add_sub_pdu(ReadDeviceInformationRequest, ReadDeviceInformationResponse)

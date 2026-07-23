@@ -163,12 +163,9 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
             return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
         if not 1 <= self.write_count <= 0x079:
             return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
-        if (
-            self.write_byte_count != self.write_count * 2
-            or (
-                self._payload_byte_count is not None
-                and self._payload_byte_count != self.write_byte_count
-            )
+        if self.write_byte_count != self.write_count * 2 or (
+            self._payload_byte_count is not None
+            and self._payload_byte_count != self.write_byte_count
         ):
             return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
         rc = await context.async_setValues(

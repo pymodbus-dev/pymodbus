@@ -149,10 +149,9 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
             self.write_byte_count,
         ) = struct.unpack(">HHHHB", data[:9])
         self._payload_byte_count = len(data) - 9
-        payload = data[9 : self.write_byte_count + 9]
         self.write_registers = [
-            struct.unpack(">H", payload[i : i + 2])[0]
-            for i in range(0, len(payload) - 1, 2)
+            struct.unpack(">H", data[i : i + 2])[0]
+            for i in range(9, min(len(data), self.write_byte_count + 9) - 1, 2)
         ]
 
     async def datastore_update(
@@ -265,10 +264,9 @@ class WriteMultipleRegistersRequest(ModbusPDU):
         """Decode a write single register packet packet request."""
         self.address, self.count, self.byte_count = struct.unpack(">HHB", data[:5])
         self._payload_byte_count = len(data) - 5
-        payload = data[5 : self.byte_count + 5]
         self.registers = [
-            struct.unpack(">H", payload[idx : idx + 2])[0]
-            for idx in range(0, len(payload) - 1, 2)
+            struct.unpack(">H", data[idx : idx + 2])[0]
+            for idx in range(5, min(len(data), self.byte_count + 5) - 1, 2)
         ]
 
     async def datastore_update(

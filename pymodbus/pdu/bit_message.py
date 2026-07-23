@@ -136,6 +136,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
 
     function_code = 15
     rtu_byte_count_pos = 6
+    count: int
     byte_count: int | None = None
     data_byte_count = 0
 

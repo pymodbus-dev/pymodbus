@@ -8,7 +8,8 @@ from typing import cast
 
 import pytest
 
-from pymodbus.constants import DeviceInformation
+from pymodbus.constants import DeviceInformation, ExcCodes
+from pymodbus.pdu.decoders import DecodePDU
 from pymodbus.pdu.device import ModbusControlBlock
 from pymodbus.pdu.mei_message import (
     ReadDeviceInformationRequest,
@@ -41,6 +42,25 @@ class TestMeiMessage:
         handle.decode(b"\x0e\x01\x00")
         assert handle.read_code == DeviceInformation.BASIC
         assert not handle.object_id
+
+    def test_device_information_mei_type_is_routed(self):
+        """Test MEI type 0x0E is routed to device identification."""
+        pdu = DecodePDU(True).decode(b"\x2b\x0e\x01\x00")
+
+        assert isinstance(pdu, ReadDeviceInformationRequest)
+
+    @pytest.mark.parametrize("mei_type", [0x00, 0x0D, 0x0F, 0xFF])
+    async def test_unsupported_mei_type_is_not_device_information(
+        self, mei_type, mock_server_context
+    ):
+        """Test unsupported MEI types are not routed to device identification."""
+        pdu = DecodePDU(True).decode(bytes([0x2B, mei_type, 0x01, 0x00]))
+
+        assert pdu
+        assert not isinstance(pdu, ReadDeviceInformationRequest)
+        assert pdu.sub_function_code == mei_type
+        response = await pdu.datastore_update(mock_server_context(), 0)
+        assert response.exception_code == ExcCodes.ILLEGAL_FUNCTION
 
     async def test_read_device_information_request(self, mock_server_context):
         """Test basic bit message encoding/decoding."""

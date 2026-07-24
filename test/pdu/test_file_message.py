@@ -216,11 +216,11 @@ class TestBitMessage:
         handle.decode(request)
         # assert handle.records[0] == record
 
-
     def test_read_file_record_request_decode_invalid_byte_count(self):
         """Test ReadFileRecordRequest raises ModbusException on oversized byte_count."""
         import pytest
         from pymodbus.exceptions import ModbusException
+
         handle = ReadFileRecordRequest()
         with pytest.raises(ModbusException):
             handle.decode(bytes([0xFF, 0x06, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01]))
@@ -229,14 +229,18 @@ class TestBitMessage:
         """Test WriteFileRecordRequest raises ModbusException on oversized byte_count."""
         import pytest
         from pymodbus.exceptions import ModbusException
+
         handle = WriteFileRecordRequest()
         with pytest.raises(ModbusException):
-            handle.decode(bytes([0xFF, 0x06, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00]))
+            handle.decode(
+                bytes([0xFF, 0x06, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00])
+            )
 
     def test_read_fifo_queue_response_decode_invalid_count(self):
         """Test ReadFifoQueueResponse raises ModbusException on oversized count."""
         import pytest
         from pymodbus.exceptions import ModbusException
+
         handle = ReadFifoQueueResponse()
         with pytest.raises(ModbusException):
             handle.decode(bytes([0x00, 0x00, 0xFF, 0xFF]))

@@ -156,7 +156,7 @@ class Heatpump:
         _count: int,
         registers: list[int],
         _set_values: list[int] | list[bool] | None,
-    ) -> None | ExcCodes:
+    ) -> ExcCodes | None:
         """Run action."""
         registers[ALIVE_ADDR[0]] = (
             0 if registers[ALIVE_ADDR[0]] > 32000 else registers[ALIVE_ADDR[0]] + 1

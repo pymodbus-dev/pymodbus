@@ -56,7 +56,7 @@ class SimCore:
         func_code: int,
         address: int,
         values: list[int] | list[bool],
-    ) -> None | ExcCodes:
+    ) -> ExcCodes | None:
         """Set the datastore with the supplied values."""
         return await self.__get_device(device_id).async_setValues(
             func_code, address, values

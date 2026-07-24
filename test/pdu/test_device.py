@@ -171,6 +171,7 @@ class TestDataStore:
         assert self.ident[0x08] != "x"
         assert self.ident[0x10] != "reserved"
         assert not self.ident[0x54]
+        assert 0x54 not in dict(self.ident)
 
     def test_modbus_device_identification_summary(self):
         """Test device identification summary creation."""

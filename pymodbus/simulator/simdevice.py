@@ -15,7 +15,7 @@ from .simutils import DataType, SimUtils
 
 SimAction: TypeAlias = Callable[
     [int, int, int, int, list[int], list[int] | list[bool] | None],
-    Awaitable[None | ExcCodes],
+    Awaitable[ExcCodes | None],
 ]
 SimRegs: TypeAlias = tuple[int, list[int], list[int]]
 TUPLE_NAMES = ("coils", "discrete inputs", "holding registers", "input registers")

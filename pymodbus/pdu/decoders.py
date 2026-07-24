@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import struct
 
 from ..exceptions import MessageRegisterException, ModbusException
 from ..logging import Log
@@ -89,6 +90,6 @@ class DecodePDU:
                 str(pdu),
             )
             return pdu
-        except (ModbusException, ValueError, IndexError) as exc:
+        except (ModbusException, ValueError, IndexError, struct.error) as exc:
             Log.warning("Unable to decode frame {}", exc)
         return None

@@ -158,7 +158,7 @@ class ModbusServerContext:
         func_code: int,
         address: int,
         values: list[int] | list[bool],
-    ) -> None | ExcCodes:
+    ) -> ExcCodes | None:
         """Set the datastore with the supplied values.
 
         :param device_id: the device being addressed

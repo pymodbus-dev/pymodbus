@@ -130,6 +130,45 @@ class TestModbusBitMessage:
         request = bit_msg.WriteMultipleCoilsRequest(address=1, bits=None)
         assert not request.bits
 
+    @pytest.mark.parametrize(
+        "frame",
+        [
+            b"\x00\x01\x00\x10\x01\xff",
+            b"\x00\x01\x00\x08\x02\xff\x00",
+            b"\x00\x01\x00\x08\x01",
+            b"\x00\x01\x00\x08\x01\xff\x00",
+        ],
+    )
+    async def test_write_multiple_coils_rejects_invalid_byte_count(
+        self, frame, mock_server_context
+    ):
+        """Test write multiple coils rejects inconsistent byte counts."""
+        request = bit_msg.WriteMultipleCoilsRequest()
+        request.decode(frame)
+        context = mock_server_context()
+        context.async_setValues = mock.AsyncMock()
+
+        result = await request.datastore_update(context, 0)
+
+        assert result.exception_code == ExcCodes.ILLEGAL_VALUE
+        context.async_setValues.assert_not_awaited()
+
+    async def test_write_multiple_coils_accepts_valid_byte_count(
+        self, mock_server_context
+    ):
+        """Test write multiple coils accepts a consistent byte count."""
+        request = bit_msg.WriteMultipleCoilsRequest()
+        request.decode(b"\x00\x01\x00\x09\x02\xff\x01")
+        context = mock_server_context()
+        context.async_setValues = mock.AsyncMock(return_value=0)
+
+        result = await request.datastore_update(context, 0)
+
+        assert result.count == 9
+        context.async_setValues.assert_awaited_once_with(
+            0, request.function_code, 1, [True] * 9
+        )
+
     def test_write_single_coil_request_encode(self):
         """Test write single coil."""
         request = bit_msg.WriteSingleCoilRequest(address=1, bits=[False])

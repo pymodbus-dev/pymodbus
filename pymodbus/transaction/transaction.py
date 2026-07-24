@@ -141,6 +141,7 @@ class TransactionManager(ModbusProtocol):
                     response = self.sync_get_response(
                         request.dev_id, request.transaction_id
                     )
+                    self.count_until_disconnect = self.max_until_disconnect
                     if response.dev_id != request.dev_id:
                         raise ModbusIOException(
                             f"ERROR: request uses device id={request.dev_id} but received {response.dev_id}."

@@ -53,7 +53,7 @@ jobs:
 
       - name: Create virtualenv and sync dependencies
         run: |
-          uv sync --all-extras
+          uv sync --all-extras --all-groups
 
       - name: codespell
         if: matrix.run_doc == true

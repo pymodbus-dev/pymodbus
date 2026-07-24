@@ -63,8 +63,7 @@ class ReadFileRecordRequest(ModbusPDU):
     def decode(self, data: bytes) -> None:
         """Decode the incoming request."""
         self.records = []
-        byte_count = int(data[0])
-        if byte_count > len(data) - 1:
+        if (byte_count := int(data[0])) > len(data) - 1:
             raise ModbusException(f"Invalid byte count: {byte_count}")
         for count in range(1, byte_count, 7):
             decoded = struct.unpack(">BHHH", data[count : count + 7])
@@ -171,8 +170,7 @@ class WriteFileRecordRequest(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode the incoming request."""
-        byte_count = int(data[0])
-        if byte_count > len(data) - 1:
+        if (byte_count := int(data[0])) > len(data) - 1:
             raise ModbusException(f"Invalid byte count: {byte_count}")
         count = 1
         self.records.clear()

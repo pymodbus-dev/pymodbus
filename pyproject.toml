@@ -78,10 +78,6 @@ documentation = [
     "Sphinx>=9.1.0;python_version>='3.12'",
     "sphinx-rtd-theme>=3.1.0"
 ]
-all = [
-    {include-group = "dev"},
-    {include-group = "documentation"},
-]
 
 [tool.setuptools]
 include-package-data = true

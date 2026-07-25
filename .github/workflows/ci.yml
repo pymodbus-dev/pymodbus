@@ -49,7 +49,9 @@ jobs:
         uses: astral-sh/setup-uv@v8.2.0
         with:
           python-version: ${{ matrix.python }}
-          enable-cache: false
+          enable-cache: true
+          prune-cache: true
+          cache-dependency-glob: "**/pyproject.toml"
 
       - name: Create virtualenv and sync dependencies
         run: |

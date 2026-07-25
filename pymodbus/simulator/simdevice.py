@@ -104,8 +104,11 @@ class SimDevice:
     #      ) -> None | ExceptionResponse:
     #:
     #: action can:
+    #:
     #: - update registers (affect the current and future responses)
+    #:
     #: - update set_values (affect the register update)
+    #:
     #: - return an ExceptionResponse.
     #:
     #: .. tip:: use functools.partial to add extra parameters if needed.

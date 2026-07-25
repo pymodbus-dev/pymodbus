@@ -49,9 +49,13 @@ simulator = [
     "aiohttp>=3.8.6;python_version<'3.12'",
     "aiohttp>=3.14.1;python_version>='3.12'"
 ]
-
-[dependency-groups]
-dev = [
+documentation = [
+    "recommonmark>=0.7.1",
+    "Sphinx>=7.3.7;python_version<'3.12'",
+    "Sphinx>=9.1.0;python_version>='3.12'",
+    "sphinx-rtd-theme>=3.1.0"
+]
+development = [
     "build>=1.5.0",
     "codespell>=2.4.2",
     "coverage>=7.14.3",
@@ -69,16 +73,8 @@ dev = [
     "types-pyserial",
     "zuban>=0.9.0"
 ]
-documentation = [
-    "recommonmark>=0.7.1",
-    "Sphinx>=7.3.7;python_version<'3.12'",
-    "Sphinx>=9.1.0;python_version>='3.12'",
-    "sphinx-rtd-theme>=3.1.0"
-]
 all = [
-    "pymodbus[serial,simulator]",
-    {include-group = "dev"},
-    {include-group = "documentation"},
+    "pymodbus[serial, simulator, documentation, development]"
 ]
 
 [tool.setuptools]

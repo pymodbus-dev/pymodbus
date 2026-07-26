@@ -77,6 +77,11 @@ all = [
     "pymodbus[serial, simulator, documentation, development]"
 ]
 
+[dependency-groups]
+dev = [
+    "pymodbus[development]",
+]
+
 [tool.setuptools]
 include-package-data = true
 zip-safe = true

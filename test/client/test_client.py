@@ -394,6 +394,32 @@ class TestMixin:
         )
         assert first == second
 
+    @pytest.mark.parametrize("word_order", ["big", "little"])
+    @pytest.mark.parametrize(
+        ("datatype", "value"),
+        [
+            (ModbusClientMixin.DATATYPE.UINT16, 258),
+            (ModbusClientMixin.DATATYPE.INT32, -2130574588),
+            (ModbusClientMixin.DATATYPE.UINT64, 72623859790382856),
+            (ModbusClientMixin.DATATYPE.FLOAT32, 8.125736),
+            (ModbusClientMixin.DATATYPE.STRING, "abcdef"),
+        ],
+    )
+    def test_client_mixin_convert_from_registers_sequence(
+        self, datatype, value, word_order
+    ):
+        """convert_from_registers must accept any Sequence[int], e.g. a tuple (#2957)."""
+        registers = ModbusClientMixin.convert_to_registers(
+            value, datatype, word_order=word_order
+        )
+        from_list = ModbusClientMixin.convert_from_registers(
+            registers, datatype, word_order=word_order
+        )
+        from_tuple = ModbusClientMixin.convert_from_registers(
+            tuple(registers), datatype, word_order=word_order
+        )
+        assert from_tuple == from_list
+
     def test_client_mixin_convert_fail(self):
         """Test convert fail."""
         with pytest.raises(TypeError):

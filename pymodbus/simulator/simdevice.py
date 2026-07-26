@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import inspect
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
 from typing import TypeAlias, cast
 
@@ -15,7 +15,7 @@ from .simutils import DataType, SimUtils
 
 SimAction: TypeAlias = Callable[
     [int, int, int, int, list[int], list[int] | list[bool] | None],
-    Awaitable[ExcCodes | None],
+    Coroutine[None, None, ExcCodes | None],
 ]
 SimRegs: TypeAlias = tuple[int, list[int], list[int]]
 TUPLE_NAMES = ("coils", "discrete inputs", "holding registers", "input registers")

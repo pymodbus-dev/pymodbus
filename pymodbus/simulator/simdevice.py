@@ -12,7 +12,7 @@ from .simdata import SimData
 from .simutils import DataType, SimUtils
 
 
-class SimAction(Protocol):
+class SimAction(Protocol):  # pylint: disable=too-few-public-methods
     """Callback protocol for functions called when registers are being accessed."""
 
     async def __call__(
@@ -25,8 +25,7 @@ class SimAction(Protocol):
         set_values: list[int] | list[bool] | None,
         /,
     ) -> ExcCodes | None:
-        """
-        Call when registers are being accessed.
+        """Call when registers are being accessed.
 
         :param function_code: The function code being executed.
         :param start_address: The starting address of the register block.

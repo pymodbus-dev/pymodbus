@@ -101,7 +101,7 @@ class SimDevice:
     #:         count: int,            # request count
     #:         current_registers: list[int],  # current registers (modify inline)
     #:         set_values: list[int] | list[bool] | None  # request values to be written (None for read requests)
-    #:     ) -> None | ExceptionResponse:
+    #:     ) -> ExcCode | None:
     #:
     #: action can:
     #:
@@ -109,7 +109,7 @@ class SimDevice:
     #:
     #: - update set_values (affect the register update)
     #:
-    #: - return an ExceptionResponse.
+    #: - return a member of :class:`pymodbus.constants.ExcCodes`.
     #:
     #: .. tip:: use functools.partial to add extra parameters if needed.
     action: SimAction | None = None

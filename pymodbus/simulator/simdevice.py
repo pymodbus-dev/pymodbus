@@ -101,7 +101,7 @@ class SimDevice:
     #:         count: int,            # request count
     #:         current_registers: list[int],  # current registers (modify inline)
     #:         set_values: list[int] | list[bool] | None  # request values to be written (None for read requests)
-    #      ) -> None | ExceptionResponse:
+    #:     ) -> None | ExceptionResponse:
     #:
     #: action can:
     #:

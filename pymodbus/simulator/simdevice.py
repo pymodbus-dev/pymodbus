@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import inspect
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Protocol, TypeAlias, cast
+from typing import TypeAlias, cast
 
 from ..constants import ExcCodes
 from ..pdu.device import ModbusDeviceIdentification
@@ -12,31 +13,10 @@ from .simdata import SimData
 from .simutils import DataType, SimUtils
 
 
-class SimAction(Protocol):  # pylint: disable=too-few-public-methods
-    """Callback protocol for functions called when registers are being accessed."""
-
-    async def __call__(
-        self,
-        function_code: int,
-        start_address: int,
-        address: int,
-        count: int,
-        current_registers: list[int],
-        set_values: list[int] | list[bool] | None,
-        /,
-    ) -> ExcCodes | None:
-        """Call when registers are being accessed.
-
-        :param function_code: The function code being executed.
-        :param start_address: The starting address of the register block.
-        :param address: The address of the register being accessed.
-        :param count: The number of registers being accessed.
-        :param current_registers: The current values of the registers.
-        :param set_values: The values to set, if any.
-        :return: An exception code, if any.
-        """
-
-
+SimAction: TypeAlias = Callable[
+    [int, int, int, int, list[int], list[int] | list[bool] | None],
+    Awaitable[ExcCodes | None],
+]
 SimRegs: TypeAlias = tuple[int, list[int], list[int]]
 TUPLE_NAMES = ("coils", "discrete inputs", "holding registers", "input registers")
 

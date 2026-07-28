@@ -186,8 +186,9 @@ class TestTransaction:
             transact.response_future.set_result((1, pdu))
         transact.callback_data(packet)
 
-    def test_io_exception_from_request_carries_identity(self, use_port):  # noqa: ARG002
+    def test_io_exception_from_request_carries_identity(self, use_port):
         """Known request identity is attached to client-side IO exceptions."""
+        _ = use_port
         request = ReadCoilsRequest(
             address=117, count=5, dev_id=7, transaction_id=0x1234
         )

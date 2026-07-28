@@ -75,11 +75,11 @@ class ReadHoldingRegistersResponse(ModbusPDU):
         """Decode a register response packet."""
         self.registers = []
         if (data_len := int(data[0])) >= len(data):
+            # function_code is the class/request FC; framing tid/dev_id are filled
+            # by FramerBase after DecodePDU re-raises this exception.
             raise ModbusIOException(
                 f"byte_count {data_len} > length of packet {len(data)}",
                 function_code=self.function_code,
-                transaction_id=self.transaction_id,
-                dev_id=self.dev_id,
             )
         for i in range(1, data_len, 2):
             self.registers.append(struct.unpack(">H", data[i : i + 2])[0])

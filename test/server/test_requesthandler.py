@@ -55,6 +55,7 @@ class TestRequesthandler:
 
     async def test_rh_callback_data_undecodable_echoes_identity(self, requesthandler):
         """Undecodable FC exception must echo framing tid/dev_id (#2990)."""
+        peer = ("192.0.2.1", 5020)
         with mock.patch(
             "pymodbus.transaction.TransactionManager.callback_data"
         ) as cb_data:
@@ -65,7 +66,7 @@ class TestRequesthandler:
             )
             cb_data.side_effect = exc
             data = b"\x00\x0a\x00\x00\x00\x06\x07\x0a\x00\x00\x00\x01"
-            assert len(data) == requesthandler.callback_data(data, None)
+            assert len(data) == requesthandler.callback_data(data, peer)
 
         requesthandler.pdu_send.assert_called_once()
         response = requesthandler.pdu_send.call_args.args[0]
@@ -75,6 +76,8 @@ class TestRequesthandler:
         # 0x00 | 0x80 — not the previous hardcoded 0x28 | 0x80
         assert response.function_code == 0x80
         assert response.exception_code == 0x01  # ILLEGAL_FUNCTION
+        # UDP peer must be preserved (do not hardcode addr=0).
+        assert requesthandler.pdu_send.call_args.kwargs.get("addr") == peer
 
     async def test_rh_callback_data_undecodable_without_framing_attrs(
         self, requesthandler

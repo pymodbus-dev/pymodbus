@@ -124,13 +124,7 @@ class TransactionManager(ModbusProtocol):
     def _io_exception_from_request(
         message: str, request: ModbusPDU
     ) -> ModbusIOException:
-        """Build ModbusIOException carrying known request identity.
-
-        Follow-up to #2992: callers that already know the outstanding request
-        should surface its function code, transaction id, and device id so
-        diagnostics can correlate timeouts and mismatches without re-parsing
-        the wire stream.
-        """
+        """Build ModbusIOException from an outstanding request."""
         return ModbusIOException(
             message,
             function_code=request.function_code,

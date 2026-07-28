@@ -186,18 +186,6 @@ class TestTransaction:
             transact.response_future.set_result((1, pdu))
         transact.callback_data(packet)
 
-    def test_io_exception_from_request_carries_identity(self, use_port):
-        """Known request identity is attached to client-side IO exceptions."""
-        _ = use_port
-        request = ReadCoilsRequest(
-            address=117, count=5, dev_id=7, transaction_id=0x1234
-        )
-        exc = TransactionManager._io_exception_from_request("timeout", request)
-        assert isinstance(exc, ModbusIOException)
-        assert exc.fcode == request.function_code
-        assert exc.dev_id == 7
-        assert exc.transaction_id == 0x1234
-
     @pytest.mark.parametrize("scenario", range(10))
     async def test_transaction_execute(self, use_clc, scenario):
         """Test tracers in disconnect."""
@@ -474,13 +462,18 @@ class TestSyncTransaction:
             )
         elif scenario == 3:  # wait receive,timeout, no_responses
             transact.comm_params.timeout_connect = 0.1
-            with pytest.raises(ModbusIOException):
+            with pytest.raises(ModbusIOException) as exc_info:
                 transact.sync_execute(False, request)
+            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.dev_id == request.dev_id
+            assert exc_info.value.transaction_id == request.transaction_id
         elif scenario == 4:  # wait receive,timeout, disconnect
             transact.comm_params.timeout_connect = 0.1
             transact.count_until_disconnect = -1
-            with pytest.raises(ModbusIOException):
+            with pytest.raises(ModbusIOException) as exc_info:
                 transact.sync_execute(False, request)
+            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.transaction_id == request.transaction_id
         elif scenario == 5:  # wait receive,timeout, no_responses pass
             transact.comm_params.timeout_connect = 0.1
             with pytest.raises(ModbusIOException):
@@ -500,8 +493,11 @@ class TestSyncTransaction:
             transact.sync_get_response = mock.Mock(return_value=pdu)  # type: ignore[method-assign]
             transact.pdu_send = mock.Mock()  # type: ignore[method-assign]
             transact.comm_params.timeout_connect = 0.2
-            with pytest.raises(ModbusIOException):
+            with pytest.raises(ModbusIOException) as exc_info:
                 transact.sync_execute(False, request)
+            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.dev_id == request.dev_id
+            assert exc_info.value.transaction_id == request.transaction_id
         elif scenario == 8:  # response wrong tid
             transact.transport = 1  # type: ignore[assignment]
             pdu = copy.deepcopy(response)
@@ -509,8 +505,11 @@ class TestSyncTransaction:
             transact.sync_get_response = mock.Mock(return_value=pdu)  # type: ignore[method-assign]
             transact.pdu_send = mock.Mock()  # type: ignore[method-assign]
             transact.comm_params.timeout_connect = 0.2
-            with pytest.raises(ModbusIOException):
+            with pytest.raises(ModbusIOException) as exc_info:
                 transact.sync_execute(False, request)
+            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.dev_id == request.dev_id
+            assert exc_info.value.transaction_id == request.transaction_id
         else:  # if scenario == 9 # pdu_send from client
             transact.transport = 1  # type: ignore[assignment]
             transact.is_server = True

@@ -5,7 +5,7 @@ from __future__ import annotations
 import copy
 import struct
 
-from ..exceptions import MessageRegisterException, ModbusException
+from ..exceptions import MessageRegisterException, ModbusException, ModbusIOException
 from ..logging import Log
 from .exceptionresponse import ExceptionResponse
 from .pdu import ModbusPDU
@@ -90,6 +90,10 @@ class DecodePDU:
                 str(pdu),
             )
             return pdu
+        except ModbusIOException:
+            # Payload decode already attached known identity (e.g. function_code).
+            # Framer enriches transaction_id / dev_id from the ADU.
+            raise
         except (ModbusException, ValueError, IndexError, struct.error) as exc:
             Log.warning("Unable to decode frame {}", exc)
         return None

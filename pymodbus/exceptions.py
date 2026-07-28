@@ -36,12 +36,24 @@ class ModbusException(Exception):
 class ModbusIOException(ModbusException):
     """Error resulting from data i/o."""
 
-    def __init__(self, string="", function_code=None):
+    def __init__(
+        self,
+        string="",
+        function_code=None,
+        *,
+        transaction_id: int = 0,
+        dev_id: int = 0,
+    ):
         """Initialize the exception.
 
         :param string: The message to append to the error
+        :param function_code: Optional function code associated with the error
+        :param transaction_id: Optional framing transaction id (e.g. MBAP TID)
+        :param dev_id: Optional framing device / unit id
         """
         self.fcode = function_code
+        self.transaction_id = transaction_id
+        self.dev_id = dev_id
         self.message = f"[Input/Output] {string}"
         ModbusException.__init__(self, self.message)
 

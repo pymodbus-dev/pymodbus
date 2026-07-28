@@ -92,10 +92,11 @@ class FramerBase:
                 # ids on the undecodable-function exception path (see #2990).
                 # Do not recover a function code from garbage payloads — noise on
                 # serial lines is the common cause of this path.
-                exc = ModbusIOException("Unable to decode request")
-                exc.transaction_id = tid
-                exc.dev_id = dev_id
-                raise exc
+                raise ModbusIOException(
+                    "Unable to decode request",
+                    transaction_id=tid,
+                    dev_id=dev_id,
+                )
             pdu.dev_id = dev_id
             pdu.transaction_id = tid
             return used_len, pdu

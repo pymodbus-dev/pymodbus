@@ -70,8 +70,8 @@ class ServerRequestHandler(TransactionManager):
             response = ExceptionResponse(
                 0x00,
                 exception_code=ExcCodes.ILLEGAL_FUNCTION,
-                device_id=getattr(exc, "dev_id", 0) or 0,
-                transaction=getattr(exc, "transaction_id", 0) or 0,
+                device_id=exc.dev_id,
+                transaction=exc.transaction_id,
             )
             self.server_send(response, 0)
             return len(data)

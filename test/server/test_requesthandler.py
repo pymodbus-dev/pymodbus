@@ -58,9 +58,11 @@ class TestRequesthandler:
         with mock.patch(
             "pymodbus.transaction.TransactionManager.callback_data"
         ) as cb_data:
-            exc = ModbusIOException("Unable to decode request")
-            exc.transaction_id = 0x000A
-            exc.dev_id = 7
+            exc = ModbusIOException(
+                "Unable to decode request",
+                transaction_id=0x000A,
+                dev_id=7,
+            )
             cb_data.side_effect = exc
             data = b"\x00\x0a\x00\x00\x00\x06\x07\x0a\x00\x00\x00\x01"
             assert len(data) == requesthandler.callback_data(data, None)

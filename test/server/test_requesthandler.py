@@ -73,10 +73,8 @@ class TestRequesthandler:
         assert isinstance(response, ExceptionResponse)
         assert response.transaction_id == 0x000A
         assert response.dev_id == 7
-        # 0x00 | 0x80 — not the previous hardcoded 0x28 | 0x80
         assert response.function_code == 0x80
-        assert response.exception_code == 0x01  # ILLEGAL_FUNCTION
-        # UDP peer must be preserved (do not hardcode addr=0).
+        assert response.exception_code == 0x01
         assert requesthandler.pdu_send.call_args.kwargs.get("addr") == peer
 
     async def test_rh_callback_data_undecodable_without_framing_attrs(

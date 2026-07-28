@@ -86,7 +86,6 @@ class TestExtras:
         msg = b"\x00\x01\x00\x00\x00\x06\xff\x70\x01\x02\x00\x08"
         with pytest.raises(ModbusIOException) as exc_info:
             self._tcp.handleFrame(msg, 0, 0)
-        # Unknown FC: framing identity only (no invented function_code).
         assert exc_info.value.transaction_id == 1
         assert exc_info.value.dev_id == 0xFF
         assert exc_info.value.fcode is None

@@ -87,15 +87,7 @@ class FramerBase:
                     f"ERROR: request ask for transaction_id={exp_tid} but got id={tid}, Skipping."
                 )
                 continue
-            try:
-                pdu = self.decoder.decode(frame_data)
-            except ModbusIOException as exc:
-                # Framing ids are authoritative; payload decode never has them yet.
-                exc.transaction_id = tid
-                exc.dev_id = dev_id
-                raise
-            if pdu is None:
-                # Unknown/garbage FC: do not invent function_code from noise (#2990).
+            if (pdu := self.decoder.decode(frame_data)) is None:
                 raise ModbusIOException(
                     "Unable to decode request",
                     transaction_id=tid,

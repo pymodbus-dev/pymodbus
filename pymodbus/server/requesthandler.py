@@ -63,11 +63,6 @@ class ServerRequestHandler(TransactionManager):
         try:
             used_len = super().callback_data(data, addr)
         except ModbusIOException as exc:
-            # Undecodable / corrupt PDUs land here. last_pdu is cleared before
-            # framing runs, so identity comes from the framer exception attrs.
-            # Prefer a known function_code from payload decode; otherwise 0x00
-            # rather than inventing a code from garbage (#2990).
-            # Prefer the callback addr (UDP peer) — last_addr is still cleared.
             function_code = 0x00 if exc.fcode is None else exc.fcode
             response = ExceptionResponse(
                 function_code,

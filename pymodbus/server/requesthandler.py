@@ -62,8 +62,17 @@ class ServerRequestHandler(TransactionManager):
         """Handle received data."""
         try:
             used_len = super().callback_data(data, addr)
-        except ModbusIOException:
-            response = ExceptionResponse(40, exception_code=ExcCodes.ILLEGAL_FUNCTION)
+        except ModbusIOException as exc:
+            # Undecodable function codes (and frame garbage) land here. last_pdu
+            # is cleared before framing runs, so identity comes from the framer
+            # exception attributes when available. Use function code 0x00 rather
+            # than a hardcoded unrelated value (was 40 / 0x28) — see #2990.
+            response = ExceptionResponse(
+                0x00,
+                exception_code=ExcCodes.ILLEGAL_FUNCTION,
+                device_id=getattr(exc, "dev_id", 0) or 0,
+                transaction=getattr(exc, "transaction_id", 0) or 0,
+            )
             self.server_send(response, 0)
             return len(data)
         if self.last_pdu:

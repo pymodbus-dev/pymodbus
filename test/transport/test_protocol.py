@@ -142,7 +142,7 @@ class TestTransportProtocol1:
         client.callback_data = mock.MagicMock(return_value=0)
         client.recv_buffer = bytearray([0x01] * 2000)
         client.datagram_received(b"abc", "127.0.0.1")
-        assert client.recv_buffer == b"abc"
+        assert client.recv_buffer == b""
 
     async def test_callback_connected(self, use_clc, dummy_protocol):
         """Test callbacks."""

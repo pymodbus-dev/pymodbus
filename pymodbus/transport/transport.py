@@ -308,6 +308,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.recv_buffer += data
         if len(self.recv_buffer) > 1024:
             self.recv_buffer = b""
+            return
         cut = self.callback_data(self.recv_buffer, addr=addr)
         self.recv_buffer = self.recv_buffer[cut:]
         if self.recv_buffer:

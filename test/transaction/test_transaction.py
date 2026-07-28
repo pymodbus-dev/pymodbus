@@ -186,6 +186,17 @@ class TestTransaction:
             transact.response_future.set_result((1, pdu))
         transact.callback_data(packet)
 
+    def test_io_exception_from_request_carries_identity(self, use_port):  # noqa: ARG002
+        """Known request identity is attached to client-side IO exceptions."""
+        request = ReadCoilsRequest(
+            address=117, count=5, dev_id=7, transaction_id=0x1234
+        )
+        exc = TransactionManager._io_exception_from_request("timeout", request)
+        assert isinstance(exc, ModbusIOException)
+        assert exc.fcode == request.function_code
+        assert exc.dev_id == 7
+        assert exc.transaction_id == 0x1234
+
     @pytest.mark.parametrize("scenario", range(10))
     async def test_transaction_execute(self, use_clc, scenario):
         """Test tracers in disconnect."""
@@ -223,14 +234,19 @@ class TestTransaction:
         elif scenario == 3:  # wait receive,timeout, no_responses
             transact.comm_params.timeout_connect = 0.1
             transact.connection_lost = mock.Mock()  # type: ignore[method-assign]
-            with pytest.raises(ModbusIOException):
+            with pytest.raises(ModbusIOException) as exc_info:
                 await transact.execute(False, request)
+            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.dev_id == request.dev_id
+            assert exc_info.value.transaction_id == request.transaction_id
         elif scenario == 4:  # wait receive,timeout, disconnect
             transact.comm_params.timeout_connect = 0.1
             transact.count_until_disconnect = -1
             transact.connection_lost = mock.Mock()  # type: ignore[method-assign]
-            with pytest.raises(ModbusIOException):
+            with pytest.raises(ModbusIOException) as exc_info:
                 await transact.execute(False, request)
+            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.transaction_id == request.transaction_id
         elif scenario == 5:  # wait receive,timeout, no_responses pass
             transact.comm_params.timeout_connect = 0.1
             transact.connection_lost = mock.Mock()  # type: ignore[method-assign]
@@ -242,8 +258,10 @@ class TestTransaction:
             await asyncio.sleep(0.1)
             resp.cancel()
             await asyncio.sleep(0.1)
-            with pytest.raises(ModbusIOException):
+            with pytest.raises(ModbusIOException) as exc_info:
                 await resp
+            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.dev_id == request.dev_id
         elif scenario == 7:  # response
             transact.comm_params.timeout_connect = 0.2
             resp = asyncio.create_task(transact.execute(False, request))
@@ -259,8 +277,11 @@ class TestTransaction:
             new_resp.dev_id = 17
             transact.response_future.set_result(new_resp)
             await asyncio.sleep(0.1)
-            with pytest.raises(ModbusIOException):
+            with pytest.raises(ModbusIOException) as exc_info:
                 resp.result()
+            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.dev_id == request.dev_id
+            assert exc_info.value.transaction_id == request.transaction_id
         else:  # if scenario == 9: # response wrong tid
             transact.comm_params.timeout_connect = 0.2
             resp = asyncio.create_task(transact.execute(False, request))
@@ -269,8 +290,11 @@ class TestTransaction:
             new_resp.transaction_id = 17
             transact.response_future.set_result(new_resp)
             await asyncio.sleep(0.1)
-            with pytest.raises(ModbusIOException):
+            with pytest.raises(ModbusIOException) as exc_info:
                 resp.result()
+            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.dev_id == request.dev_id
+            assert exc_info.value.transaction_id == request.transaction_id
 
     async def test_transaction_receiver(self, use_clc):
         """Test tracers in disconnect."""

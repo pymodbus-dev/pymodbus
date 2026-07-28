@@ -79,9 +79,12 @@ class TestReadRegisterMessages:
 
     def test_register_read_response_decode_error(self):
         """Test register read response."""
-        reg = ReadHoldingRegistersResponse(count=5)
-        with pytest.raises(ModbusIOException):
+        reg = ReadHoldingRegistersResponse(count=5, dev_id=9, transaction_id=0x55)
+        with pytest.raises(ModbusIOException) as exc_info:
             reg.decode(b"\x14\x00\x03\x00\x11")
+        assert exc_info.value.fcode == reg.function_code
+        assert exc_info.value.dev_id == 9
+        assert exc_info.value.transaction_id == 0x55
 
     async def test_register_read_requests_count_errors(self, mock_server_context):
         """This tests that the register request messages.

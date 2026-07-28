@@ -29,7 +29,11 @@ class ModbusPDU:
         """Initialize the base data for a modbus request."""
         self.dev_id: int = dev_id
         if dev_id > 255:
-            raise ModbusIOException(f"Invalid ID {dev_id}")
+            raise ModbusIOException(
+                f"Invalid ID {dev_id}",
+                transaction_id=transaction_id,
+                dev_id=dev_id,
+            )
         self.transaction_id: int = transaction_id
         self.address: int = address
         self.bits: list[bool] = bits or []

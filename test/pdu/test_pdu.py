@@ -37,8 +37,10 @@ class TestPdu:
 
     async def test_pdu_id(self):
         """Test set illegal pdu id."""
-        with pytest.raises(ModbusIOException):
-            ModbusPDU(256)
+        with pytest.raises(ModbusIOException) as exc_info:
+            ModbusPDU(256, transaction_id=0x42)
+        assert exc_info.value.dev_id == 256
+        assert exc_info.value.transaction_id == 0x42
 
     async def test_is_error(self):
         """Test is_error."""

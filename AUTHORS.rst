@@ -56,6 +56,7 @@ Thanks to
 - Ghostkeeper
 - Hangyu Fan
 - Hayden Roche
+- huhujiajia1
 - Ifrah Neria
 - igorbga
 - Iktek
@@ -100,10 +101,12 @@ Thanks to
 - Robin Trabert
 - rubenmendes-eaton
 - Qi Li
+- Sankalp Thakur
 - Sebastian Machuca
 - Sefa Keleş
 - Steffen Beyer
 - sumguytho
+- Sunand
 - Szewcson
 - Thijs W
 - Totally a booplicate

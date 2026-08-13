@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import enum
 import struct
+from collections.abc import Sequence
 from typing import Generic, Literal, TypeVar, cast
 
 from ..constants import ModbusStatus
@@ -905,7 +906,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     @classmethod
     def convert_from_registers(  # noqa: C901
         cls,
-        registers: list[int],
+        registers: Sequence[int],
         data_type: DATATYPE,
         word_order: Literal["big", "little"] = "big",
         string_encoding: str = "utf-8",
@@ -948,7 +949,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         for i in range(0, reg_len, data_len):
             regs = registers[i : i + data_len]
             if word_order == "little":
-                regs.reverse()
+                regs = list(reversed(regs))
             byte_list = bytearray()
             for x in regs:
                 byte_list.extend(int.to_bytes(x, 2, "big"))

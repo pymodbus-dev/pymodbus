@@ -34,8 +34,10 @@ class TestFaultyResponses:
     def test_faulty_frame1(self, framer):
         """Test ok frame."""
         faulty_frame = b"\x00\x04\x00\x00\x00\x05\x00\x03\x0a\x00\x04"
-        with pytest.raises(ModbusIOException):
+        with pytest.raises(ModbusIOException) as exc_info:
             framer.handleFrame(faulty_frame, 0, 0)
+        assert exc_info.value.transaction_id == 4
+        assert exc_info.value.dev_id == 0
         used_len, pdu = framer.handleFrame(self.good_frame, 0, 0)
         assert pdu
         assert used_len == len(self.good_frame)

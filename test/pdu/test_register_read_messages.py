@@ -80,8 +80,9 @@ class TestReadRegisterMessages:
     def test_register_read_response_decode_error(self):
         """Test register read response."""
         reg = ReadHoldingRegistersResponse(count=5)
-        with pytest.raises(ModbusIOException):
+        with pytest.raises(ModbusIOException) as exc_info:
             reg.decode(b"\x14\x00\x03\x00\x11")
+        assert exc_info.value.fcode == reg.function_code
 
     async def test_register_read_requests_count_errors(self, mock_server_context):
         """This tests that the register request messages.
@@ -140,6 +141,46 @@ class TestReadRegisterMessages:
         )
         response = await request.datastore_update(context, 0)
         assert request.function_code == response.function_code
+
+    @pytest.mark.parametrize(
+        "frame",
+        [
+            b"\x00\x01\x00\x01\x00\x02\x00\x02\x02\x00\x0a",
+            b"\x00\x01\x00\x01\x00\x02\x00\x01\x04\x00\x0a\x00\x0b",
+            b"\x00\x01\x00\x01\x00\x02\x00\x01\x02\x00",
+            b"\x00\x01\x00\x01\x00\x02\x00\x01\x02\x00\x0a\x00",
+            b"\x00\x01\x00\x01\x00\x02\x00\x01\x01\x00",
+        ],
+    )
+    async def test_read_write_multiple_registers_rejects_invalid_byte_count(
+        self, frame, mock_server_context
+    ):
+        """Test inconsistent write byte counts are rejected before writing."""
+        request = ReadWriteMultipleRegistersRequest()
+        request.decode(frame)
+        context = mock_server_context()
+        context.async_setValues = mock.AsyncMock()
+
+        result = await request.datastore_update(context, 1)
+
+        assert result.exception_code == ExcCodes.ILLEGAL_VALUE
+        context.async_setValues.assert_not_awaited()
+
+    async def test_read_write_multiple_registers_accepts_valid_byte_count(
+        self, mock_server_context
+    ):
+        """Test a consistent write byte count reaches the datastore."""
+        request = ReadWriteMultipleRegistersRequest()
+        request.decode(b"\x00\x01\x00\x01\x00\x02\x00\x02\x04\x00\x0a\x00\x0b")
+        context = mock_server_context()
+        context.async_setValues = mock.AsyncMock(return_value=0)
+
+        result = await request.datastore_update(context, 1)
+
+        assert result.function_code == request.function_code
+        context.async_setValues.assert_awaited_once_with(
+            1, request.function_code, 2, [0x0A, 0x0B]
+        )
 
     async def test_read_write_multiple_registers_verify(self, mock_server_context):
         """Test read/write multiple registers."""

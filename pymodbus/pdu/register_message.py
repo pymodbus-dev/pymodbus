@@ -19,16 +19,18 @@ class ReadHoldingRegistersRequest(ModbusPDU):
 
     function_code = 3
     rtu_frame_size = 8
+    MAX_COUNT = 125
 
     def encode(self) -> bytes:
         """Encode the request packet."""
         self.verifyAddress()
-        self.verifyCount(125)
+        self.verifyCount(self.MAX_COUNT)
         return struct.pack(">HH", self.address, self.count)
 
     def decode(self, data: bytes) -> None:
         """Decode a register request packet."""
         self.address, self.count = struct.unpack(">HH", data[:4])
+        self.verifyCount(self.MAX_COUNT)
 
     def get_response_pdu_size(self) -> int:
         """Get response pdu size.
@@ -76,7 +78,8 @@ class ReadHoldingRegistersResponse(ModbusPDU):
         self.registers = []
         if (data_len := int(data[0])) >= len(data):
             raise ModbusIOException(
-                f"byte_count {data_len} > length of packet {len(data)}"
+                f"byte_count {data_len} > length of packet {len(data)}",
+                function_code=self.function_code,
             )
         for i in range(1, data_len, 2):
             self.registers.append(struct.unpack(">H", data[i : i + 2])[0])
@@ -99,6 +102,8 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
 
     function_code = 23
     rtu_byte_count_pos = 10
+    MAX_READ_COUNT = 125
+    MAX_WRITE_COUNT = 121
 
     def __init__(
         self,
@@ -119,13 +124,14 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         self.write_registers = write_registers
         self.write_count = len(self.write_registers)
         self.write_byte_count = self.write_count * 2
+        self._payload_byte_count: int | None = None
 
     def encode(self) -> bytes:
         """Encode the request packet."""
         self.verifyAddress(address=self.read_address)
         self.verifyAddress(address=self.write_address)
-        self.verifyCount(125, count=self.read_count)
-        self.verifyCount(121, count=self.write_count)
+        self.verifyCount(self.MAX_READ_COUNT, count=self.read_count)
+        self.verifyCount(self.MAX_READ_COUNT, count=self.write_count)
         result = struct.pack(
             ">HHHHB",
             self.read_address,
@@ -147,10 +153,13 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
             self.write_count,
             self.write_byte_count,
         ) = struct.unpack(">HHHHB", data[:9])
-        self.write_registers = []
-        for i in range(9, self.write_byte_count + 9, 2):
-            register = struct.unpack(">H", data[i : i + 2])[0]
-            self.write_registers.append(register)
+        self.verifyCount(self.MAX_READ_COUNT, count=self.read_count)
+        self.verifyCount(self.MAX_READ_COUNT, count=self.write_count)
+        self._payload_byte_count = len(data) - 9
+        self.write_registers = [
+            struct.unpack(">H", data[i : i + 2])[0]
+            for i in range(9, min(len(data), self.write_byte_count + 9) - 1, 2)
+        ]
 
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
@@ -159,6 +168,11 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         if not (1 <= self.read_count <= 0x07D):
             return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
         if not 1 <= self.write_count <= 0x079:
+            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
+        if self.write_byte_count != self.write_count * 2 or (
+            self._payload_byte_count is not None
+            and self._payload_byte_count != self.write_byte_count
+        ):
             return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
         rc = await context.async_setValues(
             device_id, self.function_code, self.write_address, self.write_registers
@@ -243,6 +257,8 @@ class WriteMultipleRegistersRequest(ModbusPDU):
     function_code = 16
     rtu_byte_count_pos = 6
     _pdu_length = 5  # func + adress1 + adress2 + outputQuant1 + outputQuant2
+    byte_count: int | None = None
+    _payload_byte_count: int | None = None
 
     def encode(self) -> bytes:
         """Encode a write single register packet packet request."""
@@ -253,16 +269,23 @@ class WriteMultipleRegistersRequest(ModbusPDU):
 
     def decode(self, data: bytes) -> None:
         """Decode a write single register packet packet request."""
-        self.address, self.count, _byte_count = struct.unpack(">HHB", data[:5])
-        self.registers = []
-        for idx in range(5, (self.count * 2) + 5, 2):
-            self.registers.append(struct.unpack(">H", data[idx : idx + 2])[0])
+        self.address, self.count, self.byte_count = struct.unpack(">HHB", data[:5])
+        self._payload_byte_count = len(data) - 5
+        self.registers = [
+            struct.unpack(">H", data[idx : idx + 2])[0]
+            for idx in range(5, min(len(data), self.byte_count + 5) - 1, 2)
+        ]
 
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
     ) -> ModbusPDU:
         """Update diagnostic request on the given device."""
         if not 1 <= self.count <= 0x07B:
+            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
+        if self.byte_count is not None and (
+            self.byte_count != self.count * 2
+            or self._payload_byte_count != self.byte_count
+        ):
             return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
         rc = await context.async_setValues(
             device_id, self.function_code, self.address, self.registers

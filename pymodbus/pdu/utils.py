@@ -19,7 +19,7 @@ def pack_bitstring(bits: list[bool], align_byte=True) -> bytes:
     """
     ret = b""
     i = packed = 0
-    t_bits = bits
+    t_bits = bits.copy()
     bits_extra = 8 if align_byte else 16
     if extra := len(bits) % bits_extra:
         t_bits += [False] * (bits_extra - extra)

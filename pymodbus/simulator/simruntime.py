@@ -151,7 +151,7 @@ class SimRuntime:
 
     async def async_setValues(
         self, func_code: int, address: int, values: list[int] | list[bool]
-    ) -> None | ExcCodes:
+    ) -> ExcCodes | None:
         """Set the datastore with the supplied values."""
         block = await self.get_block(func_code, address, len(values), values)
         return block if isinstance(block, ExcCodes) else None

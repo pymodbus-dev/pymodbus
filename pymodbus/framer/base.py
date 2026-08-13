@@ -88,7 +88,11 @@ class FramerBase:
                 )
                 continue
             if (pdu := self.decoder.decode(frame_data)) is None:
-                raise ModbusIOException("Unable to decode request")
+                raise ModbusIOException(
+                    "Unable to decode request",
+                    transaction_id=tid,
+                    dev_id=dev_id,
+                )
             pdu.dev_id = dev_id
             pdu.transaction_id = tid
             return used_len, pdu

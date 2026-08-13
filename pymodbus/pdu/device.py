@@ -205,7 +205,7 @@ class ModbusDeviceIdentification:
 
         :param key: The register to read
         """
-        return self.stat_data.setdefault(key, "")
+        return self.stat_data.get(key, "")
 
     def __str__(self):
         """Build a representation of the device.

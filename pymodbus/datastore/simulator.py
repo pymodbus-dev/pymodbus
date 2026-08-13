@@ -635,7 +635,7 @@ class ModbusSimulatorContext:
                 bit_index = 0
         return result
 
-    async def async_OLD_setValues(self, func_code, address, values) -> None | ExcCodes:
+    async def async_OLD_setValues(self, func_code, address, values) -> ExcCodes | None:
         """Set the requested values of the datastore.
 
         :meta private:

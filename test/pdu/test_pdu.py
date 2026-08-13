@@ -37,8 +37,10 @@ class TestPdu:
 
     async def test_pdu_id(self):
         """Test set illegal pdu id."""
-        with pytest.raises(ModbusIOException):
-            ModbusPDU(256)
+        with pytest.raises(ModbusIOException) as exc_info:
+            ModbusPDU(256, transaction_id=0x42)
+        assert exc_info.value.dev_id == 256
+        assert exc_info.value.transaction_id == 0x42
 
     async def test_is_error(self):
         """Test is_error."""
@@ -631,6 +633,27 @@ class TestPdu:
     def test_bit_packing8(self, bytestream, bitlist):
         """Test all string <=> bit packing functions."""
         assert pack_bitstring(bitlist) == bytestream
+
+    @pytest.mark.parametrize(
+        ("align_byte", "expected"),
+        [
+            (True, b"\x05"),
+            (False, b"\x05\x00"),
+        ],
+    )
+    def test_pack_bitstring_does_not_mutate_input(
+        self,
+        align_byte,
+        expected,
+    ):
+        """Test that pack_bitstring leaves the input list unchanged."""
+        bits = [True, False, True]
+        original = bits.copy()
+
+        result = pack_bitstring(bits, align_byte=align_byte)
+
+        assert result == expected
+        assert bits == original
 
     @pytest.mark.parametrize(
         ("bytestream", "bitlist"),

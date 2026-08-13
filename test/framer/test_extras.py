@@ -84,8 +84,11 @@ class TestExtras:
     def test_tcp_framer_transaction_wrong_fc(self):
         """Test a half completed tcp frame transaction."""
         msg = b"\x00\x01\x00\x00\x00\x06\xff\x70\x01\x02\x00\x08"
-        with pytest.raises(ModbusIOException):
+        with pytest.raises(ModbusIOException) as exc_info:
             self._tcp.handleFrame(msg, 0, 0)
+        assert exc_info.value.transaction_id == 1
+        assert exc_info.value.dev_id == 0xFF
+        assert exc_info.value.fcode is None
 
     def test_tls_incoming_packet(self):
         """Framer tls incoming packet."""

@@ -216,6 +216,26 @@ class TestBitMessage:
         handle.decode(request)
         # assert handle.records[0] == record
 
+    def test_read_file_record_request_decode_invalid_byte_count(self):
+        """Test ReadFileRecordRequest raises ModbusException on oversized byte_count."""
+        handle = ReadFileRecordRequest()
+        with pytest.raises(ModbusException):
+            handle.decode(bytes([0xFF, 0x06, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01]))
+
+    def test_write_file_record_request_decode_invalid_byte_count(self):
+        """Test WriteFileRecordRequest raises ModbusException on oversized byte_count."""
+        handle = WriteFileRecordRequest()
+        with pytest.raises(ModbusException):
+            handle.decode(
+                bytes([0xFF, 0x06, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00])
+            )
+
+    def test_read_fifo_queue_response_decode_invalid_count(self):
+        """Test ReadFifoQueueResponse raises ModbusException on oversized count."""
+        handle = ReadFifoQueueResponse()
+        with pytest.raises(ModbusException):
+            handle.decode(bytes([0x00, 0x00, 0xFF, 0xFF]))
+
     def test_write_file_record_response_frame_size(self):
         """Test write file record response rtu frame size calculation."""
         request = b"\x00\x00\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"

@@ -12,9 +12,7 @@ The NullModem works with the normal transport types, and simply substitutes the 
 - *UDP*
 
 The NullModem is currently integrated in
-- :mod:`Modbus<x>Client`
 - :mod:`AsyncModbus<x>Client`
 - :mod:`Modbus<x>Server`
-- :mod:`AsyncModbus<x>Server`
 
 Of course the NullModem requires that server and client(s) run in the same python instance.

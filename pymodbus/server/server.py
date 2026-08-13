@@ -84,7 +84,7 @@ class ModbusTlsServer(ModbusTcpServer):
         Remember to call serve_forever to start server.
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         context: ModbusServerContext | SimDevice | list[SimDevice],
         *,
@@ -212,14 +212,22 @@ class ModbusSerialServer(ModbusBaseServer):
         context: ModbusServerContext | SimDevice | list[SimDevice],
         *,
         framer: FramerType = FramerType.RTU,
-        ignore_missing_devices: bool = False,
         identity: ModbusDeviceIdentification | None = None,
+        port: str = "",
+        stopbits: int = 1,
+        bytesize: int = 8,
+        parity: str = "N",
+        baudrate: int = 19200,
+        timeout: float = 3,
+        handle_local_echo: bool = False,
+        ignore_missing_devices: bool = False,
         broadcast_enable: bool = False,
+        reconnect_delay: float = 2,
         trace_packet: Callable[[bool, bytes], bytes] | None = None,
         trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
         custom_pdu: list[type[ModbusPDU]] | None = None,
-        **kwargs,
+        allow_multiple_devices: bool = False,
     ):
         """Initialize the socket server.
 
@@ -229,7 +237,7 @@ class ModbusSerialServer(ModbusBaseServer):
         :param framer: The framer strategy to use, default FramerType.RTU
         :param identity: An optional identify structure
         :param port: The serial port to attach to
-        :param stopbits: The number of stop bits to use
+        :param stopbits: Number of stop bits 1 or 2. (Note: 1.5 might work on non-POSIX systems)
         :param bytesize: The bytesize of the serial messages
         :param parity: Which kind of parity to use
         :param baudrate: The baud rate to use for the serial device
@@ -246,19 +254,18 @@ class ModbusSerialServer(ModbusBaseServer):
         :param allow_multiple_devices: True if the rs485 have multiple devices connected.
                     **Remark** only works with baudrates <= 38.400 and with an error free RS485.
         """
-        baudrate = kwargs.get("baudrate", 19200)
         params = CommParams(
             comm_type=CommType.SERIAL,
             comm_name="server_listener",
-            reconnect_delay=kwargs.get("reconnect_delay", 2),
+            reconnect_delay=reconnect_delay,
             reconnect_delay_max=0.0,
-            timeout_connect=kwargs.get("timeout", 3),
-            source_address=(kwargs.get("port", 0), 0),
-            bytesize=kwargs.get("bytesize", 8),
-            parity=kwargs.get("parity", "N"),
+            timeout_connect=timeout,
+            source_address=(port, 0),
+            bytesize=bytesize,
+            parity=parity,
             baudrate=baudrate,
-            stopbits=kwargs.get("stopbits", 1),
-            handle_local_echo=kwargs.get("handle_local_echo", False),
+            stopbits=stopbits,
+            handle_local_echo=handle_local_echo,
         )
         super().__init__(
             params,
@@ -272,7 +279,7 @@ class ModbusSerialServer(ModbusBaseServer):
             trace_connect,
             custom_pdu,
         )
-        self.allow_multiple_devices = kwargs.get("allow_multiple_devices", False)
+        self.allow_multiple_devices = allow_multiple_devices
         if self.allow_multiple_devices:
             if baudrate > 38400:
                 raise TypeError(

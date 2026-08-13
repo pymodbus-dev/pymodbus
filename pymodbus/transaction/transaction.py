@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Callable
 from threading import RLock
+from time import monotonic
 
 from ..exceptions import ConnectionException, ModbusIOException
 from ..framer import FramerAscii, FramerBase, FramerRTU
@@ -83,6 +84,7 @@ class TransactionManager(ModbusProtocol):
     def sync_get_response(self, dev_id, tid) -> ModbusPDU:
         """Receive until PDU is correct or timeout."""
         databuffer = b""
+        deadline = monotonic() + self.comm_params.timeout_connect
         while True:
             if not (data := self.sync_client.recv(None)):
                 raise asyncio.exceptions.TimeoutError()
@@ -115,6 +117,20 @@ class TransactionManager(ModbusProtocol):
             databuffer = databuffer[used_len:]
             if pdu:
                 return self.trace_pdu(False, pdu)
+            if monotonic() >= deadline:
+                raise asyncio.exceptions.TimeoutError()
+
+    @staticmethod
+    def _io_exception_from_request(
+        message: str, request: ModbusPDU
+    ) -> ModbusIOException:
+        """Build ModbusIOException from an outstanding request."""
+        return ModbusIOException(
+            message,
+            function_code=request.function_code,
+            transaction_id=request.transaction_id,
+            dev_id=request.dev_id,
+        )
 
     def sync_execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
         """Execute requests asynchronously.
@@ -137,13 +153,16 @@ class TransactionManager(ModbusProtocol):
                     response = self.sync_get_response(
                         request.dev_id, request.transaction_id
                     )
+                    self.count_until_disconnect = self.max_until_disconnect
                     if response.dev_id != request.dev_id:
-                        raise ModbusIOException(
-                            f"ERROR: request uses device id={request.dev_id} but received {response.dev_id}."
+                        raise self._io_exception_from_request(
+                            f"ERROR: request uses device id={request.dev_id} but received {response.dev_id}.",
+                            request,
                         )
                     if response.transaction_id != request.transaction_id:
-                        raise ModbusIOException(
-                            f"ERROR: request uses transaction id={request.transaction_id} but received {response.transaction_id}."
+                        raise self._io_exception_from_request(
+                            f"ERROR: request uses transaction id={request.transaction_id} but received {response.transaction_id}.",
+                            request,
                         )
                     response.retries = count_retries
                     return response
@@ -151,13 +170,14 @@ class TransactionManager(ModbusProtocol):
                     count_retries += 1
             if self.count_until_disconnect < 0:
                 self.connection_lost(asyncio.TimeoutError("Server not responding"))
-                raise ModbusIOException(
-                    "ERROR: No response received of the last requests (default: retries+3), CLOSING CONNECTION."
+                raise self._io_exception_from_request(
+                    "ERROR: No response received of the last requests (default: retries+3), CLOSING CONNECTION.",
+                    request,
                 )
             self.count_until_disconnect -= 1
             txt = f"No response received after {self.retries} retries, continue with next request"
             Log.error(txt)
-            raise ModbusIOException(txt)
+            raise self._io_exception_from_request(txt, request)
 
     async def execute(
         self, no_response_expected: bool, request: ModbusPDU
@@ -188,33 +208,37 @@ class TransactionManager(ModbusProtocol):
                     )
                     self.count_until_disconnect = self.max_until_disconnect
                     if request.dev_id and response.dev_id != request.dev_id:
-                        raise ModbusIOException(
-                            f"ERROR: request uses device id={request.dev_id} but received {response.dev_id}."
+                        raise self._io_exception_from_request(
+                            f"ERROR: request uses device id={request.dev_id} but received {response.dev_id}.",
+                            request,
                         )
                     if (
                         response.transaction_id
                         and response.transaction_id != request.transaction_id
                     ):
-                        raise ModbusIOException(
-                            f"ERROR: request uses transaction id={request.transaction_id} but received {response.transaction_id}."
+                        raise self._io_exception_from_request(
+                            f"ERROR: request uses transaction id={request.transaction_id} but received {response.transaction_id}.",
+                            request,
                         )
                     response.retries = count_retries
                     return response
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
                 except asyncio.exceptions.CancelledError as exc:
-                    raise ModbusIOException(
-                        "Request cancelled outside library."
+                    raise self._io_exception_from_request(
+                        "Request cancelled outside library.",
+                        request,
                     ) from exc
             if self.count_until_disconnect < 0:
                 self.connection_lost(asyncio.TimeoutError("Server not responding"))
-                raise ModbusIOException(
-                    "ERROR: No response received of the last requests (default: retries+3), CLOSING CONNECTION."
+                raise self._io_exception_from_request(
+                    "ERROR: No response received of the last requests (default: retries+3), CLOSING CONNECTION.",
+                    request,
                 )
             self.count_until_disconnect -= 1
             txt = f"No response received after {self.retries} retries, continue with next request"
             Log.error(txt)
-            raise ModbusIOException(txt)
+            raise self._io_exception_from_request(txt, request)
 
     def pdu_send(self, pdu: ModbusPDU, addr: tuple | None = None) -> None:
         """Build byte stream and send."""

@@ -110,7 +110,7 @@ def setup_sync_client(description=None, cmdline=None):
             # TLS setup parameters
             sslctx=helper.generate_ssl(
                 False,
-                certfile=helper.get_certificate("crt"),
+                helper.get_certificate("crt"),
                 keyfile=helper.get_certificate("key"),
                 #    password=None,
             ),

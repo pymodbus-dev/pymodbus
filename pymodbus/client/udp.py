@@ -59,7 +59,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         host: str,
         *,
@@ -138,7 +138,7 @@ class ModbusUdpClient(ModbusBaseSyncClient):
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         host: str,
         *,

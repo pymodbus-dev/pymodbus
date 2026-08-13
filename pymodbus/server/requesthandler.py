@@ -62,9 +62,15 @@ class ServerRequestHandler(TransactionManager):
         """Handle received data."""
         try:
             used_len = super().callback_data(data, addr)
-        except ModbusIOException:
-            response = ExceptionResponse(40, exception_code=ExcCodes.ILLEGAL_FUNCTION)
-            self.server_send(response, 0)
+        except ModbusIOException as exc:
+            function_code = 0x00 if exc.fcode is None else exc.fcode
+            response = ExceptionResponse(
+                function_code,
+                exception_code=ExcCodes.ILLEGAL_FUNCTION,
+                device_id=exc.dev_id,
+                transaction=exc.transaction_id,
+            )
+            self.server_send(response, addr)
             return len(data)
         if self.last_pdu:
             self.loop.call_soon(self.handle_later)

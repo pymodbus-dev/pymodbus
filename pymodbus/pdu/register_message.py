@@ -19,16 +19,18 @@ class ReadHoldingRegistersRequest(ModbusPDU):
 
     function_code = 3
     rtu_frame_size = 8
+    MAX_COUNT = 125
 
     def encode(self) -> bytes:
         """Encode the request packet."""
         self.verifyAddress()
-        self.verifyCount(125)
+        self.verifyCount(self.MAX_COUNT)
         return struct.pack(">HH", self.address, self.count)
 
     def decode(self, data: bytes) -> None:
         """Decode a register request packet."""
         self.address, self.count = struct.unpack(">HH", data[:4])
+        self.verifyCount(self.MAX_COUNT)
 
     def get_response_pdu_size(self) -> int:
         """Get response pdu size.
@@ -100,6 +102,8 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
 
     function_code = 23
     rtu_byte_count_pos = 10
+    MAX_READ_COUNT = 125
+    MAX_WRITE_COUNT = 121
 
     def __init__(
         self,
@@ -126,8 +130,8 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         """Encode the request packet."""
         self.verifyAddress(address=self.read_address)
         self.verifyAddress(address=self.write_address)
-        self.verifyCount(125, count=self.read_count)
-        self.verifyCount(121, count=self.write_count)
+        self.verifyCount(self.MAX_READ_COUNT, count=self.read_count)
+        self.verifyCount(self.MAX_READ_COUNT, count=self.write_count)
         result = struct.pack(
             ">HHHHB",
             self.read_address,
@@ -149,6 +153,8 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
             self.write_count,
             self.write_byte_count,
         ) = struct.unpack(">HHHHB", data[:9])
+        self.verifyCount(self.MAX_READ_COUNT, count=self.read_count)
+        self.verifyCount(self.MAX_READ_COUNT, count=self.write_count)
         self._payload_byte_count = len(data) - 9
         self.write_registers = [
             struct.unpack(">H", data[i : i + 2])[0]

@@ -16,16 +16,18 @@ class ReadCoilsRequest(ModbusPDU):
 
     rtu_frame_size = 8
     function_code = 1
+    MAX_COUNT = 2000
 
     def encode(self) -> bytes:
         """Encode a request pdu."""
-        self.verifyCount(2000)
+        self.verifyCount(self.MAX_COUNT)
         self.verifyAddress()
         return struct.pack(">HH", self.address, self.count)
 
     def decode(self, data: bytes) -> None:
         """Decode a request pdu."""
         self.address, self.count = struct.unpack(">HH", data[:4])
+        self.verifyCount(self.MAX_COUNT)
 
     def get_response_pdu_size(self) -> int:
         """Get response pdu size.
@@ -139,6 +141,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
     count: int
     byte_count: int | None
     data_byte_count: int
+    MAX_COUNT = 2000
 
     def __init__(
         self,
@@ -162,7 +165,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
         """Encode write coils request."""
         self.count = len(self.bits)
         self.verifyAddress()
-        self.verifyCount(2000)
+        self.verifyCount(self.MAX_COUNT)
         byte_count = (self.count + 7) // 8
         return struct.pack(
             ">HHB", self.address, self.count, byte_count
@@ -171,8 +174,11 @@ class WriteMultipleCoilsRequest(ModbusPDU):
     def decode(self, data: bytes) -> None:
         """Decode a write coils request."""
         self.address, self.count, self.byte_count = struct.unpack(">HHB", data[0:5])
+        self.verifyCount(self.MAX_COUNT)
         self.data_byte_count = len(data) - 5
-        self.bits = unpack_bitstring(data[5 : 5 + self.byte_count])[: self.count]
+        self.bits = unpack_bitstring(data[5 : 5 + cast(int, self.byte_count)])[
+            : self.count
+        ]
 
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int

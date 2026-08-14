@@ -219,7 +219,13 @@ class ModbusTcpClient(ModbusBaseSyncClient):
         if not self.socket:
             raise ConnectionException(str(self))
         if request:
-            return self.socket.send(request)
+            try:
+                return self.socket.send(request)
+            except (BlockingIOError, InterruptedError):
+                raise
+            except OSError:
+                self.close()
+                raise ConnectionException(str(self)) from None
         return 0
 
     def recv(self, size: int | None) -> bytes:

@@ -150,6 +150,30 @@ class TestSyncClientTcp:
         assert not client.send(b"")
         assert client.send(b"1234") == 4
 
+    def test_tcp_client_send_drops_socket_on_os_error(self):
+        """Test that a socket the OS tore down is not left in place as connected."""
+        client = ModbusTcpClient("127.0.0.1")
+        mock_socket = mock.MagicMock()
+        mock_socket.send.side_effect = BrokenPipeError(32, "Broken pipe")
+        client.socket = mock_socket
+        with pytest.raises(ConnectionException):
+            client.send(b"1234")
+        assert not client.connected
+        assert client.socket is None
+
+    def test_tcp_client_send_keeps_socket_on_transient_error(self):
+        """Test that a transient write error leaves a healthy socket in place."""
+        client = ModbusTcpClient("127.0.0.1")
+        mock_socket = mock.MagicMock()
+        mock_socket.send.side_effect = BlockingIOError(
+            11, "Resource temporarily unavailable"
+        )
+        client.socket = mock_socket
+        with pytest.raises(BlockingIOError):
+            client.send(b"1234")
+        assert client.connected
+        assert client.socket is mock_socket
+
     @mock.patch("pymodbus.client.tcp.time")
     @mock.patch("pymodbus.client.tcp.select")
     def test_tcp_client_recv(self, mock_select, mock_time):

@@ -68,6 +68,7 @@ development = [
     "pytest-xdist>=3.6.1",
     "pytest-aiohttp>=1.1.1",
     "ruff>=0.15.20",
+    "pyserial>=3.5",
     "twine>=6.2.0",
     "types-Pygments",
     "types-pyserial",

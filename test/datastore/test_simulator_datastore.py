@@ -6,8 +6,8 @@ import copy
 import pytest
 
 from pymodbus.constants import ExcCodes
-from pymodbus.datastore import ModbusSimulatorContext
-from pymodbus.datastore.simulator import Cell, CellType, Label
+from pymodbus.datastore import CellType, ModbusSimulatorContext
+from pymodbus.datastore.simulator import Cell, Label
 
 
 FX_READ_BIT = 1
@@ -33,6 +33,7 @@ class TestDatastoreSimulator:
                     "uint16": 1,
                     "uint32": 45000,
                     "float32": 127.4,
+                    "float64": -42.42,
                     "string": "X",
                 },
                 "action": {
@@ -40,6 +41,7 @@ class TestDatastoreSimulator:
                     "uint16": None,
                     "uint32": None,
                     "float32": None,
+                    "float64": None,
                     "string": None,
                 },
             },
@@ -54,6 +56,7 @@ class TestDatastoreSimulator:
             [16, 18],
             [21, 26],
             [33, 38],
+            [43, 46],
         ],
         "bits": [
             5,
@@ -89,11 +92,15 @@ class TestDatastoreSimulator:
             {"addr": [35, 38], "value": 5678.19},
             {"addr": [39, 42], "value": 345000.18, "action": "increment"},
         ],
-        "string": [
-            {"addr": [43, 44], "value": "Str"},
-            {"addr": [45, 48], "value": "Strxyz12"},
+        "float64": [
+            {"addr": [43, 46], "value": 4242.487},
+            {"addr": [47, 50], "value": -1237.879, "action": "increment"},
         ],
-        "repeat": [{"addr": [0, 48], "to": [49, 147]}],
+        "string": [
+            {"addr": [51, 52], "value": "Str"},
+            {"addr": [53, 56], "value": "Strxyz12"},
+        ],
+        "repeat": [{"addr": [0, 56], "to": [57, 171]}],
     }
 
     default_server = {
@@ -162,6 +169,14 @@ class TestDatastoreSimulator:
         Cell(type=CellType.NEXT, value=29958),  # 40
         Cell(type=CellType.FLOAT32, value=18600, action=1),
         Cell(type=CellType.NEXT, value=29958),
+        Cell(type=CellType.FLOAT64, access=True, value=16560),
+        Cell(type=CellType.NEXT, access=True, value=37500),
+        Cell(type=CellType.NEXT, access=True, value=44040),
+        Cell(type=CellType.NEXT, access=True, value=12583),
+        Cell(type=CellType.FLOAT64, value=49299, action=1),
+        Cell(type=CellType.NEXT, value=22404),
+        Cell(type=CellType.NEXT, value=6291),
+        Cell(type=CellType.NEXT, value=29884),  # 50
         Cell(type=CellType.STRING, value=int.from_bytes(bytes("St", "utf-8"), "big")),
         Cell(type=CellType.NEXT, value=int.from_bytes(bytes("r ", "utf-8"), "big")),
         Cell(type=CellType.STRING, value=int.from_bytes(bytes("St", "utf-8"), "big")),
@@ -172,11 +187,11 @@ class TestDatastoreSimulator:
     ]
 
     @classmethod
-    def custom_action1(cls, _inx, _cell):
+    def custom_action1(cls, _registers, _inx):
         """Test action."""
 
     @classmethod
-    def custom_action2(cls, _inx, _cell):
+    def custom_action2(cls, _registers, _inx):
         """Test action."""
 
     custom_actions = {
@@ -202,20 +217,35 @@ class TestDatastoreSimulator:
     def test_pack_unpack_values(self):
         """Test the pack unpack methods."""
         value = 32145678
-        regs = ModbusSimulatorContext.build_registers_from_value(value, True)
-        test_value = ModbusSimulatorContext.build_value_from_registers(regs, True)
+        regs = ModbusSimulatorContext.build_registers_from_value(value, CellType.UINT32)
+        test_value = ModbusSimulatorContext.build_value_from_registers(
+            regs, CellType.UINT32
+        )
         assert value == test_value
 
         value = 3.14159265358979
-        regs = ModbusSimulatorContext.build_registers_from_value(value, False)
-        test_value = ModbusSimulatorContext.build_value_from_registers(regs, False)
+        regs = ModbusSimulatorContext.build_registers_from_value(
+            value, CellType.FLOAT32
+        )
+        test_value = ModbusSimulatorContext.build_value_from_registers(
+            regs, CellType.FLOAT32
+        )
+        assert round(value, 6) == round(test_value, 6)
+
+        value = 2.718281828459045
+        regs = ModbusSimulatorContext.build_registers_from_value(
+            value, CellType.FLOAT64
+        )
+        test_value = ModbusSimulatorContext.build_value_from_registers(
+            regs, CellType.FLOAT64
+        )
         assert round(value, 6) == round(test_value, 6)
 
     def test_simulator_config_verify(self, simulator):
         """Test basic configuration."""
         # Manually build expected memory image and then compare.
         assert simulator.register_count == 250
-        for offset in (0, 49, 98):
+        for offset in (0, 57, 114):
             for i, test_cell in enumerate(self.test_registers):
                 reg = simulator.registers[i + offset]
                 assert reg.type == test_cell.type, f"at index {i} - {offset}"
@@ -262,7 +292,8 @@ class TestDatastoreSimulator:
             (Label.type_uint16, 16),
             (Label.type_uint32, [31, 32]),
             (Label.type_float32, [33, 34]),
-            (Label.type_string, [43, 44]),
+            (Label.type_float64, [47, 50]),
+            (Label.type_string, [51, 52]),
         ],
     )
     def test_simulator_invalid_config2(self, entry, device):
@@ -388,7 +419,12 @@ class TestDatastoreSimulator:
                 ),
             ),
             (33, "33-34", Cell(type=Label.type_float32, action="none", value="3124.5")),
-            (43, "43-44", Cell(type=Label.type_string, action="none", value="Str ")),
+            (
+                47,
+                "47-50",
+                Cell(type=Label.type_float64, action="increment", value="-1237.879"),
+            ),
+            (51, "51-52", Cell(type=Label.type_string, action="none", value="Str ")),
         ):
             reg = simulator.registers[test_reg]
             entry, cell = simulator.get_text_register(test_reg)
@@ -460,6 +496,8 @@ class TestDatastoreSimulator:
             (CellType.UINT32, 50, 75, 45, (50, 51, 52)),
             (CellType.FLOAT32, 27.0, 16100.5, 16098.0, (16099.0, 16100.0, 27.0)),
             (CellType.FLOAT32, 27.0, 75.5, 24.0, (27.0, 28.0, 29.0)),
+            (CellType.FLOAT64, 27.0, 1615, 24.0, (27.0, 28.0, 29.0)),
+            (CellType.FLOAT64, -29.5, 75.5, -40, (-29.5, -28.5, -27.5)),
         ],
     )
     async def test_simulator_action_increment(
@@ -472,38 +510,35 @@ class TestDatastoreSimulator:
             "minval": minval,
             "maxval": maxval,
         }
-        exc_simulator.registers[30].type = celltype
+        exc_simulator.registers[30].type = celltype.value
         exc_simulator.registers[30].action = action
         exc_simulator.registers[30].action_parameters = parameters
-        exc_simulator.registers[31].type = CellType.NEXT
+        for i in range(3):
+            exc_simulator.registers[31 + i].type = CellType.NEXT
+            exc_simulator.registers[31 + i].action = 0
 
-        is_int = celltype != CellType.FLOAT32
-        reg_count = 1 if celltype in (CellType.BITS, CellType.UINT16) else 2
-        regs = (
-            [value, 0]
-            if reg_count == 1
-            else ModbusSimulatorContext.build_registers_from_value(value, is_int)
-        )
-        exc_simulator.registers[30].value = regs[0]
-        exc_simulator.registers[31].value = regs[1]
+        regs = ModbusSimulatorContext.build_registers_from_value(value, celltype)
+        reg_count = CellType.register_count(celltype)
+
+        for i, new_value in enumerate(regs):
+            exc_simulator.registers[30 + i].value = new_value
+
         for expect_value in expected:
             if celltype != CellType.BITS:
                 regs = await exc_simulator.async_OLD_getValues(
                     FX_READ_REG, 30, reg_count
                 )
+                reg_value = ModbusSimulatorContext.build_value_from_registers(
+                    regs, celltype
+                )
+
             else:
                 reg_bits = await exc_simulator.async_OLD_getValues(
                     FX_READ_BIT, 30 * 16, 16
                 )
                 reg_value = sum(bit * 2**i for i, bit in enumerate(reg_bits))
-                regs = [reg_value]
-            if reg_count == 1:
-                assert expect_value == regs[0], f"type({celltype})"
-            else:
-                new_value = ModbusSimulatorContext.build_value_from_registers(
-                    regs, is_int
-                )
-                assert expect_value == new_value, f"type({celltype})"
+
+            assert expect_value == reg_value, f"type({CellType(celltype).name})"
 
     @pytest.mark.parametrize(
         ("celltype", "minval", "maxval"),
@@ -513,6 +548,8 @@ class TestDatastoreSimulator:
             (CellType.UINT32, 50, 63075),
             (CellType.FLOAT32, 27.0, 16100.5),
             (CellType.FLOAT32, 65.0, 78.0),
+            (CellType.FLOAT64, 78.5, 124.3),
+            (CellType.FLOAT64, 125.7, 354.2),
         ],
     )
     async def test_simulator_action_random(self, celltype, minval, maxval, device):
@@ -527,8 +564,8 @@ class TestDatastoreSimulator:
         exc_simulator.registers[30].action = action
         exc_simulator.registers[30].action_parameters = parameters
         exc_simulator.registers[31].type = CellType.NEXT
-        is_int = celltype != CellType.FLOAT32
-        reg_count = 1 if celltype in (CellType.BITS, CellType.UINT16) else 2
+        exc_simulator.registers[31].action = 0
+        reg_count = CellType.register_count(celltype)
         for _i in range(100):
             if celltype != CellType.BITS:
                 regs = await exc_simulator.async_OLD_getValues(
@@ -544,17 +581,41 @@ class TestDatastoreSimulator:
                 new_value = regs[0]
             else:
                 new_value = ModbusSimulatorContext.build_value_from_registers(
-                    regs, is_int
+                    regs, celltype
                 )
             assert minval <= new_value <= maxval
 
     def test_simulator_loop_validate(self, simulator):
         """Test simulator set values."""
-        assert not simulator.loop_validate(51, 52, False)
+        assert not simulator.loop_validate(59, 60, False)
         simulator.type_exception = True
         assert simulator.loop_validate(5, 6, False)
         assert not simulator.loop_validate(46, 47, False)
-        assert simulator.loop_validate(43, 45, False)
+        assert simulator.loop_validate(51, 53, False)
         assert not simulator.loop_validate(45, 50, False)
         assert not simulator.loop_validate(21, 22, False)
         assert simulator.loop_validate(21, 23, False)
+
+    @pytest.mark.parametrize(
+        ("celltype", "count", "is_int", "is_64"),
+        [
+            (CellType.INVALID, -1, False, False),
+            (CellType.BITS, 1, True, False),
+            (CellType.UINT16, 1, True, False),
+            (CellType.UINT32, 2, True, False),
+            (CellType.FLOAT32, 2, False, False),
+            (CellType.FLOAT64, 4, False, True),
+            (CellType.STRING, -1, False, False),
+            (CellType.NEXT, -1, False, False),
+        ],
+    )
+    def test_cell_type(self, celltype: CellType, count: int, is_int: bool, is_64: bool):
+        """Test CellType methods."""
+        if count < 0:
+            with pytest.raises(RuntimeError):
+                CellType.register_count(celltype)
+        else:
+            assert CellType.register_count(celltype) == count
+
+        assert CellType.is_int(celltype) == is_int
+        assert CellType.is_64(celltype) == is_64

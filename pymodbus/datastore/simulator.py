@@ -7,6 +7,7 @@ import random
 import struct
 from collections.abc import Callable
 from datetime import datetime
+from enum import IntEnum
 from typing import Any
 
 from ..constants import ExcCodes
@@ -16,24 +17,48 @@ from ..logging import Log
 WORD_SIZE = 16
 
 
-@dataclasses.dataclass(frozen=True)
-class CellType:
+class CellType(IntEnum):
     """Define single cell types."""
 
-    INVALID: int = 0
-    BITS: int = 1
-    UINT16: int = 2
-    UINT32: int = 3
-    FLOAT32: int = 4
-    STRING: int = 5
-    NEXT: int = 6
+    INVALID = 0
+    BITS = 1
+    UINT16 = 2
+    UINT32 = 3
+    FLOAT32 = 4
+    FLOAT64 = 5
+    STRING = 6
+    NEXT = 7
+
+    @classmethod
+    def register_count(cls, celltype: CellType) -> int:
+        """Return register length (a register is a world, 2 bytes value) for the given cell type."""
+        if celltype in [cls.STRING, cls.INVALID, cls.NEXT]:
+            raise RuntimeError(
+                f"Invalid call to register_count with type {CellType(celltype).name} ({celltype})."
+            )
+
+        if celltype in [cls.BITS, cls.UINT16]:
+            return 1
+        if cls.is_64(celltype):
+            return 4
+        return 2
+
+    @classmethod
+    def is_int(cls, celltype: CellType) -> bool:
+        """Return True if the given cell type represents integer value."""
+        return celltype in [cls.BITS, cls.UINT16, cls.UINT32]
+
+    @classmethod
+    def is_64(cls, celltype: CellType) -> bool:
+        """Return True if the given cell type represents 64=bit (8 bytes, 4 registers) value."""
+        return celltype in [cls.FLOAT64]
 
 
 @dataclasses.dataclass(repr=False, eq=False)
 class Cell:
     """Handle a single cell."""
 
-    type: int = CellType.INVALID
+    type: CellType = CellType.INVALID
     access: bool = False
     value: int = 0
     action: int = 0
@@ -88,6 +113,7 @@ class Label:  # pylint: disable=too-many-instance-attributes
     type_uint16: str = "uint16"
     type_uint32: str = "uint32"
     type_float32: str = "float32"
+    type_float64: str = "float64"
     type_string: str = "string"
     uptime: str = "uptime"
     value: str = "value"
@@ -141,6 +167,13 @@ class Setup:
                 Label.action: None,
                 Label.method: self.handle_type_float32,
             },
+            Label.type_float64: {
+                Label.type: CellType.FLOAT64,
+                Label.next: CellType.NEXT,
+                Label.value: 0,
+                Label.action: None,
+                Label.method: self.handle_type_float64,
+            },
             Label.type_string: {
                 Label.type: CellType.STRING,
                 Label.next: CellType.NEXT,
@@ -172,7 +205,9 @@ class Setup:
 
     def handle_type_uint32(self, start, stop, value, action, action_parameters):
         """Handle type uint32."""
-        regs_value = ModbusSimulatorContext.build_registers_from_value(value, True)
+        regs_value = ModbusSimulatorContext.build_registers_from_value(
+            value, CellType.UINT32
+        )
         for i in range(start, stop, 2):
             regs = self.runtime.registers[i : i + 2]
             if regs[0].type != CellType.INVALID or regs[1].type != CellType.INVALID:
@@ -185,8 +220,10 @@ class Setup:
             regs[1].type = CellType.NEXT
 
     def handle_type_float32(self, start, stop, value, action, action_parameters):
-        """Handle type uint32."""
-        regs_value = ModbusSimulatorContext.build_registers_from_value(value, False)
+        """Handle type float32."""
+        regs_value = ModbusSimulatorContext.build_registers_from_value(
+            value, CellType.FLOAT32
+        )
         for i in range(start, stop, 2):
             regs = self.runtime.registers[i : i + 2]
             if regs[0].type != CellType.INVALID or regs[1].type != CellType.INVALID:
@@ -197,6 +234,30 @@ class Setup:
             regs[0].action_parameters = action_parameters
             regs[1].value = regs_value[1]
             regs[1].type = CellType.NEXT
+
+    def handle_type_float64(self, start, stop, value, action, action_parameters):
+        """Handle type float64."""
+        regs_value = ModbusSimulatorContext.build_registers_from_value(
+            value, CellType.FLOAT64
+        )
+        for i in range(start, stop, 4):
+            regs = self.runtime.registers[i : i + 4]
+            if (
+                regs[0].type != CellType.INVALID
+                or regs[1].type != CellType.INVALID
+                or regs[2].type != CellType.INVALID
+                or regs[3].type != CellType.INVALID
+            ):
+                raise RuntimeError(
+                    f'ERROR "{Label.type_float64}" {i},{i + 1},{i + 2},{i + 3} used'
+                )
+            regs[0].value = regs_value[0]
+            regs[0].type = CellType.FLOAT64
+            regs[0].action = action
+            regs[0].action_parameters = action_parameters
+            for i in range(1, 4):
+                regs[i].value = regs_value[i]
+                regs[i].type = CellType.NEXT
 
     def handle_type_string(self, start, stop, value, action, action_parameters):
         """Handle type string."""
@@ -365,8 +426,9 @@ class Setup:
             "uint16",  # 2
             "uint32",  # 3
             "float32",  # 4
-            "string",  # 5
-            "next",  # 6
+            "float64",  # 5
+            "string",  # 6
+            "next",  # 7
         ]
 
         self.config = config
@@ -510,21 +572,13 @@ class ModbusSimulatorContext:
         text_cell.action = self.action_id_to_name[reg.action]
         if reg.action_parameters:
             text_cell.action = f"{text_cell.action}({reg.action_parameters})"
-        if reg.type in (CellType.INVALID, CellType.UINT16, CellType.NEXT):
+        if reg.type in [CellType.INVALID, CellType.UINT16, CellType.NEXT]:
             text_cell.value = str(reg.value)
             build_len = 0
         elif reg.type == CellType.BITS:
             text_cell.value = hex(reg.value)
             build_len = 0
-        elif reg.type == CellType.UINT32:
-            tmp_regs = [reg.value, self.registers[register + 1].value]
-            text_cell.value = str(self.build_value_from_registers(tmp_regs, True))
-            build_len = 1
-        elif reg.type == CellType.FLOAT32:
-            tmp_regs = [reg.value, self.registers[register + 1].value]
-            text_cell.value = str(self.build_value_from_registers(tmp_regs, False))
-            build_len = 1
-        else:  # reg.type == CellType.STRING:
+        elif reg.type == CellType.STRING:
             j = register
             text_cell.value = ""
             while True:
@@ -536,8 +590,18 @@ class ModbusSimulatorContext:
                 j += 1
                 if self.registers[j].type != CellType.NEXT:
                     break
-            build_len = j - register - 1
-        reg_txt = f"{register}-{register + build_len}" if build_len else f"{register}"
+            build_len = j - register
+        else:
+            build_len = CellType.register_count(reg.type)
+            text_cell.value = str(
+                self.build_value_from_registers(
+                    self.registers[register : register + build_len], reg.type
+                )
+            )
+
+        reg_txt = (
+            f"{register}-{register + build_len - 1}" if build_len else f"{register}"
+        )
         return reg_txt, text_cell
 
     # --------------------------------------------
@@ -555,26 +619,31 @@ class ModbusSimulatorContext:
         i = address
         while i < end_address:
             reg = self.registers[i]
+
             if (fx_write and not reg.access) or reg.type == CellType.INVALID:
                 return False
+
             if not self.type_exception:
                 i += 1
                 continue
+
             if reg.type == CellType.NEXT:
                 return False
-            if reg.type in (CellType.BITS, CellType.UINT16):
-                i += 1
-            elif reg.type in (CellType.UINT32, CellType.FLOAT32):
-                if i + 1 >= end_address:
-                    return False
-                i += 2
-            else:
-                i += 1
-                while i < end_address:
-                    if self.registers[i].type == CellType.NEXT:
-                        i += 1
-                    else:
-                        return False
+
+            # Handle registers with unknown length
+            if reg.type in (CellType.STRING, CellType.NEXT):
+                return all(
+                    self.registers[j].type == CellType.NEXT
+                    for j in range(i + 1, end_address)
+                )
+            step = CellType.register_count(reg.type)
+
+            # Perform a single bounds check for multi-register types
+            if i + step - 1 >= end_address:
+                return False
+
+            i += step
+
         return True
 
     def validate(self, func_code, address, count=1):
@@ -584,8 +653,8 @@ class ModbusSimulatorContext:
         """
         if func_code in self._bits_func_code:
             # Bit count, correct to register count
-            count = int((count + WORD_SIZE - 1) / WORD_SIZE)
-            address = int(address / 16)
+            count = (count + WORD_SIZE - 1) // WORD_SIZE
+            address = address // 16
 
         real_address = self.fc_offset[func_code] + address
         if real_address < 0 or real_address > self.register_count:
@@ -610,23 +679,20 @@ class ModbusSimulatorContext:
                 reg = self.registers[i]
                 parameters = reg.action_parameters if reg.action_parameters else {}
                 if reg.action:
-                    self.action_methods[reg.action](
-                        self.registers, i, reg, **parameters
-                    )
+                    self.action_methods[reg.action](self.registers, i, **parameters)
+
                 self.registers[i].count_read += 1
                 result.append(reg.value)
         else:
             # bit access
-            real_address = self.fc_offset[func_code] + int(address / 16)
+            real_address = self.fc_offset[func_code] + address // 16
             bit_index = address % 16
-            reg_count = int((count + bit_index + 15) / 16)
+            reg_count = (count + bit_index + 15) // 16
             for i in range(real_address, real_address + reg_count):
                 reg = self.registers[i]
                 if reg.action:
                     parameters = reg.action_parameters or {}
-                    self.action_methods[reg.action](
-                        self.registers, i, reg, **parameters
-                    )
+                    self.action_methods[reg.action](self.registers, i, **parameters)
                 self.registers[i].count_read += 1
                 while count and bit_index < 16:
                     result.append(bool(reg.value & (2**bit_index)))
@@ -675,66 +741,59 @@ class ModbusSimulatorContext:
     # --------------------------------------------
 
     @classmethod
-    def action_random(cls, registers, inx, cell, minval=1, maxval=65536):
+    def action_random(
+        cls,
+        registers: list[Cell],
+        inx: int,
+        minval: int | float = 1,
+        maxval: int | float = 65536,
+    ) -> None:
         """Update with random value.
 
         :meta private:
         """
-        if cell.type in (CellType.BITS, CellType.UINT16):
-            registers[inx].value = random.randint(int(minval), int(maxval))
-        elif cell.type == CellType.FLOAT32:
-            regs = cls.build_registers_from_value(
-                random.uniform(float(minval), float(maxval)), False
+        new_values: list[int] = []
+        celltype = registers[inx].type
+        if CellType.is_int(celltype):
+            new_values = cls.build_registers_from_value(
+                random.randint(int(minval), int(maxval)), celltype
             )
-            registers[inx].value = regs[0]
-            registers[inx + 1].value = regs[1]
-        elif cell.type == CellType.UINT32:
-            regs = cls.build_registers_from_value(
-                random.randint(int(minval), int(maxval)), True
+        else:
+            new_values = cls.build_registers_from_value(
+                random.uniform(float(minval), float(maxval)), celltype
             )
-            registers[inx].value = regs[0]
-            registers[inx + 1].value = regs[1]
+
+        for i, value in enumerate(new_values):
+            registers[inx + i].value = value
 
     @classmethod
-    def action_increment(cls, registers, inx, cell, minval=None, maxval=None):
+    def action_increment(
+        cls,
+        registers: list[Cell],
+        inx: int,
+        minval: int | float | None = None,
+        maxval: int | float | None = None,
+    ) -> None:
         """Increment value reset with overflow.
 
         :meta private:
         """
-        reg = registers[inx]
-        reg2 = registers[inx + 1]
-        if cell.type in (CellType.BITS, CellType.UINT16):
-            value = reg.value + 1
-            if maxval and value > maxval:
-                value = minval
-            if minval and value < minval:
-                value = minval
-            reg.value = value
-        elif cell.type == CellType.FLOAT32:
-            tmp_reg = [reg.value, reg2.value]
-            value = cls.build_value_from_registers(tmp_reg, False)
-            value += 1.0
-            if maxval and value > maxval:
-                value = minval
-            if minval and value < minval:
-                value = minval
-            new_regs = cls.build_registers_from_value(value, False)
-            reg.value = new_regs[0]
-            reg2.value = new_regs[1]
-        else:  # if cell.type == CellType.UINT32:
-            tmp_reg = [reg.value, reg2.value]
-            value = cls.build_value_from_registers(tmp_reg, True)
-            value += 1
-            if maxval and value > maxval:
-                value = minval
-            if minval and value < minval:
-                value = minval
-            new_regs = cls.build_registers_from_value(value, True)
-            reg.value = new_regs[0]
-            reg2.value = new_regs[1]
+        celltype = registers[inx].type
+        value = cls.build_value_from_registers(
+            registers[inx : inx + CellType.register_count(celltype)], celltype
+        )
+        value += 1
+        if maxval is not None and value > maxval and minval is not None:
+            value = minval
+        if minval is not None and value < minval:
+            value = minval
+
+        new_values = cls.build_registers_from_value(value, celltype)
+        for i, value in enumerate(new_values):
+            registers[inx + i].value = value
 
     @classmethod
-    def action_timestamp(cls, registers, inx, _cell, **_parameters):
+    def action_timestamp(cls, registers, inx, **_parameters):
         """Set current time.
 
         :meta private:
@@ -749,7 +808,7 @@ class ModbusSimulatorContext:
         registers[inx + 6].value = system_time.second
 
     @classmethod
-    def action_reset(cls, _registers, _inx, _cell, **_parameters):
+    def action_reset(cls, _registers, _inx, **_parameters):
         """Reboot server.
 
         :meta private:
@@ -757,48 +816,57 @@ class ModbusSimulatorContext:
         raise RuntimeError("RESET server")
 
     @classmethod
-    def action_uptime(cls, registers, inx, cell, **_parameters):
+    def action_uptime(cls, registers, inx, **_parameters):
         """Return uptime in seconds.
 
         :meta private:
         """
         value = int(datetime.now().timestamp()) - cls.start_time + 1
 
-        if cell.type in (CellType.BITS, CellType.UINT16):
-            registers[inx].value = value
-        elif cell.type == CellType.FLOAT32:
-            regs = cls.build_registers_from_value(value, False)
-            registers[inx].value = regs[0]
-            registers[inx + 1].value = regs[1]
-        else:  # if cell.type == CellType.UINT32:
-            regs = cls.build_registers_from_value(value, True)
-            registers[inx].value = regs[0]
-            registers[inx + 1].value = regs[1]
+        new_values = cls.build_registers_from_value(value, registers[inx].type)
+        for i, value in enumerate(new_values):
+            registers[inx + i].value = value
 
     # --------------------------------------------
     # Internal helper methods
     # --------------------------------------------
 
     @classmethod
-    def build_registers_from_value(cls, value, is_int):
-        """Build registers from int32 or float32."""
-        regs = [0, 0]
-        if is_int:
-            value_bytes = int.to_bytes(value, 4, "big")
+    def build_registers_from_value(
+        cls, value: int | float, celltype: CellType
+    ) -> list[int]:
+        """Build registers from int32, float32 or float64."""
+        reg_count = CellType.register_count(celltype)
+        regs = [0] * reg_count
+
+        if CellType.is_int(celltype):
+            value_bytes = int.to_bytes(int(value), reg_count * 2, "big")
+        elif CellType.is_64(celltype):
+            value_bytes = struct.pack(">d", value)
         else:
             value_bytes = struct.pack(">f", value)
-        regs[0] = int.from_bytes(value_bytes[:2], "big")
-        regs[1] = int.from_bytes(value_bytes[-2:], "big")
+
+        for i in range(reg_count):
+            regs[i] = int.from_bytes(value_bytes[i * 2 : (i * 2) + 2], "big")
         return regs
 
     @classmethod
-    def build_value_from_registers(cls, registers, is_int):
+    def build_value_from_registers(
+        cls, registers: list[Cell] | list[int], celltype: CellType
+    ) -> int | float:
         """Build int32 or float32 value from registers."""
-        value_bytes = int.to_bytes(registers[0], 2, "big") + int.to_bytes(
-            registers[1], 2, "big"
-        )
-        if is_int:
+        value_bytes: bytes = b""
+        for i in range(CellType.register_count(celltype)):
+            reg = registers[i]
+            if isinstance(reg, Cell):
+                value_bytes += int.to_bytes(reg.value, 2, "big")
+            else:
+                value_bytes += int.to_bytes(reg, 2, "big")
+
+        if CellType.is_int(celltype):
             value = int.from_bytes(value_bytes, "big")
+        elif CellType.is_64(celltype):
+            value = struct.unpack(">d", value_bytes)[0]
         else:
             value = struct.unpack(">f", value_bytes)[0]
         return value

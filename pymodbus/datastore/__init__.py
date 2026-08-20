@@ -1,6 +1,7 @@
 """Datastore."""
 
 __all__ = [
+    "CellType",
     "ModbusDeviceContext",
     "ModbusSequentialDataBlock",
     "ModbusServerContext",
@@ -13,5 +14,5 @@ from .context import (
     ModbusServerContext,
 )
 from .sequential import ModbusSequentialDataBlock
-from .simulator import ModbusSimulatorContext
+from .simulator import CellType, ModbusSimulatorContext
 from .sparse import ModbusSparseDataBlock

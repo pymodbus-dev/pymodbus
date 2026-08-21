@@ -247,7 +247,7 @@ exclude_also = [
     "if __name__ == .__main__.:",
     ]
 skip_covered = true
-fail_under = 99.95
+fail_under = 100.00
 
 [tool.coverage.html]
 directory = "build/cov"

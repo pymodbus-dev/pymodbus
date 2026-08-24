@@ -15,7 +15,7 @@ with contextlib.suppress(ImportError):
     from aiohttp import web
 
 from ...datastore import ModbusServerContext, ModbusSimulatorContext
-from ...datastore.simulator import Label
+from ...datastore.simulator import CellType, Label
 from ...logging import Log
 from ...pdu import DecodePDU
 from ...pdu.device import ModbusDeviceIdentification
@@ -310,8 +310,8 @@ class ModbusSimulatorServer:
             else:
                 foot = "Nothing selected"
         register_types = "".join(
-            f"<option value={reg_id}>{name}</option>"
-            for name, reg_id in self.datastore_context.registerType_name_to_id.items()
+            f"<option value={reg_id}>{CellType(reg_id).name}</option>"
+            for reg_id in CellType
         )
         register_actions = "".join(
             f"<option value={action_id}>{name}</option>"
@@ -487,7 +487,7 @@ class ModbusSimulatorServer:
             register_rows.append(row)
 
         # Generate register types and actions (assume these are predefined mappings)
-        register_types = dict(self.datastore_context.registerType_name_to_id)
+        register_types = {celltype.name: celltype.value for celltype in CellType}
         register_actions = dict(self.datastore_context.action_name_to_id)
 
         # Build the JSON response

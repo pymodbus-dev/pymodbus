@@ -585,6 +585,12 @@ class TestDatastoreSimulator:
                 )
             assert minval <= new_value <= maxval
 
+    def test_simulator_label_try_get(self):
+        """Test Label.try_get method."""
+        assert Label.try_get("valid", {"valid": 42}) == 42
+        with pytest.raises(RuntimeError):
+            Label.try_get("invalid", {"valid": 10})
+
     def test_simulator_loop_validate(self, simulator):
         """Test simulator set values."""
         assert not simulator.loop_validate(59, 60, False)

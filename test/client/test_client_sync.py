@@ -395,6 +395,32 @@ class TestSyncClientSerial:
         assert not client.send(b"")
         assert client.send(b"1234") == 4
 
+    def test_serial_client_send_drops_socket_on_os_error(self):
+        """Test that a port the OS tore down is not left in place as connected."""
+        client = ModbusSerialClient("/dev/null")
+        mock_socket = mock.MagicMock()
+        mock_socket.in_waiting = 0
+        mock_socket.write.side_effect = OSError(5, "Input/output error")
+        client.socket = mock_socket
+        with pytest.raises(ConnectionException):
+            client.send(b"1234")
+        assert not client.connected
+        assert client.socket is None
+
+    def test_serial_client_send_keeps_socket_on_transient_error(self):
+        """Test that a transient write error leaves a healthy port in place."""
+        client = ModbusSerialClient("/dev/null")
+        mock_socket = mock.MagicMock()
+        mock_socket.in_waiting = 0
+        mock_socket.write.side_effect = BlockingIOError(
+            11, "Resource temporarily unavailable"
+        )
+        client.socket = mock_socket
+        with pytest.raises(BlockingIOError):
+            client.send(b"1234")
+        assert client.connected
+        assert client.socket is mock_socket
+
     def test_serial_client_recv(self):
         """Test the serial client receive method."""
         client = ModbusSerialClient("/dev/null")
@@ -408,6 +434,32 @@ class TestSyncClientSerial:
         cast(mockSocket, client.socket).mock_prepare_receive(b"")
         assert client.recv(None) == b""
         assert client.recv(0) == b""
+
+    def test_serial_client_recv_drops_socket_on_os_error(self):
+        """Test that a read against a torn-down port drops it rather than escaping."""
+        client = ModbusSerialClient("/dev/null")
+        mock_socket = mock.MagicMock()
+        mock_socket.in_waiting = 10
+        mock_socket.read.side_effect = OSError(5, "Input/output error")
+        client.socket = mock_socket
+        with pytest.raises(ConnectionException):
+            client.recv(4)
+        assert not client.connected
+        assert client.socket is None
+
+    def test_serial_client_recv_keeps_socket_on_transient_error(self):
+        """Test that a transient read error leaves a healthy port in place."""
+        client = ModbusSerialClient("/dev/null")
+        mock_socket = mock.MagicMock()
+        mock_socket.in_waiting = 10
+        mock_socket.read.side_effect = BlockingIOError(
+            11, "Resource temporarily unavailable"
+        )
+        client.socket = mock_socket
+        with pytest.raises(BlockingIOError):
+            client.recv(4)
+        assert client.connected
+        assert client.socket is mock_socket
 
     def test_serial_client_recv_split(self):
         """Test the serial client receive method."""

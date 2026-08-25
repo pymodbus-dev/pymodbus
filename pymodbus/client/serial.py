@@ -265,12 +265,18 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         if not self.socket:
             raise ConnectionException(str(self))
         if request:
-            if waitingbytes := self._in_waiting():
-                result = self.socket.read(waitingbytes)
-                Log.warning("Cleanup recv buffer before send: {}", result, ":hex")
-            if (size := self.socket.write(request)) is None:  # pragma: no cover
-                size = 0
-            return size
+            try:
+                if waitingbytes := self._in_waiting():
+                    result = self.socket.read(waitingbytes)
+                    Log.warning("Cleanup recv buffer before send: {}", result, ":hex")
+                if (size := self.socket.write(request)) is None:  # pragma: no cover
+                    size = 0
+                return size
+            except (BlockingIOError, InterruptedError):
+                raise
+            except OSError:
+                self.close()
+                raise ConnectionException(str(self)) from None
         return 0
 
     def _wait_for_data(self) -> int:
@@ -296,12 +302,17 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         """Read data from the underlying descriptor."""
         if not self.socket:
             raise ConnectionException(str(self))
-        if size is None:
-            size = self._wait_for_data()
-        if size > self._in_waiting():
-            self._wait_for_data()
-        result = self.socket.read(size)
-        return result
+        try:
+            if size is None:
+                size = self._wait_for_data()
+            if size > self._in_waiting():
+                self._wait_for_data()
+            return self.socket.read(size)
+        except (BlockingIOError, InterruptedError):
+            raise
+        except OSError:
+            self.close()
+            raise ConnectionException(str(self)) from None
 
     def is_socket_open(self) -> bool:
         """Check if socket is open."""

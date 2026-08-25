@@ -117,6 +117,10 @@ class ModbusTlsServer(ModbusTcpServer):
         :param trace_connect: Called when connected/disconnected
         :param custom_pdu: list of ModbusPDU custom classes
         """
+        if not sslctx:
+            raise TypeError(
+                "Cannot start server without a certificate, please add sslctx="
+            )
         self.tls_setup = CommParams(
             comm_type=CommType.TLS,
             comm_name="server_listener",

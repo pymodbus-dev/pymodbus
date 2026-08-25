@@ -6,6 +6,7 @@ from unittest import mock
 
 import pytest
 
+from examples.helper import generate_ssl, get_certificate
 from pymodbus.datastore import ModbusDeviceContext, ModbusServerContext
 from pymodbus.server import (
     ModbusBaseServer,
@@ -59,8 +60,22 @@ class TestStartStopServer:
         """Test  StartAsyncTlsServer."""
         mock_method.return_value = True
         await StartAsyncTlsServer(
-            ModbusServerContext(devices=ModbusDeviceContext(), single=True)
+            ModbusServerContext(devices=ModbusDeviceContext(), single=True),
+            sslctx=generate_ssl(
+                False,
+                certfile=get_certificate("crt"),
+                keyfile=get_certificate("key"),
+            ),
         )
+
+    @mock.patch("pymodbus.server.ModbusBaseServer.serve_forever")
+    async def test_tls_no_cert(self, mock_method):
+        """Test  StartAsyncTlsServer."""
+        mock_method.return_value = True
+        with pytest.raises(TypeError):
+            await StartAsyncTlsServer(
+                ModbusServerContext(devices=ModbusDeviceContext(), single=True),
+            )
 
     @mock.patch("pymodbus.server.ModbusBaseServer.serve_forever")
     async def test_StartAsyncUdpServer(self, mock_method):
@@ -104,7 +119,14 @@ class TestStartStopServer:
     def test_StartTlsServer(self, mock_method):
         """Test  StartTlsServer."""
         mock_method.return_value = True
-        StartTlsServer(ModbusServerContext(devices=ModbusDeviceContext(), single=True))
+        StartTlsServer(
+            ModbusServerContext(devices=ModbusDeviceContext(), single=True),
+            sslctx=generate_ssl(
+                False,
+                certfile=get_certificate("crt"),
+                keyfile=get_certificate("key"),
+            ),
+        )
 
     @mock.patch("pymodbus.server.ModbusBaseServer.serve_forever")
     def test_StartUdpServer(self, mock_method):

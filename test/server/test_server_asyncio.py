@@ -10,6 +10,7 @@ from unittest import mock
 
 import pytest
 
+from examples.helper import generate_ssl, get_certificate
 from pymodbus import FramerType, ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchIdException
 from pymodbus.server import (
@@ -162,6 +163,11 @@ class TestAsyncioServer:
                 framer=FramerType.TLS,
                 identity=self.identity,
                 address=serv_addr,
+                sslctx=generate_ssl(
+                    False,
+                    certfile=get_certificate("crt"),
+                    keyfile=get_certificate("key"),
+                ),
             )
         elif do_udp:
             self.server = ModbusUdpServer(

@@ -204,6 +204,8 @@ class ModbusUdpClient(ModbusBaseSyncClient):
 
         :meta private:
         """
+        if self.socket:
+            self.socket.close()
         self.socket = None
 
     def send(self, request: bytes, addr: tuple | None = None) -> int:

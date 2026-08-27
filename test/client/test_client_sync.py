@@ -61,6 +61,15 @@ class TestSyncClientUdp:
         client = ModbusUdpClient("127.0.0.1")
         assert client.is_socket_open()
 
+    def test_udp_client_close_releases_socket(self):
+        """Test the udp client close method releases the socket."""
+        client = ModbusUdpClient("127.0.0.1")
+        assert client.connect()
+        sock = client.socket
+        client.close()
+        assert sock.fileno() == -1
+        assert not client.connected
+
     def test_udp_client_send(self):
         """Test the udp client send method."""
         client = ModbusUdpClient("127.0.0.1")

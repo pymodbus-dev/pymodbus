@@ -247,10 +247,9 @@ class TestTransaction:
             await asyncio.sleep(0.1)
             resp.cancel()
             await asyncio.sleep(0.1)
-            with pytest.raises(ModbusIOException) as exc_info:
+            with pytest.raises(asyncio.CancelledError):
                 await resp
-            assert exc_info.value.fcode == request.function_code
-            assert exc_info.value.dev_id == request.dev_id
+            assert resp.cancelled()
         elif scenario == 7:  # response
             transact.comm_params.timeout_connect = 0.2
             resp = asyncio.create_task(transact.execute(False, request))

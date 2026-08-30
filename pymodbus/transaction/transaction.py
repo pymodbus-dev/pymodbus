@@ -11,7 +11,7 @@ from ..exceptions import ConnectionException, ModbusIOException
 from ..framer import FramerAscii, FramerBase, FramerRTU
 from ..logging import Log
 from ..pdu import ModbusPDU
-from ..transport import CommParams, ModbusProtocol
+from ..transport import CommParams, CommType, ModbusProtocol
 
 
 class TransactionManager(ModbusProtocol):
@@ -169,7 +169,8 @@ class TransactionManager(ModbusProtocol):
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
             if self.count_until_disconnect < 0:
-                self.connection_lost(asyncio.TimeoutError("Server not responding"))
+                if self.comm_params.comm_type != CommType.SERIAL:
+                    self.connection_lost(asyncio.TimeoutError("Server not responding"))
                 raise self._io_exception_from_request(
                     "ERROR: No response received of the last requests (default: retries+3), CLOSING CONNECTION.",
                     request,

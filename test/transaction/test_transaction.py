@@ -12,6 +12,7 @@ from pymodbus.framer import FramerRTU, FramerSocket, FramerType
 from pymodbus.pdu import DecodePDU, ExceptionResponse
 from pymodbus.pdu.bit_message import ReadCoilsRequest, ReadCoilsResponse
 from pymodbus.transaction import TransactionManager
+from pymodbus.transport import CommType
 
 
 @pytest.mark.parametrize("use_port", [5098])
@@ -186,8 +187,8 @@ class TestTransaction:
             transact.response_future.set_result((1, pdu))
         transact.callback_data(packet)
 
-    @pytest.mark.parametrize("scenario", range(10))
-    async def test_transaction_execute(self, use_clc, scenario):
+    @pytest.mark.parametrize("scenario", range(11))
+    async def test_transaction_execute(self, use_clc, scenario):  # noqa: C901
         """Test tracers in disconnect."""
         transact = TransactionManager(
             use_clc,
@@ -236,12 +237,21 @@ class TestTransaction:
                 await transact.execute(False, request)
             assert exc_info.value.fcode == request.function_code
             assert exc_info.value.transaction_id == request.transaction_id
-        elif scenario == 5:  # wait receive,timeout, no_responses pass
+        elif scenario == 5:  # wait receive,timeout, disconnect
+            transact.comm_params.timeout_connect = 0.1
+            transact.comm_params.comm_type = CommType.SERIAL
+            transact.count_until_disconnect = -1
+            transact.connection_lost = mock.Mock()  # type: ignore[method-assign]
+            with pytest.raises(ModbusIOException) as exc_info:
+                await transact.execute(False, request)
+            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.transaction_id == request.transaction_id
+        elif scenario == 6:  # wait receive,timeout, no_responses pass
             transact.comm_params.timeout_connect = 0.1
             transact.connection_lost = mock.Mock()  # type: ignore[method-assign]
             with pytest.raises(ModbusIOException):
                 await transact.execute(False, request)
-        elif scenario == 6:  # wait receive, cancel
+        elif scenario == 7:  # wait receive, cancel
             transact.comm_params.timeout_connect = 0.2
             resp = asyncio.create_task(transact.execute(False, request))
             await asyncio.sleep(0.1)
@@ -250,14 +260,14 @@ class TestTransaction:
             with pytest.raises(asyncio.CancelledError):
                 await resp
             assert resp.cancelled()
-        elif scenario == 7:  # response
+        elif scenario == 8:  # response
             transact.comm_params.timeout_connect = 0.2
             resp = asyncio.create_task(transact.execute(False, request))
             await asyncio.sleep(0.1)
             transact.response_future.set_result(response)
             await asyncio.sleep(0.1)
             assert response == await resp
-        elif scenario == 8:  # response wrong dev_id
+        elif scenario == 9:  # response wrong dev_id
             transact.comm_params.timeout_connect = 0.2
             resp = asyncio.create_task(transact.execute(False, request))
             await asyncio.sleep(0.1)
@@ -270,7 +280,7 @@ class TestTransaction:
             assert exc_info.value.fcode == request.function_code
             assert exc_info.value.dev_id == request.dev_id
             assert exc_info.value.transaction_id == request.transaction_id
-        else:  # if scenario == 9: # response wrong tid
+        else:  # if scenario == 10: # response wrong tid
             transact.comm_params.timeout_connect = 0.2
             resp = asyncio.create_task(transact.execute(False, request))
             await asyncio.sleep(0.1)

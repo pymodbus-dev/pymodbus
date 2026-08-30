@@ -431,8 +431,8 @@ class TestSyncTransaction:
             sync_client=client,
         )
 
-    @pytest.mark.parametrize("scenario", range(10))
-    async def test_sync_transaction_execute(self, use_clc, scenario):
+    @pytest.mark.parametrize("scenario", range(11))
+    async def test_sync_transaction_execute(self, use_clc, scenario):  # noqa: C901
         """Test tracers in disconnect."""
         client = self.dummy_client(use_clc)
         transact = TransactionManager(
@@ -483,11 +483,19 @@ class TestSyncTransaction:
                 transact.sync_execute(False, request)
             assert exc_info.value.fcode == request.function_code
             assert exc_info.value.transaction_id == request.transaction_id
-        elif scenario == 5:  # wait receive,timeout, no_responses pass
+        elif scenario == 5:  # wait receive,timeout, disconnect
+            transact.comm_params.timeout_connect = 0.1
+            transact.comm_params.comm_type = CommType.SERIAL
+            transact.count_until_disconnect = -1
+            with pytest.raises(ModbusIOException) as exc_info:
+                transact.sync_execute(False, request)
+            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.transaction_id == request.transaction_id
+        elif scenario == 6:  # wait receive,timeout, no_responses pass
             transact.comm_params.timeout_connect = 0.1
             with pytest.raises(ModbusIOException):
                 transact.sync_execute(False, request)
-        elif scenario == 6:  # response
+        elif scenario == 7:  # response
             transact.transport = 1  # type: ignore[assignment]
             resp_bytes = transact.framer.buildFrame(response)
             transact.sync_client.recv = mock.Mock(return_value=resp_bytes)
@@ -495,7 +503,7 @@ class TestSyncTransaction:
             transact.comm_params.timeout_connect = 0.2
             resp = transact.sync_execute(False, request)
             assert response.bits == resp.bits
-        elif scenario == 7:  # response wrong dev_id
+        elif scenario == 8:  # response wrong dev_id
             transact.transport = 1  # type: ignore[assignment]
             pdu = copy.deepcopy(response)
             pdu.dev_id = 17
@@ -507,7 +515,7 @@ class TestSyncTransaction:
             assert exc_info.value.fcode == request.function_code
             assert exc_info.value.dev_id == request.dev_id
             assert exc_info.value.transaction_id == request.transaction_id
-        elif scenario == 8:  # response wrong tid
+        elif scenario == 9:  # response wrong tid
             transact.transport = 1  # type: ignore[assignment]
             pdu = copy.deepcopy(response)
             pdu.transaction_id = 17
@@ -519,7 +527,7 @@ class TestSyncTransaction:
             assert exc_info.value.fcode == request.function_code
             assert exc_info.value.dev_id == request.dev_id
             assert exc_info.value.transaction_id == request.transaction_id
-        else:  # if scenario == 9 # pdu_send from client
+        else:  # if scenario == 10 # pdu_send from client
             transact.transport = 1  # type: ignore[assignment]
             transact.is_server = True
             resp_bytes = transact.framer.buildFrame(response)

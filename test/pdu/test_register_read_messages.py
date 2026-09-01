@@ -1,5 +1,6 @@
 """Test register read messages."""
 
+import struct
 from unittest import mock
 
 import pytest
@@ -83,6 +84,34 @@ class TestReadRegisterMessages:
         with pytest.raises(ModbusIOException) as exc_info:
             reg.decode(b"\x14\x00\x03\x00\x11")
         assert exc_info.value.fcode == reg.function_code
+
+    def test_readwrite_encode_write_count_limit(self):
+        """Encoding must reject a write count above the FC23 maximum of 121.
+
+        121 write registers is a 252 byte PDU, 122 is 254 and does not fit in
+        the 253 byte MODBUS PDU.
+        """
+
+        def build(count):
+            return ReadWriteMultipleRegistersRequest(
+                read_address=1,
+                read_count=1,
+                write_address=1,
+                write_registers=[0] * count,
+            )
+
+        assert len(build(121).encode()) + 1 <= 253
+        with pytest.raises(ValueError):  # noqa: PT011
+            build(122).encode()
+
+    def test_readwrite_decode_write_count_above_limit(self):
+        """Decoding must accept 122..125 so the server can answer ILLEGAL_VALUE.
+
+        Raising here would make the server drop the frame without a response.
+        """
+        request = ReadWriteMultipleRegistersRequest()
+        request.decode(struct.pack(">HHHHB", 1, 1, 1, 122, 244) + b"\x00\x00" * 122)
+        assert request.write_count == 122
 
     async def test_register_read_requests_count_errors(self, mock_server_context):
         """This tests that the register request messages.

@@ -131,7 +131,7 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         self.verifyAddress(address=self.read_address)
         self.verifyAddress(address=self.write_address)
         self.verifyCount(self.MAX_READ_COUNT, count=self.read_count)
-        self.verifyCount(self.MAX_READ_COUNT, count=self.write_count)
+        self.verifyCount(self.MAX_WRITE_COUNT, count=self.write_count)
         result = struct.pack(
             ">HHHHB",
             self.read_address,

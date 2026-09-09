@@ -136,6 +136,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         if is_sync:
             return
         self.loop = asyncio.get_running_loop()
+        self.connected_evt = asyncio.Event()
         if self.is_server:
             if self.comm_params.source_address is not None:
                 host = self.comm_params.source_address[0]
@@ -218,9 +219,14 @@ class ModbusProtocol(asyncio.BaseProtocol):
         """Handle generic connect and call on to specific transport connect."""
         Log.debug("Connecting {}", self.comm_params.comm_name)
         self.is_closing = False
+        self.connected_evt.clear()
         try:
             self.transport, _protocol = await asyncio.wait_for(
                 self.call_create(),
+                timeout=self.comm_params.timeout_connect,
+            )
+            await asyncio.wait_for(
+                self.connected_evt.wait(),
                 timeout=self.comm_params.timeout_connect,
             )
         except (asyncio.TimeoutError, OSError) as exc:  # pylint: disable=overlapping-except
@@ -256,12 +262,16 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.transport = transport
         self.reset_delay()
         self.callback_connected()
+        self.connected_evt.set()
 
     def connection_lost(self, exc: Exception | None) -> None:
         """Call from asyncio, when the connection is lost or closed.
 
         :param exc: None or an exception object
         """
+        if not getattr(self, "is_sync", False) and hasattr(self, "connected_evt"):
+            self.connected_evt.clear()
+
         if not self.transport or self.is_closing:
             return
         Log.debug("Connection lost {} due to {}", self.comm_params.comm_name, exc)

@@ -613,7 +613,7 @@ class TestClientBase:
     async def test_async_connect_state_machine(self):
         """Test async client state-machine hydration after connect."""
         client = lib_client.AsyncModbusTcpClient("127.0.0.1")
-        
+
         # Mock create_connection to return transport and protocol but also simulate calling connection_made
         transport_mock = mock.AsyncMock()
         transport_mock.close = lambda: ()
@@ -627,7 +627,7 @@ class TestClientBase:
         # Override the normal client connect behavior to ensure we use our mocked create_connection
         connected = await client.connect()
         assert connected
-        
+
         # This is the crux of the fix: client.connected MUST be true right after await client.connect()
         assert client.connected
         assert client.ctx.transport is not None

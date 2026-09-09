@@ -371,6 +371,14 @@ class TestSyncClientSerial:
             client = ModbusSerialClient("/dev/null")
             assert not client.connect()
 
+    def test_serial_client_connect_bounds_the_write(self):
+        """Test the serial client opens the port with a write timeout."""
+        with mock.patch.object(serial, "Serial") as mock_method:
+            mock_method.return_value = mock.MagicMock()
+            client = ModbusSerialClient("/dev/null", timeout=3)
+            assert client.connect()
+        assert mock_method.call_args.kwargs["write_timeout"] == 3
+
     @mock.patch("serial.Serial")
     def test_serial_client_is_socket_open(self, mock_serial):
         """Test the serial client is_socket_open method."""
@@ -426,6 +434,18 @@ class TestSyncClientSerial:
         )
         client.socket = mock_socket
         with pytest.raises(BlockingIOError):
+            client.send(b"1234")
+        assert client.connected
+        assert client.socket is mock_socket
+
+    def test_serial_client_send_keeps_port_on_write_timeout(self):
+        """Test the serial client keeps a port the rest of the bus is still using."""
+        client = ModbusSerialClient("/dev/null")
+        mock_socket = mock.MagicMock()
+        mock_socket.in_waiting = 0
+        mock_socket.write.side_effect = serial.SerialTimeoutException("Write timeout")
+        client.socket = mock_socket
+        with pytest.raises(ConnectionException):
             client.send(b"1234")
         assert client.connected
         assert client.socket is mock_socket

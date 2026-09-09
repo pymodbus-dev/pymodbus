@@ -231,6 +231,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             self.socket = serial.serial_for_url(
                 self.comm_params.host,
                 timeout=self.comm_params.timeout_connect,
+                write_timeout=self.comm_params.timeout_connect,
                 bytesize=self.comm_params.bytesize,
                 stopbits=self.comm_params.stopbits,
                 baudrate=self.comm_params.baudrate,
@@ -274,6 +275,8 @@ class ModbusSerialClient(ModbusBaseSyncClient):
                 return size
             except (BlockingIOError, InterruptedError):
                 raise
+            except serial.SerialTimeoutException:
+                raise ConnectionException(str(self)) from None
             except OSError:
                 self.close()
                 raise ConnectionException(str(self)) from None

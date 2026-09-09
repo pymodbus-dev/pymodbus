@@ -606,8 +606,9 @@ class TestClientBase:
         transport = mock.AsyncMock()
         transport.close = lambda: ()
         client.ctx.connection_made(transport)
-        # assert await client.connected
+        rc = client.connected
         client.close()
+        assert rc
 
     async def test_client_base_async(self):
         """Test modbus base client class."""

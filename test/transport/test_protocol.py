@@ -61,7 +61,13 @@ class TestTransportProtocol1:
 
     async def test_loop_connect(self, client, dummy_protocol):
         """Test properties."""
-        client.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
+
+        async def mock_call_create():
+            prot = dummy_protocol()
+            client.connection_made(prot)
+            return (prot, None)
+
+        client.call_create = mock.AsyncMock(side_effect=mock_call_create)
         assert await client.connect()
 
     async def test_loop_listen(self, server, dummy_protocol):
@@ -73,7 +79,13 @@ class TestTransportProtocol1:
 
     async def test_connect_ok(self, client, dummy_protocol):
         """Test properties."""
-        client.call_create = mock.AsyncMock(return_value=(dummy_protocol(), None))
+
+        async def mock_call_create():
+            prot = dummy_protocol()
+            client.connection_made(prot)
+            return (prot, None)
+
+        client.call_create = mock.AsyncMock(side_effect=mock_call_create)
         assert await client.connect()
 
     async def test_connect_not_ok(self, client, dummy_protocol):

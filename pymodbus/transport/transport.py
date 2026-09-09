@@ -225,10 +225,11 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 self.call_create(),
                 timeout=self.comm_params.timeout_connect,
             )
-            await asyncio.wait_for(
-                self.connected_evt.wait(),
-                timeout=self.comm_params.timeout_connect,
-            )
+            if self.transport:
+                await asyncio.wait_for(
+                    self.connected_evt.wait(),
+                    timeout=self.comm_params.timeout_connect,
+                )
         except (asyncio.TimeoutError, OSError) as exc:  # pylint: disable=overlapping-except
             Log.warning("Failed to connect {}", exc)
             return False

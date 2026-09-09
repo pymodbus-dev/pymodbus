@@ -606,7 +606,7 @@ class TestClientBase:
         transport = mock.AsyncMock()
         transport.close = lambda: ()
         client.ctx.connection_made(transport)
-        # assert await client.connected
+        assert client.connected
         client.close()
 
     async def test_client_base_async(self):

@@ -1,5 +1,6 @@
 """Test client sync."""
 
+import asyncio
 import socket
 import ssl
 from typing import cast
@@ -629,6 +630,38 @@ class TestClientBase:
         assert connected
 
         # This is the crux of the fix: client.connected MUST be true right after await client.connect()
+        assert client.connected
+        assert client.ctx.transport is not None
+        client.close()
+
+    async def test_async_connect_race_condition(self):
+        """Test that client.connect() correctly waits for connection_made callback even if delayed.
+
+        This demonstrates why relying solely on `create_connection`'s return (the old behavior)
+        results in `client.connected == False` if the callback is delayed by the event loop.
+        """
+        client = lib_client.AsyncModbusTcpClient("127.0.0.1")
+
+        transport_mock = mock.AsyncMock()
+        transport_mock.close = lambda: ()
+
+        async def mock_create_connection():
+            # Artificially delay the firing of protocol.connection_made(transport)
+            async def delayed_connection_made():
+                await asyncio.sleep(0.01)
+                client.ctx.connection_made(transport_mock)
+
+            _task = asyncio.create_task(delayed_connection_made())  # noqa: RUF006
+            return transport_mock, client.ctx
+
+        client.ctx.call_create = mock_create_connection
+
+        # connect() should await until connection_made fires, rather than just returning immediately
+        connected = await client.connect()
+        assert connected
+
+        # With the new synchronization logic, await client.connect() successfully waits for the delayed
+        # connection_made, resulting in client.connected == True.
         assert client.connected
         assert client.ctx.transport is not None
 

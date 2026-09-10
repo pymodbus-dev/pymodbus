@@ -1,0 +1,81 @@
+2026-09-10 01:22:16,121 DEBUG test_logging:69 test 1
+2026-09-10 01:22:16,122 DEBUG test_logging:70 Repeating....
+2026-09-10 01:22:16,122 ERROR test_logging:72 get frames
+2026-09-10 01:22:16,123 CRITICAL test_logging:73 Repeating....
+2026-09-10 01:22:16,123 WARNING test_logging:77 test 2
+2026-09-10 01:22:16,124 WARNING test_logging:78 Repeating....
+2026-09-10 01:22:16,125 CRITICAL test_logging:81 test 3no
+>>>>> send: 0x61 0x62 0x63
+>>>>> Repeating....
+>>>>> None
+2026-09-10 01:22:16,125 CRITICAL test_logging:83 test 3
+2026-09-10 01:22:16,125 CRITICAL test_logging:84 Repeating....
+2026-09-10 01:22:16,126 ERROR test_logging:89 test 4
+2026-09-10 01:22:16,126 ERROR test_logging:90 Repeating....
+2026-09-10 01:22:16,127 INFO  test_logging:95 test 5
+2026-09-10 01:22:16,127 INFO  test_logging:96 Repeating....
+2026-09-10 01:22:16,594 DEBUG test_logging:136 send: 0x31 0x32 0x33
+2026-09-10 01:22:16,859 WARNING context:65 ModbusDeviceContext, ModbusSequentialDataBlock, ModbusSparseDataBlock are deprecated and will be removed in v4.
+Please convert to SimData/SimDevice.
+Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice
+2026-09-10 01:22:16,860 WARNING context:120 ModbusServerContext is deprecated and will be removed in v4.
+Please convert to SimData/SimDevice.
+Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice
+2026-09-10 01:22:17,343 WARNING context:65 ModbusDeviceContext, ModbusSequentialDataBlock, ModbusSparseDataBlock are deprecated and will be removed in v4.
+Please convert to SimData/SimDevice.
+Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice
+2026-09-10 01:22:17,344 WARNING context:120 ModbusServerContext is deprecated and will be removed in v4.
+Please convert to SimData/SimDevice.
+Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice
+2026-09-10 01:22:17,466 WARNING context:65 ModbusDeviceContext, ModbusSequentialDataBlock, ModbusSparseDataBlock are deprecated and will be removed in v4.
+Please convert to SimData/SimDevice.
+Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice
+2026-09-10 01:22:17,468 WARNING context:120 ModbusServerContext is deprecated and will be removed in v4.
+Please convert to SimData/SimDevice.
+Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice
+2026-09-10 01:22:17,472 INFO  base:92 Server listening.
+2026-09-10 01:22:17,472 INFO  base:92 Repeating....
+2026-09-10 01:22:17,473 INFO  base:96 Server graceful shutdown.
+2026-09-10 01:22:17,591 WARNING context:65 ModbusDeviceContext, ModbusSequentialDataBlock, ModbusSparseDataBlock are deprecated and will be removed in v4.
+Please convert to SimData/SimDevice.
+Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice
+2026-09-10 01:22:17,592 WARNING context:120 ModbusServerContext is deprecated and will be removed in v4.
+Please convert to SimData/SimDevice.
+Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice
+2026-09-10 01:22:17,710 WARNING context:65 ModbusDeviceContext, ModbusSequentialDataBlock, ModbusSparseDataBlock are deprecated and will be removed in v4.
+Please convert to SimData/SimDevice.
+Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice
+2026-09-10 01:22:17,711 WARNING context:120 ModbusServerContext is deprecated and will be removed in v4.
+Please convert to SimData/SimDevice.
+Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice
+2026-09-10 01:22:17,831 WARNING context:65 ModbusDeviceContext, ModbusSequentialDataBlock, ModbusSparseDataBlock are deprecated and will be removed in v4.
+Please convert to SimData/SimDevice.
+Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice
+2026-09-10 01:22:17,832 WARNING context:120 ModbusServerContext is deprecated and will be removed in v4.
+Please convert to SimData/SimDevice.
+Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice
+2026-09-10 01:22:17,954 WARNING context:65 ModbusDeviceContext, ModbusSequentialDataBlock, ModbusSparseDataBlock are deprecated and will be removed in v4.
+Please convert to SimData/SimDevice.
+Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice
+2026-09-10 01:22:17,955 WARNING context:120 ModbusServerContext is deprecated and will be removed in v4.
+Please convert to SimData/SimDevice.
+Please read https://pymodbus.readthedocs.io/en/dev/source/upgrade_40.html#convert-to-simdata-simdevice
+2026-09-10 01:22:18,811 DEBUG base:75 Processing: 0x0 0x1 0x0 0x0 0x0 0x5 0x1 0x4 0x2 0x0 0x3
+2026-09-10 01:22:18,812 DEBUG decoders:86 decoded PDU function_code(4 sub -1) -> ReadInputRegistersResponse(dev_id=0, transaction_id=0, address=0, count=0, bits=[], registers=[3], status=1, retries=0) 
+2026-09-10 01:22:18,813 DEBUG base:75 Processing: 0x0 0x1 0x0 0x0 0x0 0x5 0x1 0x4 0x2 0x0 0x3
+2026-09-10 01:22:18,814 ERROR base:86 ERROR: request ask for transaction_id=2 but got id=1, Skipping.
+2026-09-10 01:22:18,815 ERROR transaction:180 No response received after 3 retries, continue with next request
+2026-09-10 01:24:38,019 DEBUG test_logging:69 test 1
+2026-09-10 01:24:38,021 DEBUG test_logging:70 Repeating....
+2026-09-10 01:24:38,021 ERROR test_logging:72 get frames
+2026-09-10 01:24:38,027 CRITICAL test_logging:73 Repeating....
+2026-09-10 01:24:38,027 WARNING test_logging:77 test 2
+2026-09-10 01:24:38,028 WARNING test_logging:78 Repeating....
+2026-09-10 01:24:38,028 CRITICAL test_logging:81 test 3no
+2026-09-10 01:24:38,028 CRITICAL test_logging:83 test 3
+2026-09-10 01:24:38,029 CRITICAL test_logging:84 Repeating....
+2026-09-10 01:24:38,030 ERROR test_logging:89 test 4
+2026-09-10 01:24:38,030 ERROR test_logging:90 Repeating....
+2026-09-10 01:24:38,030 INFO  test_logging:95 test 5
+2026-09-10 01:24:38,031 INFO  test_logging:96 Repeating....
+2026-09-10 01:24:38,494 DEBUG test_logging:136 send: 0x31 0x32 0x33

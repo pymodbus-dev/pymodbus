@@ -64,9 +64,14 @@ class TestTransportReconnect:
     async def test_reconnect_call_ok(self, client):
         """Test connection_lost()."""
         client.loop = asyncio.get_running_loop()
-        client.call_create = mock.AsyncMock(return_value=(mock.Mock(), mock.Mock()))
+
+        async def mock_call_create():
+            transport = mock.Mock()
+            client.connection_made(transport)
+            return (transport, mock.Mock())
+
+        client.call_create = mock.AsyncMock(side_effect=mock_call_create)
         await client.connect()
-        client.connection_made(mock.Mock())
         client.connection_lost(RuntimeError("Connection lost"))
         await asyncio.sleep(client.reconnect_delay_current * 1.8)
         assert client.call_create.call_count == 2

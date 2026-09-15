@@ -57,12 +57,6 @@ class SimRuntime:
     ) -> ExcCodes | None:
         """Check block request."""
         start_address, _, registers, flags = self.block[block_id]
-        if self.action and (
-            result := await self.action(
-                func_code, start_address, address, count, registers, values
-            )
-        ):
-            return result
         for i in range(count):
             addr = offset + i
             if flags[addr] & SimUtils.RunTimeFlag_TYPE == DataType.INVALID:
@@ -70,6 +64,12 @@ class SimRuntime:
             if values:
                 if flags[addr] & SimUtils.RunTimeFlag_READONLY:
                     return ExcCodes.ILLEGAL_ADDRESS
+        if self.action and (
+            result := await self.action(
+                func_code, start_address, address, count, registers, values
+            )
+        ):
+            return result
         return None
 
     async def get_bit_block(

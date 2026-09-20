@@ -82,10 +82,6 @@ class ModbusPDU:
             f"retries={self.retries})"
         )
 
-    def get_response_pdu_size(self) -> int:
-        """Calculate response pdu size."""
-        return 0
-
     def encode(self) -> bytes:
         """Encode the message."""
         return b""

@@ -31,10 +31,6 @@ class TestPdu:
         assert result == b"\x01"
         assert self.exception.exception_code == 1
 
-    async def test_get_pdu_size(self):
-        """Test get pdu size."""
-        assert not self.exception.get_response_pdu_size()
-
     async def test_pdu_id(self):
         """Test set illegal pdu id."""
         with pytest.raises(ModbusIOException) as exc_info:
@@ -547,14 +543,6 @@ class TestPdu:
         pdu = pdutype(**kwargs)
         res_frame = pdutype.function_code.to_bytes(1, "big") + pdu.encode()
         assert res_frame == frame
-
-    @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests)
-    @pytest.mark.usefixtures("frame", "args")
-    def test_get_response_pdu_size2(self, pdutype, kwargs):
-        """Test that all PDU types can be created."""
-        pdu = pdutype(**kwargs)
-        pdu.get_response_pdu_size()
-        # FIX size > 0 !!
 
     @pytest.mark.parametrize(
         ("pdutype", "args", "kwargs", "frame"), requests + responses

@@ -197,7 +197,7 @@ class TestTransportComm:
             (CommType.TCP, "localhost"),
             (CommType.TLS, "localhost"),
             # (CommType.UDP, "localhost"),  reuses same connection
-            # (CommType.SERIAL, "socket://localhost:7301"), no multipoint
+            # (CommType.SERIAL, "socket://localhost:7301")
         ],
     )
     async def test_connected_multiple(self, client, server, use_port, dummy_protocol):

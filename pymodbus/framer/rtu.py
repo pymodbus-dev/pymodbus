@@ -36,11 +36,6 @@ class FramerRTU(FramerBase):
 
     this means decoding is always exactly 1 frame (request)
 
-    For server (Multidrop line --> devices in parallel)
-       - only 1 request allowed (master controlled protocol)
-       - other devices will send responses (unknown dev_id)
-       - the client (master) may retransmit but in larger time intervals
-
     this means decoding is always exactly 1 frame request, however some requests
     will be for unknown devices, which must be ignored together with the
     response from the unknown device.
@@ -59,7 +54,6 @@ class FramerRTU(FramerBase):
     """
 
     MIN_SIZE = 4  # <device id><function code><crc 2 bytes>
-    device_ids: list[int] = []  # will be converted to instance variable
 
     @classmethod
     def generate_crc16_table(cls) -> list[int]:
@@ -81,10 +75,6 @@ class FramerRTU(FramerBase):
 
     crc16_table: list[int] = [0]
 
-    def setMultidrop(self, device_ids: list[int]):
-        """Activate multidrop support."""
-        self.device_ids = device_ids
-
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU."""
         data_len = len(data)
@@ -93,8 +83,6 @@ class FramerRTU(FramerBase):
                 Log.debug("Short frame: {} wait for more data", data, ":hex")
                 return 0, 0, 0, self.EMPTY
             dev_id = int(data[used_len])
-            if self.device_ids and dev_id not in self.device_ids:
-                return data_len, 0, 0, self.EMPTY
             if not (pdu_class := self.decoder.lookupPduClass(data[used_len:])):
                 continue
             if not (size := pdu_class.calculateRtuFrameSize(data[used_len:])):

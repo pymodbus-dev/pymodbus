@@ -390,6 +390,6 @@ class TestAsyncioServer:
             await asyncio.wait_for(BasicClient.connected, timeout=0.1)
             assert not BasicClient.done.done()
 
-    async def test_async_serial_server_multipoint(self):
+    async def test_async_serial_server(self):
         """Check instantiate serial server."""
         await self.start_server(do_forever=False, do_serial=True)

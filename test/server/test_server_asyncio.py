@@ -183,7 +183,6 @@ class TestAsyncioServer:
                 identity=self.identity,
                 port="/dev/ttyb",
                 baudrate=19200,
-                allow_multiple_devices=True,
             )
         else:
             self.server = ModbusTcpServer(
@@ -391,32 +390,6 @@ class TestAsyncioServer:
             await asyncio.wait_for(BasicClient.connected, timeout=0.1)
             assert not BasicClient.done.done()
 
-    async def test_async_serial_server_multipoint(self):
+    async def test_async_serial_server(self):
         """Check instantiate serial server."""
         await self.start_server(do_forever=False, do_serial=True)
-
-    async def test_serial_server_multipoint_baudrate(self):
-        """Test __init__."""
-        with pytest.raises(TypeError):
-            ModbusSerialServer(
-                SimDevice(
-                    0, SimData(0, datatype=DataType.REGISTERS, values=[17] * 100)
-                ),
-                framer=FramerType.RTU,
-                baudrate=64200,
-                port="/dev/tty01",
-                allow_multiple_devices=True,
-            )
-
-    async def test_serial_server_multipoint_framer(self):
-        """Test __init__."""
-        with pytest.raises(TypeError):
-            ModbusSerialServer(
-                SimDevice(
-                    0, SimData(0, datatype=DataType.REGISTERS, values=[17] * 100)
-                ),
-                framer=FramerType.ASCII,
-                baudrate=19200,
-                port="/dev/tty01",
-                allow_multiple_devices=True,
-            )

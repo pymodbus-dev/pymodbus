@@ -133,6 +133,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.sent_buffer: bytes = b""
         self.last_frame: int = 0
         self.loop: asyncio.AbstractEventLoop
+        self.max_buffer_size = 516
         if is_sync:
             return
         self.loop = asyncio.get_running_loop()
@@ -306,7 +307,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 return
         Log.transport_dump(Log.RECV_DATA, data, self.recv_buffer)
         self.recv_buffer += data
-        if len(self.recv_buffer) > 1024:
+        if len(self.recv_buffer) > self.max_buffer_size:
             self.recv_buffer = b""
             return
         cut = self.callback_data(self.recv_buffer, addr=addr)

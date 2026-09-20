@@ -32,13 +32,6 @@ class ReadHoldingRegistersRequest(ModbusPDU):
         self.address, self.count = struct.unpack(">HH", data[:4])
         self.verifyCount(self.MAX_COUNT)
 
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size.
-
-        Func_code (1 byte) + Byte Count(1 byte) + 2 * Quantity of registers (== byte count).
-        """
-        return 1 + 1 + 2 * self.count
-
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
     ) -> ModbusPDU:
@@ -190,13 +183,6 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
             transaction_id=self.transaction_id,
         )
 
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size.
-
-        Func_code (1 byte) + Byte Count(1 byte) + 2 * Quantity of Coils (n Bytes)
-        """
-        return 1 + 1 + 2 * self.read_count
-
 
 class ReadWriteMultipleRegistersResponse(ReadHoldingRegistersResponse):
     """ReadWriteMultipleRegistersResponse."""
@@ -242,13 +228,6 @@ class WriteSingleRegisterRequest(WriteSingleRegisterResponse):
         return WriteSingleRegisterResponse(
             address=self.address, registers=cast(list[int], values)
         )
-
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size.
-
-        Func_code (1 byte) + Register Address(2 byte) + Register Value (2 bytes)
-        """
-        return 1 + 2 + 2
 
 
 class WriteMultipleRegistersRequest(ModbusPDU):
@@ -298,13 +277,6 @@ class WriteMultipleRegistersRequest(ModbusPDU):
             dev_id=device_id,
             transaction_id=self.transaction_id,
         )
-
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size.
-
-        Func_code (1 byte) + Starting Address (2 byte) + Quantity of Registers  (2 Bytes)
-        """
-        return 1 + 2 + 2
 
 
 class WriteMultipleRegistersResponse(ModbusPDU):

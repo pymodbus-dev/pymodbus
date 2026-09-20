@@ -74,13 +74,6 @@ class ReadFileRecordRequest(ModbusPDU):
             )
             self.records.append(record)
 
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size.
-
-        Func_code (1 byte) + Quantity of record (each 7 bytes),
-        """
-        return 1 + 7 * len(self.records)
-
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
     ) -> ModbusPDU:
@@ -185,13 +178,6 @@ class WriteFileRecordRequest(ModbusPDU):
             )
             record.record_length = decoded[3]
             self.records.append(record)
-
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size.
-
-        Func_code (1 byte) + Quantity of record (each 7 bytes),
-        """
-        return 1 + 7 * len(self.records)
 
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int

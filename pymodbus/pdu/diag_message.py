@@ -70,13 +70,6 @@ class DiagnosticBase(ModbusPDU):
             else:
                 self.message = struct.unpack(">" + "H" * word_len, data[: 2 * word_len])
 
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size.
-
-        Func_code (1 byte) + Sub function code (2 byte) + Data (2 * N bytes)
-        """
-        return 1 + 2 + 2
-
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
     ) -> ModbusPDU:
@@ -438,13 +431,14 @@ class GetClearModbusPlusRequest(DiagnosticBase):
 
     sub_function_code = 0x0015
 
-    def get_response_pdu_size(self):
-        """Return size of the respaonse.
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of the message.
 
         Func_code (1 byte) + Sub function code (2 byte) + Operation (2 byte) + Data (108 bytes)
         """
-        data = 2 + 108 if self.message == ModbusPlusOperation.GET_STATISTICS else 0
-        return 1 + 2 + 2 + 2 + data
+        size_data = 2 + 108 if data[0] == ModbusPlusOperation.GET_STATISTICS else 0
+        return 1 + 2 + 2 + 2 + size_data
 
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int

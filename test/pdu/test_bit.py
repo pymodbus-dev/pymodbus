@@ -61,18 +61,6 @@ class TestModbusBitMessage:
         ):
             await pdu.datastore_update(context, 1)
 
-    def test_bit_read_get_response_pdu(self):
-        """Test bit read message get response pdu."""
-        for pdu, expected in (
-            (bit_msg.ReadCoilsRequest(address=1, count=5), 3),
-            (bit_msg.ReadCoilsRequest(address=1, count=8), 3),
-            (bit_msg.ReadCoilsRequest(address=1, count=16), 4),
-            (bit_msg.ReadDiscreteInputsRequest(address=1, count=21), 5),
-            (bit_msg.ReadDiscreteInputsRequest(address=1, count=24), 5),
-            (bit_msg.ReadDiscreteInputsRequest(address=1, count=1900), 240),
-        ):
-            assert pdu.get_response_pdu_size() == expected
-
     def test_bit_write_base_requests(self):
         """Test bit write base."""
         for pdu, expected in (
@@ -99,31 +87,27 @@ class TestModbusBitMessage:
         ):
             assert pdu.encode() == expected
 
-    def test_write_message_get_response_pdu(self):
+    def test_write_message_coil(self):
         """Test bit write message."""
-        pdu = bit_msg.WriteSingleCoilRequest(address=1, bits=[True])
-        assert pdu.get_response_pdu_size() == 5
+        _ = bit_msg.WriteSingleCoilRequest(address=1, bits=[True])
 
     def test_write_multiple_coils_request(self):
         """Test write multiple coils."""
-        for request, frame, values, expected in (
+        for request, frame, values in (
             (
                 bit_msg.WriteMultipleCoilsRequest(address=1, bits=[True] * 5),
                 b"\x00\x01\x00\x05\x01\x1f",
                 [True] * 5,
-                5,
             ),
             (
                 bit_msg.WriteMultipleCoilsRequest(address=1, bits=[True]),
                 b"\x00\x01\x00\x01\x01\x01",
                 [True],
-                5,
             ),
         ):
             request.decode(frame)
             assert request.address == 1
             assert request.bits == values
-            assert request.get_response_pdu_size() == expected
 
     def test_invalid_write_multiple_coils_request(self):
         """Test write invalid multiple coils."""

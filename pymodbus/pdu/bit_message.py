@@ -29,14 +29,6 @@ class ReadCoilsRequest(ModbusPDU):
         self.address, self.count = struct.unpack(">HH", data[:4])
         self.verifyCount(self.MAX_COUNT)
 
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size.
-
-        Func_code (1 byte) + Byte Count(1 byte) + Quantity of Coils (n Bytes)/8,
-        if the remainder is different of 0 then N = N+1
-        """
-        return 1 + 1 + (self.count + 7) // 8
-
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
     ) -> ModbusPDU:
@@ -125,13 +117,6 @@ class WriteSingleCoilRequest(WriteSingleCoilResponse):
             transaction_id=self.transaction_id,
         )
 
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size.
-
-        Func_code (1 byte) + Output Address (2 byte) + Output Value  (2 Bytes)
-        """
-        return 1 + 2 + 2
-
 
 class WriteMultipleCoilsRequest(ModbusPDU):
     """WriteMultipleCoilsRequest."""
@@ -205,14 +190,6 @@ class WriteMultipleCoilsRequest(ModbusPDU):
             dev_id=self.dev_id,
             transaction_id=self.transaction_id,
         )
-
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size.
-
-        Func_code (1 byte) + Output Address (2 byte) + Quantity of Outputs  (2 Bytes)
-        :return:
-        """
-        return 1 + 2 + 2
 
 
 class WriteMultipleCoilsResponse(ModbusPDU):

@@ -91,16 +91,13 @@ class FramerRTU(FramerBase):
             if data_len < used_len + size:
                 Log.debug("Frame - not ready")
                 return 0, dev_id, 0, self.EMPTY
-            for test_len in range(data_len, used_len + size - 1, -1):
-                start_crc = test_len - 2
-                crc = data[start_crc : start_crc + 2]
-                crc_val = (int(crc[0]) << 8) + int(crc[1])
-                if not FramerRTU.check_CRC(data[used_len:start_crc], crc_val):
-                    Log.debug(
-                        "Frame check failed, possible garbage after frame, testing.."
-                    )
-                    continue
-                return data_len, dev_id, 0, data[used_len + 1 : start_crc]
+            crc_start = used_len + size - 2
+            crc = data[crc_start : crc_start + 2]
+            crc_val = (int(crc[0]) << 8) + int(crc[1])
+            if not FramerRTU.check_CRC(data[used_len:crc_start], crc_val):
+                Log.debug("Frame CRC check failed, possible garbage")
+                return data_len, 0, 0, self.EMPTY
+            return data_len, dev_id, 0, data[used_len + 1 : crc_start]
         return 0, 0, 0, self.EMPTY
 
     def encode(self, payload: bytes, device_id: int, _tid: int) -> bytes:

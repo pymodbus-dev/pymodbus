@@ -706,32 +706,28 @@ class TestFramerType:
                 FramerType.RTU,
                 b"\x00\x83\x02\x91\x21",
                 [  # bad crc
-                    (0, b""),
-                    (0, b""),
+                    (5, b""),
                 ],
             ),
             (
                 FramerType.RTU,
                 b"\x00\x83\x02\xf0\x91\x31",
                 [  # dummy char in stream, bad crc
-                    (0, b""),
-                    (0, b""),
+                    (6, b""),
                 ],
             ),
             (
                 FramerType.RTU,
                 b"\x00\x83\x02\x91\x21\x00\x83\x02\x91\x31",
                 [  # bad crc + good CRC
-                    (0, b""),
-                    (0, b""),
+                    (10, b""),
                 ],
             ),
             (
                 FramerType.RTU,
                 b"\x00\x83\x02\xf0\x91\x31\x00\x83\x02\x91\x31",
                 [  # dummy char in stream, bad crc  + good CRC
-                    (0, b""),
-                    (0, b""),
+                    (11, b""),
                 ],
             ),
         ],

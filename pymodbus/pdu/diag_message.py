@@ -431,15 +431,6 @@ class GetClearModbusPlusRequest(DiagnosticBase):
 
     sub_function_code = 0x0015
 
-    @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of the message.
-
-        Func_code (1 byte) + Sub function code (2 byte) + Operation (2 byte) + Data (108 bytes)
-        """
-        size_data = 2 + 108 if data[0] == ModbusPlusOperation.GET_STATISTICS else 0
-        return 1 + 2 + 2 + 2 + size_data
-
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
     ) -> ModbusPDU:
@@ -467,6 +458,15 @@ class GetClearModbusPlusResponse(DiagnosticBase):
     """GetClearModbusPlusResponse."""
 
     sub_function_code = 0x0015
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of the message.
+
+        Func_code (1 byte) + Sub function code (2 byte) + Operation (2 byte) + Data (108 bytes)
+        """
+        size_data = 111 if len(data) > 7 else 0
+        return 1 + 2 + 2 + 2 + size_data
 
 
 DecodePDU.add_pdu(DiagnosticBase, DiagnosticBase)

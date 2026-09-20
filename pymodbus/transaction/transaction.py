@@ -14,7 +14,7 @@ from ..pdu import ModbusPDU
 from ..transport import CommParams, CommType, ModbusProtocol
 
 
-class TransactionManager(ModbusProtocol):
+class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-attributes
     """Transaction manager.
 
     This is the central class of the library, providing a separation between API and communication:
@@ -47,6 +47,7 @@ class TransactionManager(ModbusProtocol):
         """Initialize an instance of the ModbusTransactionManager."""
         self.is_sync = bool(sync_client)
         super().__init__(params, is_server, is_sync=self.is_sync)
+        self.max_buffer_size = framer.MAX_SIZE
         self.framer = framer
         self.retries = retries
         self.next_tid: int = 0

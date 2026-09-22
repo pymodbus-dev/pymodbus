@@ -60,7 +60,6 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
             self.ctx.comm_params.port,
         )
         rc = await self.ctx.connect()
-        await asyncio.sleep(0.1)
         return rc
 
     def register(self, custom_response_class: type[ModbusPDU]) -> None:

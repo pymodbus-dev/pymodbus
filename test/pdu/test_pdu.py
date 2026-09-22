@@ -16,6 +16,7 @@ from pymodbus.pdu import (
     ExceptionResponse,
     ModbusPDU,
 )
+from pymodbus.pdu.device import ModbusControlBlock
 from pymodbus.pdu.utils import pack_bitstring, unpack_bitstring
 
 
@@ -557,8 +558,12 @@ class TestPdu:
     @pytest.mark.usefixtures("frame", "args")
     async def test_pdu_datastore(self, pdutype, kwargs, mock_server_context):
         """Test that all PDU types can be created."""
-        pdu = pdutype(**kwargs)
-        assert await pdu.datastore_update(mock_server_context(), 1)
+        control = ModbusControlBlock()
+        try:
+            pdu = pdutype(**kwargs)
+            assert await pdu.datastore_update(mock_server_context(), 1)
+        finally:
+            control.Delimiter = b"\n"
 
     async def test_pdu_default_datastore(self, mock_server_context):
         """Test that all PDU types can be created."""

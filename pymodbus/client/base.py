@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable
 

@@ -153,7 +153,7 @@ class SerialTransport(asyncio.Transport):
         """Asynchronously write buffered data."""
         data = b"".join(self.intern_write_buffer)
         try:
-            if (nlen := self.sync_serial.write(data)) and nlen < len(data):
+            if (nlen := self.sync_serial.write(data) or 0) < len(data):
                 self.intern_write_buffer = [data[nlen:]]
                 if not self.poll_task:
                     self.async_loop.add_writer(

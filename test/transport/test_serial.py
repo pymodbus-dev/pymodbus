@@ -262,6 +262,33 @@ class TestTransportSerial:
         comm.intern_write_buffer.append(b"abcd")
         comm.intern_write_ready()
 
+    @pytest.mark.parametrize("polling", [False, True])
+    @pytest.mark.parametrize("writes", [(0, 2, 2), (2, 0, 2), (0, 0, 4), (None, 4)])
+    async def test_zero_length_write_retains_buffer(self, polling, writes):
+        """A nonblocking zero-byte write must not drop a pending RTU frame."""
+        loop = mock.MagicMock()
+        comm = SerialTransport(loop, mock.Mock(), "dummy", None, None, None, None, None)
+        if polling:
+            comm.poll_task = mock.Mock()
+        serial_write = mock.MagicMock(side_effect=writes)
+        comm.intern_write_buffer.append(b"abcd")
+
+        with mock.patch.object(comm.sync_serial, "write", serial_write):
+            sent = 0
+            for written in writes:
+                comm.intern_write_ready()
+                assert serial_write.call_args.args[0] == b"abcd"[sent:]
+                sent += written or 0
+                assert comm.intern_write_buffer == (
+                    [b"abcd"[sent:]] if sent < 4 else []
+                )
+        assert comm.intern_write_buffer == []
+        assert serial_write.call_count == len(writes)
+        if polling:
+            loop.add_writer.assert_not_called()
+        else:
+            assert loop.add_writer.call_count == len(writes) - 1
+
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
     async def test_write_force(self):
         """Test write exception."""

@@ -1,9 +1,9 @@
 """Test transport."""
 
 import asyncio
-import contextlib
 import os
 import sys
+from contextlib import suppress
 from functools import partial
 from unittest import mock
 
@@ -11,7 +11,7 @@ import pytest
 import serial
 
 from pymodbus.transport.serialtransport import (
-    SerialTransport,
+    OldSerialTransport,
     create_serial_connection,
 )
 
@@ -24,7 +24,7 @@ class TestTransportSerial:
 
     async def test_init(self):
         """Test null modem init."""
-        SerialTransport(
+        OldSerialTransport(
             asyncio.get_running_loop(),
             mock.Mock(),
             "dummy",
@@ -37,7 +37,7 @@ class TestTransportSerial:
 
     async def test_loop(self):
         """Test asyncio abstract methods."""
-        comm = SerialTransport(
+        comm = OldSerialTransport(
             asyncio.get_running_loop(),
             mock.Mock(),
             "dummy",
@@ -52,7 +52,7 @@ class TestTransportSerial:
     @pytest.mark.parametrize("inx", range(0, 11))
     async def test_abstract_methods(self, inx):
         """Test asyncio abstract methods."""
-        comm = SerialTransport(
+        comm = OldSerialTransport(
             asyncio.get_running_loop(),
             mock.Mock(),
             "dummy",
@@ -80,7 +80,7 @@ class TestTransportSerial:
     @pytest.mark.parametrize("inx", range(0, 4))
     async def test_external_methods(self, inx):
         """Test external methods."""
-        comm = SerialTransport(
+        comm = OldSerialTransport(
             mock.MagicMock(), mock.Mock(), "dummy", None, None, None, None, None
         )
         comm.sync_serial.read = mock.MagicMock(return_value="abcd")  # type: ignore[method-assign]
@@ -110,10 +110,12 @@ class TestTransportSerial:
         assert protocol
         transport.close()
 
-    @pytest.mark.skipif(SerialTransport.force_poll, reason="Serial poll not supported")
+    @pytest.mark.skipif(
+        OldSerialTransport.force_poll, reason="Serial poll not supported"
+    )
     async def test_force_poll(self):
         """Test external methods."""
-        SerialTransport.force_poll = True
+        OldSerialTransport.force_poll = True
         transport, protocol = await create_serial_connection(
             asyncio.get_running_loop(), mock.Mock, "dummy"
         )
@@ -121,12 +123,14 @@ class TestTransportSerial:
         assert transport
         assert protocol
         transport.close()
-        SerialTransport.force_poll = False
+        OldSerialTransport.force_poll = False
 
-    @pytest.mark.skipif(SerialTransport.force_poll, reason="Serial poll not supported")
+    @pytest.mark.skipif(
+        OldSerialTransport.force_poll, reason="Serial poll not supported"
+    )
     async def test_write_force_poll(self):
         """Test write with poll."""
-        SerialTransport.force_poll = True
+        OldSerialTransport.force_poll = True
         transport, _ = await create_serial_connection(
             asyncio.get_running_loop(), mock.Mock, "dummy"
         )
@@ -134,11 +138,11 @@ class TestTransportSerial:
         transport.write(b"abcd")
         await asyncio.sleep(0.5)
         transport.close()
-        SerialTransport.force_poll = False
+        OldSerialTransport.force_poll = False
 
     async def test_close(self):
         """Test close."""
-        comm = SerialTransport(
+        comm = OldSerialTransport(
             asyncio.get_running_loop(),
             mock.Mock(),
             "dummy",
@@ -154,7 +158,7 @@ class TestTransportSerial:
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
     async def test_polling(self):
         """Test polling."""
-        comm = SerialTransport(
+        comm = OldSerialTransport(
             asyncio.get_running_loop(),
             mock.Mock(),
             "dummy",
@@ -166,13 +170,13 @@ class TestTransportSerial:
         )
         comm.sync_serial = mock.MagicMock()
         comm.sync_serial.read.side_effect = asyncio.CancelledError("test")
-        with contextlib.suppress(asyncio.CancelledError):
+        with suppress(asyncio.CancelledError):
             await comm.polling_task()
 
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
     async def test_poll_task(self):
         """Test polling."""
-        comm = SerialTransport(
+        comm = OldSerialTransport(
             asyncio.get_running_loop(),
             mock.Mock(),
             "dummy",
@@ -189,7 +193,7 @@ class TestTransportSerial:
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
     async def test_poll_task2(self):
         """Test polling."""
-        comm = SerialTransport(
+        comm = OldSerialTransport(
             asyncio.get_running_loop(),
             mock.Mock(),
             "dummy",
@@ -209,7 +213,7 @@ class TestTransportSerial:
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
     async def test_write_exception(self):
         """Test write exception."""
-        comm = SerialTransport(
+        comm = OldSerialTransport(
             asyncio.get_running_loop(),
             mock.Mock(),
             "dummy",
@@ -228,7 +232,7 @@ class TestTransportSerial:
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
     async def test_write_ok(self):
         """Test write exception."""
-        comm = SerialTransport(
+        comm = OldSerialTransport(
             asyncio.get_running_loop(),
             mock.Mock(),
             "dummy",
@@ -246,7 +250,7 @@ class TestTransportSerial:
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
     async def test_write_len(self):
         """Test write exception."""
-        comm = SerialTransport(
+        comm = OldSerialTransport(
             asyncio.get_running_loop(),
             mock.Mock(),
             "dummy",
@@ -267,7 +271,9 @@ class TestTransportSerial:
     async def test_zero_length_write_retains_buffer(self, polling, writes):
         """A nonblocking zero-byte write must not drop a pending RTU frame."""
         loop = mock.MagicMock()
-        comm = SerialTransport(loop, mock.Mock(), "dummy", None, None, None, None, None)
+        comm = OldSerialTransport(
+            loop, mock.Mock(), "dummy", None, None, None, None, None
+        )
         if polling:
             comm.poll_task = mock.Mock()
         serial_write = mock.MagicMock(side_effect=writes)
@@ -292,7 +298,7 @@ class TestTransportSerial:
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
     async def test_write_force(self):
         """Test write exception."""
-        comm = SerialTransport(
+        comm = OldSerialTransport(
             asyncio.get_running_loop(),
             mock.Mock(),
             "dummy",
@@ -311,7 +317,7 @@ class TestTransportSerial:
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
     async def test_read_ready(self):
         """Test polling."""
-        comm = SerialTransport(
+        comm = OldSerialTransport(
             asyncio.get_running_loop(),
             mock.Mock(),
             "dummy",
@@ -336,7 +342,7 @@ class TestTransportSerial:
         with mock.patch.dict(sys.modules, {"no_modules": None}) as mock_modules:
             del mock_modules["serial"]
             with pytest.raises(RuntimeError):
-                SerialTransport(
+                OldSerialTransport(
                     asyncio.get_running_loop(),
                     mock.Mock(),
                     "dummy",

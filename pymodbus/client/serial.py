@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import contextlib
 import sys
 import time
 from collections.abc import Callable
+from contextlib import suppress
 from functools import partial
 
 from ..exceptions import ConnectionException
@@ -16,7 +16,7 @@ from ..transport import CommParams, CommType
 from .base import ModbusBaseClient, ModbusBaseSyncClient
 
 
-with contextlib.suppress(ImportError):
+with suppress(ImportError):
     import serial
 
 

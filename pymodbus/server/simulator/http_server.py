@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 import asyncio
-import contextlib
 import dataclasses
 import importlib
 import json
 import os
+from contextlib import suppress
 from typing import TYPE_CHECKING, Any
 
 
-with contextlib.suppress(ImportError):
+with suppress(ImportError):
     from aiohttp import web
 
 from ...datastore import ModbusServerContext, ModbusSimulatorContext
@@ -228,7 +228,7 @@ class ModbusSimulatorServer:
         Log.info("Stopping modbus server")
         await self.modbus_server.shutdown()
         app[self.api_key].cancel()
-        with contextlib.suppress(asyncio.exceptions.CancelledError):
+        with suppress(asyncio.exceptions.CancelledError):
             await app[self.api_key]
 
         Log.info("Modbus server Stopped")

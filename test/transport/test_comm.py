@@ -11,7 +11,7 @@ from pymodbus.logging import Log
 from pymodbus.transport import (
     CommType,
 )
-from pymodbus.transport.serialtransport import SerialTransport
+from pymodbus.transport.serialtransport import OldSerialTransport
 
 
 FACTOR = 1.2 if platform.system().lower() != "windows" else 4.2
@@ -172,12 +172,14 @@ class TestTransportComm:
             (CommType.SERIAL, "socket://localhost:7300"),
         ],
     )
-    @pytest.mark.skipif(SerialTransport.force_poll, reason="Serial poll not supported")
+    @pytest.mark.skipif(
+        OldSerialTransport.force_poll, reason="Serial poll not supported"
+    )
     async def test_serial_poll(self, client, server, use_port):
         """Test connection and data exchange."""
         Log.debug("test_serial_poll {}", use_port)
         assert await server.listen()
-        SerialTransport.force_poll = True
+        OldSerialTransport.force_poll = True
         assert await client.connect()
         await asyncio.sleep(0.5)
         assert len(server.active_connections) == 1
@@ -189,7 +191,7 @@ class TestTransportComm:
         assert not client.recv_buffer
         client.close()
         server.close()
-        SerialTransport.force_poll = False
+        OldSerialTransport.force_poll = False
 
     @pytest.mark.parametrize(
         ("use_comm_type", "use_host"),

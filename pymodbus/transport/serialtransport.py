@@ -1,18 +1,48 @@
-"""asyncio serial support for modbus (based on pyserial)."""
+"""asyncio / sync serial support for modbus (based on pyserial)."""
 
 from __future__ import annotations
 
 import asyncio
-import contextlib
 import os
 import sys
+from contextlib import suppress
 
 
-with contextlib.suppress(ImportError):
+with suppress(ImportError):
     import serial
 
 
-class SerialTransport(asyncio.Transport):
+class SerialSync:
+    """A synchronous serial transport."""
+
+    SerialException = serial.SerialException
+    SerialTimeoutException = serial.SerialTimeoutException
+
+    def __init__(self):
+        """Initialize."""
+        self.serial = serial.Serial()
+
+    @classmethod
+    def serial_for_url(cls, *args, **kwargs) -> SerialSync:
+        """Get socket for url."""
+        obj = SerialSync()
+        obj.serial = serial.serial_for_url(*args, **kwargs)
+        return obj
+
+    def abc1(self):
+        """Define Dummy."""
+
+    def abc2(self):
+        """Define Dummy."""
+
+    def abc3(self):
+        """Define Dummy."""
+
+    def abc4(self):
+        """Define Dummy."""
+
+
+class OldSerialTransport(asyncio.Transport):
     """An asyncio serial transport."""
 
     force_poll: bool = os.name == "nt"
@@ -49,7 +79,7 @@ class SerialTransport(asyncio.Transport):
         """Prepare to read/write."""
         if self.force_poll:
             self.poll_task = asyncio.create_task(self.polling_task())
-            self.poll_task.set_name("SerialTransport poll")
+            self.poll_task.set_name("OldSerialTransport poll")
         else:
             self.async_loop.add_reader(
                 self.sync_serial.fileno(), self.intern_read_ready
@@ -70,7 +100,7 @@ class SerialTransport(asyncio.Transport):
         self.sync_serial.close()
         self.sync_serial = None  # type: ignore[assignment]
         if exc:
-            with contextlib.suppress(Exception):
+            with suppress(Exception):
                 self.intern_protocol.connection_lost(exc)
 
     def write(self, data) -> None:
@@ -188,7 +218,7 @@ async def create_serial_connection(
 ) -> tuple[asyncio.Transport, asyncio.BaseProtocol]:
     """Create a connection to a new serial port instance."""
     protocol = protocol_factory()
-    transport = SerialTransport(
+    transport = OldSerialTransport(
         loop, protocol, url, baudrate, bytesize, parity, stopbits, timeout
     )
     loop.call_soon(transport.setup)

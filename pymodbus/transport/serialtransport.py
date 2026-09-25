@@ -9,57 +9,57 @@ from contextlib import suppress
 
 
 with suppress(ImportError):
-    import serial
+    import serial as pyserial
 
 
 class SerialSync:
     """A synchronous serial transport."""
 
-    SerialException = serial.SerialException
-    SerialTimeoutException = serial.SerialTimeoutException
+    SerialException = pyserial.SerialException
+    SerialTimeoutException = pyserial.SerialTimeoutException
 
     @classmethod
     def serial_for_url(cls, *args, **kwargs) -> SerialSync:
         """Get socket for url."""
         obj = SerialSync()
-        obj.serial = serial.serial_for_url(*args, **kwargs)
+        obj.serial = pyserial.serial_for_url(*args, **kwargs)
         return obj
 
     @property
     def inter_byte_timeout(self):
         """Define property."""
-        return self.serial.inter_byte_timeout
+        return self.pyserial.inter_byte_timeout
 
     @inter_byte_timeout.setter
     def inter_byte_timeout(self, value):
         """Define property."""
-        self.serial.inter_byte_timeout = value
+        self.pyserial.inter_byte_timeout = value
 
     @property
     def is_open(self):
         """Define property."""
-        return self.serial.is_open
+        return self.pyserial.is_open
 
     @property
     def in_waiting(self):
         """Define in_waiting."""
-        return self.serial.in_waiting
+        return self.pyserial.in_waiting
 
     def __init__(self):
         """Initialize."""
-        self.serial = serial.Serial()
+        self.serial = pyserial.Serial()
 
     def close(self):
         """Define close."""
-        self.serial.close()
+        self.pyserial.close()
 
     def read(self, count: int):
         """Define read."""
-        return self.serial.read(count)
+        return self.pyserial.read(count)
 
     def write(self, data):
         """Define read."""
-        return self.serial.write(data)
+        return self.pyserial.write(data)
 
 
 class OldSerialTransport(asyncio.Transport):
@@ -80,7 +80,7 @@ class OldSerialTransport(asyncio.Transport):
             )
         self.async_loop = loop
         self.intern_protocol: asyncio.BaseProtocol = protocol
-        self.sync_serial = serial.serial_for_url(
+        self.sync_serial = pyserial.serial_for_url(
             url,
             exclusive=True,
             baudrate=baudrate,
@@ -92,8 +92,8 @@ class OldSerialTransport(asyncio.Transport):
         self.intern_write_buffer: list[bytes] = []
         self.poll_task: asyncio.Task | None = None
         self._poll_wait_time = 0.0005
-        self.sync_serial.timeout = 0
-        self.sync_serial.write_timeout = 0
+        self.sync_pyserial.timeout = 0
+        self.sync_pyserial.write_timeout = 0
 
     def setup(self) -> None:
         """Prepare to read/write."""
@@ -102,7 +102,7 @@ class OldSerialTransport(asyncio.Transport):
             self.poll_task.set_name("OldSerialTransport poll")
         else:
             self.async_loop.add_reader(
-                self.sync_serial.fileno(), self.intern_read_ready
+                self.sync_pyserial.fileno(), self.intern_read_ready
             )
         self.async_loop.call_soon(self.intern_protocol.connection_made, self)
 
@@ -115,9 +115,9 @@ class OldSerialTransport(asyncio.Transport):
             self.poll_task.cancel()
             self.poll_task = None
         else:
-            self.async_loop.remove_reader(self.sync_serial.fileno())
-            self.async_loop.remove_writer(self.sync_serial.fileno())
-        self.sync_serial.close()
+            self.async_loop.remove_reader(self.sync_pyserial.fileno())
+            self.async_loop.remove_writer(self.sync_pyserial.fileno())
+        self.sync_pyserial.close()
         self.sync_serial = None  # type: ignore[assignment]
         if exc:
             with suppress(Exception):
@@ -128,13 +128,13 @@ class OldSerialTransport(asyncio.Transport):
         self.intern_write_buffer.append(data)
         if not self.force_poll:
             self.async_loop.add_writer(
-                self.sync_serial.fileno(), self.intern_write_ready
+                self.sync_pyserial.fileno(), self.intern_write_ready
             )
 
     def flush(self) -> None:
         """Clear output buffer and stops any more data being written."""
         if not self.poll_task:
-            self.async_loop.remove_writer(self.sync_serial.fileno())
+            self.async_loop.remove_writer(self.sync_pyserial.fileno())
         self.intern_write_buffer.clear()
 
     # ------------------------------------------------
@@ -194,26 +194,26 @@ class OldSerialTransport(asyncio.Transport):
     def intern_read_ready(self) -> None:
         """Test if there are data waiting."""
         try:
-            if data := self.sync_serial.read(1024):
+            if data := self.sync_pyserial.read(1024):
                 self.intern_protocol.data_received(data)  # type: ignore[attr-defined]
-        except serial.SerialException as exc:
+        except pyserial.SerialException as exc:
             self.close(exc=exc)
 
     def intern_write_ready(self) -> None:
         """Asynchronously write buffered data."""
         data = b"".join(self.intern_write_buffer)
         try:
-            if (nlen := self.sync_serial.write(data) or 0) < len(data):
+            if (nlen := self.sync_pyserial.write(data) or 0) < len(data):
                 self.intern_write_buffer = [data[nlen:]]
                 if not self.poll_task:
                     self.async_loop.add_writer(
-                        self.sync_serial.fileno(), self.intern_write_ready
+                        self.sync_pyserial.fileno(), self.intern_write_ready
                     )
                 return
             self.flush()
         except (BlockingIOError, InterruptedError):
             return
-        except serial.SerialException as exc:
+        except pyserial.SerialException as exc:
             self.close(exc=exc)
 
     async def polling_task(self):
@@ -222,7 +222,7 @@ class OldSerialTransport(asyncio.Transport):
             await asyncio.sleep(self._poll_wait_time)
             while self.intern_write_buffer:
                 self.intern_write_ready()
-            if self.sync_serial.in_waiting:
+            if self.sync_pyserial.in_waiting:
                 self.intern_read_ready()
 
 

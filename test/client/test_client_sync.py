@@ -5,7 +5,6 @@ from typing import cast
 from unittest import mock
 
 import pytest
-import serial
 
 from pymodbus import FramerType
 from pymodbus.client import (
@@ -20,6 +19,7 @@ from pymodbus.framer import (
     FramerRTU,
     FramerTLS,
 )
+from pymodbus.transport import SerialSync
 from test.conftest import mockSocket
 
 
@@ -330,7 +330,7 @@ class TestSyncClientSerial:
             FramerRTU,
         )
 
-    @mock.patch("serial.Serial")
+    @mock.patch("pymodbus.transport.serialtransport.pyserial")
     def test_basic_sync_serial_client(self, mock_serial):
         """Test the basic methods for the serial sync client."""
         # receive/send
@@ -359,27 +359,26 @@ class TestSyncClientSerial:
         client.socket = None
         client.close()
 
-    def test_serial_client_connect(self):
+    @mock.patch("pymodbus.transport.serialtransport.pyserial.Serial")
+    def test_serial_client_connect(self, mock_serial):
         """Test the serial client connection method."""
-        with mock.patch.object(serial, "Serial") as mock_method:
-            mock_method.return_value = mock.MagicMock()
-            client = ModbusSerialClient("/dev/null")
-            assert client.connect()
+        mock_serial.return_value = mock.MagicMock()
+        client = ModbusSerialClient("/dev/null")
+        assert client.connect()
 
-        with mock.patch.object(serial, "Serial") as mock_method:
-            mock_method.side_effect = serial.SerialException()
-            client = ModbusSerialClient("/dev/null")
-            assert not client.connect()
+        mock_serial.side_effect = SerialSync.SerialException()
+        client = ModbusSerialClient("/dev/null")
+        assert not client.connect()
 
-    def test_serial_client_connect_bounds_the_write(self):
+    @mock.patch("pymodbus.transport.serialtransport.pyserial.Serial")
+    def test_serial_client_connect_bounds_the_write(self, mock_serial):
         """Test the serial client opens the port with a write timeout."""
-        with mock.patch.object(serial, "Serial") as mock_method:
-            mock_method.return_value = mock.MagicMock()
-            client = ModbusSerialClient("/dev/null", timeout=3)
-            assert client.connect()
-        assert mock_method.call_args.kwargs["write_timeout"] == 3
+        mock_serial.return_value = mock.MagicMock()
+        client = ModbusSerialClient("/dev/null", timeout=3)
+        assert client.connect()
+        assert mock_serial.call_args.kwargs["write_timeout"] == 3
 
-    @mock.patch("serial.Serial")
+    @mock.patch("pymodbus.transport.serialtransport.pyserial.Serial")
     def test_serial_client_is_socket_open(self, mock_serial):
         """Test the serial client is_socket_open method."""
         client = ModbusSerialClient("/dev/null")
@@ -387,7 +386,7 @@ class TestSyncClientSerial:
         client.socket = mock_serial
         assert client.is_socket_open()
 
-    @mock.patch("serial.Serial")
+    @mock.patch("pymodbus.transport.serialtransport.pyserial.Serial")
     def test_serial_client_send(self, mock_serial):
         """Test the serial client send method."""
         mock_serial.in_waiting = None
@@ -399,7 +398,7 @@ class TestSyncClientSerial:
         assert not client.send(b"")
         assert client.send(b"1234") == 4
 
-    @mock.patch("serial.Serial")
+    @mock.patch("pymodbus.transport.serialtransport.pyserial.Serial")
     def test_serial_client_cleanup_buffer_before_send(self, mock_serial):
         """Test the serial client send method."""
         mock_serial.in_waiting = 4
@@ -443,7 +442,9 @@ class TestSyncClientSerial:
         client = ModbusSerialClient("/dev/null")
         mock_socket = mock.MagicMock()
         mock_socket.in_waiting = 0
-        mock_socket.write.side_effect = serial.SerialTimeoutException("Write timeout")
+        mock_socket.write.side_effect = SerialSync.SerialTimeoutException(
+            "Write timeout"
+        )
         client.socket = mock_socket
         with pytest.raises(ConnectionException):
             client.send(b"1234")

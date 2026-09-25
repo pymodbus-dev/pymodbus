@@ -18,10 +18,6 @@ class SerialSync:
     SerialException = serial.SerialException
     SerialTimeoutException = serial.SerialTimeoutException
 
-    def __init__(self):
-        """Initialize."""
-        self.serial = serial.Serial()
-
     @classmethod
     def serial_for_url(cls, *args, **kwargs) -> SerialSync:
         """Get socket for url."""
@@ -29,17 +25,41 @@ class SerialSync:
         obj.serial = serial.serial_for_url(*args, **kwargs)
         return obj
 
-    def abc1(self):
-        """Define Dummy."""
+    @property
+    def inter_byte_timeout(self):
+        """Define property."""
+        return self.serial.inter_byte_timeout
 
-    def abc2(self):
-        """Define Dummy."""
+    @inter_byte_timeout.setter
+    def inter_byte_timeout(self, value):
+        """Define property."""
+        self.serial.inter_byte_timeout = value
 
-    def abc3(self):
-        """Define Dummy."""
+    @property
+    def is_open(self):
+        """Define property."""
+        return self.serial.is_open
 
-    def abc4(self):
-        """Define Dummy."""
+    @property
+    def in_waiting(self):
+        """Define in_waiting."""
+        return self.serial.in_waiting
+
+    def __init__(self):
+        """Initialize."""
+        self.serial = serial.Serial()
+
+    def close(self):
+        """Define close."""
+        self.serial.close()
+
+    def read(self, count: int):
+        """Define read."""
+        return self.serial.read(count)
+
+    def write(self, data):
+        """Define read."""
+        return self.serial.write(data)
 
 
 class OldSerialTransport(asyncio.Transport):

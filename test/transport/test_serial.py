@@ -8,7 +8,6 @@ from functools import partial
 from unittest import mock
 
 import pytest
-import serial
 
 from pymodbus.transport.serialtransport import (
     OldSerialTransport,
@@ -195,7 +194,7 @@ class TestTransportSerial:
             None,
         )
         comm.sync_serial = mock.MagicMock()
-        comm.sync_serial.read.side_effect = serial.SerialException("test")
+        comm.sync_serial.read.side_effect = SerialSync.SerialException("test")
         await comm.polling_task()
 
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
@@ -215,7 +214,7 @@ class TestTransportSerial:
         comm.sync_serial = mock.MagicMock()
         comm.sync_serial.write.return_value = 4
         comm.intern_write_buffer.append(b"abcd")
-        comm.sync_serial.read.side_effect = serial.SerialException("test")
+        comm.sync_serial.read.side_effect = SerialSync.SerialException("test")
         await comm.polling_task()
 
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
@@ -234,7 +233,7 @@ class TestTransportSerial:
         comm.sync_serial = mock.MagicMock()
         comm.sync_serial.write.side_effect = BlockingIOError("test")
         comm.intern_write_ready()
-        comm.sync_serial.write.side_effect = serial.SerialException("test")
+        comm.sync_serial.write.side_effect = SerialSync.SerialException("test")
         comm.intern_write_ready()
 
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")

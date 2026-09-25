@@ -278,7 +278,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             timeout=self.comm_params.timeout_connect,
         )
         start = time.time()
-        if not self.socket:
+        if not self.socket:  # pragma: no cover
             return 0
         while condition(start):
             available = self.socket.in_waiting

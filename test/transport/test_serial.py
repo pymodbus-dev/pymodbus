@@ -12,12 +12,13 @@ import serial
 
 from pymodbus.transport.serialtransport import (
     OldSerialTransport,
+    SerialSync,
     create_serial_connection,
 )
 
 
 @mock.patch(
-    "pymodbus.transport.serialtransport.serial.serial_for_url", mock.MagicMock()
+    "pymodbus.transport.serialtransport.pyserial.serial_for_url", mock.MagicMock()
 )
 class TestTransportSerial:
     """Test transport serial module."""
@@ -90,7 +91,6 @@ class TestTransportSerial:
         comm.async_loop.add_reader = mock.MagicMock()
         comm.async_loop.remove_writer = mock.MagicMock()
         comm.async_loop.remove_reader = mock.MagicMock()
-        comm.sync_serial.in_waiting = False  # type: ignore[misc]
 
         methods = [
             partial(comm.write, b"abcd"),
@@ -99,6 +99,14 @@ class TestTransportSerial:
             partial(comm.abort),
         ]
         methods[inx]()
+
+    def test_serial_sync_methods(self):
+        """Test serial sync."""
+        transport = SerialSync()
+        transport.inter_byte_timeout
+        transport.timeout
+        transport.write_timeout
+        transport.is_open
 
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
     async def test_create_serial(self):

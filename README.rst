@@ -64,7 +64,7 @@ Common features
 * Support for custom function codes
 * Support serial (rs-485), tcp, tls and udp communication
 * Support all standard frames: socket, rtu, rtu-over-tcp, tcp and ascii
-* Does not have third party dependencies, apart from pyserial (optional)
+* Does not have third party dependencies, apart from pyserial/serialx (optional)
 * Very lightweight project
 * Requires Python >= 3.10
 * Thorough test suite, that test all corners of the library (100% test coverage)
@@ -154,6 +154,8 @@ A growing number of Linux distributions include pymodbus in their standard insta
 
 You need to have python3 installed, preferable 3.11.
 
+.. _install-pip:
+
 Install with pip
 ^^^^^^^^^^^^^^^^
 .. note::
@@ -164,15 +166,18 @@ commands in a terminal window::
 
    pip install pymodbus
 
-If you want to use the serial interface::
+If you want to use pyserial or serialx as serial interface::
 
    pip install pymodbus[serial]
 
-This will install pymodbus with the pyserial dependency.
+   pip install pymodbus[serialx]
+
+Either serial or serialx must be installed if using pymodbus on a RS485 connection.
 
 Pymodbus offers a number of extra options:
 
-- **serial**, needed for serial communication
+- **serial**, installs pyserial
+- **serialx**, installs serialx
 - **simulator**, needed by pymodbus.simulator
 - **documentation**, needed to generate documentation
 - **development**, needed for development
@@ -237,6 +242,24 @@ The repository contains a number of important branches and tags.
   * **master** is where are releases are kept.
   * **vX.Y.Z** (e.g. v2.5.3) is a specific release
 
+
+Third party library serialx vs pyserial
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+"pyserial" was the goto library over many years, when needing serial communication.
+A new library "serialx" have emerged, which have a new and modern async implementation.
+
+While "pyserial" is widely used in python projects, it does have 2 major problems:
+   * It have not been maintained for several years.
+   * The async implmentaion is at the least not efficient and inline with newer python versions.
+
+Pymodbus now offers both libraries (see `Install with pip <install-pip_>`_), which can cause a conflict.
+
+If only either pyserial or serialx is installed, it is automatically selected.
+
+if both pyserial and serialx are installed, pyserial is automatically selected.
+
+Setting the environment variable "pymodbus_force_serial" to "serialx" or "serial" allow to force the selection.
 
 Example Code
 ------------

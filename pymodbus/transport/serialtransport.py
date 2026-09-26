@@ -9,20 +9,52 @@ from contextlib import suppress
 
 
 with suppress(ImportError):
-    import serial as pyserial
+    import serial
+with suppress(ImportError):
+    import serialx
 
 
-class SerialSync:
+def select_import_serial() -> str | None:
+    """Define which library to import."""
+    if not (use_serial := os.getenv("pymodbus_force_serial", default=None)):
+        return (
+            "serial"
+            if "serial" in sys.modules
+            else "serialx"
+            if "serialx" in sys.modules
+            else None
+        )
+    if use_serial not in ("serial", "serialx"):
+        raise RuntimeError(
+            'Environment variable "pymodbus_force_serial"'
+            ' must be either "serial" or "serialx"!'
+        )
+    if use_serial not in sys.modules:
+        raise RuntimeError(
+            f'Environment variable "pymodbus_force_serial" is "{use_serial}" but it is not installed!'
+        )
+    return use_serial
+
+
+class SerialInterface:
     """A synchronous serial transport."""
 
-    SerialException = pyserial.SerialException
-    SerialTimeoutException = pyserial.SerialTimeoutException
+    SerialException = (
+        serialx.SerialException
+        if select_import_serial() == "serialx"
+        else serial.SerialException
+    )
+    SerialTimeoutException = (
+        serialx.SerialTimeoutException
+        if select_import_serial() == "serialx"
+        else serial.SerialTimeoutException
+    )
 
     @classmethod
-    def serial_for_url(cls, *args, **kwargs) -> SerialSync:
+    def serial_for_url(cls, *args, **kwargs) -> SerialInterface:
         """Get socket for url."""
-        obj = SerialSync()
-        obj.serial = pyserial.serial_for_url(*args, **kwargs)
+        obj = SerialInterface()
+        obj.serial = serial.serial_for_url(*args, **kwargs)
         return obj
 
     @property
@@ -67,7 +99,11 @@ class SerialSync:
 
     def __init__(self):
         """Initialize."""
-        self.serial = pyserial.Serial()
+        if not select_import_serial():
+            raise RuntimeError(
+                "Serial communication requires serial or serialx installed!"
+            )
+        self.serial = serial.Serial()
 
     def close(self):
         """Define close."""
@@ -86,25 +122,19 @@ class SerialSync:
         return self.serial.fileno()
 
 
-class OldSerialTransport(asyncio.Transport):
+class PySerialAsyncTransport(asyncio.Transport):
     """An asyncio serial transport."""
 
     force_poll: bool = os.name == "nt"
-    # async_loop: asyncio.AbstractEventLoop
 
     def __init__(
         self, loop, protocol, url, baudrate, bytesize, parity, stopbits, timeout
     ) -> None:
         """Initialize."""
         super().__init__()
-        if "serial" not in sys.modules:
-            raise RuntimeError(
-                "Serial client requires pyserial "
-                'Please install with "pip install pyserial" and try again.'
-            )
         self.async_loop = loop
         self.intern_protocol: asyncio.BaseProtocol = protocol
-        self.sync_serial = SerialSync.serial_for_url(
+        self.sync_serial = SerialInterface.serial_for_url(
             url,
             exclusive=True,
             baudrate=baudrate,
@@ -123,7 +153,7 @@ class OldSerialTransport(asyncio.Transport):
         """Prepare to read/write."""
         if self.force_poll:
             self.poll_task = asyncio.create_task(self.polling_task())
-            self.poll_task.set_name("OldSerialTransport poll")
+            self.poll_task.set_name("PySerialAsyncTransport poll")
         else:
             self.async_loop.add_reader(
                 self.sync_serial.fileno(), self.intern_read_ready
@@ -220,7 +250,7 @@ class OldSerialTransport(asyncio.Transport):
         try:
             if data := self.sync_serial.read(1024):
                 self.intern_protocol.data_received(data)  # type: ignore[attr-defined]
-        except pyserial.SerialException as exc:
+        except serial.SerialException as exc:
             self.close(exc=exc)
 
     def intern_write_ready(self) -> None:
@@ -237,7 +267,7 @@ class OldSerialTransport(asyncio.Transport):
             self.flush()
         except (BlockingIOError, InterruptedError):
             return
-        except pyserial.SerialException as exc:
+        except serial.SerialException as exc:
             self.close(exc=exc)
 
     async def polling_task(self):
@@ -262,7 +292,7 @@ async def create_serial_connection(
 ) -> tuple[asyncio.Transport, asyncio.BaseProtocol]:
     """Create a connection to a new serial port instance."""
     protocol = protocol_factory()
-    transport = OldSerialTransport(
+    transport = PySerialAsyncTransport(
         loop, protocol, url, baudrate, bytesize, parity, stopbits, timeout
     )
     loop.call_soon(transport.setup)

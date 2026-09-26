@@ -1,0 +1,6 @@
+* pymodbus/client/serial.py
+* pymodbus/transport/transport.py
+* test/client/test_client_sync.py
+? test/conftest.py
+* test/transport/test_comm.py
+! to_be_controlled

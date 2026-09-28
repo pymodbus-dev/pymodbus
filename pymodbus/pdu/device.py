@@ -158,6 +158,9 @@ class ModbusDeviceIdentification:
         :param info: Device information as {int:string} dictionary
         :param info_name: Device information as {name:string} dictionary
         """
+        # Copy the defaults, so each identity has its own values instead of
+        # all instances writing into the class-level dict.
+        self.stat_data = dict(self.stat_data)
         if isinstance(info_name, dict):
             for key in info_name:
                 inx = self.__names.index(key)

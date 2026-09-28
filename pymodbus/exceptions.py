@@ -16,7 +16,7 @@ __all__ = [
 class ModbusException(Exception):
     """Base modbus exception."""
 
-    def __init__(self, string):
+    def __init__(self, string: str) -> None:
         """Initialize the exception.
 
         :param string: The message to append to the error
@@ -24,11 +24,11 @@ class ModbusException(Exception):
         self.string = string
         super().__init__(string)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return string representation."""
         return f"Modbus Error: {self.string}"
 
-    def isError(self):
+    def isError(self) -> bool:
         """Error"""
         return True
 
@@ -38,12 +38,12 @@ class ModbusIOException(ModbusException):
 
     def __init__(
         self,
-        string="",
-        function_code=None,
+        string: str = "",
+        function_code: int | None = None,
         *,
         transaction_id: int = 0,
         dev_id: int = 0,
-    ):
+    ) -> None:
         """Initialize the exception.
 
         :param string: The message to append to the error
@@ -61,7 +61,7 @@ class ModbusIOException(ModbusException):
 class ParameterException(ModbusException):
     """Error resulting from invalid parameter."""
 
-    def __init__(self, string=""):
+    def __init__(self, string: str = "") -> None:
         """Initialize the exception.
 
         :param string: The message to append to the error
@@ -73,7 +73,7 @@ class ParameterException(ModbusException):
 class NoSuchIdException(ModbusException):
     """Error resulting from making a request to a id that does not exist."""
 
-    def __init__(self, string=""):
+    def __init__(self, string: str = "") -> None:
         """Initialize the exception.
 
         :param string: The message to append to the error
@@ -85,7 +85,7 @@ class NoSuchIdException(ModbusException):
 class NotImplementedException(ModbusException):
     """Error resulting from not implemented function."""
 
-    def __init__(self, string=""):
+    def __init__(self, string: str = "") -> None:
         """Initialize the exception.
 
         :param string: The message to append to the error
@@ -97,7 +97,7 @@ class NotImplementedException(ModbusException):
 class ConnectionException(ModbusException):
     """Error resulting from a bad connection."""
 
-    def __init__(self, string=""):
+    def __init__(self, string: str = "") -> None:
         """Initialize the exception.
 
         :param string: The message to append to the error
@@ -109,7 +109,7 @@ class ConnectionException(ModbusException):
 class MessageRegisterException(ModbusException):
     """Error resulting from failing to register a custom message request/response."""
 
-    def __init__(self, string=""):
+    def __init__(self, string: str = "") -> None:
         """Initialize."""
         message = f"[Error registering message] {string}"
         ModbusException.__init__(self, message)

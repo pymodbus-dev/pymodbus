@@ -58,6 +58,19 @@ class TestDataStore:
         assert self.control.Identity.ModelName == "bashwork"
         assert self.control.Identity.UserApplicationName == "pytest"
 
+    def test_identities_do_not_share_data(self):
+        """Test each identity keeps its own values."""
+        first = ModbusDeviceIdentification(info_name={"VendorName": "first"})
+        second = ModbusDeviceIdentification(info_name={"VendorName": "second"})
+        assert first.VendorName == "first"
+        assert second.VendorName == "second"
+
+    def test_new_identity_does_not_change_server_identity(self):
+        """Test creating an identity does not alter the control block."""
+        self.control.Identity.update(self.ident)
+        ModbusDeviceIdentification(info_name={"VendorName": "other"})
+        assert self.control.Identity.VendorName == "Bashwork"
+
     def test_device_identification_factory(self):
         """Test device identification reading."""
         self.control.Identity.update(self.ident)

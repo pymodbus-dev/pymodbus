@@ -2,17 +2,26 @@
 
 from __future__ import annotations
 
+import contextlib
 import sys
-import time
 from collections.abc import Callable
-from functools import partial
 
 from ..exceptions import ConnectionException
 from ..framer import FramerType
 from ..logging import Log
 from ..pdu import ModbusPDU
-from ..transport import CommParams, CommType, SerialInterface
+from ..transport import CommParams, CommType
 from .base import ModbusBaseClient, ModbusBaseSyncClient
+
+
+with contextlib.suppress(ImportError):
+    import serialx
+
+
+# Buffer size for a single `read()` syscall when the caller didn't specify how many
+# bytes to read. Larger than any Modbus frame, so one syscall returns whatever's
+# currently in the kernel buffer without truncation.
+DEFAULT_RECV_SIZE = 1024
 
 
 class AsyncModbusSerialClient(ModbusBaseClient):
@@ -81,10 +90,10 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
-        if "serial" not in sys.modules:  # pragma: no cover
+        if "serialx" not in sys.modules:  # pragma: no cover
             raise RuntimeError(
-                "Serial client requires pyserial "
-                'Please install with "pip install pyserial" and try again.'
+                "Serial client requires serialx. "
+                'Please install with "pip install serialx" and try again.'
             )
         if framer not in [FramerType.ASCII, FramerType.RTU]:
             raise TypeError("Only FramerType RTU/ASCII allowed.")
@@ -173,10 +182,10 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Modbus Serial Client."""
-        if "serial" not in sys.modules:  # pragma: no cover
+        if "serialx" not in sys.modules:  # pragma: no cover
             raise RuntimeError(
-                "Serial client requires pyserial "
-                'Please install with "pip install pyserial" and try again.'
+                "Serial client requires serialx. "
+                'Please install with "pip install serialx" and try again.'
             )
         if framer not in [FramerType.ASCII, FramerType.RTU]:
             raise TypeError("Only RTU/ASCII allowed.")
@@ -201,13 +210,8 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             trace_pdu,
             trace_connect,
         )
-        self.socket: SerialInterface | None = None
+        self.socket: serialx.Serial | None = None
         self._t0 = float(1 + bytesize + stopbits) / baudrate
-
-        # Check every 4 bytes / 2 registers if the reading is ready
-        self._recv_interval = self._t0 * 4
-        # Set a minimum of 1ms for high baudrates
-        self._recv_interval = max(self._recv_interval, 0.001)
 
         self.inter_byte_timeout: float = 0
         if baudrate <= 19200:
@@ -223,7 +227,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         if self.socket:
             return True
         try:
-            self.socket = SerialInterface().sync_serial_for_url(
+            self.socket = serialx.serial_for_url(
                 self.comm_params.host,
                 timeout=self.comm_params.timeout_connect,
                 write_timeout=self.comm_params.timeout_connect,
@@ -232,11 +236,10 @@ class ModbusSerialClient(ModbusBaseSyncClient):
                 baudrate=self.comm_params.baudrate,
                 parity=self.comm_params.parity,
                 exclusive=True,
+                # inter_byte_timeout=self.inter_byte_timeout,
             )
-            self.socket.inter_byte_timeout = self.inter_byte_timeout
-        # except serial.SerialException as msg:
-        # pyserial raises undocumented exceptions like termios
-        except Exception as msg:  # pylint: disable=broad-exception-caught
+            self.socket.open()
+        except (OSError, serialx.SerialException) as msg:
             Log.error("{}", msg)
             self.close()
         return self.socket is not None
@@ -244,7 +247,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     def close(self):
         """Close the underlying socket connection."""
         if self.socket:
-            self.socket.sync_close()
+            self.socket.close()
         self.socket = None
 
     def send(self, request: bytes, addr: tuple | None = None) -> int:
@@ -253,60 +256,17 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         if not self.socket:
             raise ConnectionException(str(self))
         if request:
-            try:
-                if waitingbytes := self.socket.in_waiting:
-                    result = self.socket.sync_read(waitingbytes)
-                    Log.warning("Cleanup recv buffer before send: {}", result, ":hex")
-                if (
-                    size := self.socket.sync_write(request)
-                ) is None:  # pragma: no cover
-                    size = 0
-                return size
-            except (BlockingIOError, InterruptedError):
-                raise
-            except SerialInterface().SerialTimeoutException:
-                raise ConnectionException(str(self)) from None
-            except OSError:
-                self.close()
-                raise ConnectionException(str(self)) from None
+            if waitingbytes := self.socket.num_unread_bytes():
+                result = self.socket.read(waitingbytes)
+                Log.warning("Cleanup recv buffer before send: {}", result, ":hex")
+            return self.socket.write(request)
         return 0
-
-    def _wait_for_data(self) -> int:
-        """Wait for data."""
-        size = 0
-        more_data = False
-        condition = partial(
-            lambda start, timeout: (time.time() - start) <= timeout,
-            timeout=self.comm_params.timeout_connect,
-        )
-        start = time.time()
-        if not self.socket:  # pragma: no cover
-            return 0
-        while condition(start):
-            available = self.socket.in_waiting
-            if (more_data and not available) or (more_data and available == size):
-                break
-            if available and available != size:
-                more_data = True
-                size = available
-            time.sleep(self._recv_interval)
-        return size
 
     def recv(self, size: int | None) -> bytes:
         """Read data from the underlying descriptor."""
         if not self.socket:
             raise ConnectionException(str(self))
-        try:
-            if size is None:
-                size = self._wait_for_data()
-            if size > self.socket.in_waiting:
-                self._wait_for_data()
-            return self.socket.sync_read(size)
-        except (BlockingIOError, InterruptedError):
-            raise
-        except OSError:
-            self.close()
-            raise ConnectionException(str(self)) from None
+        return self.socket.read(size if size else DEFAULT_RECV_SIZE)
 
     def is_socket_open(self) -> bool:
         """Check if socket is open."""

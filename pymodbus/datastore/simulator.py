@@ -613,7 +613,7 @@ class ModbusSimulatorContext:
         if func_code in self._bits_func_code:
             # Bit count, correct to register count
             count = (count + WORD_SIZE - 1) // WORD_SIZE
-            address = address // 16
+            address //= 16
 
         real_address = self.fc_offset[func_code] + address
         if real_address < 0 or real_address > self.register_count:

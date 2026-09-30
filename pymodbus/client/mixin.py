@@ -982,7 +982,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
                 raise TypeError(f"Value should be list of bool but is {type(value)}.")
             value = cast(list[bool], value)
             if missing := len(value) % 16:
-                value = value + [False] * (16 - missing)
+                value += [False] * (16 - missing)
             byte_list = pack_bitstring(value)
         elif data_type == cls.DATATYPE.STRING:
             if not isinstance(value, str):
@@ -1015,5 +1015,5 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         for x in range(0, len(regs), data_type_len):
             single_value_regs = regs[x : x + data_type_len]
             single_value_regs.reverse()
-            reversed_regs = reversed_regs + single_value_regs
+            reversed_regs += single_value_regs
         return reversed_regs

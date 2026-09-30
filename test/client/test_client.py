@@ -311,9 +311,9 @@ class TestMixin:
         regs = ModbusClientMixin.convert_to_registers(value, datatype, **kwargs)
         assert regs == registers
         result = ModbusClientMixin.convert_from_registers(registers, datatype, **kwargs)
-        if datatype == ModbusClientMixin.DATATYPE.BITS:
-            if missing := len(value) % 16:
-                value = value + [False] * (16 - missing)
+        # if datatype == ModbusClientMixin.DATATYPE.BITS:
+        #    if missing := len(value) % 16:
+        #        value += [False] * (16 - missing)
         if datatype == ModbusClientMixin.DATATYPE.FLOAT32:
             if isinstance(result, list):
                 result = [round(v, 6) for v in result]

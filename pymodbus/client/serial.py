@@ -11,7 +11,7 @@ from ..exceptions import ConnectionException
 from ..framer import FramerType
 from ..logging import Log
 from ..pdu import ModbusPDU
-from ..transport import CommParams, CommType, SerialSync
+from ..transport import CommParams, CommType, SerialInterface
 from .base import ModbusBaseClient, ModbusBaseSyncClient
 
 
@@ -201,7 +201,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             trace_pdu,
             trace_connect,
         )
-        self.socket: SerialSync | None = None
+        self.socket: SerialInterface | None = None
         self._t0 = float(1 + bytesize + stopbits) / baudrate
 
         # Check every 4 bytes / 2 registers if the reading is ready
@@ -223,7 +223,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         if self.socket:
             return True
         try:
-            self.socket = SerialSync.serial_for_url(
+            self.socket = SerialInterface.sync_serial_for_url(
                 self.comm_params.host,
                 timeout=self.comm_params.timeout_connect,
                 write_timeout=self.comm_params.timeout_connect,
@@ -244,7 +244,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     def close(self):
         """Close the underlying socket connection."""
         if self.socket:
-            self.socket.close()
+            self.socket.sync_close()
         self.socket = None
 
     def send(self, request: bytes, addr: tuple | None = None) -> int:
@@ -255,14 +255,16 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         if request:
             try:
                 if waitingbytes := self.socket.in_waiting:
-                    result = self.socket.read(waitingbytes)
+                    result = self.socket.sync_read(waitingbytes)
                     Log.warning("Cleanup recv buffer before send: {}", result, ":hex")
-                if (size := self.socket.write(request)) is None:  # pragma: no cover
+                if (
+                    size := self.socket.sync_write(request)
+                ) is None:  # pragma: no cover
                     size = 0
                 return size
             except (BlockingIOError, InterruptedError):
                 raise
-            except SerialSync.SerialTimeoutException:
+            except SerialInterface.SerialTimeoutException:
                 raise ConnectionException(str(self)) from None
             except OSError:
                 self.close()
@@ -299,7 +301,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
                 size = self._wait_for_data()
             if size > self.socket.in_waiting:
                 self._wait_for_data()
-            return self.socket.read(size)
+            return self.socket.sync_read(size)
         except (BlockingIOError, InterruptedError):
             raise
         except OSError:

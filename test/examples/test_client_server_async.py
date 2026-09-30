@@ -28,7 +28,8 @@ from examples.client_async import (
         ("tls", "tls"),
         ("udp", "socket"),
         ("udp", "rtu"),
-        ("serial", "rtu"),
+        ("serial1", "rtu"),
+        ("serial2", "rtu"),
     ],
 )
 class TestClientServerAsyncExamples:
@@ -41,25 +42,27 @@ class TestClientServerAsyncExamples:
         base_ports[__class__.__name__] += 1  # type: ignore[index, name-defined]
         return base_ports[__class__.__name__]  # type: ignore[index, name-defined]
 
-    async def test_combinations(self, mock_server, mock_clc):
+    async def test_combinations(self, mock_with_use_comm, mock_server, mock_clc):
         """Run async client and server."""
         assert mock_server
         await main(cmdline=mock_clc)
 
-    async def test_client_no_calls(self, mock_server, mock_clc):
+    async def test_client_no_calls(self, mock_with_use_comm, mock_server, mock_clc):
         """Run async client and server."""
         assert mock_server
         test_client = setup_async_client(cmdline=mock_clc)
         await run_async_client(test_client, modbus_calls=None)
 
-    async def test_server_no_client(self, mock_server):
+    async def test_server_no_client(self, mock_with_use_comm, mock_server):
         """Run async server without client."""
         assert mock_server
 
-    async def test_server_client_twice(self, mock_server, use_comm, mock_clc):
+    async def test_server_client_twice(
+        self, mock_with_use_comm, mock_server, use_comm, mock_clc
+    ):
         """Run async server without client."""
         assert mock_server
-        if use_comm == "serial":
+        if use_comm.startswith("serial"):
             # Serial do not allow mmulti point.
             return
         test_client = setup_async_client(cmdline=mock_clc)
@@ -68,7 +71,7 @@ class TestClientServerAsyncExamples:
         await run_async_client(test_client, modbus_calls=run_a_few_calls)
         await run_async_client(test_client)
 
-    async def test_client_no_server(self, mock_clc):
+    async def test_client_no_server(self, mock_with_use_comm, mock_clc):
         """Run async client without server."""
         test_client = setup_async_client(cmdline=mock_clc)
         with pytest.raises((AssertionError, asyncio.TimeoutError)):

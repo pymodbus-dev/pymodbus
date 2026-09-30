@@ -61,7 +61,7 @@ from functools import partial
 from typing import Any
 
 from ..logging import Log
-from .serialtransport import create_serial_connection
+from .serialtransport import SerialInterface
 
 
 NULLMODEM_HOST = "__pymodbus_nullmodem"
@@ -169,7 +169,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         """Handle connect/listen handler."""
         if self.comm_params.comm_type == CommType.SERIAL:
             self.call_create = partial(
-                create_serial_connection,
+                SerialInterface().create_serial_connection,
                 self.loop,
                 self.handle_new_connection,
                 host,

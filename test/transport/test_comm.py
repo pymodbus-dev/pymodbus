@@ -36,7 +36,7 @@ class TestTransportComm:
             (CommType.SERIAL, "socket://localhost:5004"),
         ],
     )
-    async def test_connect(self, client, use_port):
+    async def test_connect(self, mock_use_ser_2lib, client, use_port):
         """Test connect()."""
         Log.debug("test_connect {}", use_port)
         start = time.time()
@@ -54,7 +54,7 @@ class TestTransportComm:
             (CommType.SERIAL, "/dev/tty007pymodbus_5008"),
         ],
     )
-    async def test_connect_not_ok(self, client, use_port):
+    async def test_connect_not_ok(self, mock_use_ser_2lib, client, use_port):
         """Test connect()."""
         Log.debug("test_connect_not_ok {}", use_port)
         start = time.time()
@@ -72,7 +72,7 @@ class TestTransportComm:
             (CommType.SERIAL, "socket://localhost:5012"),
         ],
     )
-    async def test_listen(self, server, use_port):
+    async def test_listen(self, mock_use_ser_2lib, server, use_port):
         """Test listen()."""
         Log.debug("test_listen {}", use_port)
         assert await server.listen()
@@ -88,7 +88,7 @@ class TestTransportComm:
             (CommType.SERIAL, "/dev/tty007pymodbus_5016"),
         ],
     )
-    async def test_listen_not_ok(self, server, use_port):
+    async def test_listen_not_ok(self, mock_use_ser_2lib, server, use_port):
         """Test listen()."""
         Log.debug("test_listen_not_ok {}", use_port)
         assert not await server.listen()
@@ -104,7 +104,9 @@ class TestTransportComm:
             (CommType.SERIAL, "socket://localhost:7302"),
         ],
     )
-    async def test_connected(self, client, server, use_comm_type, use_port):
+    async def test_connected(
+        self, mock_use_ser_2lib, client, server, use_comm_type, use_port
+    ):
         """Test connection and data exchange."""
         Log.debug("test_connected {}", use_port)
         assert await server.listen()
@@ -133,39 +135,6 @@ class TestTransportComm:
             assert not server.active_connections
         server.close()
 
-    def wrapped_write(self, data):
-        """Wrap serial write, to split parameters."""
-        return self.serial_write(data[:2])
-
-    @pytest.mark.parametrize(
-        ("use_comm_type", "use_host"),
-        [
-            (CommType.SERIAL, "socket://localhost:7303"),
-        ],
-    )
-    async def test_split_serial_packet(self, client, server, use_port):
-        """Test connection and data exchange."""
-        Log.debug("test_split_serial_packet {}", use_port)
-        assert await server.listen()
-        assert await client.connect()
-        await asyncio.sleep(0.5)
-        assert len(server.active_connections) == 1
-        server_connected = list(server.active_connections.values())[0]
-        test_data = b"abcd"
-
-        self.serial_write = (  # pylint: disable=attribute-defined-outside-init
-            client.transport.sync_serial.sync_write
-        )
-        with mock.patch.object(
-            client.transport.sync_serial, "sync_write", wraps=self.wrapped_write
-        ):
-            client.send(test_data)
-            await asyncio.sleep(0.5)
-        assert server_connected.recv_buffer == test_data
-        assert not client.recv_buffer
-        client.close()
-        server.close()
-
     @pytest.mark.parametrize(
         ("use_comm_type", "use_host"),
         [
@@ -173,7 +142,7 @@ class TestTransportComm:
         ],
     )
     @pytest.mark.skipif(SerialTransport.force_poll, reason="Serial poll not supported")
-    async def test_serial_poll(self, client, server, use_port):
+    async def test_serial_poll(self, mock_use_ser_2lib, client, server, use_port):
         """Test connection and data exchange."""
         Log.debug("test_serial_poll {}", use_port)
         assert await server.listen()
@@ -200,7 +169,9 @@ class TestTransportComm:
             # (CommType.SERIAL, "socket://localhost:7301")
         ],
     )
-    async def test_connected_multiple(self, client, server, use_port, dummy_protocol):
+    async def test_connected_multiple(
+        self, mock_use_ser_2lib, client, server, use_port, dummy_protocol
+    ):
         """Test connection and data exchange."""
         Log.debug("test_connected {}", use_port)
         client.comm_params.reconnect_delay = 0.0

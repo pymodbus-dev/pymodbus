@@ -1,7 +1,6 @@
 """Test transport."""
 
 import asyncio
-import os
 import sys
 from contextlib import suppress
 from functools import partial
@@ -100,8 +99,10 @@ class TestTransportSerial:
     @pytest.mark.skipif(SerialTransport.force_poll, reason="Serial poll not supported")
     async def test_force_poll(self):
         """Test external methods."""
-        with mock.patch("pymodbus.transport.serialtransport.SerialTransport.force_poll") as mock_force:
-            for force_poll in {True, False}:
+        with mock.patch(
+            "pymodbus.transport.serialtransport.SerialTransport.force_poll"
+        ):
+            for force_poll in (True, False):
                 SerialTransport.force_poll = force_poll
                 transport, protocol = await SerialInterface().create_serial_connection(
                     asyncio.get_running_loop(), mock.Mock, "dummy"
@@ -114,7 +115,9 @@ class TestTransportSerial:
     @pytest.mark.skipif(SerialTransport.force_poll, reason="Serial poll not supported")
     async def test_write_force_poll(self):
         """Test write with poll."""
-        with mock.patch("pymodbus.transport.serialtransport.SerialTransport.force_poll") as mock_force:
+        with mock.patch(
+            "pymodbus.transport.serialtransport.SerialTransport.force_poll"
+        ):
             SerialTransport.force_poll = True
             transport, _ = await SerialInterface().create_serial_connection(
                 asyncio.get_running_loop(), mock.Mock, "dummy"
@@ -139,7 +142,7 @@ class TestTransportSerial:
         comm.sync_serial = None  # type: ignore[assignment]
         comm.close()
 
-    @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
+    @pytest.mark.skipif(SerialTransport.force_poll, reason="Serial poll not supported")
     async def test_polling(self):
         """Test polling."""
         comm = SerialTransport(
@@ -173,9 +176,10 @@ class TestTransportSerial:
         comm.sync_serial.sync_read.side_effect = SerialInterface().SerialException(
             "test"
         )
-        type(comm.sync_serial).in_waiting=mock.PropertyMock(side_effect=[False, True])
+        type(comm.sync_serial).in_waiting = mock.PropertyMock(side_effect=[False, True])
         await comm.polling_task()
 
+    @pytest.mark.skipif(SerialTransport.force_poll, reason="Serial poll not supported")
     async def test_poll_task2(self):
         """Test polling."""
         comm = SerialTransport(

@@ -1,4 +1,4 @@
-"""asyncio / sync serial support for modbus (based on serial)."""
+"""asyncio / sync serial support for modbus (based on pyserial)."""
 
 from __future__ import annotations
 
@@ -6,60 +6,82 @@ import asyncio
 import os
 import sys
 from contextlib import suppress
-from typing import Any
 
 
 with suppress(ImportError):
-    import serial
+    import serial as py_serial
 with suppress(ImportError):
-    import serialx
+    import serialx as x_serial
 
 
 class SerialInterface:
-    """A serial transport using either serial or serialx."""
+    """A synchronous serial transport."""
+
+    USE_SERIAL: str
 
     @classmethod
     def select_import_serial(cls):
         """Define which library to import."""
-        ser1 = "serial"
-        ser2 = "serialx"
         if use_serial := os.getenv("pymodbus_force_serial", default=None):
-            if use_serial not in {ser1, ser2} or use_serial not in sys.modules:
+            if (
+                use_serial not in {"serial", "serialx", None}
+                or use_serial not in sys.modules
+            ):
                 raise TypeError(
                     "Env 'pymodbus_force_serial' must be 'serial', 'serialx' or none, and selection must be installed"
                 )
         else:
             use_serial = (
-                ser1 if ser1 in sys.modules else ser2 if ser2 in sys.modules else None
+                "serial"
+                if "serial" in sys.modules
+                else "serialx"
+                if "serialx" in sys.modules
+                else None
             )
-            if use_serial is None:
+            if not use_serial:
                 raise RuntimeError(
                     "Serial communication requires serial or serialx installed!"
                 )
-        return use_serial == ser1
+        if use_serial == "serial":
+            return (
+                use_serial,
+                py_serial.Serial,
+                py_serial.SerialException,
+                py_serial.SerialTimeoutException,
+            )
+        return (
+            use_serial,
+            x_serial.Serial,
+            x_serial.SerialException,
+            x_serial.SerialTimeoutException,
+        )
 
     def __init__(self):
         """Initialize."""
-        self.use_old = SerialInterface.select_import_serial()
-        self.serial: Any
-        if self.use_old:
-            self.SerialException = serial.SerialException
-            self.SerialTimeoutException = serial.SerialTimeoutException
+        (
+            SerialInterface.USE_SERIAL,
+            self.lib_Serial,
+            self.SerialException,
+            self.SerialTimeoutException,
+        ) = self.select_import_serial()
+        if self.USE_SERIAL == "serial":
+            self.serial: py_serial.Serial
         else:
-            self.SerialException = serialx.SerialException  # type: ignore[assignment]
-            self.SerialTimeoutException = serialx.SerialTimeoutException  # type: ignore[assignment]
+            self.serial: x_serial.Serial  # type: ignore[no-redef]
 
-    def sync_serial_for_url(self, *args, **kwargs) -> SerialInterface:
+    @classmethod
+    def serial_for_url(cls, *args, **kwargs) -> SerialInterface:
         """Get socket for url."""
-        self.serial = (
-            serial.serial_for_url(*args, **kwargs)
-            if self.use_old
-            else serialx.serial_for_url(*args, **kwargs)
-        )
-        return self
+        ser_obj = SerialInterface()
+        if cls.USE_SERIAL:
+            ser_obj.serial = py_serial.serial_for_url(*args, **kwargs)  # type: ignore[assignment]
+        else:
+            ser_obj.serial = x_serial.serial_for_url(*args, **kwargs)  # type: ignore[assignment]
+        return ser_obj
 
+    @classmethod
     async def create_serial_connection(
-        self,
+        cls,
         loop,
         protocol_factory,
         url,
@@ -71,22 +93,10 @@ class SerialInterface:
     ) -> tuple[asyncio.Transport, asyncio.BaseProtocol]:
         """Create a connection to a new serial port instance."""
         protocol = protocol_factory()
-        if self.use_old:
-            transport = SerialTransport(
-                loop, protocol, url, baudrate, bytesize, parity, stopbits, timeout
-            )
-            loop.call_soon(transport.setup)
-        else:
-            transport, protocol = await serialx.create_serial_connection(
-                loop,
-                protocol,
-                url,
-                baudrate=baudrate,
-                bytesize=bytesize,
-                parity=parity,
-                stopbits=stopbits,
-                timeout=timeout,
-            )
+        transport = PySerialAsyncTransport(
+            loop, protocol, url, baudrate, bytesize, parity, stopbits, timeout
+        )
+        loop.call_soon(transport.setup)
         return transport, protocol
 
     @property
@@ -131,23 +141,23 @@ class SerialInterface:
 
     @property
     def fileno(self):
-        """Define close."""
+        """Define fileno."""
         return self.serial.fileno()
 
-    def sync_close(self):
-        """Define close."""
-        self.serial.close()
-
-    def sync_read(self, count: int):
+    def read(self, count: int):
         """Define read."""
         return self.serial.read(count)
 
-    def sync_write(self, data):
+    def write(self, data):
         """Define read."""
         return self.serial.write(data)
 
+    def close(self):
+        """Close communication."""
+        self.serial.close()
 
-class SerialTransport(asyncio.Transport):
+
+class PySerialAsyncTransport(asyncio.Transport):
     """An asyncio serial transport."""
 
     force_poll: bool = os.name == "nt"
@@ -157,15 +167,9 @@ class SerialTransport(asyncio.Transport):
     ) -> None:
         """Initialize."""
         super().__init__()
-        serial = SerialInterface()
-        if "serial" not in sys.modules:
-            raise RuntimeError(
-                "Serial client requires serial "
-                'Please install with "pip install serial" and try again.'
-            )
         self.async_loop = loop
         self.intern_protocol: asyncio.BaseProtocol = protocol
-        self.sync_serial = serial.sync_serial_for_url(
+        self.sync_serial: SerialInterface = SerialInterface().serial_for_url(
             url,
             exclusive=True,
             baudrate=baudrate,
@@ -184,7 +188,7 @@ class SerialTransport(asyncio.Transport):
         """Prepare to read/write."""
         if self.force_poll:
             self.poll_task = asyncio.create_task(self.polling_task())
-            self.poll_task.set_name("SerialTransport poll")
+            self.poll_task.set_name("PySerialAsyncTransport poll")
         else:
             self.async_loop.add_reader(self.sync_serial.fileno, self.intern_read_ready)
         self.async_loop.call_soon(self.intern_protocol.connection_made, self)
@@ -200,7 +204,7 @@ class SerialTransport(asyncio.Transport):
         else:
             self.async_loop.remove_reader(self.sync_serial.fileno)
             self.async_loop.remove_writer(self.sync_serial.fileno)
-        self.sync_serial.sync_close()
+        self.sync_serial.close()
         self.sync_serial = None  # type: ignore[assignment]
         if exc:
             with suppress(Exception):
@@ -275,7 +279,7 @@ class SerialTransport(asyncio.Transport):
     def intern_read_ready(self) -> None:
         """Test if there are data waiting."""
         try:
-            if data := self.sync_serial.sync_read(1024):
+            if data := self.sync_serial.read(1024):
                 self.intern_protocol.data_received(data)  # type: ignore[attr-defined]
         except SerialInterface().SerialException as exc:
             self.close(exc=exc)
@@ -284,7 +288,7 @@ class SerialTransport(asyncio.Transport):
         """Asynchronously write buffered data."""
         data = b"".join(self.intern_write_buffer)
         try:
-            if (nlen := self.sync_serial.sync_write(data) or 0) < len(data):
+            if (nlen := self.sync_serial.write(data) or 0) < len(data):
                 self.intern_write_buffer = [data[nlen:]]
                 if not self.poll_task:
                     self.async_loop.add_writer(

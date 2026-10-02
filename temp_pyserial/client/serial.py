@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import sys
 import time
 from collections.abc import Callable
 from functools import partial
@@ -81,11 +80,6 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
-        if "serial" not in sys.modules:  # pragma: no cover
-            raise RuntimeError(
-                "Serial client requires pyserial "
-                'Please install with "pip install pyserial" and try again.'
-            )
         if framer not in [FramerType.ASCII, FramerType.RTU]:
             raise TypeError("Only FramerType RTU/ASCII allowed.")
         self.comm_params = CommParams(
@@ -173,11 +167,6 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Modbus Serial Client."""
-        if "serial" not in sys.modules:  # pragma: no cover
-            raise RuntimeError(
-                "Serial client requires pyserial "
-                'Please install with "pip install pyserial" and try again.'
-            )
         if framer not in [FramerType.ASCII, FramerType.RTU]:
             raise TypeError("Only RTU/ASCII allowed.")
         self.comm_params = CommParams(
@@ -223,7 +212,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         if self.socket:
             return True
         try:
-            self.socket = SerialInterface().sync_serial_for_url(
+            self.socket = SerialInterface().serial_for_url(
                 self.comm_params.host,
                 timeout=self.comm_params.timeout_connect,
                 write_timeout=self.comm_params.timeout_connect,
@@ -244,7 +233,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     def close(self):
         """Close the underlying socket connection."""
         if self.socket:
-            self.socket.sync_close()
+            self.socket.close()
         self.socket = None
 
     def send(self, request: bytes, addr: tuple | None = None) -> int:
@@ -255,11 +244,9 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         if request:
             try:
                 if waitingbytes := self.socket.in_waiting:
-                    result = self.socket.sync_read(waitingbytes)
+                    result = self.socket.read(waitingbytes)
                     Log.warning("Cleanup recv buffer before send: {}", result, ":hex")
-                if (
-                    size := self.socket.sync_write(request)
-                ) is None:  # pragma: no cover
+                if (size := self.socket.write(request)) is None:  # pragma: no cover
                     size = 0
                 return size
             except (BlockingIOError, InterruptedError):
@@ -301,7 +288,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
                 size = self._wait_for_data()
             if size > self.socket.in_waiting:
                 self._wait_for_data()
-            return self.socket.sync_read(size)
+            return self.socket.read(size)
         except (BlockingIOError, InterruptedError):
             raise
         except OSError:

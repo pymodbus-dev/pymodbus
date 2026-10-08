@@ -134,6 +134,26 @@ class TestMixin:
             getattr(ModbusClientMixin(), method)(**arglist[arg])
             assert isinstance(pdu_to_call, pdu_request)
 
+    def test_client_mixin_write_sequence(self):
+        """Write methods must accept any Sequence of values, e.g. a tuple (#2957)."""
+        requests: list[ModbusPDU] = []
+
+        def fake_execute(_self, _no_response_expected, request):
+            """Collect PDU requests."""
+            requests.append(request)
+
+        with mock.patch.object(ModbusClientMixin, "execute", fake_execute):
+            client = ModbusClientMixin()
+            client.write_coils(1, [True, False, True])
+            client.write_coils(1, (True, False, True))
+            client.write_registers(1, [22, 44])
+            client.write_registers(1, (22, 44))
+            client.readwrite_registers(address=1, read_count=2, values=[22, 44])
+            client.readwrite_registers(address=1, read_count=2, values=(22, 44))
+        encoded = [request.encode() for request in requests]
+        assert len(encoded) == 6
+        assert encoded[1::2] == encoded[0::2]
+
     @pytest.mark.parametrize(("word_order"), ["big", "little", None])
     @pytest.mark.parametrize(
         ("datatype", "value", "registers", "string_encoding"),

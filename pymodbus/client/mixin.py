@@ -621,7 +621,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     def write_coils(
         self,
         address: int,
-        values: list[bool],
+        values: Sequence[bool],
         *,
         device_id: int = 1,
         no_response_expected: bool = False,
@@ -639,14 +639,14 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         Coils are addressed as 0-N (Note some device manuals uses 1-N, assuming 1==0).
         """
         pdu = pdu_bit.WriteMultipleCoilsRequest(
-            address=address, bits=values, dev_id=device_id
+            address=address, bits=list(values), dev_id=device_id
         )
         return self.execute(no_response_expected, pdu)
 
     def write_registers(
         self,
         address: int,
-        values: list[int],
+        values: Sequence[int],
         *,
         device_id: int = 1,
         no_response_expected: bool = False,
@@ -665,7 +665,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         return self.execute(
             no_response_expected,
             pdu_reg.WriteMultipleRegistersRequest(
-                address=address, registers=values, dev_id=device_id
+                address=address, registers=list(values), dev_id=device_id
             ),
         )
 
@@ -785,7 +785,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         read_count: int = 0,
         write_address: int = 0,
         address: int | None = None,
-        values: list[int] | None = None,
+        values: Sequence[int] | None = None,
         device_id: int = 1,
         no_response_expected: bool = False,
     ) -> T:
@@ -818,7 +818,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
                 read_address=read_address,
                 read_count=read_count,
                 write_address=write_address,
-                write_registers=values,
+                write_registers=list(values),
                 dev_id=device_id,
             ),
         )

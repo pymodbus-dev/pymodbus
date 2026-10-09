@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import struct
+from collections.abc import Sequence
 
 
-def pack_bitstring(bits: list[bool], align_byte=True) -> bytes:
+def pack_bitstring(bits: Sequence[bool], align_byte=True) -> bytes:
     """Create a bytestring out of a list of bits.
 
     example::
@@ -19,7 +20,7 @@ def pack_bitstring(bits: list[bool], align_byte=True) -> bytes:
     """
     ret = b""
     i = packed = 0
-    t_bits = bits.copy()
+    t_bits = list(bits)
     bits_extra = 8 if align_byte else 16
     if extra := len(bits) % bits_extra:
         t_bits += [False] * (bits_extra - extra)

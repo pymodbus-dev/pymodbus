@@ -103,7 +103,7 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         read_address: int = 0x00,
         read_count: int = 0,
         write_address: int = 0x00,
-        write_registers: list[int] | None = None,
+        write_registers: Sequence[int] | None = None,
         dev_id: int = 1,
         transaction_id: int = 0,
     ) -> None:

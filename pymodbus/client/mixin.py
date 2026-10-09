@@ -639,7 +639,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         Coils are addressed as 0-N (Note some device manuals uses 1-N, assuming 1==0).
         """
         pdu = pdu_bit.WriteMultipleCoilsRequest(
-            address=address, bits=list(values), dev_id=device_id
+            address=address, bits=values, dev_id=device_id
         )
         return self.execute(no_response_expected, pdu)
 
@@ -665,7 +665,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         return self.execute(
             no_response_expected,
             pdu_reg.WriteMultipleRegistersRequest(
-                address=address, registers=list(values), dev_id=device_id
+                address=address, registers=values, dev_id=device_id
             ),
         )
 
@@ -818,7 +818,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
                 read_address=read_address,
                 read_count=read_count,
                 write_address=write_address,
-                write_registers=list(values),
+                write_registers=values,
                 dev_id=device_id,
             ),
         )

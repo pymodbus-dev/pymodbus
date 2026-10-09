@@ -560,8 +560,8 @@ class TestClientBase:
     @pytest.mark.parametrize(
         ("type_args", "clientclass"),
         [
-            # TBD ("serial", lib_client.AsyncModbusSerialClient),
-            # TBD ("serial", lib_client.ModbusSerialClient),
+            ("serial", lib_client.AsyncModbusSerialClient),
+            ("serial", lib_client.ModbusSerialClient),
             ("tcp", lib_client.AsyncModbusTcpClient),
             ("tcp", lib_client.ModbusTcpClient),
             ("tls", lib_client.AsyncModbusTlsClient),
@@ -577,6 +577,7 @@ class TestClientBase:
         type_args,
         clientclass,
         test_default,
+        mock_use_ser_2lib,
     ):
         """Try to instantiate clients."""
         cur_args = arg_list[type_args]

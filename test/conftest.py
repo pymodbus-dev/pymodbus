@@ -6,9 +6,11 @@ import sys
 from collections import deque
 from threading import enumerate as thread_enumerate
 from typing import cast
+from unittest import mock
 
 import pytest
 import pytest_asyncio
+from serialx import SerialException, SerialTimeoutException
 
 from pymodbus.constants import ExcCodes
 from pymodbus.datastore import ModbusDeviceContext, ModbusServerContext
@@ -120,9 +122,10 @@ def define_commandline_client(
     """Define commandline."""
     my_port = str(use_port)
     # Socket-backed serial can take seconds to complete long RTU frames under load.
-    timeout = "10" if use_comm == "serial" else "0.1"
-    cmdline = ["--comm", use_comm, "--framer", use_framer, "--timeout", timeout]
-    if use_comm == "serial":
+    x_parm = "serial" if use_comm.startswith("serial") else use_comm
+    timeout = "10" if use_comm.startswith("serial") else "0.1"
+    cmdline = ["--comm", x_parm, "--framer", use_framer, "--timeout", timeout]
+    if use_comm.startswith("serial"):
         if use_host == NULLMODEM_HOST:
             use_host = f"{use_host}:{my_port}"
         else:
@@ -142,13 +145,14 @@ def define_commandline_server(
 ):
     """Define commandline."""
     my_port = str(use_port)
+    x_parm = "serial" if use_comm.startswith("serial") else use_comm
     cmdline = [
         "--comm",
-        use_comm,
+        x_parm,
         "--framer",
         use_framer,
     ]
-    if use_comm == "serial":
+    if use_comm.startswith("serial"):
         if use_host == NULLMODEM_HOST:
             use_host = f"{use_host}:{my_port}"
         else:
@@ -271,7 +275,9 @@ class mockSocket:  # pylint: disable=invalid-name
         self.packets = deque()
         self.buffer = None
         self.in_waiting = 0
+        self.prop_write_timeout = 0
         self.copy_send = copy_send
+        self.state_open = False
 
     def mock_prepare_receive(self, msg):
         """Store message."""
@@ -280,10 +286,12 @@ class mockSocket:  # pylint: disable=invalid-name
 
     def close(self):
         """Close."""
+        self.state_open = False
         return True
 
-    def sync_close(self):
+    def open(self):
         """Close."""
+        self.state_open = True
         return True
 
     def recv(self, size):
@@ -298,10 +306,6 @@ class mockSocket:  # pylint: disable=invalid-name
         """Read."""
         return self.recv(size)
 
-    def sync_read(self, size):
-        """Read."""
-        return self.read(size)
-
     def recvfrom(self, size):
         """Receive from."""
         return [self.recv(size)]
@@ -309,10 +313,6 @@ class mockSocket:  # pylint: disable=invalid-name
     def write(self, msg):
         """Write."""
         return self.send(msg)
-
-    def sync_write(self, msg):
-        """Write."""
-        return self.write(msg)
 
     def send(self, msg):
         """Send."""
@@ -322,6 +322,11 @@ class mockSocket:  # pylint: disable=invalid-name
         self.in_waiting += len(msg)
         return len(msg)
 
+    @property
+    def is_open(self):
+        """Open."""
+        return self.state_open
+
     def sendto(self, msg, *_args):
         """Send to."""
         return self.send(msg)
@@ -329,3 +334,50 @@ class mockSocket:  # pylint: disable=invalid-name
     def setblocking(self, _flag):
         """Set blocking."""
         return None
+
+
+@pytest.fixture(params=[True, False])
+def mock_use_ser_2lib(request):
+    """Patch select_import_serial."""
+    with mock.patch(
+        "pymodbus.transport.serialtransport.SerialInterface.select_import_serial",
+        autospec=True,
+    ) as mock_lib:
+        mock_lib.return_value = request.param
+        yield
+
+
+@pytest.fixture
+def mock_with_use_comm(use_comm):
+    """Patch select_import_serial."""
+    if not (old_lib := "1" in use_comm):
+        old_lib = False if "2" in use_comm else None
+    if old_lib is None:
+        yield None
+    else:
+        with mock.patch(
+            "pymodbus.transport.serialtransport.SerialInterface.select_import_serial",
+            autospec=True,
+        ) as mock_lib:
+            mock_lib.return_value = old_lib
+            yield mock_lib
+
+
+@pytest.fixture
+def mock_ser_intf():
+    """Patch SerialInterface."""
+    with (
+        mock.patch(
+            "pymodbus.transport.serialtransport.SerialInterface.select_import_serial",
+            autospec=True,
+        ) as mock_lib,
+        mock.patch(
+            "pymodbus.transport.serialtransport.serialx", autospec=True
+        ) as mock_ser,
+    ):
+        mock_lib.return_value = False
+        mock_ser.SerialException = SerialException
+        mock_ser.SerialTimeoutException = SerialTimeoutException
+        serial = mockSocket()
+        mock_ser.serial_for_url.return_value = serial
+        yield serial

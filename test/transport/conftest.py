@@ -9,7 +9,7 @@ import pytest
 
 from examples.helper import generate_ssl
 from pymodbus.logging import Log
-from pymodbus.transport import CommParams, CommType, ModbusProtocol
+from pymodbus.transport import CommParams, CommType, ModbusProtocol, SerialInterface
 
 
 class DummyProtocol(ModbusProtocol):
@@ -68,3 +68,24 @@ async def prepare_transport_server(use_cls):
     transport.callback_disconnected = mock.Mock()  # type: ignore[method-assign]
     transport.callback_data = mock.Mock(return_value=0)  # type: ignore[method-assign]
     return transport
+
+
+@pytest.fixture
+def mock_serial(mock_use_ser_2lib, dummy_protocol):
+    """Patch select_import_serial."""
+    with (
+        mock.patch(
+            "pymodbus.transport.serialtransport.serial", autospec=True
+        ) as mock_ser,
+        mock.patch(
+            "pymodbus.transport.serialtransport.serialx", autospec=True
+        ) as mock_serx,
+    ):
+        for xlib in (mock_ser, mock_serx):
+            xlib.SerialException = Exception
+            xlib.SerialTimeoutException = Exception
+        mock_serx.create_serial_connection.return_value = (
+            mock_serx.Serial(),
+            dummy_protocol,
+        )
+        yield SerialInterface().sync_serial_for_url("/dev/null")

@@ -38,7 +38,8 @@ SLEEPING = 5 if os.name == "nt" else 1
         # awaiting fix: ("tls", "tls"),
         ("udp", "socket"),
         ("udp", "rtu"),
-        ("serial", "rtu"),
+        ("serial1", "rtu"),
+        ("serial2", "rtu"),
     ],
 )
 class TestClientServerSyncExamples:
@@ -53,6 +54,7 @@ class TestClientServerSyncExamples:
 
     def test_combinations(
         self,
+        mock_with_use_comm,
         mock_clc,
         mock_cls,
     ):
@@ -65,7 +67,7 @@ class TestClientServerSyncExamples:
         main(cmdline=mock_clc)
         ServerStop()
 
-    def test_server_no_client(self, mock_cls):
+    def test_server_no_client(self, mock_with_use_comm, mock_cls):
         """Run async server without client."""
         server_args = setup_server(cmdline=mock_cls)
         thread = Thread(target=run_sync_server, args=(server_args,))
@@ -74,12 +76,11 @@ class TestClientServerSyncExamples:
         sleep(SLEEPING)
         ServerStop()
 
-    @pytest.mark.skip
     def test_server_client_twice(
-        self, mock_cls, mock_clc, use_comm
-    ):  # pragma: no cover
+        self, mock_with_use_comm, mock_cls, mock_clc, use_comm
+    ):
         """Run async server without client."""
-        if use_comm == "serial":
+        if use_comm.startswith("serial"):
             # cannot open the usb port multiple times
             return
         server_args = setup_server(cmdline=mock_cls)
@@ -94,7 +95,7 @@ class TestClientServerSyncExamples:
         run_sync_client(test_client)
         ServerStop()
 
-    def test_client_no_server(self, mock_clc):
+    def test_client_no_server(self, mock_with_use_comm, mock_clc):
         """Run async client without server."""
         if mock_clc[1] == "udp":
             # udp is connectionless, so it it not possible to detect a proper connection

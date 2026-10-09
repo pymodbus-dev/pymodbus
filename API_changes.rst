@@ -5,6 +5,7 @@ Versions (X.Y.Z) where Z == 0 e.g. 3.0.1 do NOT have API changes!
 API changes 3.16.0
 ------------------
 - removed allow_multiple_devices on ModbusSerialServer (cleanup multidrop).
+- removed inter_byte_timeout from serial clients/servers (handled below transport).
 
 API changes 3.15.0
 ------------------

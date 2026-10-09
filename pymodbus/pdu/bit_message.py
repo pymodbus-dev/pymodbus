@@ -1,6 +1,7 @@
 """Bit Reading Request/Response messages."""
 
 import struct
+from collections.abc import Sequence
 from typing import cast
 
 from ..constants import ExcCodes, ModbusStatus
@@ -131,7 +132,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
     def __init__(
         self,
         address: int = 0,
-        bits: list[bool] | None = None,
+        bits: Sequence[bool] | None = None,
         dev_id: int = 0,
         transaction_id: int = 0,
     ) -> None:

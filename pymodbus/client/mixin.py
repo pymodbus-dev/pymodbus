@@ -621,7 +621,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     def write_coils(
         self,
         address: int,
-        values: list[bool],
+        values: Sequence[bool],
         *,
         device_id: int = 1,
         no_response_expected: bool = False,
@@ -646,7 +646,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
     def write_registers(
         self,
         address: int,
-        values: list[int],
+        values: Sequence[int],
         *,
         device_id: int = 1,
         no_response_expected: bool = False,
@@ -785,7 +785,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         read_count: int = 0,
         write_address: int = 0,
         address: int | None = None,
-        values: list[int] | None = None,
+        values: Sequence[int] | None = None,
         device_id: int = 1,
         no_response_expected: bool = False,
     ) -> T:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Sequence
 
 from ..datastore import ModbusServerContext
 from ..exceptions import ModbusIOException, NotImplementedException
@@ -22,8 +23,8 @@ class ModbusPDU:
         transaction_id: int = 0,
         address: int = 0,
         count: int = 0,
-        bits: list[bool] | None = None,
-        registers: list[int] | None = None,
+        bits: Sequence[bool] | None = None,
+        registers: Sequence[int] | None = None,
         status: int = 1,
     ) -> None:
         """Initialize the base data for a modbus request."""
@@ -36,8 +37,8 @@ class ModbusPDU:
             )
         self.transaction_id: int = transaction_id
         self.address: int = address
-        self.bits: list[bool] = bits or []
-        self.registers: list[int] = registers or []
+        self.bits: Sequence[bool] = bits or []
+        self.registers: Sequence[int] = registers or []
         self.count: int = count or len(self.registers)
         self.status: int = status
         self.exception_code: int = 0

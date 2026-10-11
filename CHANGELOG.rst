@@ -7,6 +7,10 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.16.1
+--------------
+* Revert changes to serialTransport (allow no pyserial). (#3044)
+
 Version 3.16.0
 --------------
 * Change list to sequence in write_coils/registers and readwrite_registers (#3039)

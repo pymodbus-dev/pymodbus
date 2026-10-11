@@ -27,11 +27,11 @@ Host/Port/SourceAddress explanation:
 - client: remote port to connect to (as host:port)
 - client serial: no used
 
-The serial libraries allow the comm_port to be a socket e.g. "socket://localhost:502",
+Pyserial allow the comm_port to be a socket e.g. "socket://localhost:502",
 this allows serial clients to connect to a tcp server with RTU framer.
 
 Pymodbus allows this format for both server and client.
-For clients the string is passed to the serial library,
+For clients the string is passed to pyserial,
 but for servers it is used to start a modbus tcp server.
 This allows for serial testing, without a serial cable.
 
@@ -40,7 +40,7 @@ if <host> is set to NULLMODEM_HOST it will be automatically invoked.
 This allows testing without actual network traffic and is a lot faster.
 
 Class NullModem is a asyncio transport class,
-that replaces the socket class or the serial library.
+that replaces the socket class or pyserial.
 
 The class is designed to take care of differences between the different
 transport mediums, and provide a neutral interface for the upper layers.

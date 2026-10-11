@@ -1,6 +1,7 @@
 """Test transport."""
 
 import asyncio
+import importlib
 import os
 import sys
 from contextlib import suppress
@@ -354,3 +355,26 @@ class TestTransportSerial:
                     None,
                     None,
                 )
+
+
+class TestTransportNoPyserial:
+    """Test transport serial module without pyserial installed."""
+
+    def test_import_without_pyserial(self, monkeypatch):
+        """Test that the module imports and defers errors without pyserial."""
+        serialtransport = importlib.import_module(
+            "pymodbus.transport.serialtransport"
+        )
+
+        monkeypatch.setitem(sys.modules, "serial", None)
+        reloaded = importlib.reload(serialtransport)
+        assert reloaded.pyserial is None
+        assert not hasattr(reloaded.SerialInterface, "SerialException")
+        with pytest.raises(ImportError):
+            reloaded.SerialInterface()
+        with pytest.raises(ImportError):
+            reloaded.SerialInterface.sync_serial_for_url("dummy")
+
+        monkeypatch.undo()
+        importlib.reload(serialtransport)
+        assert serialtransport.pyserial is not None

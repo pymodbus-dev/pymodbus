@@ -8,19 +8,25 @@ import sys
 from contextlib import suppress
 
 
-with suppress(ImportError):
+try:
     import serial as pyserial
+except ImportError:
+    pyserial = None
 
 
 class SerialInterface:
     """A serial transport using either pyserial or serialx."""
 
-    SerialException = pyserial.SerialException
-    SerialTimeoutException = pyserial.SerialTimeoutException
+    if pyserial is not None:
+        SerialException = pyserial.SerialException
+        SerialTimeoutException = pyserial.SerialTimeoutException
 
     @classmethod
     def sync_serial_for_url(cls, *args, **kwargs) -> SerialInterface:
         """Get socket for url."""
+        if pyserial is None:
+            msg = "pyserial is not installed, install it to use serial transports"
+            raise ImportError(msg)
         obj = SerialInterface()
         obj.serial = pyserial.serial_for_url(*args, **kwargs)
         return obj
@@ -72,6 +78,9 @@ class SerialInterface:
 
     def __init__(self):
         """Initialize."""
+        if pyserial is None:
+            msg = "pyserial is not installed, install it to use serial transports"
+            raise ImportError(msg)
         self.serial = pyserial.Serial()
 
     def sync_close(self):

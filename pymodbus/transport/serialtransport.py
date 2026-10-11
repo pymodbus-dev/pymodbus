@@ -6,8 +6,13 @@ import asyncio
 import os
 import sys
 from contextlib import suppress
+from typing import TYPE_CHECKING
 
 
+if TYPE_CHECKING:
+    from types import ModuleType
+
+pyserial: ModuleType | None
 try:
     import serial as pyserial
 except ImportError:
@@ -226,7 +231,7 @@ class SerialTransport(asyncio.Transport):
         try:
             if data := self.sync_serial.sync_read(1024):
                 self.intern_protocol.data_received(data)  # type: ignore[attr-defined]
-        except pyserial.SerialException as exc:
+        except SerialInterface.SerialException as exc:
             self.close(exc=exc)
 
     def intern_write_ready(self) -> None:
@@ -243,7 +248,7 @@ class SerialTransport(asyncio.Transport):
             self.flush()
         except (BlockingIOError, InterruptedError):
             return
-        except pyserial.SerialException as exc:
+        except SerialInterface.SerialException as exc:
             self.close(exc=exc)
 
     async def polling_task(self):

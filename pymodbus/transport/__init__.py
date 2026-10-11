@@ -5,11 +5,11 @@ __all__ = [
     "CommParams",
     "CommType",
     "ModbusProtocol",
-    "SerialInterface",
+    "SerialSync",
 ]
 
 from .serialtransport import (
-    SerialInterface,
+    SerialSync,
 )
 from .transport import (
     NULLMODEM_HOST,

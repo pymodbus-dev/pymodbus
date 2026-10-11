@@ -362,9 +362,7 @@ class TestTransportNoPyserial:
 
     def test_import_without_pyserial(self, monkeypatch):
         """Test that the module imports and defers errors without pyserial."""
-        serialtransport = importlib.import_module(
-            "pymodbus.transport.serialtransport"
-        )
+        serialtransport = importlib.import_module("pymodbus.transport.serialtransport")
 
         monkeypatch.setitem(sys.modules, "serial", None)
         reloaded = importlib.reload(serialtransport)

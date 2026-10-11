@@ -154,10 +154,10 @@ class TestTransportComm:
         test_data = b"abcd"
 
         self.serial_write = (  # pylint: disable=attribute-defined-outside-init
-            client.transport.sync_serial.sync_write
+            client.transport.sync_serial.write
         )
         with mock.patch.object(
-            client.transport.sync_serial, "sync_write", wraps=self.wrapped_write
+            client.transport.sync_serial, "write", wraps=self.wrapped_write
         ):
             client.send(test_data)
             await asyncio.sleep(0.5)

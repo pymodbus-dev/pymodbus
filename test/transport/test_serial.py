@@ -1,23 +1,23 @@
 """Test transport."""
 
 import asyncio
+import contextlib
 import os
 import sys
-from contextlib import suppress
 from functools import partial
 from unittest import mock
 
 import pytest
+import serial
 
 from pymodbus.transport.serialtransport import (
-    SerialInterface,
     SerialTransport,
     create_serial_connection,
 )
 
 
 @mock.patch(
-    "pymodbus.transport.serialtransport.pyserial.serial_for_url", mock.MagicMock()
+    "pymodbus.transport.serialtransport.serial.serial_for_url", mock.MagicMock()
 )
 class TestTransportSerial:
     """Test transport serial module."""
@@ -83,12 +83,14 @@ class TestTransportSerial:
         comm = SerialTransport(
             mock.MagicMock(), mock.Mock(), "dummy", None, None, None, None, None
         )
-        comm.sync_serial.sync_read = mock.MagicMock(return_value="abcd")  # type: ignore[method-assign]
-        comm.sync_serial.sync_write = mock.MagicMock(return_value=4)  # type: ignore[method-assign]
+        comm.sync_serial.read = mock.MagicMock(return_value="abcd")  # type: ignore[method-assign]
+        comm.sync_serial.write = mock.MagicMock(return_value=4)  # type: ignore[method-assign]
+        comm.sync_serial.fileno = mock.MagicMock(return_value=2)  # type: ignore[method-assign]
         comm.async_loop.add_writer = mock.MagicMock()
         comm.async_loop.add_reader = mock.MagicMock()
         comm.async_loop.remove_writer = mock.MagicMock()
         comm.async_loop.remove_reader = mock.MagicMock()
+        comm.sync_serial.in_waiting = False  # type: ignore[misc]
 
         methods = [
             partial(comm.write, b"abcd"),
@@ -97,15 +99,6 @@ class TestTransportSerial:
             partial(comm.abort),
         ]
         methods[inx]()
-
-    def test_serial_sync_methods(self):
-        """Test serial sync."""
-        transport = SerialInterface()
-        transport.inter_byte_timeout
-        transport.timeout
-        transport.write_timeout
-        transport.is_open
-        # transport.fileno
 
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
     async def test_create_serial(self):
@@ -172,8 +165,8 @@ class TestTransportSerial:
             None,
         )
         comm.sync_serial = mock.MagicMock()
-        comm.sync_serial.sync_read.side_effect = asyncio.CancelledError("test")
-        with suppress(asyncio.CancelledError):
+        comm.sync_serial.read.side_effect = asyncio.CancelledError("test")
+        with contextlib.suppress(asyncio.CancelledError):
             await comm.polling_task()
 
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
@@ -190,7 +183,7 @@ class TestTransportSerial:
             None,
         )
         comm.sync_serial = mock.MagicMock()
-        comm.sync_serial.sync_read.side_effect = SerialInterface.SerialException("test")
+        comm.sync_serial.read.side_effect = serial.SerialException("test")
         await comm.polling_task()
 
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
@@ -207,9 +200,10 @@ class TestTransportSerial:
             None,
         )
         comm.sync_serial = mock.MagicMock()
-        comm.sync_serial.sync_write.return_value = 4
+        comm.sync_serial = mock.MagicMock()
+        comm.sync_serial.write.return_value = 4
         comm.intern_write_buffer.append(b"abcd")
-        comm.sync_serial.sync_read.side_effect = SerialInterface.SerialException("test")
+        comm.sync_serial.read.side_effect = serial.SerialException("test")
         await comm.polling_task()
 
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
@@ -226,11 +220,9 @@ class TestTransportSerial:
             None,
         )
         comm.sync_serial = mock.MagicMock()
-        comm.sync_serial.sync_write.side_effect = BlockingIOError("test")
+        comm.sync_serial.write.side_effect = BlockingIOError("test")
         comm.intern_write_ready()
-        comm.sync_serial.sync_write.side_effect = SerialInterface.SerialException(
-            "test"
-        )
+        comm.sync_serial.write.side_effect = serial.SerialException("test")
         comm.intern_write_ready()
 
     @pytest.mark.skipif(os.name == "nt", reason="Windows not supported")
@@ -247,7 +239,7 @@ class TestTransportSerial:
             None,
         )
         comm.sync_serial = mock.MagicMock()
-        comm.sync_serial.sync_write.return_value = 4
+        comm.sync_serial.write.return_value = 4
         comm.intern_write_buffer.append(b"abcd")
         comm.intern_write_ready()
 
@@ -265,7 +257,7 @@ class TestTransportSerial:
             None,
         )
         comm.sync_serial = mock.MagicMock()
-        comm.sync_serial.sync_write.return_value = 3
+        comm.sync_serial.write.return_value = 3
         comm.async_loop.add_writer = mock.Mock()
         comm.intern_write_buffer.append(b"abcd")
         comm.intern_write_ready()
@@ -281,7 +273,7 @@ class TestTransportSerial:
         serial_write = mock.MagicMock(side_effect=writes)
         comm.intern_write_buffer.append(b"abcd")
 
-        with mock.patch.object(comm.sync_serial, "sync_write", serial_write):
+        with mock.patch.object(comm.sync_serial, "write", serial_write):
             sent = 0
             for written in writes:
                 comm.intern_write_ready()
@@ -312,7 +304,7 @@ class TestTransportSerial:
         )
         comm.poll_task = True  # type: ignore[assignment]
         comm.sync_serial = mock.MagicMock()
-        comm.sync_serial.sync_write.return_value = 3
+        comm.sync_serial.write.return_value = 3
         comm.intern_write_buffer.append(b"abcd")
         comm.intern_write_ready()
 
@@ -331,11 +323,11 @@ class TestTransportSerial:
         )
         comm.sync_serial = mock.MagicMock()
         comm.intern_protocol = mock.Mock()
-        comm.sync_serial.sync_read = mock.Mock()
-        comm.sync_serial.sync_read.return_value = b""
+        comm.sync_serial.read = mock.Mock()
+        comm.sync_serial.read.return_value = b""
         comm.intern_read_ready()
         comm.intern_protocol.data_received.assert_not_called()
-        comm.sync_serial.sync_read.return_value = b"abcd"
+        comm.sync_serial.read.return_value = b"abcd"
         comm.intern_read_ready()
         comm.intern_protocol.data_received.assert_called_once()
 

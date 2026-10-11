@@ -27,11 +27,11 @@ Host/Port/SourceAddress explanation:
 - client: remote port to connect to (as host:port)
 - client serial: no used
 
-Pyserial allow the comm_port to be a socket e.g. "socket://localhost:502",
+The serial libraries allow the comm_port to be a socket e.g. "socket://localhost:502",
 this allows serial clients to connect to a tcp server with RTU framer.
 
 Pymodbus allows this format for both server and client.
-For clients the string is passed to pyserial,
+For clients the string is passed to the serial library,
 but for servers it is used to start a modbus tcp server.
 This allows for serial testing, without a serial cable.
 
@@ -40,7 +40,7 @@ if <host> is set to NULLMODEM_HOST it will be automatically invoked.
 This allows testing without actual network traffic and is a lot faster.
 
 Class NullModem is a asyncio transport class,
-that replaces the socket class or pyserial.
+that replaces the socket class or the serial library.
 
 The class is designed to take care of differences between the different
 transport mediums, and provide a neutral interface for the upper layers.
@@ -133,6 +133,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
         self.sent_buffer: bytes = b""
         self.last_frame: int = 0
         self.loop: asyncio.AbstractEventLoop
+        self.max_buffer_size = 516
         if is_sync:
             return
         self.loop = asyncio.get_running_loop()
@@ -306,7 +307,7 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 return
         Log.transport_dump(Log.RECV_DATA, data, self.recv_buffer)
         self.recv_buffer += data
-        if len(self.recv_buffer) > 1024:
+        if len(self.recv_buffer) > self.max_buffer_size:
             self.recv_buffer = b""
             return
         cut = self.callback_data(self.recv_buffer, addr=addr)

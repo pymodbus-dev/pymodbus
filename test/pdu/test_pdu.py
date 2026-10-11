@@ -16,6 +16,7 @@ from pymodbus.pdu import (
     ExceptionResponse,
     ModbusPDU,
 )
+from pymodbus.pdu.device import ModbusControlBlock
 from pymodbus.pdu.utils import pack_bitstring, unpack_bitstring
 
 
@@ -30,10 +31,6 @@ class TestPdu:
         self.exception.decode(result)
         assert result == b"\x01"
         assert self.exception.exception_code == 1
-
-    async def test_get_pdu_size(self):
-        """Test get pdu size."""
-        assert not self.exception.get_response_pdu_size()
 
     async def test_pdu_id(self):
         """Test set illegal pdu id."""
@@ -548,14 +545,6 @@ class TestPdu:
         res_frame = pdutype.function_code.to_bytes(1, "big") + pdu.encode()
         assert res_frame == frame
 
-    @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests)
-    @pytest.mark.usefixtures("frame", "args")
-    def test_get_response_pdu_size2(self, pdutype, kwargs):
-        """Test that all PDU types can be created."""
-        pdu = pdutype(**kwargs)
-        pdu.get_response_pdu_size()
-        # FIX size > 0 !!
-
     @pytest.mark.parametrize(
         ("pdutype", "args", "kwargs", "frame"), requests + responses
     )
@@ -569,8 +558,12 @@ class TestPdu:
     @pytest.mark.usefixtures("frame", "args")
     async def test_pdu_datastore(self, pdutype, kwargs, mock_server_context):
         """Test that all PDU types can be created."""
-        pdu = pdutype(**kwargs)
-        assert await pdu.datastore_update(mock_server_context(), 1)
+        control = ModbusControlBlock()
+        try:
+            pdu = pdutype(**kwargs)
+            assert await pdu.datastore_update(mock_server_context(), 1)
+        finally:
+            control.Delimiter = b"\n"
 
     async def test_pdu_default_datastore(self, mock_server_context):
         """Test that all PDU types can be created."""

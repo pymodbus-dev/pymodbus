@@ -1,4 +1,4 @@
-"""Test server working as a device on a multidrop RS485 line."""
+"""Test server working as a device on a RS485 line."""
 
 import pytest
 
@@ -8,7 +8,7 @@ from pymodbus.pdu import DecodePDU
 
 
 class TestFaultyResponses:
-    """Test that server works on a multidrop line."""
+    """Test that server works on a line."""
 
     good_frame = b"\x00\x01\x00\x00\x00\x05\x00\x03\x02\x00\x01"
 
@@ -29,7 +29,7 @@ class TestFaultyResponses:
         framer = FramerRTU(DecodePDU(False))
         used_len, pdu = framer.handleFrame(recv, 0, 0)
         assert not pdu
-        assert not used_len
+        assert used_len
 
     def test_faulty_frame1(self, framer):
         """Test ok frame."""

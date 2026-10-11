@@ -126,6 +126,15 @@ Source: :github:`examples/server_updating.py`
     :noindex:
 
 
+Server datamodel
+^^^^^^^^^^^^^^^^
+Source: :github:`examples/server_datamodel.py`
+
+.. automodule:: examples.server_datamodel
+    :undoc-members:
+    :noindex:
+
+
 Simulator example
 ^^^^^^^^^^^^^^^^^
 Source: :github:`examples/simulator.py`

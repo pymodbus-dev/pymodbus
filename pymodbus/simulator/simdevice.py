@@ -48,7 +48,7 @@ class SimDevice:
         )
 
     A server can be configured with either a single :class:`SimDevice` or a list of :class:`SimDevice`
-    to simulate a multipoint line.
+    to simulate a RS485 line.
     """
 
     #: Address/id of device

@@ -1,8 +1,8 @@
 """Test datastore."""
 
-import contextlib
 import logging
 import os
+from contextlib import suppress
 from unittest import mock
 
 import pytest
@@ -23,7 +23,7 @@ class TestLogging:
     def teardown_class(cls):
         """Remove test file."""
         if "CI" not in os.environ:  # pragma: no cover
-            with contextlib.suppress(FileNotFoundError):
+            with suppress(FileNotFoundError):
                 os.remove(cls.LOG_FILE)
 
     def test_log_dont_call_build_msg(self):

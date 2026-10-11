@@ -1,6 +1,7 @@
 """Bit Reading Request/Response messages."""
 
 import struct
+from collections.abc import Sequence
 from typing import cast
 
 from ..constants import ExcCodes, ModbusStatus
@@ -28,14 +29,6 @@ class ReadCoilsRequest(ModbusPDU):
         """Decode a request pdu."""
         self.address, self.count = struct.unpack(">HH", data[:4])
         self.verifyCount(self.MAX_COUNT)
-
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size.
-
-        Func_code (1 byte) + Byte Count(1 byte) + Quantity of Coils (n Bytes)/8,
-        if the remainder is different of 0 then N = N+1
-        """
-        return 1 + 1 + (self.count + 7) // 8
 
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
@@ -125,13 +118,6 @@ class WriteSingleCoilRequest(WriteSingleCoilResponse):
             transaction_id=self.transaction_id,
         )
 
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size.
-
-        Func_code (1 byte) + Output Address (2 byte) + Output Value  (2 Bytes)
-        """
-        return 1 + 2 + 2
-
 
 class WriteMultipleCoilsRequest(ModbusPDU):
     """WriteMultipleCoilsRequest."""
@@ -146,7 +132,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
     def __init__(
         self,
         address: int = 0,
-        bits: list[bool] | None = None,
+        bits: Sequence[bool] | None = None,
         dev_id: int = 0,
         transaction_id: int = 0,
     ) -> None:
@@ -205,14 +191,6 @@ class WriteMultipleCoilsRequest(ModbusPDU):
             dev_id=self.dev_id,
             transaction_id=self.transaction_id,
         )
-
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size.
-
-        Func_code (1 byte) + Output Address (2 byte) + Quantity of Outputs  (2 Bytes)
-        :return:
-        """
-        return 1 + 2 + 2
 
 
 class WriteMultipleCoilsResponse(ModbusPDU):

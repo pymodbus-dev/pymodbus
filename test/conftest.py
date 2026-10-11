@@ -282,6 +282,10 @@ class mockSocket:  # pylint: disable=invalid-name
         """Close."""
         return True
 
+    def sync_close(self):
+        """Close."""
+        return True
+
     def recv(self, size):
         """Receive."""
         if not self.packets or not size:
@@ -294,6 +298,10 @@ class mockSocket:  # pylint: disable=invalid-name
         """Read."""
         return self.recv(size)
 
+    def sync_read(self, size):
+        """Read."""
+        return self.read(size)
+
     def recvfrom(self, size):
         """Receive from."""
         return [self.recv(size)]
@@ -301,6 +309,10 @@ class mockSocket:  # pylint: disable=invalid-name
     def write(self, msg):
         """Write."""
         return self.send(msg)
+
+    def sync_write(self, msg):
+        """Write."""
+        return self.write(msg)
 
     def send(self, msg):
         """Send."""

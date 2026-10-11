@@ -32,13 +32,6 @@ class ReadHoldingRegistersRequest(ModbusPDU):
         self.address, self.count = struct.unpack(">HH", data[:4])
         self.verifyCount(self.MAX_COUNT)
 
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size.
-
-        Func_code (1 byte) + Byte Count(1 byte) + 2 * Quantity of registers (== byte count).
-        """
-        return 1 + 1 + 2 * self.count
-
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
     ) -> ModbusPDU:
@@ -110,7 +103,7 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         read_address: int = 0x00,
         read_count: int = 0,
         write_address: int = 0x00,
-        write_registers: list[int] | None = None,
+        write_registers: Sequence[int] | None = None,
         dev_id: int = 1,
         transaction_id: int = 0,
     ) -> None:
@@ -131,7 +124,7 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         self.verifyAddress(address=self.read_address)
         self.verifyAddress(address=self.write_address)
         self.verifyCount(self.MAX_READ_COUNT, count=self.read_count)
-        self.verifyCount(self.MAX_READ_COUNT, count=self.write_count)
+        self.verifyCount(self.MAX_WRITE_COUNT, count=self.write_count)
         result = struct.pack(
             ">HHHHB",
             self.read_address,
@@ -190,13 +183,6 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
             transaction_id=self.transaction_id,
         )
 
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size.
-
-        Func_code (1 byte) + Byte Count(1 byte) + 2 * Quantity of Coils (n Bytes)
-        """
-        return 1 + 1 + 2 * self.read_count
-
 
 class ReadWriteMultipleRegistersResponse(ReadHoldingRegistersResponse):
     """ReadWriteMultipleRegistersResponse."""
@@ -242,13 +228,6 @@ class WriteSingleRegisterRequest(WriteSingleRegisterResponse):
         return WriteSingleRegisterResponse(
             address=self.address, registers=cast(list[int], values)
         )
-
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size.
-
-        Func_code (1 byte) + Register Address(2 byte) + Register Value (2 bytes)
-        """
-        return 1 + 2 + 2
 
 
 class WriteMultipleRegistersRequest(ModbusPDU):
@@ -298,13 +277,6 @@ class WriteMultipleRegistersRequest(ModbusPDU):
             dev_id=device_id,
             transaction_id=self.transaction_id,
         )
-
-    def get_response_pdu_size(self) -> int:
-        """Get response pdu size.
-
-        Func_code (1 byte) + Starting Address (2 byte) + Quantity of Registers  (2 Bytes)
-        """
-        return 1 + 2 + 2
 
 
 class WriteMultipleRegistersResponse(ModbusPDU):

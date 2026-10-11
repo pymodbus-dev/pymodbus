@@ -6,6 +6,7 @@ import struct
 
 from ..constants import ModbusStatus
 from ..datastore import ModbusServerContext
+from ..exceptions import ModbusIOException
 from .decoders import DecodePDU
 from .device import DeviceInformationFactory, ModbusControlBlock
 from .pdu import ModbusPDU
@@ -243,8 +244,14 @@ class ReportDeviceIdResponse(ModbusPDU):
         raw value that a user can decode to whatever it should be.
         """
         self.byte_count = int(data[0])
-        self.identifier = data[1 : self.byte_count + 1]
-        status = int(data[-1])
+        if not 1 <= self.byte_count <= len(data) - 1:
+            raise ModbusIOException(
+                f"byte_count {self.byte_count} outside 1..{len(data) - 1} "
+                f"for packet of length {len(data)}",
+                function_code=self.function_code,
+            )
+        self.identifier = data[1 : self.byte_count]
+        status = int(data[self.byte_count])
         self.status = status == ID_ON
 
 

@@ -12,7 +12,7 @@ modbus devices.
 The simulator allows the user to (all automated):
 
 - simulate a modbus device by adding a simple configuration,
-- simulate a multipoint line, but adding multiple device configurations,
+- simulate a RS485 line, but adding multiple device configurations,
 - simulate devices that are not conforming to the protocol,
 - simulate communication problems (data loss etc),
 - test how a client handles modbus response and exceptions,

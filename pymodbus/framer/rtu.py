@@ -36,11 +36,6 @@ class FramerRTU(FramerBase):
 
     this means decoding is always exactly 1 frame (request)
 
-    For server (Multidrop line --> devices in parallel)
-       - only 1 request allowed (master controlled protocol)
-       - other devices will send responses (unknown dev_id)
-       - the client (master) may retransmit but in larger time intervals
-
     this means decoding is always exactly 1 frame request, however some requests
     will be for unknown devices, which must be ignored together with the
     response from the unknown device.
@@ -59,7 +54,6 @@ class FramerRTU(FramerBase):
     """
 
     MIN_SIZE = 4  # <device id><function code><crc 2 bytes>
-    device_ids: list[int] = []  # will be converted to instance variable
 
     @classmethod
     def generate_crc16_table(cls) -> list[int]:
@@ -81,10 +75,6 @@ class FramerRTU(FramerBase):
 
     crc16_table: list[int] = [0]
 
-    def setMultidrop(self, device_ids: list[int]):
-        """Activate multidrop support."""
-        self.device_ids = device_ids
-
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode ADU."""
         data_len = len(data)
@@ -93,8 +83,6 @@ class FramerRTU(FramerBase):
                 Log.debug("Short frame: {} wait for more data", data, ":hex")
                 return 0, 0, 0, self.EMPTY
             dev_id = int(data[used_len])
-            if self.device_ids and dev_id not in self.device_ids:
-                return data_len, 0, 0, self.EMPTY
             if not (pdu_class := self.decoder.lookupPduClass(data[used_len:])):
                 continue
             if not (size := pdu_class.calculateRtuFrameSize(data[used_len:])):
@@ -103,16 +91,13 @@ class FramerRTU(FramerBase):
             if data_len < used_len + size:
                 Log.debug("Frame - not ready")
                 return 0, dev_id, 0, self.EMPTY
-            for test_len in range(data_len, used_len + size - 1, -1):
-                start_crc = test_len - 2
-                crc = data[start_crc : start_crc + 2]
-                crc_val = (int(crc[0]) << 8) + int(crc[1])
-                if not FramerRTU.check_CRC(data[used_len:start_crc], crc_val):
-                    Log.debug(
-                        "Frame check failed, possible garbage after frame, testing.."
-                    )
-                    continue
-                return data_len, dev_id, 0, data[used_len + 1 : start_crc]
+            crc_start = used_len + size - 2
+            crc = data[crc_start : crc_start + 2]
+            crc_val = (int(crc[0]) << 8) + int(crc[1])
+            if not FramerRTU.check_CRC(data[used_len:crc_start], crc_val):
+                Log.debug("Frame CRC check failed, possible garbage")
+                return data_len, 0, 0, self.EMPTY
+            return data_len, dev_id, 0, data[used_len + 1 : crc_start]
         return 0, 0, 0, self.EMPTY
 
     def encode(self, payload: bytes, device_id: int, _tid: int) -> bytes:

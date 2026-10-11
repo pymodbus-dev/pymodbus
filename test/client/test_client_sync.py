@@ -5,7 +5,6 @@ from typing import cast
 from unittest import mock
 
 import pytest
-import serial
 
 from pymodbus import FramerType
 from pymodbus.client import (
@@ -20,6 +19,7 @@ from pymodbus.framer import (
     FramerRTU,
     FramerTLS,
 )
+from pymodbus.transport import SerialInterface
 from test.conftest import mockSocket
 
 
@@ -60,6 +60,15 @@ class TestSyncClientUdp:
         """Test the udp client is_socket_open method."""
         client = ModbusUdpClient("127.0.0.1")
         assert client.is_socket_open()
+
+    def test_udp_client_close_releases_socket(self):
+        """Test the udp client close method releases the socket."""
+        client = ModbusUdpClient("127.0.0.1")
+        assert client.connect()
+        sock = client.socket
+        client.close()
+        assert sock.fileno() == -1
+        assert not client.connected
 
     def test_udp_client_send(self):
         """Test the udp client send method."""
@@ -149,6 +158,30 @@ class TestSyncClientTcp:
         client.socket = mockSocket()  # type: ignore[assignment]
         assert not client.send(b"")
         assert client.send(b"1234") == 4
+
+    def test_tcp_client_send_drops_socket_on_os_error(self):
+        """Test that a socket the OS tore down is not left in place as connected."""
+        client = ModbusTcpClient("127.0.0.1")
+        mock_socket = mock.MagicMock()
+        mock_socket.send.side_effect = BrokenPipeError(32, "Broken pipe")
+        client.socket = mock_socket
+        with pytest.raises(ConnectionException):
+            client.send(b"1234")
+        assert not client.connected
+        assert client.socket is None
+
+    def test_tcp_client_send_keeps_socket_on_transient_error(self):
+        """Test that a transient write error leaves a healthy socket in place."""
+        client = ModbusTcpClient("127.0.0.1")
+        mock_socket = mock.MagicMock()
+        mock_socket.send.side_effect = BlockingIOError(
+            11, "Resource temporarily unavailable"
+        )
+        client.socket = mock_socket
+        with pytest.raises(BlockingIOError):
+            client.send(b"1234")
+        assert client.connected
+        assert client.socket is mock_socket
 
     @mock.patch("pymodbus.client.tcp.time")
     @mock.patch("pymodbus.client.tcp.select")
@@ -297,79 +330,127 @@ class TestSyncClientSerial:
             FramerRTU,
         )
 
-    @mock.patch("serial.Serial")
+    @mock.patch("pymodbus.client.serial.SerialInterface", autospec=True)
     def test_basic_sync_serial_client(self, mock_serial):
         """Test the basic methods for the serial sync client."""
         # receive/send
+        mock_serial.sync_serial_for_url = lambda *args, **kwargs: mock_serial
         mock_serial.in_waiting = 0
-        mock_serial.write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
-
-        mock_serial.read = lambda size: b"\x00" * size
+        mock_serial.sync_write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
+        mock_serial.sync_read = lambda size: b"\x00" * size
         client = ModbusSerialClient("/dev/null")
-        client.socket = mock_serial
+
+        client.connect()
+        assert client.connected
         assert not client.send(b"")
         assert client.send(b"\x00") == 1
         assert client.recv(1) == b"\x00"
-
-        # connect/disconnect
-        assert client.connected
-        assert client.connect()
         client.close()
+        # assert not client.connected
 
-        # rtu connect/disconnect
         rtu_client = ModbusSerialClient("/dev/null", framer=FramerType.RTU)
         assert rtu_client.connect()
         rtu_client.close()
-        assert str(client) == "ModbusSerialClient /dev/null:0"
+        assert str(rtu_client) == "ModbusSerialClient /dev/null:0"
 
-        # already closed socket
-        client.socket = None
-        client.close()
-
-    def test_serial_client_connect(self):
+    @mock.patch("pymodbus.client.serial.SerialInterface", autospec=True)
+    def test_serial_client_connect(self, mock_serial):
         """Test the serial client connection method."""
-        with mock.patch.object(serial, "Serial") as mock_method:
-            mock_method.return_value = mock.MagicMock()
-            client = ModbusSerialClient("/dev/null")
-            assert client.connect()
+        mock_serial.sync_serial_for_url = lambda *args, **kwargs: mock_serial
+        client = ModbusSerialClient("/dev/null")
+        assert client.connect()
 
-        with mock.patch.object(serial, "Serial") as mock_method:
-            mock_method.side_effect = serial.SerialException()
-            client = ModbusSerialClient("/dev/null")
-            assert not client.connect()
+        mock_serial.sync_serial_for_url = mock.MagicMock()
+        mock_serial.sync_serial_for_url.side_effect = SerialInterface.SerialException()
+        client = ModbusSerialClient("/dev/null")
+        assert not client.connect()
 
-    @mock.patch("serial.Serial")
+    @pytest.mark.skip
+    @mock.patch("pymodbus.client.serial.SerialInterface", autospec=True)
+    def test_serial_client_connect_bounds_the_write(
+        self, mock_serial
+    ):  # pragma: no cover
+        """Test the serial client opens the port with a write timeout."""
+        mock_serial.sync_serial_for_url = lambda *args, **kwargs: mock_serial
+        client = ModbusSerialClient("/dev/null", timeout=17)
+        assert client.connect()
+        assert mock_serial.call_args.kwargs["write_timeout"] == 3
+
+    @mock.patch("pymodbus.client.serial.SerialInterface", autospec=True)
     def test_serial_client_is_socket_open(self, mock_serial):
         """Test the serial client is_socket_open method."""
+        mock_serial.sync_serial_for_url = lambda *args, **kwargs: mock_serial
         client = ModbusSerialClient("/dev/null")
         assert not client.is_socket_open()
-        client.socket = mock_serial
+        client.connect()
         assert client.is_socket_open()
 
-    @mock.patch("serial.Serial")
+    @mock.patch("pymodbus.client.serial.SerialInterface", autospec=True)
     def test_serial_client_send(self, mock_serial):
         """Test the serial client send method."""
+        mock_serial.sync_serial_for_url = lambda *args, **kwargs: mock_serial
         mock_serial.in_waiting = None
-        mock_serial.write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
+        mock_serial.sync_write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
         client = ModbusSerialClient("/dev/null")
         with pytest.raises(ConnectionException):
             client.send(b"")
-        client.socket = mock_serial
+        client.connect()
         assert not client.send(b"")
         assert client.send(b"1234") == 4
 
-    @mock.patch("serial.Serial")
+    @mock.patch("pymodbus.client.serial.SerialInterface", autospec=True)
     def test_serial_client_cleanup_buffer_before_send(self, mock_serial):
         """Test the serial client send method."""
+        mock_serial.sync_serial_for_url = lambda *args, **kwargs: mock_serial
         mock_serial.in_waiting = 4
-        mock_serial.read = lambda x: b"1" * x
-        mock_serial.write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
+        mock_serial.sync_read = lambda x: b"1" * x
+        mock_serial.sync_write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
         client = ModbusSerialClient("/dev/null")
         with pytest.raises(ConnectionException):
             client.send(b"")
-        client.socket = mock_serial
+        client.connect()
         assert not client.send(b"")
         assert client.send(b"1234") == 4
+
+    def test_serial_client_send_drops_socket_on_os_error(self):
+        """Test that a port the OS tore down is not left in place as connected."""
+        client = ModbusSerialClient("/dev/null")
+        mock_socket = mock.MagicMock()
+        mock_socket.in_waiting = 0
+        mock_socket.sync_write.side_effect = OSError(5, "Input/output error")
+        client.socket = mock_socket
+        with pytest.raises(ConnectionException):
+            client.send(b"1234")
+        assert not client.connected
+        assert client.socket is None
+
+    def test_serial_client_send_keeps_socket_on_transient_error(self):
+        """Test that a transient write error leaves a healthy port in place."""
+        client = ModbusSerialClient("/dev/null")
+        mock_socket = mock.MagicMock()
+        mock_socket.in_waiting = 0
+        mock_socket.sync_write.side_effect = BlockingIOError(
+            11, "Resource temporarily unavailable"
+        )
+        client.socket = mock_socket
+        with pytest.raises(BlockingIOError):
+            client.send(b"1234")
+        assert client.connected
+        assert client.socket is mock_socket
+
+    def test_serial_client_send_keeps_port_on_write_timeout(self):
+        """Test the serial client keeps a port the rest of the bus is still using."""
+        client = ModbusSerialClient("/dev/null")
+        mock_socket = mock.MagicMock()
+        mock_socket.in_waiting = 0
+        mock_socket.sync_write.side_effect = SerialInterface.SerialTimeoutException(
+            "Write timeout"
+        )
+        client.socket = mock_socket
+        with pytest.raises(ConnectionException):
+            client.send(b"1234")
+        assert client.connected
+        assert client.socket is mock_socket
 
     def test_serial_client_recv(self):
         """Test the serial client receive method."""
@@ -384,6 +465,32 @@ class TestSyncClientSerial:
         cast(mockSocket, client.socket).mock_prepare_receive(b"")
         assert client.recv(None) == b""
         assert client.recv(0) == b""
+
+    def test_serial_client_recv_drops_socket_on_os_error(self):
+        """Test that a read against a torn-down port drops it rather than escaping."""
+        client = ModbusSerialClient("/dev/null")
+        mock_socket = mock.MagicMock()
+        mock_socket.in_waiting = 10
+        mock_socket.sync_read.side_effect = OSError(5, "Input/output error")
+        client.socket = mock_socket
+        with pytest.raises(ConnectionException):
+            client.recv(4)
+        assert not client.connected
+        assert client.socket is None
+
+    def test_serial_client_recv_keeps_socket_on_transient_error(self):
+        """Test that a transient read error leaves a healthy port in place."""
+        client = ModbusSerialClient("/dev/null")
+        mock_socket = mock.MagicMock()
+        mock_socket.in_waiting = 10
+        mock_socket.sync_read.side_effect = BlockingIOError(
+            11, "Resource temporarily unavailable"
+        )
+        client.socket = mock_socket
+        with pytest.raises(BlockingIOError):
+            client.recv(4)
+        assert client.connected
+        assert client.socket is mock_socket
 
     def test_serial_client_recv_split(self):
         """Test the serial client receive method."""

@@ -54,6 +54,7 @@ demo_config = {
                 "uint16": 1,
                 "uint32": 45000,
                 "float32": 127.4,
+                "float64": 505.14,
                 "string": "X",
             },
             "action": {
@@ -61,6 +62,7 @@ demo_config = {
                 "uint16": None,
                 "uint32": None,
                 "float32": None,
+                "float64": None,
                 "string": None,
             },
         },
@@ -102,11 +104,14 @@ demo_config = {
         {"addr": [33, 36], "value": 5678.19},
         {"addr": [37, 40], "value": 345000.18, "action": "increment"},
     ],
-    "string": [
-        {"addr": [41, 42], "value": "Str"},
-        {"addr": [43, 44], "value": "Strx"},
+    "float64": [
+        {"addr": [41, 44], "value": -42478.53, "action": "random"},
     ],
-    "repeat": [{"addr": [0, 45], "to": [46, 138]}],
+    "string": [
+        {"addr": [45, 46], "value": "Str"},
+        {"addr": [47, 48], "value": "Strx"},
+    ],
+    "repeat": [{"addr": [0, 48], "to": [49, 147]}],
 }
 
 

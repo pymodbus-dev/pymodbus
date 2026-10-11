@@ -10,7 +10,7 @@ multiple :class:`SimData` are used to mirror the physical device.
 :class:`SimDevice` defines device parameters and a list of :class:`SimData`. The
 list of :class:`SimData` can be added as shared registers or as 4 separate blocks as defined in modbus.
 :class:`SimDevice` are used to simulate a single device, while a list of
-:class:`SimDevice` simulates a multipoint line (rs485 line) or a serial forwarder.
+:class:`SimDevice` simulates a rs485 line or a serial forwarder.
 
 A server consist of communication parameters and a list of :class:`SimDevice`
 

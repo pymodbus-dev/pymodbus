@@ -36,6 +36,7 @@ class FramerAscii(FramerBase):
     START = b":"
     END = b"\r\n"
     MIN_SIZE = 8
+    MAX_SIZE = 516
 
     @property
     def end(self) -> bytes:

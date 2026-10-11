@@ -28,6 +28,7 @@ class FramerBase:
 
     EMPTY = b""
     MIN_SIZE = 0
+    MAX_SIZE = 264
 
     def __init__(
         self,

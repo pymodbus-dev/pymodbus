@@ -82,6 +82,7 @@
                         "uint16": 0,
                         "uint32": 0,
                         "float32": 0.0,
+                        "float64": 0.0,
                         "string": " "
                     },
                     "action": {
@@ -89,6 +90,7 @@
                         "uint16": "increment",
                         "uint32": "increment",
                         "float32": "increment",
+                        "float64": "increment",
                         "string": null
                     }
                 }
@@ -114,6 +116,10 @@
                 {"addr": [6, 7], "value": 404.17},
                 [4100, 4101]
             ],
+            "float64": [
+                {"addr": [8, 11], "value": -505.78},
+                [4201, 4204]
+                ],
             "string": [
                 5047,
                 {"addr": [16, 20], "value": "A_B_C_D_E_"}
@@ -135,6 +141,7 @@
                         "uint16": 0,
                         "uint32": 0,
                         "float32": 0.0,
+                        "float64": 0.0,
                         "string": " "
                     },
                     "action": {
@@ -142,6 +149,7 @@
                         "uint16": null,
                         "uint32": null,
                         "float32": null,
+                        "float64": null,
                         "string": null
                     }
                 }
@@ -184,7 +192,7 @@
                 [3037, 3038],
                 [3136, 3139],
                 {"addr": [3174, 3175], "value": 1},
-                {"addr": [3188,3189], "value": 32514},
+                {"addr": [3188, 3189], "value": 32514},
                 {"addr": [3308, 3407], "action": null},
                 {"addr": [3688, 3875], "value": 115, "action": "increment"},
                 {"addr": [3876, 3877],
@@ -211,14 +219,30 @@
                     "action": "increment",
                     "parameters": {"minval": 45000.0, "maxval": 55000.0}
                 },
-                {"addr": [4878, 48779],
+                {"addr": [4878, 4879],
                     "value": 50000.0,
                     "action": "random",
                     "parameters": {"minval": 45000.0, "maxval": 55000.0}
                 }
             ],
+            "float64": [
+                [16, 19],
+                [5049, 5052],
+                {"addr": [5092, 5095], "value": -32514.2},
+                {"addr": [5160, 5239], "value": -42.15, "action": "increment"},
+                {"addr": [5240, 5243],
+                    "value": -42.15, 
+                    "action": "increment",
+                    "parameters": {"minval": -100, "maxval": 142}
+                },
+                {"addr": [5244, 5247],
+                    "value": 48.24,
+                    "action": "random",
+                    "parameters": {"minval": -4242, "maxval": 314.92}
+                }
+            ],
             "string": [
-                {"addr": [16, 20], "value": "A_B_C_D_E_"},
+                {"addr": [20, 24], "value": "A_B_C_D_E_"},
                 {"addr": [529, 544], "value": "Brand name, 32 bytes...........X"}
             ],
             "repeat": [

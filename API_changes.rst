@@ -2,6 +2,13 @@ API changes
 ===========
 Versions (X.Y.Z) where Z == 0 e.g. 3.0.1 do NOT have API changes!
 
+API changes 3.16.0
+------------------
+- removed allow_multiple_devices on ModbusSerialServer (cleanup multidrop).
+
+API changes 3.15.0
+------------------
+- removed cert parameters (apart from sslctx) from ModbusTLSserver/client.
 
 API changes 3.14.0
 ------------------

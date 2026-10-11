@@ -7,6 +7,39 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.16.0
+--------------
+* Change list to sequence in write_coils/registers and readwrite_registers (#3039)
+* Add SerialInterface to isolate pyserial. (#3038)
+* CI solve new pylint problems. (#3037)
+* Allow a ModbusDeviceIdentification pr device (#3036)
+* Add type annotations to exception classes. (#3035)
+* Isolate pyserial to a single file. (#3033)
+* Keep async serial frames queued after zero-byte writes (#3032)
+* Correct tests for single-CPUs. (#3031)
+* fix(async): remove sleep in connect (#3030)
+* Speedup RTU frame validation. (#3028)
+* Remove get_response_pdu_size(). (#3027)
+* Reduce buffer size to 264/516(ASCII frame) bytes. (#3026)
+* Remove allow_multiple_devices parameter (#3025)
+* Simulator: validate addresses before calling action callback. (#3023)
+* Test client.connected better. (#3020)
+* Bound the write in the sync serial client (#3018)
+* Fix FC17 response decode: identifier included the run indicator byte (#3017)
+* Validate FC23 write count against MAX_WRITE_COUNT (#3016)
+* docs: add server_datamodel example to examples page (#3015)
+* Do not close serial port when no response. (#3014)
+* Close the udp socket in close(), not just drop the reference. (#3011)
+* Let CancelledError propagate from async execute (#3010)
+* Close sync serial port on  error (#3008).
+* Create CODE_OF_CONDUCT.md (#3007)
+* sslctx= may not be None. (#3006)
+* Create SECURITY.md (#3005)
+* Reduces complexity of adding simulator datatypes. (#3004)
+* Simulator support for FLOAT64 type. (#3002)
+* coverage 100%. (#3003)
+* Drop the socket when a send fails in  sync tcp client (#3000)
+
 Version 3.15.0
 --------------
 * Control count in bit/register PDUs. (#2997)

@@ -3,7 +3,10 @@
 from typing import cast
 from unittest import mock
 
+import pytest
+
 import pymodbus.pdu.other_message as pymodbus_message
+from pymodbus.exceptions import ModbusIOException
 
 
 class TestOtherMessage:
@@ -155,9 +158,28 @@ class TestOtherMessage:
             )
 
             assert response.encode() == b"\tPymodbus\xff"
-            response.decode(b"\x03\x12\x00")
+            response.decode(b"\tPymodbus\xff")
+            assert response.status
+            assert response.identifier == b"Pymodbus"
+            response.decode(b"\x03\x12\x00\x00")
             assert not response.status
             assert response.identifier == b"\x12\x00"
 
             response.status = False
             assert response.encode() == b"\x03\x12\x00\x00"
+
+    def test_report_device_id_response_roundtrip(self):
+        """Test decode(encode()) keeps identifier and status unchanged."""
+        for identifier, status in ((b"Pymodbus", True), (b"\x12", False)):
+            sent = pymodbus_message.ReportDeviceIdResponse(identifier, status)
+            received = pymodbus_message.ReportDeviceIdResponse()
+            received.decode(sent.encode())
+            assert received.identifier == identifier
+            assert received.status == status
+
+    def test_report_device_id_response_invalid_byte_count(self):
+        """Test byte count pointing outside the received data raises."""
+        response = pymodbus_message.ReportDeviceIdResponse()
+        for frame in (b"\x00\x12\xff", b"\x04\x12\xff"):
+            with pytest.raises(ModbusIOException):
+                response.decode(frame)

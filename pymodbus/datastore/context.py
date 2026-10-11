@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from copy import deepcopy
 
 from ..constants import ExcCodes
@@ -157,7 +158,7 @@ class ModbusServerContext:
         device_id: int,
         func_code: int,
         address: int,
-        values: list[int] | list[bool],
+        values: Sequence[int] | Sequence[bool],
     ) -> ExcCodes | None:
         """Set the datastore with the supplied values.
 

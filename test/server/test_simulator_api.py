@@ -38,6 +38,7 @@ class TestSimulatorApi:
                             "uint16": 1,
                             "uint32": 45000,
                             "float32": 127.4,
+                            "float64": 42.43,
                             "string": "X",
                         },
                         "action": {
@@ -45,6 +46,7 @@ class TestSimulatorApi:
                             "uint16": None,
                             "uint32": None,
                             "float32": None,
+                            "float64": None,
                             "string": None,
                         },
                     },
@@ -94,11 +96,14 @@ class TestSimulatorApi:
                     {"addr": [35, 38], "value": 5678.19},
                     {"addr": [39, 42], "value": 345000.18, "action": "increment"},
                 ],
-                "string": [
-                    {"addr": [43, 44], "value": "Str"},
-                    {"addr": [45, 48], "value": "Strxyz12"},
+                "float64": [
+                    {"addr": [43, 46], "value": -3.145142},
                 ],
-                "repeat": [{"addr": [0, 48], "to": [49, 147]}],
+                "string": [
+                    {"addr": [47, 48], "value": "Str"},
+                    {"addr": [49, 52], "value": "Strxyz12"},
+                ],
+                "repeat": [{"addr": [0, 58], "to": [59, 175]}],
             }
         },
     }

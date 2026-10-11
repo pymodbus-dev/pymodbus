@@ -37,6 +37,7 @@ class TestSimulator:
                     "uint16": 1,
                     "uint32": 45000,
                     "float32": 127.4,
+                    "float64": -42.15,
                     "string": "X",
                 },
                 "action": {
@@ -44,6 +45,7 @@ class TestSimulator:
                     "uint16": None,
                     "uint32": None,
                     "float32": None,
+                    "float64": None,
                     "string": None,
                 },
             },
@@ -93,11 +95,12 @@ class TestSimulator:
             {"addr": [35, 38], "value": 5678.19},
             {"addr": [39, 42], "value": 345000.18, "action": "increment"},
         ],
+        "float64": [{"addr": [43, 46], "value": -321.45, "action": "increment"}],
         "string": [
-            {"addr": [43, 44], "value": "Str"},
-            {"addr": [45, 48], "value": "Strxyz12"},
+            {"addr": [47, 48], "value": "Str"},
+            {"addr": [49, 52], "value": "Strxyz12"},
         ],
-        "repeat": [{"addr": [0, 48], "to": [49, 147]}],
+        "repeat": [{"addr": [0, 52], "to": [53, 159]}],
     }
 
     default_server = {
@@ -295,10 +298,10 @@ class TestSimulator:
         """Test simulator server end to end."""
         client = AsyncModbusTcpClient(NULLMODEM_HOST, port=use_port)
         assert await client.connect()
-        result = await client.read_holding_registers(43, count=2, device_id=1)
+        result = await client.read_holding_registers(47, count=2, device_id=1)
         assert result.registers[0] == int.from_bytes(bytes("St", "utf-8"), "big")
         assert result.registers[1] == int.from_bytes(bytes("r ", "utf-8"), "big")
-        result = await client.read_holding_registers(43, count=6, device_id=1)
+        result = await client.read_holding_registers(47, count=6, device_id=1)
         assert result.registers[0] == int.from_bytes(bytes("St", "utf-8"), "big")
         assert result.registers[1] == int.from_bytes(bytes("r ", "utf-8"), "big")
         assert result.registers[2] == int.from_bytes(bytes("St", "utf-8"), "big")

@@ -125,7 +125,7 @@ class TestWriteRegisterMessages:
         result = await request.datastore_update(context, 1)
         assert result.exception_code == ExcCodes.ILLEGAL_VALUE
 
-        request.registers[0] = 0x00FF
+        request.registers = [0x00FF]
         result = await request.datastore_update(context, 1)
         # assert result.exception_code == ExcCodes.ILLEGAL_ADDRESS
 

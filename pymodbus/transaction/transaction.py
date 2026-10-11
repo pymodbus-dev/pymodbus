@@ -11,10 +11,10 @@ from ..exceptions import ConnectionException, ModbusIOException
 from ..framer import FramerAscii, FramerBase, FramerRTU
 from ..logging import Log
 from ..pdu import ModbusPDU
-from ..transport import CommParams, ModbusProtocol
+from ..transport import CommParams, CommType, ModbusProtocol
 
 
-class TransactionManager(ModbusProtocol):
+class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-attributes
     """Transaction manager.
 
     This is the central class of the library, providing a separation between API and communication:
@@ -47,6 +47,7 @@ class TransactionManager(ModbusProtocol):
         """Initialize an instance of the ModbusTransactionManager."""
         self.is_sync = bool(sync_client)
         super().__init__(params, is_server, is_sync=self.is_sync)
+        self.max_buffer_size = framer.MAX_SIZE
         self.framer = framer
         self.retries = retries
         self.next_tid: int = 0
@@ -169,7 +170,8 @@ class TransactionManager(ModbusProtocol):
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
             if self.count_until_disconnect < 0:
-                self.connection_lost(asyncio.TimeoutError("Server not responding"))
+                if self.comm_params.comm_type != CommType.SERIAL:
+                    self.connection_lost(asyncio.TimeoutError("Server not responding"))
                 raise self._io_exception_from_request(
                     "ERROR: No response received of the last requests (default: retries+3), CLOSING CONNECTION.",
                     request,
@@ -224,13 +226,9 @@ class TransactionManager(ModbusProtocol):
                     return response
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
-                except asyncio.exceptions.CancelledError as exc:
-                    raise self._io_exception_from_request(
-                        "Request cancelled outside library.",
-                        request,
-                    ) from exc
             if self.count_until_disconnect < 0:
-                self.connection_lost(asyncio.TimeoutError("Server not responding"))
+                if self.comm_params.comm_type != CommType.SERIAL:
+                    self.connection_lost(asyncio.TimeoutError("Server not responding"))
                 raise self._io_exception_from_request(
                     "ERROR: No response received of the last requests (default: retries+3), CLOSING CONNECTION.",
                     request,

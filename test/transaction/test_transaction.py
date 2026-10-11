@@ -12,6 +12,7 @@ from pymodbus.framer import FramerRTU, FramerSocket, FramerType
 from pymodbus.pdu import DecodePDU, ExceptionResponse
 from pymodbus.pdu.bit_message import ReadCoilsRequest, ReadCoilsResponse
 from pymodbus.transaction import TransactionManager
+from pymodbus.transport import CommType
 
 
 @pytest.mark.parametrize("use_port", [5098])
@@ -186,8 +187,8 @@ class TestTransaction:
             transact.response_future.set_result((1, pdu))
         transact.callback_data(packet)
 
-    @pytest.mark.parametrize("scenario", range(10))
-    async def test_transaction_execute(self, use_clc, scenario):
+    @pytest.mark.parametrize("scenario", range(11))
+    async def test_transaction_execute(self, use_clc, scenario):  # noqa: C901
         """Test tracers in disconnect."""
         transact = TransactionManager(
             use_clc,
@@ -236,29 +237,37 @@ class TestTransaction:
                 await transact.execute(False, request)
             assert exc_info.value.fcode == request.function_code
             assert exc_info.value.transaction_id == request.transaction_id
-        elif scenario == 5:  # wait receive,timeout, no_responses pass
+        elif scenario == 5:  # wait receive,timeout, disconnect
+            transact.comm_params.timeout_connect = 0.1
+            transact.comm_params.comm_type = CommType.SERIAL
+            transact.count_until_disconnect = -1
+            transact.connection_lost = mock.Mock()  # type: ignore[method-assign]
+            with pytest.raises(ModbusIOException) as exc_info:
+                await transact.execute(False, request)
+            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.transaction_id == request.transaction_id
+        elif scenario == 6:  # wait receive,timeout, no_responses pass
             transact.comm_params.timeout_connect = 0.1
             transact.connection_lost = mock.Mock()  # type: ignore[method-assign]
             with pytest.raises(ModbusIOException):
                 await transact.execute(False, request)
-        elif scenario == 6:  # wait receive, cancel
+        elif scenario == 7:  # wait receive, cancel
             transact.comm_params.timeout_connect = 0.2
             resp = asyncio.create_task(transact.execute(False, request))
             await asyncio.sleep(0.1)
             resp.cancel()
             await asyncio.sleep(0.1)
-            with pytest.raises(ModbusIOException) as exc_info:
+            with pytest.raises(asyncio.CancelledError):
                 await resp
-            assert exc_info.value.fcode == request.function_code
-            assert exc_info.value.dev_id == request.dev_id
-        elif scenario == 7:  # response
+            assert resp.cancelled()
+        elif scenario == 8:  # response
             transact.comm_params.timeout_connect = 0.2
             resp = asyncio.create_task(transact.execute(False, request))
             await asyncio.sleep(0.1)
             transact.response_future.set_result(response)
             await asyncio.sleep(0.1)
             assert response == await resp
-        elif scenario == 8:  # response wrong dev_id
+        elif scenario == 9:  # response wrong dev_id
             transact.comm_params.timeout_connect = 0.2
             resp = asyncio.create_task(transact.execute(False, request))
             await asyncio.sleep(0.1)
@@ -271,7 +280,7 @@ class TestTransaction:
             assert exc_info.value.fcode == request.function_code
             assert exc_info.value.dev_id == request.dev_id
             assert exc_info.value.transaction_id == request.transaction_id
-        else:  # if scenario == 9: # response wrong tid
+        else:  # if scenario == 10: # response wrong tid
             transact.comm_params.timeout_connect = 0.2
             resp = asyncio.create_task(transact.execute(False, request))
             await asyncio.sleep(0.1)
@@ -422,8 +431,8 @@ class TestSyncTransaction:
             sync_client=client,
         )
 
-    @pytest.mark.parametrize("scenario", range(10))
-    async def test_sync_transaction_execute(self, use_clc, scenario):
+    @pytest.mark.parametrize("scenario", range(11))
+    async def test_sync_transaction_execute(self, use_clc, scenario):  # noqa: C901
         """Test tracers in disconnect."""
         client = self.dummy_client(use_clc)
         transact = TransactionManager(
@@ -474,11 +483,19 @@ class TestSyncTransaction:
                 transact.sync_execute(False, request)
             assert exc_info.value.fcode == request.function_code
             assert exc_info.value.transaction_id == request.transaction_id
-        elif scenario == 5:  # wait receive,timeout, no_responses pass
+        elif scenario == 5:  # wait receive,timeout, disconnect
+            transact.comm_params.timeout_connect = 0.1
+            transact.comm_params.comm_type = CommType.SERIAL
+            transact.count_until_disconnect = -1
+            with pytest.raises(ModbusIOException) as exc_info:
+                transact.sync_execute(False, request)
+            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.transaction_id == request.transaction_id
+        elif scenario == 6:  # wait receive,timeout, no_responses pass
             transact.comm_params.timeout_connect = 0.1
             with pytest.raises(ModbusIOException):
                 transact.sync_execute(False, request)
-        elif scenario == 6:  # response
+        elif scenario == 7:  # response
             transact.transport = 1  # type: ignore[assignment]
             resp_bytes = transact.framer.buildFrame(response)
             transact.sync_client.recv = mock.Mock(return_value=resp_bytes)
@@ -486,7 +503,7 @@ class TestSyncTransaction:
             transact.comm_params.timeout_connect = 0.2
             resp = transact.sync_execute(False, request)
             assert response.bits == resp.bits
-        elif scenario == 7:  # response wrong dev_id
+        elif scenario == 8:  # response wrong dev_id
             transact.transport = 1  # type: ignore[assignment]
             pdu = copy.deepcopy(response)
             pdu.dev_id = 17
@@ -498,7 +515,7 @@ class TestSyncTransaction:
             assert exc_info.value.fcode == request.function_code
             assert exc_info.value.dev_id == request.dev_id
             assert exc_info.value.transaction_id == request.transaction_id
-        elif scenario == 8:  # response wrong tid
+        elif scenario == 9:  # response wrong tid
             transact.transport = 1  # type: ignore[assignment]
             pdu = copy.deepcopy(response)
             pdu.transaction_id = 17
@@ -510,7 +527,7 @@ class TestSyncTransaction:
             assert exc_info.value.fcode == request.function_code
             assert exc_info.value.dev_id == request.dev_id
             assert exc_info.value.transaction_id == request.transaction_id
-        else:  # if scenario == 9 # pdu_send from client
+        else:  # if scenario == 10 # pdu_send from client
             transact.transport = 1  # type: ignore[assignment]
             transact.is_server = True
             resp_bytes = transact.framer.buildFrame(response)

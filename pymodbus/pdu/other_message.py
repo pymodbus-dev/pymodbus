@@ -19,7 +19,11 @@ class ReadExceptionStatusRequest(ModbusPDU):
     """ReadExceptionStatusRequest."""
 
     function_code = 0x07
-    rtu_frame_size = 4
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 4
 
     def encode(self) -> bytes:
         """Encode the message."""
@@ -43,7 +47,11 @@ class ReadExceptionStatusResponse(ModbusPDU):
     """ReadExceptionStatusResponse."""
 
     function_code = 0x07
-    rtu_frame_size = 5
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 5
 
     def encode(self) -> bytes:
         """Encode the response."""
@@ -62,7 +70,11 @@ class GetCommEventCounterRequest(ModbusPDU):
     """GetCommEventCounterRequest."""
 
     function_code = 0x0B
-    rtu_frame_size = 4
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 4
 
     def encode(self) -> bytes:
         """Encode the message."""
@@ -86,7 +98,11 @@ class GetCommEventCounterResponse(ModbusPDU):
     """GetCommEventCounterRequest."""
 
     function_code = 0x0B
-    rtu_frame_size = 8
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 8
 
     def encode(self) -> bytes:
         """Encode the response."""
@@ -103,7 +119,11 @@ class GetCommEventLogRequest(ModbusPDU):
     """GetCommEventLogRequest."""
 
     function_code = 0x0C
-    rtu_frame_size = 4
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 4
 
     def encode(self) -> bytes:
         """Encode the message."""
@@ -177,7 +197,11 @@ class ReportDeviceIdRequest(ModbusPDU):
     """ReportDeviceIdRequest."""
 
     function_code = 0x11
-    rtu_frame_size = 4
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 4
 
     def encode(self) -> bytes:
         """Encode the message."""

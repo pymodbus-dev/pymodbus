@@ -218,6 +218,11 @@ class TestWriteRegisterMessages:
         result = handle.encode()
         assert result == b"\x00\x00\x01\x01\x10\x10"
 
+    def test_mask_write_register_frame_size(self):
+        """Test that the read fifo queue response can decode."""
+        assert MaskWriteRegisterRequest.calculateRtuFrameSize(b"") == 10
+        assert MaskWriteRegisterResponse.calculateRtuFrameSize(b"") == 10
+
     def test_mask_write_register_response_decode(self):
         """Test basic bit message encoding/decoding."""
         request = b"\x00\x04\x00\xf2\x00\x25"

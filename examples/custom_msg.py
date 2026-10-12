@@ -71,7 +71,11 @@ class CustomRequest(ModbusPDU):
     """Custom modbus request."""
 
     function_code = 55
-    rtu_frame_size = 8
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 8
 
     def __init__(self, address=None, device_id=1, transaction=0):
         """Initialize."""
@@ -139,6 +143,7 @@ async def main(host="localhost", port=5020):
         # add new modbus function code.
         client.register(CustomModbusResponse)
         device_id = 1
+        assert CustomRequest.calculateRtuFrameSize(b"") == 8
         request1 = CustomRequest(32, device_id=device_id)
         try:
             result = await client.execute(False, request1)

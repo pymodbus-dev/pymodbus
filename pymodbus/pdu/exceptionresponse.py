@@ -10,7 +10,10 @@ from .pdu import ModbusPDU
 class ExceptionResponse(ModbusPDU):
     """Base class for a modbus exception PDU."""
 
-    rtu_frame_size = 5
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 5
 
     def __init__(
         self,

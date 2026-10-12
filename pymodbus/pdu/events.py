@@ -20,7 +20,7 @@ class ModbusEvent(ABC):
         """Encode the status bits to an event message."""
 
     @abstractmethod
-    def decode(self, event):
+    def x_decode(self, event):
         """Decode the event message to its status bits.
 
         :param event: The event to decode
@@ -63,7 +63,7 @@ class RemoteReceiveEvent(ModbusEvent):
         packet = pack_bitstring(bits)
         return packet
 
-    def decode(self, event: bytes) -> None:
+    def x_decode(self, event: bytes) -> None:
         """Decode the event message to its status bits.
 
         :param event: The event to decode
@@ -131,7 +131,7 @@ class RemoteSendEvent(ModbusEvent):
         packet = pack_bitstring(bits)
         return packet
 
-    def decode(self, event):
+    def x_decode(self, event):
         """Decode the event message to its status bits.
 
         :param event: The event to decode
@@ -163,7 +163,7 @@ class EnteredListenModeEvent(ModbusEvent):
         """
         return self.__encoded
 
-    def decode(self, event):
+    def x_decode(self, event):
         """Decode the event message to its status bits.
 
         :param event: The event to decode
@@ -200,7 +200,7 @@ class CommunicationRestartEvent(ModbusEvent):
         """
         return self.__encoded
 
-    def decode(self, event):
+    def x_decode(self, event):
         """Decode the event message to its status bits.
 
         :param event: The event to decode

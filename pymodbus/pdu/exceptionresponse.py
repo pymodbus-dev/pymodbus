@@ -40,6 +40,6 @@ class ExceptionResponse(ModbusPDU):
         """Encode a modbus exception response."""
         return struct.pack(">B", self.exception_code)
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a modbus exception response."""
         self.exception_code = int(data[0])

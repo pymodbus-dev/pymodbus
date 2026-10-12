@@ -39,7 +39,7 @@ class TestMeiMessage:
     def test_read_device_information_request_decode(self):
         """Test basic bit message encoding/decoding."""
         handle = ReadDeviceInformationRequest()
-        handle.decode(b"\x0e\x01\x00")
+        handle.x_decode(b"\x0e\x01\x00")
         assert handle.read_code == DeviceInformation.BASIC
         assert not handle.object_id
 
@@ -196,7 +196,7 @@ class TestMeiMessage:
         message += TEST_MESSAGE
         message += b"\x81\x04Test\x81\x08Repeated\x81\x07Another"
         handle = ReadDeviceInformationResponse(read_code=0x00, information={})
-        handle.decode(message)
+        handle.x_decode(message)
         assert handle.read_code == DeviceInformation.BASIC
         assert handle.conformity == 0x01
         assert handle.information[0x00] == b"Company"

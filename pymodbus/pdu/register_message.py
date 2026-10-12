@@ -31,7 +31,7 @@ class ReadHoldingRegistersRequest(ModbusPDU):
         self.verifyCount(self.MAX_COUNT)
         return struct.pack(">HH", self.address, self.count)
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a register request packet."""
         self.address, self.count = struct.unpack(">HH", data[:4])
         self.verifyCount(self.MAX_COUNT)
@@ -74,7 +74,7 @@ class ReadHoldingRegistersResponse(ModbusPDU):
             result += struct.pack(">H", register)
         return result
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a register response packet."""
         self.registers = []
         if (data_len := int(data[0])) >= len(data):
@@ -149,7 +149,7 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
             result += struct.pack(">H", register)
         return result
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode the register request packet."""
         (
             self.read_address,
@@ -216,7 +216,7 @@ class WriteSingleRegisterResponse(ModbusPDU):
         """Encode a write single register packet packet request."""
         return struct.pack(">HH", self.address, self.registers[0])
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a write single register packet packet request."""
         self.address, register = struct.unpack(">HH", data[:4])
         self.registers = [register]
@@ -266,7 +266,7 @@ class WriteMultipleRegistersRequest(ModbusPDU):
             packet += struct.pack(">H", value)
         return packet
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a write single register packet packet request."""
         self.address, self.count, self.byte_count = struct.unpack(">HHB", data[:5])
         self._payload_byte_count = len(data) - 5
@@ -313,7 +313,7 @@ class WriteMultipleRegistersResponse(ModbusPDU):
         """Encode a write single register packet packet request."""
         return struct.pack(">HH", self.address, self.count)
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a write single register packet packet request."""
         self.address, self.count = struct.unpack(">HH", data[:4])
 
@@ -345,7 +345,7 @@ class MaskWriteRegisterRequest(ModbusPDU):
         """Encode the request packet."""
         return struct.pack(">HHH", self.address, self.and_mask, self.or_mask)
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode the incoming request."""
         self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data[:6])
 
@@ -407,7 +407,7 @@ class MaskWriteRegisterResponse(ModbusPDU):
         self.verifyAddress()
         return struct.pack(">HHH", self.address, self.and_mask, self.or_mask)
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a the response."""
         self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data[:6])
 

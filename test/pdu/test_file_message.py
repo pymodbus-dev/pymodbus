@@ -36,7 +36,7 @@ class TestBitMessage:
     def test_read_fifo_queue_request_decode(self):
         """Test basic bit message encoding/decoding."""
         handle = ReadFifoQueueRequest(0x0000)
-        handle.decode(b"\x12\x34")
+        handle.x_decode(b"\x12\x34")
         assert handle.address == 0x1234
 
     async def test_read_fifo_queue_request(self, mock_server_context):
@@ -57,7 +57,7 @@ class TestBitMessage:
         """Test that the read fifo queue response can decode."""
         message = TEST_MESSAGE
         handle = ReadFifoQueueResponse([1, 2, 3, 4])
-        handle.decode(message)
+        handle.x_decode(message)
         assert handle.values == [1, 2, 3, 4]
 
     def test_frame_size(self):
@@ -96,7 +96,7 @@ class TestBitMessage:
         # record = FileRecord(file_number=0x04, record_number=0x01, record_length=0x02)
         request = b"\x0e\x06\x00\x04\x00\x01\x00\x02\x06\x00\x03\x00\x09\x00\x02"
         handle = ReadFileRecordRequest()
-        handle.decode(request)
+        handle.x_decode(request)
         # assert handle.records[0] == record
 
     def test_read_file_record_request_frame_size(self):
@@ -135,7 +135,7 @@ class TestBitMessage:
         # )
         response = b"\x0c\x05\x06\x0d\xfe\x00\x20\x05\x06\x33\xcd\x00\x40"
         handle = ReadFileRecordResponse()
-        handle.decode(response)
+        handle.x_decode(response)
 
         # assert handle.records[0] == record1
         # ssert handle.records[1] == record2
@@ -171,7 +171,7 @@ class TestBitMessage:
         # )
         request = b"\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = WriteFileRecordRequest()
-        handle.decode(request)
+        handle.x_decode(request)
         # assert handle.records[0] == record
 
     def test_write_file_record_request_frame_size(self):
@@ -213,20 +213,20 @@ class TestBitMessage:
         # )
         request = b"\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = WriteFileRecordResponse()
-        handle.decode(request)
+        handle.x_decode(request)
         # assert handle.records[0] == record
 
     def test_read_file_record_request_decode_invalid_byte_count(self):
         """Test ReadFileRecordRequest raises ModbusException on oversized byte_count."""
         handle = ReadFileRecordRequest()
         with pytest.raises(ModbusException):
-            handle.decode(bytes([0xFF, 0x06, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01]))
+            handle.x_decode(bytes([0xFF, 0x06, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01]))
 
     def test_write_file_record_request_decode_invalid_byte_count(self):
         """Test WriteFileRecordRequest raises ModbusException on oversized byte_count."""
         handle = WriteFileRecordRequest()
         with pytest.raises(ModbusException):
-            handle.decode(
+            handle.x_decode(
                 bytes([0xFF, 0x06, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00])
             )
 
@@ -234,7 +234,7 @@ class TestBitMessage:
         """Test ReadFifoQueueResponse raises ModbusException on oversized count."""
         handle = ReadFifoQueueResponse()
         with pytest.raises(ModbusException):
-            handle.decode(bytes([0x00, 0x00, 0xFF, 0xFF]))
+            handle.x_decode(bytes([0x00, 0x00, 0xFF, 0xFF]))
 
     def test_write_file_record_response_frame_size(self):
         """Test write file record response rtu frame size calculation."""

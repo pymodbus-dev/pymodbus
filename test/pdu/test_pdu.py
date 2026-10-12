@@ -28,7 +28,7 @@ class TestPdu:
     async def test_error_methods(self):
         """Test all error methods."""
         result = self.exception.encode()
-        self.exception.decode(result)
+        self.exception.x_decode(result)
         assert result == b"\x01"
         assert self.exception.exception_code == 1
 
@@ -450,7 +450,10 @@ class TestPdu:
         pdu = ModbusPDU(4)
         str(pdu)
         assert pdu
-        assert pdu.encode() == b""
+        with pytest.raises(NotImplementedException):
+            pdu.encode()
+        with pytest.raises(NotImplementedException):
+            pdu.x_decode(b"")
 
     @pytest.mark.parametrize(
         ("pdutype", "args", "kwargs", "frame"), requests + responses
@@ -527,7 +530,7 @@ class TestPdu:
     def test_pdu_decode(self, pdutype, kwargs, frame):
         """Test pdu decode."""
         pdu = pdutype(**kwargs)
-        pdu.decode(frame[1:])
+        pdu.x_decode(frame[1:])
 
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests)
     @pytest.mark.usefixtures("frame", "args")

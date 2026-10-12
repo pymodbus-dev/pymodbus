@@ -17,7 +17,7 @@ class TestEvents:
     def test_remote_receive_event(self):
         """Test remove receive event."""
         event = RemoteReceiveEvent()
-        event.decode(b"\x70")
+        event.x_decode(b"\x70")
         assert event.overrun
         assert event.listen
         assert event.broadcast
@@ -27,7 +27,7 @@ class TestEvents:
         event = RemoteSendEvent()
         result = event.encode()
         assert result == b"\x40"
-        event.decode(b"\x7f")
+        event.x_decode(b"\x7f")
         assert event.read
         assert event.device_abort
         assert event.device_busy
@@ -54,17 +54,17 @@ class TestEvents:
         event = EnteredListenModeEvent()
         result = event.encode()
         assert result == b"\x04"
-        event.decode(b"\x04")
+        event.x_decode(b"\x04")
         assert event.value == 0x04
         with pytest.raises(ParameterException):
-            event.decode(b"\x00")
+            event.x_decode(b"\x00")
 
     def test_communication_restart_event(self):
         """Test communication restart event."""
         event = CommunicationRestartEvent()
         result = event.encode()
         assert result == b"\x00"
-        event.decode(b"\x00")
+        event.x_decode(b"\x00")
         assert not event.value
         with pytest.raises(ParameterException):
-            event.decode(b"\x04")
+            event.x_decode(b"\x04")

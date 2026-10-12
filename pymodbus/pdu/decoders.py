@@ -66,7 +66,7 @@ class DecodePDU:
         try:
             if (function_code := int(frame[0])) > 0x80:
                 pdu_exp = ExceptionResponse(function_code & 0x7F)
-                pdu_exp.decode(frame[1:])
+                pdu_exp.x_decode(frame[1:])
                 return pdu_exp
             if not (
                 pdu_class := self.pdu_table.get(function_code, (None, None))[
@@ -77,14 +77,14 @@ class DecodePDU:
                     f"Unknown response {function_code}", function_code=function_code
                 )
             pdu = pdu_class()
-            pdu.decode(frame[1:])
+            pdu.x_decode(frame[1:])
             if pdu.sub_function_code >= 0:
                 lookup = self.pdu_sub_table.get(pdu.function_code, {})
                 if sub_class := lookup.get(pdu.sub_function_code, (None, None))[
                     self.pdu_inx
                 ]:
                     pdu = sub_class()
-                    pdu.decode(frame[1:])
+                    pdu.x_decode(frame[1:])
             Log.debug(
                 "decoded PDU function_code({} sub {}) -> {} ",
                 pdu.function_code,

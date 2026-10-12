@@ -60,7 +60,7 @@ class CustomModbusResponse(ModbusPDU):
             res += struct.pack(">H", register)
         return res
 
-    def decode(self, data):
+    def x_decode(self, data):
         """Decode response pdu.
 
         :param data: The packet data to decode
@@ -91,7 +91,7 @@ class CustomRequest(ModbusPDU):
         """Encode."""
         return struct.pack(">HH", self.address, self.count)
 
-    def decode(self, data):
+    def x_decode(self, data):
         """Decode."""
         self.address, self.count = struct.unpack(">HH", data)
 

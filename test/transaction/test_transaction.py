@@ -344,6 +344,7 @@ class TestTransaction:
             with pytest.raises(ModbusIOException):
                 await resp
 
+
 @pytest.mark.parametrize("use_port", [5098])
 class TestSyncTransaction:
     """Test the pymodbus.transaction module."""

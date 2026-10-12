@@ -18,6 +18,7 @@ class FramerTLS(FramerBase):
     """
 
     MIN_SIZE = 8
+    LENGTH_IN_HEADER = True
 
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """Decode MDAP+payload."""

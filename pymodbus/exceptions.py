@@ -60,6 +60,7 @@ class ModbusIOException(ModbusException):
         )
         self.transaction_id = transaction_id
         self.dev_id = dev_id
+        self.used_len: int | None = None
         self.message = f"[Input/Output] {string}"
         ModbusException.__init__(self, self.message)
 

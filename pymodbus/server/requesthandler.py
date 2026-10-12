@@ -61,26 +61,28 @@ class ServerRequestHandler(TransactionManager):
         """Handle received data."""
         used_len = 0
         tot_len = len(data)
-        try:
-            while True:
-                if used_len >= tot_len:
-                    break
+        while used_len < tot_len:
+            try:
                 new_len = super().callback_data(data[used_len:], addr)
-                used_len += new_len
-                if self.last_pdu:
-                    self.loop.call_soon(partial(self.handle_later, self.last_pdu))
-                if not new_len:
-                    break
-        except ModbusIOException as exc:
-            function_code = 0x00 if exc.fcode is None else exc.fcode
-            response = ExceptionResponse(
-                function_code,
-                exception_code=ExcCodes.ILLEGAL_FUNCTION,
-                device_id=exc.dev_id,
-                transaction=exc.transaction_id,
-            )
-            self.server_send(response, addr)
-            return len(data)
+            except ModbusIOException as exc:
+                function_code = 0x00 if exc.fcode is None else exc.fcode
+                response = ExceptionResponse(
+                    function_code,
+                    exception_code=ExcCodes.ILLEGAL_FUNCTION,
+                    device_id=exc.dev_id,
+                    transaction=exc.transaction_id,
+                )
+                self.server_send(response, addr)
+                if not exc.used_len:
+                    # frame length unknown (e.g. serial): drop the rest of the buffer
+                    return tot_len
+                used_len += exc.used_len
+                continue
+            used_len += new_len
+            if self.last_pdu:
+                self.loop.call_soon(partial(self.handle_later, self.last_pdu))
+            if not new_len:
+                break
         return used_len
 
     def handle_later(self, pdu: ModbusPDU) -> None:

@@ -29,6 +29,8 @@ class FramerBase:
     EMPTY = b""
     MIN_SIZE = 0
     MAX_SIZE = 264
+    # True when the header gives the frame length, so an undecodable PDU can be skipped
+    LENGTH_IN_HEADER = False
 
     def __init__(
         self,
@@ -93,6 +95,8 @@ class FramerBase:
             except ModbusIOException as exc:
                 exc.transaction_id = tid
                 exc.dev_id = dev_id
+                if self.LENGTH_IN_HEADER:
+                    exc.used_len = used_len
                 raise
             pdu.dev_id = dev_id
             pdu.transaction_id = tid

@@ -46,7 +46,7 @@ class TestPdu:
     def test_not_implemented(self):
         """Test calculateRtuFrameSize."""
         with pytest.raises(NotImplementedException):
-            ModbusPDU().calculateRtuFrameSize(b'')
+            ModbusPDU().calculateRtuFrameSize(b"")
 
     requests: list[tuple[type[ModbusPDU], tuple[()], dict[str, Any], bytes]] = [
         (

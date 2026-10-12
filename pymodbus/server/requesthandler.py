@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import asyncio
 import traceback
+from functools import partial
 
 from ..constants import ExcCodes
 from ..exceptions import ModbusIOException, NoSuchIdException
 from ..logging import Log
-from ..pdu import ExceptionResponse
+from ..pdu import ExceptionResponse, ModbusPDU
 from ..transaction import TransactionManager
 from ..transport import CommParams
 
@@ -58,8 +59,18 @@ class ServerRequestHandler(TransactionManager):
 
     def callback_data(self, data: bytes, addr: tuple | None = None) -> int:
         """Handle received data."""
+        used_len = 0
+        tot_len = len(data)
         try:
-            used_len = super().callback_data(data, addr)
+            while True:
+                if used_len >= tot_len:
+                    break
+                new_len = super().callback_data(data[used_len:], addr)
+                used_len += new_len
+                if self.last_pdu:
+                    self.loop.call_soon(partial(self.handle_later, self.last_pdu))
+                if not new_len:
+                    break
         except ModbusIOException as exc:
             function_code = 0x00 if exc.fcode is None else exc.fcode
             response = ExceptionResponse(
@@ -70,38 +81,30 @@ class ServerRequestHandler(TransactionManager):
             )
             self.server_send(response, addr)
             return len(data)
-        if self.last_pdu:
-            self.loop.call_soon(self.handle_later)
         return used_len
 
-    def handle_later(self):
+    def handle_later(self, pdu: ModbusPDU) -> None:
         """Change sync (async not allowed in call_soon) to async."""
-        asyncio.run_coroutine_threadsafe(self.handle_request(), self.loop)
+        asyncio.run_coroutine_threadsafe(self.handle_request(pdu), self.loop)
 
-    async def handle_request(self):
+    async def handle_request(self, pdu: ModbusPDU) -> None:
         """Handle request."""
-        if not self.last_pdu:
-            return
         try:
-            if self.server.broadcast_enable and not self.last_pdu.dev_id:
+            if self.server.broadcast_enable and not pdu.dev_id:
                 # if broadcasting then execute on all device contexts,
                 # note response will be ignored
                 for dev_id in self.server.context.device_ids():
-                    await self.last_pdu.datastore_update(self.server.context, dev_id)
+                    await pdu.datastore_update(self.server.context, dev_id)
                 return
-            response = await self.last_pdu.datastore_update(
-                self.server.context, self.last_pdu.dev_id
-            )
+            response = await pdu.datastore_update(self.server.context, pdu.dev_id)
 
         except NoSuchIdException:
             if self.server.ignore_missing_devices:
-                Log.debug(
-                    "ignoring request for unknown device id: {}", self.last_pdu.dev_id
-                )
+                Log.debug("ignoring request for unknown device id: {}", pdu.dev_id)
                 return  # the client will simply timeout waiting for a response
-            Log.error("requested device id does not exist: {}", self.last_pdu.dev_id)
+            Log.error("requested device id does not exist: {}", pdu.dev_id)
             response = ExceptionResponse(
-                self.last_pdu.function_code, ExcCodes.GATEWAY_NO_RESPONSE
+                pdu.function_code, ExcCodes.GATEWAY_NO_RESPONSE
             )
         except Exception as exc:  # pylint: disable=broad-except
             Log.error(
@@ -109,11 +112,9 @@ class ServerRequestHandler(TransactionManager):
                 exc,
                 traceback.format_exc(),
             )
-            response = ExceptionResponse(
-                self.last_pdu.function_code, ExcCodes.DEVICE_FAILURE
-            )
-        response.transaction_id = self.last_pdu.transaction_id
-        response.dev_id = self.last_pdu.dev_id
+            response = ExceptionResponse(pdu.function_code, ExcCodes.DEVICE_FAILURE)
+        response.transaction_id = pdu.transaction_id
+        response.dev_id = pdu.dev_id
         self.server_send(response, self.last_addr)
 
     def server_send(self, pdu, addr):

@@ -35,7 +35,11 @@ class ReadFileRecordRequest(ModbusPDU):
     """ReadFileRecordRequest."""
 
     function_code = 0x14
-    rtu_byte_count_pos = 2
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[2]) + 2 + 3
 
     def __init__(
         self,
@@ -91,7 +95,11 @@ class ReadFileRecordResponse(ModbusPDU):
     """ReadFileRecordResponse."""
 
     function_code = 0x14
-    rtu_byte_count_pos = 2
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[2]) + 2 + 3
 
     def __init__(
         self,
@@ -133,7 +141,11 @@ class WriteFileRecordRequest(ModbusPDU):
     """WriteFileRecordRequest."""
 
     function_code = 0x15
-    rtu_byte_count_pos = 2
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[2]) + 2 + 3
 
     def __init__(
         self,
@@ -193,7 +205,11 @@ class WriteFileRecordResponse(ModbusPDU):
     """The normal response is an echo of the request."""
 
     function_code = 0x15
-    rtu_byte_count_pos = 2
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[2]) + 2 + 3
 
     def __init__(
         self,

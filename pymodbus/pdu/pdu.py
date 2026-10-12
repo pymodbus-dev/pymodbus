@@ -14,7 +14,6 @@ class ModbusPDU:
 
     function_code: int = 0
     sub_function_code: int = -1
-    rtu_byte_count_pos: int = 0
 
     def __init__(
         self,
@@ -101,10 +100,6 @@ class ModbusPDU:
     @classmethod
     def calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
-        if cls.rtu_byte_count_pos:
-            if len(data) < cls.rtu_byte_count_pos + 1:
-                return 0
-            return int(data[cls.rtu_byte_count_pos]) + cls.rtu_byte_count_pos + 3
         raise NotImplementedException(
-            f"Cannot determine RTU frame size for {cls.__name__}"
+            f"missing calculateRtuFrameSize {cls.__class__.__name__}"
         )

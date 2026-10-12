@@ -151,7 +151,11 @@ class GetCommEventLogResponse(ModbusPDU):
     """GetCommEventLogRequest."""
 
     function_code = 0x0C
-    rtu_byte_count_pos = 2
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[2]) + 2 + 3
 
     def __init__(
         self,
@@ -238,7 +242,11 @@ class ReportDeviceIdResponse(ModbusPDU):
     """ReportDeviceIdRequeste."""
 
     function_code = 0x11
-    rtu_byte_count_pos = 2
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[2]) + 2 + 3
 
     def __init__(
         self,

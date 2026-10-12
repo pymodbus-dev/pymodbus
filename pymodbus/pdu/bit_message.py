@@ -15,9 +15,13 @@ from .utils import pack_bitstring, unpack_bitstring
 class ReadCoilsRequest(ModbusPDU):
     """ReadCoilsRequest."""
 
-    rtu_frame_size = 8
     function_code = 1
     MAX_COUNT = 2000
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 8
 
     def encode(self) -> bytes:
         """Encode a request pdu."""
@@ -81,7 +85,11 @@ class WriteSingleCoilResponse(ModbusPDU):
     """WriteSingleCoilResponse."""
 
     function_code = 5
-    rtu_frame_size = 8
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 8
 
     def encode(self) -> bytes:
         """Encode write coil request."""
@@ -197,7 +205,11 @@ class WriteMultipleCoilsResponse(ModbusPDU):
     """WriteMultipleCoilsResponse."""
 
     function_code = 15
-    rtu_frame_size = 8
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 8
 
     def encode(self) -> bytes:
         """Encode write coils response."""

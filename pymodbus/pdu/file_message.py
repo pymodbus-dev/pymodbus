@@ -242,7 +242,11 @@ class ReadFifoQueueRequest(ModbusPDU):
     """ReadFifoQueueRequest."""
 
     function_code = 0x18
-    rtu_frame_size = 6
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 6
 
     def __init__(
         self, address: int = 0, dev_id: int = 1, transaction_id: int = 0

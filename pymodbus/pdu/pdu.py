@@ -14,7 +14,6 @@ class ModbusPDU:
 
     function_code: int = 0
     sub_function_code: int = -1
-    rtu_frame_size: int = 0
     rtu_byte_count_pos: int = 0
 
     def __init__(
@@ -102,8 +101,6 @@ class ModbusPDU:
     @classmethod
     def calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
-        if cls.rtu_frame_size:
-            return cls.rtu_frame_size
         if cls.rtu_byte_count_pos:
             if len(data) < cls.rtu_byte_count_pos + 1:
                 return 0

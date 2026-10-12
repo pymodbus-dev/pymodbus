@@ -58,7 +58,11 @@ class ReadDeviceInformationRequest(ModbusPDU):
 
     function_code = 0x2B
     sub_function_code = 0x0E
-    rtu_frame_size = 7
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 7
 
     def __init__(
         self,

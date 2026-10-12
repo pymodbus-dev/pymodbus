@@ -21,7 +21,11 @@ class DiagnosticBase(ModbusPDU):
 
     function_code = 0x08
     sub_function_code: int = 9999
-    rtu_frame_size = 8
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 8
 
     def __init__(
         self,

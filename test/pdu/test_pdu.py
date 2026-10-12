@@ -47,9 +47,6 @@ class TestPdu:
         """Test the calculation of Modbus frame sizes."""
         with pytest.raises(NotImplementedException):
             ModbusPDU.calculateRtuFrameSize(b"")
-        ModbusPDU.rtu_frame_size = 5
-        assert ModbusPDU.calculateRtuFrameSize(b"") == 5
-        ModbusPDU.rtu_frame_size = 0
         ModbusPDU.rtu_byte_count_pos = 2
         assert (
             ModbusPDU.calculateRtuFrameSize(b"\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6")
@@ -59,9 +56,6 @@ class TestPdu:
         ModbusPDU.rtu_byte_count_pos = 0
         with pytest.raises(NotImplementedException):
             ModbusPDU.calculateRtuFrameSize(b"")
-        ModbusPDU.rtu_frame_size = 12
-        assert ModbusPDU.calculateRtuFrameSize(b"") == 12
-        ModbusPDU.rtu_frame_size = 0
         ModbusPDU.rtu_byte_count_pos = 2
         assert (
             ModbusPDU.calculateRtuFrameSize(b"\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6")

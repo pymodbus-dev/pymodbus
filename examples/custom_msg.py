@@ -44,8 +44,6 @@ class CustomModbusResponse(ModbusPDU):
     def calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         rtu_byte_count_pos = 2
-        if len(data) < rtu_byte_count_pos + 1:
-            return 0
         return int(data[rtu_byte_count_pos]) + rtu_byte_count_pos + 3
 
     def __init__(self, values: list[int] | None = None, device_id=1, transaction=0):

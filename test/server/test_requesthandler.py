@@ -104,6 +104,8 @@ class TestRequesthandler:
         assert isinstance(response, ExceptionResponse)
         assert response.function_code == 0x89
         assert response.exception_code == 0x01
+        assert response.transaction_id == 0x1234
+        assert response.dev_id == 1
 
     @pytest.mark.parametrize(
         ("data", "exp_len", "exp_send"),
@@ -135,6 +137,8 @@ class TestRequesthandler:
         assert isinstance(response, ExceptionResponse)
         assert response.function_code == 0xC1
         assert response.exception_code == 0x01
+        assert response.transaction_id == 1
+        assert response.dev_id == 1
 
     async def test_rh_handle_request(self, requesthandler):
         """Test __init__."""

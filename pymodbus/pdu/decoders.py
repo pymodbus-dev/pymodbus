@@ -5,7 +5,7 @@ from __future__ import annotations
 import copy
 import struct
 
-from ..exceptions import MessageRegisterException, ModbusException
+from ..exceptions import MessageRegisterException, ModbusIOException
 from ..logging import Log
 from .exceptionresponse import ExceptionResponse
 from .pdu import ModbusPDU
@@ -60,8 +60,9 @@ class DecodePDU:
             self.pdu_table = copy.deepcopy(DecodePDU.pdu_table)
         self.pdu_table[custom_class.function_code] = (custom_class, custom_class)
 
-    def decode(self, frame: bytes) -> ModbusPDU | None:
+    def decode(self, frame: bytes) -> ModbusPDU:
         """Decode a frame."""
+        function_code = 0
         try:
             if (function_code := int(frame[0])) > 0x80:
                 pdu_exp = ExceptionResponse(function_code & 0x7F)
@@ -72,8 +73,9 @@ class DecodePDU:
                     self.pdu_inx
                 ]
             ):
-                Log.debug("decode PDU failed for function code {}", function_code)
-                raise ModbusException(f"Unknown response {function_code}")
+                raise ModbusIOException(
+                    f"Unknown response {function_code}", function_code=function_code
+                )
             pdu = pdu_class()
             pdu.decode(frame[1:])
             if pdu.sub_function_code >= 0:
@@ -90,6 +92,7 @@ class DecodePDU:
                 str(pdu),
             )
             return pdu
-        except (ModbusException, ValueError, IndexError, struct.error) as exc:
-            Log.warning("Unable to decode frame {}", exc)
-        return None
+        except (ValueError, IndexError, struct.error) as exc:
+            raise ModbusIOException(
+                f"Unable to decode frame {exc}", function_code=function_code
+            ) from exc

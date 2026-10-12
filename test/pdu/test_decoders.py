@@ -2,7 +2,7 @@
 
 import pytest
 
-from pymodbus.exceptions import MessageRegisterException
+from pymodbus.exceptions import MessageRegisterException, ModbusIOException
 from pymodbus.pdu import ModbusPDU
 from pymodbus.pdu.decoders import DecodePDU
 
@@ -137,7 +137,8 @@ class TestModbusPDU:
     @pytest.mark.parametrize(("decoder"), [server, client])
     def test_decode_bad_frame(self, decoder, frame):
         """Test lookup bad frames."""
-        assert not decoder.decode(frame)
+        with pytest.raises(ModbusIOException):
+            decoder.decode(frame)
 
     def test_decode_unknown_sub(self):
         """Test for unknown sub code."""

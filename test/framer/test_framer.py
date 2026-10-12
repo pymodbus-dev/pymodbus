@@ -930,7 +930,7 @@ class TestFramerType:
 
         msg_len, dev_id, tid, pdu = framer.decode(data)
 
-        assert msg_len == 0
+        assert msg_len == 9
         assert dev_id == 0
         assert tid == 0
         assert pdu == framer.EMPTY

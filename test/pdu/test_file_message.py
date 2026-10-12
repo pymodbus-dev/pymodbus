@@ -63,8 +63,8 @@ class TestBitMessage:
     def test_frame_size(self):
         """Test that the read fifo queue response can decode."""
         message = TEST_MESSAGE
-        assert 14 == ReadFifoQueueResponse.calculateRtuFrameSize(b"\x00\x18" + message)
-        assert 6 == ReadFifoQueueRequest.calculateRtuFrameSize(b"")
+        assert ReadFifoQueueResponse.calculateRtuFrameSize(b"\x00\x18" + message) == 14
+        assert ReadFifoQueueRequest.calculateRtuFrameSize(b"") == 6
 
     # -----------------------------------------------------------------------#
     #  File Record

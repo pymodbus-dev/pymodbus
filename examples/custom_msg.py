@@ -39,7 +39,14 @@ class CustomModbusResponse(ModbusPDU):
     """Custom modbus response."""
 
     function_code = 55
-    rtu_byte_count_pos = 2
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        rtu_byte_count_pos = 2
+        if len(data) < rtu_byte_count_pos + 1:
+            return 0
+        return int(data[rtu_byte_count_pos]) + rtu_byte_count_pos + 3
 
     def __init__(self, values: list[int] | None = None, device_id=1, transaction=0):
         """Initialize."""
@@ -141,6 +148,7 @@ async def main(host="localhost", port=5020):
         await client.connect()
 
         # add new modbus function code.
+        assert CustomModbusResponse.calculateRtuFrameSize(b"\x00\x00\x07\x00") == 12
         client.register(CustomModbusResponse)
         device_id = 1
         assert CustomRequest.calculateRtuFrameSize(b"") == 8

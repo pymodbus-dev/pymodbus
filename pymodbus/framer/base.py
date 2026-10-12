@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from enum import Enum
 
+from ..exceptions import ModbusIOException
 from ..logging import Log
 from ..pdu import DecodePDU, ModbusPDU
 
@@ -87,7 +88,12 @@ class FramerBase:
                     f"ERROR: request ask for transaction_id={exp_tid} but got id={tid}, Skipping."
                 )
                 continue
-            pdu = self.decoder.decode(frame_data)
+            try:
+                pdu = self.decoder.decode(frame_data)
+            except ModbusIOException as exc:
+                exc.transaction_id = tid
+                exc.dev_id = dev_id
+                raise
             pdu.dev_id = dev_id
             pdu.transaction_id = tid
             return used_len, pdu

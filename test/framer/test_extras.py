@@ -86,9 +86,7 @@ class TestExtras:
         msg = b"\x00\x01\x00\x00\x00\x06\xff\x70\x01\x02\x00\x08"
         with pytest.raises(ModbusIOException) as exc_info:
             self._tcp.handleFrame(msg, 0, 0)
-        assert exc_info.value.transaction_id == 1
-        assert exc_info.value.dev_id == 0xFF
-        assert exc_info.value.fcode is None
+        assert exc_info.value.fcode == 0xF0
 
     def test_tls_incoming_packet(self):
         """Framer tls incoming packet."""

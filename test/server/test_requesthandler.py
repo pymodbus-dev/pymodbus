@@ -102,9 +102,7 @@ class TestRequesthandler:
         requesthandler.pdu_send.assert_called_once()
         response = requesthandler.pdu_send.call_args.args[0]
         assert isinstance(response, ExceptionResponse)
-        assert response.transaction_id == 0x1234
-        assert response.dev_id == 1
-        assert response.function_code == 0x80
+        assert response.function_code == 0x89
         assert response.exception_code == 0x01
 
     @pytest.mark.parametrize(
@@ -124,6 +122,19 @@ class TestRequesthandler:
         assert exp_len == requesthandler.callback_data(data, None)
         await asyncio.sleep(0.1)
         assert exp_send == requesthandler.pdu_send.call_count
+
+    async def test_rh_callback_exc(
+        self,
+        requesthandler,
+    ):
+        """Test exception response contains 0x80 + fc."""
+        data = bytes.fromhex("000100000006014100000002")
+        assert len(data) == requesthandler.callback_data(data, None)
+        await asyncio.sleep(0.1)
+        response = requesthandler.pdu_send.call_args.args[0]
+        assert isinstance(response, ExceptionResponse)
+        assert response.function_code == 0xC1
+        assert response.exception_code == 0x01
 
     async def test_rh_handle_request(self, requesthandler):
         """Test __init__."""

@@ -83,7 +83,7 @@ class TestReadRegisterMessages:
         reg = ReadHoldingRegistersResponse(count=5)
         with pytest.raises(ModbusIOException) as exc_info:
             reg.decode(b"\x14\x00\x03\x00\x11")
-        assert exc_info.value.fcode == reg.function_code
+        assert exc_info.value.fcode == reg.function_code + 0x80
 
     def test_readwrite_encode_write_count_limit(self):
         """Encoding must reject a write count above the FC23 maximum of 121.

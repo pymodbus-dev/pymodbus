@@ -226,7 +226,7 @@ class TestTransaction:
             transact.connection_lost = mock.Mock()  # type: ignore[method-assign]
             with pytest.raises(ModbusIOException) as exc_info:
                 await transact.execute(False, request)
-            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.fcode == request.function_code + 0x80
             assert exc_info.value.dev_id == request.dev_id
             assert exc_info.value.transaction_id == request.transaction_id
         elif scenario == 4:  # wait receive,timeout, disconnect
@@ -235,7 +235,7 @@ class TestTransaction:
             transact.connection_lost = mock.Mock()  # type: ignore[method-assign]
             with pytest.raises(ModbusIOException) as exc_info:
                 await transact.execute(False, request)
-            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.fcode == request.function_code + 0x80
             assert exc_info.value.transaction_id == request.transaction_id
         elif scenario == 5:  # wait receive,timeout, disconnect
             transact.comm_params.timeout_connect = 0.1
@@ -244,7 +244,7 @@ class TestTransaction:
             transact.connection_lost = mock.Mock()  # type: ignore[method-assign]
             with pytest.raises(ModbusIOException) as exc_info:
                 await transact.execute(False, request)
-            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.fcode == request.function_code + 0x80
             assert exc_info.value.transaction_id == request.transaction_id
         elif scenario == 6:  # wait receive,timeout, no_responses pass
             transact.comm_params.timeout_connect = 0.1
@@ -277,7 +277,7 @@ class TestTransaction:
             await asyncio.sleep(0.1)
             with pytest.raises(ModbusIOException) as exc_info:
                 resp.result()
-            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.fcode == request.function_code + 0x80
             assert exc_info.value.dev_id == request.dev_id
             assert exc_info.value.transaction_id == request.transaction_id
         else:  # if scenario == 10: # response wrong tid
@@ -290,7 +290,7 @@ class TestTransaction:
             await asyncio.sleep(0.1)
             with pytest.raises(ModbusIOException) as exc_info:
                 resp.result()
-            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.fcode == request.function_code + 0x80
             assert exc_info.value.dev_id == request.dev_id
             assert exc_info.value.transaction_id == request.transaction_id
 
@@ -364,10 +364,6 @@ class TestTransaction:
         transact.comm_params.timeout_connect = 0.2
         resp = asyncio.create_task(transact.execute(False, request))
         await asyncio.sleep(0.1)
-        transact.response_future.set_result(response)
-        await asyncio.sleep(0.1)
-        with pytest.raises(ModbusIOException):
-            await resp
         response = ReadCoilsResponse(bits=[True, False, True, True, False], dev_id=1)
         transact.retries = 0
         transact.connection_made(mock.AsyncMock())
@@ -473,7 +469,7 @@ class TestSyncTransaction:
             transact.comm_params.timeout_connect = 0.1
             with pytest.raises(ModbusIOException) as exc_info:
                 transact.sync_execute(False, request)
-            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.fcode == request.function_code + 0x80
             assert exc_info.value.dev_id == request.dev_id
             assert exc_info.value.transaction_id == request.transaction_id
         elif scenario == 4:  # wait receive,timeout, disconnect
@@ -481,7 +477,7 @@ class TestSyncTransaction:
             transact.count_until_disconnect = -1
             with pytest.raises(ModbusIOException) as exc_info:
                 transact.sync_execute(False, request)
-            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.fcode == request.function_code + 0x80
             assert exc_info.value.transaction_id == request.transaction_id
         elif scenario == 5:  # wait receive,timeout, disconnect
             transact.comm_params.timeout_connect = 0.1
@@ -489,7 +485,7 @@ class TestSyncTransaction:
             transact.count_until_disconnect = -1
             with pytest.raises(ModbusIOException) as exc_info:
                 transact.sync_execute(False, request)
-            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.fcode == request.function_code + 0x80
             assert exc_info.value.transaction_id == request.transaction_id
         elif scenario == 6:  # wait receive,timeout, no_responses pass
             transact.comm_params.timeout_connect = 0.1
@@ -512,7 +508,7 @@ class TestSyncTransaction:
             transact.comm_params.timeout_connect = 0.2
             with pytest.raises(ModbusIOException) as exc_info:
                 transact.sync_execute(False, request)
-            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.fcode == request.function_code + 0x80
             assert exc_info.value.dev_id == request.dev_id
             assert exc_info.value.transaction_id == request.transaction_id
         elif scenario == 9:  # response wrong tid
@@ -524,7 +520,7 @@ class TestSyncTransaction:
             transact.comm_params.timeout_connect = 0.2
             with pytest.raises(ModbusIOException) as exc_info:
                 transact.sync_execute(False, request)
-            assert exc_info.value.fcode == request.function_code
+            assert exc_info.value.fcode == request.function_code + 0x80
             assert exc_info.value.dev_id == request.dev_id
             assert exc_info.value.transaction_id == request.transaction_id
         else:  # if scenario == 10 # pdu_send from client

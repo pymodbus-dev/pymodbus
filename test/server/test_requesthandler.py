@@ -127,18 +127,16 @@ class TestRequesthandler:
 
     async def test_rh_handle_request(self, requesthandler):
         """Test __init__."""
-        requesthandler.last_pdu = None
-        await requesthandler.handle_request()
         requesthandler.last_pdu = ExceptionResponse(17)
-        await requesthandler.handle_request()
+        await requesthandler.handle_request(requesthandler.last_pdu)
         requesthandler.last_pdu.datastore_update = mock.AsyncMock()  # type: ignore[method-assign]
         requesthandler.server.broadcast_enable = True
         requesthandler.last_pdu.dev_id = 0
-        await requesthandler.handle_request()
+        await requesthandler.handle_request(requesthandler.last_pdu)
         requesthandler.last_pdu.datastore_update.side_effect = NoSuchIdException
-        await requesthandler.handle_request()
+        await requesthandler.handle_request(requesthandler.last_pdu)
         requesthandler.server.ignore_missing_devices = True
-        await requesthandler.handle_request()
+        await requesthandler.handle_request(requesthandler.last_pdu)
 
     async def test_rh_server_send(self, requesthandler):
         """Test __init__."""

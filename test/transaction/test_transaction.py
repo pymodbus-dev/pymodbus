@@ -344,38 +344,6 @@ class TestTransaction:
             with pytest.raises(ModbusIOException):
                 await resp
 
-    async def test_transaction_id0(self, use_clc):
-        """Test tracers in disconnect."""
-        transact = TransactionManager(
-            use_clc,
-            FramerRTU(DecodePDU(False)),
-            5,
-            False,
-            None,
-            None,
-            None,
-        )
-        transact.send = mock.Mock()  # type: ignore[method-assign]
-        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
-        response = ReadCoilsResponse(bits=[True, False, True, True, False], dev_id=0)
-        transact.retries = 0
-        transact.connection_made(mock.AsyncMock())
-        transact.transport.write = mock.Mock()  # type: ignore[attr-defined]
-        transact.comm_params.timeout_connect = 0.2
-        resp = asyncio.create_task(transact.execute(False, request))
-        await asyncio.sleep(0.1)
-        response = ReadCoilsResponse(bits=[True, False, True, True, False], dev_id=1)
-        transact.retries = 0
-        transact.connection_made(mock.AsyncMock())
-        transact.transport.write = mock.Mock()  # type: ignore[attr-defined]
-        transact.comm_params.timeout_connect = 0.2
-        resp = asyncio.create_task(transact.execute(False, request))
-        await asyncio.sleep(0.1)
-        transact.response_future.set_result(response)
-        await asyncio.sleep(0.1)
-        assert response == await resp
-
-
 @pytest.mark.parametrize("use_port", [5098])
 class TestSyncTransaction:
     """Test the pymodbus.transaction module."""

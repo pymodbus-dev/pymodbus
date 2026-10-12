@@ -50,9 +50,10 @@ class TestRequesthandler:
         with mock.patch(
             "pymodbus.transaction.TransactionManager.callback_data"
         ) as cb_data:
-            cb_data.side_effect = ModbusIOException
             data = b"012"
-            assert len(data) == requesthandler.callback_data(data, None)
+            data_len = len(data)
+            cb_data.side_effect = ModbusIOException(used_len=data_len)
+            assert data_len == requesthandler.callback_data(data, None)
 
     async def test_rh_callback_data_undecodable_echoes_identity(self, requesthandler):
         """Undecodable FC exception must echo framing tid/dev_id (#2990)."""
@@ -60,14 +61,16 @@ class TestRequesthandler:
         with mock.patch(
             "pymodbus.transaction.TransactionManager.callback_data"
         ) as cb_data:
+            data = b"\x00\x0a\x00\x00\x00\x06\x07\x0a\x00\x00\x00\x01"
+            data_len = len(data)
             exc = ModbusIOException(
                 "Unable to decode request",
                 transaction_id=0x000A,
                 dev_id=7,
+                used_len=data_len,
             )
             cb_data.side_effect = exc
-            data = b"\x00\x0a\x00\x00\x00\x06\x07\x0a\x00\x00\x00\x01"
-            assert len(data) == requesthandler.callback_data(data, peer)
+            assert data_len == requesthandler.callback_data(data, peer)
 
         requesthandler.pdu_send.assert_called_once()
         response = requesthandler.pdu_send.call_args.args[0]
@@ -85,9 +88,12 @@ class TestRequesthandler:
         with mock.patch(
             "pymodbus.transaction.TransactionManager.callback_data"
         ) as cb_data:
-            cb_data.side_effect = ModbusIOException("Unable to decode request")
             data = b"garbage"
-            assert len(data) == requesthandler.callback_data(data, None)
+            data_len = len(data)
+            cb_data.side_effect = ModbusIOException(
+                "Unable to decode request", used_len=data_len
+            )
+            assert data_len == requesthandler.callback_data(data, None)
 
         response = requesthandler.pdu_send.call_args.args[0]
         assert response.transaction_id == 0
@@ -114,7 +120,9 @@ class TestRequesthandler:
             (bytes.fromhex("000200000006010300100001"), 12, 1),
             (bytes.fromhex("000100000006010300000002000200000006010300100001"), 24, 2),
             (bytes.fromhex("0001000000060103000000020002"), 12, 1),
-            (bytes.fromhex("000100000006010300000002000200000006018300100001"), 24, 2),
+            (bytes.fromhex("000100000006016300000002"), 12, 1),
+            (bytes.fromhex("000200000006010300100001000100000006016300000002"), 24, 2),
+            (bytes.fromhex("000100000006016300000002000100000006010300000002"), 24, 2),
         ],
     )
     async def test_rh_callback_multi_frame(

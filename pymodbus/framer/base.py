@@ -93,7 +93,8 @@ class FramerBase:
             except ModbusIOException as exc:
                 exc.transaction_id = tid
                 exc.dev_id = dev_id
-                raise
+                exc.used_len = used_len
+                raise exc
             pdu.dev_id = dev_id
             pdu.transaction_id = tid
             return used_len, pdu

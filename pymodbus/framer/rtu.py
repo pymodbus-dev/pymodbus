@@ -86,7 +86,7 @@ class FramerRTU(FramerBase):
             if not (pdu_class := self.decoder.lookupPduClass(data[used_len:])):
                 continue
             if not (size := pdu_class.calculateRtuFrameSize(data[used_len:])):
-                Log.debug("Frame - rtu_byte_count_pos wrong")
+                Log.debug("Frame - byte_count_pos wrong")
                 return 0, dev_id, 0, self.EMPTY
             if data_len < used_len + size:
                 Log.debug("Frame - not ready")

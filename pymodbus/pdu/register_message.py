@@ -61,7 +61,11 @@ class ReadHoldingRegistersResponse(ModbusPDU):
     """ReadHoldingRegistersResponse."""
 
     function_code = 3
-    rtu_byte_count_pos = 2
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[2]) + 2 + 3
 
     def encode(self) -> bytes:
         """Encode the response packet."""
@@ -98,9 +102,13 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
     """ReadWriteMultipleRegistersRequest."""
 
     function_code = 23
-    rtu_byte_count_pos = 10
     MAX_READ_COUNT = 125
     MAX_WRITE_COUNT = 121
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[10]) + 10 + 3
 
     def __init__(
         self,
@@ -242,10 +250,14 @@ class WriteMultipleRegistersRequest(ModbusPDU):
     """WriteMultipleRegistersRequest."""
 
     function_code = 16
-    rtu_byte_count_pos = 6
     _pdu_length = 5  # func + adress1 + adress2 + outputQuant1 + outputQuant2
     byte_count: int | None = None
     _payload_byte_count: int | None = None
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[6]) + 6 + 3
 
     def encode(self) -> bytes:
         """Encode a write single register packet packet request."""

@@ -63,7 +63,11 @@ class ReadCoilsResponse(ModbusPDU):
     """ReadCoilsResponse."""
 
     function_code = 1
-    rtu_byte_count_pos = 2
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[2]) + 2 + 3
 
     def encode(self) -> bytes:
         """Encode response pdu."""
@@ -131,11 +135,15 @@ class WriteMultipleCoilsRequest(ModbusPDU):
     """WriteMultipleCoilsRequest."""
 
     function_code = 15
-    rtu_byte_count_pos = 6
     count: int
     byte_count: int | None
     data_byte_count: int
     MAX_COUNT = 2000
+
+    @classmethod
+    def calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[6]) + 6 + 3
 
     def __init__(
         self,

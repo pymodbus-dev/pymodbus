@@ -43,29 +43,10 @@ class TestPdu:
         """Test is_error."""
         assert self.exception.isError()
 
-    def test_calculate_frame_size(self):
-        """Test the calculation of Modbus frame sizes."""
+    def test_not_implemented(self):
+        """Test calculateRtuFrameSize."""
         with pytest.raises(NotImplementedException):
-            ModbusPDU.calculateRtuFrameSize(b"")
-        ModbusPDU.rtu_byte_count_pos = 2
-        assert (
-            ModbusPDU.calculateRtuFrameSize(b"\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6")
-            == 0x05 + 5
-        )
-        assert not ModbusPDU.calculateRtuFrameSize(b"\x11")
-        ModbusPDU.rtu_byte_count_pos = 0
-        with pytest.raises(NotImplementedException):
-            ModbusPDU.calculateRtuFrameSize(b"")
-        ModbusPDU.rtu_byte_count_pos = 2
-        assert (
-            ModbusPDU.calculateRtuFrameSize(b"\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6")
-            == 0x05 + 5
-        )
-        ModbusPDU.rtu_byte_count_pos = 0
-
-    # --------------------------
-    # Test PDU types generically
-    # --------------------------
+            ModbusPDU().calculateRtuFrameSize(b"")
 
     requests: list[tuple[type[ModbusPDU], tuple[()], dict[str, Any], bytes]] = [
         (

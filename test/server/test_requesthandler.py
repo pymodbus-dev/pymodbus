@@ -1,5 +1,6 @@
 """Test server asyncio."""
 
+import asyncio
 from unittest import mock
 
 import pytest
@@ -98,7 +99,6 @@ class TestRequesthandler:
         # MBAP: tid=0x1234, pid=0, len=6, uid=1, PDU: FC=0x09 + 4 data bytes
         frame = b"\x12\x34\x00\x00\x00\x06\x01\x09\x00\x00\x00\x01"
         assert len(frame) == requesthandler.callback_data(frame, None)
-
         requesthandler.pdu_send.assert_called_once()
         response = requesthandler.pdu_send.call_args.args[0]
         assert isinstance(response, ExceptionResponse)
@@ -120,7 +120,8 @@ class TestRequesthandler:
     async def test_rh_callback_multi_frame(self, requesthandler, data, exp_len, exp_send):
         """Test data can contain multiple frames."""
         assert exp_len == requesthandler.callback_data(data, None)
-        assert exp_send == requesthandler.pdu_send.assert_called()
+        await asyncio.sleep(0.1)
+        assert exp_send == requesthandler.pdu_send.call_count
 
     async def test_rh_handle_request(self, requesthandler):
         """Test __init__."""

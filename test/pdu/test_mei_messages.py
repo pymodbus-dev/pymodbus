@@ -54,7 +54,7 @@ class TestMeiMessage:
         self, mei_type, mock_server_context
     ):
         """Test unsupported MEI types are not routed to device identification."""
-        pdu = DecodePDU(True).decode(bytes([0x2B, mei_type, 0x01, 0x00]))
+        pdu, _ = DecodePDU(True).decode(bytes([0x2B, mei_type, 0x01, 0x00]))
 
         assert pdu
         assert not isinstance(pdu, ReadDeviceInformationRequest)

@@ -60,23 +60,20 @@ class DecodePDU:
             self.pdu_table = copy.deepcopy(DecodePDU.pdu_table)
         self.pdu_table[custom_class.function_code] = (custom_class, custom_class)
 
-    def decode(self, frame: bytes) -> ModbusPDU:
+    def decode(self, frame: bytes) -> tuple[ModbusPDU, int]:
         """Decode a frame."""
         function_code = 0
         try:
             if (function_code := int(frame[0])) > 0x80:
                 pdu_exp = ExceptionResponse(function_code & 0x7F)
                 pdu_exp.x_decode(frame[1:])
-                return pdu_exp
-            if not (
-                pdu_class := self.pdu_table.get(function_code, (None, None))[
-                    self.pdu_inx
-                ]
-            ):
+                return pdu_exp, ExceptionResponse.calculateRtuFrameSize(frame)
+            if not (pdu_class := self.lookupPduClass(b"\x00" + frame)):
                 raise ModbusIOException(
                     f"Unknown response {function_code}", function_code=function_code
                 )
             pdu = pdu_class()
+            pdu_size = pdu.calculateRtuFrameSize(frame)
             pdu.x_decode(frame[1:])
             if pdu.sub_function_code >= 0:
                 lookup = self.pdu_sub_table.get(pdu.function_code, {})
@@ -91,7 +88,7 @@ class DecodePDU:
                 pdu.sub_function_code,
                 str(pdu),
             )
-            return pdu
+            return pdu, pdu_size
         except (ValueError, IndexError, struct.error) as exc:
             raise ModbusIOException(
                 f"Unable to decode frame {exc}", function_code=function_code

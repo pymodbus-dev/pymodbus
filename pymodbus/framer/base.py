@@ -89,7 +89,7 @@ class FramerBase:
                 )
                 continue
             try:
-                pdu = self.decoder.decode(frame_data)
+                pdu, _pdu_size = self.decoder.decode(frame_data)
             except ModbusIOException as exc:
                 exc.transaction_id = tid
                 exc.dev_id = dev_id

@@ -336,16 +336,22 @@ def define_mockSocket():  # noqa: C901
 def define_dummyPDU():
     """Define mockSocket class."""
 
-    class DummyPDU(ModbusPDU):
+    class DummyPDU(ModbusPDU):  # pragma: no cover
         """Custom request."""
 
         function_code = 0x70
+
+        @classmethod
+        def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+            """Calculate the size of a PDU."""
+            return 5
 
         def encode(self):
             """Encode."""
             return self.function_code.to_bytes(1, "big") + b"123"
 
-        def decode(self, _data):
+        def x_decode(self, data):
             """Decode."""
+            _ = data
 
     return DummyPDU

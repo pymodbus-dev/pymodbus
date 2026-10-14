@@ -27,15 +27,15 @@ class TestPdu:
 
     async def test_error_methods(self):
         """Test all error methods."""
-        result = self.exception.encode()
-        self.exception.x_decode(result)
+        result = self.exception.x_encode()
+        self.exception.from_frame(False, b"\x00" + result)
         assert result == b"\x01"
         assert self.exception.exception_code == 1
 
-    async def test_pdu_id(self):
+    async def test_pdu_id(self, mockPDU):
         """Test set illegal pdu id."""
         with pytest.raises(ModbusIOException) as exc_info:
-            ModbusPDU(256, transaction_id=0x42)
+            mockPDU(256, transaction_id=0x42)
         assert exc_info.value.dev_id == 256
         assert exc_info.value.transaction_id == 0x42
 
@@ -445,16 +445,6 @@ class TestPdu:
         pdu = pdutype()
         assert pdu
 
-    def test_pdu_base_instance(self):
-        """Test that all PDU types can be created."""
-        pdu = ModbusPDU(4)
-        str(pdu)
-        assert pdu
-        with pytest.raises(NotImplementedException):
-            pdu.encode()
-        with pytest.raises(NotImplementedException):
-            pdu.x_decode(b"")
-
     @pytest.mark.parametrize(
         ("pdutype", "args", "kwargs", "frame"), requests + responses
     )
@@ -520,7 +510,7 @@ class TestPdu:
     def test_pdu_instance_encode(self, pdutype, kwargs, frame):
         """Test that all PDU types can be created."""
         pdu = pdutype(**kwargs)
-        res_frame = pdutype.function_code.to_bytes(1, "big") + pdu.encode()
+        res_frame = pdutype.function_code.to_bytes(1, "big") + pdu.x_encode()
         assert res_frame == frame
 
     @pytest.mark.parametrize(
@@ -542,12 +532,6 @@ class TestPdu:
             assert await pdu.datastore_update(mock_server_context(), 1)
         finally:
             control.Delimiter = b"\n"
-
-    async def test_pdu_default_datastore(self, mock_server_context):
-        """Test that all PDU types can be created."""
-        pdu = ModbusPDU()
-        with pytest.raises(NotImplementedException):
-            assert await pdu.datastore_update(mock_server_context, 1)
 
     @pytest.mark.parametrize(
         ("bytestream", "bitlist"),

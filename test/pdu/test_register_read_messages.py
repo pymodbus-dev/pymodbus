@@ -65,12 +65,12 @@ class TestReadRegisterMessages:
     def test_register_read_requests(self):
         """Test register read requests."""
         for request, response in iter(self.request_read.items()):
-            assert request.encode() == response
+            assert request.x_encode() == response
 
     def test_register_read_responses(self):
         """Test register read response."""
         for request, response in iter(self.response_read.items()):
-            assert request.encode() == response
+            assert request.x_encode() == response
 
     def test_register_read_response_decode(self):
         """Test register read response."""
@@ -100,9 +100,9 @@ class TestReadRegisterMessages:
                 write_registers=[0] * count,
             )
 
-        assert len(build(121).encode()) + 1 <= 253
+        assert len(build(121).x_encode()) + 1 <= 253
         with pytest.raises(ValueError):  # noqa: PT011
-            build(122).encode()
+            build(122).x_encode()
 
     def test_readwrite_decode_write_count_above_limit(self):
         """Decoding must accept 122..125 so the server can answer ILLEGAL_VALUE.

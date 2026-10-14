@@ -20,10 +20,11 @@ class DecodePDU:
     def __init__(self, is_server: bool) -> None:
         """Initialize function_tables."""
         self.pdu_inx = 0 if is_server else 1
+        self.is_server = is_server
 
     def _lookupPduClass(self, data: bytes) -> type[ModbusPDU] | None:
         """Use `function_code` to determine the class of the PDU."""
-        if (func_code := int(data[1])) & 0x80:
+        if (func_code := int(data[1])) > 0x80:
             return ExceptionResponse
         if not (pdu := self.pdu_table.get(func_code, (None, None))[self.pdu_inx]):
             return None
@@ -62,18 +63,23 @@ class DecodePDU:
 
     def decode(self, frame: bytes) -> ModbusPDU:
         """Decode a frame."""
+        if not frame:
+            raise ModbusIOException("Cannot decode empty frame")
         function_code = 0
         try:
             if (function_code := int(frame[0])) > 0x80:
                 pdu_exp = ExceptionResponse(function_code & 0x7F)
-                pdu_exp.x_decode(frame[1:])
+                pdu_exp.from_frame(False, frame)
                 return pdu_exp
             if not (pdu_class := self._lookupPduClass(b"\x00" + frame)):
                 raise ModbusIOException(
                     f"Unknown response {function_code}", function_code=function_code
                 )
             pdu = pdu_class()
-            pdu.x_decode(frame[1:])
+            if hasattr(pdu, "from_frame"):
+                pdu.from_frame(self.is_server, frame)
+            else:
+                pdu.x_decode(frame[1:])
             Log.debug(
                 "decoded PDU function_code({} sub {}) -> {} ",
                 pdu.function_code,
@@ -91,3 +97,7 @@ class DecodePDU:
         if not (pdu_class := self._lookupPduClass(data)):
             return 0
         return pdu_class.x_calculateRtuFrameSize(data)
+
+    def encode(self, pdu: ModbusPDU) -> bytes:
+        """Calculate the size of a PDU."""
+        return pdu.x_encode()

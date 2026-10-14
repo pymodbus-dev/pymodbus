@@ -32,7 +32,7 @@ class TestMeiMessage:
         """Test basic bit message encoding/decoding."""
         params = {"read_code": DeviceInformation.BASIC, "object_id": 0x00}
         handle = ReadDeviceInformationRequest(**params)
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == b"\x0e\x01\x00"
         assert "ReadDeviceInformationRequest" in str(handle)
 
@@ -134,7 +134,7 @@ class TestMeiMessage:
         handle = ReadDeviceInformationResponse(
             read_code=DeviceInformation.BASIC, information=dataset
         )
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == message
         assert "ReadDeviceInformationResponse" in str(handle)
 
@@ -150,7 +150,7 @@ class TestMeiMessage:
         handle = ReadDeviceInformationResponse(
             read_code=DeviceInformation.EXTENDED, information=dataset
         )
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == message
 
     def test_read_device_information_encode_long(self):
@@ -174,7 +174,7 @@ class TestMeiMessage:
         handle = ReadDeviceInformationResponse(
             read_code=DeviceInformation.BASIC, information=dataset
         )
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == message
         assert "ReadDeviceInformationResponse" in str(handle)
 

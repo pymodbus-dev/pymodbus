@@ -41,7 +41,7 @@ class TestExtras:
         used_len, pdu = self._tcp.handleFrame(msg1 + msg2, 0, 0)
         assert pdu
         assert used_len == len(msg1) + len(msg2)
-        assert pdu.function_code.to_bytes(1, "big") + pdu.encode() == msg2
+        assert pdu.function_code.to_bytes(1, "big") + self.decoder.encode(pdu) == msg2
 
     def test_tcp_framer_transaction_half3(self):
         """Test a half completed tcp frame transaction."""
@@ -53,7 +53,10 @@ class TestExtras:
         used_len, pdu = self._tcp.handleFrame(msg1 + msg2, 0, 0)
         assert pdu
         assert used_len == len(msg1) + len(msg2)
-        assert pdu.function_code.to_bytes(1, "big") + pdu.encode() == msg1[7:] + msg2
+        assert (
+            pdu.function_code.to_bytes(1, "big") + self.decoder.encode(pdu)
+            == msg1[7:] + msg2
+        )
 
     def test_tcp_framer_transaction_short(self):
         """Test that we can get back on track after an invalid message."""
@@ -65,7 +68,9 @@ class TestExtras:
         used_len, pdu = self._tcp.handleFrame(msg1 + msg2, 0, 0)
         assert pdu
         assert used_len == len(msg1) + len(msg2)
-        assert pdu.function_code.to_bytes(1, "big") + pdu.encode() == msg2[7:]
+        assert (
+            pdu.function_code.to_bytes(1, "big") + self.decoder.encode(pdu) == msg2[7:]
+        )
 
     def test_tcp_framer_transaction_wrong_id(self):
         """Test a half completed tcp frame transaction."""

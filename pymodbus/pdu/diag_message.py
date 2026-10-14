@@ -37,7 +37,7 @@ class DiagnosticBase(ModbusPDU):
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.message: bytes | int | list | tuple | None = message
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode a diagnostic response."""
         packet = struct.pack(">H", self.sub_function_code)
         if self.message is not None:
@@ -446,12 +446,12 @@ class GetClearModbusPlusRequest(DiagnosticBase):
             message = ModbusPlusOperation.CLEAR_STATISTICS
         else:
             message = [self.message]
-            message += _MCB.Plus.encode()
+            message += _MCB.Plus.x_encode()
         return GetClearModbusPlusResponse(
             message=message, dev_id=device_id, transaction_id=self.transaction_id
         )
 
-    def encode(self):
+    def x_encode(self):
         """Encode a diagnostic response."""
         packet = struct.pack(">H", self.sub_function_code)
         packet += struct.pack(">H", self.message)

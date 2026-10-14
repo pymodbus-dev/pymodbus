@@ -12,7 +12,7 @@ from pymodbus.framer import (
     FramerTLS,
     FramerType,
 )
-from pymodbus.pdu import DecodePDU, ModbusPDU
+from pymodbus.pdu import DecodePDU
 from pymodbus.pdu.device import ModbusControlBlock
 from test.framer.generator import set_calls
 
@@ -890,7 +890,9 @@ class TestFramerType:
         assert result.dev_id == dev_id
         assert result.transaction_id == tid
         expected = test_framer.encode(
-            result.function_code.to_bytes(1, "big") + result.encode(), dev_id, 1
+            result.function_code.to_bytes(1, "big") + DecodePDU(False).encode(result),
+            dev_id,
+            1,
         )
         assert msg == expected
 
@@ -904,10 +906,10 @@ class TestFramerType:
             (FramerType.ASCII, b":FF0100\r\n"),
         ],
     )
-    def test_framer_encode(self, test_framer, msg):
+    def test_framer_encode(self, test_framer, msg, mockPDU):
         """Test a tcp frame transaction."""
-        with mock.patch.object(ModbusPDU, "encode") as mock_encode:
-            message = ModbusPDU()
+        with mock.patch.object(mockPDU, "x_encode") as mock_encode:
+            message = mockPDU()
             message.transaction_id = 0x0001
             message.dev_id = 0xFF
             message.function_code = 0x01

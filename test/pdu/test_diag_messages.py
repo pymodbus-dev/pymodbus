@@ -125,7 +125,7 @@ class TestDataStore:
         msg_obj = DiagnosticBase()
         data = b"\x00\x01\x02\x03"
         msg_obj.x_decode(data)
-        result = msg_obj.encode()
+        result = msg_obj.x_encode()
         assert data == result
 
     def test_diagnostic_encode_error(self):
@@ -133,7 +133,7 @@ class TestDataStore:
         msg_obj = DiagnosticBase()
         msg_obj.message = "not allowed"  # type: ignore[assignment]
         with pytest.raises(TypeError):
-            msg_obj.encode()
+            msg_obj.x_encode()
 
     def test_diagnostic_decode_error(self):
         """Testing diagnostic request/response can be decoded and encoded."""
@@ -147,14 +147,14 @@ class TestDataStore:
             handle = DiagnosticBase()
             handle.x_decode(enc)
             assert handle.sub_function_code == msg.sub_function_code
-            encoded = handle.encode()
+            encoded = handle.x_encode()
             assert enc == encoded
 
     async def test_diagnostic_simple_requests(self):
         """Testing diagnostic request messages encoding."""
         request = DiagnosticBase(message=b"\x12\x34")
         request.sub_function_code = 0x1234
-        assert request.encode() == b"\x12\x34\x12\x34"
+        assert request.x_encode() == b"\x12\x34\x12\x34"
         DiagnosticBase()
 
     def test_diagnostic_response_decode(self):
@@ -167,7 +167,7 @@ class TestDataStore:
     def test_diagnostic_requests_encode(self):
         """Testing diagnostic request messages encoding."""
         for msg, enc, _ in self.requests:
-            assert msg().encode() == enc
+            assert msg().x_encode() == enc
 
     async def test_diagnostic_datastore_update(self):
         """Testing diagnostic message execution."""
@@ -176,7 +176,7 @@ class TestDataStore:
             for message, encoded, datastore_updated in self.requests:
                 encoded = (
                     await message().datastore_update(cast(ModbusServerContext, None), 1)
-                ).encode()
+                ).x_encode()
                 assert encoded == datastore_updated
         finally:
             control.Delimiter = b"\n"
@@ -184,28 +184,28 @@ class TestDataStore:
     def test_return_query_data_request(self):
         """Testing diagnostic message execution."""
         message = ReturnQueryDataRequest(b"\x00\x00\x00\x00")
-        assert message.encode() == b"\x00\x00\x00\x00\x00\x00"
+        assert message.x_encode() == b"\x00\x00\x00\x00\x00\x00"
         message = ReturnQueryDataRequest(b"\x00\x00")
-        assert message.encode() == b"\x00\x00\x00\x00"
+        assert message.x_encode() == b"\x00\x00\x00\x00"
 
     def test_return_query_data_response(self):
         """Testing diagnostic message execution."""
         message = ReturnQueryDataResponse(b"\x00\x00\x00\x00")
-        assert message.encode() == b"\x00\x00\x00\x00\x00\x00"
+        assert message.x_encode() == b"\x00\x00\x00\x00\x00\x00"
         message = ReturnQueryDataResponse(b"\x00\x00")
-        assert message.encode() == b"\x00\x00\x00\x00"
+        assert message.x_encode() == b"\x00\x00\x00\x00"
 
     def test_restart_communications_option(self):
         """Testing diagnostic message execution."""
         request = RestartCommunicationsOptionRequest(message=ModbusStatus.ON)
-        assert request.encode() == b"\x00\x01\xff\x00"
+        assert request.x_encode() == b"\x00\x01\xff\x00"
         request = RestartCommunicationsOptionRequest(message=ModbusStatus.OFF)
-        assert request.encode() == b"\x00\x01\x00\x00"
+        assert request.x_encode() == b"\x00\x01\x00\x00"
 
         response = RestartCommunicationsOptionResponse(message=ModbusStatus.ON)
-        assert response.encode() == b"\x00\x01\xff\x00"
+        assert response.x_encode() == b"\x00\x01\xff\x00"
         response = RestartCommunicationsOptionResponse(message=ModbusStatus.OFF)
-        assert response.encode() == b"\x00\x01\x00\x00"
+        assert response.x_encode() == b"\x00\x01\x00\x00"
 
     async def test_get_clear_modbus_plus_request_datastore_update(self):
         """Testing diagnostic message execution."""

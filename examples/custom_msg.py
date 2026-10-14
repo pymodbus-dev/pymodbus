@@ -50,7 +50,7 @@ class CustomModbusResponse(ModbusPDU):
         super().__init__(dev_id=device_id, transaction_id=transaction)
         self.values: list[int] = values or []
 
-    def encode(self):
+    def x_encode(self):
         """Encode response pdu.
 
         :returns: The encoded packet message
@@ -87,7 +87,7 @@ class CustomRequest(ModbusPDU):
         self.address = address
         self.count = 2
 
-    def encode(self):
+    def x_encode(self):
         """Encode."""
         return struct.pack(">HH", self.address, self.count)
 

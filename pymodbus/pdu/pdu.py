@@ -43,9 +43,15 @@ class ModbusPDU:
         self.fut: asyncio.Future
         self.retries: int = 0
 
+    @classmethod
+    def decode_sub_function_code(cls, data: bytes) -> int:
+        """Decode sub function code."""
+        _ = data
+        return -1
+
     def isError(self) -> bool:
         """Check if the error is a success or failure."""
-        return self.function_code > 0x80
+        return False
 
     def verifyCount(self, max_count: int, count: int = -1) -> None:
         """Validate API supplied count."""
@@ -61,12 +67,6 @@ class ModbusPDU:
         if not 0 <= address <= 65535:
             raise ValueError(f"0 <= address {address} <= 65535 !")
 
-    @classmethod
-    def decode_sub_function_code(cls, data: bytes) -> int:
-        """Decode sub function code."""
-        _ = data
-        return -1
-
     def __str__(self) -> str:
         """Build a representation of a Modbus response."""
         return (
@@ -81,7 +81,7 @@ class ModbusPDU:
             f"retries={self.retries})"
         )
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the message."""
         raise NotImplementedException(
             f"encode() not implemented {self.__class__.__name__}"

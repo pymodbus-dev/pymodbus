@@ -41,17 +41,6 @@ class _EncapsulatedInterfaceTransport(ModbusPDU):
         """Decode the MEI type."""
         return int(data[2])
 
-    def x_decode(self, data: bytes) -> None:
-        """Decode the MEI type."""
-        self.sub_function_code = int(data[0])
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Reject unsupported MEI types."""
-        _ = context, device_id
-        return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_FUNCTION)
-
 
 class ReadDeviceInformationRequest(ModbusPDU):
     """ReadDeviceInformationRequest."""

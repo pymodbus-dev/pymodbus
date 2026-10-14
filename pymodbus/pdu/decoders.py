@@ -75,13 +75,6 @@ class DecodePDU:
             pdu = pdu_class()
             pdu_size = pdu.calculateRtuFrameSize(frame)
             pdu.x_decode(frame[1:])
-            if pdu.sub_function_code >= 0:
-                lookup = self.pdu_sub_table.get(pdu.function_code, {})
-                if sub_class := lookup.get(pdu.sub_function_code, (None, None))[
-                    self.pdu_inx
-                ]:
-                    pdu = sub_class()
-                    pdu.x_decode(frame[1:])
             Log.debug(
                 "decoded PDU function_code({} sub {}) -> {} ",
                 pdu.function_code,

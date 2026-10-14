@@ -65,7 +65,7 @@ class TestWriteRegisterMessages:
         )
         for packet, address in zip(values, addresses):
             request, response = packet
-            request.decode(response)
+            request.x_decode(response)
             assert request.address == address
 
     def test_invalid_write_multiple_registers_request(self):
@@ -88,7 +88,7 @@ class TestWriteRegisterMessages:
     ):
         """Test inconsistent byte counts are rejected before writing."""
         request = WriteMultipleRegistersRequest()
-        request.decode(frame)
+        request.x_decode(frame)
         context = mock_server_context()
         context.async_setValues = mock.AsyncMock()
 
@@ -102,7 +102,7 @@ class TestWriteRegisterMessages:
     ):
         """Test a consistent byte count reaches the datastore."""
         request = WriteMultipleRegistersRequest()
-        request.decode(b"\x00\x01\x00\x02\x04\x00\x0a\x00\x0b")
+        request.x_decode(b"\x00\x01\x00\x02\x04\x00\x0a\x00\x0b")
         context = mock_server_context()
         context.async_setValues = mock.AsyncMock(return_value=0)
 
@@ -173,7 +173,7 @@ class TestWriteRegisterMessages:
         """Test basic bit message encoding/decoding."""
         request = b"\x00\x04\x00\xf2\x00\x25"
         handle = MaskWriteRegisterRequest()
-        handle.decode(request)
+        handle.x_decode(request)
         assert handle.address == 0x0004
         assert handle.and_mask == 0x00F2
         assert handle.or_mask == 0x0025
@@ -227,7 +227,7 @@ class TestWriteRegisterMessages:
         """Test basic bit message encoding/decoding."""
         request = b"\x00\x04\x00\xf2\x00\x25"
         handle = MaskWriteRegisterResponse()
-        handle.decode(request)
+        handle.x_decode(request)
         assert handle.address == 0x0004
         assert handle.and_mask == 0x00F2
         assert handle.or_mask == 0x0025

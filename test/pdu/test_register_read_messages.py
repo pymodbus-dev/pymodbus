@@ -75,14 +75,14 @@ class TestReadRegisterMessages:
     def test_register_read_response_decode(self):
         """Test register read response."""
         for response, packet in self.response_read.items():
-            response.decode(packet)
+            response.x_decode(packet)
             assert response.registers == self.values
 
     def test_register_read_response_decode_error(self):
         """Test register read response."""
         reg = ReadHoldingRegistersResponse(count=5)
         with pytest.raises(ModbusIOException) as exc_info:
-            reg.decode(b"\x14\x00\x03\x00\x11")
+            reg.x_decode(b"\x14\x00\x03\x00\x11")
         assert exc_info.value.fcode == reg.function_code + 0x80
 
     def test_readwrite_encode_write_count_limit(self):
@@ -110,7 +110,7 @@ class TestReadRegisterMessages:
         Raising here would make the server drop the frame without a response.
         """
         request = ReadWriteMultipleRegistersRequest()
-        request.decode(struct.pack(">HHHHB", 1, 1, 1, 122, 244) + b"\x00\x00" * 122)
+        request.x_decode(struct.pack(">HHHHB", 1, 1, 1, 122, 244) + b"\x00\x00" * 122)
         assert request.write_count == 122
 
     async def test_register_read_requests_count_errors(self, mock_server_context):
@@ -186,7 +186,7 @@ class TestReadRegisterMessages:
     ):
         """Test inconsistent write byte counts are rejected before writing."""
         request = ReadWriteMultipleRegistersRequest()
-        request.decode(frame)
+        request.x_decode(frame)
         context = mock_server_context()
         context.async_setValues = mock.AsyncMock()
 
@@ -200,7 +200,7 @@ class TestReadRegisterMessages:
     ):
         """Test a consistent write byte count reaches the datastore."""
         request = ReadWriteMultipleRegistersRequest()
-        request.decode(b"\x00\x01\x00\x01\x00\x02\x00\x02\x04\x00\x0a\x00\x0b")
+        request.x_decode(b"\x00\x01\x00\x01\x00\x02\x00\x02\x04\x00\x0a\x00\x0b")
         context = mock_server_context()
         context.async_setValues = mock.AsyncMock(return_value=0)
 

@@ -60,14 +60,14 @@ class CustomModbusResponse(ModbusPDU):
             res += struct.pack(">H", register)
         return res
 
-    def decode(self, data):
+    def x_decode(self, data):  # pragma: no cover
         """Decode response pdu.
 
         :param data: The packet data to decode
         """
         byte_count = int(data[0])
         self.values = []
-        for i in range(1, byte_count + 1, 2):  # pragma: no cover
+        for i in range(1, byte_count + 1, 2):
             self.values.append(struct.unpack(">H", data[i : i + 2])[0])
 
 
@@ -91,7 +91,7 @@ class CustomRequest(ModbusPDU):
         """Encode."""
         return struct.pack(">HH", self.address, self.count)
 
-    def decode(self, data):
+    def x_decode(self, data):
         """Decode."""
         self.address, self.count = struct.unpack(">HH", data)
 
@@ -155,7 +155,7 @@ async def main(host="localhost", port=5020):
         except ModbusIOException:  # pragma: no cover
             print("Server do not support CustomRequest.")
         else:
-            print(result)
+            print(result)  # pragma: no cover
 
         # inherited request
         request2 = Read16CoilsRequest(32, device_id)

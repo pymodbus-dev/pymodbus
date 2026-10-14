@@ -17,7 +17,7 @@ class TestModbusBitMessage:
             data = [True] * i
             expected = data + [False] * (-len(data) % 8)
             pdu = bit_msg.ReadCoilsResponse(bits=data)
-            pdu.decode(pdu.encode())
+            pdu.x_decode(pdu.encode())
             assert pdu.bits == expected
 
     def test_bit_read_base_requests(self):
@@ -105,7 +105,7 @@ class TestModbusBitMessage:
                 [True],
             ),
         ):
-            request.decode(frame)
+            request.x_decode(frame)
             assert request.address == 1
             assert request.bits == values
 
@@ -128,7 +128,7 @@ class TestModbusBitMessage:
     ):
         """Test write multiple coils rejects inconsistent byte counts."""
         request = bit_msg.WriteMultipleCoilsRequest()
-        request.decode(frame)
+        request.x_decode(frame)
         context = mock_server_context()
         context.async_setValues = mock.AsyncMock()
 
@@ -142,7 +142,7 @@ class TestModbusBitMessage:
     ):
         """Test write multiple coils accepts a consistent byte count."""
         request = bit_msg.WriteMultipleCoilsRequest()
-        request.decode(b"\x00\x01\x00\x09\x02\xff\x01")
+        request.x_decode(b"\x00\x01\x00\x09\x02\xff\x01")
         context = mock_server_context()
         context.async_setValues = mock.AsyncMock(return_value=0)
 
@@ -207,7 +207,7 @@ class TestModbusBitMessage:
     def test_write_multiple_coils_response(self):
         """Test write multiple coils."""
         response = bit_msg.WriteMultipleCoilsResponse()
-        response.decode(b"\x00\x80\x00\x08")
+        response.x_decode(b"\x00\x80\x00\x08")
         assert response.address == 0x80
         assert response.count == 0x08
 

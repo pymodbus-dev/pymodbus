@@ -37,26 +37,26 @@ class TestOtherMessage:
         """Test read exception status."""
         context = mock_server_context()
         request = pymodbus_message.ReadExceptionStatusRequest()
-        request.decode(b"\x12")
+        request.x_decode(b"\x12")
         assert not request.encode()
         assert (await request.datastore_update(context, 0)).function_code == 0x07
 
         response = pymodbus_message.ReadExceptionStatusResponse(status=0x12)
         assert response.encode() == b"\x12"
-        response.decode(b"\x12")
+        response.x_decode(b"\x12")
         assert response.status == 0x12
 
     async def test_get_comm_event_counter(self, mock_server_context):
         """Test get comm event counter."""
         context = mock_server_context()
         request = pymodbus_message.GetCommEventCounterRequest()
-        request.decode(b"\x12")
+        request.x_decode(b"\x12")
         assert not request.encode()
         assert (await request.datastore_update(context, 0)).function_code == 0x0B
 
         response = pymodbus_message.GetCommEventCounterResponse(count=0x12)
         assert response.encode() == b"\x00\x00\x00\x12"
-        response.decode(b"\x00\x00\x00\x12")
+        response.x_decode(b"\x00\x00\x00\x12")
         assert response.status
         assert response.count == 0x12
 
@@ -67,13 +67,13 @@ class TestOtherMessage:
         """Test get comm event log."""
         context = mock_server_context()
         request = pymodbus_message.GetCommEventLogRequest()
-        request.decode(b"\x12")
+        request.x_decode(b"\x12")
         assert not request.encode()
         assert (await request.datastore_update(context, 0)).function_code == 0x0C
 
         response = pymodbus_message.GetCommEventLogResponse()
         assert response.encode() == b"\x06\x00\x00\x00\x00\x00\x00"
-        response.decode(b"\x06\x00\x00\x00\x12\x00\x12")
+        response.x_decode(b"\x06\x00\x00\x00\x12\x00\x12")
         assert response.status
         assert response.message_count == 0x12
         assert response.event_count == 0x12
@@ -86,7 +86,7 @@ class TestOtherMessage:
         """Test get comm event log with events."""
         response = pymodbus_message.GetCommEventLogResponse(events=[0x12, 0x34, 0x56])
         assert response.encode() == b"\x09\x00\x00\x00\x00\x00\x00\x12\x34\x56"
-        response.decode(b"\x09\x00\x00\x00\x12\x00\x12\x12\x34\x56")
+        response.x_decode(b"\x09\x00\x00\x00\x12\x00\x12\x12\x34\x56")
         assert response.status
         assert response.message_count == 0x12
         assert response.event_count == 0x12
@@ -145,7 +145,7 @@ class TestOtherMessage:
         with mock.patch("pymodbus.pdu.other_message.DeviceInformationFactory") as dif:
             dif.get.return_value = {}
             request = pymodbus_message.ReportDeviceIdRequest()
-            request.decode(b"\x12")
+            request.x_decode(b"\x12")
             assert not request.encode()
             assert (await request.datastore_update(context, 0)).function_code == 0x11
 
@@ -158,10 +158,10 @@ class TestOtherMessage:
             )
 
             assert response.encode() == b"\tPymodbus\xff"
-            response.decode(b"\tPymodbus\xff")
+            response.x_decode(b"\tPymodbus\xff")
             assert response.status
             assert response.identifier == b"Pymodbus"
-            response.decode(b"\x03\x12\x00\x00")
+            response.x_decode(b"\x03\x12\x00\x00")
             assert not response.status
             assert response.identifier == b"\x12\x00"
 
@@ -173,7 +173,7 @@ class TestOtherMessage:
         for identifier, status in ((b"Pymodbus", True), (b"\x12", False)):
             sent = pymodbus_message.ReportDeviceIdResponse(identifier, status)
             received = pymodbus_message.ReportDeviceIdResponse()
-            received.decode(sent.encode())
+            received.x_decode(sent.encode())
             assert received.identifier == identifier
             assert received.status == status
 
@@ -182,4 +182,4 @@ class TestOtherMessage:
         response = pymodbus_message.ReportDeviceIdResponse()
         for frame in (b"\x00\x12\xff", b"\x04\x12\xff"):
             with pytest.raises(ModbusIOException):
-                response.decode(frame)
+                response.x_decode(frame)

@@ -29,7 +29,7 @@ class ReadCoilsRequest(ModbusPDU):
         self.verifyAddress()
         return struct.pack(">HH", self.address, self.count)
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a request pdu."""
         self.address, self.count = struct.unpack(">HH", data[:4])
         self.verifyCount(self.MAX_COUNT)
@@ -74,7 +74,7 @@ class ReadCoilsResponse(ModbusPDU):
         result = pack_bitstring(self.bits)
         return struct.pack(">B", len(result)) + result
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode response pdu."""
         self.bits = unpack_bitstring(data[1:])
 
@@ -101,7 +101,7 @@ class WriteSingleCoilResponse(ModbusPDU):
         val = ModbusStatus.ON if self.bits[0] else ModbusStatus.OFF
         return struct.pack(">HH", self.address, val)
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a write coil request."""
         self.address, value = struct.unpack(">HH", data[:4])
         self.bits = [bool(value)]
@@ -173,7 +173,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
             ">HHB", self.address, self.count, byte_count
         ) + pack_bitstring(self.bits)
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a write coils request."""
         self.address, self.count, self.byte_count = struct.unpack(">HHB", data[0:5])
         self.verifyCount(self.MAX_COUNT)
@@ -223,7 +223,7 @@ class WriteMultipleCoilsResponse(ModbusPDU):
         """Encode write coils response."""
         return struct.pack(">HH", self.address, self.count)
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a write coils response."""
         self.address, self.count = struct.unpack(">HH", data[:4])
 

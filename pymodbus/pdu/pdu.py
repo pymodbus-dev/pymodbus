@@ -83,10 +83,15 @@ class ModbusPDU:
 
     def encode(self) -> bytes:
         """Encode the message."""
-        return b""
+        raise NotImplementedException(
+            f"encode() not implemented {self.__class__.__name__}"
+        )
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode data part of the message."""
+        raise NotImplementedException(
+            f"decode() not implemented {self.__class__.__name__}"
+        )
 
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
@@ -94,12 +99,12 @@ class ModbusPDU:
         """Update diagnostic request on the given device."""
         _ = context, device_id
         raise NotImplementedException(
-            f"update datastore called wrongly {self.__class__.__name__}"
+            f"datastore_update() not implemented {self.__class__.__name__}"
         )
 
     @classmethod
     def calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         raise NotImplementedException(
-            f"missing calculateRtuFrameSize {cls.__class__.__name__}"
+            f"calculateRtuFrameSize() not implemented {cls.__class__.__name__}"
         )

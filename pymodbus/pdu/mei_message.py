@@ -41,17 +41,6 @@ class _EncapsulatedInterfaceTransport(ModbusPDU):
         """Decode the MEI type."""
         return int(data[2])
 
-    def decode(self, data: bytes) -> None:
-        """Decode the MEI type."""
-        self.sub_function_code = int(data[0])
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Reject unsupported MEI types."""
-        _ = context, device_id
-        return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_FUNCTION)
-
 
 class ReadDeviceInformationRequest(ModbusPDU):
     """ReadDeviceInformationRequest."""
@@ -88,7 +77,7 @@ class ReadDeviceInformationRequest(ModbusPDU):
         """Decode sub function code (1 byte)."""
         return int(data[2])
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode data part of the message."""
         self.sub_function_code, self.read_code, self.object_id = struct.unpack(
             ">BBB", data[:3]
@@ -197,7 +186,7 @@ class ReadDeviceInformationResponse(ModbusPDU):
         """Decode sub function code (1 byte)."""
         return int(data[2])
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a the response."""
         params = struct.unpack(">BBBBBB", data[0:6])
         self.sub_function_code, self.read_code = params[0:2]

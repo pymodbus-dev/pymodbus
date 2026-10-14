@@ -59,7 +59,7 @@ class DiagnosticBase(ModbusPDU):
         """Decode sub function code (2 bytes)."""
         return int.from_bytes(data[2:4], "big")
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a diagnostic request."""
         (self.sub_function_code,) = struct.unpack(">H", data[:2])
         data = data[2:]

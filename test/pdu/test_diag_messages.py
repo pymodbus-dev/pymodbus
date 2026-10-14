@@ -124,7 +124,7 @@ class TestDataStore:
         """Testing diagnostic request/response can be decoded and encoded."""
         msg_obj = DiagnosticBase()
         data = b"\x00\x01\x02\x03"
-        msg_obj.decode(data)
+        msg_obj.x_decode(data)
         result = msg_obj.encode()
         assert data == result
 
@@ -139,13 +139,13 @@ class TestDataStore:
         """Testing diagnostic request/response can be decoded and encoded."""
         msg_obj = DiagnosticBase()
         data = b"\x00\x01\x02\x03a"
-        msg_obj.decode(data)
+        msg_obj.x_decode(data)
 
     def test_diagnostic_requests_decode(self):
         """Testing diagnostic request messages encoding."""
         for msg, enc, _ in self.requests:
             handle = DiagnosticBase()
-            handle.decode(enc)
+            handle.x_decode(enc)
             assert handle.sub_function_code == msg.sub_function_code
             encoded = handle.encode()
             assert enc == encoded
@@ -161,7 +161,7 @@ class TestDataStore:
         """Testing diagnostic request messages encoding."""
         for msg, enc, _ in self.requests:
             handle = DiagnosticBase()
-            handle.decode(enc)
+            handle.x_decode(enc)
             assert handle.sub_function_code == msg.sub_function_code
 
     def test_diagnostic_requests_encode(self):

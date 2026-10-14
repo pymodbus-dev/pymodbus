@@ -64,7 +64,7 @@ class ReadFileRecordRequest(ModbusPDU):
             )
         return packet
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode the incoming request."""
         self.records = []
         if (byte_count := int(data[0])) > len(data) - 1:
@@ -120,7 +120,7 @@ class ReadFileRecordResponse(ModbusPDU):
             packet += record.record_data
         return packet
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode the response."""
         count = 1
         self.records.clear()
@@ -173,7 +173,7 @@ class WriteFileRecordRequest(ModbusPDU):
             packet += record.record_data
         return packet
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode the incoming request."""
         if (byte_count := int(data[0])) > len(data) - 1:
             raise ModbusException(f"Invalid byte count: {byte_count}")
@@ -236,7 +236,7 @@ class WriteFileRecordResponse(ModbusPDU):
             packet += record.record_data
         return packet
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode the incoming request."""
         count = 1
         self.records.clear()
@@ -276,7 +276,7 @@ class ReadFifoQueueRequest(ModbusPDU):
         """Encode the request packet."""
         return struct.pack(">H", self.address)
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode the incoming request."""
         self.address = struct.unpack(">H", data[:2])[0]
 
@@ -318,7 +318,7 @@ class ReadFifoQueueResponse(ModbusPDU):
             packet += struct.pack(">H", value)
         return packet
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a the response."""
         self.values = []
         _, count = struct.unpack(">HH", data[0:4])

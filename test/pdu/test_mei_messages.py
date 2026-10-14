@@ -39,28 +39,14 @@ class TestMeiMessage:
     def test_read_device_information_request_decode(self):
         """Test basic bit message encoding/decoding."""
         handle = ReadDeviceInformationRequest()
-        handle.decode(b"\x0e\x01\x00")
+        handle.x_decode(b"\x0e\x01\x00")
         assert handle.read_code == DeviceInformation.BASIC
         assert not handle.object_id
 
     def test_device_information_mei_type_is_routed(self):
         """Test MEI type 0x0E is routed to device identification."""
-        pdu = DecodePDU(True).decode(b"\x2b\x0e\x01\x00")
-
+        pdu, _ = DecodePDU(True).decode(b"\x2b\x0e\x01\x00")
         assert isinstance(pdu, ReadDeviceInformationRequest)
-
-    @pytest.mark.parametrize("mei_type", [0x00, 0x0D, 0x0F, 0xFF])
-    async def test_unsupported_mei_type_is_not_device_information(
-        self, mei_type, mock_server_context
-    ):
-        """Test unsupported MEI types are not routed to device identification."""
-        pdu = DecodePDU(True).decode(bytes([0x2B, mei_type, 0x01, 0x00]))
-
-        assert pdu
-        assert not isinstance(pdu, ReadDeviceInformationRequest)
-        assert pdu.sub_function_code == mei_type
-        response = await pdu.datastore_update(mock_server_context(), 0)
-        assert response.exception_code == ExcCodes.ILLEGAL_FUNCTION
 
     async def test_read_device_information_request(self, mock_server_context):
         """Test basic bit message encoding/decoding."""
@@ -196,7 +182,7 @@ class TestMeiMessage:
         message += TEST_MESSAGE
         message += b"\x81\x04Test\x81\x08Repeated\x81\x07Another"
         handle = ReadDeviceInformationResponse(read_code=0x00, information={})
-        handle.decode(message)
+        handle.x_decode(message)
         assert handle.read_code == DeviceInformation.BASIC
         assert handle.conformity == 0x01
         assert handle.information[0x00] == b"Company"

@@ -29,7 +29,7 @@ class ReadExceptionStatusRequest(ModbusPDU):
         """Encode the message."""
         return b""
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode data part of the message."""
 
     async def datastore_update(
@@ -57,7 +57,7 @@ class ReadExceptionStatusResponse(ModbusPDU):
         """Encode the response."""
         return struct.pack(">B", self.status)
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a the response."""
         self.status = int(data[0])
 
@@ -80,7 +80,7 @@ class GetCommEventCounterRequest(ModbusPDU):
         """Encode the message."""
         return b""
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode data part of the message."""
 
     async def datastore_update(
@@ -109,7 +109,7 @@ class GetCommEventCounterResponse(ModbusPDU):
         ready = ModbusStatus.READY if self.status else ModbusStatus.WAITING
         return struct.pack(">HH", ready, self.count)
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a the response."""
         ready, self.count = struct.unpack(">HH", data[:4])
         self.status = ready == ModbusStatus.READY
@@ -129,7 +129,7 @@ class GetCommEventLogRequest(ModbusPDU):
         """Encode the message."""
         return b""
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode data part of the message."""
 
     async def datastore_update(
@@ -184,7 +184,7 @@ class GetCommEventLogResponse(ModbusPDU):
         packet += b"".join(struct.pack(">B", e) for e in self.events)
         return packet
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a the response."""
         length = int(data[0])
         status = struct.unpack(">H", data[1:3])[0]
@@ -211,7 +211,7 @@ class ReportDeviceIdRequest(ModbusPDU):
         """Encode the message."""
         return b""
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode data part of the message."""
 
     async def datastore_update(
@@ -269,7 +269,7 @@ class ReportDeviceIdResponse(ModbusPDU):
         packet += struct.pack(">B", status)
         return packet
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a the response.
 
         Since the identifier is device dependent, we just return the

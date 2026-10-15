@@ -957,7 +957,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         return result if len(result) != 1 else result[0]
 
     @classmethod
-    def convert_to_registers(  # noqa: C901
+    def convert_to_registers(
         cls,
         value: int | float | str | list[bool] | list[int] | list[float],
         data_type: DATATYPE,
@@ -980,10 +980,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         if data_type == cls.DATATYPE.BITS:
             if not isinstance(value, list):
                 raise TypeError(f"Value should be list of bool but is {type(value)}.")
-            value = cast(list[bool], value)
-            if missing := len(value) % 16:
-                value += [False] * (16 - missing)
-            byte_list = pack_bitstring(value)
+            byte_list = pack_bitstring(cast(list[bool], value), align_byte=False)
         elif data_type == cls.DATATYPE.STRING:
             if not isinstance(value, str):
                 raise TypeError(f"Value should be string but is {type(value)}.")

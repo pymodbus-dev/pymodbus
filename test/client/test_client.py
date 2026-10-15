@@ -339,6 +339,12 @@ class TestMixin:
                 result = [round(v, 6) for v in result]
             else:
                 result = round(cast(float, result), 6)
+        elif datatype == ModbusClientMixin.DATATYPE.BITS and (
+            missing := len(value) % 16
+        ):
+            x_value = value + [False] * (16 - missing)
+            assert result == x_value
+            return
         assert result == value
 
     @pytest.mark.parametrize(

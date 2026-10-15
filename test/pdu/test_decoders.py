@@ -121,14 +121,14 @@ class TestModbusPDU:
     @pytest.mark.parametrize(("code", "frame"), list(responses) + list(exceptions))
     def test_client_decode(self, code, frame):
         """Test lookup for responses."""
-        pdu, _ = self.client.decode(frame)
+        pdu = self.client.decode(frame)
         assert pdu
         assert pdu.function_code == code
 
     @pytest.mark.parametrize(("code", "frame"), list(requests))
     def test_server_decode(self, code, frame):
         """Test lookup for requests."""
-        pdu, _ = self.server.decode(frame)
+        pdu = self.server.decode(frame)
         assert pdu
         assert pdu.function_code == code
 
@@ -141,8 +141,7 @@ class TestModbusPDU:
 
     def test_decode_unknown_sub(self):
         """Test for unknown sub code."""
-        with pytest.raises(ModbusIOException):
-            self.client.decode(b"\x08\x00\xf0\xf0\x00")
+        assert self.client.decode(b"\x08\x00\xf0\xf0\x00")
 
     @pytest.mark.parametrize(("decoder"), [server, client])
     def test_register_custom_request(self, decoder, mockPDU):

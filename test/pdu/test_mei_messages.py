@@ -45,7 +45,7 @@ class TestMeiMessage:
 
     def test_device_information_mei_type_is_routed(self):
         """Test MEI type 0x0E is routed to device identification."""
-        pdu, _ = DecodePDU(True).decode(b"\x2b\x0e\x01\x00")
+        pdu = DecodePDU(True).decode(b"\x2b\x0e\x01\x00")
         assert isinstance(pdu, ReadDeviceInformationRequest)
 
     async def test_read_device_information_request(self, mock_server_context):

@@ -21,7 +21,7 @@ class DecodePDU:
         """Initialize function_tables."""
         self.pdu_inx = 0 if is_server else 1
 
-    def lookupPduClass(self, data: bytes) -> type[ModbusPDU] | None:
+    def _lookupPduClass(self, data: bytes) -> type[ModbusPDU] | None:
         """Use `function_code` to determine the class of the PDU."""
         if (func_code := int(data[1])) & 0x80:
             return ExceptionResponse
@@ -68,7 +68,7 @@ class DecodePDU:
                 pdu_exp = ExceptionResponse(function_code & 0x7F)
                 pdu_exp.x_decode(frame[1:])
                 return pdu_exp
-            if not (pdu_class := self.lookupPduClass(b"\x00" + frame)):
+            if not (pdu_class := self._lookupPduClass(b"\x00" + frame)):
                 raise ModbusIOException(
                     f"Unknown response {function_code}", function_code=function_code
                 )
@@ -88,6 +88,6 @@ class DecodePDU:
 
     def calculateRtuFrameSize(self, data: bytes) -> int:
         """Calculate the size of a PDU."""
-        if not (pdu_class := self.lookupPduClass(data)):
+        if not (pdu_class := self._lookupPduClass(data)):
             return 0
         return pdu_class.x_calculateRtuFrameSize(data)

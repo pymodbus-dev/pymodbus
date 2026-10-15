@@ -94,7 +94,7 @@ class TestModbusPDU:
     def test_client_lookup(self, code, frame):
         """Test lookup for responses."""
         data = b"\x01" + frame
-        pdu = self.client.lookupPduClass(data)
+        pdu = self.client._lookupPduClass(data)
         assert pdu
         if not code & 0x80:
             assert pdu.function_code == code
@@ -102,7 +102,7 @@ class TestModbusPDU:
     def test_client_lookup_no_fc(self):
         """Test lookup for responses."""
         data = b"\x01\x70"
-        pdu = self.client.lookupPduClass(data)
+        pdu = self.client._lookupPduClass(data)
         assert not pdu
 
     def test_list_function_codes(self):
@@ -114,7 +114,7 @@ class TestModbusPDU:
     def test_server_lookup(self, code, frame):
         """Test lookup for requests."""
         data = b"\x01" + frame
-        pdu = self.client.lookupPduClass(data)
+        pdu = self.client._lookupPduClass(data)
         assert pdu
         assert pdu.function_code == code
 
@@ -161,12 +161,12 @@ class TestModbusPDU:
 
         decoder.register(mockPDU)
         data = b"\x01" + mockPDU().encode()
-        assert decoder.lookupPduClass(data)
+        assert decoder._lookupPduClass(data)
         mockPDU.sub_function_code = 0xF7
         decoder.register(mockPDU)
         mockPDU.sub_function_code = 0xF4
         decoder.register(mockPDU)
         data = b"\x01" + mockPDU().encode()
-        assert self.server.lookupPduClass(data)
+        assert self.server._lookupPduClass(data)
         with pytest.raises(MessageRegisterException):
             decoder.register(NoCustomRequestResponse)

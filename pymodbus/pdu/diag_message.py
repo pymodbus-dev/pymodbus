@@ -23,7 +23,7 @@ class DiagnosticBase(ModbusPDU):
     sub_function_code: int = 9999
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 8
 
@@ -464,7 +464,7 @@ class GetClearModbusPlusResponse(DiagnosticBase):
     sub_function_code = 0x0015
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of the message.
 
         Func_code (1 byte) + Sub function code (2 byte) + Operation (2 byte) + Data (108 bytes)

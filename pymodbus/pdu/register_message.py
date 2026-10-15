@@ -21,7 +21,7 @@ class ReadHoldingRegistersRequest(ModbusPDU):
     MAX_COUNT = 125
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 8
 
@@ -63,7 +63,7 @@ class ReadHoldingRegistersResponse(ModbusPDU):
     function_code = 3
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return int(data[2]) + 2 + 3
 
@@ -106,7 +106,7 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
     MAX_WRITE_COUNT = 121
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return int(data[10]) + 10 + 3
 
@@ -208,7 +208,7 @@ class WriteSingleRegisterResponse(ModbusPDU):
     function_code = 6
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 8
 
@@ -255,7 +255,7 @@ class WriteMultipleRegistersRequest(ModbusPDU):
     _payload_byte_count: int | None = None
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return int(data[6]) + 6 + 3
 
@@ -305,7 +305,7 @@ class WriteMultipleRegistersResponse(ModbusPDU):
     function_code = 16
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 8
 
@@ -324,7 +324,7 @@ class MaskWriteRegisterRequest(ModbusPDU):
     function_code = 0x16
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 10
 
@@ -385,7 +385,7 @@ class MaskWriteRegisterResponse(ModbusPDU):
     function_code = 0x16
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 10
 

@@ -49,7 +49,7 @@ class ReadDeviceInformationRequest(ModbusPDU):
     sub_function_code = 0x0E
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 7
 
@@ -113,7 +113,7 @@ class ReadDeviceInformationResponse(ModbusPDU):
     sub_function_code = 0x0E
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of the message."""
         size = 8  # skip the header information
         if (data_len := len(data)) < size:

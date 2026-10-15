@@ -115,7 +115,7 @@ class TestExtras:
         """Test rtu process incoming packets."""
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
         with patch(
-            "pymodbus.pdu.ReadCoilsRequest.calculateRtuFrameSize", return_value=0
+            "pymodbus.pdu.ReadCoilsRequest.x_calculateRtuFrameSize", return_value=0
         ):
             used_len, pdu = self._rtu.handleFrame(msg, 0, 0)
             assert not used_len

@@ -37,7 +37,7 @@ class ReadFileRecordRequest(ModbusPDU):
     function_code = 0x14
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return int(data[2]) + 2 + 3
 
@@ -97,7 +97,7 @@ class ReadFileRecordResponse(ModbusPDU):
     function_code = 0x14
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return int(data[2]) + 2 + 3
 
@@ -143,7 +143,7 @@ class WriteFileRecordRequest(ModbusPDU):
     function_code = 0x15
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return int(data[2]) + 2 + 3
 
@@ -207,7 +207,7 @@ class WriteFileRecordResponse(ModbusPDU):
     function_code = 0x15
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return int(data[2]) + 2 + 3
 
@@ -260,7 +260,7 @@ class ReadFifoQueueRequest(ModbusPDU):
     function_code = 0x18
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 6
 
@@ -297,7 +297,7 @@ class ReadFifoQueueResponse(ModbusPDU):
     function_code = 0x18
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of the message."""
         hi_byte = int(data[2])
         lo_byte = int(data[3])

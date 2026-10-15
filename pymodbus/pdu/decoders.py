@@ -85,3 +85,9 @@ class DecodePDU:
             raise ModbusIOException(
                 f"Unable to decode frame {exc}", function_code=function_code
             ) from exc
+
+    def calculateRtuFrameSize(self, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        if not (pdu_class := self.lookupPduClass(data)):
+            return 0
+        return pdu_class.x_calculateRtuFrameSize(data)

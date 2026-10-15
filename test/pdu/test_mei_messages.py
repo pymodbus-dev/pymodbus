@@ -108,13 +108,15 @@ class TestMeiMessage:
         assert result.exception_code == ExcCodes.ILLEGAL_ADDRESS
 
     def test_read_device_information_calc1(self):
-        """Test calculateRtuFrameSize, short buffer."""
+        """Test x_calculateRtuFrameSize, short buffer."""
         handle = ReadDeviceInformationResponse()
-        assert handle.calculateRtuFrameSize(b"\x0e\x01\x83") == 999
-        assert handle.calculateRtuFrameSize(b"\x0e\x01\x83\x00\x00\x03\x01\x03") == 998
+        assert handle.x_calculateRtuFrameSize(b"\x0e\x01\x83") == 999
+        assert (
+            handle.x_calculateRtuFrameSize(b"\x0e\x01\x83\x00\x00\x03\x01\x03") == 998
+        )
 
     def test_read_device_information_sub_fc(self):
-        """Test calculateRtuFrameSize, short buffer."""
+        """Test x_calculateRtuFrameSize, short buffer."""
         handle = ReadDeviceInformationResponse()
         assert handle.decode_sub_function_code(b"\x0e\x01\x83") == 0x83
         handle2 = ReadDeviceInformationRequest()
@@ -195,8 +197,8 @@ class TestMeiMessage:
         message = (
             b"\x04\x2b\x0e\x01\x81\x00\x01\x01\x00\x06\x66\x6f\x6f\x62\x61\x72\xd7\x3b"
         )
-        result = ReadDeviceInformationResponse.calculateRtuFrameSize(message)
+        result = ReadDeviceInformationResponse.x_calculateRtuFrameSize(message)
         assert result == 18
         message = b"\x00\x2b\x0e\x02\x00\x4d\x47"
-        result = ReadDeviceInformationRequest.calculateRtuFrameSize(message)
+        result = ReadDeviceInformationRequest.x_calculateRtuFrameSize(message)
         assert result == 7

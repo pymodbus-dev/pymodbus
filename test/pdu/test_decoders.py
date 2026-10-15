@@ -141,7 +141,8 @@ class TestModbusPDU:
 
     def test_decode_unknown_sub(self):
         """Test for unknown sub code."""
-        assert self.client.decode(b"\x08\x00\xf0\xf0\x00")
+        with pytest.raises(ModbusIOException):
+            self.client.decode(b"\x08\x00\xf0\xf0\x00")
 
     @pytest.mark.parametrize(("decoder"), [server, client])
     def test_register_custom_request(self, decoder, mockPDU):

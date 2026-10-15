@@ -12,6 +12,7 @@ import pytest_asyncio
 
 from pymodbus.constants import ExcCodes
 from pymodbus.datastore import ModbusDeviceContext, ModbusServerContext
+from pymodbus.pdu import ModbusPDU
 from pymodbus.server import ServerAsyncStop
 from pymodbus.transport import NULLMODEM_HOST, CommParams, CommType
 from pymodbus.transport.transport import NullModem
@@ -240,80 +241,111 @@ def define_mock_servercontext() -> ModbusServerContext:
     return cast(ModbusServerContext, MockServerContext)
 
 
-class MockLastValuesContext(ModbusServerContext):
-    """Mock context."""
+@pytest.fixture(name="MockLastValuesContext")
+def define_valuesContext():
+    """Define context class."""
 
-    def __init__(self, valid=False, default=True):
-        """Initialize."""
-        super().__init__(devices=ModbusDeviceContext())
-        self.valid = valid
-        self.default = default
-        self.last_values: list = []
+    class DummyValuesContext(ModbusServerContext):
+        """Mock context."""
 
-    async def async_getValues(self, device_id, func_code, address, count=0):
-        """Get values."""
-        _ = device_id, func_code, address
-        return [self.default] * count
+        def __init__(self, valid=False, default=True):
+            """Initialize."""
+            super().__init__(devices=ModbusDeviceContext())
+            self.valid = valid
+            self.default = default
+            self.last_values: list = []
 
-    async def async_setValues(self, device_id, func_code, address, values):
-        """Set values."""
-        _ = device_id, func_code, address
-        self.last_values = values
+        async def async_getValues(self, device_id, func_code, address, count=0):
+            """Get values."""
+            _ = device_id, func_code, address
+            return [self.default] * count
+
+        async def async_setValues(self, device_id, func_code, address, values):
+            """Set values."""
+            _ = device_id, func_code, address
+            self.last_values = values
+
+    return DummyValuesContext
 
 
-class mockSocket:  # pylint: disable=invalid-name
-    """Mock socket."""
+@pytest.fixture(name="mockSocket")
+def define_mockSocket():  # noqa: C901
+    """Define mockSocket class."""
 
-    timeout = 2
+    class DummySocket:
+        """Mock socket."""
 
-    def __init__(self, copy_send=True):
-        """Initialize."""
-        self.packets = deque()
-        self.buffer = None
-        self.in_waiting = 0
-        self.copy_send = copy_send
+        timeout = 2
 
-    def mock_prepare_receive(self, msg):
-        """Store message."""
-        self.packets.append(msg)
-        self.in_waiting += len(msg)
+        def __init__(self, copy_send=True):
+            """Initialize."""
+            self.packets = deque()
+            self.buffer = None
+            self.in_waiting = 0
+            self.copy_send = copy_send
 
-    def close(self):
-        """Close."""
-        return True
+        def mock_prepare_receive(self, msg):
+            """Store message."""
+            self.packets.append(msg)
+            self.in_waiting += len(msg)
 
-    def recv(self, size):
-        """Receive."""
-        if not self.packets or not size:
-            return b""
-        retval = self.packets.popleft()
-        self.in_waiting -= len(retval)
-        return retval
+        def close(self):
+            """Close."""
+            return True
 
-    def read(self, size):
-        """Read."""
-        return self.recv(size)
+        def recv(self, size):
+            """Receive."""
+            if not self.packets or not size:
+                return b""
+            retval = self.packets.popleft()
+            self.in_waiting -= len(retval)
+            return retval
 
-    def recvfrom(self, size):
-        """Receive from."""
-        return [self.recv(size)]
+        def read(self, size):
+            """Read."""
+            return self.recv(size)
 
-    def write(self, msg):
-        """Write."""
-        return self.send(msg)
+        def recvfrom(self, size):
+            """Receive from."""
+            return [self.recv(size)]
 
-    def send(self, msg):
-        """Send."""
-        if not self.copy_send:
+        def write(self, msg):
+            """Write."""
+            return self.send(msg)
+
+        def send(self, msg):
+            """Send."""
+            if not self.copy_send:
+                return len(msg)
+            self.packets.append(msg)
+            self.in_waiting += len(msg)
             return len(msg)
-        self.packets.append(msg)
-        self.in_waiting += len(msg)
-        return len(msg)
 
-    def sendto(self, msg, *_args):
-        """Send to."""
-        return self.send(msg)
+        def sendto(self, msg, *_args):
+            """Send to."""
+            return self.send(msg)
 
-    def setblocking(self, _flag):
-        """Set blocking."""
-        return None
+        def setblocking(self, _flag):
+            """Set blocking."""
+            return None
+
+    return DummySocket
+
+
+@pytest.fixture(name="mockPDU")
+def define_dummyPDU():
+    """Define mockSocket class."""
+
+    class DummyPDU(ModbusPDU):
+        """Custom request."""
+
+        function_code = 0x70
+
+        def encode(self):
+            """Encode."""
+            return self.function_code.to_bytes(1, "big") + b"123"
+
+        def decode(self, _data):
+            """Decode."""
+
+    return DummyPDU

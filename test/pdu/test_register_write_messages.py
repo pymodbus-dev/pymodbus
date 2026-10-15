@@ -13,7 +13,6 @@ from pymodbus.pdu.register_message import (
     WriteSingleRegisterRequest,
     WriteSingleRegisterResponse,
 )
-from test.conftest import MockLastValuesContext
 
 
 # ---------------------------------------------------------------------------#
@@ -178,7 +177,9 @@ class TestWriteRegisterMessages:
         assert handle.and_mask == 0x00F2
         assert handle.or_mask == 0x0025
 
-    async def test_mask_write_register_request_datastore_update(self):
+    async def test_mask_write_register_request_datastore_update(
+        self, MockLastValuesContext
+    ):
         """Test write register request valid execution."""
         # The test uses the 4 nibbles of the 16-bit values to test
         # the combinations:

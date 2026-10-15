@@ -19,7 +19,7 @@ class ReadCoilsRequest(ModbusPDU):
     MAX_COUNT = 2000
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 8
 
@@ -65,7 +65,7 @@ class ReadCoilsResponse(ModbusPDU):
     function_code = 1
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return int(data[2]) + 2 + 3
 
@@ -91,7 +91,7 @@ class WriteSingleCoilResponse(ModbusPDU):
     function_code = 5
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 8
 
@@ -141,7 +141,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
     MAX_COUNT = 2000
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return int(data[6]) + 6 + 3
 
@@ -215,7 +215,7 @@ class WriteMultipleCoilsResponse(ModbusPDU):
     function_code = 15
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 8
 

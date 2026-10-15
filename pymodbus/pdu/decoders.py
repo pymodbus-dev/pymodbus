@@ -21,7 +21,7 @@ class DecodePDU:
         """Initialize function_tables."""
         self.pdu_inx = 0 if is_server else 1
 
-    def lookupPduClass(self, data: bytes) -> type[ModbusPDU] | None:
+    def _lookupPduClass(self, data: bytes) -> type[ModbusPDU] | None:
         """Use `function_code` to determine the class of the PDU."""
         if (func_code := int(data[1])) & 0x80:
             return ExceptionResponse
@@ -60,20 +60,19 @@ class DecodePDU:
             self.pdu_table = copy.deepcopy(DecodePDU.pdu_table)
         self.pdu_table[custom_class.function_code] = (custom_class, custom_class)
 
-    def decode(self, frame: bytes) -> tuple[ModbusPDU, int]:
+    def decode(self, frame: bytes) -> ModbusPDU:
         """Decode a frame."""
         function_code = 0
         try:
             if (function_code := int(frame[0])) > 0x80:
                 pdu_exp = ExceptionResponse(function_code & 0x7F)
                 pdu_exp.x_decode(frame[1:])
-                return pdu_exp, ExceptionResponse.calculateRtuFrameSize(frame)
-            if not (pdu_class := self.lookupPduClass(b"\x00" + frame)):
+                return pdu_exp
+            if not (pdu_class := self._lookupPduClass(b"\x00" + frame)):
                 raise ModbusIOException(
                     f"Unknown response {function_code}", function_code=function_code
                 )
             pdu = pdu_class()
-            pdu_size = pdu.calculateRtuFrameSize(frame)
             pdu.x_decode(frame[1:])
             Log.debug(
                 "decoded PDU function_code({} sub {}) -> {} ",
@@ -81,8 +80,14 @@ class DecodePDU:
                 pdu.sub_function_code,
                 str(pdu),
             )
-            return pdu, pdu_size
+            return pdu
         except (ValueError, IndexError, struct.error) as exc:
             raise ModbusIOException(
                 f"Unable to decode frame {exc}", function_code=function_code
             ) from exc
+
+    def calculateRtuFrameSize(self, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        if not (pdu_class := self._lookupPduClass(data)):
+            return 0
+        return pdu_class.x_calculateRtuFrameSize(data)

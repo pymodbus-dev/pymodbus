@@ -63,8 +63,10 @@ class TestBitMessage:
     def test_frame_size(self):
         """Test that the read fifo queue response can decode."""
         message = TEST_MESSAGE
-        assert ReadFifoQueueResponse.calculateRtuFrameSize(b"\x00\x18" + message) == 14
-        assert ReadFifoQueueRequest.calculateRtuFrameSize(b"") == 6
+        assert (
+            ReadFifoQueueResponse.x_calculateRtuFrameSize(b"\x00\x18" + message) == 14
+        )
+        assert ReadFifoQueueRequest.x_calculateRtuFrameSize(b"") == 6
 
     # -----------------------------------------------------------------------#
     #  File Record
@@ -105,7 +107,7 @@ class TestBitMessage:
             b"\x00\x00\x0e\x06\x00\x04\x00\x01\x00\x02\x06\x00\x03\x00\x09\x00\x02"
         )
         handle = ReadFileRecordRequest()
-        size = handle.calculateRtuFrameSize(request)
+        size = handle.x_calculateRtuFrameSize(request)
         assert size == 0x0E + 5
 
     async def test_read_file_record_request_datastore_update(self, mock_server_context):
@@ -144,7 +146,7 @@ class TestBitMessage:
         """Test basic bit message encoding/decoding."""
         request = b"\x00\x00\x0c\x05\x06\x0d\xfe\x00\x20\x05\x05\x06\x33\xcd\x00\x40"
         handle = ReadFileRecordResponse()
-        size = handle.calculateRtuFrameSize(request)
+        size = handle.x_calculateRtuFrameSize(request)
         assert size == 0x0C + 5
 
     # -----------------------------------------------------------------------#
@@ -178,7 +180,7 @@ class TestBitMessage:
         """Test write file record request rtu frame size calculation."""
         request = b"\x00\x00\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = WriteFileRecordRequest()
-        size = handle.calculateRtuFrameSize(request)
+        size = handle.x_calculateRtuFrameSize(request)
         assert size == 0x0D + 5
 
     async def test_write_file_record_request_datastore_update(
@@ -240,5 +242,5 @@ class TestBitMessage:
         """Test write file record response rtu frame size calculation."""
         request = b"\x00\x00\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = WriteFileRecordResponse()
-        size = handle.calculateRtuFrameSize(request)
+        size = handle.x_calculateRtuFrameSize(request)
         assert size == 0x0D + 5

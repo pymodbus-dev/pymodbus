@@ -21,7 +21,7 @@ class ReadExceptionStatusRequest(ModbusPDU):
     function_code = 0x07
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 4
 
@@ -49,7 +49,7 @@ class ReadExceptionStatusResponse(ModbusPDU):
     function_code = 0x07
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 5
 
@@ -72,7 +72,7 @@ class GetCommEventCounterRequest(ModbusPDU):
     function_code = 0x0B
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 4
 
@@ -100,7 +100,7 @@ class GetCommEventCounterResponse(ModbusPDU):
     function_code = 0x0B
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 8
 
@@ -121,7 +121,7 @@ class GetCommEventLogRequest(ModbusPDU):
     function_code = 0x0C
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 4
 
@@ -153,7 +153,7 @@ class GetCommEventLogResponse(ModbusPDU):
     function_code = 0x0C
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return int(data[2]) + 2 + 3
 
@@ -203,7 +203,7 @@ class ReportDeviceIdRequest(ModbusPDU):
     function_code = 0x11
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 4
 
@@ -244,7 +244,7 @@ class ReportDeviceIdResponse(ModbusPDU):
     function_code = 0x11
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return int(data[2]) + 2 + 3
 

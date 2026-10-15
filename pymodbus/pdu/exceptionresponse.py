@@ -11,7 +11,7 @@ class ExceptionResponse(ModbusPDU):
     """Base class for a modbus exception PDU."""
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 5
 

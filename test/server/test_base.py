@@ -7,7 +7,7 @@ import pytest
 from pymodbus.datastore import ModbusDeviceContext, ModbusServerContext
 from pymodbus.exceptions import ParameterException
 from pymodbus.framer import FramerType
-from pymodbus.pdu import ReadHoldingRegistersRequest
+from pymodbus.pdu.register_message import PDUreadHoldingRegisters
 from pymodbus.server import ModbusBaseServer
 from pymodbus.simulator import DataType, SimData, SimDevice
 from pymodbus.transport import CommParams, CommType
@@ -35,7 +35,7 @@ class TestBaseServer:
             None,
             None,
             None,
-            [ReadHoldingRegistersRequest],
+            [PDUreadHoldingRegisters],
         )
         return server
 
@@ -60,7 +60,7 @@ class TestBaseServer:
             None,
             None,
             None,
-            [ReadHoldingRegistersRequest],
+            [PDUreadHoldingRegisters],
         )
 
     async def test_base_getValues(self):
@@ -81,7 +81,7 @@ class TestBaseServer:
             None,
             None,
             None,
-            [ReadHoldingRegistersRequest],
+            [PDUreadHoldingRegisters],
         )
         result = await bs.async_getValues(0, 0x03, 0)
         assert result == [15]
@@ -106,7 +106,7 @@ class TestBaseServer:
             None,
             None,
             None,
-            [ReadHoldingRegistersRequest],
+            [PDUreadHoldingRegisters],
         )
         await bs.async_setValues(1, 0x10, 1, [1])
         result = await bs.async_getValues(1, 0x03, 1)
@@ -163,5 +163,5 @@ class TestBaseServer:
                 None,
                 None,
                 None,
-                [ReadHoldingRegistersRequest],
+                [PDUreadHoldingRegisters],
             )

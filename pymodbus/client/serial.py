@@ -11,7 +11,7 @@ from functools import partial
 from ..exceptions import ConnectionException
 from ..framer import FramerType
 from ..logging import Log
-from ..pdu import ModbusPDU
+from ..pdu import OLD_pdu
 from ..transport import CommParams, CommType
 from .base import ModbusBaseClient, ModbusBaseSyncClient
 
@@ -82,7 +82,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         timeout: float = 3,
         retries: int = 3,
         trace_packet: Callable[[bool, bytes], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_pdu: Callable[[bool, OLD_pdu], OLD_pdu] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
@@ -174,7 +174,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         timeout: float = 3,
         retries: int = 3,
         trace_packet: Callable[[bool, bytes], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_pdu: Callable[[bool, OLD_pdu], OLD_pdu] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
     ) -> None:
         """Initialize Modbus Serial Client."""

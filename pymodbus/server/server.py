@@ -6,8 +6,7 @@ from collections.abc import Callable
 
 from ..datastore import ModbusServerContext
 from ..framer import FramerType
-from ..pdu import ModbusPDU
-from ..pdu.device import ModbusDeviceIdentification
+from ..pdu import ModbusDeviceIdentification, OLD_pdu
 from ..simulator import SimDevice
 from ..transport import CommParams, CommType
 from .base import ModbusBaseServer
@@ -30,9 +29,9 @@ class ModbusTcpServer(ModbusBaseServer):
         ignore_missing_devices: bool = False,
         broadcast_enable: bool = False,
         trace_packet: Callable[[bool, bytes], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_pdu: Callable[[bool, OLD_pdu], OLD_pdu] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
-        custom_pdu: list[type[ModbusPDU]] | None = None,
+        custom_pdu: list[type[OLD_pdu]] | None = None,
     ):
         """Initialize the socket server.
 
@@ -49,7 +48,7 @@ class ModbusTcpServer(ModbusBaseServer):
         :param trace_packet: Called with bytestream received/to be sent
         :param trace_pdu: Called with PDU received/to be sent
         :param trace_connect: Called when connected/disconnected
-        :param custom_pdu: list of ModbusPDU custom classes
+        :param custom_pdu: list of OLD_pdu custom classes
         """
         params = getattr(
             self,
@@ -95,9 +94,9 @@ class ModbusTlsServer(ModbusTcpServer):
         ignore_missing_devices=False,
         broadcast_enable=False,
         trace_packet: Callable[[bool, bytes], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_pdu: Callable[[bool, OLD_pdu], OLD_pdu] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
-        custom_pdu: list[type[ModbusPDU]] | None = None,
+        custom_pdu: list[type[OLD_pdu]] | None = None,
     ):
         """Overloaded initializer for the socket server.
 
@@ -115,7 +114,7 @@ class ModbusTlsServer(ModbusTcpServer):
         :param trace_packet: Called with bytestream received/to be sent
         :param trace_pdu: Called with PDU received/to be sent
         :param trace_connect: Called when connected/disconnected
-        :param custom_pdu: list of ModbusPDU custom classes
+        :param custom_pdu: list of OLD_pdu custom classes
         """
         if not sslctx:
             raise TypeError(
@@ -160,9 +159,9 @@ class ModbusUdpServer(ModbusBaseServer):
         ignore_missing_devices: bool = False,
         broadcast_enable: bool = False,
         trace_packet: Callable[[bool, bytes], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_pdu: Callable[[bool, OLD_pdu], OLD_pdu] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
-        custom_pdu: list[type[ModbusPDU]] | None = None,
+        custom_pdu: list[type[OLD_pdu]] | None = None,
     ):
         """Overloaded initializer for the socket server.
 
@@ -179,7 +178,7 @@ class ModbusUdpServer(ModbusBaseServer):
         :param trace_packet: Called with bytestream received/to be sent
         :param trace_pdu: Called with PDU received/to be sent
         :param trace_connect: Called when connected/disconnected
-        :param custom_pdu: list of ModbusPDU custom classes
+        :param custom_pdu: list of OLD_pdu custom classes
         """
         # ----------------
         params = CommParams(
@@ -228,9 +227,9 @@ class ModbusSerialServer(ModbusBaseServer):
         broadcast_enable: bool = False,
         reconnect_delay: float = 2,
         trace_packet: Callable[[bool, bytes], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_pdu: Callable[[bool, OLD_pdu], OLD_pdu] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
-        custom_pdu: list[type[ModbusPDU]] | None = None,
+        custom_pdu: list[type[OLD_pdu]] | None = None,
     ):
         """Initialize the socket server.
 
@@ -253,7 +252,7 @@ class ModbusSerialServer(ModbusBaseServer):
         :param trace_packet: Called with bytestream received/to be sent
         :param trace_pdu: Called with PDU received/to be sent
         :param trace_connect: Called when connected/disconnected
-        :param custom_pdu: list of ModbusPDU custom classes
+        :param custom_pdu: list of OLD_pdu custom classes
         """
         params = CommParams(
             comm_type=CommType.SERIAL,

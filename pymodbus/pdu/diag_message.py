@@ -6,41 +6,47 @@ import struct
 from typing import cast
 
 from ..constants import ModbusPlusOperation
-from ..datastore import ModbusServerContext
-from .decoders import DecodePDU
 from .device import ModbusControlBlock
-from .pdu import ModbusPDU
+from .pdu import DecodePDU, ModbusPdu, StoreGet, StoreSet
 from .utils import pack_bitstring
 
 
 _MCB = ModbusControlBlock()
 
 
-class DiagnosticBase(ModbusPDU):
-    """DiagnosticBase."""
+class PDUdiagnostic(ModbusPdu):
+    """Diagnostic base."""
 
     function_code = 0x08
-    sub_function_code: int = 9999
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return 8
 
     def __init__(
         self,
+        *args,
         message: bytes | int | list | tuple | None = 0,
-        dev_id: int = 1,
-        transaction_id: int = 0,
+        **kwargs,
     ) -> None:
-        """Initialize a diagnostic request."""
-        super().__init__(transaction_id=transaction_id, dev_id=dev_id)
-        self.message: bytes | int | list | tuple | None = message
+        """Initialize."""
+        super().__init__(*args, **kwargs)
+        self.message: bytes | int | list | tuple = message or []
 
-    def x_encode(self) -> bytes:
-        """Encode a diagnostic response."""
+    def __str__(self) -> str:
+        """Build representation of pdu."""
+        return super().__str__() + f", message={self.message}"
+
+    @classmethod
+    def calculatePduSize(cls, is_request: bool, offset: int, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 8
+
+    @classmethod
+    def decode_sub_function_code(cls, offset: int, data: bytes) -> int:
+        """Decode sub function code."""
+        return int.from_bytes(data[offset + 2 : offset + 4], "big")
+
+    def to_bytes(self) -> bytes:
+        """Encode the message."""
         packet = struct.pack(">H", self.sub_function_code)
-        if self.message is not None:
+        if not self.is_request:
             if isinstance(self.message, bytes):
                 packet += self.message
                 return packet
@@ -54,16 +60,11 @@ class DiagnosticBase(ModbusPDU):
             raise TypeError(f"UNKNOWN DIAG message type: {type(self.message)}")
         return packet
 
-    @classmethod
-    def decode_sub_function_code(cls, data: bytes) -> int:
-        """Decode sub function code (2 bytes)."""
-        return int.from_bytes(data[2:4], "big")
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode a diagnostic request."""
-        (self.sub_function_code,) = struct.unpack(">H", data[:2])
-        data = data[2:]
-        if self.sub_function_code == ReturnQueryDataRequest.sub_function_code:
+    def from_bytes(self, offset: int, data: bytes) -> None:
+        """Decode payload."""
+        (self.sub_function_code,) = struct.unpack(">H", data[offset : offset + 2])
+        data = data[offset + 2 :]
+        if self.sub_function_code == PDUreturnQueryData.sub_function_code:
             self.message = data
         elif data_len := len(data):
             if data_len % 2:
@@ -74,433 +75,216 @@ class DiagnosticBase(ModbusPDU):
             else:
                 self.message = struct.unpack(">" + "H" * word_len, data[: 2 * word_len])
 
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Implement dummy."""
-        _ = context
-        response = {
-            DiagnosticBase.sub_function_code: DiagnosticBase,
-            ReturnQueryDataResponse.sub_function_code: ReturnQueryDataResponse,
-            RestartCommunicationsOptionResponse.sub_function_code: RestartCommunicationsOptionResponse,
-        }[self.sub_function_code]
-        return response(
-            message=self.message, dev_id=device_id, transaction_id=self.transaction_id
-        )
+    def sub_build_response(self) -> None:
+        """get/set info in _MCB."""
+        return
+
+    async def build_response(
+        self, get_values: StoreGet, set_values: StoreSet
+    ) -> ModbusPdu:
+        """Update internal data."""
+        self.is_request = False
+        self.sub_build_response()
+        return self
 
 
-class ReturnQueryDataRequest(DiagnosticBase):
-    """ReturnQueryDataRequest."""
+class PDUreturnQueryData(PDUdiagnostic):
+    """ReturnQueryData."""
 
     sub_function_code = 0x0000
 
 
-class ReturnQueryDataResponse(DiagnosticBase):
-    """ReturnQueryDataResponse."""
-
-    sub_function_code = 0x0000
-
-
-class RestartCommunicationsOptionRequest(DiagnosticBase):
-    """RestartCommunicationsOptionRequest."""
+class PDUrestartCommunicationsOption(PDUdiagnostic):
+    """RestartCommunicationsOption."""
 
     sub_function_code = 0x0001
 
 
-class RestartCommunicationsOptionResponse(DiagnosticBase):
-    """RestartCommunicationsOptionResponse."""
-
-    sub_function_code = 0x0001
-
-
-class ReturnDiagnosticRegisterRequest(DiagnosticBase):
-    """ReturnDiagnosticRegisterRequest."""
+class PDUreturnDiagnosticRegister(PDUdiagnostic):
+    """ReturnDiagnosticRegister."""
 
     sub_function_code = 0x0002
 
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
-        register = pack_bitstring(_MCB.getDiagnosticRegister())
-        return ReturnDiagnosticRegisterResponse(
-            message=register, dev_id=device_id, transaction_id=self.transaction_id
-        )
+    def sub_build_response(self) -> None:
+        """Get/set info in _MCB."""
+        self.message = pack_bitstring(_MCB.getDiagnosticRegister())
 
 
-class ReturnDiagnosticRegisterResponse(DiagnosticBase):
-    """ReturnDiagnosticRegisterResponse."""
-
-    sub_function_code = 0x0002
-
-
-class ChangeAsciiInputDelimiterRequest(DiagnosticBase):
-    """ChangeAsciiInputDelimiterRequest."""
+class PDUchangeAsciiInputDelimiter(PDUdiagnostic):
+    """ChangeAsciiInputDelimiter."""
 
     sub_function_code = 0x0003
 
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
+    def sub_build_response(self) -> None:
+        """Get/set info in _MCB."""
         char = (cast(int, self.message) & 0xFF00) >> 8
         _MCB.Delimiter = char
-        return ChangeAsciiInputDelimiterResponse(
-            message=self.message, dev_id=device_id, transaction_id=self.transaction_id
-        )
 
 
-class ChangeAsciiInputDelimiterResponse(DiagnosticBase):
-    """ChangeAsciiInputDelimiterResponse."""
-
-    sub_function_code = 0x0003
-
-
-class ForceListenOnlyModeRequest(DiagnosticBase):
-    """ForceListenOnlyModeRequest."""
+class PDUforceListenOnlyMode(PDUdiagnostic):
+    """ForceListenOnlyMode."""
 
     sub_function_code = 0x0004
 
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
+    def sub_build_response(self) -> None:
+        """Get/set info in _MCB."""
         _MCB.ListenOnly = True
-        return ForceListenOnlyModeResponse(
-            dev_id=device_id, transaction_id=self.transaction_id
-        )
 
 
-class ForceListenOnlyModeResponse(DiagnosticBase):
-    """ForceListenOnlyModeResponse.
-
-    This does not send a response
-    """
-
-    sub_function_code = 0x0004
-
-    def __init__(self, dev_id=1, transaction_id=0):
-        """Initialize to block a return response."""
-        DiagnosticBase.__init__(self, dev_id=dev_id, transaction_id=transaction_id)
-        self.message = []
-
-
-class ClearCountersRequest(DiagnosticBase):
-    """ClearCountersRequest."""
+class PDUclearCounters(PDUdiagnostic):
+    """ClearCounters."""
 
     sub_function_code = 0x000A
 
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
+    def sub_build_response(self) -> None:
+        """Get/set info in _MCB."""
         _MCB.reset()
-        return ClearCountersResponse(
-            dev_id=device_id, transaction_id=self.transaction_id
-        )
 
 
-class ClearCountersResponse(DiagnosticBase):
-    """ClearCountersResponse."""
-
-    sub_function_code = 0x000A
-
-
-class ReturnBusMessageCountRequest(DiagnosticBase):
-    """ReturnBusMessageCountRequest."""
+class PDUreturnBusMessageCount(PDUdiagnostic):
+    """ReturnBusMessageCount."""
 
     sub_function_code = 0x000B
 
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
-        count = _MCB.Counter.BusMessage
-        return ReturnBusMessageCountResponse(
-            message=count, dev_id=device_id, transaction_id=self.transaction_id
-        )
+    def sub_build_response(self) -> None:
+        """Get/set info in _MCB."""
+        self.message = _MCB.Counter.BusMessage
 
 
-class ReturnBusMessageCountResponse(DiagnosticBase):
-    """ReturnBusMessageCountResponse."""
-
-    sub_function_code = 0x000B
-
-
-class ReturnBusCommunicationErrorCountRequest(DiagnosticBase):
-    """ReturnBusCommunicationErrorCountRequest."""
+class PDUreturnBusCommunicationErrorCount(PDUdiagnostic):
+    """ReturnBusCommunicationErrorCount."""
 
     sub_function_code = 0x000C
 
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
-        count = _MCB.Counter.BusCommunicationError
-        return ReturnBusCommunicationErrorCountResponse(
-            message=count, dev_id=device_id, transaction_id=self.transaction_id
-        )
+    def sub_build_response(self) -> None:
+        """Get/set info in _MCB."""
+        self.message = _MCB.Counter.BusCommunicationError
 
 
-class ReturnBusCommunicationErrorCountResponse(DiagnosticBase):
-    """ReturnBusCommunicationErrorCountResponse."""
-
-    sub_function_code = 0x000C
-
-
-class ReturnBusExceptionErrorCountRequest(DiagnosticBase):
-    """ReturnBusExceptionErrorCountRequest."""
+class PDUreturnBusExceptionErrorCount(PDUdiagnostic):
+    """ReturnBusExceptionErrorCount."""
 
     sub_function_code = 0x000D
 
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
-        count = _MCB.Counter.BusExceptionError
-        return ReturnBusExceptionErrorCountResponse(
-            message=count, dev_id=device_id, transaction_id=self.transaction_id
-        )
+    def sub_build_response(self) -> None:
+        """Get/set info in _MCB."""
+        self.message = _MCB.Counter.BusExceptionError
 
 
-class ReturnBusExceptionErrorCountResponse(DiagnosticBase):
-    """ReturnBusExceptionErrorCountResponse."""
-
-    sub_function_code = 0x000D
-
-
-class ReturnDeviceMessageCountRequest(DiagnosticBase):
-    """ReturnDeviceMessageCountRequest."""
+class PDUreturnDeviceMessageCount(PDUdiagnostic):
+    """ReturnDeviceMessageCount."""
 
     sub_function_code = 0x000E
 
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
-        count = _MCB.Counter.DeviceMessage
-        return ReturnDeviceMessageCountResponse(
-            message=count, dev_id=device_id, transaction_id=self.transaction_id
-        )
+    def sub_build_response(self) -> None:
+        """Get/set info in _MCB."""
+        self.message = _MCB.Counter.DeviceMessage
 
 
-class ReturnDeviceMessageCountResponse(DiagnosticBase):
-    """ReturnDeviceMessageCountResponse."""
-
-    sub_function_code = 0x000E
-
-
-class ReturnDeviceNoResponseCountRequest(DiagnosticBase):
-    """ReturnDeviceNoResponseCountRequest."""
+class PDUreturnDeviceNoResponseCount(PDUdiagnostic):
+    """ReturnDeviceNoResponseCount."""
 
     sub_function_code = 0x000F
 
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
-        count = _MCB.Counter.DeviceNoResponse
-        return ReturnDeviceNoResponseCountResponse(
-            message=count, dev_id=device_id, transaction_id=self.transaction_id
-        )
+    def sub_build_response(self) -> None:
+        """Get/set info in _MCB."""
+        self.message = _MCB.Counter.DeviceNoResponse
 
 
-class ReturnDeviceNoResponseCountResponse(DiagnosticBase):
-    """ReturnDeviceNoResponseCountResponse."""
-
-    sub_function_code = 0x000F
-
-
-class ReturnDeviceNAKCountRequest(DiagnosticBase):
-    """ReturnDeviceNAKCountRequest."""
+class PDUreturnDeviceNAKCount(PDUdiagnostic):
+    """ReturnDeviceNAKCount."""
 
     sub_function_code = 0x0010
 
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
-        count = _MCB.Counter.DeviceNAK
-        return ReturnDeviceNAKCountResponse(
-            message=count, dev_id=device_id, transaction_id=self.transaction_id
-        )
+    def sub_build_response(self) -> None:
+        """Get/set info in _MCB."""
+        self.message = _MCB.Counter.DeviceNAK
 
 
-class ReturnDeviceNAKCountResponse(DiagnosticBase):
-    """ReturnDeviceNAKCountResponse."""
-
-    sub_function_code = 0x0010
-
-
-class ReturnDeviceBusyCountRequest(DiagnosticBase):
-    """ReturnDeviceBusyCountRequest."""
+class PDUreturnDeviceBusyCount(PDUdiagnostic):
+    """ReturnDeviceBusyCount."""
 
     sub_function_code = 0x0011
 
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
-        count = _MCB.Counter.DEVICE_BUSY
-        return ReturnDeviceBusyCountResponse(
-            message=count, dev_id=device_id, transaction_id=self.transaction_id
-        )
+    def sub_build_response(self) -> None:
+        """Get/set info in _MCB."""
+        self.message = _MCB.Counter.DEVICE_BUSY
 
 
-class ReturnDeviceBusyCountResponse(DiagnosticBase):
-    """ReturnDeviceBusyCountResponse."""
-
-    sub_function_code = 0x0011
-
-
-class ReturnDeviceBusCharacterOverrunCountRequest(DiagnosticBase):
-    """ReturnDeviceBusCharacterOverrunCountRequest."""
+class PDUreturnDeviceBusCharacterOverrunCount(PDUdiagnostic):
+    """ReturnDeviceBusCharacterOverrunCount."""
 
     sub_function_code = 0x0012
 
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
-        count = _MCB.Counter.BusCharacterOverrun
-        return ReturnDeviceBusCharacterOverrunCountResponse(
-            message=count, dev_id=device_id, transaction_id=self.transaction_id
-        )
+    def sub_build_response(self) -> None:
+        """Get/set info in _MCB."""
+        self.message = _MCB.Counter.BusCharacterOverrun
 
 
-class ReturnDeviceBusCharacterOverrunCountResponse(DiagnosticBase):
-    """ReturnDeviceBusCharacterOverrunCountResponse."""
-
-    sub_function_code = 0x0012
-
-
-class ReturnIopOverrunCountRequest(DiagnosticBase):
-    """ReturnIopOverrunCountRequest."""
+class PDUreturnIopOverrunCount(PDUdiagnostic):
+    """ReturnIopOverrunCount."""
 
     sub_function_code = 0x0013
 
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
-        count = _MCB.Counter.BusCharacterOverrun
-        return ReturnIopOverrunCountResponse(
-            message=count, dev_id=device_id, transaction_id=self.transaction_id
-        )
+    def sub_build_response(self) -> None:
+        """Get/set info in _MCB."""
+        self.message = _MCB.Counter.BusCharacterOverrun
 
 
-class ReturnIopOverrunCountResponse(DiagnosticBase):
-    """ReturnIopOverrunCountResponse."""
-
-    sub_function_code = 0x0013
-
-
-class ClearOverrunCountRequest(DiagnosticBase):
-    """ClearOverrunCountRequest."""
+class PDUclearOverrunCount(PDUdiagnostic):
+    """ClearOverrunCount."""
 
     sub_function_code = 0x0014
 
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
+    def sub_build_response(self) -> None:
+        """Get/set info in _MCB."""
         _MCB.Counter.BusCharacterOverrun = 0x0000
-        return ClearOverrunCountResponse(
-            dev_id=device_id, transaction_id=self.transaction_id
-        )
 
 
-class ClearOverrunCountResponse(DiagnosticBase):
-    """ClearOverrunCountResponse."""
-
-    sub_function_code = 0x0014
-
-
-class GetClearModbusPlusRequest(DiagnosticBase):
-    """GetClearModbusPlusRequest."""
+class PDUgetClearModbusPlus(PDUdiagnostic):
+    """GetClearModbusPlus."""
 
     sub_function_code = 0x0015
 
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
-        message: int | list | None = None  # the clear operation does not return info
+    @classmethod
+    def calculatePduSize(cls, is_request: bool, offset: int, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        if is_request:
+            return 8
+        size_data = 111 if len(data) > 7 else 0
+        return 1 + 2 + 2 + 2 + size_data
+
+    def sub_build_response(self) -> None:
+        """Get/set info in _MCB."""
         if self.message == ModbusPlusOperation.CLEAR_STATISTICS:
             _MCB.Plus.reset()
-            message = ModbusPlusOperation.CLEAR_STATISTICS
+            self.message = ModbusPlusOperation.CLEAR_STATISTICS
         else:
-            message = [self.message]
-            message += _MCB.Plus.x_encode()
-        return GetClearModbusPlusResponse(
-            message=message, dev_id=device_id, transaction_id=self.transaction_id
-        )
+            if not isinstance(self.message, list):
+                self.message = [self.message]
+            self.message += _MCB.Plus.encode()
 
-    def x_encode(self):
+    def to_bytes(self):
         """Encode a diagnostic response."""
         packet = struct.pack(">H", self.sub_function_code)
         packet += struct.pack(">H", self.message)
         return packet
 
 
-class GetClearModbusPlusResponse(DiagnosticBase):
-    """GetClearModbusPlusResponse."""
-
-    sub_function_code = 0x0015
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of the message.
-
-        Func_code (1 byte) + Sub function code (2 byte) + Operation (2 byte) + Data (108 bytes)
-        """
-        size_data = 111 if len(data) > 7 else 0
-        return 1 + 2 + 2 + 2 + size_data
-
-
-DecodePDU.add_pdu(DiagnosticBase, DiagnosticBase)
-DecodePDU.add_sub_pdu(ReturnQueryDataRequest, ReturnQueryDataResponse)
-DecodePDU.add_sub_pdu(
-    RestartCommunicationsOptionRequest, RestartCommunicationsOptionResponse
-)
-DecodePDU.add_sub_pdu(ReturnDiagnosticRegisterRequest, ReturnDiagnosticRegisterResponse)
-DecodePDU.add_sub_pdu(
-    ChangeAsciiInputDelimiterRequest, ChangeAsciiInputDelimiterResponse
-)
-DecodePDU.add_sub_pdu(ForceListenOnlyModeRequest, ForceListenOnlyModeResponse)
-DecodePDU.add_sub_pdu(ClearCountersRequest, ClearCountersResponse)
-DecodePDU.add_sub_pdu(ReturnBusMessageCountRequest, ReturnBusMessageCountResponse)
-DecodePDU.add_sub_pdu(
-    ReturnBusCommunicationErrorCountRequest, ReturnBusCommunicationErrorCountResponse
-)
-DecodePDU.add_sub_pdu(
-    ReturnBusExceptionErrorCountRequest, ReturnBusExceptionErrorCountResponse
-)
-DecodePDU.add_sub_pdu(ReturnDeviceMessageCountRequest, ReturnDeviceMessageCountResponse)
-DecodePDU.add_sub_pdu(
-    ReturnDeviceNoResponseCountRequest, ReturnDeviceNoResponseCountResponse
-)
-DecodePDU.add_sub_pdu(ReturnDeviceNAKCountRequest, ReturnDeviceNAKCountResponse)
-DecodePDU.add_sub_pdu(ReturnDeviceBusyCountRequest, ReturnDeviceBusyCountResponse)
-DecodePDU.add_sub_pdu(
-    ReturnDeviceBusCharacterOverrunCountRequest,
-    ReturnDeviceBusCharacterOverrunCountResponse,
-)
-DecodePDU.add_sub_pdu(ReturnIopOverrunCountRequest, ReturnIopOverrunCountResponse)
-DecodePDU.add_sub_pdu(ClearOverrunCountRequest, ClearOverrunCountResponse)
-DecodePDU.add_sub_pdu(GetClearModbusPlusRequest, GetClearModbusPlusResponse)
+DecodePDU.add_pdu(PDUdiagnostic)
+DecodePDU.add_pdu(PDUreturnQueryData)
+DecodePDU.add_pdu(PDUrestartCommunicationsOption)
+DecodePDU.add_pdu(PDUreturnDiagnosticRegister)
+DecodePDU.add_pdu(PDUchangeAsciiInputDelimiter)
+DecodePDU.add_pdu(PDUforceListenOnlyMode)
+DecodePDU.add_pdu(PDUclearCounters)
+DecodePDU.add_pdu(PDUreturnBusMessageCount)
+DecodePDU.add_pdu(PDUreturnBusCommunicationErrorCount)
+DecodePDU.add_pdu(PDUreturnDeviceMessageCount)
+DecodePDU.add_pdu(PDUreturnDeviceNoResponseCount)
+DecodePDU.add_pdu(PDUreturnDeviceNAKCount)
+DecodePDU.add_pdu(PDUreturnDeviceBusyCount)
+DecodePDU.add_pdu(PDUreturnDeviceBusCharacterOverrunCount)
+DecodePDU.add_pdu(PDUreturnIopOverrunCount)
+DecodePDU.add_pdu(PDUclearOverrunCount)
+DecodePDU.add_pdu(PDUgetClearModbusPlus)

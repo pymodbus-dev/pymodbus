@@ -5,293 +5,162 @@ from collections.abc import Sequence
 from typing import cast
 
 from ..constants import ExcCodes, ModbusStatus
-from ..datastore import ModbusServerContext
-from .decoders import DecodePDU
-from .exceptionresponse import ExceptionResponse
-from .pdu import ModbusPDU
+from .pdu import DecodePDU, ModbusPdu, PDUexception, StoreGet, StoreSet
 from .utils import pack_bitstring, unpack_bitstring
 
 
-class ReadCoilsRequest(ModbusPDU):
-    """ReadCoilsRequest."""
+class PDUreadCoils(ModbusPdu):
+    """ReadCoils."""
 
     function_code = 1
     MAX_COUNT = 2000
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return 8
-
-    def x_encode(self) -> bytes:
-        """Encode a request pdu."""
-        self.verifyCount(self.MAX_COUNT)
-        self.verifyAddress()
-        return struct.pack(">HH", self.address, self.count)
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode a request pdu."""
-        self.address, self.count = struct.unpack(">HH", data[:4])
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Run request against a datastore."""
-        if not 1 <= self.count <= self.MAX_COUNT:
-            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
-        values = await context.async_getValues(
-            device_id, self.function_code, self.address, self.count
-        )
-        if isinstance(values, ExcCodes):
-            return ExceptionResponse(self.function_code, values)
-        return ReadCoilsResponse(
-            dev_id=self.dev_id,
-            transaction_id=self.transaction_id,
-            bits=cast(list[bool], values),
-        )
-
-
-class ReadDiscreteInputsRequest(ModbusPDU):
-    """ReadDiscreteInputsRequest."""
-
-    function_code = 2
-    MAX_COUNT = 2000
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return 8
-
-    def x_encode(self) -> bytes:
-        """Encode a request pdu."""
-        self.verifyCount(self.MAX_COUNT)
-        self.verifyAddress()
-        return struct.pack(">HH", self.address, self.count)
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode a request pdu."""
-        self.address, self.count = struct.unpack(">HH", data[:4])
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Run request against a datastore."""
-        if not 1 <= self.count <= self.MAX_COUNT:
-            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
-        values = await context.async_getValues(
-            device_id, self.function_code, self.address, self.count
-        )
-        if isinstance(values, ExcCodes):
-            return ExceptionResponse(self.function_code, values)
-        return ReadDiscreteInputsResponse(
-            dev_id=self.dev_id,
-            transaction_id=self.transaction_id,
-            bits=cast(list[bool], values),
-        )
-
-
-class ReadCoilsResponse(ModbusPDU):
-    """ReadCoilsResponse."""
-
-    function_code = 1
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return int(data[2]) + 2 + 3
-
-    def x_encode(self) -> bytes:
-        """Encode response pdu."""
-        result = pack_bitstring(self.bits)
-        return struct.pack(">B", len(result)) + result
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode response pdu."""
-        self.bits = unpack_bitstring(data[1:])
-
-
-class ReadDiscreteInputsResponse(ModbusPDU):
-    """ReadDiscreteInputsResponse."""
-
-    function_code = 2
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return int(data[2]) + 2 + 3
-
-    def x_encode(self) -> bytes:
-        """Encode response pdu."""
-        result = pack_bitstring(self.bits)
-        return struct.pack(">B", len(result)) + result
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode response pdu."""
-        self.bits = unpack_bitstring(data[1:])
-
-
-class WriteSingleCoilResponse(ModbusPDU):
-    """WriteSingleCoilResponse."""
-
-    function_code = 5
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return 8
-
-    def x_encode(self) -> bytes:
-        """Encode write coil request."""
-        self.verifyAddress()
-        val = ModbusStatus.ON if self.bits[0] else ModbusStatus.OFF
-        return struct.pack(">HH", self.address, val)
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode a write coil request."""
-        self.address, value = struct.unpack(">HH", data[:4])
-        self.bits = [bool(value)]
-
-
-class WriteSingleCoilRequest(ModbusPDU):
-    """WriteSingleCoilRequest."""
-
-    function_code = 5
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return 8
-
-    def x_encode(self) -> bytes:
-        """Encode write coil request."""
-        self.verifyAddress()
-        val = ModbusStatus.ON if self.bits[0] else ModbusStatus.OFF
-        return struct.pack(">HH", self.address, val)
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode a write coil request."""
-        self.address, value = struct.unpack(">HH", data[:4])
-        self.bits = [bool(value)]
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Run a request against a datastore."""
-        if rc := await context.async_setValues(
-            device_id, self.function_code, self.address, self.bits
-        ):
-            return ExceptionResponse(self.function_code, rc)
-        values = await context.async_getValues(
-            device_id, self.function_code, self.address, 1
-        )
-        if isinstance(values, ExcCodes):
-            return ExceptionResponse(self.function_code, values)
-        return WriteSingleCoilResponse(
-            address=self.address,
-            bits=cast(list[bool], values),
-            dev_id=self.dev_id,
-            transaction_id=self.transaction_id,
-        )
-
-
-class WriteMultipleCoilsRequest(ModbusPDU):
-    """WriteMultipleCoilsRequest."""
-
-    function_code = 15
-    count: int
-    byte_count: int | None
-    data_byte_count: int
-    MAX_COUNT = 2000
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return int(data[6]) + 6 + 3
 
     def __init__(
         self,
-        address: int = 0,
+        *args,
         bits: Sequence[bool] | None = None,
-        dev_id: int = 0,
-        transaction_id: int = 0,
+        **kwargs,
     ) -> None:
-        """Initialize a write multiple coils request."""
-        super().__init__(
-            address=address,
-            bits=bits,
-            dev_id=dev_id,
-            transaction_id=transaction_id,
-        )
-        self.count = len(self.bits)
-        self.byte_count = None
-        self.data_byte_count = 0
+        """Initialize."""
+        super().__init__(*args, **kwargs)
+        self.bits: Sequence[bool] = bits or []
 
-    def x_encode(self) -> bytes:
-        """Encode write coils request."""
-        self.count = len(self.bits)
-        self.verifyAddress()
-        self.verifyCount(self.MAX_COUNT)
-        byte_count = (self.count + 7) // 8
-        return struct.pack(
-            ">HHB", self.address, self.count, byte_count
-        ) + pack_bitstring(self.bits)
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode a write coils request."""
-        self.address, self.count, self.byte_count = struct.unpack(">HHB", data[0:5])
-        self.verifyCount(self.MAX_COUNT)
-        self.data_byte_count = len(data) - 5
-        self.bits = unpack_bitstring(data[5 : 5 + cast(int, self.byte_count)])[
-            : self.count
-        ]
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Run a request against a datastore."""
-        if self.byte_count is None:
-            self.count = len(self.bits)
-        else:
-            expected_byte_count = (self.count + 7) // 8
-            if (
-                self.byte_count != expected_byte_count
-                or self.data_byte_count != self.byte_count
-            ):
-                return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
-        rc = await context.async_setValues(
-            device_id, self.function_code, self.address, self.bits
-        )
-        if rc:
-            return ExceptionResponse(self.function_code, rc)
-
-        return WriteMultipleCoilsResponse(
-            address=self.address,
-            count=self.count,
-            dev_id=self.dev_id,
-            transaction_id=self.transaction_id,
-        )
-
-
-class WriteMultipleCoilsResponse(ModbusPDU):
-    """WriteMultipleCoilsResponse."""
-
-    function_code = 15
+    def __str__(self) -> str:
+        """Build representation of pdu."""
+        return super().__str__() + f", bits={self.bits}"
 
     @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+    def calculatePduSize(cls, is_request: bool, offset: int, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 8 if is_request else int(data[offset + 2]) + 2 + 3
+
+    def to_bytes(self) -> bytes:
+        """Encode the message."""
+        if self.is_request:
+            return struct.pack(">HH", self.address, self.count)
+        result = pack_bitstring(self.bits)
+        return struct.pack(">B", len(result)) + result
+
+    def from_bytes(self, offset: int, data: bytes) -> None:
+        """Decode payload."""
+        if self.is_request:
+            self.address, self.count = struct.unpack(">HH", data[offset : offset + 4])
+        else:
+            self.bits = unpack_bitstring(data[offset + 1 :])
+
+    async def build_response(
+        self, get_values: StoreGet, set_values: StoreSet
+    ) -> ModbusPdu:
+        """Get bits from datastore."""
+        if not 1 <= self.count <= self.MAX_COUNT:
+            return PDUexception(self.dev_id, self.function_code, ExcCodes.ILLEGAL_VALUE)
+        values = await get_values(
+            self.dev_id, self.function_code, self.address, self.count
+        )
+        if isinstance(values, ExcCodes):
+            return PDUexception(self.dev_id, self.function_code, values)
+        self.is_request = False
+        self.bits = cast(list[bool], values)
+        return self
+
+
+class PDUreadDiscreteInputs(PDUreadCoils):
+    """ReadDiscreteInputsRequest."""
+
+    function_code = 2
+
+
+class PDUwriteSingleCoil(PDUreadCoils):
+    """WriteSingleCoil."""
+
+    function_code = 5
+
+    @classmethod
+    def calculatePduSize(cls, is_request: bool, offset: int, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 8
 
-    def x_encode(self) -> bytes:
-        """Encode write coils response."""
+    def to_bytes(self) -> bytes:
+        """Encode the message."""
+        val = ModbusStatus.ON if self.bits[0] else ModbusStatus.OFF
+        return struct.pack(">HH", self.address, val)
+
+    def from_bytes(self, offset: int, data: bytes) -> None:
+        """Decode payload."""
+        self.address, value = struct.unpack(">HH", data[offset : offset + 4])
+        self.bits = [bool(value)]
+        self.count = 1
+
+    async def build_response(
+        self, get_values: StoreGet, set_values: StoreSet
+    ) -> ModbusPdu:
+        """Get bits from datastore."""
+        if rc := await set_values(
+            self.dev_id, self.function_code, self.address, self.bits
+        ):
+            return PDUexception(self.dev_id, self.function_code, rc)
+
+        values = await get_values(
+            self.dev_id, self.function_code, self.address, self.count
+        )
+        if isinstance(values, ExcCodes):
+            return PDUexception(self.dev_id, self.function_code, values)
+        self.is_request = False
+        self.bits = cast(list[bool], values)
+        return self
+
+
+class PDUwriteMultipleCoils(PDUreadCoils):
+    """WriteMultipleCoils."""
+
+    function_code = 15
+    MAX_COUNT = 2000
+
+    @classmethod
+    def calculatePduSize(cls, is_request: bool, offset: int, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[offset + 6]) + 6 + 3 if is_request else 8
+
+    def to_bytes(self) -> bytes:
+        """Encode the message."""
+        if self.is_request:
+            byte_count = (self.count + 7) // 8
+            return struct.pack(
+                ">HHB", self.address, self.count, byte_count
+            ) + pack_bitstring(self.bits)
         return struct.pack(">HH", self.address, self.count)
 
-    def x_decode(self, data: bytes) -> None:
-        """Decode a write coils response."""
-        self.address, self.count = struct.unpack(">HH", data[:4])
+    def from_bytes(self, offset: int, data: bytes) -> None:
+        """Decode payload."""
+        if self.is_request:
+            self.address, self.count, byte_count = struct.unpack(
+                ">HHB", data[offset : offset + 5]
+            )
+            self.bits = unpack_bitstring(
+                data[offset + 5 : offset + 5 + cast(int, byte_count)]
+            )[: self.count]
+        else:
+            self.address, self.count = struct.unpack(">HH", data[offset : offset + 4])
+
+    async def build_response(
+        self, get_values: StoreGet, set_values: StoreSet
+    ) -> ModbusPdu:
+        """Get bits from datastore."""
+        if rc := await set_values(
+            self.dev_id, self.function_code, self.address, self.bits
+        ):
+            return PDUexception(self.dev_id, self.function_code, rc)
+        values = await get_values(
+            self.dev_id, self.function_code, self.address, self.count
+        )
+        if isinstance(values, ExcCodes):
+            return PDUexception(self.dev_id, self.function_code, values)
+        self.is_request = False
+        self.bits = cast(list[bool], values)
+        return self
 
 
-DecodePDU.add_pdu(ReadCoilsRequest, ReadCoilsResponse)
-DecodePDU.add_pdu(ReadDiscreteInputsRequest, ReadDiscreteInputsResponse)
-DecodePDU.add_pdu(WriteSingleCoilRequest, WriteSingleCoilResponse)
-DecodePDU.add_pdu(WriteMultipleCoilsRequest, WriteMultipleCoilsResponse)
+DecodePDU.add_pdu(PDUreadCoils)
+DecodePDU.add_pdu(PDUreadDiscreteInputs)
+DecodePDU.add_pdu(PDUwriteSingleCoil)
+DecodePDU.add_pdu(PDUwriteMultipleCoils)

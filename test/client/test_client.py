@@ -19,7 +19,7 @@ from pymodbus import FramerType
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.exceptions import ConnectionException, ModbusException
-from pymodbus.pdu import DecodePDU, ModbusPDU
+from pymodbus.pdu import DecodePDU, OLD_pdu
 from pymodbus.transport import CommParams, CommType
 
 
@@ -47,78 +47,78 @@ class TestMixin:
     @pytest.mark.parametrize(
         ("method", "arg", "pdu_request"),
         [
-            ("read_coils", 1, pdu_bit.ReadCoilsRequest),
-            ("read_discrete_inputs", 1, pdu_bit.ReadDiscreteInputsRequest),
-            ("read_holding_registers", 1, pdu_reg.ReadHoldingRegistersRequest),
-            ("read_input_registers", 1, pdu_reg.ReadInputRegistersRequest),
-            ("write_coil", 2, pdu_bit.WriteSingleCoilRequest),
-            ("write_register", 2, pdu_reg.WriteSingleRegisterRequest),
-            ("read_exception_status", 0, pdu_other_msg.ReadExceptionStatusRequest),
-            ("diag_query_data", 3, pdu_diag.ReturnQueryDataRequest),
+            ("read_coils", 1, pdu_bit.PDUreadCoils),
+            ("read_discrete_inputs", 1, pdu_bit.PDUreadDiscreteInputs),
+            ("read_holding_registers", 1, pdu_reg.PDUreadHoldingRegisters),
+            ("read_input_registers", 1, pdu_reg.PDUreadInputRegisters),
+            ("write_coil", 2, pdu_bit.PDUwriteSingleCoil),
+            ("write_register", 2, pdu_reg.PDUwriteSingleRegister),
+            ("read_exception_status", 0, pdu_other_msg.PDUreadExceptionStatus),
+            ("diag_query_data", 3, pdu_diag.PDUreturnQueryData),
             (
                 "diag_restart_communication",
                 4,
-                pdu_diag.RestartCommunicationsOptionRequest,
+                pdu_diag.PDUrestartCommunicationsOption,
             ),
             (
                 "diag_read_diagnostic_register",
                 0,
-                pdu_diag.ReturnDiagnosticRegisterRequest,
+                pdu_diag.PDUreturnDiagnosticRegister,
             ),
             (
                 "diag_change_ascii_input_delimeter",
                 0,
-                pdu_diag.ChangeAsciiInputDelimiterRequest,
+                pdu_diag.PDUchangeAsciiInputDelimiter,
             ),
-            ("diag_force_listen_only", 0, pdu_diag.ForceListenOnlyModeRequest),
-            ("diag_clear_counters", 0, pdu_diag.ClearCountersRequest),
-            ("diag_read_bus_message_count", 0, pdu_diag.ReturnBusMessageCountRequest),
+            ("diag_force_listen_only", 0, pdu_diag.PDUforceListenOnlyMode),
+            ("diag_clear_counters", 0, pdu_diag.PDUclearCounters),
+            ("diag_read_bus_message_count", 0, pdu_diag.PDUreturnBusMessageCount),
             (
                 "diag_read_bus_comm_error_count",
                 0,
-                pdu_diag.ReturnBusCommunicationErrorCountRequest,
+                pdu_diag.PDUreturnBusCommunicationErrorCount,
             ),
             (
                 "diag_read_bus_exception_error_count",
                 0,
-                pdu_diag.ReturnBusExceptionErrorCountRequest,
+                pdu_diag.PDUreturnBusExceptionErrorCount,
             ),
             (
                 "diag_read_device_message_count",
                 0,
-                pdu_diag.ReturnDeviceMessageCountRequest,
+                pdu_diag.PDUreturnDeviceMessageCount,
             ),
             (
                 "diag_read_device_no_response_count",
                 0,
-                pdu_diag.ReturnDeviceNoResponseCountRequest,
+                pdu_diag.PDUreturnDeviceNoResponseCount,
             ),
-            ("diag_read_device_nak_count", 0, pdu_diag.ReturnDeviceNAKCountRequest),
-            ("diag_read_device_busy_count", 0, pdu_diag.ReturnDeviceBusyCountRequest),
+            ("diag_read_device_nak_count", 0, pdu_diag.PDUreturnDeviceNAKCount),
+            ("diag_read_device_busy_count", 0, pdu_diag.PDUreturnDeviceBusyCount),
             (
                 "diag_read_bus_char_overrun_count",
                 0,
-                pdu_diag.ReturnDeviceBusCharacterOverrunCountRequest,
+                pdu_diag.PDUreturnDeviceBusCharacterOverrunCount,
             ),
-            ("diag_read_iop_overrun_count", 0, pdu_diag.ReturnIopOverrunCountRequest),
-            ("diag_clear_overrun_counter", 0, pdu_diag.ClearOverrunCountRequest),
-            ("diag_getclear_modbus_response", 0, pdu_diag.GetClearModbusPlusRequest),
+            ("diag_read_iop_overrun_count", 0, pdu_diag.PDUreturnIopOverrunCount),
+            ("diag_clear_overrun_counter", 0, pdu_diag.PDUclearOverrunCount),
+            ("diag_getclear_modbus_response", 0, pdu_diag.PDUgetClearModbusPlus),
             (
                 "diag_get_comm_event_counter",
                 0,
-                pdu_other_msg.GetCommEventCounterRequest,
+                pdu_other_msg.PDUgetCommEventCounter,
             ),
-            ("diag_get_comm_event_log", 0, pdu_other_msg.GetCommEventLogRequest),
-            ("write_coils", 5, pdu_bit.WriteMultipleCoilsRequest),
-            ("write_registers", 6, pdu_reg.WriteMultipleRegistersRequest),
-            ("readwrite_registers", 0, pdu_reg.ReadWriteMultipleRegistersRequest),
-            ("readwrite_registers", 6, pdu_reg.ReadWriteMultipleRegistersRequest),
-            ("mask_write_register", 1, pdu_reg.MaskWriteRegisterRequest),
-            ("report_device_id", 0, pdu_other_msg.ReportDeviceIdRequest),
-            ("read_file_record", 7, pdu_file_msg.ReadFileRecordRequest),
-            ("write_file_record", 7, pdu_file_msg.WriteFileRecordRequest),
-            ("read_fifo_queue", 1, pdu_file_msg.ReadFifoQueueRequest),
-            ("read_device_information", 0, pdu_mei.ReadDeviceInformationRequest),
+            ("diag_get_comm_event_log", 0, pdu_other_msg.PDUgetCommEventLog),
+            ("write_coils", 5, pdu_bit.PDUwriteMultipleCoils),
+            ("write_registers", 6, pdu_reg.PDUwriteMultipleRegisters),
+            ("readwrite_registers", 0, pdu_reg.PDUreadWriteMultipleRegisters),
+            ("readwrite_registers", 6, pdu_reg.PDUreadWriteMultipleRegisters),
+            ("mask_write_register", 1, pdu_reg.PDUmaskWriteRegister),
+            ("report_device_id", 0, pdu_other_msg.PDUreportDeviceId),
+            ("read_file_record", 7, pdu_file_msg.PDUreadFileRecord),
+            ("write_file_record", 7, pdu_file_msg.PDUwriteFileRecord),
+            ("read_fifo_queue", 1, pdu_file_msg.PDUreadFifoQueue),
+            ("read_device_information", 0, pdu_mei.PDUreadDeviceInformation),
         ],
     )
     def test_client_mixin(self, arglist, method, arg, pdu_request):
@@ -136,7 +136,7 @@ class TestMixin:
 
     def test_client_mixin_write_sequence(self):
         """Write methods must accept any Sequence of values, e.g. a tuple (#2957)."""
-        requests: list[ModbusPDU] = []
+        requests: list[OLD_pdu] = []
 
         def fake_execute(_self, _no_response_expected, request):
             """Collect PDU requests."""
@@ -475,7 +475,7 @@ class TestMixin:
     def test_client_mixin_execute(self):
         """Test mixin execute."""
         a = ModbusClientMixin()
-        a.execute(False, cast(ModbusPDU, None))
+        a.execute(False, cast(OLD_pdu, None))
 
 
 class TestClientBase:
@@ -620,7 +620,7 @@ class TestClientBase:
             None,
             None,
         )
-        client.register(pdu_bit.ReadCoilsResponse)
+        client.register(pdu_bit.PDUreadCoils)
         assert str(client)
         client.set_max_no_responses(110)
         client.close()
@@ -794,7 +794,7 @@ class TestClientBase:
     def test_tcp_client_register(self):
         """Test tcp client."""
 
-        class CustomRequest(ModbusPDU):  # pylint: disable=too-few-public-methods
+        class CustomRequest(OLD_pdu):  # pylint: disable=too-few-public-methods
             """Dummy custom request."""
 
             function_code = 79

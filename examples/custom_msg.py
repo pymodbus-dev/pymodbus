@@ -18,8 +18,7 @@ from pymodbus import FramerType
 from pymodbus.client import AsyncModbusTcpClient as ModbusClient
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.pdu import ModbusPDU
-from pymodbus.pdu.bit_message import ReadCoilsRequest
+from pymodbus.pdu import OLD_pdu
 from pymodbus.server import ServerAsyncStop, StartAsyncTcpServer
 from pymodbus.simulator import DataType, SimData, SimDevice
 
@@ -35,7 +34,7 @@ from pymodbus.simulator import DataType, SimData, SimDevice
 # --------------------------------------------------------------------------- #
 
 
-class CustomModbusResponse(ModbusPDU):
+class CustomModbusResponse(OLD_pdu):
     """Custom modbus response."""
 
     function_code = 55
@@ -71,7 +70,7 @@ class CustomModbusResponse(ModbusPDU):
             self.values.append(struct.unpack(">H", data[i : i + 2])[0])
 
 
-class CustomRequest(ModbusPDU):
+class CustomRequest(OLD_pdu):
     """Custom modbus request."""
 
     function_code = 55
@@ -97,28 +96,10 @@ class CustomRequest(ModbusPDU):
 
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
+    ) -> OLD_pdu:
         """Update diagnostic request on the given device."""
         _ = context, device_id
         return CustomModbusResponse()
-
-
-# --------------------------------------------------------------------------- #
-# This could also have been defined as
-# --------------------------------------------------------------------------- #
-
-
-class Read16CoilsRequest(ReadCoilsRequest):
-    """Read 16 coils in one request."""
-
-    def __init__(self, address, device_id=1, transaction=0):
-        """Initialize a new instance.
-
-        :param address: The address to start reading from
-        """
-        super().__init__(
-            address=address, count=16, dev_id=device_id, transaction_id=transaction
-        )
 
 
 # --------------------------------------------------------------------------- #
@@ -156,11 +137,6 @@ async def main(host="localhost", port=5020):
             print("Server do not support CustomRequest.")
         else:
             print(result)  # pragma: no cover
-
-        # inherited request
-        request2 = Read16CoilsRequest(32, device_id)
-        result = await client.execute(False, request2)
-        print(result)
     await ServerAsyncStop()
     task.cancel()
     await task

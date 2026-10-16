@@ -105,7 +105,7 @@ class ModbusPlusStatistics:
         """
         return iter(self.stat_data.values())
 
-    def x_encode(self) -> list[int]:
+    def encode(self) -> list[int]:
         """Return a summary of the modbus plus statistics.
 
         :returns: An iterator over lists of 8-bit integers representing each statistic
@@ -487,7 +487,7 @@ class ModbusControlBlock:
 
         :returns: The encoded events packet
         """
-        events = [event.x_encode() for event in self._events]
+        events = [event.encode() for event in self._events]
         return b"".join(events)
 
     def clearEvents(self):

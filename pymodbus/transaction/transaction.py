@@ -10,7 +10,7 @@ from time import monotonic
 from ..exceptions import ConnectionException, ModbusIOException
 from ..framer import FramerAscii, FramerBase, FramerRTU
 from ..logging import Log
-from ..pdu import ModbusPDU
+from ..pdu import OLD_pdu
 from ..transport import CommParams, CommType, ModbusProtocol
 
 
@@ -40,7 +40,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
         retries: int,
         is_server: bool,
         trace_packet: Callable[[bool, bytes], bytes] | None,
-        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None,
+        trace_pdu: Callable[[bool, OLD_pdu], OLD_pdu] | None,
         trace_connect: Callable[[bool], None] | None,
         sync_client=None,
     ) -> None:
@@ -65,7 +65,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
             self._lock = asyncio.Lock()
             self.low_level_send = self.send
             self.response_future: asyncio.Future = asyncio.Future()
-            self.last_pdu: ModbusPDU | None = None
+            self.last_pdu: OLD_pdu | None = None
             self.last_addr: tuple | None = None
 
     def dummy_trace_packet(self, sending: bool, data: bytes) -> bytes:
@@ -73,7 +73,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
         _ = sending
         return data
 
-    def dummy_trace_pdu(self, sending: bool, pdu: ModbusPDU) -> ModbusPDU:
+    def dummy_trace_pdu(self, sending: bool, pdu: OLD_pdu) -> OLD_pdu:
         """Do dummy trace."""
         _ = sending
         return pdu
@@ -82,7 +82,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
         """Do dummy trace."""
         _ = connect
 
-    def sync_get_response(self, dev_id, tid) -> ModbusPDU:
+    def sync_get_response(self, dev_id, tid) -> OLD_pdu:
         """Receive until PDU is correct or timeout."""
         databuffer = b""
         deadline = monotonic() + self.comm_params.timeout_connect
@@ -122,9 +122,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
                 raise asyncio.exceptions.TimeoutError()
 
     @staticmethod
-    def _io_exception_from_request(
-        message: str, request: ModbusPDU
-    ) -> ModbusIOException:
+    def _io_exception_from_request(message: str, request: OLD_pdu) -> ModbusIOException:
         """Build ModbusIOException from an outstanding request."""
         return ModbusIOException(
             message,
@@ -133,7 +131,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
             dev_id=request.dev_id,
         )
 
-    def sync_execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
+    def sync_execute(self, no_response_expected: bool, request: OLD_pdu) -> OLD_pdu:
         """Execute requests asynchronously.
 
         REMARK: this method is identical to execute, apart from the lock and sync_receive.
@@ -181,9 +179,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
             Log.error(txt)
             raise self._io_exception_from_request(txt, request)
 
-    async def execute(
-        self, no_response_expected: bool, request: ModbusPDU
-    ) -> ModbusPDU:
+    async def execute(self, no_response_expected: bool, request: OLD_pdu) -> OLD_pdu:
         """Execute requests asynchronously.
 
         REMARK: this method is identical to sync_execute, apart from the lock and try/except.
@@ -205,7 +201,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
                 if no_response_expected:
                     return None  # type: ignore[return-value]
                 try:
-                    response: ModbusPDU = await asyncio.wait_for(
+                    response: OLD_pdu = await asyncio.wait_for(
                         self.response_future, timeout=self.comm_params.timeout_connect
                     )
                     self.count_until_disconnect = self.max_until_disconnect
@@ -238,7 +234,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
             Log.error(txt)
             raise self._io_exception_from_request(txt, request)
 
-    def pdu_send(self, pdu: ModbusPDU, addr: tuple | None = None) -> None:
+    def pdu_send(self, pdu: OLD_pdu, addr: tuple | None = None) -> None:
         """Build byte stream and send."""
         if not self.is_server:
             self.request_dev_id = pdu.dev_id

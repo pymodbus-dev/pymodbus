@@ -9,13 +9,8 @@ from typing import cast
 import pytest
 
 from pymodbus.constants import DeviceInformation, ExcCodes
-from pymodbus.pdu import ExceptionResponse
-from pymodbus.pdu.decoders import DecodePDU
-from pymodbus.pdu.device import ModbusControlBlock
-from pymodbus.pdu.mei_message import (
-    ReadDeviceInformationRequest,
-    ReadDeviceInformationResponse,
-)
+from pymodbus.pdu import DecodePDU, ModbusControlBlock, PDUexception
+from pymodbus.pdu.mei_message import PDUreadDeviceInformation
 
 
 TEST_VERSION = b"v2.1.12"
@@ -31,15 +26,15 @@ class TestMeiMessage:
 
     def test_read_device_information_request_encode(self):
         """Test basic bit message encoding/decoding."""
-        params = {"read_code": DeviceInformation.BASIC, "object_id": 0x00}
-        handle = ReadDeviceInformationRequest(**params)
+        params = {"read_code": int(DeviceInformation.BASIC), "object_id": 0x00}
+        handle = PDUreadDeviceInformation(0, *params)
         result = handle.x_encode()
         assert result == b"\x0e\x01\x00"
-        assert "ReadDeviceInformationRequest" in str(handle)
+        assert "PDUreadDeviceInformation" in str(handle)
 
     def test_read_device_information_request_decode(self):
         """Test basic bit message encoding/decoding."""
-        handle = ReadDeviceInformationRequest()
+        handle = PDUreadDeviceInformation(0)
         handle.x_decode(b"\x0e\x01\x00")
         assert handle.read_code == DeviceInformation.BASIC
         assert not handle.object_id
@@ -47,7 +42,7 @@ class TestMeiMessage:
     def test_device_information_mei_type_is_routed(self):
         """Test MEI type 0x0E is routed to device identification."""
         pdu = DecodePDU(True).decode(b"\x2b\x0e\x01\x00")
-        assert isinstance(pdu, ReadDeviceInformationRequest)
+        assert isinstance(pdu, PDUreadDeviceInformation)
 
     async def test_read_device_information_request(self, mock_server_context):
         """Test basic bit message encoding/decoding."""
@@ -58,28 +53,26 @@ class TestMeiMessage:
         control.Identity.MajorMinorRevision = TEST_VERSION
         control.Identity.update({0x81: ["Test", "Repeated"]})
 
-        handle = ReadDeviceInformationRequest()
+        handle = PDUreadDeviceInformation()
         result = await handle.datastore_update(context, 0)
-        assert isinstance(result, ReadDeviceInformationResponse)
+        assert isinstance(result, PDUreadDeviceInformation)
         assert result.information[0x00] == "Company"
         assert result.information[0x01] == "Product"
         assert result.information[0x02] == TEST_VERSION
         with pytest.raises(KeyError):
             _ = result.information[0x81]
 
-        handle = ReadDeviceInformationRequest(
+        handle = PDUreadDeviceInformation(
             read_code=DeviceInformation.SPECIFIC, object_id=0x00
         )
         result = await handle.datastore_update(context, 0)
-        assert cast(ReadDeviceInformationResponse, result).information == {
-            0x00: "Company"
-        }
+        assert cast(PDUreadDeviceInformation, result).information == {0x00: "Company"}
 
-        handle = ReadDeviceInformationRequest(
+        handle = PDUreadDeviceInformation(
             read_code=DeviceInformation.EXTENDED, object_id=0x80
         )
         result = await handle.datastore_update(context, 0)
-        assert cast(ReadDeviceInformationResponse, result).information[0x81] == [
+        assert cast(PDUreadDeviceInformation, result).information[0x81] == [
             "Test",
             "Repeated",
         ]
@@ -87,7 +80,7 @@ class TestMeiMessage:
     async def test_read_device_information_request_error(self, mock_server_context):
         """Test basic bit message encoding/decoding."""
         context = mock_server_context()
-        handle = ReadDeviceInformationRequest()
+        handle = PDUreadDeviceInformation()
         handle.read_code = -1
         assert (await handle.datastore_update(context, 0)).function_code == 0xAB
         handle.read_code = 0x05
@@ -96,13 +89,13 @@ class TestMeiMessage:
         assert (await handle.datastore_update(context, 0)).function_code == 0xAB
         handle.object_id = 0x100
         assert (await handle.datastore_update(context, 0)).function_code == 0xAB
-        handle = ReadDeviceInformationRequest(
+        handle = PDUreadDeviceInformation(
             read_code=DeviceInformation.SPECIFIC, object_id=0x54
         )
         result = await handle.datastore_update(context, 0)
         assert result.exception_code == ExcCodes.ILLEGAL_ADDRESS
         ModbusControlBlock().Identity[0xFE] = ""
-        handle = ReadDeviceInformationRequest(
+        handle = PDUreadDeviceInformation(
             read_code=DeviceInformation.SPECIFIC, object_id=0xFE
         )
         result = await handle.datastore_update(context, 0)
@@ -110,7 +103,7 @@ class TestMeiMessage:
 
     def test_read_device_information_calc1(self):
         """Test x_calculateRtuFrameSize, short buffer."""
-        handle = ReadDeviceInformationResponse()
+        handle = PDUreadDeviceInformation()
         assert handle.x_calculateRtuFrameSize(b"\x0e\x01\x83") == 999
         assert (
             handle.x_calculateRtuFrameSize(b"\x0e\x01\x83\x00\x00\x03\x01\x03") == 998
@@ -118,10 +111,10 @@ class TestMeiMessage:
 
     def test_read_device_information_sub_fc(self):
         """Test x_calculateRtuFrameSize, short buffer."""
-        handle = ReadDeviceInformationResponse()
-        assert handle.decode_sub_function_code(b"\x0e\x01\x83") == 0x83
-        handle2 = ReadDeviceInformationRequest()
-        assert handle2.decode_sub_function_code(b"\x0e\x01\x83") == 0x83
+        handle = PDUreadDeviceInformation()
+        assert handle.decode_x_sub_function_code(b"\x0e\x01\x83") == 0x83
+        handle2 = PDUreadDeviceInformation()
+        assert handle2.decode_x_sub_function_code(b"\x0e\x01\x83") == 0x83
 
     def test_read_device_information_encode(self):
         """Test that the read fifo queue response can encode."""
@@ -132,24 +125,24 @@ class TestMeiMessage:
             0x01: "Product",
             0x02: TEST_VERSION,
         }
-        handle = ReadDeviceInformationResponse(
+        handle = PDUreadDeviceInformation(
             read_code=DeviceInformation.BASIC, information=dataset
         )
         result = handle.x_encode()
         assert result == message
-        assert "ReadDeviceInformationResponse" in str(handle)
+        assert "PDUreadDeviceInformation" in str(handle)
 
         dataset = {
             0x00: "Company",
             0x01: "Product",
             0x02: TEST_VERSION,
             0x81: ["Test", "Repeated"],
-            0x82: ExceptionResponse(function_code=0x01),
+            0x82: PDUexception(0, 0x01, 0),
         }
         message = b"\x0e\x03\x83\x00\x00\x06"
         message += TEST_MESSAGE
         message += b"\x81\x04Test\x81\x08Repeated\x82\x01\x00"
-        handle = ReadDeviceInformationResponse(
+        handle = PDUreadDeviceInformation(
             read_code=DeviceInformation.EXTENDED, information=dataset
         )
         result = handle.x_encode()
@@ -173,19 +166,19 @@ class TestMeiMessage:
             0x02: TEST_VERSION,
             0x80: longstring,
         }
-        handle = ReadDeviceInformationResponse(
+        handle = PDUreadDeviceInformation(
             read_code=DeviceInformation.BASIC, information=dataset
         )
         result = handle.x_encode()
         assert result == message
-        assert "ReadDeviceInformationResponse" in str(handle)
+        assert "PDUreadDeviceInformation" in str(handle)
 
     def test_read_device_information_decode(self):
         """Test that the read device information response can decode."""
         message = b"\x0e\x01\x01\x00\x00\x05"
         message += TEST_MESSAGE
         message += b"\x81\x04Test\x81\x08Repeated\x81\x07Another"
-        handle = ReadDeviceInformationResponse(read_code=0x00, information={})
+        handle = PDUreadDeviceInformation(read_code=0x00, information={})
         handle.x_decode(message)
         assert handle.read_code == DeviceInformation.BASIC
         assert handle.conformity == 0x01
@@ -199,8 +192,8 @@ class TestMeiMessage:
         message = (
             b"\x04\x2b\x0e\x01\x81\x00\x01\x01\x00\x06\x66\x6f\x6f\x62\x61\x72\xd7\x3b"
         )
-        result = ReadDeviceInformationResponse.x_calculateRtuFrameSize(message)
+        result = PDUreadDeviceInformation.x_calculateRtuFrameSize(message)
         assert result == 18
         message = b"\x00\x2b\x0e\x02\x00\x4d\x47"
-        result = ReadDeviceInformationRequest.x_calculateRtuFrameSize(message)
+        result = PDUreadDeviceInformation.x_calculateRtuFrameSize(message)
         assert result == 7

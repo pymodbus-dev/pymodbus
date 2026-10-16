@@ -38,11 +38,11 @@ class TestOtherMessage:
         context = mock_server_context()
         request = pymodbus_message.ReadExceptionStatusRequest()
         request.x_decode(b"\x12")
-        assert not request.encode()
+        assert not request.x_encode()
         assert (await request.datastore_update(context, 0)).function_code == 0x07
 
         response = pymodbus_message.ReadExceptionStatusResponse(status=0x12)
-        assert response.encode() == b"\x12"
+        assert response.x_encode() == b"\x12"
         response.x_decode(b"\x12")
         assert response.status == 0x12
 
@@ -51,28 +51,28 @@ class TestOtherMessage:
         context = mock_server_context()
         request = pymodbus_message.GetCommEventCounterRequest()
         request.x_decode(b"\x12")
-        assert not request.encode()
+        assert not request.x_encode()
         assert (await request.datastore_update(context, 0)).function_code == 0x0B
 
         response = pymodbus_message.GetCommEventCounterResponse(count=0x12)
-        assert response.encode() == b"\x00\x00\x00\x12"
+        assert response.x_encode() == b"\x00\x00\x00\x12"
         response.x_decode(b"\x00\x00\x00\x12")
         assert response.status
         assert response.count == 0x12
 
         response.status = False
-        assert response.encode() == b"\xff\xff\x00\x12"
+        assert response.x_encode() == b"\xff\xff\x00\x12"
 
     async def test_get_comm_event_log(self, mock_server_context):
         """Test get comm event log."""
         context = mock_server_context()
         request = pymodbus_message.GetCommEventLogRequest()
         request.x_decode(b"\x12")
-        assert not request.encode()
+        assert not request.x_encode()
         assert (await request.datastore_update(context, 0)).function_code == 0x0C
 
         response = pymodbus_message.GetCommEventLogResponse()
-        assert response.encode() == b"\x06\x00\x00\x00\x00\x00\x00"
+        assert response.x_encode() == b"\x06\x00\x00\x00\x00\x00\x00"
         response.x_decode(b"\x06\x00\x00\x00\x12\x00\x12")
         assert response.status
         assert response.message_count == 0x12
@@ -80,12 +80,12 @@ class TestOtherMessage:
         assert not response.events
 
         response.status = False
-        assert response.encode() == b"\x06\xff\xff\x00\x12\x00\x12"
+        assert response.x_encode() == b"\x06\xff\xff\x00\x12\x00\x12"
 
     def test_get_comm_event_log_with_events(self):
         """Test get comm event log with events."""
         response = pymodbus_message.GetCommEventLogResponse(events=[0x12, 0x34, 0x56])
-        assert response.encode() == b"\x09\x00\x00\x00\x00\x00\x00\x12\x34\x56"
+        assert response.x_encode() == b"\x09\x00\x00\x00\x00\x00\x00\x12\x34\x56"
         response.x_decode(b"\x09\x00\x00\x00\x12\x00\x12\x12\x34\x56")
         assert response.status
         assert response.message_count == 0x12
@@ -146,7 +146,7 @@ class TestOtherMessage:
             dif.get.return_value = {}
             request = pymodbus_message.ReportDeviceIdRequest()
             request.x_decode(b"\x12")
-            assert not request.encode()
+            assert not request.x_encode()
             assert (await request.datastore_update(context, 0)).function_code == 0x11
 
             response = pymodbus_message.ReportDeviceIdResponse(
@@ -157,7 +157,7 @@ class TestOtherMessage:
                 True,
             )
 
-            assert response.encode() == b"\tPymodbus\xff"
+            assert response.x_encode() == b"\tPymodbus\xff"
             response.x_decode(b"\tPymodbus\xff")
             assert response.status
             assert response.identifier == b"Pymodbus"
@@ -166,14 +166,14 @@ class TestOtherMessage:
             assert response.identifier == b"\x12\x00"
 
             response.status = False
-            assert response.encode() == b"\x03\x12\x00\x00"
+            assert response.x_encode() == b"\x03\x12\x00\x00"
 
     def test_report_device_id_response_roundtrip(self):
-        """Test decode(encode()) keeps identifier and status unchanged."""
+        """Test decode( x_encode()) keeps identifier and status unchanged."""
         for identifier, status in ((b"Pymodbus", True), (b"\x12", False)):
             sent = pymodbus_message.ReportDeviceIdResponse(identifier, status)
             received = pymodbus_message.ReportDeviceIdResponse()
-            received.x_decode(sent.encode())
+            received.x_decode(sent.x_encode())
             assert received.identifier == identifier
             assert received.status == status
 

@@ -25,7 +25,7 @@ class ReadExceptionStatusRequest(ModbusPDU):
         """Calculate the size of a PDU."""
         return 4
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the message."""
         return b""
 
@@ -53,7 +53,7 @@ class ReadExceptionStatusResponse(ModbusPDU):
         """Calculate the size of a PDU."""
         return 5
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the response."""
         return struct.pack(">B", self.status)
 
@@ -76,7 +76,7 @@ class GetCommEventCounterRequest(ModbusPDU):
         """Calculate the size of a PDU."""
         return 4
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the message."""
         return b""
 
@@ -104,7 +104,7 @@ class GetCommEventCounterResponse(ModbusPDU):
         """Calculate the size of a PDU."""
         return 8
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the response."""
         ready = ModbusStatus.READY if self.status else ModbusStatus.WAITING
         return struct.pack(">HH", ready, self.count)
@@ -125,7 +125,7 @@ class GetCommEventLogRequest(ModbusPDU):
         """Calculate the size of a PDU."""
         return 4
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the message."""
         return b""
 
@@ -172,7 +172,7 @@ class GetCommEventLogResponse(ModbusPDU):
         self.event_count = event_count
         self.events = events or []
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the response."""
         if self.status:
             ready = ModbusStatus.READY
@@ -207,7 +207,7 @@ class ReportDeviceIdRequest(ModbusPDU):
         """Calculate the size of a PDU."""
         return 4
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the message."""
         return b""
 
@@ -260,7 +260,7 @@ class ReportDeviceIdResponse(ModbusPDU):
         self.identifier = identifier
         self.byte_count = 0
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the response."""
         status = ID_ON if self.status else ID_OFF
         length = len(self.identifier) + 1

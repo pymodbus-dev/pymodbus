@@ -53,7 +53,7 @@ class TestWriteRegisterMessages:
     def test_register_write_requests_encode(self):
         """Test register write requests encode."""
         for request, response in iter(self.write.items()):
-            assert request.encode() == response
+            assert request.x_encode() == response
 
     def test_register_write_requests_decode(self):
         """Test register write requests decode."""
@@ -165,7 +165,7 @@ class TestWriteRegisterMessages:
     def test_mask_write_register_request_encode(self):
         """Test basic bit message encoding/decoding."""
         handle = MaskWriteRegisterRequest(0x0000, 0x0101, 0x1010)
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == b"\x00\x00\x01\x01\x10\x10"
 
     def test_mask_write_register_request_decode(self):
@@ -216,7 +216,7 @@ class TestWriteRegisterMessages:
     def test_mask_write_register_response_encode(self):
         """Test basic bit message encoding/decoding."""
         handle = MaskWriteRegisterResponse(0x0000, 0x0101, 0x1010)
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == b"\x00\x00\x01\x01\x10\x10"
 
     def test_mask_write_register_frame_size(self):

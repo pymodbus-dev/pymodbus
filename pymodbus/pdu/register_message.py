@@ -25,7 +25,7 @@ class ReadHoldingRegistersRequest(ModbusPDU):
         """Calculate the size of a PDU."""
         return 8
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the request packet."""
         self.verifyAddress()
         self.verifyCount(self.MAX_COUNT)
@@ -45,12 +45,7 @@ class ReadHoldingRegistersRequest(ModbusPDU):
         )
         if isinstance(values, ExcCodes):
             return ExceptionResponse(self.function_code, values)
-        response_class = (
-            ReadHoldingRegistersResponse
-            if self.function_code == 3
-            else ReadInputRegistersResponse
-        )
-        return response_class(
+        return ReadHoldingRegistersResponse(
             registers=cast(list[int], values),
             dev_id=device_id,
             transaction_id=self.transaction_id,
@@ -67,7 +62,7 @@ class ReadHoldingRegistersResponse(ModbusPDU):
         """Calculate the size of a PDU."""
         return int(data[2]) + 2 + 3
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the response packet."""
         result = struct.pack(">B", len(self.registers) * 2)
         for register in self.registers:
@@ -86,16 +81,71 @@ class ReadHoldingRegistersResponse(ModbusPDU):
             self.registers.append(struct.unpack(">H", data[i : i + 2])[0])
 
 
-class ReadInputRegistersRequest(ReadHoldingRegistersRequest):
+class ReadInputRegistersRequest(ModbusPDU):
     """ReadInputRegistersRequest."""
 
     function_code = 4
+    MAX_COUNT = 125
+
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 8
+
+    def x_encode(self) -> bytes:
+        """Encode the request packet."""
+        self.verifyAddress()
+        self.verifyCount(self.MAX_COUNT)
+        return struct.pack(">HH", self.address, self.count)
+
+    def x_decode(self, data: bytes) -> None:
+        """Decode a register request packet."""
+        self.address, self.count = struct.unpack(">HH", data[:4])
+        self.verifyCount(self.MAX_COUNT)
+
+    async def datastore_update(
+        self, context: ModbusServerContext, device_id: int
+    ) -> ModbusPDU:
+        """Update diagnostic request on the given device."""
+        values = await context.async_getValues(
+            device_id, self.function_code, self.address, self.count
+        )
+        if isinstance(values, ExcCodes):
+            return ExceptionResponse(self.function_code, values)
+        return ReadInputRegistersResponse(
+            registers=cast(list[int], values),
+            dev_id=device_id,
+            transaction_id=self.transaction_id,
+        )
 
 
-class ReadInputRegistersResponse(ReadHoldingRegistersResponse):
+class ReadInputRegistersResponse(ModbusPDU):
     """ReadInputRegistersResponse."""
 
     function_code = 4
+
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[2]) + 2 + 3
+
+    def x_encode(self) -> bytes:
+        """Encode the response packet."""
+        result = struct.pack(">B", len(self.registers) * 2)
+        for register in self.registers:
+            result += struct.pack(">H", register)
+        return result
+
+    def x_decode(self, data: bytes) -> None:
+        """Decode a register response packet."""
+        self.registers = []
+        if (data_len := int(data[0])) >= len(data):
+            raise ModbusIOException(
+                f"byte_count {data_len} > length of packet {len(data)}",
+                function_code=self.function_code,
+            )
+        for i in range(1, data_len, 2):
+            self.registers.append(struct.unpack(">H", data[i : i + 2])[0])
 
 
 class ReadWriteMultipleRegistersRequest(ModbusPDU):
@@ -131,7 +181,7 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         self.write_byte_count = self.write_count * 2
         self._payload_byte_count: int | None = None
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the request packet."""
         self.verifyAddress(address=self.read_address)
         self.verifyAddress(address=self.write_address)
@@ -196,10 +246,33 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
         )
 
 
-class ReadWriteMultipleRegistersResponse(ReadHoldingRegistersResponse):
+class ReadWriteMultipleRegistersResponse(ModbusPDU):
     """ReadWriteMultipleRegistersResponse."""
 
     function_code = 23
+
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[2]) + 2 + 3
+
+    def x_encode(self) -> bytes:
+        """Encode the response packet."""
+        result = struct.pack(">B", len(self.registers) * 2)
+        for register in self.registers:
+            result += struct.pack(">H", register)
+        return result
+
+    def x_decode(self, data: bytes) -> None:
+        """Decode a register response packet."""
+        self.registers = []
+        if (data_len := int(data[0])) >= len(data):
+            raise ModbusIOException(
+                f"byte_count {data_len} > length of packet {len(data)}",
+                function_code=self.function_code,
+            )
+        for i in range(1, data_len, 2):
+            self.registers.append(struct.unpack(">H", data[i : i + 2])[0])
 
 
 class WriteSingleRegisterResponse(ModbusPDU):
@@ -212,7 +285,7 @@ class WriteSingleRegisterResponse(ModbusPDU):
         """Calculate the size of a PDU."""
         return 8
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode a write single register packet packet request."""
         return struct.pack(">HH", self.address, self.registers[0])
 
@@ -222,8 +295,24 @@ class WriteSingleRegisterResponse(ModbusPDU):
         self.registers = [register]
 
 
-class WriteSingleRegisterRequest(WriteSingleRegisterResponse):
+class WriteSingleRegisterRequest(ModbusPDU):
     """WriteSingleRegisterRequest."""
+
+    function_code = 6
+
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 8
+
+    def x_encode(self) -> bytes:
+        """Encode a write single register packet packet request."""
+        return struct.pack(">HH", self.address, self.registers[0])
+
+    def x_decode(self, data: bytes) -> None:
+        """Decode a write single register packet packet request."""
+        self.address, register = struct.unpack(">HH", data[:4])
+        self.registers = [register]
 
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
@@ -259,7 +348,7 @@ class WriteMultipleRegistersRequest(ModbusPDU):
         """Calculate the size of a PDU."""
         return int(data[6]) + 6 + 3
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode a write single register packet packet request."""
         packet = struct.pack(">HHB", self.address, self.count, self.count * 2)
         for value in self.registers:
@@ -309,7 +398,7 @@ class WriteMultipleRegistersResponse(ModbusPDU):
         """Calculate the size of a PDU."""
         return 8
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode a write single register packet packet request."""
         return struct.pack(">HH", self.address, self.count)
 
@@ -341,7 +430,7 @@ class MaskWriteRegisterRequest(ModbusPDU):
         self.and_mask = and_mask
         self.or_mask = or_mask
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the request packet."""
         return struct.pack(">HHH", self.address, self.and_mask, self.or_mask)
 
@@ -402,7 +491,7 @@ class MaskWriteRegisterResponse(ModbusPDU):
         self.and_mask = and_mask
         self.or_mask = or_mask
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the response."""
         self.verifyAddress()
         return struct.pack(">HHH", self.address, self.and_mask, self.or_mask)

@@ -61,7 +61,7 @@ class FramerBase:
 
         :param message: The populated request/response to send
         """
-        data = message.function_code.to_bytes(1, "big") + message.encode()
+        data = message.function_code.to_bytes(1, "big") + self.decoder.encode(message)
         frame = self.encode(data, message.dev_id, message.transaction_id)
         return frame
 

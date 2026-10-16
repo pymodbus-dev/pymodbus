@@ -30,7 +30,7 @@ class TestBitMessage:
     def test_read_fifo_queue_request_encode(self):
         """Test basic bit message encoding/decoding."""
         handle = ReadFifoQueueRequest(0x1234)
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == b"\x12\x34"
 
     def test_read_fifo_queue_request_decode(self):
@@ -50,7 +50,7 @@ class TestBitMessage:
         """Test that the read fifo queue response can encode."""
         message = TEST_MESSAGE
         handle = ReadFifoQueueResponse([1, 2, 3, 4])
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == message
 
     def test_read_fifo_queue_response_decode(self):
@@ -90,7 +90,7 @@ class TestBitMessage:
         """Test basic bit message encoding/decoding."""
         records = [FileRecord(file_number=0x01, record_number=0x02)]
         handle = ReadFileRecordRequest(records=records)
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == b"\x07\x06\x00\x01\x00\x02\x00\x00"
 
     def test_read_file_record_request_decode(self):
@@ -124,7 +124,7 @@ class TestBitMessage:
         """Test basic bit message encoding/decoding."""
         records = [FileRecord(record_data=b"\x00\x01\x02\x03\x04\x05")]
         handle = ReadFileRecordResponse(records)
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == b"\x08\x07\x06\x00\x01\x02\x03\x04\x05"
 
     def test_read_file_record_response_decode(self):
@@ -161,7 +161,7 @@ class TestBitMessage:
             )
         ]
         handle = WriteFileRecordRequest(records)
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == b"\x0b\x06\x00\x01\x00\x02\x00\x02\x00\x01\x02\x03"
 
     def test_write_file_record_request_decode(self):
@@ -203,7 +203,7 @@ class TestBitMessage:
             )
         ]
         handle = WriteFileRecordResponse(records)
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == b"\x0b\x06\x00\x01\x00\x02\x00\x02\x00\x01\x02\x03"
 
     def test_write_file_record_response_decode(self):

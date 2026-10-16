@@ -51,7 +51,7 @@ class ReadFileRecordRequest(ModbusPDU):
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.records: list[FileRecord] = records or []
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the request packet."""
         packet = struct.pack("B", len(self.records) * 7)
         for record in self.records:
@@ -111,7 +111,7 @@ class ReadFileRecordResponse(ModbusPDU):
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.records: list[FileRecord] = records or []
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the response."""
         total = sum(len(record.record_data) + 1 + 1 for record in self.records)
         packet = struct.pack("B", total)
@@ -157,7 +157,7 @@ class WriteFileRecordRequest(ModbusPDU):
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.records: list[FileRecord] = records or []
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the request packet."""
         total_length = sum((record.record_length * 2) + 7 for record in self.records)
         packet = struct.pack("B", total_length)
@@ -221,7 +221,7 @@ class WriteFileRecordResponse(ModbusPDU):
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.records: list[FileRecord] = records or []
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the response."""
         total_length = sum((record.record_length * 2) + 7 for record in self.records)
         packet = struct.pack("B", total_length)
@@ -272,7 +272,7 @@ class ReadFifoQueueRequest(ModbusPDU):
         self.address = address
         self.verifyAddress()
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the request packet."""
         return struct.pack(">H", self.address)
 
@@ -310,7 +310,7 @@ class ReadFifoQueueResponse(ModbusPDU):
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.values = values or []
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the response."""
         length = len(self.values)
         packet = struct.pack(">HH", 2 + length * 2, length)

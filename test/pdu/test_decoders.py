@@ -153,20 +153,20 @@ class TestModbusPDU:
 
             function_code = 0x70
 
-            def encode(self):
+            def x_encode(self):
                 """Encode."""
 
-            def decode(self, _data):
+            def x_decode(self, _data):
                 """Decode."""
 
         decoder.register(mockPDU)
-        data = b"\x01" + mockPDU().encode()
+        data = b"\x01" + mockPDU().x_encode()
         assert decoder._lookupPduClass(data)
         mockPDU.sub_function_code = 0xF7
         decoder.register(mockPDU)
         mockPDU.sub_function_code = 0xF4
         decoder.register(mockPDU)
-        data = b"\x01" + mockPDU().encode()
+        data = b"\x01" + mockPDU().x_encode()
         assert self.server._lookupPduClass(data)
         with pytest.raises(MessageRegisterException):
             decoder.register(NoCustomRequestResponse)

@@ -9,6 +9,7 @@ from typing import cast
 import pytest
 
 from pymodbus.constants import DeviceInformation, ExcCodes
+from pymodbus.pdu import ExceptionResponse
 from pymodbus.pdu.decoders import DecodePDU
 from pymodbus.pdu.device import ModbusControlBlock
 from pymodbus.pdu.mei_message import (
@@ -143,10 +144,11 @@ class TestMeiMessage:
             0x01: "Product",
             0x02: TEST_VERSION,
             0x81: ["Test", "Repeated"],
+            0x82: ExceptionResponse(function_code=0x01),
         }
-        message = b"\x0e\x03\x83\x00\x00\x05"
+        message = b"\x0e\x03\x83\x00\x00\x06"
         message += TEST_MESSAGE
-        message += b"\x81\x04Test\x81\x08Repeated"
+        message += b"\x81\x04Test\x81\x08Repeated\x82\x01\x00"
         handle = ReadDeviceInformationResponse(
             read_code=DeviceInformation.EXTENDED, information=dataset
         )

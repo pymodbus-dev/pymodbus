@@ -32,6 +32,7 @@ class TestPdu:
         assert result == b"\x01"
         DecodePDU(True).decode(b"\x81" + result)
         assert self.exception.exception_code == 1
+        self.exception.x_decode(b"")
 
     async def test_pdu_id(self, mockPDU):
         """Test set illegal pdu id."""

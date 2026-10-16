@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import struct
+from abc import abstractmethod
 from typing import Any
 
 from ..constants import DeviceInformation, ExcCodes, MoreData
@@ -41,13 +42,9 @@ class EncapsulatedInterfaceTransportBase(ModbusPDU):
         """Decode the MEI type."""
         return int(data[2])
 
+    @abstractmethod
     def x_encode(self) -> bytes:
         """Encode the request packet."""
-        return b""
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode data part of the message."""
-        _ = data
 
 
 class ReadDeviceInformationRequest(EncapsulatedInterfaceTransportBase):

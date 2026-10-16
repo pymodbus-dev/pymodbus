@@ -153,10 +153,10 @@ class TestModbusPDU:
 
             function_code = 0x70
 
-            def encode(self):
+            def x_encode(self):
                 """Encode."""
 
-            def decode(self, _data):
+            def x_decode(self, _data):
                 """Decode."""
 
         decoder.register(mockPDU)

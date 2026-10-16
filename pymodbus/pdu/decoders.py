@@ -76,10 +76,7 @@ class DecodePDU:
                     f"Unknown response {function_code}", function_code=function_code
                 )
             pdu = pdu_class()
-            if hasattr(pdu, "from_frame"):
-                pdu.from_frame(self.is_server, frame)
-            else:
-                pdu.x_decode(frame[1:])
+            pdu.x_decode(frame[1:])
             Log.debug(
                 "decoded PDU function_code({} sub {}) -> {} ",
                 pdu.function_code,

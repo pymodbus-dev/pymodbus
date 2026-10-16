@@ -100,8 +100,6 @@ class ModbusPDU:
         )
 
     @classmethod
+    @abstractmethod
     def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
-        raise NotImplementedException(
-            f"x_calculateRtuFrameSize() not implemented {cls.__class__.__name__}"
-        )

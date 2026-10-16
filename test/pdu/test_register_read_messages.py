@@ -85,6 +85,20 @@ class TestReadRegisterMessages:
             reg.x_decode(b"\x14\x00\x03\x00\x11")
         assert exc_info.value.fcode == reg.function_code + 0x80
 
+    def test_register_input_response_decode_error(self):
+        """Test register read response."""
+        reg = ReadInputRegistersResponse(count=5)
+        with pytest.raises(ModbusIOException) as exc_info:
+            reg.x_decode(b"\x14\x00\x03\x00\x11")
+        assert exc_info.value.fcode == reg.function_code + 0x80
+
+    def test_readwrite_response_decode_error(self):
+        """Test register read response."""
+        reg = ReadWriteMultipleRegistersResponse(count=5)
+        with pytest.raises(ModbusIOException) as exc_info:
+            reg.x_decode(b"\x14\x00\x03\x00\x11")
+        assert exc_info.value.fcode == reg.function_code + 0x80
+
     def test_readwrite_encode_write_count_limit(self):
         """Encoding must reject a write count above the FC23 maximum of 121.
 

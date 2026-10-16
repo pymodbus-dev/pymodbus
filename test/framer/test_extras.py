@@ -11,8 +11,7 @@ from pymodbus.framer import (
     FramerSocket,
     FramerTLS,
 )
-from pymodbus.pdu import DecodePDU
-from pymodbus.pdu.device import ModbusControlBlock
+from pymodbus.pdu import DecodePDU, ModbusControlBlock
 
 
 TEST_MESSAGE = b"\x7b\x01\x03\x00\x00\x00\x05\x85\xc9\x7d"
@@ -120,7 +119,8 @@ class TestExtras:
         """Test rtu process incoming packets."""
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
         with patch(
-            "pymodbus.pdu.ReadCoilsRequest.x_calculateRtuFrameSize", return_value=0
+            "pymodbus.pdu.bit_message.PDUreadCoils.calculatePduSize",
+            return_value=0,
         ):
             used_len, pdu = self._rtu.handleFrame(msg, 0, 0)
             assert not used_len

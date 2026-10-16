@@ -1,549 +1,234 @@
 """Test pdu."""
 
-from typing import Any
+from copy import copy
+from unittest import mock
 
 import pytest
 
-import pymodbus.pdu.bit_message as bit_msg
-import pymodbus.pdu.diag_message as diag_msg
-import pymodbus.pdu.file_message as file_msg
-import pymodbus.pdu.mei_message as mei_msg
-import pymodbus.pdu.other_message as o_msg
 import pymodbus.pdu.register_message as reg_msg
-from pymodbus.constants import ModbusStatus
+from pymodbus.constants import CLEAR_STATISTICS, ExcCodes
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.pdu import (
-    DecodePDU,
-    ExceptionResponse,
-    ModbusPDU,
-)
-from pymodbus.pdu.device import ModbusControlBlock
-from pymodbus.pdu.utils import pack_bitstring, unpack_bitstring
+from pymodbus.pdu import DecodePDU, PDUexception, pack_bitstring, unpack_bitstring
+from pymodbus.pdu.diag_message import PDUgetClearModbusPlus, PDUreturnQueryData
 
 
 class TestPdu:
     """Test modbus PDU."""
 
-    exception = ExceptionResponse(1, 1, 0, 0)
-
-    async def test_error_methods(self):
-        """Test all error methods."""
-        result = self.exception.x_encode()
-        assert result == b"\x01"
-        DecodePDU(False).decode(b"\x81" + result)
-        assert self.exception.exception_code == 1
-        self.exception.x_decode(b"")
-
-    async def test_pdu_id(self, mockPDU):
-        """Test set illegal pdu id."""
-        with pytest.raises(ModbusIOException) as exc_info:
-            mockPDU(256, transaction_id=0x42)
-        assert exc_info.value.dev_id == 256
-        assert exc_info.value.transaction_id == 0x42
-
-    async def test_is_error(self):
-        """Test is_error."""
-        assert self.exception.isError()
-
-    requests: list[tuple[type[ModbusPDU], tuple[()], dict[str, Any], bytes]] = [
-        (
-            bit_msg.ReadCoilsRequest,
-            (),
-            {"address": 117, "count": 3},
-            b"\x01\x00\x75\x00\x03",
-        ),
-        (
-            bit_msg.ReadDiscreteInputsRequest,
-            (),
-            {"address": 117, "count": 3},
-            b"\x02\x00\x75\x00\x03",
-        ),
-        (
-            bit_msg.WriteSingleCoilRequest,
-            (),
-            {"address": 117, "bits": [True]},
-            b"\x05\x00\x75\xff\x00",
-        ),
-        (
-            bit_msg.WriteMultipleCoilsRequest,
-            (),
-            {"address": 117, "bits": [True, False, True]},
-            b"\x0f\x00\x75\x00\x03\x01\x05",
-        ),
-        (diag_msg.DiagnosticBase, (), {"message": None}, b"\x08\x27\x0f"),
-        (diag_msg.DiagnosticBase, (), {"message": 0x1010}, b"\x08\x27\x0f\x10\x10"),
-        (
-            diag_msg.ReturnQueryDataRequest,
-            (),
-            {"message": b"\x10\x01"},
-            b"\x08\x00\x00\x10\x01",
-        ),
-        (
-            diag_msg.RestartCommunicationsOptionRequest,
-            (),
-            {"message": ModbusStatus.ON},
-            b"\x08\x00\x01\xff\x00",
-        ),
-        (
-            diag_msg.ReturnDiagnosticRegisterRequest,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x02\x10\x10",
-        ),
-        (
-            diag_msg.ChangeAsciiInputDelimiterRequest,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x03\x10\x10",
-        ),
-        (diag_msg.ForceListenOnlyModeRequest, (), {}, b"\x08\x00\x04\x00\x00"),
-        (diag_msg.ClearCountersRequest, (), {"message": 0x1010}, b"\x08\x00\n\x10\x10"),
-        (
-            diag_msg.ReturnBusMessageCountRequest,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x0b\x10\x10",
-        ),
-        (
-            diag_msg.ReturnBusCommunicationErrorCountRequest,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x0c\x10\x10",
-        ),
-        (
-            diag_msg.ReturnBusExceptionErrorCountRequest,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x0d\x10\x10",
-        ),
-        (
-            diag_msg.ReturnDeviceMessageCountRequest,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x0e\x10\x10",
-        ),
-        (
-            diag_msg.ReturnDeviceNoResponseCountRequest,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x0f\x10\x10",
-        ),
-        (
-            diag_msg.ReturnDeviceNAKCountRequest,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x10\x10\x10",
-        ),
-        (
-            diag_msg.ReturnDeviceBusyCountRequest,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x11\x10\x10",
-        ),
-        (
-            diag_msg.ReturnDeviceBusCharacterOverrunCountRequest,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x12\x10\x10",
-        ),
-        (
-            diag_msg.ReturnIopOverrunCountRequest,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x13\x10\x10",
-        ),
-        (
-            diag_msg.ClearOverrunCountRequest,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x14\x10\x10",
-        ),
-        (
-            diag_msg.GetClearModbusPlusRequest,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x15\x10\x10",
-        ),
-        (
-            file_msg.ReadFileRecordRequest,
-            (),
-            {"records": [file_msg.FileRecord(), file_msg.FileRecord()]},
-            b"\x14\x0e\x06\x00\x00\x00\x00\x00\x00\x06\x00\x00\x00\x00\x00\x00",
-        ),
-        (
-            file_msg.WriteFileRecordRequest,
-            (),
-            {"records": [file_msg.FileRecord(), file_msg.FileRecord()]},
-            b"\x15\x0e\x06\x00\x00\x00\x00\x00\x00\x06\x00\x00\x00\x00\x00\x00",
-        ),
-        (file_msg.ReadFifoQueueRequest, (), {"address": 117}, b"\x18\x00\x75"),
-        (
-            mei_msg.ReadDeviceInformationRequest,
-            (),
-            {"read_code": 0x17, "object_id": 0x29},
-            b"\x2b\x0e\x17\x29",
-        ),
-        (o_msg.ReadExceptionStatusRequest, (), {}, b"\x07"),
-        (o_msg.GetCommEventCounterRequest, (), {}, b"\x0b"),
-        (o_msg.GetCommEventLogRequest, (), {}, b"\x0c"),
-        (o_msg.ReportDeviceIdRequest, (), {}, b"\x11"),
-        (
-            reg_msg.ReadHoldingRegistersRequest,
-            (),
-            {"address": 117, "count": 3},
-            b"\x03\x00\x75\x00\x03",
-        ),
-        (
-            reg_msg.ReadInputRegistersRequest,
-            (),
-            {"address": 117, "count": 3},
-            b"\x04\x00\x75\x00\x03",
-        ),
-        (
-            reg_msg.ReadWriteMultipleRegistersRequest,
-            (),
-            {
-                "read_address": 17,
-                "read_count": 2,
-                "write_address": 25,
-                "write_registers": [111, 112],
-            },
-            b"\x17\x00\x11\x00\x02\x00\x19\x00\x02\x04\x00\x6f\x00\x70",
-        ),
-        (
-            reg_msg.WriteMultipleRegistersRequest,
-            (),
-            {"address": 117, "registers": [111, 121, 131]},
-            b"\x10\x00\x75\x00\x03\x06\x00\x6f\x00\x79\x00\x83",
-        ),
-        (
-            reg_msg.WriteSingleRegisterRequest,
-            (),
-            {"address": 117, "registers": [112]},
-            b"\x06\x00\x75\x00\x70",
-        ),
-        (
-            reg_msg.MaskWriteRegisterRequest,
-            (),
-            {"address": 0x0104, "and_mask": 0xE1D2, "or_mask": 0x1234},
-            b"\x16\x01\x04\xe1\xd2\x12\x34",
-        ),
-    ]
-
-    responses: list[tuple[type[ModbusPDU], tuple[()], dict[str, Any], bytes]] = [
-        (
-            bit_msg.ReadCoilsResponse,
-            (),
-            {"bits": [True, True] + [False] * 6, "address": 17},
-            b"\x01\x01\x03",
-        ),
-        (
-            bit_msg.ReadDiscreteInputsResponse,
-            (),
-            {"bits": [True, True], "address": 17},
-            b"\x02\x01\x03",
-        ),
-        (
-            bit_msg.WriteSingleCoilResponse,
-            (),
-            {"address": 117, "bits": [True]},
-            b"\x05\x00\x75\xff\x00",
-        ),
-        (
-            bit_msg.WriteMultipleCoilsResponse,
-            (),
-            {"address": 117, "count": 3},
-            b"\x0f\x00\x75\x00\x03",
-        ),
-        (diag_msg.DiagnosticBase, (), {"message": None}, b"\x08\x27\x0f"),
-        (diag_msg.DiagnosticBase, (), {"message": 0x1010}, b"\x08\x27\x0f\x10\x10"),
-        (
-            diag_msg.ReturnQueryDataResponse,
-            (),
-            {"message": b"AB"},
-            b"\x08\x00\x00\x41\x42",
-        ),
-        (
-            diag_msg.RestartCommunicationsOptionResponse,
-            (),
-            {"message": ModbusStatus.ON},
-            b"\x08\x00\x01\xff\x00",
-        ),
-        (
-            diag_msg.ReturnDiagnosticRegisterResponse,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x02\x10\x10",
-        ),
-        (
-            diag_msg.ChangeAsciiInputDelimiterResponse,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x03\x10\x10",
-        ),
-        (diag_msg.ForceListenOnlyModeResponse, (), {}, b"\x08\x00\x04"),
-        (
-            diag_msg.ClearCountersResponse,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\n\x10\x10",
-        ),
-        (
-            diag_msg.ReturnBusMessageCountResponse,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x0b\x10\x10",
-        ),
-        (
-            diag_msg.ReturnBusCommunicationErrorCountResponse,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x0c\x10\x10",
-        ),
-        (
-            diag_msg.ReturnBusExceptionErrorCountResponse,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x0d\x10\x10",
-        ),
-        (
-            diag_msg.ReturnDeviceMessageCountResponse,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x0e\x10\x10",
-        ),
-        (
-            diag_msg.ReturnDeviceNoResponseCountResponse,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x0f\x10\x10",
-        ),
-        (
-            diag_msg.ReturnDeviceNAKCountResponse,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x10\x10\x10",
-        ),
-        (
-            diag_msg.ReturnDeviceBusyCountResponse,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x11\x10\x10",
-        ),
-        (
-            diag_msg.ReturnDeviceBusCharacterOverrunCountResponse,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x12\x10\x10",
-        ),
-        (
-            diag_msg.ReturnIopOverrunCountResponse,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x13\x10\x10",
-        ),
-        (
-            diag_msg.ClearOverrunCountResponse,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x14\x10\x10",
-        ),
-        (
-            diag_msg.GetClearModbusPlusResponse,
-            (),
-            {"message": 0x1010},
-            b"\x08\x00\x15\x10\x10",
-        ),
-        (
-            file_msg.ReadFileRecordResponse,
-            (),
-            {"records": [file_msg.FileRecord(), file_msg.FileRecord()]},
-            b"\x14\x04\x01\x06\x01\x06",
-        ),
-        (
-            file_msg.WriteFileRecordResponse,
-            (),
-            {"records": [file_msg.FileRecord(), file_msg.FileRecord()]},
-            b"\x15\x0e\x06\x00\x00\x00\x00\x00\x00\x06\x00\x00\x00\x00\x00\x00",
-        ),
-        (
-            file_msg.ReadFifoQueueResponse,
-            (),
-            {"values": [123, 456]},
-            b"\x18\x00\x06\x00\x02\x00{\x01\xc8",
-        ),
-        (
-            mei_msg.ReadDeviceInformationResponse,
-            (),
-            {"read_code": 0x17},
-            b"\x2b\x0e\x17\x83\x00\x00\x00",
-        ),
-        (o_msg.ReadExceptionStatusResponse, (), {"status": 0x23}, b"\x07\x23"),
-        (
-            o_msg.GetCommEventCounterResponse,
-            (),
-            {"count": 123},
-            b"\x0b\x00\x00\x00\x7b",
-        ),
-        (
-            o_msg.GetCommEventLogResponse,
-            (),
-            {"status": True, "message_count": 12, "event_count": 7, "events": [12, 14]},
-            b"\x0c\x08\x00\x00\x00\x07\x00\x0c\x0c\x0e",
-        ),
-        (
-            o_msg.ReportDeviceIdResponse,
-            (),
-            {"identifier": b"\x12", "status": True},
-            b"\x11\x02\x12\xff",
-        ),
-        (
-            reg_msg.ReadHoldingRegistersResponse,
-            (),
-            {"registers": [3, 17]},
-            b"\x03\x04\x00\x03\x00\x11",
-        ),
-        (
-            reg_msg.ReadInputRegistersResponse,
-            (),
-            {"registers": [3, 17]},
-            b"\x04\x04\x00\x03\x00\x11",
-        ),
-        (
-            reg_msg.ReadWriteMultipleRegistersResponse,
-            (),
-            {"registers": [1, 2]},
-            b"\x17\x04\x00\x01\x00\x02",
-        ),
-        (
-            reg_msg.WriteSingleRegisterResponse,
-            (),
-            {"address": 117, "registers": [112]},
-            b"\x06\x00\x75\x00\x70",
-        ),
-        (
-            reg_msg.WriteMultipleRegistersResponse,
-            (),
-            {"address": 117, "count": 3},
-            b"\x10\x00\x75\x00\x03",
-        ),
-        (
-            reg_msg.MaskWriteRegisterResponse,
-            (),
-            {"address": 0x0104, "and_mask": 0xE1D2, "or_mask": 0x1234},
-            b"\x16\x01\x04\xe1\xd2\x12\x34",
-        ),
-    ]
-
-    @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests)
-    @pytest.mark.usefixtures("kwargs", "args", "frame")
-    def test_pdu_instance(self, pdutype):
-        """Test that all PDU types can be created."""
-        pdu = pdutype()
-        assert pdu
-
     @pytest.mark.parametrize(
-        ("pdutype", "args", "kwargs", "frame"), requests + responses
+        "cases",
+        ["id", "params", "wrong_addr", "wrong_count"],
     )
-    @pytest.mark.usefixtures("frame", "args")
-    def test_pdu_instance_args(self, pdutype, kwargs):
-        """Test that all PDU types can be created."""
-        pdu = pdutype(**kwargs)
-        assert pdu
-        assert pdutype.__name__ in str(pdu)
+    async def test_init1(self, cases, paramPDU):
+        """Ensure that __init__ runs correctly."""
+        pdu, _api, params, _msg, params2, _msg = paramPDU
+        match cases:
+            case "id":
+                with pytest.raises(TypeError):
+                    pdu()
+                assert pdu(0)
+                assert pdu(1)
+                assert pdu(1, is_request=False)
+                assert pdu(1, is_request=True)
+                with pytest.raises(ModbusIOException):
+                    pdu(-1)
+                with pytest.raises(ModbusIOException):
+                    pdu(256)
+            case "params":
+                assert pdu(1, **params)
+                assert pdu(1, **params2)
+                assert pdu(1, **(params | params2))
+                dev_id = 63
+                params_comb = params | {
+                    "transaction_id": 9112,
+                    "address": 517,
+                    "count": 68,
+                }
+                pdu = pdu(dev_id, **params_comb)
+                assert pdu
+                assert str(pdu)
+                assert 0 < pdu.function_code < 0x80
+                for key, value in params_comb.items():
+                    assert getattr(pdu, key) == value
+            case "wrong_addr":
+                z_param = params | {"address": -1}
+                with pytest.raises(ModbusIOException):
+                    pdu(0, **z_param)
+                z_param = params | {"address": 70000}
+                with pytest.raises(ModbusIOException):
+                    pdu(0, **z_param)
+            case "wrong_count":
+                z_param = params | {"count": -1}
+                with pytest.raises(ModbusIOException):
+                    pdu(0, **z_param)
+                z_param = params | {"count": 3000}
+                with pytest.raises(ModbusIOException):
+                    pdu(0, **z_param)
+            case _:  # pragma: no cover
+                raise TypeError("Test case not handled!")
 
     @pytest.mark.parametrize(
-        ("pdutype", "args", "kwargs", "frame"), requests + responses
+        "cases",
+        ["isError", "sub_func", "store", "str"],
     )
-    @pytest.mark.usefixtures("frame", "args")
-    def test_pdu_instance_extras(self, pdutype, kwargs):
-        """Test that all PDU types can be created."""
-        tid = 9112
-        dev_id = 63
-        pdu = pdutype(transaction_id=tid, dev_id=dev_id, **kwargs)
-        assert pdu
-        assert str(pdu)
-        assert pdu.dev_id == dev_id
-        assert pdu.transaction_id == tid
-        assert pdu.function_code > 0
+    async def test_init(self, cases, paramPDU):
+        """Ensure that __init__ runs correctly."""
+        pdu, _api, params, msg, _params2, _msg = paramPDU
+        match cases:
+            case "isError":
+                assert not pdu(0).isError()
+            case "sub_func":
+                x = pdu(0)
+                x_fc = x.sub_function_code
+                assert x_fc == x.decode_sub_function_code(0, b"\x01" + msg)
+            case "store":
+                x = pdu(0, **params)
+                assert await x.build_response(mock.AsyncMock(), mock.AsyncMock())
+            case "str":
+                x_str = str(pdu(0, **params))
+                for x in (pdu.__name__, "dev_id", "function_code", "transaction_id"):
+                    assert x in x_str
+                for key in params:
+                    assert key in x_str
+            case _:  # pragma: no cover
+                raise TypeError("Test case not handled!")
 
-    def test_pdu_register_as_byte(self):
-        """Test verify functions."""
-        registers = [int.from_bytes(b"ab", "big"), int.from_bytes(b"cd", "big")]
-        # NOT ALLOWED, NO conversion.
-        req = reg_msg.ReadHoldingRegistersRequest(
-            address=117, registers=registers, count=3
-        )
-        assert len(req.registers) == 2
-        assert req.registers[0] == 24930
-        assert req.registers[1] == 25444
+    @pytest.mark.parametrize("is_request", [True, False])
+    @pytest.mark.parametrize("cases", ["to_bytes", "from_bytes", "calc"])
+    def test_to_from_bytes(self, is_request, cases, paramPDU):
+        """Ensure that __init__ runs correctly."""
+        if is_request:
+            pdu, _api, params, msg, params2, _msg = paramPDU
+        else:
+            pdu, _api, params2, _msg, params, msg = paramPDU
+        params_comb = params | params2
+        match cases:
+            case "to_bytes":
+                x = pdu(0, is_request=is_request, **params)
+                fc = x.function_code.to_bytes(1, "big")
+                assert msg == fc + x.to_bytes()
+                x = pdu(0, is_request=is_request, **params_comb)
+                assert msg == fc + x.to_bytes()
+            case "from_bytes":
+                result = pdu(0, is_request=is_request, **params)
+                x = pdu(0, is_request=is_request)
+                x.from_bytes(1, msg)
+                if "bits" in params:
+                    for entry in (result, x):
+                        if j := len(entry.bits) % 8:
+                            entry.bits += [False] * (8 - j)
+                            entry.count = len(result.bits)
+                for key in params:
+                    assert getattr(result, key) == getattr(x, key)
+                result_str = str(result)
+                x_str = str(x)
+                for entry in params:
+                    assert entry in result_str
+                    assert entry in x_str
+            case "calc":
+                x = pdu(0, is_request=is_request)
+                x.from_bytes(1, msg)
+                assert len(msg) + 3 == x.calculatePduSize(is_request, 0, b"\x01" + msg)
+            case _:  # pragma: no cover
+                raise TypeError("Test case not handled!")
 
-    def test_pdu_verify_address(self):
-        """Test verify functions."""
-        req = reg_msg.ReadHoldingRegistersRequest(address=10, count=3)
-        req.address = -1
-        with pytest.raises(ValueError):  # noqa: PT011
-            req.verifyAddress()
-        req.address = 66000
-        with pytest.raises(ValueError):  # noqa: PT011
-            req.verifyAddress()
-
-    def test_pdu_verify_count(self):
-        """Test verify functions."""
-        req = reg_msg.ReadHoldingRegistersRequest(address=2, count=0)
-        req.count = 0
-        with pytest.raises(ValueError):  # noqa: PT011
-            req.verifyCount(100)
-        req.count = 101
-        with pytest.raises(ValueError):  # noqa: PT011
-            req.verifyCount(100)
-        with pytest.raises(ValueError):  # noqa: PT011
-            req.verifyCount(100, count=0)
-
+    @pytest.mark.parametrize("is_request", [True, False])
     @pytest.mark.parametrize(
-        ("pdutype", "args", "kwargs", "frame"), requests + responses
+        "cases", ["isError", "to_bytes", "from_bytes", "build", "calc", "str"]
     )
-    @pytest.mark.usefixtures("args")
-    def test_pdu_instance_encode(self, pdutype, kwargs, frame):
-        """Test that all PDU types can be created."""
-        pdu = pdutype(**kwargs)
-        res_frame = pdutype.function_code.to_bytes(1, "big") + pdu.x_encode()
-        assert res_frame == frame
+    async def test_PDUexception(self, is_request, cases):
+        """Ensure that PDUexception is correct."""
+        pdu = PDUexception(2, 0x01, 0x02, is_request=is_request)
+        match cases:
+            case "isError":
+                assert pdu.isError()
+            case "to_bytes":
+                assert pdu.to_bytes() == b"\x02"
+            case "from_bytes":
+                pdu2 = PDUexception(2, 0x01, 0x02, is_request=is_request)
+                pdu2.from_bytes(0, b"\x84\x04")
+                assert pdu2.function_code == 0x84
+                assert pdu2.exception_code == 0x04
+            case "calc":
+                assert pdu.calculatePduSize(is_request, 0, b"\x81\x05") == 5
+            case "build":
+                if is_request:
+                    x = await pdu.build_response(mock.AsyncMock(), mock.AsyncMock())
+                    assert isinstance(x, PDUexception)
+                    assert x.exception_code == ExcCodes.ILLEGAL_FUNCTION
+            case "str":
+                x_str = str(pdu)
+                for x in ("PDUexception", "dev_id", "function_code", "transaction_id"):
+                    assert x in x_str
+            case _:  # pragma: no cover
+                raise TypeError("Test case not handled!")
 
+    @pytest.mark.parametrize("pack", ["pack", "pack8", "unpack"])
     @pytest.mark.parametrize(
-        ("pdutype", "args", "kwargs", "frame"), requests + responses
-    )
-    @pytest.mark.usefixtures("args")
-    def test_pdu_decode(self, pdutype, kwargs, frame):
-        """Test pdu decode."""
-        pdu = pdutype(**kwargs)
-        pdu.x_decode(frame[1:])
-
-    @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests)
-    @pytest.mark.usefixtures("frame", "args")
-    async def test_pdu_datastore(self, pdutype, kwargs, mock_server_context):
-        """Test that all PDU types can be created."""
-        control = ModbusControlBlock()
-        try:
-            pdu = pdutype(**kwargs)
-            assert await pdu.datastore_update(mock_server_context(), 1)
-        finally:
-            control.Delimiter = b"\n"
-
-    @pytest.mark.parametrize(
-        ("bytestream", "bitlist"),
+        ("pack_run", "bytestream", "bitlist", "padding"),
         [
-            (b"\x01\x00", [True] + [False] * 15),
-            (b"\x00\x80", [False] * 15 + [True]),
-            (b"\x00\x01", [False] * 8 + [True] + [False] * 7),
-            (b"\x01\x80", [True] + [False] * 14 + [True]),
-            (b"\x00\x05", [False] * 8 + [True, False, True] + [False] * 5),
-            (b"\x01\x05", [True] + [False] * 7 + [True, False, True] + [False] * 5),
-            (
+            (  # 0
+                1,
+                b"\x01",
+                [True],
+                7,
+            ),
+            (  # 1
+                1,
+                b"\x05",
+                [True, False, True],
+                5,
+            ),
+            (  # 2
+                2,
+                b"\x01\x00",
+                [True] + [False] * 15,
+                0,
+            ),
+            (  # 3
+                2,
+                b"\x01\x00",
+                [True],
+                15,
+            ),
+            (  # 4
+                3,
+                b"\x00\x80",
+                [False] * 15 + [True],
+                0,
+            ),
+            (  # 5
+                3,
+                b"\x00\x01",
+                [False] * 8 + [True] + [False] * 7,
+                0,
+            ),
+            (  # 6
+                3,
+                b"\x01\x80",
+                [True] + [False] * 14 + [True],
+                0,
+            ),
+            (  # 7
+                3,
+                b"\x00\x05",
+                [False] * 8 + [True, False, True] + [False] * 5,
+                0,
+            ),
+            (  # 8
+                3,
+                b"\x01\x05",
+                [True] + [False] * 7 + [True, False, True] + [False] * 5,
+                0,
+            ),
+            (  # 9
+                3,
                 b"\x81\x05",
                 [True] + [False] * 6 + [True, True, False, True] + [False] * 5,
+                0,
             ),
-            (
+            (  # 10
+                3,
                 b"\x00\x01\x81\x05",
                 [False] * 8
                 + [True]
@@ -552,13 +237,34 @@ class TestPdu:
                 + [False] * 6
                 + [True, True, False, True]
                 + [False] * 5,
+                0,
             ),
-            (b"\x01\x00", [True]),
-            (b"\x00\x01", [False] * 8 + [True]),
-            (b"\x00\x05", [False] * 8 + [True, False, True]),
-            (b"\x01\x05", [True] + [False] * 7 + [True, False, True]),
-            (b"\x81\x05", [True] + [False] * 6 + [True, True, False, True]),
-            (
+            (  # 11
+                3,
+                b"\x00\x01",
+                [False] * 8 + [True],
+                7,
+            ),
+            (  # 12
+                3,
+                b"\x00\x05",
+                [False] * 8 + [True, False, True],
+                5,
+            ),
+            (  # 13
+                3,
+                b"\x01\x05",
+                [True] + [False] * 7 + [True, False, True],
+                5,
+            ),
+            (  # 14
+                3,
+                b"\x81\x05",
+                [True] + [False] * 6 + [True, True, False, True],
+                5,
+            ),
+            (  # 15
+                3,
                 b"\x00\x01\x81\x05",
                 [False] * 8
                 + [True]
@@ -566,78 +272,108 @@ class TestPdu:
                 + [True]
                 + [False] * 6
                 + [True, True, False, True],
+                5,
             ),
         ],
     )
-    def test_bit_packing(self, bytestream, bitlist):
+    def test_bit_packing(self, pack, bytestream, pack_run, bitlist, padding):
         """Test all string <=> bit packing functions."""
-        assert pack_bitstring(bitlist, align_byte=False) == bytestream
+        original = copy(bitlist)
+        match pack:
+            case "pack":
+                if pack_run in (2, 3):
+                    assert pack_bitstring(bitlist, align_byte=False) == bytestream
+            case "pack8":
+                if pack_run in (1, 3):
+                    original = copy(bitlist)
+                    assert pack_bitstring(bitlist, align_byte=True) == bytestream
+                    assert original == bitlist
+            case "unpack":
+                original_b = copy(bytestream)
+                assert unpack_bitstring(bytestream) == bitlist + [False] * padding
+                assert original_b == bytestream
+            case _:  # pragma: no cover
+                raise TypeError("Test case not handled!")
+        assert original == bitlist
 
-    @pytest.mark.parametrize(
-        ("bytestream", "bitlist"),
-        [
-            (b"\x01", [True]),
-            (b"\x00\x01", [False] * 8 + [True]),
-            (b"\x05", [True, False, True]),
-            (b"\x01\x05", [True] + [False] * 7 + [True, False, True]),
-        ],
-    )
-    def test_bit_packing8(self, bytestream, bitlist):
-        """Test all string <=> bit packing functions."""
-        assert pack_bitstring(bitlist) == bytestream
+    def test_pdu_register_as_byte(self):
+        """Test verify functions."""
+        registers = [int.from_bytes(b"ab", "big"), int.from_bytes(b"cd", "big")]
+        # NOT ALLOWED, NO conversion.
+        req = reg_msg.PDUreadHoldingRegisters(
+            0, address=117, registers=registers, count=3
+        )
+        assert len(req.registers) == 2
+        assert req.registers[0] == 24930
+        assert req.registers[1] == 25444
 
-    @pytest.mark.parametrize(
-        ("align_byte", "expected"),
-        [
-            (True, b"\x05"),
-            (False, b"\x05\x00"),
-        ],
-    )
-    def test_pack_bitstring_does_not_mutate_input(
-        self,
-        align_byte,
-        expected,
-    ):
-        """Test that pack_bitstring leaves the input list unchanged."""
-        bits = [True, False, True]
-        original = bits.copy()
+    @pytest.mark.parametrize("cases", ["lookup"])
+    def test_decoder1(self, cases, paramPDU):
+        """Test decoder."""
+        pdu, _api, _params, msg, _params2, _msg = paramPDU
+        match cases:
+            case "lookup":
+                result = DecodePDU._lookupPduClass(b"\x01" + msg)
+                assert result == pdu
+            case _:  # pragma: no cover
+                raise TypeError("Test case not handled!")
 
-        result = pack_bitstring(bits, align_byte=align_byte)
+    @pytest.mark.parametrize("is_request", [True, False])
+    @pytest.mark.parametrize("cases", ["decode", "encode", "calc"])
+    def test_decoder2(self, is_request, cases, paramPDU):
+        """Test decoder."""
+        if is_request:
+            pdu, _api, params, msg, _params2, _msg = paramPDU
+        else:
+            pdu, _api, _params2, _msg, params, msg = paramPDU
+        match cases:
+            case "decode":
+                x_pdu = DecodePDU(is_request).decode(msg)
+                assert isinstance(x_pdu, pdu)
+            case "encode":
+                x_pdu = pdu(0, is_request=is_request, **params)
+                x_msg = DecodePDU(is_request).encode(x_pdu)
+                assert x_msg == msg[1:]
+            case "calc":
+                x = pdu(0, is_request=is_request)
+                x.from_bytes(1, msg)
+                assert len(msg) + 3 == DecodePDU(is_request).calculateRtuFrameSize(
+                    b"\x01" + msg
+                )
+            case _:  # pragma: no cover
+                raise TypeError("Test case not handled!")
 
-        assert result == expected
-        assert bits == original
+    def test_decoder_no_fc(self):
+        """Test lookup for responses."""
+        msg = b"\x01\x7f\x70"
+        pdu = DecodePDU._lookupPduClass(msg)
+        assert not pdu
+        pdu = DecodePDU(True).calculateRtuFrameSize(msg)
+        assert not pdu
 
-    @pytest.mark.parametrize(
-        ("bytestream", "bitlist"),
-        [
-            (b"\x01", [True] + [False] * 7),
-            (b"\x01\x00", [True] + [False] * 15),
-            (b"\x00\x01", [False] * 8 + [True] + [False] * 7),
-            (b"\x00\x80", [False] * 15 + [True]),
-            (b"\x01\x80", [True] + [False] * 14 + [True]),
-            (b"\x00\x05", [False] * 8 + [True, False, True] + [False] * 5),
-            (b"\x01\x05", [True] + [False] * 7 + [True, False, True] + [False] * 5),
-            (
-                b"\x81\x05",
-                [True] + [False] * 6 + [True, True, False, True] + [False] * 5,
-            ),
-            (
-                b"\x05\x81\x01\x00",
-                [True, False, True]
-                + [False] * 5
-                + [True]
-                + [False] * 6
-                + [True]
-                + [True]
-                + [False] * 7
-                + [False] * 8,
-            ),
-        ],
-    )
-    def test_bit_unpacking(self, bytestream, bitlist):
-        """Test all string <=> bit packing functions."""
-        assert unpack_bitstring(bytestream) == bitlist
+    def test_decoder_no_sub(self):
+        """Test for unknown sub code."""
+        with pytest.raises(ModbusIOException):
+            DecodePDU(True).decode(b"\x08\x00\xf0\xf0\x00")
 
-    def test_ExceptionResponse_str(self):
-        """Test string conversion of ExceptionResponse."""
-        assert str(self.exception) != ""
+    def test_decoder_exc(self):
+        """Test lookup for exception response."""
+        pdu = DecodePDU._lookupPduClass(b"\x01\x81\x04")
+        assert pdu == PDUexception
+
+    @pytest.mark.parametrize(("frame"), [b"", b"\x01", b"NO FRAME"])
+    def test_decoder_bad_frame(self, frame):
+        """Test lookup bad frames."""
+        with pytest.raises(ModbusIOException):
+            DecodePDU(True).decode(frame)
+
+    @pytest.mark.parametrize(("message"), [b"\x0c", 12, [12], [12, 24]])
+    def test_diag_message(self, message):
+        """Test diag message."""
+        PDUreturnQueryData(0, message=message)
+
+    @pytest.mark.parametrize(("message"), [b"\x0c", 12, [12], [12, 24]])
+    async def test_diag_message2(self, message):
+        """Test diag message."""
+        pdu = PDUgetClearModbusPlus(0, message=CLEAR_STATISTICS)
+        assert await pdu.build_response(mock.AsyncMock(), mock.AsyncMock())

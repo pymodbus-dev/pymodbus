@@ -10,8 +10,12 @@ from ..datastore import ModbusServerContext
 from ..exceptions import ParameterException
 from ..framer import FRAMER_NAME_TO_CLASS, FramerType
 from ..logging import Log
-from ..pdu import DecodePDU, ModbusPDU
-from ..pdu.device import ModbusControlBlock, ModbusDeviceIdentification
+from ..pdu import (
+    DecodePDU,
+    ModbusControlBlock,
+    ModbusDeviceIdentification,
+    ModbusPdu,
+)
 from ..simulator import SimDevice
 from ..simulator.simcore import SimCore
 from ..transport import CommParams, ModbusProtocol
@@ -32,9 +36,9 @@ class ModbusBaseServer(ModbusProtocol):
         identity: ModbusDeviceIdentification | None,
         framer: FramerType,
         trace_packet: Callable[[bool, bytes], bytes] | None,
-        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None,
+        trace_pdu: Callable[[bool, ModbusPdu], ModbusPdu] | None,
         trace_connect: Callable[[bool], None] | None,
-        custom_pdu: list[type[ModbusPDU]] | None,
+        custom_pdu: list[type[ModbusPdu]] | None,
     ) -> None:
         """Initialize base server."""
         super().__init__(
@@ -44,8 +48,8 @@ class ModbusBaseServer(ModbusProtocol):
         self.loop = asyncio.get_running_loop()
         self.decoder = DecodePDU(True)
         if custom_pdu:
-            for func in custom_pdu:
-                self.decoder.register(func)
+            for new_pdu in custom_pdu:
+                DecodePDU.add_pdu(new_pdu)
         self.context: ModbusServerContext | SimCore
         if not isinstance(context, ModbusServerContext):
             self.context = SimCore(context)

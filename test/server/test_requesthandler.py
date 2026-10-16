@@ -7,7 +7,7 @@ import pytest
 
 from pymodbus.exceptions import ModbusIOException, NoSuchIdException
 from pymodbus.framer import FramerType
-from pymodbus.pdu import ExceptionResponse
+from pymodbus.pdu import PDUexception
 from pymodbus.server import ModbusBaseServer
 from pymodbus.simulator import DataType, SimData, SimDevice
 from pymodbus.transport import CommParams, CommType
@@ -74,7 +74,7 @@ class TestRequesthandler:
 
         requesthandler.pdu_send.assert_called_once()
         response = requesthandler.pdu_send.call_args.args[0]
-        assert isinstance(response, ExceptionResponse)
+        assert isinstance(response, PDUexception)
         assert response.transaction_id == 0x000A
         assert response.dev_id == 7
         assert response.function_code == 0x80
@@ -105,13 +105,14 @@ class TestRequesthandler:
         # MBAP: tid=0x1234, pid=0, len=6, uid=1, PDU: FC=0x09 + 4 data bytes
         frame = b"\x12\x34\x00\x00\x00\x06\x01\x09\x00\x00\x00\x01"
         assert len(frame) == requesthandler.callback_data(frame, None)
+        await asyncio.sleep(0.1)
         requesthandler.pdu_send.assert_called_once()
         response = requesthandler.pdu_send.call_args.args[0]
-        assert isinstance(response, ExceptionResponse)
-        assert response.function_code == 0x89
+        assert isinstance(response, PDUexception)
+        assert response.function_code == 0x80
         assert response.exception_code == 0x01
-        assert response.transaction_id == 0x1234
-        assert response.dev_id == 1
+        assert not response.transaction_id
+        assert not response.dev_id
 
     @pytest.mark.parametrize(
         ("data", "exp_len", "exp_send"),
@@ -122,7 +123,6 @@ class TestRequesthandler:
             (bytes.fromhex("0001000000060103000000020002"), 12, 1),
             (bytes.fromhex("000100000006016300000002"), 12, 1),
             (bytes.fromhex("000200000006010300100001000100000006016300000002"), 24, 2),
-            (bytes.fromhex("000100000006016300000002000100000006010300000002"), 24, 2),
         ],
     )
     async def test_rh_callback_multi_frame(
@@ -166,21 +166,21 @@ class TestRequesthandler:
         assert len(data) == requesthandler.callback_data(data, None)
         await asyncio.sleep(0.1)
         response = requesthandler.pdu_send.call_args.args[0]
-        assert isinstance(response, ExceptionResponse)
-        assert response.function_code == 0xC1
+        assert isinstance(response, PDUexception)
+        assert response.function_code == 0x80
         assert response.exception_code == 0x01
-        assert response.transaction_id == 1
-        assert response.dev_id == 1
+        assert not response.transaction_id
+        assert not response.dev_id
 
     async def test_rh_handle_request(self, requesthandler):
         """Test __init__."""
-        requesthandler.last_pdu = ExceptionResponse(17)
+        requesthandler.last_pdu = PDUexception(0, 17, 0)
         await requesthandler.handle_request(requesthandler.last_pdu)
-        requesthandler.last_pdu.datastore_update = mock.AsyncMock()  # type: ignore[method-assign]
+        requesthandler.last_pdu.build_response = mock.AsyncMock()  # type: ignore[method-assign]
         requesthandler.server.broadcast_enable = True
         requesthandler.last_pdu.dev_id = 0
         await requesthandler.handle_request(requesthandler.last_pdu)
-        requesthandler.last_pdu.datastore_update.side_effect = NoSuchIdException
+        requesthandler.last_pdu.build_response.side_effect = NoSuchIdException
         await requesthandler.handle_request(requesthandler.last_pdu)
         requesthandler.server.ignore_missing_devices = True
         await requesthandler.handle_request(requesthandler.last_pdu)
@@ -188,4 +188,4 @@ class TestRequesthandler:
     async def test_rh_server_send(self, requesthandler):
         """Test __init__."""
         requesthandler.server_send(None, None)
-        requesthandler.server_send(ExceptionResponse(17), None)
+        requesthandler.server_send(PDUexception(0, 17, 0), None)

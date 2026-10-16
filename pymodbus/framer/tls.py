@@ -25,15 +25,14 @@ class FramerTLS(FramerBase):
             return data_len, 0, 0, self.EMPTY
         tid = int.from_bytes(data[0:2], "big")
         dev_id = int(data[6])
-        return data_len, dev_id, tid, data[7:]
+        return data_len, dev_id, tid, data[6:]
 
-    def encode(self, payload: bytes, device_id: int, tid: int) -> bytes:
+    def encode(self, payload: bytes, tid: int) -> bytes:
         """Encode MDAP+payload."""
         frame = (
             tid.to_bytes(2, "big")
             + b"\x00\x00"
-            + (len(payload) + 1).to_bytes(2, "big")
-            + device_id.to_bytes(1, "big")
+            + len(payload).to_bytes(2, "big")
             + payload
         )
         return frame

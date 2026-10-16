@@ -7,19 +7,188 @@ should be inserted in the correct locations.
 
 from __future__ import annotations
 
-
-__all__ = [
-    "DeviceInformationFactory",
-    "ModbusDeviceIdentification",
-    "ModbusPlusStatistics",
-]
-
 import struct
+from abc import ABC, abstractmethod
 
-# pylint: disable=missing-type-doc
 from ..constants import DeviceInformation
+from ..exceptions import ParameterException
 from ..utilities import dict_property
-from .events import ModbusEvent
+from .pdu import pack_bitstring, unpack_bitstring
+
+
+# ---------------------------------------------------------------------------#
+#  Modbus Event
+#
+# An event byte returned by the Get Communications Event Log function
+# can be any one of four types. The type is defined by bit 7
+# (the high-order bit) in each byte. It may be further defined by bit 6.
+# ---------------------------------------------------------------------------#
+class ModbusEvent(ABC):
+    """Define modbus events."""
+
+    @abstractmethod
+    def encode(self) -> bytes:
+        """Encode the status bits to an event message."""
+
+    @abstractmethod
+    def decode(self, event):
+        """Decode the event message to its status bits."""
+
+
+class RemoteReceiveEvent(ModbusEvent):
+    """Remote device MODBUS Receive Event.
+
+    The remote device stores this type of event byte when a query message
+    is received. It is stored before the remote device processes the message.
+    This event is defined by bit 7 set to logic "1". The other bits will be
+    set to a logic "1" if the corresponding condition is TRUE. The bit layout
+    is::
+
+        Bit Contents
+        ----------------------------------
+        0   Not Used
+        2   Not Used
+        3   Not Used
+        4   Character Overrun
+        5   Currently in Listen Only Mode
+        6   Broadcast Receive
+        7   1
+    """
+
+    def __init__(self, overrun=False, listen=False, broadcast=False):
+        """Initialize a new event instance."""
+        self.overrun = overrun
+        self.listen = listen
+        self.broadcast = broadcast
+
+    def encode(self) -> bytes:
+        """Encode the status bits to an event message."""
+        bits = [False] * 3
+        bits += [self.overrun, self.listen, self.broadcast, True]
+        packet = pack_bitstring(bits)
+        return packet
+
+    def decode(self, event: bytes) -> None:
+        """Decode the event message to its status bits."""
+        bits = unpack_bitstring(event)
+        self.overrun = bits[4]
+        self.listen = bits[5]
+        self.broadcast = bits[6]
+
+
+class RemoteSendEvent(ModbusEvent):
+    """Remote device MODBUS Send Event.
+
+    The remote device stores this type of event byte when it finishes
+    processing a request message. It is stored if the remote device
+    returned a normal or exception response, or no response.
+
+    This event is defined by bit 7 set to a logic "0", with bit 6 set to a "1".
+    The other bits will be set to a logic "1" if the corresponding
+    condition is TRUE. The bit layout is::
+
+        Bit Contents
+        -----------------------------------------------------------
+        0   Read Exception Sent (Exception Codes 1-3)
+        1   Device Abort Exception Sent (Exception Code 4)
+        2   Device Busy Exception Sent (Exception Codes 5-6)
+        3   Device Program NAK Exception Sent (Exception Code 7)
+        4   Write Timeout Error Occurred
+        5   Currently in Listen Only Mode
+        6   1
+        7   0
+    """
+
+    def __init__(
+        self,
+        read=False,
+        device_abort=False,
+        device_busy=False,
+        device_nak=False,
+        write_timeout=False,
+        listen=False,
+    ):
+        """Initialize a new event instance."""
+        self.read = read
+        self.device_abort = device_abort
+        self.device_busy = device_busy
+        self.device_nak = device_nak
+        self.write_timeout = write_timeout
+        self.listen = listen
+
+    def encode(self):
+        """Encode the status bits to an event message."""
+        bits = [
+            self.read,
+            self.device_abort,
+            self.device_busy,
+            self.device_nak,
+            self.write_timeout,
+            self.listen,
+        ]
+        bits += [True, False]
+        packet = pack_bitstring(bits)
+        return packet
+
+    def decode(self, event):
+        """Decode the event message to its status bits."""
+        bits = unpack_bitstring(event)
+        self.read = bits[0]
+        self.device_abort = bits[1]
+        self.device_busy = bits[2]
+        self.device_nak = bits[3]
+        self.write_timeout = bits[4]
+        self.listen = bits[5]
+
+
+class EnteredListenModeEvent(ModbusEvent):
+    """Enter Remote device Listen Only Mode.
+
+    The remote device stores this type of event byte when it enters
+    the Listen Only Mode. The event is defined by a content of 04 hex.
+    """
+
+    value = 0x04
+    __encoded = b"\x04"
+
+    def encode(self):
+        """Encode the status bits to an event message."""
+        return self.__encoded
+
+    def decode(self, event):
+        """Decode the event message to its status bits."""
+        if event != self.__encoded:
+            raise ParameterException("Invalid decoded value")
+
+
+class CommunicationRestartEvent(ModbusEvent):
+    """Restart remote device Initiated Communication.
+
+    The remote device stores this type of event byte when its communications
+    port is restarted. The remote device can be restarted by the Diagnostics
+    function (code 08), with sub-function Restart Communications Option
+    (code 00 01).
+
+    That function also places the remote device into a "Continue on Error"
+    or "Stop on Error" mode. If the remote device is placed  into "Continue on
+    Error" mode, the event byte is added to the existing event log. If the
+    remote device is placed into "Stop on Error" mode, the byte is added to
+    the log and the rest of the log is cleared to zeros.
+
+    The event is defined by a content of zero.
+    """
+
+    value = 0x00
+    __encoded = b"\x00"
+
+    def encode(self):
+        """Encode the status bits to an event message."""
+        return self.__encoded
+
+    def decode(self, event):
+        """Decode the event message to its status bits."""
+        if event != self.__encoded:
+            raise ParameterException("Invalid decoded value")
 
 
 # ---------------------------------------------------------------------------#
@@ -87,10 +256,7 @@ class ModbusPlusStatistics:
         self.reset()
 
     def __iter__(self):
-        """Iterate over the statistics.
-
-        :returns: An iterator of the modbus plus statistics
-        """
+        """Iterate over the statistics."""
         return iter(self.stat_data.items())
 
     def reset(self) -> None:
@@ -99,17 +265,11 @@ class ModbusPlusStatistics:
             self.stat_data[key] = [0x00] * len(self.stat_data[key])
 
     def summary(self):
-        """Return a summary of the modbus plus statistics.
-
-        :returns: 54 16-bit words representing the status
-        """
+        """Return a summary of the modbus plus statistics."""
         return iter(self.stat_data.values())
 
-    def x_encode(self) -> list[int]:
-        """Return a summary of the modbus plus statistics.
-
-        :returns: An iterator over lists of 8-bit integers representing each statistic
-        """
+    def encode(self) -> list[int]:
+        """Return a summary of the modbus plus statistics."""
         values = [v for sublist in self.stat_data.values() for v in sublist]
         total = [(values[i] << 8) | values[i + 1] for i in range(0, len(values), 2)]
         return total
@@ -151,15 +311,7 @@ class ModbusDeviceIdentification:
     ]
 
     def __init__(self, info=None, info_name=None):
-        """Initialize the datastore with the elements you need.
-
-        (note acceptable range is [0x00-0x06,0x80-0xFF] inclusive)
-
-        :param info: Device information as {int:string} dictionary
-        :param info_name: Device information as {name:string} dictionary
-        """
-        # Copy the defaults, so each identity has its own values instead of
-        # all instances writing into the class-level dict.
+        """Initialize the datastore with the elements you need."""
         self.stat_data = dict(self.stat_data)
         if isinstance(info_name, dict):
             for key in info_name:
@@ -172,49 +324,28 @@ class ModbusDeviceIdentification:
                     self.stat_data[key] = info[key]
 
     def __iter__(self):
-        """Iterate over the device information.
-
-        :returns: An iterator of the device information
-        """
+        """Iterate over the device information."""
         return iter(self.stat_data.items())
 
     def summary(self):
-        """Return a summary of the main items.
-
-        :returns: An dictionary of the main items
-        """
+        """Return a summary of the main items."""
         return dict(zip(self.__names, iter(self.stat_data.values())))
 
     def update(self, value):
-        """Update the values of this identity.
-
-        using another identify as the value
-
-        :param value: The value to copy values from
-        """
+        """Update the values of this identity."""
         self.stat_data.update(value)
 
     def __setitem__(self, key, value):
-        """Access the device information.
-
-        :param key: The register to set
-        :param value: The new value for referenced register
-        """
+        """Access the device information."""
         if key not in [0x07, 0x08]:
             self.stat_data[key] = value
 
     def __getitem__(self, key):
-        """Access the device information.
-
-        :param key: The register to read
-        """
+        """Access the device information."""
         return self.stat_data.get(key, "")
 
     def __str__(self):
-        """Build a representation of the device.
-
-        :returns: A string representation of the device
-        """
+        """Build a representation of the device."""
         return "DeviceIdentity"
 
     # -------------------------------------------------------------------------#
@@ -262,34 +393,18 @@ class DeviceInformationFactory:  # pylint: disable=too-few-public-methods
 
     @classmethod
     def get(cls, control, read_code=DeviceInformation.BASIC, object_id=0x00):
-        """Get the requested device data from the system.
-
-        :param control: The control block to pull data from
-        :param read_code: The read code to process
-        :param object_id: The specific object_id to read
-        :returns: The requested data (id, length, value)
-        """
+        """Get the requested device data from the system."""
         identity = control.Identity
         return cls.__lookup[read_code](cls, identity, object_id)
 
     @classmethod
     def __get(cls, identity, object_id):  # pylint: disable=unused-private-member
-        """Read a single object_id from the device information.
-
-        :param identity: The identity block to pull data from
-        :param object_id: The specific object id to read
-        :returns: The requested data (id, length, value)
-        """
+        """Read a single object_id from the device information."""
         return {object_id: identity[object_id]}
 
     @classmethod
     def __gets(cls, identity, object_ids):  # pylint: disable=unused-private-member
-        """Read multiple object_ids from the device information.
-
-        :param identity: The identity block to pull data from
-        :param object_ids: The specific object ids to read
-        :returns: The requested data (id, length, value)
-        """
+        """Read multiple object_ids from the device information."""
         return {oid: identity[oid] for oid in object_ids if identity[oid]}
 
 
@@ -375,19 +490,11 @@ class ModbusCountersHandler:
     ]
 
     def __iter__(self):
-        """Iterate over the device counters.
-
-        :returns: An iterator of the device counters
-        """
+        """Iterate over the device counters."""
         return zip(self.__names, iter(self.stat_data.values()))
 
     def update(self, values):
-        """Update the values of this identity.
-
-        using another identify as the value
-
-        :param values: The value to copy values from
-        """
+        """Update the values of this identity."""
         for k, v_item in iter(values.items()):
             v_item += self.__getattribute__(  # pylint: disable=unnecessary-dunder-call
                 k
@@ -399,10 +506,7 @@ class ModbusCountersHandler:
         self.stat_data = dict.fromkeys(range(9), 0x00)
 
     def summary(self):
-        """Return a summary of the counters current status.
-
-        :returns: A byte with each bit representing each counter
-        """
+        """Return a summary of the counters current status."""
         count, result = 0x01, 0x00
         for i in iter(self.stat_data.values()):
             if i != 0x00:  # pylint: disable=compare-to-zero
@@ -451,17 +555,11 @@ class ModbusControlBlock:
     #  Magic
     # -------------------------------------------------------------------------#
     def __str__(self):
-        """Build a representation of the control block.
-
-        :returns: A string representation of the control block
-        """
+        """Build a representation of the control block."""
         return "ModbusControl"
 
     def __iter__(self):
-        """Iterate over the device counters.
-
-        :returns: An iterator of the device counters
-        """
+        """Iterate over the device counters."""
         return self._counters.__iter__()
 
     def __new__(cls):
@@ -474,20 +572,14 @@ class ModbusControlBlock:
     #  Events
     # -------------------------------------------------------------------------#
     def addEvent(self, event: ModbusEvent):
-        """Add a new event to the event log.
-
-        :param event: A new event to add to the log
-        """
+        """Add a new event to the event log."""
         self._events.insert(0, event)
         self._events = self._events[0:64]  # chomp to 64 entries
         self.Counter.Event += 1
 
     def getEvents(self):
-        """Return an encoded collection of the event log.
-
-        :returns: The encoded events packet
-        """
-        events = [event.x_encode() for event in self._events]
+        """Return an encoded collection of the event log."""
+        events = [event.encode() for event in self._events]
         return b"".join(events)
 
     def clearEvents(self):
@@ -512,10 +604,7 @@ class ModbusControlBlock:
     #  Listen Properties
     # -------------------------------------------------------------------------#
     def _setListenOnly(self, value):
-        """Toggle the listen only status.
-
-        :param value: The value to set the listen status to
-        """
+        """Toggle the listen only status."""
         self._listen_only = bool(value)
 
     ListenOnly = property(lambda s: s._listen_only, _setListenOnly)
@@ -524,10 +613,7 @@ class ModbusControlBlock:
     #  Mode Properties
     # -------------------------------------------------------------------------#
     def _setMode(self, mode):
-        """Toggle the current serial mode.
-
-        :param mode: The data transfer method in (RTU, ASCII)
-        """
+        """Toggle the current serial mode."""
         if mode in {"ASCII", "RTU"}:
             self._mode = mode
 
@@ -537,10 +623,7 @@ class ModbusControlBlock:
     #  Delimiter Properties
     # -------------------------------------------------------------------------#
     def _setDelimiter(self, char):
-        """Change the serial delimiter character.
-
-        :param char: The new serial delimiter character
-        """
+        """Change the serial delimiter character."""
         if isinstance(char, str):
             self._delimiter = char.encode()
         if isinstance(char, bytes):
@@ -554,19 +637,12 @@ class ModbusControlBlock:
     #  Diagnostic Properties
     # -------------------------------------------------------------------------#
     def setDiagnostic(self, mapping):
-        """Set the value in the diagnostic register.
-
-        :param mapping: Dictionary of key:value pairs to set
-        """
+        """Set the value in the diagnostic register."""
         for entry in iter(mapping.items()):
             self._diagnostic[entry[0]] = bool(entry[1])
 
     def getDiagnostic(self, bit):
-        """Get the value in the diagnostic register.
-
-        :param bit: The bit to get
-        :returns: The current value of the requested bit
-        """
+        """Get the value in the diagnostic register."""
         try:
             if bit and 0 <= bit < len(self._diagnostic):
                 return self._diagnostic[bit]
@@ -575,8 +651,5 @@ class ModbusControlBlock:
         return None
 
     def getDiagnosticRegister(self):
-        """Get the entire diagnostic register.
-
-        :returns: The diagnostic register collection
-        """
+        """Get the entire diagnostic register."""
         return self._diagnostic

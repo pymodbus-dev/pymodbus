@@ -83,29 +83,23 @@ class FramerRTU(FramerBase):
                 Log.debug("Short frame: {} wait for more data", data, ":hex")
                 return 0, 0, 0, self.EMPTY
             dev_id = int(data[used_len])
-            try:
-                size = self.decoder.calculateRtuFrameSize(data[used_len:])
-            except IndexError:
-                Log.debug("Frame - byte count not received, wait for more data")
+            if not (size := self.decoder.calculatePduSize(data[used_len:-2])):
+                Log.debug(
+                    "Frame - not enough bytes to calculate PDU size, wait for more data"
+                )
                 return 0, dev_id, 0, self.EMPTY
-            if not size:
-                continue
-            if data_len < used_len + size:
-                Log.debug("Frame - not ready")
-                return 0, dev_id, 0, self.EMPTY
-            crc_start = used_len + size - 2
+            crc_start = used_len + size
             crc = data[crc_start : crc_start + 2]
             crc_val = (int(crc[0]) << 8) + int(crc[1])
             if not FramerRTU.check_CRC(data[used_len:crc_start], crc_val):
                 Log.debug("Frame CRC check failed, possible garbage")
                 return data_len, 0, 0, self.EMPTY
-            return data_len, dev_id, 0, data[used_len + 1 : crc_start]
+            return data_len, dev_id, 0, data[used_len:crc_start]
         return 0, 0, 0, self.EMPTY
 
-    def encode(self, payload: bytes, device_id: int, _tid: int) -> bytes:
+    def encode(self, payload: bytes, _tid: int) -> bytes:
         """Encode ADU."""
-        frame = device_id.to_bytes(1, "big") + payload
-        return frame + FramerRTU.compute_CRC(frame).to_bytes(2, "big")
+        return payload + FramerRTU.compute_CRC(payload).to_bytes(2, "big")
 
     @classmethod
     def check_CRC(cls, data: bytes, check: int) -> bool:

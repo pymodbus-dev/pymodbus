@@ -11,16 +11,8 @@ same register type (e.g. coils).
 All available modbus calls are present.
 
 If you are performing a request that is not available in the client
-mixin, you have to perform the request like this instead::
-
-    from pymodbus.pdu.diag_message import ClearCountersRequest
-    from pymodbus.pdu.diag_message import ClearCountersResponse
-
-    request  = ClearCountersRequest()
-    response = client.execute(request)
-    if isinstance(response, ClearCountersResponse):
-        ... do something with the response
-
+mixin, you can use client.execute directly, but the easiest way it to add
+a custom PDU class.
 
 This example uses client_async.py and client_sync.py to handle connection,
 and have the same options.

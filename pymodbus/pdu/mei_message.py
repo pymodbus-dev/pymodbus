@@ -41,6 +41,14 @@ class EncapsulatedInterfaceTransportBase(ModbusPDU):
         """Decode the MEI type."""
         return int(data[2])
 
+    def x_encode(self) -> bytes:
+        """Encode the request packet."""
+        return b""
+
+    def x_decode(self, data: bytes) -> None:
+        """Decode data part of the message."""
+        _ = data
+
 
 class ReadDeviceInformationRequest(EncapsulatedInterfaceTransportBase):
     """ReadDeviceInformationRequest."""

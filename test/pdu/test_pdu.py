@@ -11,8 +11,9 @@ import pymodbus.pdu.mei_message as mei_msg
 import pymodbus.pdu.other_message as o_msg
 import pymodbus.pdu.register_message as reg_msg
 from pymodbus.constants import ModbusStatus
-from pymodbus.exceptions import ModbusIOException, NotImplementedException
+from pymodbus.exceptions import ModbusIOException
 from pymodbus.pdu import (
+    DecodePDU,
     ExceptionResponse,
     ModbusPDU,
 )
@@ -28,8 +29,8 @@ class TestPdu:
     async def test_error_methods(self):
         """Test all error methods."""
         result = self.exception.x_encode()
-        self.exception.from_frame(False, b"\x00" + result)
         assert result == b"\x01"
+        DecodePDU(True).decode(b"\x81" + result)
         assert self.exception.exception_code == 1
 
     async def test_pdu_id(self, mockPDU):
@@ -42,11 +43,6 @@ class TestPdu:
     async def test_is_error(self):
         """Test is_error."""
         assert self.exception.isError()
-
-    def test_not_implemented(self):
-        """Test x_calculateRtuFrameSize."""
-        with pytest.raises(NotImplementedException):
-            ModbusPDU().x_calculateRtuFrameSize(b"")
 
     requests: list[tuple[type[ModbusPDU], tuple[()], dict[str, Any], bytes]] = [
         (

@@ -40,14 +40,17 @@ class ExceptionResponse(ModbusPDU):
         """Encode a modbus exception response."""
         return struct.pack(">B", self.exception_code)
 
+    def x_decode(self, data: bytes) -> None:
+        """Decode data part of the message."""
+        _ = data
+
     def isError(self) -> bool:
         """Check if the error is a success or failure."""
         return True
 
     def from_frame(self, is_request: bool, data: bytes) -> int:
         """Decode a modbus exception response."""
-        if is_request:
-            raise NotImplementedError("Modbus exception request do not exist.")
+        _ = is_request
         self.function_code = int(data[0])
         self.exception_code = int(data[1])
         return 5

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from abc import abstractmethod
 from collections.abc import Sequence
 
 from ..datastore import ModbusServerContext
@@ -81,17 +82,13 @@ class ModbusPDU:
             f"retries={self.retries})"
         )
 
+    @abstractmethod
     def x_encode(self) -> bytes:
         """Encode the message."""
-        raise NotImplementedException(
-            f"encode() not implemented {self.__class__.__name__}"
-        )
 
+    @abstractmethod
     def x_decode(self, data: bytes) -> None:
         """Decode data part of the message."""
-        raise NotImplementedException(
-            f"decode() not implemented {self.__class__.__name__}"
-        )
 
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int

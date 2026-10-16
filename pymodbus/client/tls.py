@@ -8,7 +8,7 @@ from collections.abc import Callable
 
 from ..framer import FramerType
 from ..logging import Log
-from ..pdu import ModbusPDU
+from ..pdu import ModbusPdu
 from ..transport import CommParams, CommType
 from .tcp import AsyncModbusTcpClient, ModbusTcpClient
 
@@ -71,7 +71,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         timeout: float = 3,
         retries: int = 3,
         trace_packet: Callable[[bool, bytes], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_pdu: Callable[[bool, ModbusPdu], ModbusPdu] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
     ):
         """Initialize Asyncio Modbus TLS Client."""
@@ -152,7 +152,7 @@ class ModbusTlsClient(ModbusTcpClient):
         timeout: float = 3,
         retries: int = 3,
         trace_packet: Callable[[bool, bytes], bytes] | None = None,
-        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
+        trace_pdu: Callable[[bool, ModbusPdu], ModbusPdu] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
     ):
         """Initialize Modbus TLS Client."""

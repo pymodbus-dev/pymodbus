@@ -9,14 +9,9 @@ import pytest
 from pymodbus.client import ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.framer import FramerRTU, FramerSocket, FramerType
-from pymodbus.pdu import DecodePDU, ExceptionResponse
-from pymodbus.pdu.bit_message import ReadCoilsRequest, ReadCoilsResponse
-from pymodbus.pdu.register_message import (
-    ReadHoldingRegistersRequest,
-    ReadHoldingRegistersResponse,
-    ReadInputRegistersRequest,
-    ReadInputRegistersResponse,
-)
+from pymodbus.pdu import DecodePDU, PDUexception
+from pymodbus.pdu.bit_message import PDUreadCoils
+from pymodbus.pdu.register_message import PDUreadHoldingRegisters, PDUreadInputRegisters
 from pymodbus.transaction import TransactionManager
 from pymodbus.transport import CommType
 
@@ -92,7 +87,7 @@ class TestTransaction:
         )
         transact.is_sync = True
         transact.comm_params.handle_local_echo = True
-        transact.pdu_send(ExceptionResponse(0xFF), (0, 0))
+        transact.pdu_send(PDUexception(0, 0xFF, 0), (0, 0))
         assert transact.sent_buffer == b"\x01\xff\x00a\xf0"
 
     async def test_transaction_connect(self, use_clc):
@@ -138,7 +133,7 @@ class TestTransaction:
     )
     async def test_transaction_data(self, use_clc, test, is_server):
         """Test tracers in disconnect."""
-        pdu = ExceptionResponse(0xFF)
+        pdu = PDUexception(0, 0xFF, 0)
         pdu.dev_id = 0
         packet = b"\x00\x03\x00\x7c\x00\x02\x04\x02"
         transact = TransactionManager(
@@ -172,7 +167,7 @@ class TestTransaction:
     @pytest.mark.parametrize("test", [True, False])
     async def test_transaction_data_2(self, use_clc, test):
         """Test tracers in disconnect."""
-        pdu = ExceptionResponse(0xFF)
+        pdu = PDUexception(0, 0xFF, 0)
         packet = b"\x00\x03\x00\x7c\x00\x02\x04\x02"
         transact = TransactionManager(
             use_clc,
@@ -195,10 +190,12 @@ class TestTransaction:
 
     async def test_transaction_discard(self, use_clc):
         """Test next request does not get the response of a cancelled request."""
-        req_org = ReadHoldingRegistersRequest(dev_id=1, count=4)
-        resp_org = ReadHoldingRegistersResponse(dev_id=1, registers=[1, 2, 3, 4])
-        resp_fc = ReadInputRegistersResponse(dev_id=1, registers=[1, 2, 3, 4, 5])
-        resp_id = ReadHoldingRegistersResponse(dev_id=2, registers=[1, 2, 3, 4, 5])
+        req_org = PDUreadHoldingRegisters(1, count=4)
+        resp_org = PDUreadHoldingRegisters(1, is_request=False, registers=[1, 2, 3, 4])
+        resp_fc = PDUreadInputRegisters(1, is_request=False, registers=[1, 2, 3, 4, 5])
+        resp_id = PDUreadHoldingRegisters(
+            dev_id=2, is_request=False, registers=[1, 2, 3, 4, 5]
+        )
         transact = TransactionManager(
             use_clc,
             FramerRTU(DecodePDU(False)),
@@ -242,8 +239,10 @@ class TestTransaction:
             None,
         )
         transact.send = mock.Mock()  # type: ignore[method-assign]
-        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
-        response = ReadCoilsResponse(bits=[True, False, True, True, False], dev_id=1)
+        request = PDUreadCoils(1, address=117, count=5)
+        response = PDUreadCoils(
+            1, is_request=False, bits=[True, False, True, True, False]
+        )
         transact.retries = 0
         transact.connection_made(mock.AsyncMock())
         transact.transport.write = mock.Mock()  # type: ignore[method-assign, attr-defined]
@@ -355,14 +354,18 @@ class TestTransaction:
     )
     async def test_transaction_execute_cancel(self, use_clc, cases):
         """Test next request does not get the response of a cancelled request."""
-        req_org = ReadHoldingRegistersRequest(dev_id=1, count=4)
-        resp_org = ReadHoldingRegistersResponse(dev_id=1, registers=[1, 2, 3, 4])
-        req_org2 = ReadHoldingRegistersRequest(dev_id=1, count=5)
-        resp_org2 = ReadHoldingRegistersResponse(dev_id=1, registers=[1, 2, 3, 4, 5])
-        req_fc = ReadInputRegistersRequest(dev_id=1, count=5)
-        resp_fc = ReadInputRegistersResponse(dev_id=1, registers=[1, 2, 3, 4, 5])
-        req_id = ReadHoldingRegistersRequest(dev_id=2, count=5)
-        resp_id = ReadHoldingRegistersResponse(dev_id=2, registers=[1, 2, 3, 4, 5])
+        req_org = PDUreadHoldingRegisters(1, count=4)
+        resp_org = PDUreadHoldingRegisters(1, is_request=False, registers=[1, 2, 3, 4])
+        req_org2 = PDUreadHoldingRegisters(1, is_request=False, count=5)
+        resp_org2 = PDUreadHoldingRegisters(
+            1, is_request=False, registers=[1, 2, 3, 4, 5]
+        )
+        req_fc = PDUreadInputRegisters(1, count=5)
+        resp_fc = PDUreadInputRegisters(1, is_request=False, registers=[1, 2, 3, 4, 5])
+        req_id = PDUreadHoldingRegisters(2, count=5)
+        resp_id = PDUreadHoldingRegisters(
+            2, is_request=False, registers=[1, 2, 3, 4, 5]
+        )
         transact = TransactionManager(
             use_clc,
             FramerRTU(DecodePDU(False)),
@@ -429,13 +432,13 @@ class TestTransaction:
     @pytest.mark.parametrize(
         ("framer", "dev_id", "request_type", "response_type"),
         [
-            (FramerRTU, 2, ReadHoldingRegistersRequest, ReadHoldingRegistersResponse),
-            (FramerRTU, 1, ReadInputRegistersRequest, ReadInputRegistersResponse),
+            (FramerRTU, 2, PDUreadHoldingRegisters, PDUreadHoldingRegisters),
+            (FramerRTU, 1, PDUreadInputRegisters, PDUreadInputRegisters),
             (
                 FramerSocket,
                 1,
-                ReadHoldingRegistersRequest,
-                ReadHoldingRegistersResponse,
+                PDUreadHoldingRegisters,
+                PDUreadHoldingRegisters,
             ),
         ],
     )
@@ -460,23 +463,23 @@ class TestTransaction:
         transact.connection_made(transport)
         transact.comm_params.timeout_connect = 5
         resp = asyncio.create_task(
-            transact.execute(False, ReadHoldingRegistersRequest(dev_id=1, count=4))
+            transact.execute(False, PDUreadHoldingRegisters(1, count=4))
         )
         await asyncio.sleep(0.1)
         resp.cancel()
         with pytest.raises(asyncio.CancelledError):
             await resp
         resp = asyncio.create_task(
-            transact.execute(False, request_type(dev_id=dev_id, count=5))
+            transact.execute(False, request_type(dev_id, count=5))
         )
         await asyncio.sleep(0.1)
         assert transport.write.call_count == 2
-        late = ReadHoldingRegistersResponse(
-            dev_id=1, transaction_id=1, registers=[1, 2, 3, 4]
+        late = PDUreadHoldingRegisters(
+            1, is_request=False, transaction_id=1, registers=[1, 2, 3, 4]
         )
         transact.data_received(transact.framer.buildFrame(late))
         response = response_type(
-            dev_id=dev_id, transaction_id=2, registers=[1, 2, 3, 4, 5]
+            dev_id, is_request=False, transaction_id=2, registers=[1, 2, 3, 4, 5]
         )
         transact.data_received(transact.framer.buildFrame(response))
         assert (await resp).registers == response.registers
@@ -493,14 +496,16 @@ class TestTransaction:
             None,
         )
         transact.send = mock.Mock()  # type: ignore[method-assign]
-        response = ReadCoilsResponse(bits=[True, False, True, True, False], dev_id=0)
+        response = PDUreadCoils(
+            0, is_request=False, bits=[True, False, True, True, False]
+        )
         transact.retries = 0
         transact.connection_made(mock.AsyncMock())
 
         data = b"\x00\x00\x00\x00\x00\x06\x00\x01\x01\x02\x00\x04"
         transact.data_received(data)
         response = await transact.response_future
-        assert isinstance(response, ReadCoilsResponse)
+        assert isinstance(response, PDUreadCoils)
 
     @pytest.mark.parametrize("no_resp", [False, True])
     async def test_client_protocol_execute_outside(self, use_clc, no_resp):
@@ -516,7 +521,7 @@ class TestTransaction:
         )
         transact.send = mock.Mock()  # type: ignore[method-assign]
         transact.comm_params.timeout_connect = 0.1
-        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
+        request = PDUreadCoils(1, address=117, count=5)
         transact.retries = 0
         transact.connection_made(mock.AsyncMock())
         transact.transport.write = mock.Mock()  # type: ignore[attr-defined]
@@ -599,9 +604,11 @@ class TestSyncTransaction:
         )
         transact.send = mock.Mock()  # type: ignore[method-assign]
         transact.sync_client.connect = mock.Mock(return_value=True)
-        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
-        response = ReadCoilsResponse(
-            bits=[True, False, True, True, False, False, False, False], dev_id=1
+        request = PDUreadCoils(1, address=117, count=5)
+        response = PDUreadCoils(
+            1,
+            is_request=False,
+            bits=[True, False, True, True, False, False, False, False],
         )
         transact.retries = 0
         if scenario == 0:  # transport not ok and no connect
@@ -703,9 +710,11 @@ class TestSyncTransaction:
         )
         transact.sync_client.connect = mock.Mock(return_value=True)
         transact.sync_client.send = mock.Mock()
-        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
-        response = ReadCoilsResponse(
-            bits=[True, False, True, True, False, False, False, False], dev_id=1
+        request = PDUreadCoils(1, address=117, count=5)
+        response = PDUreadCoils(
+            1,
+            is_request=False,
+            bits=[True, False, True, True, False, False, False, False],
         )
         transact.retries = 0
         transact.transport = 1  # type: ignore[assignment]
@@ -730,9 +739,11 @@ class TestSyncTransaction:
             sync_client=client,
         )
         transact.sync_client.connect = mock.Mock(return_value=True)
-        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
-        response = ReadCoilsResponse(
-            bits=[True, False, True, True, False, False, False, False], dev_id=1
+        request = PDUreadCoils(1, address=117, count=5)
+        response = PDUreadCoils(
+            1,
+            is_request=False,
+            bits=[True, False, True, True, False, False, False, False],
         )
         transact.retries = 0
         transact.transport = 1  # type: ignore[assignment]
@@ -760,9 +771,11 @@ class TestSyncTransaction:
             sync_client=client,
         )
         transact.sync_client.connect = mock.Mock(return_value=True)
-        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
-        response = ReadCoilsResponse(
-            bits=[True, False, True, True, False, False, False, False], dev_id=1
+        request = PDUreadCoils(1, address=117, count=5)
+        response = PDUreadCoils(
+            1,
+            is_request=False,
+            bits=[True, False, True, True, False, False, False, False],
         )
         transact.retries = 0
         transact.transport = 1  # type: ignore[assignment]
@@ -774,7 +787,7 @@ class TestSyncTransaction:
             assert not result
         else:
             assert not result.isError()
-            assert isinstance(response, ReadCoilsResponse)
+            assert isinstance(response, PDUreadCoils)
 
     def test_sync_client_protocol_execute_no_pdu(self, use_clc):
         """Test the transaction execute method."""
@@ -790,9 +803,11 @@ class TestSyncTransaction:
             sync_client=client,
         )
         transact.sync_client.connect = mock.Mock(return_value=True)
-        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
-        response = ReadCoilsResponse(
-            bits=[True, False, True, True, False, False, False, False], dev_id=1
+        request = PDUreadCoils(1, address=117, count=5)
+        response = PDUreadCoils(
+            1,
+            is_request=False,
+            bits=[True, False, True, True, False, False, False, False],
         )
         transact.retries = 0
         transact.transport = 1  # type: ignore[assignment]
@@ -819,19 +834,23 @@ class TestSyncTransaction:
         transact.sync_client.send = mock.Mock()
         transact.retries = 0
         transact.transport = 1  # type: ignore[assignment]
-        response = ReadCoilsResponse(
-            bits=[True, False, True, True, False, False, False, False], dev_id=2
+        response = PDUreadCoils(
+            2,
+            is_request=False,
+            bits=[True, False, True, True, False, False, False, False],
         )
         resp_bytes = transact.framer.buildFrame(response)
         transact.sync_client.recv = mock.Mock()
         transact.sync_client.recv.side_effect = [resp_bytes, None]
         transact.sync_client.send = mock.Mock()
         transact.comm_params.timeout_connect = 0.2
-        request = ReadCoilsRequest(address=117, count=5, dev_id=1)
+        request = PDUreadCoils(1, address=117, count=5)
         with pytest.raises(ModbusIOException):
             transact.sync_execute(False, request)
-        response = ReadCoilsResponse(
-            bits=[True, False, True, True, False, False, False, False], dev_id=1
+        response = PDUreadCoils(
+            1,
+            is_request=False,
+            bits=[True, False, True, True, False, False, False, False],
         )
         resp_bytes = transact.framer.buildFrame(response)
         transact.sync_client.recv = mock.Mock(return_value=resp_bytes)
@@ -852,24 +871,22 @@ class TestSyncTransaction:
             sync_client=client,
         )
         client.recv = mock.Mock()  # type: ignore[method-assign]
-        request = transact.framer.buildFrame(
-            ReadCoilsRequest(address=117, count=5, dev_id=1)
-        )
+        request = transact.framer.buildFrame(PDUreadCoils(1, address=117, count=5))
         response = transact.framer.buildFrame(
-            ReadCoilsResponse(bits=[True] * 8, dev_id=1)
+            PDUreadCoils(1, is_request=False, bits=[True] * 8)
         )
         transact.sent_buffer = request
         client.recv.side_effect = [request, response]
         pdu = transact.sync_get_response(1, 0)
-        assert isinstance(pdu, ReadCoilsResponse)
+        assert isinstance(pdu, PDUreadCoils)
         transact.sent_buffer = request
         client.recv.side_effect = [request[:3], request[3:], response]
         pdu = transact.sync_get_response(1, 0)
-        assert isinstance(pdu, ReadCoilsResponse)
+        assert isinstance(pdu, PDUreadCoils)
         transact.sent_buffer = request
         client.recv.side_effect = [response]
         pdu = transact.sync_get_response(1, 0)
-        assert isinstance(pdu, ReadCoilsResponse)
+        assert isinstance(pdu, PDUreadCoils)
 
     def test_transaction_sync_get_response_garbage_timeout(self, use_clc):
         """Test continuous invalid input cannot bypass the response timeout."""

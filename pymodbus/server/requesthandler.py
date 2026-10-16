@@ -9,7 +9,7 @@ from functools import partial
 from ..constants import ExcCodes
 from ..exceptions import ModbusIOException, NoSuchIdException
 from ..logging import Log
-from ..pdu import ExceptionResponse, ModbusPDU
+from ..pdu import ModbusPdu, PDUexception
 from ..transaction import TransactionManager
 from ..transport import CommParams
 
@@ -68,10 +68,10 @@ class ServerRequestHandler(TransactionManager):
                 new_len = super().callback_data(data[used_len:], addr)
             except ModbusIOException as exc:
                 function_code = 0x00 if exc.fcode is None else exc.fcode
-                response = ExceptionResponse(
+                response = PDUexception(
+                    exc.dev_id,
                     function_code,
-                    exception_code=ExcCodes.ILLEGAL_FUNCTION,
-                    device_id=exc.dev_id,
+                    ExcCodes.ILLEGAL_FUNCTION,
                     transaction=exc.transaction_id,
                 )
                 new_len = exc.used_len
@@ -83,36 +83,39 @@ class ServerRequestHandler(TransactionManager):
                 break
         return used_len
 
-    def handle_later(self, pdu: ModbusPDU) -> None:
+    def handle_later(self, pdu: ModbusPdu) -> None:
         """Change sync (async not allowed in call_soon) to async."""
         asyncio.run_coroutine_threadsafe(self.handle_request(pdu), self.loop)
 
-    async def handle_request(self, pdu: ModbusPDU) -> None:
+    async def handle_request(self, pdu: ModbusPdu) -> None:
         """Handle request."""
         try:
+            get_v = self.server.context.async_getValues
+            set_v = self.server.context.async_setValues
             if self.server.broadcast_enable and not pdu.dev_id:
                 # if broadcasting then execute on all device contexts,
                 # note response will be ignored
+                remember = pdu.dev_id
                 for dev_id in self.server.context.device_ids():
-                    await pdu.datastore_update(self.server.context, dev_id)
+                    pdu.dev_id = dev_id
+                    await pdu.build_response(get_v, set_v)
+                pdu.dev_id = remember
                 return
-            response = await pdu.datastore_update(self.server.context, pdu.dev_id)
+            response = await pdu.build_response(get_v, set_v)
 
         except NoSuchIdException:
             if self.server.ignore_missing_devices:
                 Log.debug("ignoring request for unknown device id: {}", pdu.dev_id)
                 return  # the client will simply timeout waiting for a response
             Log.error("requested device id does not exist: {}", pdu.dev_id)
-            response = ExceptionResponse(
-                pdu.function_code, ExcCodes.GATEWAY_NO_RESPONSE
-            )
+            response = PDUexception(0, pdu.function_code, ExcCodes.GATEWAY_NO_RESPONSE)
         except Exception as exc:  # pylint: disable=broad-except
             Log.error(
                 "Datastore unable to fulfill request: {}; {}",
                 exc,
                 traceback.format_exc(),
             )
-            response = ExceptionResponse(pdu.function_code, ExcCodes.DEVICE_FAILURE)
+            response = PDUexception(0, pdu.function_code, ExcCodes.DEVICE_FAILURE)
         response.transaction_id = pdu.transaction_id
         response.dev_id = pdu.dev_id
         self.server_send(response, self.last_addr)

@@ -17,8 +17,7 @@ with contextlib.suppress(ImportError):
 from ...datastore import ModbusServerContext, ModbusSimulatorContext
 from ...datastore.simulator import CellType, Label
 from ...logging import Log
-from ...pdu import DecodePDU
-from ...pdu.device import ModbusDeviceIdentification
+from ...pdu import DecodePDU, ModbusDeviceIdentification
 from ..server import (
     ModbusSerialServer,
     ModbusTcpServer,
@@ -377,7 +376,7 @@ class ModbusSimulatorServer:
             else ""
         )
         function_codes = ""
-        for function in DecodePDU(True).list_function_codes():
+        for function in DecodePDU.pdu_table:
             selected = "selected" if function == self.call_monitor.function else ""
             function_codes += (
                 f"<option value={function} {selected}>function code name</option>"
@@ -546,7 +545,7 @@ class ModbusSimulatorServer:
         )
 
         function_codes = []
-        for function in DecodePDU(True).list_function_codes():
+        for function in DecodePDU.pdu_table:
             function_codes.append(
                 {
                     "value": function,

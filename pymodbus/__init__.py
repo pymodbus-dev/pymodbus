@@ -4,11 +4,11 @@ Released under the BSD license
 """
 
 __all__ = [
-    "ExceptionResponse",
     "FramerType",
     "Log",
     "ModbusDeviceIdentification",
     "ModbusException",
+    "ModbusPdu",
     "__version__",
     "__version_full__",
     "pymodbus_apply_logging_config",
@@ -17,8 +17,7 @@ __all__ = [
 from .exceptions import ModbusException
 from .framer import FramerType
 from .logging import Log, pymodbus_apply_logging_config
-from .pdu import ExceptionResponse
-from .pdu.device import ModbusDeviceIdentification
+from .pdu import ModbusDeviceIdentification, ModbusPdu
 
 
 __version__ = "4.0.0dev16"

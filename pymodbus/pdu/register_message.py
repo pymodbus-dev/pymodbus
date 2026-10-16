@@ -7,504 +7,374 @@ from collections.abc import Sequence
 from typing import cast
 
 from ..constants import ExcCodes
-from ..datastore import ModbusServerContext
 from ..exceptions import ModbusIOException
-from .decoders import DecodePDU
-from .exceptionresponse import ExceptionResponse
-from .pdu import ModbusPDU
+from .pdu import DecodePDU, ModbusPdu, PDUexception, StoreGet, StoreSet
 
 
-class ReadHoldingRegistersRequest(ModbusPDU):
-    """ReadHoldingRegistersRequest."""
+class PDUreadHoldingRegisters(ModbusPdu):
+    """ReadHoldingRegisters."""
 
     function_code = 3
     MAX_COUNT = 125
 
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return 8
+    def __init__(
+        self,
+        *args,
+        registers: Sequence[int] | None = None,
+        **kwargs,
+    ) -> None:
+        """Initialize."""
+        if registers:
+            kwargs |= {"count": kwargs.get("count", len(registers))}
+        super().__init__(*args, **kwargs)
+        self.registers = registers or []
 
-    def x_encode(self) -> bytes:
-        """Encode the request packet."""
-        self.verifyAddress()
-        self.verifyCount(self.MAX_COUNT)
-        return struct.pack(">HH", self.address, self.count)
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode a register request packet."""
-        self.address, self.count = struct.unpack(">HH", data[:4])
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        if not 1 <= self.count <= self.MAX_COUNT:
-            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
-        values = await context.async_getValues(
-            device_id, self.function_code, self.address, self.count
-        )
-        if isinstance(values, ExcCodes):
-            return ExceptionResponse(self.function_code, values)
-        return ReadHoldingRegistersResponse(
-            registers=cast(list[int], values),
-            dev_id=device_id,
-            transaction_id=self.transaction_id,
-        )
-
-
-class ReadHoldingRegistersResponse(ModbusPDU):
-    """ReadHoldingRegistersResponse."""
-
-    function_code = 3
+    def __str__(self) -> str:
+        """Build representation of pdu."""
+        return super().__str__() + f", registers={self.registers}"
 
     @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+    def calculatePduSize(cls, is_request: bool, offset: int, data: bytes) -> int:
         """Calculate the size of a PDU."""
-        return int(data[2]) + 2 + 3
+        return 8 if is_request else int(data[offset + 2]) + 2 + 3
 
-    def x_encode(self) -> bytes:
-        """Encode the response packet."""
+    def to_bytes(self) -> bytes:
+        """Encode the message."""
+        if self.is_request:
+            return struct.pack(">HH", self.address, self.count)
         result = struct.pack(">B", len(self.registers) * 2)
         for register in self.registers:
             result += struct.pack(">H", register)
         return result
 
-    def x_decode(self, data: bytes) -> None:
-        """Decode a register response packet."""
-        self.registers = []
-        if (data_len := int(data[0])) >= len(data):
-            raise ModbusIOException(
-                f"byte_count {data_len} > length of packet {len(data)}",
-                function_code=self.function_code,
-            )
-        for i in range(1, data_len, 2):
-            self.registers.append(struct.unpack(">H", data[i : i + 2])[0])
+    def from_bytes(self, offset: int, data: bytes) -> None:
+        """Decode payload."""
+        if self.is_request:
+            self.address, self.count = struct.unpack(">HH", data[offset : offset + 4])
+        else:
+            self.registers = []
+            if (data_len := int(data[offset])) >= len(data) - offset:
+                raise ModbusIOException(
+                    f"byte_count {data_len} > length of packet {len(data) - offset}",
+                    function_code=self.function_code,
+                )
+            for i in range(1, data_len, 2):
+                self.registers.append(
+                    struct.unpack(">H", data[offset + i : offset + i + 2])[0]
+                )
+            self.count = len(self.registers)
+
+    async def build_response(
+        self, get_values: StoreGet, set_values: StoreSet
+    ) -> ModbusPdu:
+        """Get bits from datastore."""
+        if not 1 <= self.count <= self.MAX_COUNT:
+            return PDUexception(self.dev_id, self.function_code, ExcCodes.ILLEGAL_VALUE)
+        values = await get_values(
+            self.dev_id, self.function_code, self.address, self.count
+        )
+        if isinstance(values, ExcCodes):
+            return PDUexception(self.dev_id, self.function_code, values)
+        self.is_request = False
+        return self
 
 
-class ReadInputRegistersRequest(ModbusPDU):
-    """ReadInputRegistersRequest."""
+class PDUreadInputRegisters(PDUreadHoldingRegisters):
+    """ReadInputRegisters."""
 
     function_code = 4
     MAX_COUNT = 125
 
     @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+    def calculatePduSize(cls, is_request: bool, offset: int, data: bytes) -> int:
         """Calculate the size of a PDU."""
-        return 8
+        return 8 if is_request else int(data[offset + 2]) + 2 + 3
 
-    def x_encode(self) -> bytes:
-        """Encode the request packet."""
-        self.verifyAddress()
-        self.verifyCount(self.MAX_COUNT)
-        return struct.pack(">HH", self.address, self.count)
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode a register request packet."""
-        self.address, self.count = struct.unpack(">HH", data[:4])
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        if not 1 <= self.count <= self.MAX_COUNT:
-            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
-        values = await context.async_getValues(
-            device_id, self.function_code, self.address, self.count
-        )
-        if isinstance(values, ExcCodes):
-            return ExceptionResponse(self.function_code, values)
-        return ReadInputRegistersResponse(
-            registers=cast(list[int], values),
-            dev_id=device_id,
-            transaction_id=self.transaction_id,
-        )
-
-
-class ReadInputRegistersResponse(ModbusPDU):
-    """ReadInputRegistersResponse."""
-
-    function_code = 4
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return int(data[2]) + 2 + 3
-
-    def x_encode(self) -> bytes:
-        """Encode the response packet."""
+    def to_bytes(self) -> bytes:
+        """Encode the message."""
+        if self.is_request:
+            return struct.pack(">HH", self.address, self.count)
         result = struct.pack(">B", len(self.registers) * 2)
         for register in self.registers:
             result += struct.pack(">H", register)
         return result
 
-    def x_decode(self, data: bytes) -> None:
-        """Decode a register response packet."""
-        self.registers = []
-        if (data_len := int(data[0])) >= len(data):
-            raise ModbusIOException(
-                f"byte_count {data_len} > length of packet {len(data)}",
-                function_code=self.function_code,
-            )
-        for i in range(1, data_len, 2):
-            self.registers.append(struct.unpack(">H", data[i : i + 2])[0])
+    def from_bytes(self, offset: int, data: bytes) -> None:
+        """Decode payload."""
+        if self.is_request:
+            self.address, self.count = struct.unpack(">HH", data[offset : offset + 4])
+        else:
+            self.registers = []
+            if (data_len := int(data[offset])) >= len(data) - offset:
+                raise ModbusIOException(
+                    f"byte_count {data_len} > length of packet {len(data) - offset}",
+                    function_code=self.function_code,
+                )
+            for i in range(1, data_len, 2):
+                self.registers.append(
+                    struct.unpack(">H", data[offset + i : offset + i + 2])[0]
+                )
+            self.count = len(self.registers)
+
+    async def build_response(
+        self, get_values: StoreGet, set_values: StoreSet
+    ) -> ModbusPdu:
+        """Get bits from datastore."""
+        if not 1 <= self.count <= self.MAX_COUNT:
+            return PDUexception(self.dev_id, self.function_code, ExcCodes.ILLEGAL_VALUE)
+        values = await get_values(
+            self.dev_id, self.function_code, self.address, self.count
+        )
+        if isinstance(values, ExcCodes):
+            return PDUexception(self.dev_id, self.function_code, values)
+        self.is_request = False
+        return self
 
 
-class ReadWriteMultipleRegistersRequest(ModbusPDU):
-    """ReadWriteMultipleRegistersRequest."""
+class PDUreadWriteMultipleRegisters(PDUreadHoldingRegisters):
+    """ReadWriteMultipleRegisters."""
 
     function_code = 23
     MAX_READ_COUNT = 125
     MAX_WRITE_COUNT = 121
 
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return int(data[10]) + 10 + 3
-
     def __init__(
         self,
-        read_address: int = 0x00,
-        read_count: int = 0,
+        *args,
+        read_address: int = 0,
         write_address: int = 0x00,
         write_registers: Sequence[int] | None = None,
-        dev_id: int = 1,
-        transaction_id: int = 0,
+        **kwargs,
     ) -> None:
-        """Initialize a new request message."""
-        if not write_registers:
-            write_registers = []
-        super().__init__(transaction_id=transaction_id, dev_id=dev_id)
-        self.read_address = read_address
-        self.read_count = read_count
-        self.write_address = write_address
-        self.write_registers = write_registers
-        self.write_count = len(self.write_registers)
-        self.write_byte_count = self.write_count * 2
-        self._payload_byte_count: int | None = None
-
-    def x_encode(self) -> bytes:
-        """Encode the request packet."""
-        self.verifyAddress(address=self.read_address)
-        self.verifyAddress(address=self.write_address)
-        self.verifyCount(self.MAX_READ_COUNT, count=self.read_count)
-        self.verifyCount(self.MAX_WRITE_COUNT, count=self.write_count)
-        result = struct.pack(
-            ">HHHHB",
-            self.read_address,
-            self.read_count,
-            self.write_address,
-            self.write_count,
-            self.write_byte_count,
-        )
-        for register in self.write_registers:
-            result += struct.pack(">H", register)
-        return result
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode the register request packet."""
-        (
-            self.read_address,
-            self.read_count,
-            self.write_address,
-            self.write_count,
-            self.write_byte_count,
-        ) = struct.unpack(">HHHHB", data[:9])
-        self.verifyCount(self.MAX_READ_COUNT, count=self.write_count)
-        self._payload_byte_count = len(data) - 9
-        self.write_registers = [
-            struct.unpack(">H", data[i : i + 2])[0]
-            for i in range(9, min(len(data), self.write_byte_count + 9) - 1, 2)
-        ]
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        if not (1 <= self.read_count <= 0x07D):
-            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
-        if not 1 <= self.write_count <= 0x079:
-            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
-        if self.write_byte_count != self.write_count * 2 or (
-            self._payload_byte_count is not None
-            and self._payload_byte_count != self.write_byte_count
-        ):
-            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
-        rc = await context.async_setValues(
-            device_id, self.function_code, self.write_address, self.write_registers
-        )
-        if rc:
-            return ExceptionResponse(self.function_code, rc)
-        registers = await context.async_getValues(
-            device_id, self.function_code, self.read_address, self.read_count
-        )
-        if isinstance(registers, ExcCodes):
-            return ExceptionResponse(self.function_code, registers)
-        return ReadWriteMultipleRegistersResponse(
-            registers=cast(list[int], registers),
-            dev_id=device_id,
-            transaction_id=self.transaction_id,
-        )
-
-
-class ReadWriteMultipleRegistersResponse(ModbusPDU):
-    """ReadWriteMultipleRegistersResponse."""
-
-    function_code = 23
+        """Initialize."""
+        super().__init__(*args, **kwargs)
+        self.write_registers: Sequence[int] = write_registers or []
+        self.read_address: int = read_address
+        self.write_address: int = write_address
+        self.write_count: int = len(write_registers) if write_registers else 0
 
     @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+    def calculatePduSize(cls, is_request: bool, offset: int, data: bytes) -> int:
         """Calculate the size of a PDU."""
-        return int(data[2]) + 2 + 3
+        return (
+            int(data[offset + 10]) + 10 + 3
+            if is_request
+            else int(data[offset + 2]) + 2 + 3
+        )
 
-    def x_encode(self) -> bytes:
-        """Encode the response packet."""
+    def to_bytes(self) -> bytes:
+        """Encode the message."""
+        if self.is_request:
+            result = struct.pack(
+                ">HHHHB",
+                self.read_address,
+                self.count,
+                self.write_address,
+                self.write_count,
+                self.write_count * 2,
+            )
+            for register in self.write_registers:
+                result += struct.pack(">H", register)
+            return result
         result = struct.pack(">B", len(self.registers) * 2)
         for register in self.registers:
             result += struct.pack(">H", register)
         return result
 
-    def x_decode(self, data: bytes) -> None:
-        """Decode a register response packet."""
-        self.registers = []
-        if (data_len := int(data[0])) >= len(data):
-            raise ModbusIOException(
-                f"byte_count {data_len} > length of packet {len(data)}",
-                function_code=self.function_code,
-            )
-        for i in range(1, data_len, 2):
-            self.registers.append(struct.unpack(">H", data[i : i + 2])[0])
+    def from_bytes(self, offset: int, data: bytes) -> None:
+        """Decode payload."""
+        if self.is_request:
+            (
+                self.read_address,
+                self.count,
+                self.write_address,
+                self.write_count,
+                _,
+            ) = struct.unpack(">HHHHB", data[offset : offset + 9])
+            self.write_registers = [
+                struct.unpack(">H", data[offset + i : offset + i + 2])[0]
+                for i in range(
+                    9, min(len(data) - offset, self.write_count * 2 + 9) - 1, 2
+                )
+            ]
+        else:
+            self.registers = []
+            if (data_len := int(data[offset])) >= len(data) - offset:
+                raise ModbusIOException(
+                    f"byte_count {data_len} > length of packet {len(data) - offset}",
+                    function_code=self.function_code,
+                )
+            for i in range(1, data_len, 2):
+                self.registers.append(
+                    struct.unpack(">H", data[offset + i : offset + i + 2])[0]
+                )
+            self.count = len(self.registers)
+
+    async def build_response(
+        self, get_values: StoreGet, set_values: StoreSet
+    ) -> ModbusPdu:
+        """Get bits from datastore."""
+        if not (1 <= self.count <= 0x07D):
+            return PDUexception(self.dev_id, self.function_code, ExcCodes.ILLEGAL_VALUE)
+        if not 1 <= self.write_count <= 0x079:
+            return PDUexception(self.dev_id, self.function_code, ExcCodes.ILLEGAL_VALUE)
+        rc = await set_values(
+            self.dev_id, self.function_code, self.write_address, self.write_registers
+        )
+        if rc:
+            return PDUexception(self.dev_id, self.function_code, ExcCodes.ILLEGAL_VALUE)
+
+        registers = await get_values(
+            self.dev_id, self.function_code, self.address, self.count
+        )
+        if isinstance(registers, ExcCodes):
+            return PDUexception(self.dev_id, self.function_code, registers)
+        self.is_request = False
+        return self
 
 
-class WriteSingleRegisterResponse(ModbusPDU):
-    """WriteSingleRegisterResponse."""
+class PDUwriteSingleRegister(PDUreadHoldingRegisters):
+    """WriteSingleRegister."""
 
     function_code = 6
 
     @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+    def calculatePduSize(cls, is_request: bool, offset: int, data: bytes) -> int:
         """Calculate the size of a PDU."""
         return 8
 
-    def x_encode(self) -> bytes:
-        """Encode a write single register packet packet request."""
+    def to_bytes(self) -> bytes:
+        """Encode the message."""
         return struct.pack(">HH", self.address, self.registers[0])
 
-    def x_decode(self, data: bytes) -> None:
-        """Decode a write single register packet packet request."""
-        self.address, register = struct.unpack(">HH", data[:4])
+    def from_bytes(self, offset: int, data: bytes) -> None:
+        """Decode payload."""
+        self.address, register = struct.unpack(">HH", data[offset : offset + 4])
         self.registers = [register]
 
-
-class WriteSingleRegisterRequest(ModbusPDU):
-    """WriteSingleRegisterRequest."""
-
-    function_code = 6
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return 8
-
-    def x_encode(self) -> bytes:
-        """Encode a write single register packet packet request."""
-        return struct.pack(">HH", self.address, self.registers[0])
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode a write single register packet packet request."""
-        self.address, register = struct.unpack(">HH", data[:4])
-        self.registers = [register]
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
+    async def build_response(
+        self, get_values: StoreGet, set_values: StoreSet
+    ) -> ModbusPdu:
+        """Get bits from datastore."""
         if not 0 <= self.registers[0] <= 0xFFFF:
-            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
-        rc = await context.async_setValues(
-            device_id, self.function_code, self.address, self.registers
+            return PDUexception(self.dev_id, self.function_code, ExcCodes.ILLEGAL_VALUE)
+        rc = await set_values(
+            self.dev_id, self.function_code, self.address, self.registers
         )
         if rc:
-            return ExceptionResponse(self.function_code, rc)
-        values = await context.async_getValues(
-            device_id, self.function_code, self.address, 1
-        )
-        if isinstance(values, ExcCodes):
-            return ExceptionResponse(self.function_code, values)
-        return WriteSingleRegisterResponse(
-            address=self.address, registers=cast(list[int], values)
-        )
+            return PDUexception(self.dev_id, self.function_code, ExcCodes.ILLEGAL_VALUE)
+
+        registers = await get_values(self.dev_id, self.function_code, self.address, 1)
+        if isinstance(registers, ExcCodes):
+            return PDUexception(self.dev_id, self.function_code, registers)
+        self.is_request = False
+        return self
 
 
-class WriteMultipleRegistersRequest(ModbusPDU):
-    """WriteMultipleRegistersRequest."""
-
-    function_code = 16
-    _pdu_length = 5  # func + adress1 + adress2 + outputQuant1 + outputQuant2
-    byte_count: int | None = None
-    _payload_byte_count: int | None = None
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return int(data[6]) + 6 + 3
-
-    def x_encode(self) -> bytes:
-        """Encode a write single register packet packet request."""
-        packet = struct.pack(">HHB", self.address, self.count, self.count * 2)
-        for value in self.registers:
-            packet += struct.pack(">H", value)
-        return packet
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode a write single register packet packet request."""
-        self.address, self.count, self.byte_count = struct.unpack(">HHB", data[:5])
-        self._payload_byte_count = len(data) - 5
-        self.registers = [
-            struct.unpack(">H", data[idx : idx + 2])[0]
-            for idx in range(5, min(len(data), self.byte_count + 5) - 1, 2)
-        ]
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        if not 1 <= self.count <= 0x07B:
-            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
-        if self.byte_count is not None and (
-            self.byte_count != self.count * 2
-            or self._payload_byte_count != self.byte_count
-        ):
-            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
-        rc = await context.async_setValues(
-            device_id, self.function_code, self.address, self.registers
-        )
-        if rc:
-            return ExceptionResponse(self.function_code, rc)
-        return WriteMultipleRegistersResponse(
-            address=self.address,
-            count=self.count,
-            dev_id=device_id,
-            transaction_id=self.transaction_id,
-        )
-
-
-class WriteMultipleRegistersResponse(ModbusPDU):
-    """WriteMultipleRegistersResponse."""
+class PDUwriteMultipleRegisters(PDUreadHoldingRegisters):
+    """WriteMultipleRegisters."""
 
     function_code = 16
 
     @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+    def calculatePduSize(cls, is_request: bool, offset: int, data: bytes) -> int:
         """Calculate the size of a PDU."""
-        return 8
+        return int(data[offset + 6]) + 6 + 3 if is_request else 8
 
-    def x_encode(self) -> bytes:
-        """Encode a write single register packet packet request."""
+    def to_bytes(self) -> bytes:
+        """Encode the message."""
+        if self.is_request:
+            packet = struct.pack(">HHB", self.address, self.count, self.count * 2)
+            for value in self.registers:
+                packet += struct.pack(">H", value)
+            return packet
         return struct.pack(">HH", self.address, self.count)
 
-    def x_decode(self, data: bytes) -> None:
-        """Decode a write single register packet packet request."""
-        self.address, self.count = struct.unpack(">HH", data[:4])
+    def from_bytes(self, offset: int, data: bytes) -> None:
+        """Decode payload."""
+        if self.is_request:
+            self.address, self.count, byte_count = struct.unpack(
+                ">HHB", data[offset : offset + 5]
+            )
+            self.registers = [
+                struct.unpack(">H", data[offset + idx : offset + idx + 2])[0]
+                for idx in range(5, min(len(data) - offset, byte_count + 5) - 1, 2)
+            ]
+            self.count = len(self.registers)
+        else:
+            self.address, self.count = struct.unpack(">HH", data[offset : offset + 4])
 
-
-class MaskWriteRegisterRequest(ModbusPDU):
-    """MaskWriteRegisterRequest."""
-
-    function_code = 0x16
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return 10
-
-    def __init__(
-        self,
-        address=0x0000,
-        and_mask=0xFFFF,
-        or_mask=0x0000,
-        dev_id=1,
-        transaction_id=0,
-    ) -> None:
-        """Initialize a new instance."""
-        super().__init__(transaction_id=transaction_id, dev_id=dev_id, address=address)
-        self.and_mask = and_mask
-        self.or_mask = or_mask
-
-    def x_encode(self) -> bytes:
-        """Encode the request packet."""
-        return struct.pack(">HHH", self.address, self.and_mask, self.or_mask)
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode the incoming request."""
-        self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data[:6])
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        if not 0x0000 <= self.and_mask <= 0xFFFF:
-            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
-        if not 0x0000 <= self.or_mask <= 0xFFFF:
-            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
-        values = await context.async_getValues(
-            device_id, self.function_code, self.address, 1
-        )
-        if isinstance(values, ExcCodes):
-            return ExceptionResponse(self.function_code, values)
-        values = (cast(Sequence[int | bool], values)[0] & self.and_mask) | (
-            self.or_mask & ~self.and_mask
-        )
-        rc = await context.async_setValues(
-            device_id, self.function_code, self.address, cast(list[int], [values])
+    async def build_response(
+        self, get_values: StoreGet, set_values: StoreSet
+    ) -> ModbusPdu:
+        """Get bits from datastore."""
+        if not 1 <= self.count <= 0x07B:
+            return PDUexception(self.dev_id, self.function_code, ExcCodes.ILLEGAL_VALUE)
+        rc = await set_values(
+            self.dev_id, self.function_code, self.address, self.registers
         )
         if rc:
-            return ExceptionResponse(self.function_code, rc)
-        return MaskWriteRegisterResponse(
-            address=self.address,
-            and_mask=self.and_mask,
-            or_mask=self.or_mask,
-            dev_id=device_id,
-            transaction_id=self.transaction_id,
-        )
+            return PDUexception(self.dev_id, self.function_code, ExcCodes.ILLEGAL_VALUE)
+        self.is_request = False
+        return self
 
 
-class MaskWriteRegisterResponse(ModbusPDU):
-    """MaskWriteRegisterResponse."""
+class PDUmaskWriteRegister(PDUreadHoldingRegisters):
+    """MaskWriteRegister."""
 
     function_code = 0x16
 
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return 10
-
     def __init__(
         self,
-        address=0x0000,
-        and_mask=0xFFFF,
-        or_mask=0x0000,
-        dev_id=1,
-        transaction_id=0,
+        *args,
+        and_mask: int = 0xFFFF,
+        or_mask: int = 0x0000,
+        **kwargs,
     ) -> None:
-        """Initialize new instance."""
-        super().__init__(transaction_id=transaction_id, dev_id=dev_id, address=address)
+        """Initialize."""
+        super().__init__(*args, **kwargs)
         self.and_mask = and_mask
         self.or_mask = or_mask
 
-    def x_encode(self) -> bytes:
-        """Encode the response."""
-        self.verifyAddress()
+    @classmethod
+    def calculatePduSize(cls, is_request: bool, offset: int, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 10
+
+    def to_bytes(self) -> bytes:
+        """Encode the message."""
         return struct.pack(">HHH", self.address, self.and_mask, self.or_mask)
 
-    def x_decode(self, data: bytes) -> None:
-        """Decode a the response."""
-        self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data[:6])
+    def from_bytes(self, offset: int, data: bytes) -> None:
+        """Decode payload."""
+        self.address, self.and_mask, self.or_mask = struct.unpack(
+            ">HHH", data[offset : offset + 6]
+        )
+
+    async def build_response(
+        self, get_values: StoreGet, set_values: StoreSet
+    ) -> ModbusPdu:
+        """Get bits from datastore."""
+        if not 0x0000 <= self.and_mask <= 0xFFFF:
+            return PDUexception(self.dev_id, self.function_code, ExcCodes.ILLEGAL_VALUE)
+        if not 0x0000 <= self.or_mask <= 0xFFFF:
+            return PDUexception(self.dev_id, self.function_code, ExcCodes.ILLEGAL_VALUE)
+        if not 1 <= self.count <= 0x07B:
+            return PDUexception(self.dev_id, self.function_code, ExcCodes.ILLEGAL_VALUE)
+        if values := await get_values(self.dev_id, self.function_code, self.address, 1):
+            return PDUexception(self.dev_id, self.function_code, ExcCodes.ILLEGAL_VALUE)
+        rc = await set_values(
+            self.dev_id, self.function_code, self.address, cast(list[int], [values])
+        )
+        if rc:
+            return PDUexception(self.dev_id, self.function_code, ExcCodes.ILLEGAL_VALUE)
+        self.is_request = False
+        return self
 
 
-DecodePDU.add_pdu(ReadHoldingRegistersRequest, ReadHoldingRegistersResponse)
-DecodePDU.add_pdu(ReadInputRegistersRequest, ReadInputRegistersResponse)
-DecodePDU.add_pdu(WriteMultipleRegistersRequest, WriteMultipleRegistersResponse)
-DecodePDU.add_pdu(WriteSingleRegisterRequest, WriteSingleRegisterResponse)
-DecodePDU.add_pdu(ReadWriteMultipleRegistersRequest, ReadWriteMultipleRegistersResponse)
-DecodePDU.add_pdu(MaskWriteRegisterRequest, MaskWriteRegisterResponse)
+DecodePDU.add_pdu(PDUreadHoldingRegisters)
+DecodePDU.add_pdu(PDUreadInputRegisters)
+DecodePDU.add_pdu(PDUwriteMultipleRegisters)
+DecodePDU.add_pdu(PDUwriteSingleRegister)
+DecodePDU.add_pdu(PDUreadWriteMultipleRegisters)
+DecodePDU.add_pdu(PDUmaskWriteRegister)

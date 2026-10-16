@@ -5,220 +5,213 @@ from __future__ import annotations
 import struct
 
 from ..constants import ModbusStatus
-from ..datastore import ModbusServerContext
 from ..exceptions import ModbusIOException
-from .decoders import DecodePDU
 from .device import DeviceInformationFactory, ModbusControlBlock
-from .pdu import ModbusPDU
+from .pdu import DecodePDU, ModbusPdu, StoreGet, StoreSet
 
 
 _MCB = ModbusControlBlock()
 
 
-class ReadExceptionStatusRequest(ModbusPDU):
-    """ReadExceptionStatusRequest."""
+class PDUreadExceptionStatus(ModbusPdu):
+    """ReadExceptionStatus."""
 
     function_code = 0x07
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return 4
-
-    def x_encode(self) -> bytes:
-        """Encode the message."""
-        return b""
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode data part of the message."""
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
-        status = _MCB.Counter.summary()
-        return ReadExceptionStatusResponse(
-            status=status, dev_id=device_id, transaction_id=self.transaction_id
-        )
-
-
-class ReadExceptionStatusResponse(ModbusPDU):
-    """ReadExceptionStatusResponse."""
-
-    function_code = 0x07
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return 5
-
-    def x_encode(self) -> bytes:
-        """Encode the response."""
-        return struct.pack(">B", self.status)
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode a the response."""
-        self.status = int(data[0])
-
-
-# Encapsulate interface transport 43, 14
-# CANopen general reference 43, 13
-
-
-class GetCommEventCounterRequest(ModbusPDU):
-    """GetCommEventCounterRequest."""
-
-    function_code = 0x0B
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return 4
-
-    def x_encode(self) -> bytes:
-        """Encode the message."""
-        return b""
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode data part of the message."""
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
-        count = _MCB.Counter.Event
-        return GetCommEventCounterResponse(
-            count=count, dev_id=device_id, transaction_id=self.transaction_id
-        )
-
-
-class GetCommEventCounterResponse(ModbusPDU):
-    """GetCommEventCounterRequest."""
-
-    function_code = 0x0B
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return 8
-
-    def x_encode(self) -> bytes:
-        """Encode the response."""
-        ready = ModbusStatus.READY if self.status else ModbusStatus.WAITING
-        return struct.pack(">HH", ready, self.count)
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode a the response."""
-        ready, self.count = struct.unpack(">HH", data[:4])
-        self.status = ready == ModbusStatus.READY
-
-
-class GetCommEventLogRequest(ModbusPDU):
-    """GetCommEventLogRequest."""
-
-    function_code = 0x0C
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return 4
-
-    def x_encode(self) -> bytes:
-        """Encode the message."""
-        return b""
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode data part of the message."""
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
-        return GetCommEventLogResponse(
-            status=True,
-            message_count=_MCB.Counter.BusMessage,
-            event_count=_MCB.Counter.Event,
-            events=list(_MCB.getEvents()),
-            dev_id=device_id,
-            transaction_id=self.transaction_id,
-        )
-
-
-class GetCommEventLogResponse(ModbusPDU):
-    """GetCommEventLogRequest."""
-
-    function_code = 0x0C
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return int(data[2]) + 2 + 3
 
     def __init__(
         self,
+        *args,
+        status: int = 0,
+        **kwargs,
+    ) -> None:
+        """Initialize."""
+        super().__init__(*args, **kwargs)
+        self.status: int = status or 0
+
+    @classmethod
+    def calculatePduSize(cls, is_request: bool, offset: int, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 4 if is_request else 5
+
+    def to_bytes(self) -> bytes:
+        """Encode the message."""
+        return b"" if self.is_request else struct.pack(">B", self.status)
+
+    def from_bytes(self, offset: int, data: bytes) -> None:
+        """Decode payload."""
+        if not self.is_request:
+            self.status = int(data[offset + 0])
+
+    async def build_response(
+        self, get_values: StoreGet, set_values: StoreSet
+    ) -> ModbusPdu:
+        """Update internal data."""
+        self.status = _MCB.Counter.summary()
+        self.is_request = False
+        return self
+
+
+class PDUgetCommEventCounter(ModbusPdu):
+    """GetCommEventCounter."""
+
+    function_code = 0x0B
+
+    def __init__(
+        self,
+        *args,
+        status: int = 0,
+        **kwargs,
+    ) -> None:
+        """Initialize."""
+        super().__init__(*args, **kwargs)
+        self.status: int = status or 0
+
+    @classmethod
+    def calculatePduSize(cls, is_request: bool, offset: int, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 4 if is_request else 8
+
+    def to_bytes(self) -> bytes:
+        """Encode the message."""
+        if self.is_request:
+            return b""
+        ready = ModbusStatus.READY if self.status else ModbusStatus.WAITING
+        return struct.pack(">HH", ready, self.count)
+
+    def from_bytes(self, offset: int, data: bytes) -> None:
+        """Decode payload."""
+        if not self.is_request:
+            ready, self.count = struct.unpack(">HH", data[offset : offset + 4])
+            self.status = ready == ModbusStatus.READY
+
+    async def build_response(
+        self, get_values: StoreGet, set_values: StoreSet
+    ) -> ModbusPdu:
+        """Update internal data."""
+        self.count = _MCB.Counter.Event
+        self.is_request = False
+        return self
+
+
+class PDUgetCommEventLog(ModbusPdu):
+    """GetCommEventLog."""
+
+    function_code = 0x0C
+
+    def __init__(
+        self,
+        *args,
         status: bool = True,
         message_count: int = 0,
         event_count: int = 0,
         events: list[int] | None = None,
-        dev_id: int = 1,
-        transaction_id: int = 0,
+        **kwargs,
     ) -> None:
-        """Initialize a new instance."""
-        super().__init__(transaction_id=transaction_id, dev_id=dev_id, status=status)
+        """Initialize."""
+        super().__init__(*args, **kwargs)
+        self.status = status
         self.message_count = message_count
         self.event_count = event_count
         self.events = events or []
 
-    def x_encode(self) -> bytes:
-        """Encode the response."""
-        if self.status:
-            ready = ModbusStatus.READY
-        else:
-            ready = ModbusStatus.WAITING
+    @classmethod
+    def calculatePduSize(cls, is_request: bool, offset: int, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 4 if is_request else int(data[offset + 2]) + 2 + 3
+
+    def to_bytes(self) -> bytes:
+        """Encode the message."""
+        if self.is_request:
+            return b""
+        ready = ModbusStatus.READY if self.status else ModbusStatus.WAITING
         packet = struct.pack(">B", 6 + len(self.events))
         packet += struct.pack(">H", ready)
         packet += struct.pack(">HH", self.event_count, self.message_count)
         packet += b"".join(struct.pack(">B", e) for e in self.events)
         return packet
 
-    def x_decode(self, data: bytes) -> None:
-        """Decode a the response."""
-        length = int(data[0])
-        status = struct.unpack(">H", data[1:3])[0]
+    def from_bytes(self, offset: int, data: bytes) -> None:
+        """Decode payload."""
+        if self.is_request:
+            return
+        length = int(data[offset])
+        status = struct.unpack(">H", data[offset + 1 : offset + 3])[0]
         self.status = status == ModbusStatus.READY
-        self.event_count = struct.unpack(">H", data[3:5])[0]
-        self.message_count = struct.unpack(">H", data[5:7])[0]
+        self.event_count = struct.unpack(">H", data[offset + 3 : offset + 5])[0]
+        self.message_count = struct.unpack(">H", data[offset + 5 : offset + 7])[0]
 
         self.events = []
         for i in range(7, length + 1):
-            self.events.append(int(data[i]))
+            self.events.append(int(data[offset + i]))
+
+    async def build_response(
+        self, get_values: StoreGet, set_values: StoreSet
+    ) -> ModbusPdu:
+        """Update internal data."""
+        self.status = True
+        self.message_count = _MCB.Counter.BusMessage
+        self.event_count = _MCB.Counter.Event
+        self.events = list(_MCB.getEvents())
+        return self
 
 
-class ReportDeviceIdRequest(ModbusPDU):
-    """ReportDeviceIdRequest."""
+ID_ON = 0xFF
+ID_OFF = 0x00
+
+
+class PDUreportDeviceId(ModbusPdu):
+    """ReportDeviceId."""
 
     function_code = 0x11
 
+    def __init__(
+        self,
+        *args,
+        identifier: bytes = b"\x00",
+        status: bool = True,
+        **kwargs,
+    ) -> None:
+        """Initialize."""
+        super().__init__(*args, **kwargs)
+        self.status = status
+        self.identifier = identifier
+
     @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+    def calculatePduSize(cls, is_request: bool, offset: int, data: bytes) -> int:
         """Calculate the size of a PDU."""
-        return 4
+        return 4 if is_request else int(data[offset + 2]) + 2 + 3
 
-    def x_encode(self) -> bytes:
+    def to_bytes(self) -> bytes:
         """Encode the message."""
-        return b""
+        if self.is_request:
+            return b""
+        status = ID_ON if self.status else ID_OFF
+        length = len(self.identifier) + 1
+        packet = struct.pack(">B", length)
+        packet += self.identifier  # we assume it is already encoded
+        packet += struct.pack(">B", status)
+        return packet
 
-    def x_decode(self, data: bytes) -> None:
-        """Decode data part of the message."""
+    def from_bytes(self, offset: int, data: bytes) -> None:
+        """Decode payload."""
+        if self.is_request:
+            return
 
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
+        byte_count = int(data[offset])
+        if not 1 <= byte_count <= len(data) - 1 - offset:
+            raise ModbusIOException(
+                f"byte_count {byte_count} outside 1..{len(data) - 1 - offset} "
+                f"for packet of length {len(data)}",
+                function_code=self.function_code,
+            )
+        self.identifier = data[offset + 1 : offset + byte_count]
+        status = int(data[offset + byte_count])
+        self.status = status == ID_ON
+
+    async def build_response(
+        self, get_values: StoreGet, set_values: StoreSet
+    ) -> ModbusPdu:
+        """Update internal data."""
         information = DeviceInformationFactory.get(_MCB)
         id_data = []
         for v_item in information.values():
@@ -228,66 +221,11 @@ class ReportDeviceIdRequest(ModbusPDU):
                 id_data.append(v_item.encode())
 
         identifier = b"-".join(id_data)
-        identifier = identifier or b"Pymodbus"
-        return ReportDeviceIdResponse(
-            identifier=identifier, dev_id=device_id, transaction_id=self.transaction_id
-        )
+        self.identifier = identifier or b"Pymodbus"
+        return self
 
 
-ID_ON = 0xFF
-ID_OFF = 0x00
-
-
-class ReportDeviceIdResponse(ModbusPDU):
-    """ReportDeviceIdRequeste."""
-
-    function_code = 0x11
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return int(data[2]) + 2 + 3
-
-    def __init__(
-        self,
-        identifier: bytes = b"\x00",
-        status: bool = True,
-        dev_id: int = 1,
-        transaction_id: int = 0,
-    ) -> None:
-        """Initialize a new instance."""
-        super().__init__(transaction_id=transaction_id, dev_id=dev_id, status=status)
-        self.identifier = identifier
-        self.byte_count = 0
-
-    def x_encode(self) -> bytes:
-        """Encode the response."""
-        status = ID_ON if self.status else ID_OFF
-        length = len(self.identifier) + 1
-        packet = struct.pack(">B", length)
-        packet += self.identifier  # we assume it is already encoded
-        packet += struct.pack(">B", status)
-        return packet
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode a the response.
-
-        Since the identifier is device dependent, we just return the
-        raw value that a user can decode to whatever it should be.
-        """
-        self.byte_count = int(data[0])
-        if not 1 <= self.byte_count <= len(data) - 1:
-            raise ModbusIOException(
-                f"byte_count {self.byte_count} outside 1..{len(data) - 1} "
-                f"for packet of length {len(data)}",
-                function_code=self.function_code,
-            )
-        self.identifier = data[1 : self.byte_count]
-        status = int(data[self.byte_count])
-        self.status = status == ID_ON
-
-
-DecodePDU.add_pdu(ReadExceptionStatusRequest, ReadExceptionStatusResponse)
-DecodePDU.add_pdu(GetCommEventCounterRequest, GetCommEventCounterResponse)
-DecodePDU.add_pdu(GetCommEventLogRequest, GetCommEventLogResponse)
-DecodePDU.add_pdu(ReportDeviceIdRequest, ReportDeviceIdResponse)
+DecodePDU.add_pdu(PDUreadExceptionStatus)
+DecodePDU.add_pdu(PDUgetCommEventCounter)
+DecodePDU.add_pdu(PDUgetCommEventLog)
+DecodePDU.add_pdu(PDUreportDeviceId)

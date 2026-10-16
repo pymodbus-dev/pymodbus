@@ -17,8 +17,7 @@ with contextlib.suppress(ImportError):
 from ...datastore import ModbusServerContext, ModbusSimulatorContext
 from ...datastore.simulator import CellType, Label
 from ...logging import Log
-from ...pdu import DecodePDU
-from ...pdu.device import ModbusDeviceIdentification
+from ...pdu import DecodePDU, ModbusDeviceIdentification
 from ..server import (
     ModbusSerialServer,
     ModbusTcpServer,

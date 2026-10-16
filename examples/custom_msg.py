@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# pylint: disable=missing-type-doc
 """Pymodbus Synchronous Client Examples.
 
 The following is an example of how to use the synchronous modbus client
@@ -12,14 +11,9 @@ implementation from pymodbus::
 """
 
 import asyncio
-import struct
 
 from pymodbus import FramerType
 from pymodbus.client import AsyncModbusTcpClient as ModbusClient
-from pymodbus.datastore import ModbusServerContext
-from pymodbus.exceptions import ModbusIOException
-from pymodbus.pdu import ModbusPDU
-from pymodbus.pdu.bit_message import ReadCoilsRequest
 from pymodbus.server import ServerAsyncStop, StartAsyncTcpServer
 from pymodbus.simulator import DataType, SimData, SimDevice
 
@@ -33,92 +27,6 @@ from pymodbus.simulator import DataType, SimData, SimDevice
 # method that is not currently implemented, you must register the request
 # and response with the active DecodePDU object.
 # --------------------------------------------------------------------------- #
-
-
-class CustomModbusResponse(ModbusPDU):
-    """Custom modbus response."""
-
-    function_code = 55
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return int(data[2]) + 2 + 3
-
-    def __init__(self, values: list[int] | None = None, device_id=1, transaction=0):
-        """Initialize."""
-        super().__init__(dev_id=device_id, transaction_id=transaction)
-        self.values: list[int] = values or []
-
-    def x_encode(self):
-        """Encode response pdu.
-
-        :returns: The encoded packet message
-        """
-        res = struct.pack(">B", len(self.values) * 2)
-        for register in self.values:  # pragma: no cover
-            res += struct.pack(">H", register)
-        return res
-
-    def x_decode(self, data):  # pragma: no cover
-        """Decode response pdu.
-
-        :param data: The packet data to decode
-        """
-        byte_count = int(data[0])
-        self.values = []
-        for i in range(1, byte_count + 1, 2):
-            self.values.append(struct.unpack(">H", data[i : i + 2])[0])
-
-
-class CustomRequest(ModbusPDU):
-    """Custom modbus request."""
-
-    function_code = 55
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return 8
-
-    def __init__(self, address=None, device_id=1, transaction=0):
-        """Initialize."""
-        super().__init__(dev_id=device_id, transaction_id=transaction)
-        self.address = address
-        self.count = 2
-
-    def x_encode(self):
-        """Encode."""
-        return struct.pack(">HH", self.address, self.count)
-
-    def x_decode(self, data):
-        """Decode."""
-        self.address, self.count = struct.unpack(">HH", data)
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context, device_id
-        return CustomModbusResponse()
-
-
-# --------------------------------------------------------------------------- #
-# This could also have been defined as
-# --------------------------------------------------------------------------- #
-
-
-class Read16CoilsRequest(ReadCoilsRequest):
-    """Read 16 coils in one request."""
-
-    def __init__(self, address, device_id=1, transaction=0):
-        """Initialize a new instance.
-
-        :param address: The address to start reading from
-        """
-        super().__init__(
-            address=address, count=16, dev_id=device_id, transaction_id=transaction
-        )
 
 
 # --------------------------------------------------------------------------- #
@@ -137,7 +45,6 @@ async def main(host="localhost", port=5020):
                 0, SimData(0, datatype=DataType.REGISTERS, values=[17] * 100)
             ),
             address=(host, port),
-            custom_pdu=[CustomRequest],
         )
     )
     await asyncio.sleep(0.1)
@@ -145,22 +52,6 @@ async def main(host="localhost", port=5020):
         await client.connect()
 
         # add new modbus function code.
-        assert CustomModbusResponse.x_calculateRtuFrameSize(b"\x00\x00\x07\x00") == 12
-        client.register(CustomModbusResponse)
-        device_id = 1
-        assert CustomRequest.x_calculateRtuFrameSize(b"") == 8
-        request1 = CustomRequest(32, device_id=device_id)
-        try:
-            result = await client.execute(False, request1)
-        except ModbusIOException:  # pragma: no cover
-            print("Server do not support CustomRequest.")
-        else:
-            print(result)  # pragma: no cover
-
-        # inherited request
-        request2 = Read16CoilsRequest(32, device_id)
-        result = await client.execute(False, request2)
-        print(result)
     await ServerAsyncStop()
     task.cancel()
     await task

@@ -12,7 +12,7 @@ import logging
 import sys
 
 from pymodbus import FramerType, pymodbus_apply_logging_config
-from pymodbus.pdu import ModbusPDU
+from pymodbus.pdu import ModbusPdu
 from pymodbus.server import ModbusTcpServer
 from pymodbus.simulator import DataType, SimData, SimDevice
 
@@ -41,7 +41,7 @@ class Manipulator:
 
         return data
 
-    def trace_pdu(self, sending: bool, pdu: ModbusPDU) -> ModbusPDU:
+    def trace_pdu(self, sending: bool, pdu: ModbusPdu) -> ModbusPdu:
         """Do dummy trace."""
         txt = "REQUEST pdu" if sending else "RESPONSE pdu"
         print(f"---> {txt}: {pdu}")

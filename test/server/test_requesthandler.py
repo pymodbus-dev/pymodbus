@@ -7,7 +7,7 @@ import pytest
 
 from pymodbus.exceptions import ModbusIOException, NoSuchIdException
 from pymodbus.framer import FramerType
-from pymodbus.pdu import ExceptionResponse
+from pymodbus.pdu import PDUexception
 from pymodbus.server import ModbusBaseServer
 from pymodbus.simulator import DataType, SimData, SimDevice
 from pymodbus.transport import CommParams, CommType
@@ -74,7 +74,7 @@ class TestRequesthandler:
 
         requesthandler.pdu_send.assert_called_once()
         response = requesthandler.pdu_send.call_args.args[0]
-        assert isinstance(response, ExceptionResponse)
+        assert isinstance(response, PDUexception)
         assert response.transaction_id == 0x000A
         assert response.dev_id == 7
         assert response.function_code == 0x80
@@ -107,7 +107,7 @@ class TestRequesthandler:
         assert len(frame) == requesthandler.callback_data(frame, None)
         requesthandler.pdu_send.assert_called_once()
         response = requesthandler.pdu_send.call_args.args[0]
-        assert isinstance(response, ExceptionResponse)
+        assert isinstance(response, PDUexception)
         assert response.function_code == 0x89
         assert response.exception_code == 0x01
         assert response.transaction_id == 0x1234
@@ -142,7 +142,7 @@ class TestRequesthandler:
         assert len(data) == requesthandler.callback_data(data, None)
         await asyncio.sleep(0.1)
         response = requesthandler.pdu_send.call_args.args[0]
-        assert isinstance(response, ExceptionResponse)
+        assert isinstance(response, PDUexception)
         assert response.function_code == 0xC1
         assert response.exception_code == 0x01
         assert response.transaction_id == 1
@@ -150,13 +150,13 @@ class TestRequesthandler:
 
     async def test_rh_handle_request(self, requesthandler):
         """Test __init__."""
-        requesthandler.last_pdu = ExceptionResponse(17)
+        requesthandler.last_pdu = PDUexception(0, 17, 0)
         await requesthandler.handle_request(requesthandler.last_pdu)
-        requesthandler.last_pdu.datastore_update = mock.AsyncMock()  # type: ignore[method-assign]
+        requesthandler.last_pdu.build_response = mock.AsyncMock()  # type: ignore[method-assign]
         requesthandler.server.broadcast_enable = True
         requesthandler.last_pdu.dev_id = 0
         await requesthandler.handle_request(requesthandler.last_pdu)
-        requesthandler.last_pdu.datastore_update.side_effect = NoSuchIdException
+        requesthandler.last_pdu.build_response.side_effect = NoSuchIdException
         await requesthandler.handle_request(requesthandler.last_pdu)
         requesthandler.server.ignore_missing_devices = True
         await requesthandler.handle_request(requesthandler.last_pdu)
@@ -164,4 +164,4 @@ class TestRequesthandler:
     async def test_rh_server_send(self, requesthandler):
         """Test __init__."""
         requesthandler.server_send(None, None)
-        requesthandler.server_send(ExceptionResponse(17), None)
+        requesthandler.server_send(PDUexception(0, 17, 0), None)

@@ -7,6 +7,7 @@ import pytest
 
 from pymodbus.constants import ExcCodes
 from pymodbus.exceptions import ModbusIOException
+from pymodbus.pdu.decoders import DecodePDU
 from pymodbus.pdu.register_message import (
     ReadHoldingRegistersRequest,
     ReadHoldingRegistersResponse,
@@ -146,6 +147,52 @@ class TestReadRegisterMessages:
         for request in requests:
             result = await request.datastore_update(context, 0)
             assert result.exception_code == ExcCodes.ILLEGAL_VALUE
+
+    @pytest.mark.parametrize(
+        ("request_class", "function_code"),
+        [
+            (ReadHoldingRegistersRequest, 3),
+            (ReadInputRegistersRequest, 4),
+        ],
+    )
+    async def test_read_register_count_above_max_returns_illegal_value(
+        self, request_class, function_code, mock_server_context
+    ):
+        """An out-of-range read quantity must answer 0x03, not silence."""
+        context = mock_server_context()
+        context.async_getValues = mock.AsyncMock(return_value=[1] * 10)
+        request = request_class(address=0, count=request_class.MAX_COUNT + 1)
+        result = await request.datastore_update(context, 1)
+        assert result.function_code == function_code | 0x80
+        assert result.exception_code == ExcCodes.ILLEGAL_VALUE
+        context.async_getValues.assert_not_awaited()
+
+    @pytest.mark.parametrize(
+        "request_class",
+        [ReadHoldingRegistersRequest, ReadInputRegistersRequest],
+    )
+    async def test_read_register_count_zero_returns_illegal_value(
+        self, request_class, mock_server_context
+    ):
+        """A zero read quantity must answer 0x03."""
+        context = mock_server_context()
+        result = await request_class(address=0, count=0).datastore_update(context, 1)
+        assert result.function_code == request_class.function_code | 0x80
+        assert result.exception_code == ExcCodes.ILLEGAL_VALUE
+
+    def test_read_register_decode_accepts_count_above_max(self):
+        """Decoding must not raise for an over-max read quantity.
+
+        Raising here makes DecodePDU.decode() swallow the frame and the server
+        answer nothing, replacing a correct exception response with silence.
+        """
+        decoder = DecodePDU(True)
+        for frame, expected_count in (
+            (b"\x03\x00\x00\x00\x7e", 126),
+            (b"\x04\x00\x00\x00\x7e", 126),
+        ):
+            pdu = decoder.decode(frame)
+            assert pdu.count == expected_count
 
     async def test_register_read_requests_verify_errors(self, mock_server_context):
         """This tests that the register request messages.

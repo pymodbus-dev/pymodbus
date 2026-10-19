@@ -88,8 +88,8 @@ class TestModbusBitMessage:
         context = mock_server_context()
         context.async_getValues = mock.AsyncMock(return_value=ExcCodes.ILLEGAL_VALUE)
         for pdu in (
-            (bit_msg.ReadCoilsRequest(address=1, count=0x800)),
-            (bit_msg.ReadDiscreteInputsRequest(address=1, count=0x800)),
+            (bit_msg.ReadCoilsRequest(address=1, count=5)),
+            (bit_msg.ReadDiscreteInputsRequest(address=1, count=5)),
             (bit_msg.WriteSingleCoilRequest(address=1, bits=[True])),
             (bit_msg.WriteMultipleCoilsRequest(address=1, bits=[True] * 5)),
         ):

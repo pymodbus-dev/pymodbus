@@ -69,9 +69,24 @@ class TestModbusBitMessage:
     ):
         """A zero bit read quantity must answer 0x03."""
         context = mock_server_context()
+        context.async_getValues = mock.AsyncMock(return_value=[True] * 10)
         result = await request_class(address=0, count=0).datastore_update(context, 1)
         assert result.function_code == request_class.function_code | 0x80
         assert result.exception_code == ExcCodes.ILLEGAL_VALUE
+        context.async_getValues.assert_not_awaited()
+
+    @pytest.mark.parametrize(
+        "request_class",
+        [bit_msg.ReadCoilsRequest, bit_msg.ReadDiscreteInputsRequest],
+    )
+    async def test_bit_read_count_at_max_returns_normal_response(
+        self, request_class, mock_server_context
+    ):
+        """A count exactly at the maximum must be accepted, not rejected."""
+        context = mock_server_context()
+        request = request_class(address=0, count=request_class.MAX_COUNT)
+        result = await request.datastore_update(context, 1)
+        assert result.function_code == request_class.function_code
 
     def test_bit_read_decode_accepts_count_above_max(self):
         """Decoding must not raise for an over-max bit read quantity."""

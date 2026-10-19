@@ -139,12 +139,30 @@ class TestReadRegisterMessages:
     ):
         """An out-of-range FC23 read count must answer 0x03."""
         context = mock_server_context()
+        context.async_getValues = mock.AsyncMock()
+        context.async_setValues = mock.AsyncMock()
         request = ReadWriteMultipleRegistersRequest(
             read_address=1, read_count=126, write_address=1, write_registers=[5]
         )
         result = await request.datastore_update(context, 1)
         assert result.function_code == 0x97
         assert result.exception_code == ExcCodes.ILLEGAL_VALUE
+        context.async_getValues.assert_not_awaited()
+        context.async_setValues.assert_not_awaited()
+
+    async def test_readwrite_read_count_at_max_returns_normal_response(
+        self, mock_server_context
+    ):
+        """A read count exactly at MAX_READ_COUNT must be accepted."""
+        context = mock_server_context()
+        request = ReadWriteMultipleRegistersRequest(
+            read_address=1,
+            read_count=ReadWriteMultipleRegistersRequest.MAX_READ_COUNT,
+            write_address=1,
+            write_registers=[5],
+        )
+        result = await request.datastore_update(context, 1)
+        assert result.function_code == request.function_code
 
     async def test_register_read_requests_count_errors(self, mock_server_context):
         """This tests that the register request messages.
@@ -194,9 +212,24 @@ class TestReadRegisterMessages:
     ):
         """A zero read quantity must answer 0x03."""
         context = mock_server_context()
+        context.async_getValues = mock.AsyncMock(return_value=[1] * 10)
         result = await request_class(address=0, count=0).datastore_update(context, 1)
         assert result.function_code == request_class.function_code | 0x80
         assert result.exception_code == ExcCodes.ILLEGAL_VALUE
+        context.async_getValues.assert_not_awaited()
+
+    @pytest.mark.parametrize(
+        "request_class",
+        [ReadHoldingRegistersRequest, ReadInputRegistersRequest],
+    )
+    async def test_read_register_count_at_max_returns_normal_response(
+        self, request_class, mock_server_context
+    ):
+        """A count exactly at the maximum must be accepted, not rejected."""
+        context = mock_server_context()
+        request = request_class(address=0, count=request_class.MAX_COUNT)
+        result = await request.datastore_update(context, 1)
+        assert result.function_code == request_class.function_code
 
     def test_read_register_decode_accepts_count_above_max(self):
         """Decoding must not raise for an over-max read quantity.

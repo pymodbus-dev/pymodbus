@@ -10,7 +10,6 @@ from typing import cast
 import pytest
 import pytest_asyncio
 
-from pymodbus.constants import ExcCodes
 from pymodbus.datastore import ModbusDeviceContext, ModbusServerContext
 from pymodbus.pdu import ModbusPDU
 from pymodbus.server import ServerAsyncStop
@@ -231,8 +230,6 @@ def define_mock_servercontext() -> ModbusServerContext:
         async def async_getValues(self, device_id, func_code, address, count=0):
             """Get values."""
             _ = device_id, func_code, address
-            if count > 0x100:
-                return ExcCodes.ILLEGAL_VALUE
             return [self.default] * count
 
         async def async_setValues(self, device_id, func_code, address, values):

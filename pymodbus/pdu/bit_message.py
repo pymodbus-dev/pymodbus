@@ -32,12 +32,13 @@ class ReadCoilsRequest(ModbusPDU):
     def x_decode(self, data: bytes) -> None:
         """Decode a request pdu."""
         self.address, self.count = struct.unpack(">HH", data[:4])
-        self.verifyCount(self.MAX_COUNT)
 
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
     ) -> ModbusPDU:
         """Run request against a datastore."""
+        if not 1 <= self.count <= self.MAX_COUNT:
+            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
         values = await context.async_getValues(
             device_id, self.function_code, self.address, self.count
         )
@@ -70,12 +71,13 @@ class ReadDiscreteInputsRequest(ModbusPDU):
     def x_decode(self, data: bytes) -> None:
         """Decode a request pdu."""
         self.address, self.count = struct.unpack(">HH", data[:4])
-        self.verifyCount(self.MAX_COUNT)
 
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
     ) -> ModbusPDU:
         """Run request against a datastore."""
+        if not 1 <= self.count <= self.MAX_COUNT:
+            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
         values = await context.async_getValues(
             device_id, self.function_code, self.address, self.count
         )

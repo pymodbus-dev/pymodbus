@@ -258,6 +258,14 @@ class TestAsyncioServer:
         await asyncio.wait_for(BasicClient.done, timeout=0.1)
         assert BasicClient.received_data, expected_response
 
+    async def test_async_tcp_server_read_count_above_limit(self):
+        """An out-of-range read quantity must answer exception 0x03 on the wire."""
+        BasicClient.data = b"\x00\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x7e"
+        await self.start_server()
+        await self.connect_server()
+        await asyncio.wait_for(BasicClient.done, timeout=0.1)
+        assert BasicClient.received_data == b"\x00\x00\x00\x00\x00\x03\x01\x83\x03"
+
     async def test_async_server_trace_connect_disconnect(self):
         """Test connect/disconnect trace handler."""
         trace_connect = mock.Mock()

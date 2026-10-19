@@ -6,6 +6,7 @@ import pytest
 
 import pymodbus.pdu.bit_message as bit_msg
 from pymodbus.constants import ExcCodes
+from pymodbus.pdu.decoders import DecodePDU
 
 
 class TestModbusBitMessage:
@@ -39,6 +40,48 @@ class TestModbusBitMessage:
             (bit_msg.ReadDiscreteInputsRequest(address=1, count=0x800)),
         ):
             await pdu.datastore_update(context, 1)
+
+    @pytest.mark.parametrize(
+        ("request_class", "function_code"),
+        [
+            (bit_msg.ReadCoilsRequest, 1),
+            (bit_msg.ReadDiscreteInputsRequest, 2),
+        ],
+    )
+    async def test_bit_read_count_above_max_returns_illegal_value(
+        self, request_class, function_code, mock_server_context
+    ):
+        """An out-of-range bit read quantity must answer 0x03, not silence."""
+        context = mock_server_context()
+        context.async_getValues = mock.AsyncMock(return_value=[True] * 10)
+        request = request_class(address=0, count=request_class.MAX_COUNT + 1)
+        result = await request.datastore_update(context, 1)
+        assert result.function_code == function_code | 0x80
+        assert result.exception_code == ExcCodes.ILLEGAL_VALUE
+        context.async_getValues.assert_not_awaited()
+
+    @pytest.mark.parametrize(
+        "request_class",
+        [bit_msg.ReadCoilsRequest, bit_msg.ReadDiscreteInputsRequest],
+    )
+    async def test_bit_read_count_zero_returns_illegal_value(
+        self, request_class, mock_server_context
+    ):
+        """A zero bit read quantity must answer 0x03."""
+        context = mock_server_context()
+        result = await request_class(address=0, count=0).datastore_update(context, 1)
+        assert result.function_code == request_class.function_code | 0x80
+        assert result.exception_code == ExcCodes.ILLEGAL_VALUE
+
+    def test_bit_read_decode_accepts_count_above_max(self):
+        """Decoding must not raise for an over-max bit read quantity."""
+        decoder = DecodePDU(True)
+        for frame, expected_count in (
+            (b"\x01\x00\x00\x07\xd1", 2001),
+            (b"\x02\x00\x00\x07\xd1", 2001),
+        ):
+            pdu = decoder.decode(frame)
+            assert pdu.count == expected_count
 
     async def test_bit_datastore_exceptions(self, mock_server_context):
         """Test bit exception response from datastore."""

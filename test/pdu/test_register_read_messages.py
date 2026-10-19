@@ -128,6 +128,24 @@ class TestReadRegisterMessages:
         request.x_decode(struct.pack(">HHHHB", 1, 1, 1, 122, 244) + b"\x00\x00" * 122)
         assert request.write_count == 122
 
+    def test_readwrite_decode_read_count_above_limit(self):
+        """Decoding must accept read_count above 125 so the server can answer 0x03."""
+        request = ReadWriteMultipleRegistersRequest()
+        request.x_decode(struct.pack(">HHHHB", 1, 126, 1, 1, 2) + b"\x00\x00")
+        assert request.read_count == 126
+
+    async def test_readwrite_read_count_above_limit_returns_illegal_value(
+        self, mock_server_context
+    ):
+        """An out-of-range FC23 read count must answer 0x03."""
+        context = mock_server_context()
+        request = ReadWriteMultipleRegistersRequest(
+            read_address=1, read_count=126, write_address=1, write_registers=[5]
+        )
+        result = await request.datastore_update(context, 1)
+        assert result.function_code == 0x97
+        assert result.exception_code == ExcCodes.ILLEGAL_VALUE
+
     async def test_register_read_requests_count_errors(self, mock_server_context):
         """This tests that the register request messages.
 

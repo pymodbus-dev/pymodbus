@@ -210,7 +210,6 @@ class ReadWriteMultipleRegistersRequest(ModbusPDU):
             self.write_count,
             self.write_byte_count,
         ) = struct.unpack(">HHHHB", data[:9])
-        self.verifyCount(self.MAX_READ_COUNT, count=self.read_count)
         self.verifyCount(self.MAX_READ_COUNT, count=self.write_count)
         self._payload_byte_count = len(data) - 9
         self.write_registers = [

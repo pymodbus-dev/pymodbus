@@ -629,7 +629,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """Write coils (code 0x0F).
 
         :param address: Start address to write to
-        :param values: List of booleans to write, or a single boolean to write
+        :param values: List of booleans to write
         :param device_id: (optional) Modbus device ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:
@@ -795,7 +795,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         :param read_count: The number of registers to read from address
         :param write_address: The address to start writing to
         :param address: (optional) use as read/write address
-        :param values: List of values to write, or a single value to write
+        :param values: List of values to write
         :param device_id: (optional) Modbus device ID
         :param no_response_expected: (optional) The client will not expect a response to the request
         :raises ModbusException:

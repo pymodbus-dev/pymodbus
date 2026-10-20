@@ -13,7 +13,12 @@ from pymodbus.framer import (
     FramerType,
 )
 from pymodbus.pdu import DecodePDU
+from pymodbus.pdu.bit_message import WriteMultipleCoilsRequest
 from pymodbus.pdu.device import ModbusControlBlock
+from pymodbus.pdu.register_message import (
+    ReadWriteMultipleRegistersRequest,
+    WriteMultipleRegistersRequest,
+)
 from test.framer.generator import set_calls
 
 
@@ -853,6 +858,39 @@ class TestFramerType:
         used_len, pdu = test_framer.handleFrame(msg, 0, 0)
         assert pdu
         assert used_len == len(msg)
+
+    @pytest.mark.parametrize(
+        "request_pdu",
+        [
+            WriteMultipleCoilsRequest(address=1, bits=[True, False, True], dev_id=1),
+            WriteMultipleRegistersRequest(address=1, registers=[10, 11], dev_id=1),
+            ReadWriteMultipleRegistersRequest(
+                read_address=1,
+                read_count=2,
+                write_address=3,
+                write_registers=[4, 5],
+                dev_id=1,
+            ),
+        ],
+    )
+    def test_rtu_partial_request_waits_for_more_data(self, request_pdu):
+        """Test a request cut before its byte count waits for the rest of the frame."""
+        framer = FramerRTU(DecodePDU(True))
+        frame = framer.buildFrame(request_pdu)
+        for size in range(1, len(frame)):
+            used_len, pdu = framer.handleFrame(frame[:size], 0, 0)
+            assert not used_len
+            assert not pdu
+        used_len, pdu = framer.handleFrame(frame, 0, 0)
+        assert used_len == len(frame)
+        assert pdu
+
+    @pytest.mark.parametrize("msg", [b":ZZ0300010001FB\r\n", b":0Z0300010001FB\r\n"])
+    def test_ascii_non_hex_device_id(self, msg):
+        """Test a non hex device id is skipped like any other bad hex."""
+        used_len, pdu = FramerAscii(DecodePDU(True)).handleFrame(msg, 0, 0)
+        assert used_len == len(msg)
+        assert not pdu
 
     @pytest.mark.parametrize(("is_server"), [True])
     @pytest.mark.parametrize(("half"), [False, True])

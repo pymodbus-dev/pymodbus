@@ -83,7 +83,12 @@ class FramerRTU(FramerBase):
                 Log.debug("Short frame: {} wait for more data", data, ":hex")
                 return 0, 0, 0, self.EMPTY
             dev_id = int(data[used_len])
-            if not (size := self.decoder.calculateRtuFrameSize(data[used_len:])):
+            try:
+                size = self.decoder.calculateRtuFrameSize(data[used_len:])
+            except IndexError:
+                Log.debug("Frame - byte count not received, wait for more data")
+                return 0, dev_id, 0, self.EMPTY
+            if not size:
                 continue
             if data_len < used_len + size:
                 Log.debug("Frame - not ready")

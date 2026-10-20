@@ -62,9 +62,10 @@ class FramerAscii(FramerBase):
             if (end := buffer.find(end_marker)) == -1:
                 Log.debug("Incomplete frame: {} wait for more data", data, ":hex")
                 return used_len, 0, 0, self.EMPTY
-            dev_id = int(buffer[1:3], 16)
+            dev_id = 0
             used_len += end + len(end_marker)
             try:
+                dev_id = int(buffer[1:3], 16)
                 lrc = int(buffer[end - 2 : end], 16)
                 msg = a2b_hex(buffer[1 : end - 2])
             except ValueError:

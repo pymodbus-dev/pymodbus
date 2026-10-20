@@ -885,6 +885,13 @@ class TestFramerType:
         assert used_len == len(frame)
         assert pdu
 
+    @pytest.mark.parametrize("msg", [b":ZZ0300010001FB\r\n", b":0Z0300010001FB\r\n"])
+    def test_ascii_non_hex_device_id(self, msg):
+        """Test a non hex device id is skipped like any other bad hex."""
+        used_len, pdu = FramerAscii(DecodePDU(True)).handleFrame(msg, 0, 0)
+        assert used_len == len(msg)
+        assert not pdu
+
     @pytest.mark.parametrize(("is_server"), [True])
     @pytest.mark.parametrize(("half"), [False, True])
     @pytest.mark.parametrize(

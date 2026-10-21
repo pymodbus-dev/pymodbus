@@ -4,6 +4,7 @@ from unittest import mock
 
 import pytest
 
+from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer import (
     FramerAscii,
     FramerBase,
@@ -955,6 +956,17 @@ class TestFramerType:
 
             actual = test_framer.buildFrame(message)
             assert msg == actual
+
+    def test_bad_file_record_request_for_framer_socket(self):
+        """Test a bad file record request keeps the ids the server reply needs."""
+        framer = FramerSocket(DecodePDU(True))
+        # transaction 1, protocol 0, length 3, device 1, read file record, byte count 16
+        data = b"\x00\x01\x00\x00\x00\x03\x01\x14\x10"
+        with pytest.raises(ModbusIOException) as exc:
+            framer.handleFrame(data, 0, 0)
+        assert exc.value.transaction_id == 1
+        assert exc.value.dev_id == 1
+        assert exc.value.used_len == len(data)
 
     def test_invalid_protocol_id_for_framer_socket(self):
         """Test that ModbusSocketFramer rejects an invalid Protocol ID."""

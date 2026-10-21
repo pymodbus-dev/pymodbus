@@ -5,7 +5,11 @@ from __future__ import annotations
 import copy
 import struct
 
-from ..exceptions import MessageRegisterException, ModbusIOException
+from ..exceptions import (
+    MessageRegisterException,
+    ModbusException,
+    ModbusIOException,
+)
 from ..logging import Log
 from .exceptionresponse import ExceptionResponse
 from .pdu import ModbusPDU
@@ -84,7 +88,9 @@ class DecodePDU:
                 str(pdu),
             )
             return pdu
-        except (ValueError, IndexError, struct.error) as exc:
+        except ModbusIOException:
+            raise
+        except (ValueError, IndexError, struct.error, ModbusException) as exc:
             raise ModbusIOException(
                 f"Unable to decode frame {exc}", function_code=function_code
             ) from exc

@@ -139,6 +139,19 @@ class TestModbusPDU:
         with pytest.raises(ModbusIOException):
             decoder.decode(frame)
 
+    @pytest.mark.parametrize(
+        ("decoder", "frame"),
+        [
+            (server, b"\x14\x10"),  # read file record, byte count past the frame
+            (server, b"\x15\x10"),  # write file record, byte count past the frame
+            (client, b"\x18\x00\x06\x00\x05\x00\x01"),  # fifo count past the frame
+        ],
+    )
+    def test_decode_bad_file_record_frame(self, decoder, frame):
+        """Test bad file record frames fail like other undecodable frames."""
+        with pytest.raises(ModbusIOException):
+            decoder.decode(frame)
+
     def test_decode_unknown_sub(self):
         """Test for unknown sub code."""
         with pytest.raises(ModbusIOException):

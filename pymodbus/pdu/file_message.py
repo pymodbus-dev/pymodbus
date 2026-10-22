@@ -6,7 +6,7 @@ import struct
 from dataclasses import dataclass
 
 from ..datastore import ModbusServerContext
-from ..exceptions import ModbusException
+from ..exceptions import ModbusException, ModbusIOException
 from .decoders import DecodePDU
 from .pdu import ModbusPDU
 
@@ -68,7 +68,9 @@ class ReadFileRecordRequest(ModbusPDU):
         """Decode the incoming request."""
         self.records = []
         if (byte_count := int(data[0])) > len(data) - 1:
-            raise ModbusException(f"Invalid byte count: {byte_count}")
+            raise ModbusIOException(
+                f"Invalid byte count: {byte_count}", function_code=self.function_code
+            )
         for count in range(1, byte_count, 7):
             decoded = struct.unpack(">BHHH", data[count : count + 7])
             record = FileRecord(
@@ -176,7 +178,9 @@ class WriteFileRecordRequest(ModbusPDU):
     def x_decode(self, data: bytes) -> None:
         """Decode the incoming request."""
         if (byte_count := int(data[0])) > len(data) - 1:
-            raise ModbusException(f"Invalid byte count: {byte_count}")
+            raise ModbusIOException(
+                f"Invalid byte count: {byte_count}", function_code=self.function_code
+            )
         count = 1
         self.records.clear()
         while count < byte_count:
@@ -323,7 +327,9 @@ class ReadFifoQueueResponse(ModbusPDU):
         self.values = []
         _, count = struct.unpack(">HH", data[0:4])
         if 4 + count * 2 > len(data):
-            raise ModbusException(f"Invalid fifo count: {count}")
+            raise ModbusIOException(
+                f"Invalid fifo count: {count}", function_code=self.function_code
+            )
         for index in range(0, count):
             idx = 4 + index * 2
             self.values.append(struct.unpack(">H", data[idx : idx + 2])[0])

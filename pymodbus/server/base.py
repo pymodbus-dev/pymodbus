@@ -10,8 +10,7 @@ from ..datastore import ModbusServerContext
 from ..exceptions import ParameterException
 from ..framer import FRAMER_NAME_TO_CLASS, FramerType
 from ..logging import Log
-from ..pdu import DecodePDU, ModbusPDU
-from ..pdu.device import ModbusControlBlock, ModbusDeviceIdentification
+from ..pdu import DecodePDU, ModbusControlBlock, ModbusDeviceIdentification, OLD_pdu
 from ..simulator import SimDevice
 from ..simulator.simcore import SimCore
 from ..transport import CommParams, ModbusProtocol
@@ -32,9 +31,9 @@ class ModbusBaseServer(ModbusProtocol):
         identity: ModbusDeviceIdentification | None,
         framer: FramerType,
         trace_packet: Callable[[bool, bytes], bytes] | None,
-        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None,
+        trace_pdu: Callable[[bool, OLD_pdu], OLD_pdu] | None,
         trace_connect: Callable[[bool], None] | None,
-        custom_pdu: list[type[ModbusPDU]] | None,
+        custom_pdu: list[type[OLD_pdu]] | None,
     ) -> None:
         """Initialize base server."""
         super().__init__(

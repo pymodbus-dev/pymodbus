@@ -3,11 +3,11 @@
 import pytest
 
 from pymodbus.exceptions import MessageRegisterException, ModbusIOException
-from pymodbus.pdu.decoders import DecodePDU
+from pymodbus.pdu import DecodePDU
 
 
-class TestModbusPDU:
-    """Test ModbusPDU."""
+class TestPDU:
+    """Test OLD_pdu."""
 
     client = DecodePDU(False)
     server = DecodePDU(True)

@@ -11,7 +11,7 @@ import pytest
 import pytest_asyncio
 
 from pymodbus.datastore import ModbusDeviceContext, ModbusServerContext
-from pymodbus.pdu import ModbusPDU
+from pymodbus.pdu import OLD_pdu
 from pymodbus.server import ServerAsyncStop
 from pymodbus.transport import NULLMODEM_HOST, CommParams, CommType
 from pymodbus.transport.transport import NullModem
@@ -333,7 +333,7 @@ def define_mockSocket():  # noqa: C901
 def define_dummyPDU():
     """Define mockSocket class."""
 
-    class DummyPDU(ModbusPDU):  # pragma: no cover
+    class DummyPDU(OLD_pdu):  # pragma: no cover
         """Custom request."""
 
         function_code = 0x70

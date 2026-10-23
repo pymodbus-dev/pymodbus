@@ -9,16 +9,8 @@ bit based request/response messages:
 
 import pytest
 
+import pymodbus.pdu.file_message as file_msg
 from pymodbus.exceptions import ModbusException
-from pymodbus.pdu.file_message import (
-    FileRecord,
-    ReadFifoQueueRequest,
-    ReadFifoQueueResponse,
-    ReadFileRecordRequest,
-    ReadFileRecordResponse,
-    WriteFileRecordRequest,
-    WriteFileRecordResponse,
-)
 
 
 TEST_MESSAGE = b"\x00\n\x00\x04\x00\x01\x00\x02\x00\x03\x00\x04"
@@ -29,34 +21,34 @@ class TestBitMessage:
 
     def test_read_fifo_queue_request_encode(self):
         """Test basic bit message encoding/decoding."""
-        handle = ReadFifoQueueRequest(0x1234)
+        handle = file_msg.PDUreadFifoQueue(0x1234)
         result = handle.x_encode()
         assert result == b"\x12\x34"
 
     def test_read_fifo_queue_request_decode(self):
         """Test basic bit message encoding/decoding."""
-        handle = ReadFifoQueueRequest(0x0000)
+        handle = file_msg.PDUreadFifoQueue(0x0000)
         handle.x_decode(b"\x12\x34")
         assert handle.address == 0x1234
 
     async def test_read_fifo_queue_request(self, mock_server_context):
         """Test basic bit message encoding/decoding."""
         context = mock_server_context()
-        handle = ReadFifoQueueRequest(0x1234)
+        handle = file_msg.PDUreadFifoQueue(0x1234)
         result = await handle.datastore_update(context, 0)
-        assert isinstance(result, ReadFifoQueueResponse)
+        assert isinstance(result, file_msg.PDUreadFifoQueue)
 
     def test_read_fifo_queue_response_encode(self):
         """Test that the read fifo queue response can encode."""
         message = TEST_MESSAGE
-        handle = ReadFifoQueueResponse([1, 2, 3, 4])
+        handle = file_msg.PDUreadFifoQueue([1, 2, 3, 4])
         result = handle.x_encode()
         assert result == message
 
     def test_read_fifo_queue_response_decode(self):
         """Test that the read fifo queue response can decode."""
         message = TEST_MESSAGE
-        handle = ReadFifoQueueResponse([1, 2, 3, 4])
+        handle = file_msg.PDUreadFifoQueue([1, 2, 3, 4])
         handle.x_decode(message)
         assert handle.values == [1, 2, 3, 4]
 
@@ -64,9 +56,10 @@ class TestBitMessage:
         """Test that the read fifo queue response can decode."""
         message = TEST_MESSAGE
         assert (
-            ReadFifoQueueResponse.x_calculateRtuFrameSize(b"\x00\x18" + message) == 14
+            file_msg.PDUreadFifoQueue.x_calculateRtuFrameSize(b"\x00\x18" + message)
+            == 14
         )
-        assert ReadFifoQueueRequest.x_calculateRtuFrameSize(b"") == 6
+        assert file_msg.PDUreadFifoQueue.x_calculateRtuFrameSize(b"") == 6
 
     # -----------------------------------------------------------------------#
     #  File Record
@@ -74,7 +67,7 @@ class TestBitMessage:
 
     def test_file_record_length(self):
         """Test file record length generation."""
-        record = FileRecord(
+        record = file_msg.FileRecord(
             file_number=0x01, record_number=0x02, record_data=b"\x00\x01\x02\x04"
         )
         assert record.record_length == 0x02
@@ -82,14 +75,14 @@ class TestBitMessage:
     def test_file_record_errors(self):
         """Test file record length generation."""
         with pytest.raises(ModbusException):
-            FileRecord(record_length=12, record_data=b"\x00\x01\x02\x04")
+            file_msg.FileRecord(record_length=12, record_data=b"\x00\x01\x02\x04")
         with pytest.raises(ModbusException):
-            FileRecord(record_length=11)
+            file_msg.FileRecord(record_length=11)
 
     def test_read_file_record_request_encode(self):
         """Test basic bit message encoding/decoding."""
-        records = [FileRecord(file_number=0x01, record_number=0x02)]
-        handle = ReadFileRecordRequest(records=records)
+        records = [file_msg.FileRecord(file_number=0x01, record_number=0x02)]
+        handle = file_msg.PDUreadFileRecord(records=records)
         result = handle.x_encode()
         assert result == b"\x07\x06\x00\x01\x00\x02\x00\x00"
 
@@ -97,7 +90,7 @@ class TestBitMessage:
         """Test basic bit message encoding/decoding."""
         # record = FileRecord(file_number=0x04, record_number=0x01, record_length=0x02)
         request = b"\x0e\x06\x00\x04\x00\x01\x00\x02\x06\x00\x03\x00\x09\x00\x02"
-        handle = ReadFileRecordRequest()
+        handle = file_msg.PDUreadFileRecord()
         handle.x_decode(request)
         # assert handle.records[0] == record
 
@@ -106,15 +99,15 @@ class TestBitMessage:
         request = (
             b"\x00\x00\x0e\x06\x00\x04\x00\x01\x00\x02\x06\x00\x03\x00\x09\x00\x02"
         )
-        handle = ReadFileRecordRequest()
+        handle = file_msg.PDUreadFileRecord()
         size = handle.x_calculateRtuFrameSize(request)
         assert size == 0x0E + 5
 
     async def test_read_file_record_request_datastore_update(self, mock_server_context):
         """Test basic bit message encoding/decoding."""
-        handle = ReadFileRecordRequest()
+        handle = file_msg.PDUreadFileRecord()
         result = await handle.datastore_update(mock_server_context(), 0)
-        assert isinstance(result, ReadFileRecordResponse)
+        assert isinstance(result, file_msg.PDUreadFileRecord)
 
     # -----------------------------------------------------------------------#
     #  Read File Record Response
@@ -122,8 +115,8 @@ class TestBitMessage:
 
     def test_read_file_record_response_encode(self):
         """Test basic bit message encoding/decoding."""
-        records = [FileRecord(record_data=b"\x00\x01\x02\x03\x04\x05")]
-        handle = ReadFileRecordResponse(records)
+        records = [file_msg.FileRecord(record_data=b"\x00\x01\x02\x03\x04\x05")]
+        handle = file_msg.PDUreadFileRecord(records)
         result = handle.x_encode()
         assert result == b"\x08\x07\x06\x00\x01\x02\x03\x04\x05"
 
@@ -136,7 +129,7 @@ class TestBitMessage:
         #     file_number=0x00, record_number=0x00, record_data=b"\x33\xcd\x00\x40"
         # )
         response = b"\x0c\x05\x06\x0d\xfe\x00\x20\x05\x06\x33\xcd\x00\x40"
-        handle = ReadFileRecordResponse()
+        handle = file_msg.PDUreadFileRecord()
         handle.x_decode(response)
 
         # assert handle.records[0] == record1
@@ -145,7 +138,7 @@ class TestBitMessage:
     def test_read_file_record_response_frame_size(self):
         """Test basic bit message encoding/decoding."""
         request = b"\x00\x00\x0c\x05\x06\x0d\xfe\x00\x20\x05\x05\x06\x33\xcd\x00\x40"
-        handle = ReadFileRecordResponse()
+        handle = file_msg.PDUreadFileRecord()
         size = handle.x_calculateRtuFrameSize(request)
         assert size == 0x0C + 5
 
@@ -156,11 +149,11 @@ class TestBitMessage:
     def test_write_file_record_request_encode(self):
         """Test basic bit message encoding/decoding."""
         records = [
-            FileRecord(
+            file_msg.FileRecord(
                 file_number=0x01, record_number=0x02, record_data=b"\x00\x01\x02\x03"
             )
         ]
-        handle = WriteFileRecordRequest(records)
+        handle = file_msg.PDUwriteFileRecord(records)
         result = handle.x_encode()
         assert result == b"\x0b\x06\x00\x01\x00\x02\x00\x02\x00\x01\x02\x03"
 
@@ -172,14 +165,14 @@ class TestBitMessage:
         #     record_data=b"\x06\xaf\x04\xbe\x10\x0d",
         # )
         request = b"\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
-        handle = WriteFileRecordRequest()
+        handle = file_msg.PDUwriteFileRecord()
         handle.x_decode(request)
         # assert handle.records[0] == record
 
     def test_write_file_record_request_frame_size(self):
         """Test write file record request rtu frame size calculation."""
         request = b"\x00\x00\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
-        handle = WriteFileRecordRequest()
+        handle = file_msg.PDUwriteFileRecord()
         size = handle.x_calculateRtuFrameSize(request)
         assert size == 0x0D + 5
 
@@ -187,9 +180,9 @@ class TestBitMessage:
         self, mock_server_context
     ):
         """Test basic bit message encoding/decoding."""
-        handle = WriteFileRecordRequest()
+        handle = file_msg.PDUwriteFileRecord()
         result = await handle.datastore_update(mock_server_context(), 0)
-        assert isinstance(result, WriteFileRecordResponse)
+        assert isinstance(result, file_msg.PDUwriteFileRecord)
 
     # -----------------------------------------------------------------------#
     #  Write File Record Response
@@ -198,11 +191,11 @@ class TestBitMessage:
     def test_write_file_record_response_encode(self):
         """Test basic bit message encoding/decoding."""
         records = [
-            FileRecord(
+            file_msg.FileRecord(
                 file_number=0x01, record_number=0x02, record_data=b"\x00\x01\x02\x03"
             )
         ]
-        handle = WriteFileRecordResponse(records)
+        handle = file_msg.PDUwriteFileRecord(records)
         result = handle.x_encode()
         assert result == b"\x0b\x06\x00\x01\x00\x02\x00\x02\x00\x01\x02\x03"
 
@@ -214,33 +207,33 @@ class TestBitMessage:
         #     record_data=b"\x06\xaf\x04\xbe\x10\x0d",
         # )
         request = b"\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
-        handle = WriteFileRecordResponse()
+        handle = file_msg.PDUwriteFileRecord()
         handle.x_decode(request)
         # assert handle.records[0] == record
 
     def test_read_file_record_request_decode_invalid_byte_count(self):
-        """Test ReadFileRecordRequest raises ModbusException on oversized byte_count."""
-        handle = ReadFileRecordRequest()
+        """Test file_msg.PDUreadFileRecord raises ModbusException on oversized byte_count."""
+        handle = file_msg.PDUreadFileRecord()
         with pytest.raises(ModbusException):
             handle.x_decode(bytes([0xFF, 0x06, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01]))
 
     def test_write_file_record_request_decode_invalid_byte_count(self):
-        """Test WriteFileRecordRequest raises ModbusException on oversized byte_count."""
-        handle = WriteFileRecordRequest()
+        """Test file_msg.PDUwriteFileRecord raises ModbusException on oversized byte_count."""
+        handle = file_msg.PDUwriteFileRecord()
         with pytest.raises(ModbusException):
             handle.x_decode(
                 bytes([0xFF, 0x06, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00])
             )
 
     def test_read_fifo_queue_response_decode_invalid_count(self):
-        """Test ReadFifoQueueResponse raises ModbusException on oversized count."""
-        handle = ReadFifoQueueResponse()
+        """Test file_msg.PDUreadFifoQueue raises ModbusException on oversized count."""
+        handle = file_msg.PDUreadFifoQueue()
         with pytest.raises(ModbusException):
             handle.x_decode(bytes([0x00, 0x00, 0xFF, 0xFF]))
 
     def test_write_file_record_response_frame_size(self):
         """Test write file record response rtu frame size calculation."""
         request = b"\x00\x00\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
-        handle = WriteFileRecordResponse()
+        handle = file_msg.PDUwriteFileRecord()
         size = handle.x_calculateRtuFrameSize(request)
         assert size == 0x0D + 5

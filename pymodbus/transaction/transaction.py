@@ -209,9 +209,11 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
                         self.response_future, timeout=self.comm_params.timeout_connect
                     )
                     self.count_until_disconnect = self.max_until_disconnect
-                    if request.dev_id and response.dev_id != request.dev_id:
+                    if (request.dev_id and response.dev_id != request.dev_id) or (
+                        response.function_code & 0x7F
+                    ) != request.function_code:
                         raise self._io_exception_from_request(
-                            f"ERROR: request uses device id={request.dev_id} but received {response.dev_id}.",
+                            "ERROR: Unsolicited response received.",
                             request,
                         )
                     if (
@@ -273,7 +275,11 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
             self.last_pdu = self.trace_pdu(False, pdu)
             self.last_addr = addr
             if not self.is_server:
-                if self.response_future.done():
+                if (
+                    not self.response_future
+                    or self.response_future.done()
+                    or self.response_future.cancelled()
+                ):
                     Log.warning(
                         "ERROR: received pdu without a corresponding request, IGNORING"
                     )

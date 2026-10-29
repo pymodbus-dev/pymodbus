@@ -36,7 +36,7 @@ as well as the
 `API_changes <https://github.com/pymodbus-dev/pymodbus/blob/dev/API_changes.rst>`_
 files.
 
-Current release is `3.16.1 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.16.1>`_.
+Current release is `3.16.2 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.16.2>`_.
 
 Bleeding edge (not released) is `dev <https://github.com/pymodbus-dev/pymodbus/tree/dev>`_.
 

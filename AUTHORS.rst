@@ -21,6 +21,7 @@ Thanks to
 - alexis-care
 - Alois Hockenschlohe
 - Andy Walker
+- ann
 - Arjan
 - André Srinivasan
 - andrew-harness
@@ -88,6 +89,7 @@ Thanks to
 - Kürşat Aktaş
 - laund
 - Logan Gunthorpe
+- Lucas
 - Luke Hoggatt
 - Mark Deneen
 - Marko Luther

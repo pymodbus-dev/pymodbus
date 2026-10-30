@@ -266,6 +266,14 @@ class TestAsyncioServer:
         await asyncio.wait_for(BasicClient.done, timeout=0.1)
         assert BasicClient.received_data == b"\x00\x00\x00\x00\x00\x03\x01\x83\x03"
 
+    async def test_async_tcp_server_reserved_function_code(self):
+        """A function code reserved for exception responses must answer 0x01."""
+        BasicClient.data = b"\x00\x00\x00\x00\x00\x04\x01\x81\x00\x00"
+        await self.start_server()
+        await self.connect_server()
+        await asyncio.wait_for(BasicClient.done, timeout=0.1)
+        assert BasicClient.received_data == b"\x00\x00\x00\x00\x00\x03\x01\x81\x01"
+
     async def test_async_server_trace_connect_disconnect(self):
         """Test connect/disconnect trace handler."""
         trace_connect = mock.Mock()

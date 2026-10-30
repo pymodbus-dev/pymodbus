@@ -68,6 +68,11 @@ class DecodePDU:
         function_code = 0
         try:
             if (function_code := int(frame[0])) > 0x80:
+                if self.is_server:
+                    raise ModbusIOException(
+                        f"Reserved function code {function_code}",
+                        function_code=function_code,
+                    )
                 pdu_exp = ExceptionResponse(function_code & 0x7F)
                 pdu_exp.from_frame(False, frame)
                 return pdu_exp

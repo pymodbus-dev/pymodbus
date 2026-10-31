@@ -8,13 +8,13 @@ from collections.abc import Awaitable, Callable
 from ..exceptions import ConnectionException
 from ..framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
 from ..logging import Log
-from ..pdu import DecodePDU, ModbusPDU
+from ..pdu import DecodePDU, ModbusPdu
 from ..transaction import TransactionManager
 from ..transport import CommParams
 from .mixin import ModbusClientMixin
 
 
-class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
+class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPdu]]):
     """**ModbusBaseClient**.
 
     :mod:`ModbusBaseClient` is normally not referenced outside :mod:`pymodbus`.
@@ -26,7 +26,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         retries: int,
         comm_params: CommParams,
         trace_packet: Callable[[bool, bytes], bytes] | None,
-        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None,
+        trace_pdu: Callable[[bool, ModbusPdu], ModbusPdu] | None,
         trace_connect: Callable[[bool], None] | None,
     ) -> None:
         """Initialize a client instance.
@@ -61,7 +61,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         rc = await self.ctx.connect()
         return rc
 
-    def register(self, custom_response_class: type[ModbusPDU]) -> None:
+    def register(self, custom_response_class: type[ModbusPdu]) -> None:
         """Register a custom response class with the decoder (call **sync**).
 
         :param custom_response_class: (optional) Modbus response class.
@@ -76,7 +76,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         """Close connection."""
         self.ctx.close()
 
-    def execute(self, no_response_expected: bool, request: ModbusPDU):
+    def execute(self, no_response_expected: bool, request: ModbusPdu):
         """Execute request and get response (call **sync/async**).
 
         :meta private:
@@ -120,7 +120,7 @@ class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
         return f"{self.__class__.__name__} {self.ctx.comm_params.host}:{self.ctx.comm_params.port}"
 
 
-class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
+class ModbusBaseSyncClient(ModbusClientMixin[ModbusPdu]):
     """**ModbusBaseClient**.
 
     :mod:`ModbusBaseClient` is normally not referenced outside :mod:`pymodbus`.
@@ -132,7 +132,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         retries: int,
         comm_params: CommParams,
         trace_packet: Callable[[bool, bytes], bytes] | None,
-        trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None,
+        trace_pdu: Callable[[bool, ModbusPdu], ModbusPdu] | None,
         trace_connect: Callable[[bool], None] | None,
     ) -> None:
         """Initialize a client instance.
@@ -161,7 +161,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
     # ----------------------------------------------------------------------- #
     # Client external interface
     # ----------------------------------------------------------------------- #
-    def register(self, custom_response_class: type[ModbusPDU]) -> None:
+    def register(self, custom_response_class: type[ModbusPdu]) -> None:
         """Register a custom response class with the decoder.
 
         :param custom_response_class: (optional) Modbus response class.
@@ -172,7 +172,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         """
         self.framer.decoder.register(custom_response_class)
 
-    def execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
+    def execute(self, no_response_expected: bool, request: ModbusPdu) -> ModbusPdu:
         """Execute request and get response (call **sync/async**).
 
         :param no_response_expected: The client will not expect a response to the request

@@ -30,7 +30,7 @@ from examples.simple_async_client import run_async_simple_client
 from examples.simple_sync_client import run_sync_simple_client
 from examples.simulator import run_simulator as run_simulator3
 from pymodbus.exceptions import ModbusException
-from pymodbus.pdu import ExceptionResponse
+from pymodbus.pdu import PDUexception
 from pymodbus.server import ServerAsyncStop, ServerStop
 
 
@@ -142,7 +142,9 @@ class TestAsyncExamples:
         with pytest.raises(ModbusException):
             await run_async_client(client, modbus_calls=async_template_call)
         client.close()
-        client.read_coils = mock.AsyncMock(return_value=ExceptionResponse(0x05, 0x10))  # type: ignore[method-assign]
+        client.read_coils = mock.AsyncMock(  # type: ignore[method-assign]
+            return_value=PDUexception(0, 0x05, 0x10)
+        )  # type: ignore[method-assign]
         with pytest.raises(ModbusException):
             await run_async_client(client, modbus_calls=async_template_call)
         client.close()
@@ -154,7 +156,9 @@ class TestAsyncExamples:
         with pytest.raises(ModbusException):
             await run_async_client(client, modbus_calls=async_template_call)
         client.close()
-        client.read_coils = mock.Mock(return_value=ExceptionResponse(0x05, 0x10))  # type: ignore[method-assign]
+        client.read_coils = mock.Mock(  # type: ignore[method-assign]
+            return_value=PDUexception(0, 0x05, 0x10)
+        )  # type: ignore[method-assign]
         with pytest.raises(ModbusException):
             await run_async_client(client, modbus_calls=template_call)
         client.close()

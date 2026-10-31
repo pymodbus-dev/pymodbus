@@ -3,15 +3,11 @@
 from __future__ import annotations
 
 import struct
-from abc import abstractmethod
 from typing import Any
 
 from ..constants import DeviceInformation, ExcCodes, MoreData
-from ..datastore import ModbusServerContext
-from .decoders import DecodePDU
 from .device import DeviceInformationFactory, ModbusControlBlock
-from .exceptionresponse import ExceptionResponse
-from .pdu import ModbusPDU
+from .pdu import DecodePDU, ModbusPdu, PDUexception, StoreGet, StoreSet
 
 
 _MCB = ModbusControlBlock()
@@ -32,110 +28,24 @@ class _OutOfSpaceException(Exception):
         self.oid = oid
 
 
-class EncapsulatedInterfaceTransportBase(ModbusPDU):
+class PDUreadDeviceInformation(ModbusPdu):
     """Base PDU for dispatching Encapsulated Interface Transport messages."""
 
     function_code = 0x2B
-
-    @classmethod
-    def decode_sub_function_code(cls, data: bytes) -> int:
-        """Decode the MEI type."""
-        return int(data[2])
-
-    @abstractmethod
-    def x_encode(self) -> bytes:
-        """Encode the request packet."""
-
-
-class ReadDeviceInformationRequest(EncapsulatedInterfaceTransportBase):
-    """ReadDeviceInformationRequest."""
-
     sub_function_code = 0x0E
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of a PDU."""
-        return 7
 
     def __init__(
         self,
+        *args,
         read_code: int | None = None,
         object_id: int = 0,
-        dev_id: int = 1,
-        transaction_id: int = 0,
-    ) -> None:
-        """Initialize a new instance."""
-        super().__init__(transaction_id=transaction_id, dev_id=dev_id)
-        self.read_code = read_code or DeviceInformation.BASIC
-        self.object_id = object_id
-
-    def x_encode(self) -> bytes:
-        """Encode the request packet."""
-        packet = struct.pack(
-            ">BBB", self.sub_function_code, self.read_code, self.object_id
-        )
-        return packet
-
-    def x_decode(self, data: bytes) -> None:
-        """Decode data part of the message."""
-        self.sub_function_code, self.read_code, self.object_id = struct.unpack(
-            ">BBB", data[:3]
-        )
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Update diagnostic request on the given device."""
-        _ = context
-        if not 0x00 <= self.object_id <= 0xFF:
-            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
-        if not 0x00 <= self.read_code <= 0x04:
-            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
-
-        information = DeviceInformationFactory.get(_MCB, self.read_code, self.object_id)
-        if self.read_code == DeviceInformation.SPECIFIC and (
-            0x07 <= self.object_id < 0x80 or not information.get(self.object_id)
-        ):
-            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_ADDRESS)
-        return ReadDeviceInformationResponse(
-            read_code=self.read_code,
-            information=information,
-            dev_id=device_id,
-            transaction_id=self.transaction_id,
-        )
-
-
-class ReadDeviceInformationResponse(EncapsulatedInterfaceTransportBase):
-    """ReadDeviceInformationResponse."""
-
-    sub_function_code = 0x0E
-
-    @classmethod
-    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-        """Calculate the size of the message."""
-        size = 8  # skip the header information
-        if (data_len := len(data)) < size:
-            return 999
-        count = int(data[7])
-
-        while count > 0:
-            if data_len < size + 2:
-                return 998
-            _, object_length = struct.unpack(">BB", data[size : size + 2])
-            size += object_length + 2
-            count -= 1
-        return size + 2
-
-    def __init__(
-        self,
-        read_code: int | None = None,
         information: dict[int, Any] | None = None,
-        dev_id: int = 1,
-        transaction_id: int = 0,
+        **kwargs,
     ) -> None:
-        """Initialize a new instance."""
-        super().__init__(transaction_id=transaction_id, dev_id=dev_id)
-        self.read_code = read_code or DeviceInformation.BASIC
+        """Initialize."""
+        super().__init__(*args, **kwargs)
+        self.read_code = read_code or int(DeviceInformation.BASIC)
+        self.object_id = object_id
         self.information: dict[int, Any] = information or {}
         self.number_of_objects = 0
         self.conformity = 0x83  # I support everything right now
@@ -143,12 +53,51 @@ class ReadDeviceInformationResponse(EncapsulatedInterfaceTransportBase):
         self.more_follows = MoreData.NOTHING
         self.space_left = 253 - 6
 
-    def _encode_object(self, object_id: int, data: str | bytes | ModbusPDU) -> bytes:
+    def __str__(self) -> str:
+        """Build representation of pdu."""
+        return super().__str__() + (
+            ",  "
+            + f"read_code={self.read_code}, "
+            + f"object_id={self.object_id}, "
+            + f"information={self.information}, "
+            + f"number_of_objects={self.number_of_objects}, "
+            + f"conformity={self.conformity}, "
+            + f"next_object_id={self.next_object_id}, "
+            + f"more_follows={self.more_follows}, "
+            + f"space_left={self.space_left}, "
+        )
+
+    @classmethod
+    def calculatePduSize(cls, is_request: bool, offset: int, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        if is_request:
+            return 7
+        size = 8  # skip the header information
+        if (data_len := len(data) - offset) < size:
+            return 999
+        count = int(data[offset + 7])
+
+        while count > 0:
+            if data_len < size + 2:
+                return 998
+            _, object_length = struct.unpack(
+                ">BB", data[offset + size : offset + size + 2]
+            )
+            size += object_length + 2
+            count -= 1
+        return size + 2
+
+    @classmethod
+    def decode_sub_function_code(cls, offset: int, data: bytes) -> int:
+        """Decode sub function code."""
+        return int.from_bytes(data[offset + 2 : offset + 3])
+
+    def _encode_object(self, object_id: int, data: str | bytes | ModbusPdu) -> bytes:
         """Encode object."""
         if isinstance(data, str):
             data = data.encode()
         elif not isinstance(data, bytes):
-            data = data.x_encode()
+            data = data.to_bytes()
         data_len = len(data)
         self.space_left -= 2 + data_len
         if self.space_left <= 0:
@@ -158,8 +107,13 @@ class ReadDeviceInformationResponse(EncapsulatedInterfaceTransportBase):
         self.number_of_objects += 1
         return encoded_obj
 
-    def x_encode(self) -> bytes:
-        """Encode the response."""
+    def to_bytes(self) -> bytes:
+        """Encode the message."""
+        if self.is_request:
+            packet = struct.pack(
+                ">BBB", self.sub_function_code, self.read_code, self.object_id
+            )
+            return packet
         packet = struct.pack(
             ">BBB", self.sub_function_code, self.read_code, self.conformity
         )
@@ -181,30 +135,61 @@ class ReadDeviceInformationResponse(EncapsulatedInterfaceTransportBase):
         packet += objects
         return packet
 
-    def x_decode(self, data: bytes) -> None:
-        """Decode a the response."""
-        params = struct.unpack(">BBBBBB", data[0:6])
-        self.sub_function_code, self.read_code = params[0:2]
-        self.conformity, self.more_follows = params[2:4]
-        self.next_object_id, self.number_of_objects = params[4:6]
+    def from_bytes(self, offset: int, data: bytes) -> None:
+        """Decode payload."""
+        if self.is_request:
+            self.sub_function_code, self.read_code, self.object_id = struct.unpack(
+                ">BBB", data[offset : offset + 3]
+            )
+            return
+        (
+            self.sub_function_code,
+            self.read_code,
+            self.conformity,
+            self.more_follows,
+            self.next_object_id,
+            self.number_of_objects,
+        ) = struct.unpack(">BBBBBB", data[offset + 0 : offset + 6])
         count = 6  # skip the header information
         self.information.clear()
 
-        while count < len(data):
-            object_id, object_length = struct.unpack(">BB", data[count : count + 2])
+        while count < len(data) - offset:
+            object_id, object_length = struct.unpack(
+                ">BB", data[offset + count : offset + count + 2]
+            )
             count += object_length + 2
             if object_id not in self.information:
-                self.information[object_id] = data[count - object_length : count]
+                self.information[object_id] = data[
+                    offset + count - object_length : offset + count
+                ]
             elif isinstance(self.information[object_id], list):
-                self.information[object_id].append(data[count - object_length : count])
+                self.information[object_id].append(
+                    data[offset + count - object_length : offset + count]
+                )
             else:
                 self.information[object_id] = [
                     self.information[object_id],
                     data[count - object_length : count],
                 ]
 
+    async def build_response(
+        self, get_values: StoreGet, set_values: StoreSet
+    ) -> ModbusPdu:
+        """Update diagnostic request on the given device."""
+        if not 0x00 <= self.object_id <= 0xFF:
+            return PDUexception(self.dev_id, self.function_code, ExcCodes.ILLEGAL_VALUE)
+        if not 0x00 <= self.read_code <= 0x04:
+            return PDUexception(self.dev_id, self.function_code, ExcCodes.ILLEGAL_VALUE)
 
-DecodePDU.add_pdu(
-    EncapsulatedInterfaceTransportBase, EncapsulatedInterfaceTransportBase
-)
-DecodePDU.add_sub_pdu(ReadDeviceInformationRequest, ReadDeviceInformationResponse)
+        information = DeviceInformationFactory.get(_MCB, self.read_code, self.object_id)
+        if self.read_code == DeviceInformation.SPECIFIC and (
+            0x07 <= self.object_id < 0x80 or not information.get(self.object_id)
+        ):
+            return PDUexception(
+                self.dev_id, self.function_code, ExcCodes.ILLEGAL_ADDRESS
+            )
+        self.is_request = False
+        return self
+
+
+DecodePDU.add_pdu(PDUreadDeviceInformation)

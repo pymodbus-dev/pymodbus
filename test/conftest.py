@@ -11,7 +11,6 @@ import pytest
 import pytest_asyncio
 
 from pymodbus.datastore import ModbusDeviceContext, ModbusServerContext
-from pymodbus.pdu import ModbusPDU
 from pymodbus.server import ServerAsyncStop
 from pymodbus.transport import NULLMODEM_HOST, CommParams, CommType
 from pymodbus.transport.transport import NullModem
@@ -327,28 +326,3 @@ def define_mockSocket():  # noqa: C901
             return None
 
     return DummySocket
-
-
-@pytest.fixture(name="mockPDU")
-def define_dummyPDU():
-    """Define mockSocket class."""
-
-    class DummyPDU(ModbusPDU):  # pragma: no cover
-        """Custom request."""
-
-        function_code = 0x70
-
-        @classmethod
-        def x_calculateRtuFrameSize(cls, data: bytes) -> int:
-            """Calculate the size of a PDU."""
-            return 5
-
-        def x_encode(self) -> bytes:
-            """Encode the message."""
-            return self.function_code.to_bytes(1, "big") + b"123"
-
-        def x_decode(self, data):
-            """Decode."""
-            _ = data
-
-    return DummyPDU

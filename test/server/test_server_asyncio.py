@@ -266,6 +266,14 @@ class TestAsyncioServer:
         await asyncio.wait_for(BasicClient.done, timeout=0.1)
         assert BasicClient.received_data == b"\x00\x00\x00\x00\x00\x03\x01\x83\x03"
 
+    async def test_async_tcp_server_write_coil_illegal_value(self):
+        """A Write Single Coil value other than 0x0000 or 0xFF00 must answer 0x03."""
+        BasicClient.data = b"\x00\x00\x00\x00\x00\x06\x01\x05\x00\x00\x00\x01"
+        await self.start_server()
+        await self.connect_server()
+        await asyncio.wait_for(BasicClient.done, timeout=0.1)
+        assert BasicClient.received_data == b"\x00\x00\x00\x00\x00\x03\x01\x85\x03"
+
     async def test_async_server_trace_connect_disconnect(self):
         """Test connect/disconnect trace handler."""
         trace_connect = mock.Mock()

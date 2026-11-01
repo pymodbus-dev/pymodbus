@@ -231,6 +231,32 @@ class TestModbusBitMessage:
         result = await request.datastore_update(context, 0)
         assert result.x_encode() == b"\x00\x02\x00\x00"
 
+    @pytest.mark.parametrize("value", [b"\x00\x01", b"\x00\xff", b"\xff\xff"])
+    async def test_write_single_coil_illegal_value(self, value, mock_server_context):
+        """A value other than 0x0000 or 0xFF00 must answer 0x03 and leave the coil."""
+        context = mock_server_context()
+        context.async_setValues = mock.AsyncMock(return_value=0)
+        request = bit_msg.WriteSingleCoilRequest()
+        request.x_decode(b"\x00\x02" + value)
+        result = await request.datastore_update(context, 1)
+        assert result.function_code == 0x85
+        assert result.exception_code == ExcCodes.ILLEGAL_VALUE
+        context.async_setValues.assert_not_awaited()
+
+    @pytest.mark.parametrize(
+        ("value", "bit"), [(b"\xff\x00", True), (b"\x00\x00", False)]
+    )
+    async def test_write_single_coil_legal_value(self, value, bit, mock_server_context):
+        """0xFF00 and 0x0000 are written as ON and OFF."""
+        context = mock_server_context()
+        context.async_setValues = mock.AsyncMock(return_value=0)
+        context.async_getValues = mock.AsyncMock(return_value=[bit])
+        request = bit_msg.WriteSingleCoilRequest()
+        request.x_decode(b"\x00\x02" + value)
+        result = await request.datastore_update(context, 1)
+        assert result.x_encode() == b"\x00\x02" + value
+        context.async_setValues.assert_awaited_once_with(1, 5, 2, [bit])
+
     async def test_write_multiple_coils_datastore_update(self, mock_server_context):
         """Test write multiple coils."""
         context = mock_server_context(False)

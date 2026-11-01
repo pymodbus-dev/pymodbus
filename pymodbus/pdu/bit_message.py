@@ -156,6 +156,7 @@ class WriteSingleCoilRequest(ModbusPDU):
     """WriteSingleCoilRequest."""
 
     function_code = 5
+    _value: int | None = None
 
     @classmethod
     def x_calculateRtuFrameSize(cls, data: bytes) -> int:
@@ -170,13 +171,15 @@ class WriteSingleCoilRequest(ModbusPDU):
 
     def x_decode(self, data: bytes) -> None:
         """Decode a write coil request."""
-        self.address, value = struct.unpack(">HH", data[:4])
-        self.bits = [bool(value)]
+        self.address, self._value = struct.unpack(">HH", data[:4])
+        self.bits = [bool(self._value)]
 
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
     ) -> ModbusPDU:
         """Run a request against a datastore."""
+        if self._value not in (None, ModbusStatus.ON, ModbusStatus.OFF):
+            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
         if rc := await context.async_setValues(
             device_id, self.function_code, self.address, self.bits
         ):

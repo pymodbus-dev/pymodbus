@@ -132,6 +132,13 @@ class TestModbusPDU:
         assert pdu
         assert pdu.function_code == code
 
+    @pytest.mark.parametrize(("code", "frame"), list(exceptions))
+    def test_server_decode_reserved_function_code(self, code, frame):
+        """A request may not use a function code reserved for exception responses."""
+        with pytest.raises(ModbusIOException) as exc:
+            self.server.decode(frame)
+        assert exc.value.fcode == code
+
     @pytest.mark.parametrize(("frame"), [b"", b"NO FRAME"])
     @pytest.mark.parametrize(("decoder"), [server, client])
     def test_decode_bad_frame(self, decoder, frame):

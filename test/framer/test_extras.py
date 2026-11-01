@@ -142,7 +142,7 @@ class TestExtras:
     def test_rtu_decode_exception(self):
         """Test that the RTU framer can decode errors."""
         msg = b"\x00\x90\x02\x9c\x01"
-        _, pdu = self._rtu.handleFrame(msg, 0, 0)
+        _, pdu = FramerRTU(DecodePDU(False)).handleFrame(msg, 0, 0)
         assert pdu
 
     def test_tcp_framer_skip_wrong_dev_id_then_decode(self):

@@ -20,8 +20,8 @@ FACTOR = 1.2 if platform.system().lower() != "windows" else 4.2
 class TestTransportComm:
     """Test for the transport module."""
 
-    @staticmethod
     @pytest.fixture(name="use_port")
+    @staticmethod
     def get_port_in_class(base_ports):
         """Return next port."""
         base_ports[__class__.__name__] += 1  # type: ignore[name-defined,index]

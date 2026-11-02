@@ -11,8 +11,8 @@ from pymodbus.transport.transport import NullModem
 class TestTransportNullModem:
     """Test null modem module."""
 
-    @staticmethod
     @pytest.fixture(name="use_port")
+    @staticmethod
     def get_port_in_class(base_ports):
         """Return next port."""
         base_ports[__class__.__name__] += 2  # type: ignore[index, name-defined]

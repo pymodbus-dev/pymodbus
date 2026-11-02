@@ -21,8 +21,8 @@ COMM_TYPES = [
 class TestTransportProtocol1:
     """Test transport module."""
 
-    @staticmethod
     @pytest.fixture(name="use_port")
+    @staticmethod
     def get_port_in_class(base_ports):
         """Return next port."""
         base_ports[__class__.__name__] += 1  # type: ignore[name-defined,index]
@@ -214,8 +214,8 @@ class TestTransportProtocol1:
 class TestTransportProtocol2:
     """Test transport module."""
 
-    @staticmethod
     @pytest.fixture(name="use_port")
+    @staticmethod
     def get_port_in_class(base_ports):
         """Return next port."""
         base_ports[__class__.__name__] += 1  # type: ignore[name-defined,index]

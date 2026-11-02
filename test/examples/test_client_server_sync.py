@@ -44,8 +44,8 @@ SLEEPING = 5 if os.name == "nt" else 1
 class TestClientServerSyncExamples:
     """Test Client server async combinations."""
 
-    @staticmethod
     @pytest.fixture(name="use_port")
+    @staticmethod
     def get_port_in_class(base_ports):
         """Return next port."""
         base_ports[__class__.__name__] += 1  # type: ignore[index, name-defined]

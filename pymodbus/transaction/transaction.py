@@ -212,10 +212,10 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
                     if (request.dev_id and response.dev_id != request.dev_id) or (
                         response.function_code & 0x7F
                     ) != request.function_code:
-                        raise self._io_exception_from_request(
-                            "ERROR: Unsolicited response received.",
-                            request,
+                        Log.error(
+                            f"ERROR: request ask for id/fc={request.dev_id}/{request.function_code}  but got {response.dev_id}/{response.function_code}, Skipping."
                         )
+                        continue
                     if (
                         response.transaction_id
                         and response.transaction_id != request.transaction_id

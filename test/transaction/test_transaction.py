@@ -11,6 +11,7 @@ from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.framer import FramerRTU, FramerSocket, FramerType
 from pymodbus.pdu import DecodePDU, ExceptionResponse
 from pymodbus.pdu.bit_message import ReadCoilsRequest, ReadCoilsResponse
+from pymodbus.pdu.register_message import ReadHoldingRegistersRequest, ReadInputRegistersResponse, ReadInputRegistersRequest, ReadHoldingRegistersResponse
 from pymodbus.transaction import TransactionManager
 from pymodbus.transport import CommType
 
@@ -186,6 +187,54 @@ class TestTransaction:
             pdu.dev_id = 0
             transact.response_future.set_result((1, pdu))
         transact.callback_data(packet)
+
+    async def _cancel_send(self, transact, transport, delay_cond, pdu):
+        """Create task and wait."""
+        resp = asyncio.create_task(transact.execute(False, pdu))
+        while transport.write.call_count < 2:
+            await asyncio.sleep(0.1)
+        return resp
+
+    async def test_transaction_discard(self, use_clc):
+        """Test next request does not get the response of a cancelled request."""
+        req_org = ReadHoldingRegistersRequest(dev_id=1, count=4)
+        resp_org = ReadHoldingRegistersResponse(dev_id=1, registers=[1, 2, 3, 4])
+        req_org2 = ReadHoldingRegistersRequest(dev_id=1, count=5)
+        resp_org2 = ReadHoldingRegistersResponse(dev_id=1, registers=[1, 2, 3, 4, 5])
+        req_fc = ReadInputRegistersRequest(dev_id=1, count=5)
+        resp_fc = ReadInputRegistersResponse(dev_id=1, registers=[1, 2, 3, 4, 5])
+        req_id = ReadHoldingRegistersRequest(dev_id=2, count=5)
+        resp_id = ReadHoldingRegistersResponse(dev_id=2, registers=[1, 2, 3, 4, 5])
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            0,
+            False,
+            None,
+            None,
+            None,
+        )
+        transact.retries = 0
+        transact.comm_params.timeout_connect = 0.5
+        transport = mock.Mock()
+        transact.connection_made(transport)
+        resp = asyncio.create_task(transact.execute(False, req_org))
+        while transport.write.call_count < 1:
+            await asyncio.sleep(0.1)
+        transact.data_received(transact.framer.buildFrame(resp_id))
+        await asyncio.sleep(0.1)
+        transact.data_received(transact.framer.buildFrame(resp_org))
+        await asyncio.sleep(0.1)
+        assert (await resp).registers == resp_org.registers
+
+        resp = asyncio.create_task(transact.execute(False, req_org))
+        while transport.write.call_count < 2:
+            await asyncio.sleep(0.1)
+        transact.data_received(transact.framer.buildFrame(resp_fc))
+        await asyncio.sleep(0.1)
+        transact.data_received(transact.framer.buildFrame(resp_org))
+        assert (await resp).registers == resp_org.registers
+
 
     @pytest.mark.parametrize("scenario", range(11))
     async def test_transaction_execute(self, use_clc, scenario):  # noqa: C901

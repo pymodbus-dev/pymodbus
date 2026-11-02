@@ -14,7 +14,6 @@ from pymodbus.pdu.bit_message import ReadCoilsRequest, ReadCoilsResponse
 from pymodbus.pdu.register_message import (
     ReadHoldingRegistersRequest,
     ReadHoldingRegistersResponse,
-    ReadInputRegistersResponse,
 )
 from pymodbus.transaction import TransactionManager
 from pymodbus.transport import CommType
@@ -334,6 +333,41 @@ class TestTransaction:
             assert exc_info.value.fcode == request.function_code + 0x80
             assert exc_info.value.dev_id == request.dev_id
             assert exc_info.value.transaction_id == request.transaction_id
+
+    @pytest.mark.parametrize("late_response", [True, False])
+    async def test_transaction_execute_cancel(self, use_clc, late_response):
+        """Test next request does not get the response of a cancelled request."""
+        transact = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            0,
+            False,
+            None,
+            None,
+            None,
+        )
+        transport = mock.Mock()
+        transact.connection_made(transport)
+        transact.comm_params.timeout_connect = 0.5
+        resp = asyncio.create_task(
+            transact.execute(False, ReadHoldingRegistersRequest(dev_id=1, count=4))
+        )
+        await asyncio.sleep(0.1)
+        resp.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await resp
+        resp = asyncio.create_task(
+            transact.execute(False, ReadHoldingRegistersRequest(dev_id=1, count=5))
+        )
+        await asyncio.sleep(0.1)
+        if late_response:
+            late = ReadHoldingRegistersResponse(dev_id=1, registers=[1, 2, 3, 4])
+            transact.data_received(transact.framer.buildFrame(late))
+        while transport.write.call_count < 2:
+            await asyncio.sleep(0.1)
+        response = ReadHoldingRegistersResponse(dev_id=1, registers=[1, 2, 3, 4, 5])
+        transact.data_received(transact.framer.buildFrame(response))
+        assert (await resp).registers == response.registers
 
     async def test_transaction_receiver(self, use_clc):
         """Test tracers in disconnect."""

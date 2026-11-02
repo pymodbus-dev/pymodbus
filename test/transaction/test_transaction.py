@@ -315,7 +315,11 @@ class TestTransaction:
             await asyncio.sleep(0.1)
             new_resp = copy.deepcopy(response)
             new_resp.dev_id = 17
-            transact.response_future.set_result(new_resp)
+            if (
+                not transact.response_future.done()
+                or transact.response_future.cancelled()
+            ):
+                transact.response_future.set_result(new_resp)
             await asyncio.sleep(0.1)
             with pytest.raises(ModbusIOException) as exc_info:
                 await resp
@@ -352,7 +356,7 @@ class TestTransaction:
 
     @pytest.mark.skip
     @pytest.mark.parametrize("cases", ["timeout", "resend", "new_id", "new_fc"])
-    async def test_transaction_execute_cancel(self, use_clc, cases):
+    async def test_transaction_execute_cancel(self, use_clc, cases):  # pragma: no cover
         """Test next request does not get the response of a cancelled request."""
         req_org = ReadHoldingRegistersRequest(dev_id=1, count=4)
         resp_org = ReadHoldingRegistersResponse(dev_id=1, registers=[1, 2, 3, 4])

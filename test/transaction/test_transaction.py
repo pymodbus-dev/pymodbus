@@ -192,13 +192,6 @@ class TestTransaction:
             transact.response_future.set_result((1, pdu))
         transact.callback_data(packet)
 
-    async def _cancel_send(self, transact, transport, delay_cond, pdu):
-        """Create task and wait."""
-        resp = asyncio.create_task(transact.execute(False, pdu))
-        while transport.write.call_count < 2:
-            await asyncio.sleep(0.1)
-        return resp
-
     async def test_transaction_discard(self, use_clc):
         """Test next request does not get the response of a cancelled request."""
         req_org = ReadHoldingRegistersRequest(dev_id=1, count=4)

@@ -318,7 +318,7 @@ class TestTransaction:
             if (
                 not transact.response_future.done()
                 or transact.response_future.cancelled()
-            ):
+            ):  # pragma: no cover
                 transact.response_future.set_result(new_resp)
             await asyncio.sleep(0.1)
             with pytest.raises(ModbusIOException) as exc_info:
@@ -340,7 +340,9 @@ class TestTransaction:
             assert exc_info.value.dev_id == request.dev_id
             assert exc_info.value.transaction_id == request.transaction_id
 
-    async def _cancel_send(self, transact, transport, delay_cond, pdu):
+    async def _cancel_send(
+        self, transact, transport, delay_cond, pdu
+    ):  # pragma: no cover
         """Create task and wait."""
         writes = transport.write.call_count
         resp = asyncio.create_task(transact.execute(False, pdu))

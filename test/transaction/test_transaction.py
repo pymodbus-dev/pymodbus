@@ -324,7 +324,7 @@ class TestTransaction:
             transact.response_future.set_result(new_resp)
             await asyncio.sleep(0.1)
             with pytest.raises(ModbusIOException) as exc_info:
-                resp.result()
+                await resp
             assert exc_info.value.fcode == request.function_code + 0x80
             assert exc_info.value.dev_id == request.dev_id
             assert exc_info.value.transaction_id == request.transaction_id

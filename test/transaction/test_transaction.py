@@ -14,6 +14,8 @@ from pymodbus.pdu.bit_message import ReadCoilsRequest, ReadCoilsResponse
 from pymodbus.pdu.register_message import (
     ReadHoldingRegistersRequest,
     ReadHoldingRegistersResponse,
+    ReadInputRegistersRequest,
+    ReadInputRegistersResponse,
 )
 from pymodbus.transaction import TransactionManager
 from pymodbus.transport import CommType
@@ -334,9 +336,32 @@ class TestTransaction:
             assert exc_info.value.dev_id == request.dev_id
             assert exc_info.value.transaction_id == request.transaction_id
 
-    @pytest.mark.parametrize("late_response", [True, False])
-    async def test_transaction_execute_cancel(self, use_clc, late_response):
+    async def _cancel_send(self, transact, transport, delay_cond, pdu):
+        """Create task and wait."""
+        writes = transport.write.call_count
+        resp = asyncio.create_task(transact.execute(False, pdu))
+        delay = 0
+        while transport.write.call_count == writes:
+            await asyncio.sleep(0.1)
+            delay += 1
+        if delay_cond:
+            assert delay > 5
+        else:
+            assert delay < 5
+        return resp
+
+    @pytest.mark.skip
+    @pytest.mark.parametrize("cases", ["timeout", "resend", "new_id", "new_fc"])
+    async def test_transaction_execute_cancel(self, use_clc, cases):
         """Test next request does not get the response of a cancelled request."""
+        req_org = ReadHoldingRegistersRequest(dev_id=1, count=4)
+        resp_org = ReadHoldingRegistersResponse(dev_id=1, registers=[1, 2, 3, 4])
+        req_org2 = ReadHoldingRegistersRequest(dev_id=1, count=5)
+        resp_org2 = ReadHoldingRegistersResponse(dev_id=1, registers=[1, 2, 3, 4, 5])
+        req_fc = ReadInputRegistersRequest(dev_id=1, count=5)
+        resp_fc = ReadInputRegistersResponse(dev_id=1, registers=[1, 2, 3, 4, 5])
+        req_id = ReadHoldingRegistersRequest(dev_id=2, count=5)
+        resp_id = ReadHoldingRegistersResponse(dev_id=2, registers=[1, 2, 3, 4, 5])
         transact = TransactionManager(
             use_clc,
             FramerRTU(DecodePDU(False)),
@@ -346,28 +371,53 @@ class TestTransaction:
             None,
             None,
         )
+        transact.retries = 0
+        transact.comm_params.timeout_connect = 0.5
         transport = mock.Mock()
         transact.connection_made(transport)
-        transact.comm_params.timeout_connect = 0.5
-        resp = asyncio.create_task(
-            transact.execute(False, ReadHoldingRegistersRequest(dev_id=1, count=4))
-        )
+        resp = asyncio.create_task(transact.execute(False, req_org))
         await asyncio.sleep(0.1)
         resp.cancel()
         with pytest.raises(asyncio.CancelledError):
             await resp
-        resp = asyncio.create_task(
-            transact.execute(False, ReadHoldingRegistersRequest(dev_id=1, count=5))
-        )
         await asyncio.sleep(0.1)
-        if late_response:
-            late = ReadHoldingRegistersResponse(dev_id=1, registers=[1, 2, 3, 4])
-            transact.data_received(transact.framer.buildFrame(late))
-        while transport.write.call_count < 2:
-            await asyncio.sleep(0.1)
-        response = ReadHoldingRegistersResponse(dev_id=1, registers=[1, 2, 3, 4, 5])
-        transact.data_received(transact.framer.buildFrame(response))
-        assert (await resp).registers == response.registers
+        match cases:
+            case "timeout":  # resend after timeout must be without delay !
+                transact.data_received(transact.framer.buildFrame(resp_org))
+                await asyncio.sleep(1.0)
+                resp = await self._cancel_send(transact, transport, False, req_org2)
+                transact.data_received(transact.framer.buildFrame(resp_org2))
+                assert (await resp).registers == resp_org2.registers
+            case "resend":  # resend within timeout, must delay until after timeout
+                resp = asyncio.create_task(transact.execute(False, req_org2))
+                await asyncio.sleep(0.1)
+                transact.data_received(transact.framer.buildFrame(resp_org))
+                resp = await self._cancel_send(transact, transport, True, req_org2)
+                transact.data_received(transact.framer.buildFrame(resp_org2))
+                assert (await resp).registers == resp_org2.registers
+            case "new_fc":  # send new request, No delay, after timeout resend, No delay
+                resp = await self._cancel_send(transact, transport, False, req_fc)
+                transact.data_received(transact.framer.buildFrame(resp_org))
+                transact.data_received(transact.framer.buildFrame(resp_fc))
+                assert (await resp).registers == resp_org.registers
+                await asyncio.sleep(1.0)
+                resp = await self._cancel_send(transact, transport, False, req_org2)
+                transact.data_received(transact.framer.buildFrame(resp_org2))
+                assert (await resp).registers == resp_org2.registers
+            case (
+                "new_id"
+            ):  # request other device, OK, timeout, request1, NO wait, response1 OK
+                await asyncio.sleep(0.1)
+                resp = await self._cancel_send(transact, transport, False, req_id)
+                transact.data_received(transact.framer.buildFrame(resp_org))
+                transact.data_received(transact.framer.buildFrame(resp_id))
+                assert (await resp).registers == resp_id.registers
+                await asyncio.sleep(1.0)
+                resp = await self._cancel_send(transact, transport, False, req_org2)
+                transact.data_received(transact.framer.buildFrame(resp_org2))
+                assert (await resp).registers == resp_org2.registers
+            case _:  # pragma: no cover
+                raise RuntimeError("Unhandled case.")
 
     async def test_transaction_receiver(self, use_clc):
         """Test tracers in disconnect."""

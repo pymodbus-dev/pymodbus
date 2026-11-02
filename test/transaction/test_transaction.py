@@ -11,7 +11,11 @@ from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.framer import FramerRTU, FramerSocket, FramerType
 from pymodbus.pdu import DecodePDU, ExceptionResponse
 from pymodbus.pdu.bit_message import ReadCoilsRequest, ReadCoilsResponse
-from pymodbus.pdu.register_message import ReadHoldingRegistersRequest, ReadInputRegistersResponse, ReadInputRegistersRequest, ReadHoldingRegistersResponse
+from pymodbus.pdu.register_message import (
+    ReadHoldingRegistersRequest,
+    ReadHoldingRegistersResponse,
+    ReadInputRegistersResponse,
+)
 from pymodbus.transaction import TransactionManager
 from pymodbus.transport import CommType
 
@@ -199,11 +203,7 @@ class TestTransaction:
         """Test next request does not get the response of a cancelled request."""
         req_org = ReadHoldingRegistersRequest(dev_id=1, count=4)
         resp_org = ReadHoldingRegistersResponse(dev_id=1, registers=[1, 2, 3, 4])
-        req_org2 = ReadHoldingRegistersRequest(dev_id=1, count=5)
-        resp_org2 = ReadHoldingRegistersResponse(dev_id=1, registers=[1, 2, 3, 4, 5])
-        req_fc = ReadInputRegistersRequest(dev_id=1, count=5)
         resp_fc = ReadInputRegistersResponse(dev_id=1, registers=[1, 2, 3, 4, 5])
-        req_id = ReadHoldingRegistersRequest(dev_id=2, count=5)
         resp_id = ReadHoldingRegistersResponse(dev_id=2, registers=[1, 2, 3, 4, 5])
         transact = TransactionManager(
             use_clc,
@@ -234,7 +234,6 @@ class TestTransaction:
         await asyncio.sleep(0.1)
         transact.data_received(transact.framer.buildFrame(resp_org))
         assert (await resp).registers == resp_org.registers
-
 
     @pytest.mark.parametrize("scenario", range(11))
     async def test_transaction_execute(self, use_clc, scenario):  # noqa: C901

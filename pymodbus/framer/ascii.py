@@ -10,7 +10,7 @@ from __future__ import annotations
 from binascii import a2b_hex, b2a_hex
 
 from ..logging import Log
-from ..pdu.device import ModbusControlBlock
+from ..pdu import ModbusControlBlock
 from .base import FramerBase
 
 

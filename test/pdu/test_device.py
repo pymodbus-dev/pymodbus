@@ -320,10 +320,10 @@ class TestDataStore:
         """Test device identification reading."""
         default = [0x0000] * 55
         statistics = ModbusPlusStatistics()
-        assert default == statistics.encode()
+        assert default == statistics.x_encode()
         statistics.reset()
-        assert default == statistics.encode()
-        assert default == self.control.Plus.encode()
+        assert default == statistics.x_encode()
+        assert default == self.control.Plus.x_encode()
 
     def test_modbus_plus_statistics_helpers(self):
         """Test modbus plus statistics helper methods."""

@@ -19,7 +19,7 @@ from pymodbus import FramerType
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.exceptions import ConnectionException, ModbusException
-from pymodbus.pdu import ModbusPDU
+from pymodbus.pdu import DecodePDU, ModbusPDU
 from pymodbus.transport import CommParams, CommType
 
 
@@ -150,7 +150,7 @@ class TestMixin:
             client.write_registers(1, (22, 44))
             client.readwrite_registers(address=1, read_count=2, values=[22, 44])
             client.readwrite_registers(address=1, read_count=2, values=(22, 44))
-        encoded = [request.encode() for request in requests]
+        encoded = [DecodePDU(False).encode(request) for request in requests]
         assert len(encoded) == 6
         assert encoded[1::2] == encoded[0::2]
 
@@ -339,6 +339,12 @@ class TestMixin:
                 result = [round(v, 6) for v in result]
             else:
                 result = round(cast(float, result), 6)
+        elif datatype == ModbusClientMixin.DATATYPE.BITS and (
+            missing := len(value) % 16
+        ):
+            x_value = value + [False] * (16 - missing)
+            assert result == x_value
+            return
         assert result == value
 
     @pytest.mark.parametrize(
@@ -577,6 +583,7 @@ class TestClientBase:
         type_args,
         clientclass,
         test_default,
+        mockPDU,
     ):
         """Try to instantiate clients."""
         cur_args = arg_list[type_args]
@@ -595,7 +602,7 @@ class TestClientBase:
         # a unsuccessful connect
         client.connect = lambda: False
         client.transport = None
-        pdu = ModbusPDU()
+        pdu = mockPDU()
         with pytest.raises(ConnectionException):
             client.execute(False, pdu)
 

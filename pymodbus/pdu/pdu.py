@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from abc import abstractmethod
 from collections.abc import Sequence
 
 from ..datastore import ModbusServerContext
@@ -14,8 +15,6 @@ class ModbusPDU:
 
     function_code: int = 0
     sub_function_code: int = -1
-    rtu_frame_size: int = 0
-    rtu_byte_count_pos: int = 0
 
     def __init__(
         self,
@@ -45,9 +44,15 @@ class ModbusPDU:
         self.fut: asyncio.Future
         self.retries: int = 0
 
+    @classmethod
+    def decode_sub_function_code(cls, data: bytes) -> int:
+        """Decode sub function code."""
+        _ = data
+        return -1
+
     def isError(self) -> bool:
         """Check if the error is a success or failure."""
-        return self.function_code > 0x80
+        return False
 
     def verifyCount(self, max_count: int, count: int = -1) -> None:
         """Validate API supplied count."""
@@ -63,12 +68,6 @@ class ModbusPDU:
         if not 0 <= address <= 65535:
             raise ValueError(f"0 <= address {address} <= 65535 !")
 
-    @classmethod
-    def decode_sub_function_code(cls, data: bytes) -> int:
-        """Decode sub function code."""
-        _ = data
-        return -1
-
     def __str__(self) -> str:
         """Build a representation of a Modbus response."""
         return (
@@ -83,11 +82,12 @@ class ModbusPDU:
             f"retries={self.retries})"
         )
 
-    def encode(self) -> bytes:
+    @abstractmethod
+    def x_encode(self) -> bytes:
         """Encode the message."""
-        return b""
 
-    def decode(self, data: bytes) -> None:
+    @abstractmethod
+    def x_decode(self, data: bytes) -> None:
         """Decode data part of the message."""
 
     async def datastore_update(
@@ -96,18 +96,10 @@ class ModbusPDU:
         """Update diagnostic request on the given device."""
         _ = context, device_id
         raise NotImplementedException(
-            f"update datastore called wrongly {self.__class__.__name__}"
+            f"datastore_update() not implemented {self.__class__.__name__}"
         )
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    @abstractmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of a PDU."""
-        if cls.rtu_frame_size:
-            return cls.rtu_frame_size
-        if cls.rtu_byte_count_pos:
-            if len(data) < cls.rtu_byte_count_pos + 1:
-                return 0
-            return int(data[cls.rtu_byte_count_pos]) + cls.rtu_byte_count_pos + 3
-        raise NotImplementedException(
-            f"Cannot determine RTU frame size for {cls.__name__}"
-        )

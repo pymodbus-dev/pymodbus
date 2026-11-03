@@ -355,7 +355,6 @@ class ModbusProtocol(asyncio.BaseProtocol):
             Log.error("Cancel send, because not connected!")
             return
         Log.transport_dump(Log.SEND_DATA, data, None)
-        self.recv_buffer = b""
         if self.comm_params.handle_local_echo:
             self.sent_buffer += data
         if self.comm_params.comm_type == CommType.UDP:

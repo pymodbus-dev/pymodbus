@@ -4,6 +4,7 @@ from unittest import mock
 
 import pytest
 
+from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer import (
     FramerAscii,
     FramerBase,
@@ -12,8 +13,13 @@ from pymodbus.framer import (
     FramerTLS,
     FramerType,
 )
-from pymodbus.pdu import DecodePDU, ModbusPDU
+from pymodbus.pdu import DecodePDU
+from pymodbus.pdu.bit_message import WriteMultipleCoilsRequest
 from pymodbus.pdu.device import ModbusControlBlock
+from pymodbus.pdu.register_message import (
+    ReadWriteMultipleRegistersRequest,
+    WriteMultipleRegistersRequest,
+)
 from test.framer.generator import set_calls
 
 
@@ -854,6 +860,39 @@ class TestFramerType:
         assert pdu
         assert used_len == len(msg)
 
+    @pytest.mark.parametrize(
+        "request_pdu",
+        [
+            WriteMultipleCoilsRequest(address=1, bits=[True, False, True], dev_id=1),
+            WriteMultipleRegistersRequest(address=1, registers=[10, 11], dev_id=1),
+            ReadWriteMultipleRegistersRequest(
+                read_address=1,
+                read_count=2,
+                write_address=3,
+                write_registers=[4, 5],
+                dev_id=1,
+            ),
+        ],
+    )
+    def test_rtu_partial_request_waits_for_more_data(self, request_pdu):
+        """Test a request cut before its byte count waits for the rest of the frame."""
+        framer = FramerRTU(DecodePDU(True))
+        frame = framer.buildFrame(request_pdu)
+        for size in range(1, len(frame)):
+            used_len, pdu = framer.handleFrame(frame[:size], 0, 0)
+            assert not used_len
+            assert not pdu
+        used_len, pdu = framer.handleFrame(frame, 0, 0)
+        assert used_len == len(frame)
+        assert pdu
+
+    @pytest.mark.parametrize("msg", [b":ZZ0300010001FB\r\n", b":0Z0300010001FB\r\n"])
+    def test_ascii_non_hex_device_id(self, msg):
+        """Test a non hex device id is skipped like any other bad hex."""
+        used_len, pdu = FramerAscii(DecodePDU(True)).handleFrame(msg, 0, 0)
+        assert used_len == len(msg)
+        assert not pdu
+
     @pytest.mark.parametrize(("is_server"), [True])
     @pytest.mark.parametrize(("half"), [False, True])
     @pytest.mark.parametrize(
@@ -890,7 +929,9 @@ class TestFramerType:
         assert result.dev_id == dev_id
         assert result.transaction_id == tid
         expected = test_framer.encode(
-            result.function_code.to_bytes(1, "big") + result.encode(), dev_id, 1
+            result.function_code.to_bytes(1, "big") + DecodePDU(False).encode(result),
+            dev_id,
+            1,
         )
         assert msg == expected
 
@@ -904,10 +945,10 @@ class TestFramerType:
             (FramerType.ASCII, b":FF0100\r\n"),
         ],
     )
-    def test_framer_encode(self, test_framer, msg):
+    def test_framer_encode(self, test_framer, msg, mockPDU):
         """Test a tcp frame transaction."""
-        with mock.patch.object(ModbusPDU, "encode") as mock_encode:
-            message = ModbusPDU()
+        with mock.patch.object(mockPDU, "x_encode") as mock_encode:
+            message = mockPDU()
             message.transaction_id = 0x0001
             message.dev_id = 0xFF
             message.function_code = 0x01
@@ -915,6 +956,17 @@ class TestFramerType:
 
             actual = test_framer.buildFrame(message)
             assert msg == actual
+
+    def test_bad_file_record_request_for_framer_socket(self):
+        """Test a bad file record request keeps the ids the server reply needs."""
+        framer = FramerSocket(DecodePDU(True))
+        # transaction 1, protocol 0, length 3, device 1, read file record, byte count 16
+        data = b"\x00\x01\x00\x00\x00\x03\x01\x14\x10"
+        with pytest.raises(ModbusIOException) as exc:
+            framer.handleFrame(data, 0, 0)
+        assert exc.value.transaction_id == 1
+        assert exc.value.dev_id == 1
+        assert exc.value.used_len == len(data)
 
     def test_invalid_protocol_id_for_framer_socket(self):
         """Test that ModbusSocketFramer rejects an invalid Protocol ID."""
@@ -930,7 +982,7 @@ class TestFramerType:
 
         msg_len, dev_id, tid, pdu = framer.decode(data)
 
-        assert msg_len == 0
+        assert msg_len == 9
         assert dev_id == 0
         assert tid == 0
         assert pdu == framer.EMPTY

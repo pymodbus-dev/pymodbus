@@ -20,8 +20,8 @@ FACTOR = 1.2 if platform.system().lower() != "windows" else 4.2
 class TestTransportComm:
     """Test for the transport module."""
 
-    @staticmethod
     @pytest.fixture(name="use_port")
+    @staticmethod
     def get_port_in_class(base_ports):
         """Return next port."""
         base_ports[__class__.__name__] += 1  # type: ignore[name-defined,index]
@@ -239,7 +239,7 @@ class TestTransportComm:
 
         client2.send(test_data)
         await asyncio.sleep(0.5)
-        assert server2_connected.recv_buffer == test_data
+        assert server2_connected.recv_buffer == test2_data + test_data
         client2.close()
         server.close()
         await asyncio.sleep(0.5)

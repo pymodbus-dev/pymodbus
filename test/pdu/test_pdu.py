@@ -11,8 +11,9 @@ import pymodbus.pdu.mei_message as mei_msg
 import pymodbus.pdu.other_message as o_msg
 import pymodbus.pdu.register_message as reg_msg
 from pymodbus.constants import ModbusStatus
-from pymodbus.exceptions import ModbusIOException, NotImplementedException
+from pymodbus.exceptions import ModbusIOException
 from pymodbus.pdu import (
+    DecodePDU,
     ExceptionResponse,
     ModbusPDU,
 )
@@ -27,51 +28,22 @@ class TestPdu:
 
     async def test_error_methods(self):
         """Test all error methods."""
-        result = self.exception.encode()
-        self.exception.decode(result)
+        result = self.exception.x_encode()
         assert result == b"\x01"
+        DecodePDU(False).decode(b"\x81" + result)
         assert self.exception.exception_code == 1
+        self.exception.x_decode(b"")
 
-    async def test_pdu_id(self):
+    async def test_pdu_id(self, mockPDU):
         """Test set illegal pdu id."""
         with pytest.raises(ModbusIOException) as exc_info:
-            ModbusPDU(256, transaction_id=0x42)
+            mockPDU(256, transaction_id=0x42)
         assert exc_info.value.dev_id == 256
         assert exc_info.value.transaction_id == 0x42
 
     async def test_is_error(self):
         """Test is_error."""
         assert self.exception.isError()
-
-    def test_calculate_frame_size(self):
-        """Test the calculation of Modbus frame sizes."""
-        with pytest.raises(NotImplementedException):
-            ModbusPDU.calculateRtuFrameSize(b"")
-        ModbusPDU.rtu_frame_size = 5
-        assert ModbusPDU.calculateRtuFrameSize(b"") == 5
-        ModbusPDU.rtu_frame_size = 0
-        ModbusPDU.rtu_byte_count_pos = 2
-        assert (
-            ModbusPDU.calculateRtuFrameSize(b"\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6")
-            == 0x05 + 5
-        )
-        assert not ModbusPDU.calculateRtuFrameSize(b"\x11")
-        ModbusPDU.rtu_byte_count_pos = 0
-        with pytest.raises(NotImplementedException):
-            ModbusPDU.calculateRtuFrameSize(b"")
-        ModbusPDU.rtu_frame_size = 12
-        assert ModbusPDU.calculateRtuFrameSize(b"") == 12
-        ModbusPDU.rtu_frame_size = 0
-        ModbusPDU.rtu_byte_count_pos = 2
-        assert (
-            ModbusPDU.calculateRtuFrameSize(b"\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6")
-            == 0x05 + 5
-        )
-        ModbusPDU.rtu_byte_count_pos = 0
-
-    # --------------------------
-    # Test PDU types generically
-    # --------------------------
 
     requests: list[tuple[type[ModbusPDU], tuple[()], dict[str, Any], bytes]] = [
         (
@@ -470,13 +442,6 @@ class TestPdu:
         pdu = pdutype()
         assert pdu
 
-    def test_pdu_base_instance(self):
-        """Test that all PDU types can be created."""
-        pdu = ModbusPDU(4)
-        str(pdu)
-        assert pdu
-        assert pdu.encode() == b""
-
     @pytest.mark.parametrize(
         ("pdutype", "args", "kwargs", "frame"), requests + responses
     )
@@ -542,7 +507,7 @@ class TestPdu:
     def test_pdu_instance_encode(self, pdutype, kwargs, frame):
         """Test that all PDU types can be created."""
         pdu = pdutype(**kwargs)
-        res_frame = pdutype.function_code.to_bytes(1, "big") + pdu.encode()
+        res_frame = pdutype.function_code.to_bytes(1, "big") + pdu.x_encode()
         assert res_frame == frame
 
     @pytest.mark.parametrize(
@@ -552,7 +517,7 @@ class TestPdu:
     def test_pdu_decode(self, pdutype, kwargs, frame):
         """Test pdu decode."""
         pdu = pdutype(**kwargs)
-        pdu.decode(frame[1:])
+        pdu.x_decode(frame[1:])
 
     @pytest.mark.parametrize(("pdutype", "args", "kwargs", "frame"), requests)
     @pytest.mark.usefixtures("frame", "args")
@@ -564,12 +529,6 @@ class TestPdu:
             assert await pdu.datastore_update(mock_server_context(), 1)
         finally:
             control.Delimiter = b"\n"
-
-    async def test_pdu_default_datastore(self, mock_server_context):
-        """Test that all PDU types can be created."""
-        pdu = ModbusPDU()
-        with pytest.raises(NotImplementedException):
-            assert await pdu.datastore_update(mock_server_context, 1)
 
     @pytest.mark.parametrize(
         ("bytestream", "bitlist"),

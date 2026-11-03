@@ -11,8 +11,8 @@ from pymodbus.transport import NULLMODEM_HOST, CommType
 class TestTransportReconnect:
     """Test transport module, base part."""
 
-    @staticmethod
     @pytest.fixture(name="use_port")
+    @staticmethod
     def get_port_in_class(base_ports):
         """Return next port."""
         base_ports[__class__.__name__] += 1  # type: ignore[name-defined,index]

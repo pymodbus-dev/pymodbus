@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import struct
+from abc import abstractmethod
 from typing import Any
 
 from ..constants import DeviceInformation, ExcCodes, MoreData
@@ -31,7 +32,7 @@ class _OutOfSpaceException(Exception):
         self.oid = oid
 
 
-class _EncapsulatedInterfaceTransport(ModbusPDU):
+class EncapsulatedInterfaceTransportBase(ModbusPDU):
     """Base PDU for dispatching Encapsulated Interface Transport messages."""
 
     function_code = 0x2B
@@ -41,24 +42,20 @@ class _EncapsulatedInterfaceTransport(ModbusPDU):
         """Decode the MEI type."""
         return int(data[2])
 
-    def decode(self, data: bytes) -> None:
-        """Decode the MEI type."""
-        self.sub_function_code = int(data[0])
-
-    async def datastore_update(
-        self, context: ModbusServerContext, device_id: int
-    ) -> ModbusPDU:
-        """Reject unsupported MEI types."""
-        _ = context, device_id
-        return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_FUNCTION)
+    @abstractmethod
+    def x_encode(self) -> bytes:
+        """Encode the request packet."""
 
 
-class ReadDeviceInformationRequest(ModbusPDU):
+class ReadDeviceInformationRequest(EncapsulatedInterfaceTransportBase):
     """ReadDeviceInformationRequest."""
 
-    function_code = 0x2B
     sub_function_code = 0x0E
-    rtu_frame_size = 7
+
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 7
 
     def __init__(
         self,
@@ -72,19 +69,14 @@ class ReadDeviceInformationRequest(ModbusPDU):
         self.read_code = read_code or DeviceInformation.BASIC
         self.object_id = object_id
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the request packet."""
         packet = struct.pack(
             ">BBB", self.sub_function_code, self.read_code, self.object_id
         )
         return packet
 
-    @classmethod
-    def decode_sub_function_code(cls, data: bytes) -> int:
-        """Decode sub function code (1 byte)."""
-        return int(data[2])
-
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode data part of the message."""
         self.sub_function_code, self.read_code, self.object_id = struct.unpack(
             ">BBB", data[:3]
@@ -113,14 +105,13 @@ class ReadDeviceInformationRequest(ModbusPDU):
         )
 
 
-class ReadDeviceInformationResponse(ModbusPDU):
+class ReadDeviceInformationResponse(EncapsulatedInterfaceTransportBase):
     """ReadDeviceInformationResponse."""
 
-    function_code = 0x2B
     sub_function_code = 0x0E
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of the message."""
         size = 8  # skip the header information
         if (data_len := len(data)) < size:
@@ -152,10 +143,12 @@ class ReadDeviceInformationResponse(ModbusPDU):
         self.more_follows = MoreData.NOTHING
         self.space_left = 253 - 6
 
-    def _encode_object(self, object_id: int, data: bytes | ModbusPDU) -> bytes:
+    def _encode_object(self, object_id: int, data: str | bytes | ModbusPDU) -> bytes:
         """Encode object."""
-        if not isinstance(data, bytes):
+        if isinstance(data, str):
             data = data.encode()
+        elif not isinstance(data, bytes):
+            data = data.x_encode()
         data_len = len(data)
         self.space_left -= 2 + data_len
         if self.space_left <= 0:
@@ -165,7 +158,7 @@ class ReadDeviceInformationResponse(ModbusPDU):
         self.number_of_objects += 1
         return encoded_obj
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the response."""
         packet = struct.pack(
             ">BBB", self.sub_function_code, self.read_code, self.conformity
@@ -188,12 +181,7 @@ class ReadDeviceInformationResponse(ModbusPDU):
         packet += objects
         return packet
 
-    @classmethod
-    def decode_sub_function_code(cls, data: bytes) -> int:
-        """Decode sub function code (1 byte)."""
-        return int(data[2])
-
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a the response."""
         params = struct.unpack(">BBBBBB", data[0:6])
         self.sub_function_code, self.read_code = params[0:2]
@@ -216,5 +204,7 @@ class ReadDeviceInformationResponse(ModbusPDU):
                 ]
 
 
-DecodePDU.add_pdu(_EncapsulatedInterfaceTransport, _EncapsulatedInterfaceTransport)
+DecodePDU.add_pdu(
+    EncapsulatedInterfaceTransportBase, EncapsulatedInterfaceTransportBase
+)
 DecodePDU.add_sub_pdu(ReadDeviceInformationRequest, ReadDeviceInformationResponse)

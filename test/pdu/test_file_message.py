@@ -30,13 +30,13 @@ class TestBitMessage:
     def test_read_fifo_queue_request_encode(self):
         """Test basic bit message encoding/decoding."""
         handle = ReadFifoQueueRequest(0x1234)
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == b"\x12\x34"
 
     def test_read_fifo_queue_request_decode(self):
         """Test basic bit message encoding/decoding."""
         handle = ReadFifoQueueRequest(0x0000)
-        handle.decode(b"\x12\x34")
+        handle.x_decode(b"\x12\x34")
         assert handle.address == 0x1234
 
     async def test_read_fifo_queue_request(self, mock_server_context):
@@ -50,21 +50,23 @@ class TestBitMessage:
         """Test that the read fifo queue response can encode."""
         message = TEST_MESSAGE
         handle = ReadFifoQueueResponse([1, 2, 3, 4])
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == message
 
     def test_read_fifo_queue_response_decode(self):
         """Test that the read fifo queue response can decode."""
         message = TEST_MESSAGE
         handle = ReadFifoQueueResponse([1, 2, 3, 4])
-        handle.decode(message)
+        handle.x_decode(message)
         assert handle.values == [1, 2, 3, 4]
 
     def test_frame_size(self):
         """Test that the read fifo queue response can decode."""
         message = TEST_MESSAGE
-        result = ReadFifoQueueResponse.calculateRtuFrameSize(b"\x00\x18" + message)
-        assert result == 14
+        assert (
+            ReadFifoQueueResponse.x_calculateRtuFrameSize(b"\x00\x18" + message) == 14
+        )
+        assert ReadFifoQueueRequest.x_calculateRtuFrameSize(b"") == 6
 
     # -----------------------------------------------------------------------#
     #  File Record
@@ -88,7 +90,7 @@ class TestBitMessage:
         """Test basic bit message encoding/decoding."""
         records = [FileRecord(file_number=0x01, record_number=0x02)]
         handle = ReadFileRecordRequest(records=records)
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == b"\x07\x06\x00\x01\x00\x02\x00\x00"
 
     def test_read_file_record_request_decode(self):
@@ -96,7 +98,7 @@ class TestBitMessage:
         # record = FileRecord(file_number=0x04, record_number=0x01, record_length=0x02)
         request = b"\x0e\x06\x00\x04\x00\x01\x00\x02\x06\x00\x03\x00\x09\x00\x02"
         handle = ReadFileRecordRequest()
-        handle.decode(request)
+        handle.x_decode(request)
         # assert handle.records[0] == record
 
     def test_read_file_record_request_frame_size(self):
@@ -105,7 +107,7 @@ class TestBitMessage:
             b"\x00\x00\x0e\x06\x00\x04\x00\x01\x00\x02\x06\x00\x03\x00\x09\x00\x02"
         )
         handle = ReadFileRecordRequest()
-        size = handle.calculateRtuFrameSize(request)
+        size = handle.x_calculateRtuFrameSize(request)
         assert size == 0x0E + 5
 
     async def test_read_file_record_request_datastore_update(self, mock_server_context):
@@ -122,7 +124,7 @@ class TestBitMessage:
         """Test basic bit message encoding/decoding."""
         records = [FileRecord(record_data=b"\x00\x01\x02\x03\x04\x05")]
         handle = ReadFileRecordResponse(records)
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == b"\x08\x07\x06\x00\x01\x02\x03\x04\x05"
 
     def test_read_file_record_response_decode(self):
@@ -135,7 +137,7 @@ class TestBitMessage:
         # )
         response = b"\x0c\x05\x06\x0d\xfe\x00\x20\x05\x06\x33\xcd\x00\x40"
         handle = ReadFileRecordResponse()
-        handle.decode(response)
+        handle.x_decode(response)
 
         # assert handle.records[0] == record1
         # ssert handle.records[1] == record2
@@ -144,7 +146,7 @@ class TestBitMessage:
         """Test basic bit message encoding/decoding."""
         request = b"\x00\x00\x0c\x05\x06\x0d\xfe\x00\x20\x05\x05\x06\x33\xcd\x00\x40"
         handle = ReadFileRecordResponse()
-        size = handle.calculateRtuFrameSize(request)
+        size = handle.x_calculateRtuFrameSize(request)
         assert size == 0x0C + 5
 
     # -----------------------------------------------------------------------#
@@ -159,7 +161,7 @@ class TestBitMessage:
             )
         ]
         handle = WriteFileRecordRequest(records)
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == b"\x0b\x06\x00\x01\x00\x02\x00\x02\x00\x01\x02\x03"
 
     def test_write_file_record_request_decode(self):
@@ -171,14 +173,14 @@ class TestBitMessage:
         # )
         request = b"\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = WriteFileRecordRequest()
-        handle.decode(request)
+        handle.x_decode(request)
         # assert handle.records[0] == record
 
     def test_write_file_record_request_frame_size(self):
         """Test write file record request rtu frame size calculation."""
         request = b"\x00\x00\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = WriteFileRecordRequest()
-        size = handle.calculateRtuFrameSize(request)
+        size = handle.x_calculateRtuFrameSize(request)
         assert size == 0x0D + 5
 
     async def test_write_file_record_request_datastore_update(
@@ -201,7 +203,7 @@ class TestBitMessage:
             )
         ]
         handle = WriteFileRecordResponse(records)
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == b"\x0b\x06\x00\x01\x00\x02\x00\x02\x00\x01\x02\x03"
 
     def test_write_file_record_response_decode(self):
@@ -213,20 +215,20 @@ class TestBitMessage:
         # )
         request = b"\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = WriteFileRecordResponse()
-        handle.decode(request)
+        handle.x_decode(request)
         # assert handle.records[0] == record
 
     def test_read_file_record_request_decode_invalid_byte_count(self):
         """Test ReadFileRecordRequest raises ModbusException on oversized byte_count."""
         handle = ReadFileRecordRequest()
         with pytest.raises(ModbusException):
-            handle.decode(bytes([0xFF, 0x06, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01]))
+            handle.x_decode(bytes([0xFF, 0x06, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01]))
 
     def test_write_file_record_request_decode_invalid_byte_count(self):
         """Test WriteFileRecordRequest raises ModbusException on oversized byte_count."""
         handle = WriteFileRecordRequest()
         with pytest.raises(ModbusException):
-            handle.decode(
+            handle.x_decode(
                 bytes([0xFF, 0x06, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00])
             )
 
@@ -234,11 +236,11 @@ class TestBitMessage:
         """Test ReadFifoQueueResponse raises ModbusException on oversized count."""
         handle = ReadFifoQueueResponse()
         with pytest.raises(ModbusException):
-            handle.decode(bytes([0x00, 0x00, 0xFF, 0xFF]))
+            handle.x_decode(bytes([0x00, 0x00, 0xFF, 0xFF]))
 
     def test_write_file_record_response_frame_size(self):
         """Test write file record response rtu frame size calculation."""
         request = b"\x00\x00\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = WriteFileRecordResponse()
-        size = handle.calculateRtuFrameSize(request)
+        size = handle.x_calculateRtuFrameSize(request)
         assert size == 0x0D + 5

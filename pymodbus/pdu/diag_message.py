@@ -21,7 +21,11 @@ class DiagnosticBase(ModbusPDU):
 
     function_code = 0x08
     sub_function_code: int = 9999
-    rtu_frame_size = 8
+
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 8
 
     def __init__(
         self,
@@ -33,7 +37,7 @@ class DiagnosticBase(ModbusPDU):
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.message: bytes | int | list | tuple | None = message
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode a diagnostic response."""
         packet = struct.pack(">H", self.sub_function_code)
         if self.message is not None:
@@ -55,7 +59,7 @@ class DiagnosticBase(ModbusPDU):
         """Decode sub function code (2 bytes)."""
         return int.from_bytes(data[2:4], "big")
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a diagnostic request."""
         (self.sub_function_code,) = struct.unpack(">H", data[:2])
         data = data[2:]
@@ -442,12 +446,12 @@ class GetClearModbusPlusRequest(DiagnosticBase):
             message = ModbusPlusOperation.CLEAR_STATISTICS
         else:
             message = [self.message]
-            message += _MCB.Plus.encode()
+            message += _MCB.Plus.x_encode()
         return GetClearModbusPlusResponse(
             message=message, dev_id=device_id, transaction_id=self.transaction_id
         )
 
-    def encode(self):
+    def x_encode(self):
         """Encode a diagnostic response."""
         packet = struct.pack(">H", self.sub_function_code)
         packet += struct.pack(">H", self.message)
@@ -460,7 +464,7 @@ class GetClearModbusPlusResponse(DiagnosticBase):
     sub_function_code = 0x0015
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of the message.
 
         Func_code (1 byte) + Sub function code (2 byte) + Operation (2 byte) + Data (108 bytes)

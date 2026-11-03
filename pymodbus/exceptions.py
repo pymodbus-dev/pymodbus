@@ -43,6 +43,7 @@ class ModbusIOException(ModbusException):
         *,
         transaction_id: int = 0,
         dev_id: int = 0,
+        used_len: int = 0,
     ) -> None:
         """Initialize the exception.
 
@@ -51,9 +52,16 @@ class ModbusIOException(ModbusException):
         :param transaction_id: Optional framing transaction id (e.g. MBAP TID)
         :param dev_id: Optional framing device / unit id
         """
-        self.fcode = function_code
+        self.fcode = (
+            0x80
+            if not function_code
+            else function_code + 0x80
+            if function_code < 0x80
+            else function_code
+        )
         self.transaction_id = transaction_id
         self.dev_id = dev_id
+        self.used_len = used_len
         self.message = f"[Input/Output] {string}"
         ModbusException.__init__(self, self.message)
 

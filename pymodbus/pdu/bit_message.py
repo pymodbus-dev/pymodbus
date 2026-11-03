@@ -15,93 +15,171 @@ from .utils import pack_bitstring, unpack_bitstring
 class ReadCoilsRequest(ModbusPDU):
     """ReadCoilsRequest."""
 
-    rtu_frame_size = 8
     function_code = 1
     MAX_COUNT = 2000
 
-    def encode(self) -> bytes:
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 8
+
+    def x_encode(self) -> bytes:
         """Encode a request pdu."""
         self.verifyCount(self.MAX_COUNT)
         self.verifyAddress()
         return struct.pack(">HH", self.address, self.count)
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a request pdu."""
         self.address, self.count = struct.unpack(">HH", data[:4])
-        self.verifyCount(self.MAX_COUNT)
 
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
     ) -> ModbusPDU:
         """Run request against a datastore."""
+        if not 1 <= self.count <= self.MAX_COUNT:
+            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
         values = await context.async_getValues(
             device_id, self.function_code, self.address, self.count
         )
         if isinstance(values, ExcCodes):
             return ExceptionResponse(self.function_code, values)
-        response_class = (
-            ReadCoilsResponse if self.function_code == 1 else ReadDiscreteInputsResponse
-        )
-        return response_class(
+        return ReadCoilsResponse(
             dev_id=self.dev_id,
             transaction_id=self.transaction_id,
             bits=cast(list[bool], values),
         )
 
 
-class ReadDiscreteInputsRequest(ReadCoilsRequest):
+class ReadDiscreteInputsRequest(ModbusPDU):
     """ReadDiscreteInputsRequest."""
 
     function_code = 2
+    MAX_COUNT = 2000
+
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 8
+
+    def x_encode(self) -> bytes:
+        """Encode a request pdu."""
+        self.verifyCount(self.MAX_COUNT)
+        self.verifyAddress()
+        return struct.pack(">HH", self.address, self.count)
+
+    def x_decode(self, data: bytes) -> None:
+        """Decode a request pdu."""
+        self.address, self.count = struct.unpack(">HH", data[:4])
+
+    async def datastore_update(
+        self, context: ModbusServerContext, device_id: int
+    ) -> ModbusPDU:
+        """Run request against a datastore."""
+        if not 1 <= self.count <= self.MAX_COUNT:
+            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
+        values = await context.async_getValues(
+            device_id, self.function_code, self.address, self.count
+        )
+        if isinstance(values, ExcCodes):
+            return ExceptionResponse(self.function_code, values)
+        return ReadDiscreteInputsResponse(
+            dev_id=self.dev_id,
+            transaction_id=self.transaction_id,
+            bits=cast(list[bool], values),
+        )
 
 
 class ReadCoilsResponse(ModbusPDU):
     """ReadCoilsResponse."""
 
     function_code = 1
-    rtu_byte_count_pos = 2
 
-    def encode(self) -> bytes:
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[2]) + 2 + 3
+
+    def x_encode(self) -> bytes:
         """Encode response pdu."""
         result = pack_bitstring(self.bits)
         return struct.pack(">B", len(result)) + result
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode response pdu."""
         self.bits = unpack_bitstring(data[1:])
 
 
-class ReadDiscreteInputsResponse(ReadCoilsResponse):
+class ReadDiscreteInputsResponse(ModbusPDU):
     """ReadDiscreteInputsResponse."""
 
     function_code = 2
+
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[2]) + 2 + 3
+
+    def x_encode(self) -> bytes:
+        """Encode response pdu."""
+        result = pack_bitstring(self.bits)
+        return struct.pack(">B", len(result)) + result
+
+    def x_decode(self, data: bytes) -> None:
+        """Decode response pdu."""
+        self.bits = unpack_bitstring(data[1:])
 
 
 class WriteSingleCoilResponse(ModbusPDU):
     """WriteSingleCoilResponse."""
 
     function_code = 5
-    rtu_frame_size = 8
 
-    def encode(self) -> bytes:
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 8
+
+    def x_encode(self) -> bytes:
         """Encode write coil request."""
         self.verifyAddress()
         val = ModbusStatus.ON if self.bits[0] else ModbusStatus.OFF
         return struct.pack(">HH", self.address, val)
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a write coil request."""
         self.address, value = struct.unpack(">HH", data[:4])
         self.bits = [bool(value)]
 
 
-class WriteSingleCoilRequest(WriteSingleCoilResponse):
+class WriteSingleCoilRequest(ModbusPDU):
     """WriteSingleCoilRequest."""
+
+    function_code = 5
+    _value: int | None = None
+
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 8
+
+    def x_encode(self) -> bytes:
+        """Encode write coil request."""
+        self.verifyAddress()
+        val = ModbusStatus.ON if self.bits[0] else ModbusStatus.OFF
+        return struct.pack(">HH", self.address, val)
+
+    def x_decode(self, data: bytes) -> None:
+        """Decode a write coil request."""
+        self.address, self._value = struct.unpack(">HH", data[:4])
+        self.bits = [bool(self._value)]
 
     async def datastore_update(
         self, context: ModbusServerContext, device_id: int
     ) -> ModbusPDU:
         """Run a request against a datastore."""
+        if self._value not in (None, ModbusStatus.ON, ModbusStatus.OFF):
+            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
         if rc := await context.async_setValues(
             device_id, self.function_code, self.address, self.bits
         ):
@@ -123,11 +201,15 @@ class WriteMultipleCoilsRequest(ModbusPDU):
     """WriteMultipleCoilsRequest."""
 
     function_code = 15
-    rtu_byte_count_pos = 6
     count: int
     byte_count: int | None
     data_byte_count: int
     MAX_COUNT = 2000
+
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[6]) + 6 + 3
 
     def __init__(
         self,
@@ -147,7 +229,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
         self.byte_count = None
         self.data_byte_count = 0
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode write coils request."""
         self.count = len(self.bits)
         self.verifyAddress()
@@ -157,7 +239,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
             ">HHB", self.address, self.count, byte_count
         ) + pack_bitstring(self.bits)
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a write coils request."""
         self.address, self.count, self.byte_count = struct.unpack(">HHB", data[0:5])
         self.verifyCount(self.MAX_COUNT)
@@ -197,13 +279,17 @@ class WriteMultipleCoilsResponse(ModbusPDU):
     """WriteMultipleCoilsResponse."""
 
     function_code = 15
-    rtu_frame_size = 8
 
-    def encode(self) -> bytes:
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 8
+
+    def x_encode(self) -> bytes:
         """Encode write coils response."""
         return struct.pack(">HH", self.address, self.count)
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a write coils response."""
         self.address, self.count = struct.unpack(">HH", data[:4])
 

@@ -61,7 +61,7 @@ class FramerBase:
 
         :param message: The populated request/response to send
         """
-        data = message.function_code.to_bytes(1, "big") + message.encode()
+        data = message.function_code.to_bytes(1, "big") + self.decoder.encode(message)
         frame = self.encode(data, message.dev_id, message.transaction_id)
         return frame
 
@@ -88,12 +88,13 @@ class FramerBase:
                     f"ERROR: request ask for transaction_id={exp_tid} but got id={tid}, Skipping."
                 )
                 continue
-            if (pdu := self.decoder.decode(frame_data)) is None:
-                raise ModbusIOException(
-                    "Unable to decode request",
-                    transaction_id=tid,
-                    dev_id=dev_id,
-                )
+            try:
+                pdu = self.decoder.decode(frame_data)
+            except ModbusIOException as exc:
+                exc.transaction_id = tid
+                exc.dev_id = dev_id
+                exc.used_len = used_len
+                raise exc
             pdu.dev_id = dev_id
             pdu.transaction_id = tid
             return used_len, pdu

@@ -13,7 +13,6 @@ from pymodbus.pdu.register_message import (
     WriteSingleRegisterRequest,
     WriteSingleRegisterResponse,
 )
-from test.conftest import MockLastValuesContext
 
 
 # ---------------------------------------------------------------------------#
@@ -54,7 +53,7 @@ class TestWriteRegisterMessages:
     def test_register_write_requests_encode(self):
         """Test register write requests encode."""
         for request, response in iter(self.write.items()):
-            assert request.encode() == response
+            assert request.x_encode() == response
 
     def test_register_write_requests_decode(self):
         """Test register write requests decode."""
@@ -65,7 +64,7 @@ class TestWriteRegisterMessages:
         )
         for packet, address in zip(values, addresses):
             request, response = packet
-            request.decode(response)
+            request.x_decode(response)
             assert request.address == address
 
     def test_invalid_write_multiple_registers_request(self):
@@ -88,7 +87,7 @@ class TestWriteRegisterMessages:
     ):
         """Test inconsistent byte counts are rejected before writing."""
         request = WriteMultipleRegistersRequest()
-        request.decode(frame)
+        request.x_decode(frame)
         context = mock_server_context()
         context.async_setValues = mock.AsyncMock()
 
@@ -102,7 +101,7 @@ class TestWriteRegisterMessages:
     ):
         """Test a consistent byte count reaches the datastore."""
         request = WriteMultipleRegistersRequest()
-        request.decode(b"\x00\x01\x00\x02\x04\x00\x0a\x00\x0b")
+        request.x_decode(b"\x00\x01\x00\x02\x04\x00\x0a\x00\x0b")
         context = mock_server_context()
         context.async_setValues = mock.AsyncMock(return_value=0)
 
@@ -166,19 +165,21 @@ class TestWriteRegisterMessages:
     def test_mask_write_register_request_encode(self):
         """Test basic bit message encoding/decoding."""
         handle = MaskWriteRegisterRequest(0x0000, 0x0101, 0x1010)
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == b"\x00\x00\x01\x01\x10\x10"
 
     def test_mask_write_register_request_decode(self):
         """Test basic bit message encoding/decoding."""
         request = b"\x00\x04\x00\xf2\x00\x25"
         handle = MaskWriteRegisterRequest()
-        handle.decode(request)
+        handle.x_decode(request)
         assert handle.address == 0x0004
         assert handle.and_mask == 0x00F2
         assert handle.or_mask == 0x0025
 
-    async def test_mask_write_register_request_datastore_update(self):
+    async def test_mask_write_register_request_datastore_update(
+        self, MockLastValuesContext
+    ):
         """Test write register request valid execution."""
         # The test uses the 4 nibbles of the 16-bit values to test
         # the combinations:
@@ -215,14 +216,19 @@ class TestWriteRegisterMessages:
     def test_mask_write_register_response_encode(self):
         """Test basic bit message encoding/decoding."""
         handle = MaskWriteRegisterResponse(0x0000, 0x0101, 0x1010)
-        result = handle.encode()
+        result = handle.x_encode()
         assert result == b"\x00\x00\x01\x01\x10\x10"
+
+    def test_mask_write_register_frame_size(self):
+        """Test that the read fifo queue response can decode."""
+        assert MaskWriteRegisterRequest.x_calculateRtuFrameSize(b"") == 10
+        assert MaskWriteRegisterResponse.x_calculateRtuFrameSize(b"") == 10
 
     def test_mask_write_register_response_decode(self):
         """Test basic bit message encoding/decoding."""
         request = b"\x00\x04\x00\xf2\x00\x25"
         handle = MaskWriteRegisterResponse()
-        handle.decode(request)
+        handle.x_decode(request)
         assert handle.address == 0x0004
         assert handle.and_mask == 0x00F2
         assert handle.or_mask == 0x0025

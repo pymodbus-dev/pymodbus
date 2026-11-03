@@ -6,7 +6,7 @@ import struct
 from dataclasses import dataclass
 
 from ..datastore import ModbusServerContext
-from ..exceptions import ModbusException
+from ..exceptions import ModbusException, ModbusIOException
 from .decoders import DecodePDU
 from .pdu import ModbusPDU
 
@@ -35,7 +35,11 @@ class ReadFileRecordRequest(ModbusPDU):
     """ReadFileRecordRequest."""
 
     function_code = 0x14
-    rtu_byte_count_pos = 2
+
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[2]) + 2 + 3
 
     def __init__(
         self,
@@ -47,7 +51,7 @@ class ReadFileRecordRequest(ModbusPDU):
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.records: list[FileRecord] = records or []
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the request packet."""
         packet = struct.pack("B", len(self.records) * 7)
         for record in self.records:
@@ -60,11 +64,13 @@ class ReadFileRecordRequest(ModbusPDU):
             )
         return packet
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode the incoming request."""
         self.records = []
         if (byte_count := int(data[0])) > len(data) - 1:
-            raise ModbusException(f"Invalid byte count: {byte_count}")
+            raise ModbusIOException(
+                f"Invalid byte count: {byte_count}", function_code=self.function_code
+            )
         for count in range(1, byte_count, 7):
             decoded = struct.unpack(">BHHH", data[count : count + 7])
             record = FileRecord(
@@ -91,7 +97,11 @@ class ReadFileRecordResponse(ModbusPDU):
     """ReadFileRecordResponse."""
 
     function_code = 0x14
-    rtu_byte_count_pos = 2
+
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[2]) + 2 + 3
 
     def __init__(
         self,
@@ -103,7 +113,7 @@ class ReadFileRecordResponse(ModbusPDU):
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.records: list[FileRecord] = records or []
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the response."""
         total = sum(len(record.record_data) + 1 + 1 for record in self.records)
         packet = struct.pack("B", total)
@@ -112,7 +122,7 @@ class ReadFileRecordResponse(ModbusPDU):
             packet += record.record_data
         return packet
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode the response."""
         count = 1
         self.records.clear()
@@ -133,7 +143,11 @@ class WriteFileRecordRequest(ModbusPDU):
     """WriteFileRecordRequest."""
 
     function_code = 0x15
-    rtu_byte_count_pos = 2
+
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[2]) + 2 + 3
 
     def __init__(
         self,
@@ -145,7 +159,7 @@ class WriteFileRecordRequest(ModbusPDU):
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.records: list[FileRecord] = records or []
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the request packet."""
         total_length = sum((record.record_length * 2) + 7 for record in self.records)
         packet = struct.pack("B", total_length)
@@ -161,10 +175,12 @@ class WriteFileRecordRequest(ModbusPDU):
             packet += record.record_data
         return packet
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode the incoming request."""
         if (byte_count := int(data[0])) > len(data) - 1:
-            raise ModbusException(f"Invalid byte count: {byte_count}")
+            raise ModbusIOException(
+                f"Invalid byte count: {byte_count}", function_code=self.function_code
+            )
         count = 1
         self.records.clear()
         while count < byte_count:
@@ -193,7 +209,11 @@ class WriteFileRecordResponse(ModbusPDU):
     """The normal response is an echo of the request."""
 
     function_code = 0x15
-    rtu_byte_count_pos = 2
+
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return int(data[2]) + 2 + 3
 
     def __init__(
         self,
@@ -205,7 +225,7 @@ class WriteFileRecordResponse(ModbusPDU):
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.records: list[FileRecord] = records or []
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the response."""
         total_length = sum((record.record_length * 2) + 7 for record in self.records)
         packet = struct.pack("B", total_length)
@@ -220,7 +240,7 @@ class WriteFileRecordResponse(ModbusPDU):
             packet += record.record_data
         return packet
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode the incoming request."""
         count = 1
         self.records.clear()
@@ -242,7 +262,11 @@ class ReadFifoQueueRequest(ModbusPDU):
     """ReadFifoQueueRequest."""
 
     function_code = 0x18
-    rtu_frame_size = 6
+
+    @classmethod
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
+        """Calculate the size of a PDU."""
+        return 6
 
     def __init__(
         self, address: int = 0, dev_id: int = 1, transaction_id: int = 0
@@ -252,11 +276,11 @@ class ReadFifoQueueRequest(ModbusPDU):
         self.address = address
         self.verifyAddress()
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the request packet."""
         return struct.pack(">H", self.address)
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode the incoming request."""
         self.address = struct.unpack(">H", data[:2])[0]
 
@@ -277,7 +301,7 @@ class ReadFifoQueueResponse(ModbusPDU):
     function_code = 0x18
 
     @classmethod
-    def calculateRtuFrameSize(cls, data: bytes) -> int:
+    def x_calculateRtuFrameSize(cls, data: bytes) -> int:
         """Calculate the size of the message."""
         hi_byte = int(data[2])
         lo_byte = int(data[3])
@@ -290,7 +314,7 @@ class ReadFifoQueueResponse(ModbusPDU):
         super().__init__(transaction_id=transaction_id, dev_id=dev_id)
         self.values = values or []
 
-    def encode(self) -> bytes:
+    def x_encode(self) -> bytes:
         """Encode the response."""
         length = len(self.values)
         packet = struct.pack(">HH", 2 + length * 2, length)
@@ -298,12 +322,14 @@ class ReadFifoQueueResponse(ModbusPDU):
             packet += struct.pack(">H", value)
         return packet
 
-    def decode(self, data: bytes) -> None:
+    def x_decode(self, data: bytes) -> None:
         """Decode a the response."""
         self.values = []
         _, count = struct.unpack(">HH", data[0:4])
         if 4 + count * 2 > len(data):
-            raise ModbusException(f"Invalid fifo count: {count}")
+            raise ModbusIOException(
+                f"Invalid fifo count: {count}", function_code=self.function_code
+            )
         for index in range(0, count):
             idx = 4 + index * 2
             self.values.append(struct.unpack(">H", data[idx : idx + 2])[0])

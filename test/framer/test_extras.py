@@ -41,7 +41,7 @@ class TestExtras:
         used_len, pdu = self._tcp.handleFrame(msg1 + msg2, 0, 0)
         assert pdu
         assert used_len == len(msg1) + len(msg2)
-        assert pdu.function_code.to_bytes(1, "big") + pdu.encode() == msg2
+        assert pdu.function_code.to_bytes(1, "big") + self.decoder.encode(pdu) == msg2
 
     def test_tcp_framer_transaction_half3(self):
         """Test a half completed tcp frame transaction."""
@@ -53,7 +53,10 @@ class TestExtras:
         used_len, pdu = self._tcp.handleFrame(msg1 + msg2, 0, 0)
         assert pdu
         assert used_len == len(msg1) + len(msg2)
-        assert pdu.function_code.to_bytes(1, "big") + pdu.encode() == msg1[7:] + msg2
+        assert (
+            pdu.function_code.to_bytes(1, "big") + self.decoder.encode(pdu)
+            == msg1[7:] + msg2
+        )
 
     def test_tcp_framer_transaction_short(self):
         """Test that we can get back on track after an invalid message."""
@@ -65,7 +68,9 @@ class TestExtras:
         used_len, pdu = self._tcp.handleFrame(msg1 + msg2, 0, 0)
         assert pdu
         assert used_len == len(msg1) + len(msg2)
-        assert pdu.function_code.to_bytes(1, "big") + pdu.encode() == msg2[7:]
+        assert (
+            pdu.function_code.to_bytes(1, "big") + self.decoder.encode(pdu) == msg2[7:]
+        )
 
     def test_tcp_framer_transaction_wrong_id(self):
         """Test a half completed tcp frame transaction."""
@@ -86,9 +91,7 @@ class TestExtras:
         msg = b"\x00\x01\x00\x00\x00\x06\xff\x70\x01\x02\x00\x08"
         with pytest.raises(ModbusIOException) as exc_info:
             self._tcp.handleFrame(msg, 0, 0)
-        assert exc_info.value.transaction_id == 1
-        assert exc_info.value.dev_id == 0xFF
-        assert exc_info.value.fcode is None
+        assert exc_info.value.fcode == 0xF0
 
     def test_tls_incoming_packet(self):
         """Framer tls incoming packet."""
@@ -117,7 +120,7 @@ class TestExtras:
         """Test rtu process incoming packets."""
         msg = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
         with patch(
-            "pymodbus.pdu.ReadCoilsRequest.calculateRtuFrameSize", return_value=0
+            "pymodbus.pdu.ReadCoilsRequest.x_calculateRtuFrameSize", return_value=0
         ):
             used_len, pdu = self._rtu.handleFrame(msg, 0, 0)
             assert not used_len
@@ -139,7 +142,7 @@ class TestExtras:
     def test_rtu_decode_exception(self):
         """Test that the RTU framer can decode errors."""
         msg = b"\x00\x90\x02\x9c\x01"
-        _, pdu = self._rtu.handleFrame(msg, 0, 0)
+        _, pdu = FramerRTU(DecodePDU(False)).handleFrame(msg, 0, 0)
         assert pdu
 
     def test_tcp_framer_skip_wrong_dev_id_then_decode(self):

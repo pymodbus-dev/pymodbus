@@ -258,6 +258,30 @@ class TestAsyncioServer:
         await asyncio.wait_for(BasicClient.done, timeout=0.1)
         assert BasicClient.received_data, expected_response
 
+    async def test_async_tcp_server_read_count_above_limit(self):
+        """An out-of-range read quantity must answer exception 0x03 on the wire."""
+        BasicClient.data = b"\x00\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x7e"
+        await self.start_server()
+        await self.connect_server()
+        await asyncio.wait_for(BasicClient.done, timeout=0.1)
+        assert BasicClient.received_data == b"\x00\x00\x00\x00\x00\x03\x01\x83\x03"
+
+    async def test_async_tcp_server_write_coil_illegal_value(self):
+        """A Write Single Coil value other than 0x0000 or 0xFF00 must answer 0x03."""
+        BasicClient.data = b"\x00\x00\x00\x00\x00\x06\x01\x05\x00\x00\x00\x01"
+        await self.start_server()
+        await self.connect_server()
+        await asyncio.wait_for(BasicClient.done, timeout=0.1)
+        assert BasicClient.received_data == b"\x00\x00\x00\x00\x00\x03\x01\x85\x03"
+
+    async def test_async_tcp_server_reserved_function_code(self):
+        """A function code reserved for exception responses must answer 0x01."""
+        BasicClient.data = b"\x00\x00\x00\x00\x00\x04\x01\x81\x00\x00"
+        await self.start_server()
+        await self.connect_server()
+        await asyncio.wait_for(BasicClient.done, timeout=0.1)
+        assert BasicClient.received_data == b"\x00\x00\x00\x00\x00\x03\x01\x81\x01"
+
     async def test_async_server_trace_connect_disconnect(self):
         """Test connect/disconnect trace handler."""
         trace_connect = mock.Mock()

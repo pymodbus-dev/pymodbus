@@ -469,6 +469,31 @@ class TestSyncClientSerial:
         assert client.recv(None) == b""
         assert client.recv(0) == b""
 
+    @pytest.mark.parametrize(
+        ("initial_size", "reply"), [(0, b""), (0, b"123456789"), (4, b"123456789")]
+    )
+    @mock.patch("pymodbus.client.serial.time")
+    def test_serial_client_recv_after_delayed_wakeup(
+        self, mock_time, initial_size, reply
+    ):
+        """Read the current buffer when a sleep outlasts the receive timeout."""
+        client = ModbusSerialClient("/dev/null", timeout=0.2)
+        mock_socket = mock.MagicMock()
+        client.socket = mock_socket
+        mock_socket.in_waiting = initial_size
+        mock_socket.read.side_effect = lambda size: reply[:size]
+        mock_time.time.return_value = 0
+
+        def delayed_wakeup(_interval):
+            mock_socket.in_waiting = len(reply)
+            mock_time.time.return_value = 0.3
+
+        mock_time.sleep.side_effect = delayed_wakeup
+
+        assert client.recv(None) == reply
+        mock_socket.read.assert_called_once_with(len(reply))
+        mock_time.sleep.assert_called_once()
+
     def test_serial_client_recv_drops_socket_on_os_error(self):
         """Test that a read against a torn-down port drops it rather than escaping."""
         client = ModbusSerialClient("/dev/null")

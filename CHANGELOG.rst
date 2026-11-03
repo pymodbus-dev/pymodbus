@@ -7,6 +7,32 @@ helps make pymodbus a better product.
 
 :ref:`Authors`: contains a complete list of volunteers have contributed to each major version.
 
+Version 3.16.2
+--------------
+* Discard the late response of a cancelled request (#3076)
+* Fix missed buffered serial replies after a delayed wakeup (#3079)
+* Test case for cancelling request. (#3077)
+* Test wrong response gets discarded. (#3078)
+* Answer ILLEGAL_VALUE for a Write Single Coil value other than 0x0000/0xFF00 (#3074)
+* Partial solve ext. cancel sideeffects. (#3072)
+* Correct CI for PR runs. (#3071)
+* Report bad file record frames as undecodable (#3069)
+* Wait for data when an RTU request arrives split (#3067)
+* return ILLEGAL_VALUE for out-of-range counts (#3066)
+* Correct doc of write_coils / readwrite_registers (#3065)
+* Isolate PDU methods (using decoder). (#3061)
+* Fix decoders.decode() (#3064)
+* Fix convert_to_registers mutate value. (#3063)
+* add fixtures for PDU, socket and content.
+* Combine decode in pdu. (#3060)
+* Allow multiple frames with bad decoding. (#3059)
+* Echo transaction id and device id in exception for undecodable request. (#3056) (#3057)
+* Remove rtu_byte_count_pos from pdu. (#3054)
+* Remove packet when MDAP is wrong. (#3053)
+* Correct fc in exception response. (#3052)
+* Multiple frames in one packet. (#3049)
+* Remove rtu_frame_size from pdu. (#3048)
+
 Version 3.16.1
 --------------
 * Revert changes to serialTransport (allow no pyserial). (#3044)

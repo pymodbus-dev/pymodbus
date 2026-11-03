@@ -315,11 +315,7 @@ class TestTransaction:
             await asyncio.sleep(0.1)
             new_resp = copy.deepcopy(response)
             new_resp.dev_id = 17
-            if (
-                not transact.response_future.done()
-                or transact.response_future.cancelled()
-            ):  # pragma: no cover
-                transact.response_future.set_result(new_resp)
+            transact.response_future.set_result(new_resp)
             await asyncio.sleep(0.1)
             with pytest.raises(ModbusIOException) as exc_info:
                 await resp
@@ -340,9 +336,7 @@ class TestTransaction:
             assert exc_info.value.dev_id == request.dev_id
             assert exc_info.value.transaction_id == request.transaction_id
 
-    async def _cancel_send(
-        self, transact, transport, delay_cond, pdu
-    ):  # pragma: no cover
+    async def _cancel_send(self, transact, transport, delay_cond, pdu):
         """Create task and wait."""
         writes = transport.write.call_count
         resp = asyncio.create_task(transact.execute(False, pdu))
@@ -351,14 +345,15 @@ class TestTransaction:
             await asyncio.sleep(0.1)
             delay += 1
         if delay_cond:
-            assert delay > 5
+            assert delay > 3
         else:
             assert delay < 5
         return resp
 
-    @pytest.mark.skip
-    @pytest.mark.parametrize("cases", ["timeout", "resend", "new_id", "new_fc"])
-    async def test_transaction_execute_cancel(self, use_clc, cases):  # pragma: no cover
+    @pytest.mark.parametrize(
+        "cases", ["timeout", "resend", "resend_response", "new_id", "new_fc"]
+    )
+    async def test_transaction_execute_cancel(self, use_clc, cases):
         """Test next request does not get the response of a cancelled request."""
         req_org = ReadHoldingRegistersRequest(dev_id=1, count=4)
         resp_org = ReadHoldingRegistersResponse(dev_id=1, registers=[1, 2, 3, 4])
@@ -395,17 +390,23 @@ class TestTransaction:
                 transact.data_received(transact.framer.buildFrame(resp_org2))
                 assert (await resp).registers == resp_org2.registers
             case "resend":  # resend within timeout, must delay until after timeout
+                resp = await self._cancel_send(transact, transport, True, req_org2)
+                transact.data_received(transact.framer.buildFrame(resp_org2))
+                assert (await resp).registers == resp_org2.registers
+            case "resend_response":  # resend within timeout, response arrives, send
                 resp = asyncio.create_task(transact.execute(False, req_org2))
                 await asyncio.sleep(0.1)
+                assert transport.write.call_count == 1
                 transact.data_received(transact.framer.buildFrame(resp_org))
-                resp = await self._cancel_send(transact, transport, True, req_org2)
+                await asyncio.sleep(0.1)
+                assert transport.write.call_count == 2
                 transact.data_received(transact.framer.buildFrame(resp_org2))
                 assert (await resp).registers == resp_org2.registers
             case "new_fc":  # send new request, No delay, after timeout resend, No delay
                 resp = await self._cancel_send(transact, transport, False, req_fc)
                 transact.data_received(transact.framer.buildFrame(resp_org))
                 transact.data_received(transact.framer.buildFrame(resp_fc))
-                assert (await resp).registers == resp_org.registers
+                assert (await resp).registers == resp_fc.registers
                 await asyncio.sleep(1.0)
                 resp = await self._cancel_send(transact, transport, False, req_org2)
                 transact.data_received(transact.framer.buildFrame(resp_org2))

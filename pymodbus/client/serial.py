@@ -299,6 +299,9 @@ class ModbusSerialClient(ModbusBaseSyncClient):
                 more_data = True
                 size = available
             time.sleep(self._recv_interval)
+        else:
+            # Data may have arrived while sleeping past the timeout.
+            size = self._in_waiting()
         return size
 
     def recv(self, size: int | None) -> bytes:

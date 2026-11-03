@@ -425,6 +425,61 @@ class TestTransaction:
             case _:  # pragma: no cover
                 raise RuntimeError("Unhandled case.")
 
+    @pytest.mark.parametrize(
+        ("framer", "dev_id", "request_type", "response_type"),
+        [
+            (FramerRTU, 2, ReadHoldingRegistersRequest, ReadHoldingRegistersResponse),
+            (FramerRTU, 1, ReadInputRegistersRequest, ReadInputRegistersResponse),
+            (
+                FramerSocket,
+                1,
+                ReadHoldingRegistersRequest,
+                ReadHoldingRegistersResponse,
+            ),
+        ],
+    )
+    async def test_transaction_execute_cancel_no_wait(
+        self, use_clc, framer, dev_id, request_type, response_type
+    ):
+        """Test no wait after a cancel for a request that cannot get its response.
+
+        That is a request to another device, a request with another function
+        code, or any request with a transaction id.
+        """
+        transact = TransactionManager(
+            use_clc,
+            framer(DecodePDU(False)),
+            0,
+            False,
+            None,
+            None,
+            None,
+        )
+        transport = mock.Mock()
+        transact.connection_made(transport)
+        transact.comm_params.timeout_connect = 5
+        resp = asyncio.create_task(
+            transact.execute(False, ReadHoldingRegistersRequest(dev_id=1, count=4))
+        )
+        await asyncio.sleep(0.1)
+        resp.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await resp
+        resp = asyncio.create_task(
+            transact.execute(False, request_type(dev_id=dev_id, count=5))
+        )
+        await asyncio.sleep(0.1)
+        assert transport.write.call_count == 2
+        late = ReadHoldingRegistersResponse(
+            dev_id=1, transaction_id=1, registers=[1, 2, 3, 4]
+        )
+        transact.data_received(transact.framer.buildFrame(late))
+        response = response_type(
+            dev_id=dev_id, transaction_id=2, registers=[1, 2, 3, 4, 5]
+        )
+        transact.data_received(transact.framer.buildFrame(response))
+        assert (await resp).registers == response.registers
+
     async def test_transaction_receiver(self, use_clc):
         """Test tracers in disconnect."""
         transact = TransactionManager(

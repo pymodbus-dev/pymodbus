@@ -96,7 +96,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             )
         if framer not in [FramerType.ASCII, FramerType.RTU]:
             raise TypeError("Only FramerType RTU/ASCII allowed.")
-        if not math.isfinite(inter_request_delay) or inter_request_delay < 0:
+        if not math.isfinite(inter_request_delay) or inter_request_delay < 0.0:
             raise ValueError("inter_request_delay must be finite and non-negative")
         self.comm_params = CommParams(
             comm_type=CommType.SERIAL,
@@ -193,7 +193,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             )
         if framer not in [FramerType.ASCII, FramerType.RTU]:
             raise TypeError("Only RTU/ASCII allowed.")
-        if not math.isfinite(inter_request_delay) or inter_request_delay < 0:
+        if not math.isfinite(inter_request_delay) or inter_request_delay < 0.0:
             raise ValueError("inter_request_delay must be finite and non-negative")
         self.comm_params = CommParams(
             comm_type=CommType.SERIAL,

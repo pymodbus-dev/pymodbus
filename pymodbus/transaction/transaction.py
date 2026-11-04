@@ -54,6 +54,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
         self.next_tid: int = 0
         self.request_dev_id: int = 0
         self.request_transaction_id: int = 0
+        self.request_function_code: int = 0
         self.trace_packet = trace_packet or self.dummy_trace_packet
         self.trace_pdu = trace_pdu or self.dummy_trace_pdu
         self.trace_connect = trace_connect or self.dummy_trace_connect
@@ -66,6 +67,9 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
             self._lock = asyncio.Lock()
             self.low_level_send = self.send
             self.response_future: asyncio.Future = asyncio.Future()
+            self.cancelled_requests: dict[
+                tuple[int, int], tuple[asyncio.Future, float]
+            ] = {}
             self.last_pdu: ModbusPDU | None = None
             self.last_addr: tuple | None = None
 
@@ -210,13 +214,13 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
             Log.error(txt)
             raise self._io_exception_from_request(txt, request)
 
-    async def execute(
+    async def execute(  # noqa: C901
         self, no_response_expected: bool, request: ModbusPDU
     ) -> ModbusPDU:
         """Execute requests asynchronously.
 
-        REMARK: this method is identical to sync_execute, apart from the lock and try/except.
-                any changes in either method MUST be mirrored !!!
+        REMARK: this method is identical to sync_execute, apart from the lock, try/except
+                and the wait after a cancel. any changes in either method MUST be mirrored !!!
         """
         if not self.transport:
             Log.warning("Not connected, trying to connect!")
@@ -225,6 +229,10 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
                     "Client cannot connect (automatic retry continuing) !!"
                 )
         async with self._lock:
+            cancel_key = (request.dev_id, request.function_code)
+            if cancelled := self.cancelled_requests.pop(cancel_key, None):
+                late_response, until = cancelled
+                await asyncio.wait([late_response], timeout=until - monotonic())
             request.transaction_id = self.getNextTID()
             count_retries = 0
             while count_retries <= self.retries:
@@ -260,6 +268,19 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
                         return response
                     except asyncio.exceptions.TimeoutError:
                         count_retries += 1
+                    except asyncio.exceptions.CancelledError:
+                        # RTU/ASCII responses carry no transaction id, so the next
+                        # request to this device with this function code first
+                        # waits for the response to this one. A response from
+                        # another device or with another function code is skipped,
+                        # so other requests are not delayed.
+                        if not request.transaction_id:
+                            self.response_future = asyncio.Future()
+                            self.cancelled_requests[cancel_key] = (
+                                self.response_future,
+                                monotonic() + self.comm_params.timeout_connect,
+                            )
+                        raise
                 finally:
                     self._set_transaction_end()
             if self.count_until_disconnect < 0:
@@ -279,6 +300,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
         if not self.is_server:
             self.request_dev_id = pdu.dev_id
             self.request_transaction_id = pdu.transaction_id
+            self.request_function_code = pdu.function_code
         packet = self.framer.buildFrame(self.trace_pdu(True, pdu))
         if self.is_sync and self.comm_params.handle_local_echo:
             self.sent_buffer = packet
@@ -316,6 +338,13 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
                 ):
                     Log.warning(
                         "ERROR: received pdu without a corresponding request, IGNORING"
+                    )
+                elif (
+                    self.request_function_code
+                    and (pdu.function_code & 0x7F) != self.request_function_code
+                ):
+                    Log.error(
+                        f"ERROR: request ask for fc={self.request_function_code} but got fc={pdu.function_code}, Skipping."
                     )
                 else:
                     self.response_future.set_result(self.last_pdu)

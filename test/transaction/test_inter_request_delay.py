@@ -106,7 +106,7 @@ async def test_timeouts_retries_and_next_call(clock, monkeypatch, sync):
 
     def timeout(*_args, **_kwargs):
         now[0] += 0.2
-        raise TimeoutError
+        raise asyncio.TimeoutError
 
     async def async_timeout(*args, **kwargs):
         return timeout(*args, **kwargs)

@@ -137,6 +137,20 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
             dev_id=request.dev_id,
         )
 
+    def _no_response(self, request: ModbusPDU) -> ModbusIOException:
+        """Count a request that got no response, and build the exception to raise."""
+        if self.count_until_disconnect < 0:
+            if self.comm_params.comm_type != CommType.SERIAL:
+                self.connection_lost(asyncio.TimeoutError("Server not responding"))
+            return self._io_exception_from_request(
+                "ERROR: No response received of the last requests (default: retries+3), CLOSING CONNECTION.",
+                request,
+            )
+        self.count_until_disconnect -= 1
+        txt = f"No response received after {self.retries} retries, continue with next request"
+        Log.error(txt)
+        return self._io_exception_from_request(txt, request)
+
     def sync_execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
         """Execute requests asynchronously.
 
@@ -173,19 +187,18 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
                     return response
                 except asyncio.exceptions.TimeoutError:
                     count_retries += 1
-            if self.count_until_disconnect < 0:
-                if self.comm_params.comm_type != CommType.SERIAL:
-                    self.connection_lost(asyncio.TimeoutError("Server not responding"))
-                raise self._io_exception_from_request(
-                    "ERROR: No response received of the last requests (default: retries+3), CLOSING CONNECTION.",
-                    request,
-                )
-            self.count_until_disconnect -= 1
-            txt = f"No response received after {self.retries} retries, continue with next request"
-            Log.error(txt)
-            raise self._io_exception_from_request(txt, request)
+            raise self._no_response(request)
 
-    async def execute(  # noqa: C901
+    async def _connect_if_needed(self) -> None:
+        """Connect if there is no transport."""
+        if not self.transport:
+            Log.warning("Not connected, trying to connect!")
+            if not await self.connect():
+                raise ConnectionException(
+                    "Client cannot connect (automatic retry continuing) !!"
+                )
+
+    async def execute(
         self, no_response_expected: bool, request: ModbusPDU
     ) -> ModbusPDU:
         """Execute requests asynchronously.
@@ -193,12 +206,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
         REMARK: this method is identical to sync_execute, apart from the lock, try/except
                 and the wait after a cancel. any changes in either method MUST be mirrored !!!
         """
-        if not self.transport:
-            Log.warning("Not connected, trying to connect!")
-            if not await self.connect():
-                raise ConnectionException(
-                    "Client cannot connect (automatic retry continuing) !!"
-                )
+        await self._connect_if_needed()
         async with self._lock:
             cancel_key = (request.dev_id, request.function_code)
             if cancelled := self.cancelled_requests.pop(cancel_key, None):
@@ -249,17 +257,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
                             monotonic() + self.comm_params.timeout_connect,
                         )
                     raise
-            if self.count_until_disconnect < 0:
-                if self.comm_params.comm_type != CommType.SERIAL:
-                    self.connection_lost(asyncio.TimeoutError("Server not responding"))
-                raise self._io_exception_from_request(
-                    "ERROR: No response received of the last requests (default: retries+3), CLOSING CONNECTION.",
-                    request,
-                )
-            self.count_until_disconnect -= 1
-            txt = f"No response received after {self.retries} retries, continue with next request"
-            Log.error(txt)
-            raise self._io_exception_from_request(txt, request)
+            raise self._no_response(request)
 
     def pdu_send(self, pdu: ModbusPDU, addr: tuple | None = None) -> None:
         """Build byte stream and send."""

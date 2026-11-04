@@ -237,6 +237,30 @@ And in case of read retrieve the data depending on type of request
 
 Remark if using :mod:`no_response_expected=True` rr will always be None.
 
+
+Serial request spacing
+----------------------
+
+Some serial devices accept a request and return a valid response, but may not
+respond to another request sent immediately afterwards.
+
+Both serial clients accept ``inter_request_delay`` in seconds, and defaults to ``0.0``. For example::
+
+    client = ModbusSerialClient("/dev/ttyUSB0", baudrate=115200,
+                                inter_request_delay=0.020)
+    with client:
+        client.write_coil(0, True, device_id=1)
+        client.read_coils(0, count=1, device_id=1)
+
+The second request waits until at least 20 ms after the first transaction
+finishes. The asynchronous equivalent uses the same option::
+
+    async with AsyncModbusSerialClient("/dev/ttyUSB0", baudrate=115200,
+                                      inter_request_delay=0.020) as client:
+        await client.write_coil(0, True, device_id=1)
+        await client.read_coils(0, count=1, device_id=1)
+
+
 Client interface classes
 ------------------------
 

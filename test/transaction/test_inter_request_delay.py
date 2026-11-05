@@ -1,12 +1,13 @@
-"""Test optional serial transaction spacing without wall-clock delays."""
+"""Test optional serial transaction spacing."""
 
 import asyncio
 import math
-from concurrent.futures import ThreadPoolExecutor
-from threading import Event
+from itertools import pairwise
+from time import monotonic, sleep
 from unittest import mock
 
 import pytest
+import pytest_asyncio
 
 import pymodbus.transaction.transaction as transaction_module
 from pymodbus.client import AsyncModbusSerialClient, ModbusSerialClient
@@ -15,245 +16,235 @@ from pymodbus.framer import FramerRTU
 from pymodbus.pdu import DecodePDU
 from pymodbus.pdu.bit_message import ReadCoilsRequest, ReadCoilsResponse
 from pymodbus.transaction import TransactionManager
-from pymodbus.transport import CommParams, CommType
+from pymodbus.transport import CommType
 
 
-@pytest.fixture(name="clock")
-def fake_clock(monkeypatch):
-    """Provide monotonic time and advancing sync/async sleeps."""
-    now, waits = [100.0], []
+@pytest.mark.usefixtures("use_clc")
+@pytest.mark.parametrize("use_port", [5098])
+@pytest.mark.parametrize("use_comm_type", [CommType.SERIAL])
+class TestInterRequestDelay:
+    """Exercise real transactions with mocked serial I/O."""
 
-    def sleep(delay):
-        waits.append(delay)
-        now[0] += delay
-
-    async def async_sleep(delay):
-        sleep(delay)
-
-    monkeypatch.setattr(transaction_module, "monotonic", lambda: now[0])
-    monkeypatch.setattr(transaction_module, "sleep", sleep)
-    monkeypatch.setattr(transaction_module.asyncio, "sleep", async_sleep)
-    return now, waits
-
-
-def manager(sync, delay, retries=0):
-    """Construct a transaction manager without opening a port."""
-    params = CommParams(
-        comm_type=CommType.SERIAL, inter_request_delay=delay, timeout_connect=1
+    @pytest_asyncio.fixture(
+        name="transact", params=[False, True], ids=["async", "sync"]
     )
-    client = mock.Mock() if sync else None
-    result = TransactionManager(
-        params,
-        FramerRTU(DecodePDU(False)),
-        retries,
-        False,
-        None,
-        None,
-        None,
-        sync_client=client,
+    async def transaction(self, request, use_clc):
+        """Use the existing communication fixture for both transaction paths."""
+        use_clc.inter_request_delay = 0.02
+        use_clc.timeout_connect = 0.05
+        client = mock.Mock() if request.param else None
+        manager = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            0,
+            False,
+            None,
+            None,
+            None,
+            sync_client=client,
+        )
+        manager.connection_made(mock.Mock())
+        yield manager
+        manager.close()
+
+    @pytest.fixture(name="wire")
+    def serial_output(self, transact):
+        """Observe bytes sent without replacing transaction methods."""
+        return (
+            transact.sync_client.send if transact.is_sync else transact.transport.write
+        )
+
+    async def execute(self, transact, no_response=False):
+        """Send one request through the selected transaction implementation."""
+        request = ReadCoilsRequest(address=0, count=1, dev_id=1)
+        if transact.is_sync:
+            return transact.sync_execute(no_response, request)
+        return await transact.execute(no_response, request)
+
+    @pytest.mark.parametrize(
+        ("delay", "last_end", "now", "expected"),
+        [
+            (0.0, 100.0, 100.0, 0.0),
+            (0.02, None, 100.0, 0.0),
+            (0.02, 100.0, 100.0, 0.02),
+            (0.02, 100.0, 100.01, 0.01),
+            (0.02, 100.0, 100.02, 0.0),
+            (0.02, 100.0, 101.0, 0.0),
+        ],
     )
-    result.transport = mock.Mock()
-    return result
+    async def test_remaining_interval(self, transact, delay, last_end, now, expected):
+        """First requests, disabled spacing and elapsed idle time need no wait."""
+        transact.comm_params.inter_request_delay = delay
+        transact._last_transaction_end = last_end
+        # Replace only the imported reference owned by the transaction module.
+        with mock.patch.object(transaction_module, "monotonic", return_value=now):
+            assert transact._inter_request_delay() == pytest.approx(expected)
 
+    @pytest.mark.parametrize("delay", [0.0, 0.02])
+    async def test_completion_spacing(self, transact, wire, delay):
+        """Measure the interval from response completion, not request start."""
+        transact.comm_params.inter_request_delay = delay
+        starts, completions = [], []
+        response = transact.framer.buildFrame(ReadCoilsResponse(dev_id=1, bits=[True]))
 
-async def execute(transact, sync, no_response=False):
-    """Run the same request through either implementation."""
-    request = ReadCoilsRequest(address=0, count=1, dev_id=1)
-    if sync:
-        return transact.sync_execute(no_response, request)
-    return await transact.execute(no_response, request)
+        def receive():
+            completions.append(monotonic())
+            transact.data_received(response)
 
+        def send(*_args, **_kwargs):
+            starts.append(monotonic())
+            if not transact.is_sync:
+                asyncio.get_running_loop().call_later(0.03, receive)
 
-@pytest.mark.parametrize("sync", [False, True])
-@pytest.mark.parametrize("delay", [0.0, 0.02])
-async def test_completion_spacing_and_idle_time(clock, monkeypatch, sync, delay):
-    """Count from response completion, skip the first wait and credit idle time."""
-    now, waits = clock
-    transact = manager(sync, delay)
-    starts = []
-
-    def send(request):
-        starts.append(now[0])
-        response = ReadCoilsResponse(dev_id=1, transaction_id=request.transaction_id)
-
-        def receive(*_args):
-            now[0] += 0.03
-            if not sync:
-                transact.response_future.set_result(response)
+        def read(_size):
+            sleep(0.03)
+            completions.append(monotonic())
             return response
 
-        if sync:
-            monkeypatch.setattr(transact, "sync_get_response", receive)
-        else:
-            asyncio.get_running_loop().call_soon(receive)
+        wire.side_effect = send
+        if transact.is_sync:
+            transact.sync_client.recv.side_effect = read
+        for _ in range(2):
+            result = await self.execute(transact)
+            assert result.bits[0]
+        assert len(starts) == len(completions) == 2
+        assert starts[1] - completions[0] >= delay - 0.001
+        assert (transact._last_transaction_end is None) == (delay == 0.0)
 
-    monkeypatch.setattr(transact, "pdu_send", send)
-    for _ in range(2):
-        await execute(transact, sync)
-    assert starts == pytest.approx([100.0, 100.03 + delay])
-    now[0] += 1
-    await execute(transact, sync)
-    assert len(waits) == (1 if delay else 0)
+    async def test_timeouts_retries_and_next_call(self, transact, wire):
+        """Real receive timeouts pace retries and the next transaction."""
+        transact.retries = 1
+        gaps = []
 
+        def send(*_args, **_kwargs):
+            if transact._last_transaction_end is not None:
+                gaps.append(monotonic() - transact._last_transaction_end)
 
-@pytest.mark.parametrize("sync", [False, True])
-async def test_timeouts_retries_and_next_call(clock, monkeypatch, sync):
-    """Timeouts pace retries and subsequent calls, preserving the original error."""
-    now, waits = clock
-    transact = manager(sync, 0.02, retries=1)
-    send = mock.Mock()
-    monkeypatch.setattr(transact, "pdu_send", send)
+        wire.side_effect = send
+        if transact.is_sync:
+            transact.sync_client.recv.return_value = b""
+        for _ in range(2):
+            with pytest.raises(ModbusIOException):
+                await self.execute(transact)
+        assert wire.call_count == 4
+        minimum = transact.comm_params.inter_request_delay
+        assert len(gaps) == 3
+        assert all(gap >= minimum - 0.001 for gap in gaps)
 
-    def timeout(*_args, **_kwargs):
-        now[0] += 0.2
-        raise asyncio.TimeoutError
-
-    async def async_timeout(*args, **kwargs):
-        return timeout(*args, **kwargs)
-
-    monkeypatch.setattr(transact, "sync_get_response", timeout)
-    monkeypatch.setattr(transaction_module.asyncio, "wait_for", async_timeout)
-    for _ in range(2):
-        with pytest.raises(ModbusIOException):
-            await execute(transact, sync)
-    assert send.call_count == 4
-    assert waits == pytest.approx([0.02] * 3)
-
-
-@pytest.mark.parametrize("sync", [False, True])
-async def test_no_response_and_independent_clients(clock, monkeypatch, sync):
-    """No-response sends are paced without sharing deadlines between clients."""
-    _, waits = clock
-    first, second = manager(sync, 0.02), manager(sync, 0.02)
-    monkeypatch.setattr(first, "pdu_send", mock.Mock())
-    monkeypatch.setattr(second, "pdu_send", mock.Mock())
-    await execute(first, sync, True)
-    await execute(second, sync, True)
-    assert waits == []
-    await execute(first, sync, True)
-    assert waits == pytest.approx([0.02])
-
-
-@pytest.mark.parametrize("sync", [False, True])
-async def test_send_error_still_paces_next_attempt(clock, monkeypatch, sync):
-    """An exceptional send must not bypass pacing."""
-    _, waits = clock
-    transact = manager(sync, 0.02)
-    monkeypatch.setattr(
-        transact, "pdu_send", mock.Mock(side_effect=[OSError("send failed"), None])
-    )
-    with pytest.raises(OSError, match="send failed"):
-        await execute(transact, sync, True)
-    await execute(transact, sync, True)
-    assert waits == pytest.approx([0.02])
-
-
-@pytest.mark.parametrize("client_class", [ModbusSerialClient, AsyncModbusSerialClient])
-@pytest.mark.parametrize("delay", [-1, math.nan, math.inf])
-async def test_invalid_serial_delay(client_class, delay):
-    """Reject delay values that cannot define a finite nonnegative interval."""
-    with pytest.raises(ValueError, match="inter_request_delay"):
-        client_class("test", inter_request_delay=delay)
-
-
-@pytest.mark.parametrize("client_class", [ModbusSerialClient, AsyncModbusSerialClient])
-async def test_serial_option_forwarding(client_class):
-    """Both public clients default to zero and forward explicit delays."""
-    for kwargs, expected in (({}, 0.0), ({"inter_request_delay": 0.02}, 0.02)):
-        client = client_class("test", **kwargs)
-        transact = (
-            client.transaction if isinstance(client, ModbusSerialClient) else client.ctx
+    async def test_no_response_and_independent_clients(self, transact, wire, use_clc):
+        """No-response transactions record completion only on their own client."""
+        client = mock.Mock() if transact.is_sync else None
+        second = TransactionManager(
+            use_clc,
+            FramerRTU(DecodePDU(False)),
+            0,
+            False,
+            None,
+            None,
+            None,
+            sync_client=client,
         )
-        assert transact.comm_params.inter_request_delay == expected
-        client.close()
-
-
-async def test_async_concurrent_callers(clock, monkeypatch):
-    """Queued callers cannot send during another caller's idle interval."""
-    now, waits = clock
-    transact = manager(False, 0.02)
-    starts = []
-    sleeping, release = asyncio.Event(), asyncio.Event()
-
-    async def sleep(delay):
-        sleeping.set()
-        await release.wait()
-        waits.append(delay)
-        now[0] += delay
-
-    monkeypatch.setattr(transaction_module.asyncio, "sleep", sleep)
-    monkeypatch.setattr(transact, "pdu_send", lambda _request: starts.append(now[0]))
-    await execute(transact, False, True)
-    second = asyncio.create_task(execute(transact, False, True))
-    await asyncio.wait_for(sleeping.wait(), 1)
-    third = asyncio.create_task(execute(transact, False, True))
-    queued = asyncio.Event()
-    asyncio.get_running_loop().call_soon(queued.set)
-    await queued.wait()
-    assert starts == [100.0]
-    release.set()
-    await asyncio.wait_for(asyncio.gather(second, third), 1)
-    assert starts == pytest.approx([100.0, 100.02, 100.04])
-    assert waits == pytest.approx([0.02, 0.02])
-
-
-async def test_sync_concurrent_callers(clock, monkeypatch):
-    """Threads sharing a client retain spacing while queued on its lock."""
-    now, waits = clock
-    transact = manager(True, 0.02)
-    starts = []
-    sleeping, release = Event(), Event()
-
-    def sleep(delay):
-        sleeping.set()
-        assert release.wait(2)
-        waits.append(delay)
-        now[0] += delay
-
-    monkeypatch.setattr(transaction_module, "sleep", sleep)
-    monkeypatch.setattr(transact, "pdu_send", lambda _request: starts.append(now[0]))
-    await execute(transact, True, True)
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        second = executor.submit(transact.sync_execute, True, ReadCoilsRequest())
+        second.connection_made(mock.Mock())
+        starts = []
+        wire.side_effect = lambda *_args, **_kwargs: starts.append(monotonic())
         try:
-            assert sleeping.wait(2)
-            third = executor.submit(transact.sync_execute, True, ReadCoilsRequest())
-            assert starts == [100.0]
+            await self.execute(transact, True)
+            assert transact._last_transaction_end is not None
+            previous_completion = second._last_transaction_end
+            assert previous_completion is None
+            assert second._inter_request_delay() == 0.0
+            await self.execute(second, True)
+            assert second._last_transaction_end is not None
+            await self.execute(transact, True)
+            assert starts[1] - starts[0] >= 0.019
         finally:
-            release.set()
-        second.result(timeout=2)
-        third.result(timeout=2)
-    assert starts == pytest.approx([100.0, 100.02, 100.04])
-    assert waits == pytest.approx([0.02, 0.02])
+            second.close()
 
+    @pytest.mark.parametrize("error", [OSError, asyncio.TimeoutError])
+    async def test_send_error_propagates_and_paces_next_attempt(
+        self, transact, wire, error
+    ):
+        """Send errors propagate without entering the receive retry handler."""
+        transact.retries = 1
+        wire.side_effect = error("send failed")
+        with pytest.raises(error, match="send failed"):
+            await self.execute(transact, True)
+        assert wire.call_count == 1
+        completed = transact._last_transaction_end
+        assert completed is not None
+        starts = []
+        wire.side_effect = lambda *_args, **_kwargs: starts.append(monotonic())
+        await self.execute(transact, True)
+        assert starts[0] - completed >= 0.019
 
-async def test_cancel_during_idle_interval(clock, monkeypatch):
-    """Cancellation sends nothing and preserves the remaining idle interval."""
-    now, waits = clock
-    transact = manager(False, 0.02)
-    send = mock.Mock()
-    monkeypatch.setattr(transact, "pdu_send", send)
-    await execute(transact, False, True)
-    sleeping = asyncio.Event()
+    @pytest.mark.parametrize(
+        "client_class", [ModbusSerialClient, AsyncModbusSerialClient]
+    )
+    @pytest.mark.parametrize("delay", [-1.0, math.nan, math.inf])
+    async def test_invalid_serial_delay(self, client_class, delay):
+        """Reject delay values that cannot define a finite nonnegative interval."""
+        with pytest.raises(ValueError, match="inter_request_delay"):
+            client_class("test", inter_request_delay=delay)
 
-    async def sleep(_delay):
-        sleeping.set()
-        await asyncio.Future()
+    @pytest.mark.parametrize(
+        "client_class", [ModbusSerialClient, AsyncModbusSerialClient]
+    )
+    async def test_serial_option_forwarding(self, client_class):
+        """Both public clients default to zero and forward explicit delays."""
+        for kwargs, expected in (({}, 0.0), ({"inter_request_delay": 0.02}, 0.02)):
+            client = client_class("test", **kwargs)
+            try:
+                transact = (
+                    client.transaction
+                    if isinstance(client, ModbusSerialClient)
+                    else client.ctx
+                )
+                assert transact.comm_params.inter_request_delay == expected
+            finally:
+                client.close()
 
-    monkeypatch.setattr(transaction_module.asyncio, "sleep", sleep)
-    pending = asyncio.create_task(execute(transact, False, True))
-    await asyncio.wait_for(sleeping.wait(), 1)
-    now[0] += 0.01
-    pending.cancel()
-    with pytest.raises(asyncio.CancelledError):
-        await pending
-    assert send.call_count == 1
+    @pytest.mark.parametrize("transact", [False], indirect=True)
+    async def test_async_same_device_callers(self, transact, wire):
+        """Queued requests to the same slave preserve the recovery interval."""
+        starts = []
+        wire.side_effect = lambda *_args, **_kwargs: starts.append(monotonic())
+        await self.execute(transact, True)
+        await asyncio.wait_for(
+            asyncio.gather(self.execute(transact, True), self.execute(transact, True)),
+            timeout=2,
+        )
+        assert len(starts) == 3
+        assert all(later - earlier >= 0.019 for earlier, later in pairwise(starts))
 
-    async def finish_sleep(delay):
-        waits.append(delay)
-        now[0] += delay
+    @pytest.mark.parametrize("transact", [False], indirect=True)
+    async def test_cancel_during_idle_interval(self, transact, wire):
+        """Cancellation sends nothing and does not reset the last completion."""
+        transact.comm_params.inter_request_delay = 0.1
+        await self.execute(transact, True)
+        completed = transact._last_transaction_end
+        waiting = asyncio.Event()
+        original_wait = transact._wait_before_request
 
-    monkeypatch.setattr(transaction_module.asyncio, "sleep", finish_sleep)
-    await execute(transact, False, True)
-    assert send.call_count == 2
-    assert waits == pytest.approx([0.01])
+        async def observe_wait():
+            waiting.set()
+            await original_wait()
+
+        with mock.patch.object(
+            transact, "_wait_before_request", side_effect=observe_wait
+        ):
+            pending = asyncio.create_task(self.execute(transact, True))
+            try:
+                await asyncio.wait_for(waiting.wait(), timeout=2)
+                pending.cancel()
+                with pytest.raises(asyncio.CancelledError):
+                    await pending
+            finally:
+                pending.cancel()
+                await asyncio.gather(pending, return_exceptions=True)
+        assert wire.call_count == 1
+        assert transact._last_transaction_end == completed
+        starts = []
+        wire.side_effect = lambda *_args, **_kwargs: starts.append(monotonic())
+        await self.execute(transact, True)
+        assert wire.call_count == 2
+        assert starts[0] - completed >= 0.099

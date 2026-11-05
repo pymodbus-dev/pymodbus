@@ -99,6 +99,7 @@ class CommParams:
     parity: str = ""
     stopbits: int = -1
     handle_local_echo: bool = False
+    inter_request_delay: float = 0.0
 
     def copy(self: CommParams) -> CommParams:
         """Create a copy."""

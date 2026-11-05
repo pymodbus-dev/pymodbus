@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import math
 from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from threading import RLock
@@ -143,24 +144,23 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
         """Return this device's remaining delay interval, including broadcasts."""
         if not self.comm_params.inter_request_delay or not self._last_transaction_end:
             return 0.0
-        if dev_id == 0:
+        if dev_id == 0:  # pylint: disable=use-implicit-booleaness-not-comparison-to-zero
             # Broadcasts address all slaves, so use the latest transaction completion.
             last_end = max(self._last_transaction_end.values())
         else:
             last_end = max(
-                self._last_transaction_end.get(dev_id, float("-inf")),
-                self._last_transaction_end.get(0, float("-inf")),
+                self._last_transaction_end.get(dev_id, -math.inf),
+                self._last_transaction_end.get(0, -math.inf),
             )
         remaining = self.comm_params.inter_request_delay - (monotonic() - last_end)
         return remaining if remaining > 0.0 else 0.0
 
     @asynccontextmanager
-    async def _request_lock(self, dev_id: int) -> AsyncGenerator[None, None]:
+    async def _request_lock(self, dev_id: int) -> AsyncGenerator[None]:
         """Serialize attempts, releasing the wire during device delay intervals."""
         while True:
             async with self._lock:
-                delay = self._inter_request_delay(dev_id)
-                if not delay:
+                if not (delay := self._inter_request_delay(dev_id)):
                     yield
                     return
             await asyncio.sleep(delay)

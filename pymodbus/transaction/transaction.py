@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable
+from collections.abc import AsyncGenerator, Callable
+from contextlib import asynccontextmanager
 from threading import RLock
 from time import monotonic, sleep
 
@@ -153,9 +154,15 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
         remaining = self.comm_params.inter_request_delay - (monotonic() - last_end)
         return remaining if remaining > 0.0 else 0.0
 
-    async def _wait_before_request(self, dev_id: int) -> None:
-        """Wait for the remaining idle interval without blocking the event loop."""
-        if delay := self._inter_request_delay(dev_id):
+    @asynccontextmanager
+    async def _request_lock(self, dev_id: int) -> AsyncGenerator[None, None]:
+        """Serialize attempts, releasing the wire during device delay intervals."""
+        while True:
+            async with self._lock:
+                delay = self._inter_request_delay(dev_id)
+                if not delay:
+                    yield
+                    return
             await asyncio.sleep(delay)
 
     def _set_transaction_end(self, dev_id: int) -> None:
@@ -230,15 +237,14 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
                 raise ConnectionException(
                     "Client cannot connect (automatic retry continuing) !!"
                 )
-        async with self._lock:
-            cancel_key = (request.dev_id, request.function_code)
-            if cancelled := self.cancelled_requests.pop(cancel_key, None):
-                late_response, until = cancelled
-                await asyncio.wait([late_response], timeout=until - monotonic())
-            request.transaction_id = self.getNextTID()
-            count_retries = 0
-            while count_retries <= self.retries:
-                await self._wait_before_request(request.dev_id)
+        request.transaction_id = self.getNextTID()
+        count_retries = 0
+        while count_retries <= self.retries:
+            async with self._request_lock(request.dev_id):
+                cancel_key = (request.dev_id, request.function_code)
+                if cancelled := self.cancelled_requests.pop(cancel_key, None):
+                    late_response, until = cancelled
+                    await asyncio.wait([late_response], timeout=until - monotonic())
                 try:
                     self.recv_buffer = b""
                     self.response_future = asyncio.Future()
@@ -285,17 +291,17 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
                         raise
                 finally:
                     self._set_transaction_end(request.dev_id)
-            if self.count_until_disconnect < 0:
-                if self.comm_params.comm_type != CommType.SERIAL:
-                    self.connection_lost(asyncio.TimeoutError("Server not responding"))
-                raise self._io_exception_from_request(
-                    "ERROR: No response received of the last requests (default: retries+3), CLOSING CONNECTION.",
-                    request,
-                )
-            self.count_until_disconnect -= 1
-            txt = f"No response received after {self.retries} retries, continue with next request"
-            Log.error(txt)
-            raise self._io_exception_from_request(txt, request)
+        if self.count_until_disconnect < 0:
+            if self.comm_params.comm_type != CommType.SERIAL:
+                self.connection_lost(asyncio.TimeoutError("Server not responding"))
+            raise self._io_exception_from_request(
+                "ERROR: No response received of the last requests (default: retries+3), CLOSING CONNECTION.",
+                request,
+            )
+        self.count_until_disconnect -= 1
+        txt = f"No response received after {self.retries} retries, continue with next request"
+        Log.error(txt)
+        raise self._io_exception_from_request(txt, request)
 
     def pdu_send(self, pdu: ModbusPDU, addr: tuple | None = None) -> None:
         """Build byte stream and send."""

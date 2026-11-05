@@ -223,14 +223,14 @@ class TestInterRequestDelay:
         await self.execute(transact, True)
         completed = transact._last_transaction_end.get(1)
         waiting = asyncio.Event()
-        original_wait = transact._wait_before_request
+        original_delay = transact._inter_request_delay
 
-        async def observe_wait(dev_id):
+        def observe_delay(dev_id):
             waiting.set()
-            await original_wait(dev_id)
+            return original_delay(dev_id)
 
         with mock.patch.object(
-            transact, "_wait_before_request", side_effect=observe_wait
+            transact, "_inter_request_delay", side_effect=observe_delay
         ):
             pending = asyncio.create_task(self.execute(transact, True))
             try:
@@ -274,3 +274,112 @@ class TestInterRequestDelay:
         assert transact._last_transaction_end[1] == completed
         await self.execute(transact, True, 1)
         assert starts[2] - completed >= 0.019
+
+    @pytest.mark.parametrize("transact", [False], indirect=True)
+    async def test_ready_device_overtakes_waiting_device(self, transact, wire):
+        """Waiting for a delay interval must not reserve the wire against device B."""
+        transact.comm_params.inter_request_delay = 0.2
+        sent = []
+        wire.side_effect = lambda data: sent.append(data[0])
+        await self.execute(transact, True, 1)
+        waiting = asyncio.Event()
+        original_delay = transact._inter_request_delay
+
+        def observe_delay(dev_id):
+            waiting.set()
+            return original_delay(dev_id)
+
+        with mock.patch.object(
+            transact, "_inter_request_delay", side_effect=observe_delay
+        ):
+            pending = asyncio.create_task(self.execute(transact, True, 1))
+            try:
+                await asyncio.wait_for(waiting.wait(), 2)
+                await self.execute(transact, True, 2)
+                assert sent == [1, 2]
+                await asyncio.wait_for(pending, 2)
+                assert sent == [1, 2, 1]
+            finally:
+                pending.cancel()
+                await asyncio.gather(pending, return_exceptions=True)
+
+    @pytest.mark.parametrize("transact", [False], indirect=True)
+    async def test_other_device_waits_for_active_response(self, transact, wire):
+        """Delay intervals can overlap other work, but wire transactions cannot."""
+        sent = []
+        started = asyncio.Event()
+
+        def send(data):
+            sent.append(data[0])
+            started.set()
+
+        wire.side_effect = send
+        transact.comm_params.timeout_connect = 2
+        first = asyncio.create_task(self.execute(transact, False, 1))
+        second = asyncio.create_task(self.execute(transact, True, 2))
+        try:
+            await asyncio.wait_for(started.wait(), 1)
+            await asyncio.sleep(0)
+            assert sent == [1]
+            response = transact.framer.buildFrame(
+                ReadCoilsResponse(dev_id=1, bits=[True])
+            )
+            transact.data_received(response)
+            await asyncio.wait_for(asyncio.gather(first, second), 2)
+            assert sent == [1, 2]
+        finally:
+            first.cancel()
+            second.cancel()
+            await asyncio.gather(first, second, return_exceptions=True)
+
+    @pytest.mark.parametrize("transact", [False], indirect=True)
+    async def test_cancel_while_waiting_for_wire_lock(self, transact, wire):
+        """A cancelled waiter must not release another caller's wire lock."""
+        await transact._lock.acquire()
+        pending = asyncio.create_task(self.execute(transact, True))
+        try:
+            await asyncio.sleep(0)
+            pending.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await pending
+            assert transact._lock.locked()
+            wire.assert_not_called()
+            assert transact._last_transaction_end == {}
+        finally:
+            pending.cancel()
+            await asyncio.gather(pending, return_exceptions=True)
+            transact._lock.release()
+        await asyncio.wait_for(self.execute(transact, True), 1)
+        wire.assert_called_once()
+        assert not transact._lock.locked()
+
+    @pytest.mark.parametrize("transact", [False], indirect=True)
+    async def test_other_device_runs_during_retry_delay(self, transact, wire):
+        """A timed-out slave's retry interval must not reserve the wire."""
+        transact.retries = 1
+        transact.comm_params.inter_request_delay = 0.2
+        sent = []
+        wire.side_effect = lambda data: sent.append(data[0])
+        retry_waiting = asyncio.Event()
+        original_delay = transact._inter_request_delay
+
+        def observe_delay(dev_id):
+            if dev_id == 1 and sent:
+                retry_waiting.set()
+            return original_delay(dev_id)
+
+        with mock.patch.object(
+            transact, "_inter_request_delay", side_effect=observe_delay
+        ):
+            pending = asyncio.create_task(self.execute(transact, False, 1))
+            try:
+                await asyncio.wait_for(retry_waiting.wait(), 2)
+                await self.execute(transact, True, 2)
+                assert sent == [1, 2]
+                with pytest.raises(ModbusIOException):
+                    await asyncio.wait_for(pending, 2)
+                assert sent == [1, 2, 1]
+                assert not transact._lock.locked()
+            finally:
+                pending.cancel()
+                await asyncio.gather(pending, return_exceptions=True)

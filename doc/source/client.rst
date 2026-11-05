@@ -249,16 +249,24 @@ Both serial clients accept ``inter_request_delay`` in seconds, and defaults to `
     client = ModbusSerialClient("/dev/ttyUSB0", baudrate=115200,
                                 inter_request_delay=0.020)
     with client:
-        client.write_coil(0, True, device_id=1)
-        client.read_coils(0, count=1, device_id=1)
+        temperatures = client.read_input_registers(
+            temperature_address, count=4, device_id=1
+        )
+        diagnostics = client.read_holding_registers(
+            diagnostics_address, count=2, device_id=1
+        )
 
 The second request waits until at least 20 ms after the first transaction
 finishes. The asynchronous equivalent uses the same option::
 
     async with AsyncModbusSerialClient("/dev/ttyUSB0", baudrate=115200,
                                       inter_request_delay=0.020) as client:
-        await client.write_coil(0, True, device_id=1)
-        await client.read_coils(0, count=1, device_id=1)
+        temperatures = await client.read_input_registers(
+            temperature_address, count=4, device_id=1
+        )
+        diagnostics = await client.read_holding_registers(
+            diagnostics_address, count=2, device_id=1
+        )
 
 
 Client interface classes

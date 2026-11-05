@@ -3,7 +3,7 @@
 import asyncio
 import math
 from itertools import pairwise
-from time import monotonic, sleep
+from time import perf_counter, sleep
 from unittest import mock
 
 import pytest
@@ -77,28 +77,30 @@ class TestInterRequestDelay:
         transact.comm_params.inter_request_delay = delay
         transact._last_transaction_end = {} if last_end is None else {1: last_end}
         # Replace only the imported reference owned by the transaction module.
-        with mock.patch.object(transaction_module, "monotonic", return_value=now):
+        with mock.patch.object(transaction_module, "perf_counter", return_value=now):
             assert transact._inter_request_delay(1) == pytest.approx(expected)
 
     @pytest.mark.parametrize("delay", [0.0, 0.02])
     async def test_completion_spacing(self, transact, wire, delay):
         """Measure the interval from response completion, not request start."""
         transact.comm_params.inter_request_delay = delay
+        # Leave scheduling margin for the response scheduled after 30 ms.
+        transact.comm_params.timeout_connect = 0.5
         starts, completions = [], []
         response = transact.framer.buildFrame(ReadCoilsResponse(dev_id=1, bits=[True]))
 
         def receive():
-            completions.append(monotonic())
+            completions.append(perf_counter())
             transact.data_received(response)
 
         def send(*_args, **_kwargs):
-            starts.append(monotonic())
+            starts.append(perf_counter())
             if not transact.is_sync:
                 asyncio.get_running_loop().call_later(0.03, receive)
 
         def read(_size):
             sleep(0.03)
-            completions.append(monotonic())
+            completions.append(perf_counter())
             return response
 
         wire.side_effect = send
@@ -118,7 +120,7 @@ class TestInterRequestDelay:
 
         def send(*_args, **_kwargs):
             if 1 in transact._last_transaction_end:
-                gaps.append(monotonic() - transact._last_transaction_end[1])
+                gaps.append(perf_counter() - transact._last_transaction_end[1])
 
         wire.side_effect = send
         if transact.is_sync:
@@ -146,7 +148,7 @@ class TestInterRequestDelay:
         )
         second.connection_made(mock.Mock())
         starts = []
-        wire.side_effect = lambda *_args, **_kwargs: starts.append(monotonic())
+        wire.side_effect = lambda *_args, **_kwargs: starts.append(perf_counter())
         try:
             await self.execute(transact, True)
             assert 1 in transact._last_transaction_end
@@ -173,7 +175,7 @@ class TestInterRequestDelay:
         completed = transact._last_transaction_end.get(1)
         assert completed is not None
         starts = []
-        wire.side_effect = lambda *_args, **_kwargs: starts.append(monotonic())
+        wire.side_effect = lambda *_args, **_kwargs: starts.append(perf_counter())
         await self.execute(transact, True)
         assert starts[0] - completed >= 0.019
 
@@ -207,7 +209,7 @@ class TestInterRequestDelay:
     async def test_async_same_device_callers(self, transact, wire):
         """Queued requests to the same slave preserve the delay interval."""
         starts = []
-        wire.side_effect = lambda *_args, **_kwargs: starts.append(monotonic())
+        wire.side_effect = lambda *_args, **_kwargs: starts.append(perf_counter())
         await self.execute(transact, True)
         await asyncio.wait_for(
             asyncio.gather(self.execute(transact, True), self.execute(transact, True)),
@@ -244,19 +246,19 @@ class TestInterRequestDelay:
         assert wire.call_count == 1
         assert transact._last_transaction_end.get(1) == completed
         starts = []
-        wire.side_effect = lambda *_args, **_kwargs: starts.append(monotonic())
+        wire.side_effect = lambda *_args, **_kwargs: starts.append(perf_counter())
         await self.execute(transact, True)
         assert wire.call_count == 2
         assert starts[0] - completed >= 0.099
 
     async def test_device_intervals_and_broadcasts(self, transact):
         """Other devices retain independent deadlines; broadcasts affect all."""
-        with mock.patch.object(transaction_module, "monotonic", return_value=100.0):
+        with mock.patch.object(transaction_module, "perf_counter", return_value=100.0):
             transact._set_transaction_end(1)
             assert transact._inter_request_delay(1) == pytest.approx(0.02)
             assert transact._inter_request_delay(2) == 0.0
             assert transact._inter_request_delay(0) == pytest.approx(0.02)
-        with mock.patch.object(transaction_module, "monotonic", return_value=100.01):
+        with mock.patch.object(transaction_module, "perf_counter", return_value=100.01):
             transact._set_transaction_end(2)
             assert transact._inter_request_delay(1) == pytest.approx(0.01)
             assert transact._inter_request_delay(2) == pytest.approx(0.02)
@@ -267,7 +269,7 @@ class TestInterRequestDelay:
     async def test_interleaved_devices(self, transact, wire):
         """Requests to B do not reset A's delay interval."""
         starts = []
-        wire.side_effect = lambda *_args, **_kwargs: starts.append(monotonic())
+        wire.side_effect = lambda *_args, **_kwargs: starts.append(perf_counter())
         await self.execute(transact, True, 1)
         completed = transact._last_transaction_end[1]
         await self.execute(transact, True, 2)

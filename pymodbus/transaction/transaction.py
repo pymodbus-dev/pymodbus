@@ -7,7 +7,7 @@ import math
 from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from threading import RLock
-from time import monotonic, sleep
+from time import monotonic, perf_counter, sleep
 
 from ..exceptions import ConnectionException, ModbusIOException
 from ..framer import FramerAscii, FramerBase, FramerRTU
@@ -152,7 +152,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
                 self._last_transaction_end.get(dev_id, -math.inf),
                 self._last_transaction_end.get(0, -math.inf),
             )
-        remaining = self.comm_params.inter_request_delay - (monotonic() - last_end)
+        remaining = self.comm_params.inter_request_delay - (perf_counter() - last_end)
         return remaining if remaining > 0.0 else 0.0
 
     @asynccontextmanager
@@ -168,7 +168,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
     def _set_transaction_end(self, dev_id: int) -> None:
         """Record completion for the addressed device when spacing is enabled."""
         if self.comm_params.inter_request_delay:
-            self._last_transaction_end[dev_id] = monotonic()
+            self._last_transaction_end[dev_id] = perf_counter()
 
     def _no_response(self, request: ModbusPDU) -> ModbusIOException:
         """Count a request that got no response, and build the exception to raise."""

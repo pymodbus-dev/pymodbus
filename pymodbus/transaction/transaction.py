@@ -50,7 +50,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
         self.max_buffer_size = framer.MAX_SIZE
         self.framer = framer
         self.retries = retries
-        self._last_transaction_end: float | None = None
+        self._last_transaction_end: dict[int, float] = {}
         self.next_tid: int = 0
         self.request_dev_id: int = 0
         self.request_transaction_id: int = 0
@@ -138,28 +138,30 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
             dev_id=request.dev_id,
         )
 
-    def _inter_request_delay(self) -> float:
-        """Return remaining idle time while holding the transaction lock."""
-        if (
-            not self.comm_params.inter_request_delay
-            or self._last_transaction_end is None
-        ):
+    def _inter_request_delay(self, dev_id: int) -> float:
+        """Return this device's remaining delay interval, including broadcasts."""
+        if not self.comm_params.inter_request_delay or not self._last_transaction_end:
             return 0.0
-        return max(
-            0.0,
-            self.comm_params.inter_request_delay
-            - (monotonic() - self._last_transaction_end),
-        )
+        if dev_id == 0:
+            # Broadcasts address all slaves, so use the latest transaction completion.
+            last_end = max(self._last_transaction_end.values())
+        else:
+            last_end = max(
+                self._last_transaction_end.get(dev_id, float("-inf")),
+                self._last_transaction_end.get(0, float("-inf")),
+            )
+        remaining = self.comm_params.inter_request_delay - (monotonic() - last_end)
+        return remaining if remaining > 0.0 else 0.0
 
-    async def _wait_before_request(self) -> None:
+    async def _wait_before_request(self, dev_id: int) -> None:
         """Wait for the remaining idle interval without blocking the event loop."""
-        if delay := self._inter_request_delay():
+        if delay := self._inter_request_delay(dev_id):
             await asyncio.sleep(delay)
 
-    def _set_transaction_end(self) -> None:
-        """Record completion only when request spacing is enabled."""
+    def _set_transaction_end(self, dev_id: int) -> None:
+        """Record completion for the addressed device when spacing is enabled."""
         if self.comm_params.inter_request_delay:
-            self._last_transaction_end = monotonic()
+            self._last_transaction_end[dev_id] = monotonic()
 
     def sync_execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
         """Execute requests asynchronously.
@@ -175,7 +177,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
             request.transaction_id = self.getNextTID()
             count_retries = 0
             while count_retries <= self.retries:
-                if delay := self._inter_request_delay():
+                if delay := self._inter_request_delay(request.dev_id):
                     sleep(delay)
                 try:
                     self.pdu_send(request)
@@ -201,7 +203,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
                     except asyncio.exceptions.TimeoutError:
                         count_retries += 1
                 finally:
-                    self._set_transaction_end()
+                    self._set_transaction_end(request.dev_id)
             if self.count_until_disconnect < 0:
                 if self.comm_params.comm_type != CommType.SERIAL:
                     self.connection_lost(asyncio.TimeoutError("Server not responding"))
@@ -236,7 +238,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
             request.transaction_id = self.getNextTID()
             count_retries = 0
             while count_retries <= self.retries:
-                await self._wait_before_request()
+                await self._wait_before_request(request.dev_id)
                 try:
                     self.recv_buffer = b""
                     self.response_future = asyncio.Future()
@@ -282,7 +284,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
                             )
                         raise
                 finally:
-                    self._set_transaction_end()
+                    self._set_transaction_end(request.dev_id)
             if self.count_until_disconnect < 0:
                 if self.comm_params.comm_type != CommType.SERIAL:
                     self.connection_lost(asyncio.TimeoutError("Server not responding"))

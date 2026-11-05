@@ -41,7 +41,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
     :param reconnect_delay_max: Maximum delay when reconnecting, in seconds (use decimals for milliseconds).
     :param timeout: Timeout for connecting and receiving data, in seconds (use decimals for milliseconds).
     :param retries: Max number of retries per request.
-    :param inter_request_delay: Minimum seconds between completing a transaction attempt and sending the next request, including retries. Default 0.0 (disabled).
+    :param inter_request_delay: Minimum seconds between completing a transaction attempt and sending the next request to the same device ID, including retries. Broadcasts apply to all devices. Default 0.0 (disabled).
     :param trace_packet: Called with bytestream received/to be sent
     :param trace_pdu: Called with PDU received/to be sent
     :param trace_connect: Called when connected/disconnected
@@ -143,7 +143,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     :param reconnect_delay_max: Not used in the sync client
     :param timeout: Timeout for connecting and receiving data, in seconds.
     :param retries: Max number of retries per request.
-    :param inter_request_delay: Minimum seconds between completing a transaction attempt and sending the next request, including retries. Default 0.0 (disabled).
+    :param inter_request_delay: Minimum seconds between completing a transaction attempt and sending the next request to the same device ID, including retries. Broadcasts apply to all devices. Default 0.0 (disabled).
     :param trace_packet: Called with bytestream received/to be sent
     :param trace_pdu: Called with PDU received/to be sent
     :param trace_connect: Called when connected/disconnected

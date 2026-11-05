@@ -257,7 +257,12 @@ Both serial clients accept ``inter_request_delay`` in seconds, and defaults to `
         )
 
 The second request waits until at least 20 ms after the first transaction
-finishes. The asynchronous equivalent uses the same option::
+finishes. 
+
+Broadcast requests (device ID 0) wait for all recorded device delay intervals
+and start a delay interval for every device, including previously unused IDs.
+
+The asynchronous equivalent uses the same option::
 
     async with AsyncModbusSerialClient("/dev/ttyUSB0", baudrate=115200,
                                       inter_request_delay=0.020) as client:

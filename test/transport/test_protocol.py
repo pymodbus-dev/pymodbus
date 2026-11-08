@@ -137,6 +137,16 @@ class TestTransportProtocol1:
         client.datagram_received(b"abc", "127.0.0.1")
         client.callback_data.assert_called_once()
 
+    async def test_data_received_frames_above_buffer_size(self, client):
+        """Test data_received(), frames that arrive together are decoded, not dropped."""
+        client.max_buffer_size = 10
+        client.callback_data = mock.MagicMock(
+            side_effect=lambda data, addr=None: len(data)
+        )
+        client.data_received(b"x" * 25)
+        client.callback_data.assert_called_once_with(b"x" * 25, addr=None)
+        assert not client.recv_buffer
+
     async def test_datagram_buffer_overrun(self, client):
         """Test datagram_received()."""
         client.callback_data = mock.MagicMock(return_value=0)

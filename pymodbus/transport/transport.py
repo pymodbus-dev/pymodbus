@@ -307,11 +307,11 @@ class ModbusProtocol(asyncio.BaseProtocol):
                 return
         Log.transport_dump(Log.RECV_DATA, data, self.recv_buffer)
         self.recv_buffer += data
+        cut = self.callback_data(self.recv_buffer, addr=addr)
+        self.recv_buffer = self.recv_buffer[cut:]
         if len(self.recv_buffer) > self.max_buffer_size:
             self.recv_buffer = b""
             return
-        cut = self.callback_data(self.recv_buffer, addr=addr)
-        self.recv_buffer = self.recv_buffer[cut:]
         if self.recv_buffer:
             Log.transport_dump(Log.EXTRA_DATA, None, self.recv_buffer)
 

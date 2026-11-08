@@ -310,8 +310,6 @@ class ModbusProtocol(asyncio.BaseProtocol):
         cut = self.callback_data(self.recv_buffer, addr=addr)
         self.recv_buffer = self.recv_buffer[cut:]
         if len(self.recv_buffer) > self.max_buffer_size:
-            # Several frames can arrive in one read, but what is left after
-            # decoding is at most the start of a frame, which cannot be this long.
             self.recv_buffer = b""
             return
         if self.recv_buffer:

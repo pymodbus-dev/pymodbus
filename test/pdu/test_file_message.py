@@ -11,7 +11,7 @@ from unittest import mock
 
 import pytest
 
-import pymodbus.pdu.file_message as file_msg
+import pymodbus.pdu.other_message as file_msg
 from pymodbus.exceptions import ModbusException, ModbusIOException
 from pymodbus.pdu import DecodePDU
 
@@ -44,7 +44,7 @@ class TestFileMessage:
         """Test basic bit message encoding/decoding."""
         request = b"\x0e\x06\x00\x04\x00\x01\x00\x02\x06\x00\x03\x00\x09\x00\x02"
         handle = file_msg.PDUreadFileRecord(0)
-        handle.from_bytes(0, request)
+        handle.from_bytes(request)
 
     def test_read_file_record_request_frame_size(self):
         """Test basic bit message encoding/decoding."""
@@ -52,7 +52,7 @@ class TestFileMessage:
             b"\x00\x00\x0e\x06\x00\x04\x00\x01\x00\x02\x06\x00\x03\x00\x09\x00\x02"
         )
         handle = file_msg.PDUreadFileRecord(0)
-        size = handle.calculatePduSize(True, 0, request)
+        size = handle.calculatePduSize(request)
         assert size == 0x0E + 5
 
     async def test_read_file_record_request_build_response(self):
@@ -82,7 +82,7 @@ class TestFileMessage:
         # )
         response = b"\x0c\x05\x06\x0d\xfe\x00\x20\x05\x06\x33\xcd\x00\x40"
         handle = file_msg.PDUreadFileRecord(0, is_request=False)
-        handle.from_bytes(0, response)
+        handle.from_bytes(response)
 
         # assert handle.records[0] == record1
         # ssert handle.records[1] == record2
@@ -91,7 +91,7 @@ class TestFileMessage:
         """Test basic bit message encoding/decoding."""
         request = b"\x00\x00\x0c\x05\x06\x0d\xfe\x00\x20\x05\x05\x06\x33\xcd\x00\x40"
         handle = file_msg.PDUreadFileRecord(0)
-        size = handle.calculatePduSize(True, 0, request)
+        size = handle.calculatePduSize(request)
         assert size == 0x0C + 5
 
     # -----------------------------------------------------------------------#
@@ -118,14 +118,14 @@ class TestFileMessage:
         # )
         request = b"\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = file_msg.PDUwriteFileRecord(0)
-        handle.from_bytes(0, request)
+        handle.from_bytes(request)
         # assert handle.records[0] == record
 
     def test_write_file_record_request_frame_size(self):
         """Test write file record request rtu frame size calculation."""
         request = b"\x00\x00\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = file_msg.PDUwriteFileRecord(0)
-        size = handle.calculatePduSize(True, 0, request)
+        size = handle.calculatePduSize(request)
         assert size == 0x0D + 5
 
     async def test_write_file_record_request_build_response(self):
@@ -158,36 +158,34 @@ class TestFileMessage:
         # )
         request = b"\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = file_msg.PDUwriteFileRecord(0)
-        handle.from_bytes(0, request)
+        handle.from_bytes(request)
         # assert handle.records[0] == record
 
     def test_read_file_record_request_decode_invalid_byte_count(self):
         """Test file_msg.PDUreadFileRecord raises ModbusException on oversized byte_count."""
         handle = file_msg.PDUreadFileRecord(0)
         with pytest.raises(ModbusException):
-            handle.from_bytes(
-                0, bytes([0xFF, 0x06, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01])
-            )
+            handle.from_bytes(bytes([0xFF, 0x06, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01]))
 
     def test_write_file_record_request_decode_invalid_byte_count(self):
         """Test file_msg.PDUwriteFileRecord raises ModbusException on oversized byte_count."""
         handle = file_msg.PDUwriteFileRecord(0)
         with pytest.raises(ModbusException):
             handle.from_bytes(
-                0, bytes([0xFF, 0x06, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00])
+                bytes([0xFF, 0x06, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00])
             )
 
     def test_read_fifo_queue_response_decode_invalid_count(self):
         """Test file_msg.PDUreadFifoQueue raises ModbusException on oversized count."""
         handle = file_msg.PDUreadFifoQueue(0, is_request=False)
         with pytest.raises(ModbusException):
-            handle.from_bytes(0, bytes([0x00, 0x00, 0xFF, 0xFF]))
+            handle.from_bytes(bytes([0x00, 0x00, 0xFF, 0xFF]))
 
     def test_write_file_record_response_frame_size(self):
         """Test write file record response rtu frame size calculation."""
         request = b"\x00\x00\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = file_msg.PDUwriteFileRecord(0)
-        size = handle.calculatePduSize(True, 0, request)
+        size = handle.calculatePduSize(request)
         assert size == 0x0D + 5
 
     server = DecodePDU(True)

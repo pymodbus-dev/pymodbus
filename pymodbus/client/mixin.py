@@ -9,12 +9,9 @@ from typing import Generic, Literal, TypeVar, cast
 
 from ..exceptions import ModbusException
 from ..pdu import ModbusPdu, pack_bitstring, unpack_bitstring
-from ..pdu import bit_message as pdu_bit
+from ..pdu import data_message as pdu_data
 from ..pdu import diag_message as pdu_diag
-from ..pdu import file_message as pdu_file_msg
-from ..pdu import mei_message as pdu_mei
-from ..pdu import other_message as pdu_other_msg
-from ..pdu import register_message as pdu_reg
+from ..pdu import other_message as pdu_other
 
 
 T = TypeVar("T", covariant=False)
@@ -76,7 +73,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(
             no_response_expected,
-            pdu_bit.PDUreadCoils(device_id, address=address, count=count),
+            pdu_data.PDUreadCoils(device_id, address=address, count=count),
         )
 
     def read_discrete_inputs(
@@ -99,7 +96,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
         Discrete Inputs are addressed as 0-N (Note some device manuals uses 1-N, assuming 1==0).
         """
-        pdu = pdu_bit.PDUreadDiscreteInputs(device_id, address=address, count=count)
+        pdu = pdu_data.PDUreadDiscreteInputs(device_id, address=address, count=count)
         return self.execute(no_response_expected, pdu)
 
     def read_holding_registers(
@@ -127,7 +124,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(
             no_response_expected,
-            pdu_reg.PDUreadHoldingRegisters(device_id, address=address, count=count),
+            pdu_data.PDUreadHoldingRegisters(device_id, address=address, count=count),
         )
 
     def read_input_registers(
@@ -155,7 +152,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(
             no_response_expected,
-            pdu_reg.PDUreadInputRegisters(device_id, address=address, count=count),
+            pdu_data.PDUreadInputRegisters(device_id, address=address, count=count),
         )
 
     def write_coil(
@@ -178,7 +175,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
         Coils are addressed as 0-N (Note some device manuals uses 1-N, assuming 1==0).
         """
-        pdu = pdu_bit.PDUwriteSingleCoil(device_id, address=address, bits=[value])
+        pdu = pdu_data.PDUwriteSingleCoil(device_id, address=address, bits=[value])
         return self.execute(no_response_expected, pdu)
 
     def write_register(
@@ -206,7 +203,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(
             no_response_expected,
-            pdu_reg.PDUwriteSingleRegister(
+            pdu_data.PDUwriteSingleRegister(
                 device_id, address=address, registers=[value]
             ),
         )
@@ -228,7 +225,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(
             no_response_expected,
-            pdu_other_msg.PDUreadExceptionStatus(device_id),
+            pdu_other.PDUreadExceptionStatus(device_id),
         )
 
     def diag_query_data(
@@ -570,7 +567,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(
             no_response_expected,
-            pdu_other_msg.PDUgetCommEventCounter(device_id),
+            pdu_other.PDUgetCommEventCounter(device_id),
         )
 
     def diag_get_comm_event_log(
@@ -601,7 +598,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         flushes the oldest byte from the field.
         """
         return self.execute(
-            no_response_expected, pdu_other_msg.PDUgetCommEventLog(device_id)
+            no_response_expected, pdu_other.PDUgetCommEventLog(device_id)
         )
 
     def write_coils(
@@ -624,7 +621,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
         Coils are addressed as 0-N (Note some device manuals uses 1-N, assuming 1==0).
         """
-        pdu = pdu_bit.PDUwriteMultipleCoils(device_id, address=address, bits=values)
+        pdu = pdu_data.PDUwriteMultipleCoils(device_id, address=address, bits=values)
         return self.execute(no_response_expected, pdu)
 
     def write_registers(
@@ -648,7 +645,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(
             no_response_expected,
-            pdu_reg.PDUwriteMultipleRegisters(
+            pdu_data.PDUwriteMultipleRegisters(
                 device_id, address=address, registers=values
             ),
         )
@@ -666,12 +663,12 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         and other information specific to a remote device.
         """
         return self.execute(
-            no_response_expected, pdu_other_msg.PDUreportDeviceId(device_id)
+            no_response_expected, pdu_other.PDUreportDeviceId(device_id)
         )
 
     def read_file_record(
         self,
-        records: list[pdu_file_msg.FileRecord],
+        records: list[pdu_other.FileRecord],
         *,
         device_id: int = 1,
         no_response_expected: bool = False,
@@ -705,12 +702,12 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(
             no_response_expected,
-            pdu_file_msg.PDUreadFileRecord(records, dev_id=device_id),
+            pdu_other.PDUreadFileRecord(records, dev_id=device_id),
         )
 
     def write_file_record(
         self,
-        records: list[pdu_file_msg.FileRecord],
+        records: list[pdu_other.FileRecord],
         *,
         device_id: int = 1,
         no_response_expected: bool = False,
@@ -729,7 +726,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(
             no_response_expected,
-            pdu_file_msg.PDUwriteFileRecord(records=records, dev_id=device_id),
+            pdu_other.PDUwriteFileRecord(records=records, dev_id=device_id),
         )
 
     def mask_write_register(
@@ -757,7 +754,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(
             no_response_expected,
-            pdu_reg.PDUmaskWriteRegister(
+            pdu_data.PDUmaskWriteRegister(
                 device_id, address=address, and_mask=and_mask, or_mask=or_mask
             ),
         )
@@ -798,7 +795,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
             write_address = address
         return self.execute(
             no_response_expected,
-            pdu_reg.PDUreadWriteMultipleRegisters(
+            pdu_data.PDUreadWriteMultipleRegisters(
                 device_id,
                 read_address=read_address,
                 count=read_count,
@@ -833,7 +830,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(
             no_response_expected,
-            pdu_file_msg.PDUreadFifoQueue(address, dev_id=device_id),
+            pdu_other.PDUreadFifoQueue(address, dev_id=device_id),
         )
 
     # code 0x2B sub 0x0D: CANopen General Reference Request and Response, NOT IMPLEMENTED
@@ -864,7 +861,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         """
         return self.execute(
             no_response_expected,
-            pdu_mei.PDUreadDeviceInformation(
+            pdu_diag.PDUreadDeviceInformation(
                 device_id, read_code=read_code, object_id=object_id
             ),
         )

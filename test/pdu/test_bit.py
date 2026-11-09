@@ -4,10 +4,10 @@ from unittest import mock
 
 import pytest
 
-import pymodbus.pdu.bit_message as bit_msg
+import pymodbus.pdu.data_message as bit_msg
 from pymodbus.constants import ExcCodes
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.pdu import DecodePDU
+from pymodbus.pdu import DecodePDU, PDUexception
 
 
 class TestBitMessage:
@@ -17,18 +17,16 @@ class TestBitMessage:
         """Test basic to_from_bytes."""
         for i in range(1, 20):
             data = [True] * i
-            pdu = bit_msg.PDUreadCoils(0, is_request=False, bits=data)
-            pdu.from_bytes(0, pdu.to_bytes())
+            pdu = bit_msg.PDUreadCoils(False, 0, bits=data)
+            pdu.from_bytes(pdu.to_bytes())
             assert pdu.bits == data + [False] * (-len(data) % 8)
 
     @pytest.mark.parametrize(
         ("pdu", "msg"),
         [
-            (bit_msg.PDUreadCoils(0, address=12, count=14), b"\x00\x0c\x00\x0e"),
+            (bit_msg.PDUreadCoils(True, 0, address=12, count=14), b"\x00\x0c\x00\x0e"),
             (
-                bit_msg.PDUreadCoils(
-                    0, is_request=False, bits=[True, False, True, True, False]
-                ),
+                bit_msg.PDUreadCoils(False, 0, bits=[True, False, True, True, False]),
                 b"\x01\x0d",
             ),
         ],
@@ -95,23 +93,23 @@ class TestBitMessage:
         """Test bit write base."""
         for pdu, expected in (
             (
-                bit_msg.PDUwriteSingleCoil(0, address=1, bits=[True]),
+                bit_msg.PDUwriteSingleCoil(True, 0, address=1, bits=[True]),
                 b"\x00\x01\xff\x00",
             ),
             (
-                bit_msg.PDUwriteMultipleCoils(0, address=1, bits=[True] * 5),
+                bit_msg.PDUwriteMultipleCoils(True, 0, address=1, bits=[True] * 5),
                 b"\x00\x01\x00\x05\x01\x1f",
             ),
             (
-                bit_msg.PDUwriteMultipleCoils(0, address=1, bits=[True]),
+                bit_msg.PDUwriteMultipleCoils(True, 0, address=1, bits=[True]),
                 b"\x00\x01\x00\x01\x01\x01",
             ),
             (
-                bit_msg.PDUwriteMultipleCoils(0, is_request=False, address=1, count=5),
+                bit_msg.PDUwriteMultipleCoils(False, 0, address=1, count=5),
                 b"\x00\x01\x00\x05",
             ),
             (
-                bit_msg.PDUwriteMultipleCoils(0, is_request=False, address=1, count=1),
+                bit_msg.PDUwriteMultipleCoils(False, 0, address=1, count=1),
                 b"\x00\x01\x00\x01",
             ),
         ):
@@ -135,7 +133,7 @@ class TestBitMessage:
                 [True],
             ),
         ):
-            request.from_bytes(0, frame)
+            request.from_bytes(frame)
             assert request.address == 1
             assert request.bits == values
 
@@ -156,9 +154,10 @@ class TestBitMessage:
     async def test_write_multiple_coils_rejects_invalid_byte_count(self, frame):
         """Test write multiple coils rejects inconsistent byte counts."""
         request = bit_msg.PDUwriteMultipleCoils(0)
-        request.from_bytes(0, frame)
+        request.from_bytes(frame)
         mx = mock.AsyncMock(return_value=ExcCodes.ILLEGAL_VALUE)
         result = await request.build_response(mx, mx)
+        assert isinstance(result, PDUexception)
         assert result.exception_code == ExcCodes.ILLEGAL_VALUE
 
     async def test_write_multiple_coils_accepts_valid_byte_count(
@@ -166,7 +165,7 @@ class TestBitMessage:
     ):
         """Test write multiple coils accepts a consistent byte count."""
         request = bit_msg.PDUwriteMultipleCoils(0)
-        request.from_bytes(0, b"\x00\x01\x00\x09\x02\xff\x01")
+        request.from_bytes(b"\x00\x01\x00\x09\x02\xff\x01")
         result = await request.build_response(
             mock.AsyncMock(return_value=[True]), mock.AsyncMock(return_value=0)
         )
@@ -195,11 +194,12 @@ class TestBitMessage:
     async def test_write_single_coil_illegal_value(self, value):
         """A value other than 0x0000 or 0xFF00 must answer 0x03 and leave the coil."""
         request = bit_msg.PDUwriteSingleCoil(0)
-        request.from_bytes(0, b"\x00\x02" + value)
+        request.from_bytes(b"\x00\x02" + value)
         result = await request.build_response(
             mock.AsyncMock(return_value=[True]), mock.AsyncMock(return_value=0)
         )
         assert result.function_code == 0x85
+        assert isinstance(result, PDUexception)
         assert result.exception_code == ExcCodes.ILLEGAL_VALUE
 
     @pytest.mark.parametrize(
@@ -208,7 +208,7 @@ class TestBitMessage:
     async def test_write_single_coil_legal_value(self, value, bit):
         """0xFF00 and 0x0000 are written as ON and OFF."""
         request = bit_msg.PDUwriteSingleCoil(1)
-        request.from_bytes(0, b"\x00\x02" + value)
+        request.from_bytes(b"\x00\x02" + value)
         x_set = mock.AsyncMock(return_value=0)
         result = await request.build_response(mock.AsyncMock(return_value=[bit]), x_set)
         assert result.to_bytes() == b"\x00\x02" + value
@@ -237,8 +237,8 @@ class TestBitMessage:
     @pytest.mark.parametrize(
         ("request_pdu"),
         [
-            bit_msg.PDUwriteSingleCoil(1, address=2, bits=[True]),
-            bit_msg.PDUwriteMultipleCoils(1, address=2, bits=[True]),
+            bit_msg.PDUwriteSingleCoil(True, 1, address=2, bits=[True]),
+            bit_msg.PDUwriteMultipleCoils(True, 1, address=2, bits=[True]),
         ],
     )
     async def test_write_coil_exception(self, request_pdu):
@@ -250,22 +250,22 @@ class TestBitMessage:
 
     def test_write_multiple_coils_response(self):
         """Test write multiple coils."""
-        response = bit_msg.PDUwriteMultipleCoils(0, is_request=False)
-        response.from_bytes(0, b"\x00\x80\x00\x08")
+        response = bit_msg.PDUwriteMultipleCoils(False, 0)
+        response.from_bytes(b"\x00\x80\x00\x08")
         assert response.address == 0x80
         assert response.count == 0x08
 
     def test_serializing_to_string(self):
         """Test serializing to string."""
         for pdu in (
-            bit_msg.PDUwriteSingleCoil(0, address=1, bits=[True]),
-            bit_msg.PDUwriteSingleCoil(0, is_request=False, address=1, bits=[True]),
-            bit_msg.PDUwriteMultipleCoils(0, address=1, bits=[True] * 5),
-            bit_msg.PDUwriteMultipleCoils(0, is_request=False, address=1, count=5),
+            bit_msg.PDUwriteSingleCoil(True, 0, address=1, bits=[True]),
+            bit_msg.PDUwriteSingleCoil(False, 0, address=1, bits=[True]),
+            bit_msg.PDUwriteMultipleCoils(True, 0, address=1, bits=[True] * 5),
+            bit_msg.PDUwriteMultipleCoils(False, 0, address=1, count=5),
         ):
             assert str(pdu)
 
     def test_pass_falsy_value_in_write_multiple_coils_request(self):
         """Test pass falsy value to write multiple coils."""
-        request = bit_msg.PDUwriteMultipleCoils(0, address=1, bits=[False])
+        request = bit_msg.PDUwriteMultipleCoils(True, 0, address=1, bits=[False])
         assert request.bits == [False]

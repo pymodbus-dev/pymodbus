@@ -4,9 +4,10 @@ from unittest import mock
 
 import pytest
 
-import pymodbus.pdu.register_message as pdu_reg
+import pymodbus.pdu.data_message as pdu_reg
 from pymodbus import ModbusIOException
 from pymodbus.constants import ExcCodes
+from pymodbus.pdu import PDUexception
 
 
 # ---------------------------------------------------------------------------#
@@ -30,16 +31,16 @@ class TestWriteRegisterMessages:
         self.values = [0xA, 0xB, 0xC]
         self.write = {
             pdu_reg.PDUwriteSingleRegister(
-                0, address=1, registers=[self.value]
+                True, 0, address=1, registers=[self.value]
             ): b"\x00\x01\xab\xcd",
             pdu_reg.PDUwriteSingleRegister(
-                0, address=1, registers=[self.value]
+                True, 0, address=1, registers=[self.value]
             ): b"\x00\x01\xab\xcd",
             pdu_reg.PDUwriteMultipleRegisters(
-                0, address=1, registers=self.values
+                True, 0, address=1, registers=self.values
             ): b"\x00\x01\x00\x03\x06\x00\x0a\x00\x0b\x00\x0c",
             pdu_reg.PDUwriteMultipleRegisters(
-                0, address=1, registers=[0xD]
+                True, 0, address=1, registers=[0xD]
             ): b"\x00\x01\x00\x01\x02\x00\x0d",
         }
 
@@ -57,12 +58,12 @@ class TestWriteRegisterMessages:
         )
         for packet, address in zip(values, addresses):
             request, response = packet
-            request.from_bytes(0, response)
+            request.from_bytes(response)
             assert request.address == address
 
     def test_invalid_write_multiple_registers_request(self):
         """Test invalid write multiple registers request."""
-        request = pdu_reg.PDUwriteMultipleRegisters(0, address=0, registers=None)
+        request = pdu_reg.PDUwriteMultipleRegisters(True, 0, address=0, registers=None)
         assert not request.registers
 
     @pytest.mark.parametrize(
@@ -77,14 +78,14 @@ class TestWriteRegisterMessages:
     )
     async def test_write_multiple_registers_rejects_invalid_byte_count(self, frame):
         """Test inconsistent byte counts are rejected before writing."""
-        request = pdu_reg.PDUwriteMultipleRegisters(0)
+        request = pdu_reg.PDUwriteMultipleRegisters(True, 0)
         with pytest.raises(ModbusIOException):
-            request.from_bytes(0, frame)
+            request.from_bytes(frame)
 
     async def test_write_multiple_registers_accepts_valid_byte_count(self):
         """Test a consistent byte count reaches the datastore."""
-        request = pdu_reg.PDUwriteMultipleRegisters(0)
-        request.from_bytes(0, b"\x00\x01\x00\x02\x04\x00\x0a\x00\x0b")
+        request = pdu_reg.PDUwriteMultipleRegisters(True, 0)
+        request.from_bytes(b"\x00\x01\x00\x02\x04\x00\x0a\x00\x0b")
         setValues = mock.AsyncMock(return_value=0)
         result = await request.build_response(mock.AsyncMock(), setValues)
 
@@ -98,8 +99,11 @@ class TestWriteRegisterMessages:
 
     async def test_write_single_register_request(self):
         """Test write single register request."""
-        request = pdu_reg.PDUwriteSingleRegister(0, address=0x00, registers=[0xF0000])
+        request = pdu_reg.PDUwriteSingleRegister(
+            True, 0, address=0x00, registers=[0xF0000]
+        )
         result = await request.build_response(mock.AsyncMock(), mock.AsyncMock())
+        assert isinstance(result, PDUexception)
         assert result.exception_code == ExcCodes.ILLEGAL_VALUE
 
         request.registers = [0x00FF]
@@ -113,7 +117,7 @@ class TestWriteRegisterMessages:
     async def test_write_multiple_register_request(self):
         """Test write multiple register request."""
         request = pdu_reg.PDUwriteMultipleRegisters(
-            0, address=0x00, registers=[0x00] * 10
+            True, 0, address=0x00, registers=[0x00] * 10
         )
         result = await request.build_response(
             mock.AsyncMock(), mock.AsyncMock(return_value=0)
@@ -124,17 +128,20 @@ class TestWriteRegisterMessages:
         result = await request.build_response(
             mock.AsyncMock(), mock.AsyncMock(return_value=0)
         )
+        assert isinstance(result, PDUexception)
         assert result.exception_code == ExcCodes.ILLEGAL_VALUE
 
         request = pdu_reg.PDUwriteMultipleRegisters(
-            0, address=0x00, registers=[0x00] * 10
+            True, 0, address=0x00, registers=[0x00] * 10
         )
         result = await request.build_response(
             mock.AsyncMock(), mock.AsyncMock(return_value=0)
         )
         assert result.function_code == request.function_code
 
-        request = pdu_reg.PDUwriteMultipleRegisters(0, address=0x00, registers=[0x00])
+        request = pdu_reg.PDUwriteMultipleRegisters(
+            True, 0, address=0x00, registers=[0x00]
+        )
         result = await request.build_response(
             mock.AsyncMock(), mock.AsyncMock(return_value=0)
         )
@@ -144,10 +151,12 @@ class TestWriteRegisterMessages:
         """Test exception response from datastore."""
         getV = mock.AsyncMock(return_value=ExcCodes.ILLEGAL_VALUE)
         for pdu in (
-            pdu_reg.PDUwriteSingleRegister(0, address=0x00, registers=[0xF000]),
-            pdu_reg.PDUwriteMultipleRegisters(0, address=0x00, registers=[0x00] * 10),
+            pdu_reg.PDUwriteSingleRegister(True, 0, address=0x00, registers=[0xF000]),
+            pdu_reg.PDUwriteMultipleRegisters(
+                True, 0, address=0x00, registers=[0x00] * 10
+            ),
             pdu_reg.PDUmaskWriteRegister(
-                0, address=0x0000, and_mask=0x0101, or_mask=0x1010
+                True, 0, address=0x0000, and_mask=0x0101, or_mask=0x1010
             ),
         ):
             await pdu.build_response(getV, mock.AsyncMock())
@@ -155,7 +164,7 @@ class TestWriteRegisterMessages:
     def test_mask_write_register_request_encode(self):
         """Test basic bit message encoding/decoding."""
         handle = pdu_reg.PDUmaskWriteRegister(
-            0, address=0x0000, and_mask=0x0101, or_mask=0x1010
+            True, 0, address=0x0000, and_mask=0x0101, or_mask=0x1010
         )
         result = handle.to_bytes()
         assert result == b"\x00\x00\x01\x01\x10\x10"
@@ -163,8 +172,8 @@ class TestWriteRegisterMessages:
     def test_mask_write_register_request_decode(self):
         """Test basic bit message encoding/decoding."""
         request = b"\x00\x04\x00\xf2\x00\x25"
-        handle = pdu_reg.PDUmaskWriteRegister(0)
-        handle.from_bytes(0, request)
+        handle = pdu_reg.PDUmaskWriteRegister(True, 0)
+        handle.from_bytes(request)
         assert handle.address == 0x0004
         assert handle.and_mask == 0x00F2
         assert handle.or_mask == 0x0025
@@ -181,7 +190,7 @@ class TestWriteRegisterMessages:
         #     and_mask=F, or_mask=F
         context = MockLastValuesContext(valid=True, default=0xAA55)
         handle = pdu_reg.PDUmaskWriteRegister(
-            0, address=0x0000, count=1, and_mask=0x0F0F, or_mask=0x00FF
+            True, 0, address=0x0000, count=1, and_mask=0x0F0F, or_mask=0x00FF
         )
         await handle.build_response(context.async_getValues, context.async_setValues)
         assert context.last_values == [0x0AF5]
@@ -189,19 +198,21 @@ class TestWriteRegisterMessages:
     async def test_mask_write_register_request_invalid_build_response(self):
         """Test write register request build_response with invalid data."""
         handle = pdu_reg.PDUmaskWriteRegister(
-            0, address=0x0000, and_mask=-1, or_mask=0x1010
+            True, 0, address=0x0000, and_mask=-1, or_mask=0x1010
         )
         result = await handle.build_response(mock.AsyncMock(), mock.AsyncMock())
+        assert isinstance(result, PDUexception)
         assert result.exception_code == ExcCodes.ILLEGAL_VALUE
 
         handle = pdu_reg.PDUmaskWriteRegister(
-            0, address=0x0000, and_mask=0x0101, or_mask=-1
+            True, 0, address=0x0000, and_mask=0x0101, or_mask=-1
         )
         result = await handle.build_response(mock.AsyncMock(), mock.AsyncMock())
+        assert isinstance(result, PDUexception)
         assert result.exception_code == ExcCodes.ILLEGAL_VALUE
 
         handle = pdu_reg.PDUmaskWriteRegister(
-            0, address=0x0000, and_mask=0x0101, or_mask=0x1010
+            True, 0, address=0x0000, and_mask=0x0101, or_mask=0x1010
         )
         result = await handle.build_response(mock.AsyncMock(), mock.AsyncMock())
 
@@ -212,21 +223,21 @@ class TestWriteRegisterMessages:
     def test_mask_write_register_response_encode(self):
         """Test basic bit message encoding/decoding."""
         handle = pdu_reg.PDUmaskWriteRegister(
-            0, address=0x0000, and_mask=0x0101, or_mask=0x1010
+            True, 0, address=0x0000, and_mask=0x0101, or_mask=0x1010
         )
         result = handle.to_bytes()
         assert result == b"\x00\x00\x01\x01\x10\x10"
 
     def test_mask_write_register_frame_size(self):
         """Test that the read fifo queue response can decode."""
-        assert pdu_reg.PDUmaskWriteRegister.calculatePduSize(True, 0, b"") == 10
-        assert pdu_reg.PDUmaskWriteRegister.calculatePduSize(False, 0, b"") == 10
+        assert pdu_reg.PDUmaskWriteRegister(True, 0).calculatePduSize(b"") == 10
+        assert pdu_reg.PDUmaskWriteRegister(False, 0).calculatePduSize(b"") == 10
 
     def test_mask_write_register_response_decode(self):
         """Test basic bit message encoding/decoding."""
         request = b"\x00\x04\x00\xf2\x00\x25"
-        handle = pdu_reg.PDUmaskWriteRegister(0)
-        handle.from_bytes(0, request)
+        handle = pdu_reg.PDUmaskWriteRegister(True, 0)
+        handle.from_bytes(request)
         assert handle.address == 0x0004
         assert handle.and_mask == 0x00F2
         assert handle.or_mask == 0x0025
@@ -234,9 +245,13 @@ class TestWriteRegisterMessages:
     @pytest.mark.parametrize(
         ("request_pdu"),
         [
-            pdu_reg.PDUwriteSingleRegister(0, address=0x00, registers=[5]),
-            pdu_reg.PDUwriteMultipleRegisters(0, address=0x00, registers=[0x00] * 10),
-            pdu_reg.PDUmaskWriteRegister(0, 0x0000, 0x01, 0x1010),
+            pdu_reg.PDUwriteSingleRegister(True, 0, address=0x00, registers=[5]),
+            pdu_reg.PDUwriteMultipleRegisters(
+                True, 0, address=0x00, registers=[0x00] * 10
+            ),
+            pdu_reg.PDUmaskWriteRegister(
+                True, 0, address=0x0000, count=0x01, registers=[0x1010]
+            ),
         ],
     )
     async def test_register_write_exception(self, request_pdu, mock_server_context):

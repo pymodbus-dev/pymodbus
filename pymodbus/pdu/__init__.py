@@ -9,16 +9,15 @@ __all__ = [
     "PDUexception",
     "StoreGet",
     "StoreSet",
+    "add_pdu",
     "pack_bitstring",
     "unpack_bitstring",
 ]
 
-from .bit_message import PDUreadCoils
+from .data_message import PDUreadCoils
 from .device import ModbusControlBlock, ModbusDeviceIdentification
 from .diag_message import PDUdiagnostic
-from .file_message import FileRecord
-from .mei_message import PDUreadDeviceInformation
-from .other_message import PDUreadExceptionStatus
+from .other_message import FileRecord, PDUreadExceptionStatus
 from .pdu import (
     DecodePDU,
     ModbusPdu,
@@ -28,11 +27,13 @@ from .pdu import (
     pack_bitstring,
     unpack_bitstring,
 )
-from .register_message import PDUreadHoldingRegisters
+
+
+def add_pdu(pdu: type[ModbusPdu]) -> None:
+    """Make add_pdu global."""
+    DecodePDU.add_pdu(pdu)
 
 
 _ = PDUreadCoils
 _ = PDUdiagnostic
-_ = PDUreadDeviceInformation
 _ = PDUreadExceptionStatus
-_ = PDUreadHoldingRegisters

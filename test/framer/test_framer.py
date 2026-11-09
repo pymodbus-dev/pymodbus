@@ -14,9 +14,9 @@ from pymodbus.framer import (
     FramerType,
 )
 from pymodbus.pdu import DecodePDU, ModbusControlBlock
-from pymodbus.pdu.bit_message import PDUwriteMultipleCoils
-from pymodbus.pdu.register_message import (
+from pymodbus.pdu.data_message import (
     PDUreadWriteMultipleRegisters,
+    PDUwriteMultipleCoils,
     PDUwriteMultipleRegisters,
 )
 from test.framer.generator import set_calls
@@ -862,14 +862,15 @@ class TestFramerType:
     @pytest.mark.parametrize(
         "request_pdu",
         [
-            PDUwriteMultipleCoils(1, address=1, bits=[True, False, True]),
-            PDUwriteMultipleRegisters(address=1, registers=[10, 11], dev_id=1),
+            PDUwriteMultipleCoils(True, 1, address=1, bits=[True, False, True]),
+            PDUwriteMultipleRegisters(True, 1, address=1, registers=[10, 11]),
             PDUreadWriteMultipleRegisters(
-                read_address=1,
+                True,
+                1,
+                address=1,
                 count=2,
                 write_address=3,
                 write_registers=[4, 5],
-                dev_id=1,
             ),
         ],
     )

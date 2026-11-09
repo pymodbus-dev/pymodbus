@@ -6,7 +6,9 @@ from unittest import mock
 import pytest
 
 import pymodbus.pdu.other_message as pymodbus_message
+from pymodbus.constants import CLEAR_STATISTICS
 from pymodbus.exceptions import ModbusIOException
+from pymodbus.pdu.diag_message import PDUgetClearModbusPlus, PDUreturnQueryData
 
 
 class TestOtherMessage:
@@ -15,7 +17,7 @@ class TestOtherMessage:
     async def test_read_exception_status(self):
         """Test read exception status."""
         request = pymodbus_message.PDUreadExceptionStatus(0)
-        request.from_bytes(0, b"\x12")
+        request.from_bytes(b"\x12")
         assert not request.to_bytes()
         assert (
             await request.build_response(mock.AsyncMock(), mock.AsyncMock())
@@ -25,13 +27,13 @@ class TestOtherMessage:
             0, is_request=False, status=0x12
         )
         assert response.to_bytes() == b"\x12"
-        response.from_bytes(0, b"\x12")
+        response.from_bytes(b"\x12")
         assert response.status == 0x12
 
     async def test_get_comm_event_counter(self):
         """Test get comm event counter."""
         request = pymodbus_message.PDUgetCommEventCounter(0)
-        request.from_bytes(1, b"\x0b\x00\x00\x00\x12")
+        request.from_bytes(b"\x0b\x00\x00\x00\x12")
         assert not request.to_bytes()
         assert (
             await request.build_response(mock.AsyncMock(), mock.AsyncMock())
@@ -41,7 +43,7 @@ class TestOtherMessage:
             0, is_request=False, count=0x12
         )
         assert response.to_bytes() == b"\x00\x00\x00\x12"
-        response.from_bytes(0, b"\x00\x00\x00\x12")
+        response.from_bytes(b"\x00\x00\x00\x12")
         assert response.status
         assert response.count == 0x12
 
@@ -51,7 +53,7 @@ class TestOtherMessage:
     async def test_get_comm_event_log(self):
         """Test get comm event log."""
         request = pymodbus_message.PDUgetCommEventLog(0)
-        request.from_bytes(0, b"\x12")
+        request.from_bytes(b"\x12")
         assert not request.to_bytes()
         assert (
             await request.build_response(mock.AsyncMock(), mock.AsyncMock())
@@ -59,7 +61,7 @@ class TestOtherMessage:
 
         response = pymodbus_message.PDUgetCommEventLog(0, is_request=False)
         assert response.to_bytes() == b"\x06\x00\x00\x00\x00\x00\x00"
-        response.from_bytes(0, b"\x06\x00\x00\x00\x12\x00\x12")
+        response.from_bytes(b"\x06\x00\x00\x00\x12\x00\x12")
         assert response.status
         assert response.message_count == 0x12
         assert response.event_count == 0x12
@@ -74,7 +76,7 @@ class TestOtherMessage:
             0, is_request=False, events=[0x12, 0x34, 0x56]
         )
         assert response.to_bytes() == b"\x09\x00\x00\x00\x00\x00\x00\x12\x34\x56"
-        response.from_bytes(0, b"\x09\x00\x00\x00\x12\x00\x12\x12\x34\x56")
+        response.from_bytes(b"\x09\x00\x00\x00\x12\x00\x12\x12\x34\x56")
         assert response.status
         assert response.message_count == 0x12
         assert response.event_count == 0x12
@@ -131,7 +133,7 @@ class TestOtherMessage:
         with mock.patch("pymodbus.pdu.other_message.DeviceInformationFactory") as dif:
             dif.get.return_value = {}
             request = pymodbus_message.PDUreportDeviceId(0)
-            request.from_bytes(0, b"\x12")
+            request.from_bytes(b"\x12")
             assert not request.to_bytes()
             assert (
                 await request.build_response(mock.AsyncMock(), mock.AsyncMock())
@@ -148,10 +150,10 @@ class TestOtherMessage:
             )
 
             assert response.to_bytes() == b"\tPymodbus\xff"
-            response.from_bytes(0, b"\tPymodbus\xff")
+            response.from_bytes(b"\tPymodbus\xff")
             assert response.status
             assert response.identifier == b"Pymodbus"
-            response.from_bytes(0, b"\x03\x12\x00\x00")
+            response.from_bytes(b"\x03\x12\x00\x00")
             assert response.identifier == b"\x12\x00"
             response.status = False
             assert response.to_bytes() == b"\x03\x12\x00\x00"
@@ -163,7 +165,7 @@ class TestOtherMessage:
                 0, is_request=False, identifier=identifier, status=status
             )
             received = pymodbus_message.PDUreportDeviceId(0, is_request=False)
-            received.from_bytes(0, sent.to_bytes())
+            received.from_bytes(sent.to_bytes())
             assert received.identifier == identifier
             assert received.status == status
 
@@ -172,4 +174,15 @@ class TestOtherMessage:
         response = pymodbus_message.PDUreportDeviceId(0, is_request=False)
         for frame in (b"\x00\x12\xff", b"\x04\x12\xff"):
             with pytest.raises(ModbusIOException):
-                response.from_bytes(0, frame)
+                response.from_bytes(frame)
+
+    @pytest.mark.parametrize(("message"), [b"\x0c", 12, [12], [12, 24]])
+    def test_diag_message(self, message):
+        """Test diag message."""
+        PDUreturnQueryData(0, message=message)
+
+    @pytest.mark.parametrize(("message"), [b"\x0c", 12, [12], [12, 24]])
+    async def test_diag_message2(self, message):
+        """Test diag message."""
+        pdu = PDUgetClearModbusPlus(0, message=CLEAR_STATISTICS)
+        assert await pdu.build_response(mock.AsyncMock(), mock.AsyncMock())

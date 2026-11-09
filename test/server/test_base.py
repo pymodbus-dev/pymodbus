@@ -7,7 +7,7 @@ import pytest
 from pymodbus.datastore import ModbusDeviceContext, ModbusServerContext
 from pymodbus.exceptions import ParameterException
 from pymodbus.framer import FramerType
-from pymodbus.pdu.register_message import PDUreadHoldingRegisters
+from pymodbus.pdu.data_message import PDUreadHoldingRegisters
 from pymodbus.server import ModbusBaseServer
 from pymodbus.simulator import DataType, SimData, SimDevice
 from pymodbus.transport import CommParams, CommType

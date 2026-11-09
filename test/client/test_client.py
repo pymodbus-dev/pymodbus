@@ -8,12 +8,9 @@ from unittest import mock
 import pytest
 
 import pymodbus.client as lib_client
-import pymodbus.pdu.bit_message as pdu_bit
+import pymodbus.pdu.data_message as pdu_data
 import pymodbus.pdu.diag_message as pdu_diag
-import pymodbus.pdu.file_message as pdu_file_msg
-import pymodbus.pdu.mei_message as pdu_mei
-import pymodbus.pdu.other_message as pdu_other_msg
-import pymodbus.pdu.register_message as pdu_reg
+import pymodbus.pdu.other_message as pdu_other
 from examples.helper import generate_ssl, get_certificate
 from pymodbus import FramerType
 from pymodbus.client.base import ModbusBaseClient
@@ -47,13 +44,13 @@ class TestMixin:
     @pytest.mark.parametrize(
         ("method", "arg", "pdu_request"),
         [
-            ("read_coils", 1, pdu_bit.PDUreadCoils),
-            ("read_discrete_inputs", 1, pdu_bit.PDUreadDiscreteInputs),
-            ("read_holding_registers", 1, pdu_reg.PDUreadHoldingRegisters),
-            ("read_input_registers", 1, pdu_reg.PDUreadInputRegisters),
-            ("write_coil", 2, pdu_bit.PDUwriteSingleCoil),
-            ("write_register", 2, pdu_reg.PDUwriteSingleRegister),
-            ("read_exception_status", 0, pdu_other_msg.PDUreadExceptionStatus),
+            ("read_coils", 1, pdu_data.PDUreadCoils),
+            ("read_discrete_inputs", 1, pdu_data.PDUreadDiscreteInputs),
+            ("read_holding_registers", 1, pdu_data.PDUreadHoldingRegisters),
+            ("read_input_registers", 1, pdu_data.PDUreadInputRegisters),
+            ("write_coil", 2, pdu_data.PDUwriteSingleCoil),
+            ("write_register", 2, pdu_data.PDUwriteSingleRegister),
+            ("read_exception_status", 0, pdu_other.PDUreadExceptionStatus),
             ("diag_query_data", 3, pdu_diag.PDUreturnQueryData),
             (
                 "diag_restart_communication",
@@ -106,19 +103,19 @@ class TestMixin:
             (
                 "diag_get_comm_event_counter",
                 0,
-                pdu_other_msg.PDUgetCommEventCounter,
+                pdu_other.PDUgetCommEventCounter,
             ),
-            ("diag_get_comm_event_log", 0, pdu_other_msg.PDUgetCommEventLog),
-            ("write_coils", 5, pdu_bit.PDUwriteMultipleCoils),
-            ("write_registers", 6, pdu_reg.PDUwriteMultipleRegisters),
-            ("readwrite_registers", 0, pdu_reg.PDUreadWriteMultipleRegisters),
-            ("readwrite_registers", 6, pdu_reg.PDUreadWriteMultipleRegisters),
-            ("mask_write_register", 1, pdu_reg.PDUmaskWriteRegister),
-            ("report_device_id", 0, pdu_other_msg.PDUreportDeviceId),
-            ("read_file_record", 7, pdu_file_msg.PDUreadFileRecord),
-            ("write_file_record", 7, pdu_file_msg.PDUwriteFileRecord),
-            ("read_fifo_queue", 1, pdu_file_msg.PDUreadFifoQueue),
-            ("read_device_information", 0, pdu_mei.PDUreadDeviceInformation),
+            ("diag_get_comm_event_log", 0, pdu_other.PDUgetCommEventLog),
+            ("write_coils", 5, pdu_data.PDUwriteMultipleCoils),
+            ("write_registers", 6, pdu_data.PDUwriteMultipleRegisters),
+            ("readwrite_registers", 0, pdu_data.PDUreadWriteMultipleRegisters),
+            ("readwrite_registers", 6, pdu_data.PDUreadWriteMultipleRegisters),
+            ("mask_write_register", 1, pdu_data.PDUmaskWriteRegister),
+            ("report_device_id", 0, pdu_other.PDUreportDeviceId),
+            ("read_file_record", 7, pdu_other.PDUreadFileRecord),
+            ("write_file_record", 7, pdu_other.PDUwriteFileRecord),
+            ("read_fifo_queue", 1, pdu_other.PDUreadFifoQueue),
+            ("read_device_information", 0, pdu_diag.PDUreadDeviceInformation),
         ],
     )
     def test_client_mixin(self, arglist, method, arg, pdu_request):
@@ -620,7 +617,7 @@ class TestClientBase:
             None,
             None,
         )
-        client.register(pdu_bit.PDUreadCoils)
+        client.register(pdu_data.PDUreadCoils)
         assert str(client)
         client.set_max_no_responses(110)
         client.close()

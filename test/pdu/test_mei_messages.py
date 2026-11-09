@@ -11,7 +11,7 @@ import pytest
 
 from pymodbus.constants import DeviceInformation, ExcCodes
 from pymodbus.pdu import DecodePDU, ModbusControlBlock, PDUexception
-from pymodbus.pdu.mei_message import PDUreadDeviceInformation
+from pymodbus.pdu.diag_message import PDUreadDeviceInformation
 
 
 TEST_VERSION = b"v2.1.12"
@@ -36,7 +36,7 @@ class TestMeiMessage:
     def test_read_device_information_request_decode(self):
         """Test basic bit message encoding/decoding."""
         handle = PDUreadDeviceInformation(0)
-        handle.from_bytes(0, b"\x0e\x01\x00")
+        handle.from_bytes(b"\x0e\x01\x00")
         assert handle.read_code == DeviceInformation.BASIC
         assert not handle.object_id
 
@@ -100,26 +100,28 @@ class TestMeiMessage:
             0, read_code=DeviceInformation.SPECIFIC, object_id=0x54
         )
         result = await handle.build_response(mock.AsyncMock(), mock.AsyncMock())
+        assert isinstance(result, PDUexception)
         assert result.exception_code == ExcCodes.ILLEGAL_ADDRESS
         ModbusControlBlock().Identity[0xFE] = ""
         handle = PDUreadDeviceInformation(
             0, read_code=DeviceInformation.SPECIFIC, object_id=0xFE
         )
         result = await handle.build_response(mock.AsyncMock(), mock.AsyncMock())
+        assert isinstance(result, PDUexception)
         assert result.exception_code == ExcCodes.ILLEGAL_ADDRESS
 
     def test_read_device_information_calc1(self):
         """Test calculatePduSize, short buffer."""
         assert (
-            PDUreadDeviceInformation.calculatePduSize(True, 0, b"\x0e\x01\x83") == 999
+            PDUreadDeviceInformation(True, 0).calculatePduSize(b"\x0e\x01\x83") == 999
         )
         assert (
-            PDUreadDeviceInformation.calculatePduSize(False, 0, b"\x0e\x01\x83\x00\x00")
+            PDUreadDeviceInformation(False, 0).calculatePduSize(b"\x0e\x01\x83\x00\x00")
             == 999
         )
         assert (
-            PDUreadDeviceInformation.calculatePduSize(
-                False, 0, b"\x0e\x01\x83\x00\x00\x03\x01\x03"
+            PDUreadDeviceInformation(False, 0).calculatePduSize(
+                b"\x0e\x01\x83\x00\x00\x03\x01\x03"
             )
             == 998
         )
@@ -127,9 +129,9 @@ class TestMeiMessage:
     def test_read_device_information_sub_fc(self):
         """Test calculatePduSize, short buffer."""
         handle = PDUreadDeviceInformation(0)
-        assert handle.decode_sub_function_code(0, b"\x0e\x01\x83") == 0x83
+        assert handle.decode_sub_function_code(b"\x0e\x01\x83") == 0x83
         handle2 = PDUreadDeviceInformation(0)
-        assert handle2.decode_sub_function_code(0, b"\x0e\x01\x83") == 0x83
+        assert handle2.decode_sub_function_code(b"\x0e\x01\x83") == 0x83
 
     def test_read_device_information_encode(self):
         """Test that the read fifo queue response can encode."""
@@ -199,7 +201,7 @@ class TestMeiMessage:
         handle = PDUreadDeviceInformation(
             0, is_request=False, read_code=0x00, information={}
         )
-        handle.from_bytes(0, message)
+        handle.from_bytes(message)
         assert handle.read_code == DeviceInformation.BASIC
         assert handle.conformity == 0x01
         assert handle.information[0x00] == b"Company"
@@ -212,8 +214,8 @@ class TestMeiMessage:
         message = (
             b"\x04\x2b\x0e\x01\x81\x00\x01\x01\x00\x06\x66\x6f\x6f\x62\x61\x72\xd7\x3b"
         )
-        result = PDUreadDeviceInformation.calculatePduSize(False, 0, message)
+        result = PDUreadDeviceInformation(False, 0).calculatePduSize(message)
         assert result == 18
         message = b"\x00\x2b\x0e\x02\x00"
-        result = PDUreadDeviceInformation.calculatePduSize(True, 0, message)
+        result = PDUreadDeviceInformation(False, 0).calculatePduSize(message)
         assert result == 7

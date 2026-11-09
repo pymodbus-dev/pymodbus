@@ -5,10 +5,10 @@ from unittest import mock
 
 import pytest
 
-import pymodbus.pdu.register_message as pdu_reg
+import pymodbus.pdu.data_message as pdu_reg
 from pymodbus.constants import ExcCodes
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.pdu import DecodePDU
+from pymodbus.pdu import DecodePDU, PDUexception
 
 
 TEST_MESSAGE = b"\x06\x00\x0a\x00\x0b\x00\x0c"
@@ -26,23 +26,23 @@ class TestReadRegisterMessages:
 
     def test_register_read_response_decode_error(self):
         """Test register read response."""
-        reg = pdu_reg.PDUreadHoldingRegisters(0, is_request=False, count=5)
+        reg = pdu_reg.PDUreadHoldingRegisters(False, 0, count=5)
         with pytest.raises(ModbusIOException) as exc_info:
-            reg.from_bytes(0, b"\x14\x00\x03\x00\x11")
+            reg.from_bytes(b"\x14\x00\x03\x00\x11")
         assert exc_info.value.fcode == reg.function_code + 0x80
 
     def test_register_input_response_decode_error(self):
         """Test register read response."""
-        reg = pdu_reg.PDUreadHoldingRegisters(0, is_request=False, count=5)
+        reg = pdu_reg.PDUreadHoldingRegisters(False, 0, count=5)
         with pytest.raises(ModbusIOException) as exc_info:
-            reg.from_bytes(0, b"\x14\x00\x03\x00\x11")
+            reg.from_bytes(b"\x14\x00\x03\x00\x11")
         assert exc_info.value.fcode == reg.function_code + 0x80
 
     def test_readwrite_response_decode_error(self):
         """Test register read response."""
-        reg = pdu_reg.PDUreadWriteMultipleRegisters(0, is_request=False, count=5)
+        reg = pdu_reg.PDUreadWriteMultipleRegisters(False, 0, count=5)
         with pytest.raises(ModbusIOException) as exc_info:
-            reg.from_bytes(0, b"\x14\x00\x03\x00\x11")
+            reg.from_bytes(b"\x14\x00\x03\x00\x11")
         assert exc_info.value.fcode == reg.function_code + 0x80
 
     def test_readwrite_encode_write_count_limit(self):
@@ -54,6 +54,7 @@ class TestReadRegisterMessages:
 
         def build(count):
             return pdu_reg.PDUreadWriteMultipleRegisters(
+                True,
                 0,
                 address=1,
                 count=1,
@@ -70,16 +71,14 @@ class TestReadRegisterMessages:
 
         Raising here would make the server drop the frame without a response.
         """
-        request = pdu_reg.PDUreadWriteMultipleRegisters(0)
-        request.from_bytes(
-            0, struct.pack(">HHHHB", 1, 1, 1, 122, 244) + b"\x00\x00" * 122
-        )
-        assert request.write_count == 122
+        request = pdu_reg.PDUreadWriteMultipleRegisters(True, 0)
+        request.from_bytes(struct.pack(">HHHHB", 1, 1, 1, 122, 244) + b"\x00\x00" * 122)
+        assert len(request.registers) == 122
 
     def test_readwrite_decode_count_above_limit(self):
         """Decoding must accept count above 125 so the server can answer 0x03."""
-        request = pdu_reg.PDUreadWriteMultipleRegisters(0)
-        request.from_bytes(0, struct.pack(">HHHHB", 1, 126, 1, 1, 2) + b"\x00\x00")
+        request = pdu_reg.PDUreadWriteMultipleRegisters(True, 0)
+        request.from_bytes(struct.pack(">HHHHB", 1, 126, 1, 1, 2) + b"\x00\x00")
         assert request.count == 126
 
     async def test_readwrite_count_above_limit_returns_illegal_value(self):
@@ -87,10 +86,11 @@ class TestReadRegisterMessages:
         getV = mock.AsyncMock()
         setV = mock.AsyncMock()
         request = pdu_reg.PDUreadWriteMultipleRegisters(
-            0, address=1, count=1, write_address=1, write_registers=[5]
+            True, 0, address=1, count=1, write_address=1, write_registers=[5]
         )
         request.count = 126
         result = await request.build_response(getV, setV)
+        assert isinstance(result, PDUexception)
         assert result.function_code == 0x97
         assert result.exception_code == ExcCodes.ILLEGAL_VALUE
         getV.assert_not_awaited()
@@ -99,6 +99,7 @@ class TestReadRegisterMessages:
     async def test_readwrite_count_at_max_returns_normal_response(self):
         """A read count exactly at MAX_READ_COUNT must be accepted."""
         request = pdu_reg.PDUreadWriteMultipleRegisters(
+            True,
             0,
             address=1,
             count=pdu_reg.PDUreadWriteMultipleRegisters.MAX_COUNT,
@@ -116,13 +117,13 @@ class TestReadRegisterMessages:
         will break on counts that are out of range
         """
         requests = [
-            pdu_reg.PDUreadHoldingRegisters(0, address=1, count=1),
-            pdu_reg.PDUreadInputRegisters(0, address=1, count=1),
+            pdu_reg.PDUreadHoldingRegisters(True, 0, address=1, count=1),
+            pdu_reg.PDUreadInputRegisters(True, 0, address=1, count=1),
             pdu_reg.PDUreadWriteMultipleRegisters(
-                0, address=1, count=1, write_address=1, write_registers=[5]
+                True, 0, address=1, count=1, write_address=1, write_registers=[5]
             ),
             pdu_reg.PDUreadWriteMultipleRegisters(
-                0, address=1, count=5, write_address=1, write_registers=[7]
+                True, 0, address=1, count=5, write_address=1, write_registers=[7]
             ),
         ]
         for request in requests:
@@ -132,6 +133,7 @@ class TestReadRegisterMessages:
             else:
                 request.count = 0x800
             result = await request.build_response(mock.AsyncMock(), mock.AsyncMock())
+            assert isinstance(result, PDUexception)
             assert result.exception_code == ExcCodes.ILLEGAL_VALUE
 
     @pytest.mark.parametrize(
@@ -144,7 +146,7 @@ class TestReadRegisterMessages:
     async def test_register_count_above_max(self, request_class):
         """An out-of-range read quantity must answer 0x03, not silence."""
         getV = mock.AsyncMock(return_value=[1] * 10)
-        request = request_class(0, address=0, count=1)
+        request = request_class(True, 0, address=0, count=1)
         request.count = request_class.MAX_COUNT + 1
         result = await request.build_response(getV, mock.AsyncMock())
         assert result.function_code == request_class.function_code | 0x80
@@ -161,7 +163,7 @@ class TestReadRegisterMessages:
     async def test_read_register_count_zero_returns_illegal_value(self, request_class):
         """A zero read quantity must answer 0x03."""
         getV = mock.AsyncMock(return_value=[1] * 10)
-        request = request_class(0, address=0, count=1)
+        request = request_class(True, 0, address=0, count=1)
         request.count = 0
         result = await request.build_response(getV, mock.AsyncMock())
         assert result.function_code == request_class.function_code | 0x80
@@ -176,7 +178,7 @@ class TestReadRegisterMessages:
         self, request_class
     ):
         """A count exactly at the maximum must be accepted, not rejected."""
-        request = request_class(0, address=0, count=request_class.MAX_COUNT)
+        request = request_class(True, 0, address=0, count=request_class.MAX_COUNT)
         result = await request.build_response(mock.AsyncMock(), mock.AsyncMock())
         assert result.function_code == request_class.function_code
 
@@ -200,16 +202,16 @@ class TestReadRegisterMessages:
         will break on counts that are out of range
         """
         with pytest.raises(ModbusIOException):
-            pdu_reg.PDUreadHoldingRegisters(0, address=-1, count=5)
+            pdu_reg.PDUreadHoldingRegisters(True, 0, address=-1, count=5)
         with pytest.raises(ModbusIOException):
-            pdu_reg.PDUreadInputRegisters(0, address=-1, count=5)
+            pdu_reg.PDUreadInputRegisters(True, 0, address=-1, count=5)
         with pytest.raises(ModbusIOException):
             pdu_reg.PDUreadWriteMultipleRegisters(
-                0, address=-1, count=5, write_address=1, write_registers=[5]
+                True, 0, address=-1, count=5, write_address=1, write_registers=[5]
             )
         with pytest.raises(ModbusIOException):
             pdu_reg.PDUreadWriteMultipleRegisters(
-                0, address=1, count=5, write_address=-1, write_registers=[5]
+                True, 0, address=1, count=5, write_address=-1, write_registers=[5]
             )
 
     async def test_register_read_requests_build_response(self):
@@ -218,14 +220,14 @@ class TestReadRegisterMessages:
         will break on counts that are out of range
         """
         with pytest.raises(ModbusIOException):
-            pdu_reg.PDUreadHoldingRegisters(0, address=-1, count=5)
+            pdu_reg.PDUreadHoldingRegisters(True, 0, address=-1, count=5)
         with pytest.raises(ModbusIOException):
-            pdu_reg.PDUreadInputRegisters(0, address=-1, count=5)
+            pdu_reg.PDUreadInputRegisters(True, 0, address=-1, count=5)
 
     async def test_read_write_multiple_registers_request(self):
         """Test read/write multiple registers."""
         request = pdu_reg.PDUreadWriteMultipleRegisters(
-            0, address=1, count=10, write_address=1, write_registers=[0x00]
+            True, 0, address=1, count=10, write_address=1, write_registers=[0x00]
         )
         response = await request.build_response(
             mock.AsyncMock(), mock.AsyncMock(return_value=0)
@@ -246,18 +248,18 @@ class TestReadRegisterMessages:
         self, frame
     ):
         """Test inconsistent write byte counts are rejected before writing."""
-        request = pdu_reg.PDUreadWriteMultipleRegisters(0)
-        request.from_bytes(0, frame)
+        request = pdu_reg.PDUreadWriteMultipleRegisters(True, 0)
+        request.from_bytes(frame)
         setV = mock.AsyncMock()
 
         result = await request.build_response(mock.AsyncMock(), setV)
-
+        assert isinstance(result, PDUexception)
         assert result.exception_code == ExcCodes.ILLEGAL_VALUE
 
     async def test_read_write_multiple_registers_accepts_valid_byte_count(self):
         """Test a consistent write byte count reaches the datastore."""
-        request = pdu_reg.PDUreadWriteMultipleRegisters(0)
-        request.from_bytes(0, b"\x00\x01\x00\x01\x00\x02\x00\x02\x04\x00\x0a\x00\x0b")
+        request = pdu_reg.PDUreadWriteMultipleRegisters(True, 0)
+        request.from_bytes(b"\x00\x01\x00\x01\x00\x02\x00\x02\x04\x00\x0a\x00\x0b")
         setV = mock.AsyncMock(return_value=0)
 
         result = await request.build_response(mock.AsyncMock(), setV)
@@ -268,17 +270,20 @@ class TestReadRegisterMessages:
     async def test_read_write_multiple_registers_verify(self):
         """Test read/write multiple registers."""
         request = pdu_reg.PDUreadWriteMultipleRegisters(
-            0, address=1, count=1, write_address=2, write_registers=[0x00]
+            True, 0, address=1, count=1, write_address=2, write_registers=[0x00]
         )
         request.count = 0x200
         response = await request.build_response(mock.AsyncMock(), mock.AsyncMock())
+        assert isinstance(response, PDUexception)
         assert response.exception_code == ExcCodes.ILLEGAL_VALUE
 
         await request.build_response(mock.AsyncMock(), mock.AsyncMock())
+        assert isinstance(response, PDUexception)
         assert response.exception_code == ExcCodes.ILLEGAL_VALUE
 
         # request.write_byte_count = 0x100
         await request.build_response(mock.AsyncMock(), mock.AsyncMock())
+        assert isinstance(response, PDUexception)
         assert response.exception_code == ExcCodes.ILLEGAL_VALUE
 
     async def test_register_datastore_exceptions(self):
@@ -286,10 +291,10 @@ class TestReadRegisterMessages:
         getV = mock.AsyncMock(return_value=ExcCodes.ILLEGAL_VALUE)
 
         for pdu in (
-            pdu_reg.PDUreadHoldingRegisters(0, address=0, count=5),
-            pdu_reg.PDUreadInputRegisters(0, address=0, count=5),
+            pdu_reg.PDUreadHoldingRegisters(True, 0, address=0, count=5),
+            pdu_reg.PDUreadInputRegisters(True, 0, address=0, count=5),
             pdu_reg.PDUreadWriteMultipleRegisters(
-                0, address=0, count=1, write_registers=[5], write_address=1
+                True, 0, address=0, count=1, write_registers=[5], write_address=1
             ),
         ):
             pdu.address = -1
@@ -299,7 +304,7 @@ class TestReadRegisterMessages:
         ("request_pdu"),
         [
             pdu_reg.PDUreadWriteMultipleRegisters(
-                0, address=5, count=1, write_address=1, write_registers=[5]
+                True, 0, address=5, count=1, write_address=1, write_registers=[5]
             ),
         ],
     )

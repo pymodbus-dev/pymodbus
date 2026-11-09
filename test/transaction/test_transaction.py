@@ -10,8 +10,11 @@ from pymodbus.client import ModbusBaseSyncClient
 from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.framer import FramerRTU, FramerSocket, FramerType
 from pymodbus.pdu import DecodePDU, PDUexception
-from pymodbus.pdu.bit_message import PDUreadCoils
-from pymodbus.pdu.register_message import PDUreadHoldingRegisters, PDUreadInputRegisters
+from pymodbus.pdu.data_message import (
+    PDUreadCoils,
+    PDUreadHoldingRegisters,
+    PDUreadInputRegisters,
+)
 from pymodbus.transaction import TransactionManager
 from pymodbus.transport import CommType
 

@@ -9,7 +9,7 @@ from pymodbus.framer import (
     FramerTLS,
 )
 from pymodbus.pdu import DecodePDU, PDUexception
-from pymodbus.pdu.register_message import PDUreadHoldingRegisters
+from pymodbus.pdu.data_message import PDUreadHoldingRegisters
 
 
 def set_calls():
@@ -21,13 +21,13 @@ def set_calls():
             for tid in (0, 3077):
                 print(f"    tid --> {tid}")
                 client = framer(DecodePDU(False))
-                request = PDUreadHoldingRegisters(address=124, count=2, dev_id=dev_id)
+                request = PDUreadHoldingRegisters(True, dev_id, address=124, count=2)
                 request.transaction_id = tid
                 result = client.buildFrame(request)
                 print(f"      request --> {result}")
                 print(f"      request --> {result.hex()}")
                 server = framer(DecodePDU(True))
-                response = PDUreadHoldingRegisters(0, registers=[141, 142])
+                response = PDUreadHoldingRegisters(False, 0, registers=[141, 142])
                 response.dev_id = dev_id
                 response.transaction_id = tid
                 result = server.buildFrame(response)

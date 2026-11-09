@@ -10,6 +10,7 @@ import enum
 
 
 INTERNAL_ERROR = "Pymodbus internal error"
+MAX_TRANSACTION_ID = 65535
 
 
 class ModbusStatus(enum.IntEnum):

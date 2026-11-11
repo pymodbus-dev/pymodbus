@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 from ..constants import ExcCodes
+from ..exceptions import NoSuchIdException
 from .simdevice import SimDevice
 from .simruntime import SimRuntime
 
@@ -32,8 +33,14 @@ class SimCore:
             self.devices[device.id] = SimRuntime(device)
 
     def __get_device(self, device_id: int) -> SimRuntime:
-        """Return device object."""
-        return self.devices[device_id] if device_id in self.devices else self.devices[0]
+        """Return device object, device 0 serves ids not defined."""
+        if device_id in self.devices:
+            return self.devices[device_id]
+        if 0 in self.devices:
+            return self.devices[0]
+        raise NoSuchIdException(
+            f"device_id - {device_id} does not exist, or is out of range"
+        )
 
     def device_ids(self) -> list[int]:
         """Return list of device ids."""

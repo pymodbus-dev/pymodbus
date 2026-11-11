@@ -13,12 +13,11 @@ from pymodbus.framer import (
     FramerTLS,
     FramerType,
 )
-from pymodbus.pdu import DecodePDU
-from pymodbus.pdu.bit_message import WriteMultipleCoilsRequest
-from pymodbus.pdu.device import ModbusControlBlock
-from pymodbus.pdu.register_message import (
-    ReadWriteMultipleRegistersRequest,
-    WriteMultipleRegistersRequest,
+from pymodbus.pdu import DecodePDU, ModbusControlBlock
+from pymodbus.pdu.data_message import (
+    PDUreadWriteMultipleRegisters,
+    PDUwriteMultipleCoils,
+    PDUwriteMultipleRegisters,
 )
 from test.framer.generator import set_calls
 
@@ -863,14 +862,15 @@ class TestFramerType:
     @pytest.mark.parametrize(
         "request_pdu",
         [
-            WriteMultipleCoilsRequest(address=1, bits=[True, False, True], dev_id=1),
-            WriteMultipleRegistersRequest(address=1, registers=[10, 11], dev_id=1),
-            ReadWriteMultipleRegistersRequest(
-                read_address=1,
-                read_count=2,
+            PDUwriteMultipleCoils(True, 1, address=1, bits=[True, False, True]),
+            PDUwriteMultipleRegisters(True, 1, address=1, registers=[10, 11]),
+            PDUreadWriteMultipleRegisters(
+                True,
+                1,
+                address=1,
+                count=2,
                 write_address=3,
                 write_registers=[4, 5],
-                dev_id=1,
             ),
         ],
     )
@@ -947,7 +947,7 @@ class TestFramerType:
     )
     def test_framer_encode(self, test_framer, msg, mockPDU):
         """Test a tcp frame transaction."""
-        with mock.patch.object(mockPDU, "x_encode") as mock_encode:
+        with mock.patch.object(mockPDU, "to_bytes") as mock_encode:
             message = mockPDU()
             message.transaction_id = 0x0001
             message.dev_id = 0xFF

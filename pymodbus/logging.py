@@ -137,7 +137,7 @@ class Log:
             if (
                 i < count_args
                 and isinstance(args[i + 1], str)
-                and args[i + 1][0] == ":"
+                and args[i + 1].startswith(":")
             ):
                 if args[i + 1] == ":hex":
                     string_args.append(hexlify_packets(args[i]))

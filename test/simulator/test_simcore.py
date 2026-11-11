@@ -2,6 +2,7 @@
 
 import pytest
 
+from pymodbus.exceptions import NoSuchIdException
 from pymodbus.simulator import DataType, SimData, SimDevice
 from pymodbus.simulator.simcore import SimCore
 
@@ -65,3 +66,26 @@ class TestSimCore:
         """Test that simdata can be objects."""
         core = SimCore(devices=SimDevice(1, simdata=self.simdata2))
         assert core.device_ids() == [1]
+
+    async def test_simcore_get_missing_device(self):
+        """Test unknown device id without device 0 raises NoSuchIdException."""
+        core = SimCore(devices=SimDevice(1, simdata=self.simdata2))
+        with pytest.raises(NoSuchIdException):
+            await core.async_getValues(device_id=4, func_code=3, address=1)
+
+    async def test_simcore_set_missing_device(self):
+        """Test unknown device id without device 0 raises NoSuchIdException."""
+        core = SimCore(devices=SimDevice(1, simdata=self.simdata2))
+        with pytest.raises(NoSuchIdException):
+            await core.async_setValues(device_id=4, func_code=6, address=1, values=[1])
+
+    async def test_simcore_get_defined_device(self):
+        """Test a defined device id is served when device 0 also exists."""
+        core = SimCore(
+            devices=[
+                SimDevice(0, simdata=self.simdata2),
+                SimDevice(1, simdata=SimData(1, datatype=DataType.INT16, values=17)),
+            ]
+        )
+        assert await core.async_getValues(device_id=1, func_code=3, address=1) == [17]
+        assert await core.async_getValues(device_id=4, func_code=3, address=1) == [16]

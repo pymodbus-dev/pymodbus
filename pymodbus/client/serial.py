@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import contextlib
+import math
 import sys
 import time
 from collections.abc import Callable
@@ -40,6 +41,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
     :param reconnect_delay_max: Maximum delay when reconnecting, in seconds (use decimals for milliseconds).
     :param timeout: Timeout for connecting and receiving data, in seconds (use decimals for milliseconds).
     :param retries: Max number of retries per request.
+    :param inter_request_delay: Minimum seconds between completing a transaction attempt and sending the next request to the same device ID, including retries. Broadcasts apply to all devices. Default 0.0 (disabled).
     :param trace_packet: Called with bytestream received/to be sent
     :param trace_pdu: Called with PDU received/to be sent
     :param trace_connect: Called when connected/disconnected
@@ -81,6 +83,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
+        inter_request_delay: float = 0.0,
         trace_packet: Callable[[bool, bytes], bytes] | None = None,
         trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
@@ -93,6 +96,8 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             )
         if framer not in [FramerType.ASCII, FramerType.RTU]:
             raise TypeError("Only FramerType RTU/ASCII allowed.")
+        if not math.isfinite(inter_request_delay) or inter_request_delay < 0.0:
+            raise ValueError("inter_request_delay must be finite and non-negative")
         self.comm_params = CommParams(
             comm_type=CommType.SERIAL,
             host=port,
@@ -101,6 +106,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             parity=parity,
             stopbits=stopbits,
             handle_local_echo=handle_local_echo,
+            inter_request_delay=inter_request_delay,
             comm_name=name,
             reconnect_delay=reconnect_delay,
             reconnect_delay_max=reconnect_delay_max,
@@ -137,6 +143,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
     :param reconnect_delay_max: Not used in the sync client
     :param timeout: Timeout for connecting and receiving data, in seconds.
     :param retries: Max number of retries per request.
+    :param inter_request_delay: Minimum seconds between completing a transaction attempt and sending the next request to the same device ID, including retries. Broadcasts apply to all devices. Default 0.0 (disabled).
     :param trace_packet: Called with bytestream received/to be sent
     :param trace_pdu: Called with PDU received/to be sent
     :param trace_connect: Called when connected/disconnected
@@ -173,6 +180,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
         reconnect_delay_max: float = 300,
         timeout: float = 3,
         retries: int = 3,
+        inter_request_delay: float = 0.0,
         trace_packet: Callable[[bool, bytes], bytes] | None = None,
         trace_pdu: Callable[[bool, ModbusPDU], ModbusPDU] | None = None,
         trace_connect: Callable[[bool], None] | None = None,
@@ -185,6 +193,8 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             )
         if framer not in [FramerType.ASCII, FramerType.RTU]:
             raise TypeError("Only RTU/ASCII allowed.")
+        if not math.isfinite(inter_request_delay) or inter_request_delay < 0.0:
+            raise ValueError("inter_request_delay must be finite and non-negative")
         self.comm_params = CommParams(
             comm_type=CommType.SERIAL,
             host=port,
@@ -193,6 +203,7 @@ class ModbusSerialClient(ModbusBaseSyncClient):
             parity=parity,
             stopbits=stopbits,
             handle_local_echo=handle_local_echo,
+            inter_request_delay=inter_request_delay,
             comm_name=name,
             reconnect_delay=reconnect_delay,
             reconnect_delay_max=reconnect_delay_max,

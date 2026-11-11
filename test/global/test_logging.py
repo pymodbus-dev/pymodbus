@@ -50,6 +50,7 @@ class TestLogging:
             ("string {}", "string 0x41 0x42 0x43 0x44", (b"ABCD", ":hex")),
             ("string {}", "string 41424344", (b"ABCD", ":b2a")),
             ("string {}", "string 125", (125, ":str")),
+            ("string {} {}", "string 0 ", (0, "")),
         ],
     )
     def test_log_parms(self, txt, result, params):

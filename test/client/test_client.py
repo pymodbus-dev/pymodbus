@@ -715,6 +715,7 @@ class TestClientBase:
             client = lib_client.ModbusUdpClient("127.0.0.1")
             assert not client.connect()
 
+    @mock.patch.object(lib_client.ModbusTcpClient, "_run_async", False)
     def test_client_tcp_connect(self):
         """Test the tcp client connection method."""
         with mock.patch.object(socket, "create_connection") as mock_method:
@@ -729,6 +730,7 @@ class TestClientBase:
             client = lib_client.ModbusTcpClient("127.0.0.1")
             assert not client.connect()
 
+    @mock.patch.object(lib_client.ModbusTcpClient, "_run_async", False)
     def test_client_tcp_reuse(self):
         """Test the tcp client connection method."""
         with mock.patch.object(socket, "create_connection") as mock_method:

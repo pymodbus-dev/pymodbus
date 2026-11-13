@@ -193,7 +193,8 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         self.use_udp = False
         self._loop_thread: _LoopThread | None = None
         self._async_client: ModbusBaseClient | None = None
-        self._custom_responses: list[type[ModbusPDU]] = []
+        #: Creates the async counterpart, set by clients that run async.
+        self._async_client_factory: Callable[[], ModbusBaseClient] | None = None
 
     #: True when the client runs its async counterpart on a private loop,
     #: instead of using its own sync communication code.
@@ -212,9 +213,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         have them interpreted automatically.
         """
         self.framer.decoder.register(custom_response_class)
-        self._custom_responses.append(custom_response_class)
-        if self._async_client:
-            self._async_client.register(custom_response_class)
 
     def execute(self, no_response_expected: bool, request: ModbusPDU) -> ModbusPDU:
         """Execute request and get response (call **sync/async**).
@@ -253,15 +251,6 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
     # ----------------------------------------------------------------------- #
     # Internal methods
     # ----------------------------------------------------------------------- #
-    def _new_async_client(self) -> ModbusBaseClient:
-        """Return the async counterpart, overwritten.
-
-        Called on the private loop, because the async client needs a running loop.
-
-        :meta private:
-        """
-        raise TypeError(f"{self.__class__.__name__} has no async counterpart.")
-
     def _connect_async(self) -> bool:
         """Connect the async counterpart on the private loop.
 
@@ -278,11 +267,18 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         return True
 
     async def _create_async_client(self) -> ModbusBaseClient:
-        """Create the async counterpart, on the private loop."""
-        client = self._new_async_client()
+        """Create the async counterpart, on the private loop.
+
+        The async client needs a running loop. It shares the decoder of the
+        sync client, so responses registered with register() are known to both.
+
+        :meta private:
+        """
+        if not (factory := self._async_client_factory):
+            raise TypeError(f"{self.__class__.__name__} has no async counterpart.")
+        client = factory()  # pylint: disable=not-callable
+        client.ctx.framer.decoder = self.framer.decoder
         client.set_max_no_responses(self.transaction.max_until_disconnect)
-        for custom_response_class in self._custom_responses:
-            client.register(custom_response_class)
         return client
 
     def _close_async(self) -> None:

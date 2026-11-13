@@ -1,58 +1,18 @@
-"""Test the sync tcp client, that runs the async client on a private loop."""
+"""Test the sync tcp client, that runs the async client on a private loop.
+
+The server runs on the test loop, so the sync client is called from another
+thread with asyncio.to_thread().
+"""
 
 import asyncio
-import socket
 import threading
+from unittest import mock
 
 import pytest
 
 from pymodbus.client import ModbusTcpClient
-from pymodbus.exceptions import ConnectionException
-from pymodbus.server import ModbusTcpServer
-from pymodbus.simulator import DataType, SimData, SimDevice
-
-
-def free_port() -> int:
-    """Return a free tcp port."""
-    with socket.socket() as sock:
-        sock.bind(("127.0.0.1", 0))
-        return sock.getsockname()[1]
-
-
-class ServerThread:  # pylint: disable=too-few-public-methods
-    """Tcp server on its own loop, so a sync client can block the test thread."""
-
-    def __init__(self, port: int) -> None:
-        """Start the server."""
-        self.loop = asyncio.new_event_loop()
-        self.thread = threading.Thread(target=self.loop.run_forever, name="test server")
-        self.thread.start()
-        device = SimDevice(
-            0, SimData(0, datatype=DataType.REGISTERS, values=[17] * 100)
-        )
-
-        async def start() -> ModbusTcpServer:
-            server = ModbusTcpServer(device, address=("127.0.0.1", port))
-            await server.listen()
-            return server
-
-        self.server = asyncio.run_coroutine_threadsafe(start(), self.loop).result()
-
-    def stop(self) -> None:
-        """Stop the server."""
-        asyncio.run_coroutine_threadsafe(self.server.shutdown(), self.loop).result()
-        self.loop.call_soon_threadsafe(self.loop.stop)
-        self.thread.join()
-        self.loop.close()
-
-
-@pytest.fixture(name="port")
-def fixture_port():
-    """Return a port with a running server."""
-    port = free_port()
-    server = ServerThread(port)
-    yield port
-    server.stop()
+from pymodbus.exceptions import ConnectionException, ModbusIOException
+from pymodbus.framer import FramerType
 
 
 def client_threads() -> list[threading.Thread]:
@@ -60,63 +20,131 @@ def client_threads() -> list[threading.Thread]:
     return [t for t in threading.enumerate() if t.name == "pymodbus-sync-client"]
 
 
+@pytest.mark.parametrize("use_host", ["localhost"])
+@pytest.mark.parametrize(("use_comm", "use_framer"), [("tcp", "socket")])
 class TestSyncClientLoop:
     """Test the sync tcp client."""
 
-    def test_read(self, port):
-        """Test requests, and that close stops the private loop."""
-        client = ModbusTcpClient("127.0.0.1", port=port)
-        assert not client.connected
-        assert client.connect()
-        assert client.connected
-        assert len(client_threads()) == 1
-        for _ in range(3):
-            rr = client.read_holding_registers(0, count=10)
-            assert rr.registers == [17] * 10
+    @pytest.fixture(name="use_port")
+    @staticmethod
+    def get_port_in_class(base_ports):
+        """Return next port."""
+        base_ports[__class__.__name__] += 1  # type: ignore[index, name-defined]
+        return base_ports[__class__.__name__]  # type: ignore[index, name-defined]
+
+    @pytest.fixture(name="client")
+    @staticmethod
+    def define_client(use_comm, use_framer, use_host, use_port):
+        """Return a sync tcp client."""
+        assert use_comm == "tcp"
+        client = ModbusTcpClient(
+            use_host, framer=FramerType(use_framer), port=use_port, timeout=1
+        )
+        yield client
         client.close()
-        assert not client.connected
+
+    @pytest.mark.parametrize("run_async", [True, False])
+    async def test_read(self, mock_server, client, run_async):
+        """Test requests with the async counterpart and with the sync code."""
+        assert mock_server
+
+        def run():
+            assert client.connect()
+            for _ in range(3):
+                assert client.read_holding_registers(0, count=10).registers == [17] * 10
+            assert len(client_threads()) == (1 if run_async else 0)
+            client.close()
+            assert not client.connected
+
+        with mock.patch.object(ModbusTcpClient, "_run_async", run_async):
+            await asyncio.to_thread(run)
         assert not client_threads()
 
-    def test_connect_on_request(self, port):
+    async def test_connect_on_request(self, mock_server, client):
         """Test that a request connects, and connects again after close."""
-        client = ModbusTcpClient("127.0.0.1", port=port)
-        assert client.read_holding_registers(0, count=1).registers == [17]
-        client.close()
-        assert client.read_holding_registers(0, count=1).registers == [17]
-        client.close()
-        assert not client_threads()
+        assert mock_server
 
-    def test_with(self, port):
-        """Test the with block."""
-        with ModbusTcpClient("127.0.0.1", port=port) as client:
+        def run():
             assert client.read_holding_registers(0, count=1).registers == [17]
-        assert not client.connected
+            client.close()
+            assert client.read_holding_registers(0, count=1).registers == [17]
+            client.close()
+
+        await asyncio.to_thread(run)
         assert not client_threads()
 
-    def test_connect_fails(self):
+    async def test_with(self, mock_server, use_host, use_port):
+        """Test the with block."""
+        assert mock_server
+
+        def run():
+            with ModbusTcpClient(use_host, port=use_port) as client:
+                assert client.read_holding_registers(0, count=1).registers == [17]
+            assert not client.connected
+
+        await asyncio.to_thread(run)
+        assert not client_threads()
+
+    def test_connect_fails(self, client):
         """Test that a failed connect does not leave the private loop running."""
-        client = ModbusTcpClient("127.0.0.1", port=free_port(), timeout=0.5)
         assert not client.connect()
         assert not client_threads()
         with pytest.raises(ConnectionException):
             client.read_holding_registers(0, count=1)
         assert not client_threads()
-        client.close()
 
-    async def test_in_running_loop(self, port):
+    async def test_exception(self, mock_server, client):
+        """Test that an exception in the async client reaches the app."""
+        assert mock_server
+
+        def run():
+            assert client.connect()
+            async_client = client._async_client  # pylint: disable=protected-access
+            assert async_client
+            error = ModbusIOException("raised on the private loop")
+            with (
+                mock.patch.object(async_client, "execute", side_effect=error),
+                pytest.raises(ModbusIOException) as exc,
+            ):
+                client.read_holding_registers(0, count=1)
+            assert exc.value is error
+            # The client is still usable after the exception.
+            assert client.read_holding_registers(0, count=1).registers == [17]
+
+        await asyncio.to_thread(run)
+
+    async def test_in_running_loop(self, mock_server, client):
         """Test the sync client, called from a thread that runs a loop."""
-        client = ModbusTcpClient("127.0.0.1", port=port)
-        assert client.read_holding_registers(0, count=1).registers == [17]
-        client.close()
+        assert mock_server
 
-    def test_set_max_no_responses(self, port):
+        async def read_in_loop():
+            return client.read_holding_registers(0, count=1).registers
+
+        assert await asyncio.to_thread(asyncio.run, read_in_loop()) == [17]
+
+    async def test_set_max_no_responses(self, mock_server, client):
         """Test that the setting reaches the async client."""
-        client = ModbusTcpClient("127.0.0.1", port=port)
-        client.set_max_no_responses(7)
-        assert client.connect()
-        async_client = client._async_client  # pylint: disable=protected-access
-        assert async_client
-        assert async_client.ctx.max_until_disconnect == 7
-        client.set_max_no_responses(9)
-        assert async_client.ctx.max_until_disconnect == 9
-        client.close()
+        assert mock_server
+
+        def run():
+            client.set_max_no_responses(7)
+            assert client.connect()
+            async_client = client._async_client  # pylint: disable=protected-access
+            assert async_client
+            assert async_client.ctx.max_until_disconnect == 7
+            client.set_max_no_responses(9)
+            assert async_client.ctx.max_until_disconnect == 9
+
+        await asyncio.to_thread(run)
+
+    async def test_decoder_shared(self, mock_server, client):
+        """Test that the async client uses the decoder of the sync client."""
+        assert mock_server
+
+        def run():
+            assert client.connect()
+            async_client = client._async_client  # pylint: disable=protected-access
+            assert async_client
+            assert async_client.ctx.framer.decoder is client.framer.decoder
+
+        await asyncio.to_thread(run)

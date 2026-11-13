@@ -49,6 +49,7 @@ BASE_PORTS = {
     "TestClientServerAsyncExamples": 8400,
     "TestNetwork": 8500,
     "TestSimulator": 8600,
+    "TestSyncClientLoop": 8700,
 }
 
 

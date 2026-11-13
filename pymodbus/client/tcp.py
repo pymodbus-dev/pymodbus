@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import functools
 import select
 import socket
 import time
@@ -177,29 +178,22 @@ class ModbusTcpClient(ModbusBaseSyncClient):
             trace_connect,
         )
         self.socket: socket.socket | None = None
-        self._async_args = {
-            "host": host,
-            "framer": framer,
-            "port": port,
-            "name": name,
-            "source_address": source_address,
-            "timeout": timeout,
-            "retries": retries,
-            "trace_packet": trace_packet,
-            "trace_pdu": trace_pdu,
-            "trace_connect": trace_connect,
-        }
+        self._async_client_factory = functools.partial(
+            AsyncModbusTcpClient,
+            host,
+            framer=framer,
+            port=port,
+            name=name,
+            source_address=source_address,
+            reconnect_delay=0,  # the sync client connects when a request needs it
+            timeout=timeout,
+            retries=retries,
+            trace_packet=trace_packet,
+            trace_pdu=trace_pdu,
+            trace_connect=trace_connect,
+        )
 
     _run_async = True
-
-    def _new_async_client(self) -> AsyncModbusTcpClient:
-        """Return the async counterpart.
-
-        reconnect_delay=0, because the sync client connects when a request needs it.
-
-        :meta private:
-        """
-        return AsyncModbusTcpClient(**self._async_args, reconnect_delay=0)  # type: ignore[arg-type]
 
     @property
     def connected(self) -> bool:

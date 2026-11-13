@@ -120,6 +120,7 @@ class TestSyncClientTcp:
         client = ModbusTcpClient("127.0.0.1")
         assert client
 
+    @mock.patch.object(ModbusTcpClient, "_run_async", False)
     @mock.patch("pymodbus.client.tcp.select")
     def test_basic_syn_tcp_client(self, mock_select, mockSocket):
         """Test the basic methods for the tcp sync client."""
@@ -159,6 +160,7 @@ class TestSyncClientTcp:
         assert not client.send(b"")
         assert client.send(b"1234") == 4
 
+    @mock.patch.object(ModbusTcpClient, "_run_async", False)
     def test_tcp_client_send_drops_socket_on_os_error(self):
         """Test that a socket the OS tore down is not left in place as connected."""
         client = ModbusTcpClient("127.0.0.1")
@@ -170,6 +172,7 @@ class TestSyncClientTcp:
         assert not client.connected
         assert client.socket is None
 
+    @mock.patch.object(ModbusTcpClient, "_run_async", False)
     def test_tcp_client_send_keeps_socket_on_transient_error(self):
         """Test that a transient write error leaves a healthy socket in place."""
         client = ModbusTcpClient("127.0.0.1")

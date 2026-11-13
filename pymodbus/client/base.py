@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import asyncio
+import threading
 from abc import abstractmethod
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Coroutine
+from typing import Any, TypeVar
 
 from ..exceptions import ConnectionException
 from ..framer import FRAMER_NAME_TO_CLASS, FramerBase, FramerType
@@ -12,6 +15,37 @@ from ..pdu import DecodePDU, ModbusPDU
 from ..transaction import TransactionManager
 from ..transport import CommParams
 from .mixin import ModbusClientMixin
+
+
+_T = TypeVar("_T")
+
+
+class _LoopThread:
+    """Private event loop, running in a daemon thread.
+
+    A sync client runs its async counterpart on this loop, so the sync client
+    also works when the calling thread already runs an event loop.
+
+    :meta private:
+    """
+
+    def __init__(self) -> None:
+        """Start the loop."""
+        self.loop = asyncio.new_event_loop()
+        self.thread = threading.Thread(
+            target=self.loop.run_forever, name="pymodbus-sync-client", daemon=True
+        )
+        self.thread.start()
+
+    def run(self, coro: Coroutine[Any, Any, _T]) -> _T:
+        """Run a coroutine on the loop and wait for its result."""
+        return asyncio.run_coroutine_threadsafe(coro, self.loop).result()
+
+    def stop(self) -> None:
+        """Stop the loop and wait for the thread to end."""
+        self.loop.call_soon_threadsafe(self.loop.stop)
+        self.thread.join()
+        self.loop.close()
 
 
 class ModbusBaseClient(ModbusClientMixin[Awaitable[ModbusPDU]]):
@@ -157,6 +191,14 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         )
         self.reconnect_delay_current = self.comm_params.reconnect_delay or 0
         self.use_udp = False
+        self._loop_thread: _LoopThread | None = None
+        self._async_client: ModbusBaseClient | None = None
+        #: Creates the async counterpart, set by clients that run async.
+        self._async_client_factory: Callable[[], ModbusBaseClient] | None = None
+
+    #: True when the client runs its async counterpart on a private loop,
+    #: instead of using its own sync communication code.
+    _run_async = False
 
     # ----------------------------------------------------------------------- #
     # Client external interface
@@ -184,6 +226,10 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
         """
         if not self.connect():
             raise ConnectionException(f"Failed to connect[{self!s}]")
+        if self._async_client and self._loop_thread:
+            return self._loop_thread.run(
+                self._async_client.execute(no_response_expected, request)
+            )
         return self.transaction.sync_execute(no_response_expected, request)
 
     def set_max_no_responses(self, max_count: int) -> None:
@@ -199,10 +245,58 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
             When a request is successful the count is reset.
         """
         self.transaction.max_until_disconnect = max_count
+        if self._async_client:
+            self._async_client.set_max_no_responses(max_count)
 
     # ----------------------------------------------------------------------- #
     # Internal methods
     # ----------------------------------------------------------------------- #
+    def _connect_async(self) -> bool:
+        """Connect the async counterpart on the private loop.
+
+        :meta private:
+        """
+        if not self._loop_thread or not self._async_client:
+            self._loop_thread = _LoopThread()
+            self._async_client = self._loop_thread.run(self._create_async_client())
+        if self._async_client.connected:
+            return True
+        if not self._loop_thread.run(self._async_client.connect()):
+            self._close_async()
+            return False
+        return True
+
+    async def _create_async_client(self) -> ModbusBaseClient:
+        """Create the async counterpart, on the private loop.
+
+        The async client needs a running loop. It shares the decoder of the
+        sync client, so responses registered with register() are known to both.
+
+        :meta private:
+        """
+        if not (factory := self._async_client_factory):
+            raise TypeError(f"{self.__class__.__name__} has no async counterpart.")
+        client = factory()  # pylint: disable=not-callable
+        client.ctx.framer.decoder = self.framer.decoder
+        client.set_max_no_responses(self.transaction.max_until_disconnect)
+        return client
+
+    def _close_async(self) -> None:
+        """Close the async counterpart and stop the private loop.
+
+        :meta private:
+        """
+        if self._loop_thread:
+            if client := self._async_client:
+
+                async def close() -> None:
+                    client.close()
+
+                self._loop_thread.run(close())
+            self._loop_thread.stop()
+        self._loop_thread = None
+        self._async_client = None
+
     @abstractmethod
     def send(self, request: bytes, addr: tuple | None = None) -> int:
         """Send request.

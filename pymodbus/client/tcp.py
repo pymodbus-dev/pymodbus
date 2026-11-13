@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import functools
 import select
 import socket
 import time
@@ -177,14 +178,34 @@ class ModbusTcpClient(ModbusBaseSyncClient):
             trace_connect,
         )
         self.socket: socket.socket | None = None
+        self._async_client_factory = functools.partial(
+            AsyncModbusTcpClient,
+            host,
+            framer=framer,
+            port=port,
+            name=name,
+            source_address=source_address,
+            reconnect_delay=0,  # the sync client connects when a request needs it
+            timeout=timeout,
+            retries=retries,
+            trace_packet=trace_packet,
+            trace_pdu=trace_pdu,
+            trace_connect=trace_connect,
+        )
+
+    _run_async = True
 
     @property
     def connected(self) -> bool:
         """Check if socket exists."""
+        if self._run_async:
+            return bool(self._async_client and self._async_client.connected)
         return self.socket is not None
 
     def connect(self):
         """Connect to the modbus tcp server."""
+        if self._run_async:
+            return self._connect_async()
         if self.socket:
             return True
         try:
@@ -209,6 +230,9 @@ class ModbusTcpClient(ModbusBaseSyncClient):
 
     def close(self):
         """Close the underlying socket connection."""
+        if self._run_async:
+            self._close_async()
+            return
         if self.socket:
             self.socket.close()
         self.socket = None
@@ -318,7 +342,7 @@ class ModbusTcpClient(ModbusBaseSyncClient):
 
     def is_socket_open(self) -> bool:
         """Check if socket is open."""
-        return self.socket is not None
+        return self.connected
 
     def __repr__(self):
         """Return string representation."""

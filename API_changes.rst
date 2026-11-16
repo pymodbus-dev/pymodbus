@@ -2,6 +2,10 @@ API changes
 ===========
 Versions (X.Y.Z) where Z == 0 e.g. 3.0.1 do NOT have API changes!
 
+API changes 3.17.0
+------------------
+- the sync client converts automatically to async, this is not a API change, but it is a major change.
+
 API changes 3.16.0
 ------------------
 - removed allow_multiple_devices on ModbusSerialServer (cleanup multidrop).

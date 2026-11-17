@@ -93,6 +93,15 @@ class TestSyncClientLoop:
             client.read_holding_registers(0, count=1)
         assert not client_threads()
 
+    def test_no_async_counterpart(self, client):
+        """Test that close() stops the private loop, when the async client is missing."""
+        client._async_client_factory = None  # pylint: disable=protected-access
+        with pytest.raises(TypeError):
+            client.connect()
+        assert len(client_threads()) == 1
+        client.close()
+        assert not client_threads()
+
     async def test_exception(self, mock_server, client):
         """Test that an exception in the async client reaches the app."""
         assert mock_server

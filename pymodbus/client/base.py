@@ -274,7 +274,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
 
         :meta private:
         """
-        if not (factory := self._async_client_factory):  # pragma: no cover
+        if not (factory := self._async_client_factory):
             raise TypeError(f"{self.__class__.__name__} has no async counterpart.")
         client = factory()  # pylint: disable=not-callable
         client.ctx.framer.decoder = self.framer.decoder
@@ -286,7 +286,7 @@ class ModbusBaseSyncClient(ModbusClientMixin[ModbusPDU]):
 
         :meta private:
         """
-        if self._loop_thread:  # pragma: no cover
+        if self._loop_thread:
             if client := self._async_client:
 
                 async def close() -> None:

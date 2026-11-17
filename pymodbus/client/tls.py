@@ -138,6 +138,9 @@ class ModbusTlsClient(ModbusTcpClient):
     Please refer to :ref:`Pymodbus internals` for advanced usage.
     """
 
+    # The TLS client keeps its sync communication code for now.
+    _run_async = False
+
     def __init__(
         self,
         host: str,

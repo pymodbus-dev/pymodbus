@@ -11,6 +11,7 @@ These are basis for most examples and thus tested separately
 import os
 from threading import Thread
 from time import sleep
+from unittest import mock
 
 import pytest
 
@@ -22,6 +23,7 @@ from examples.client_sync import (
 )
 from examples.server_async import setup_server
 from examples.server_sync import run_sync_server
+from pymodbus.client import ModbusTcpClient
 from pymodbus.exceptions import ConnectionException
 from pymodbus.server import ServerStop
 
@@ -31,14 +33,16 @@ SLEEPING = 5 if os.name == "nt" else 1
 
 @pytest.mark.parametrize("use_host", ["localhost"])
 @pytest.mark.parametrize(
-    ("use_comm", "use_framer"),
+    ("use_comm", "use_framer", "run_async"),
     [
-        ("tcp", "socket"),
-        ("tcp", "rtu"),
-        # awaiting fix: ("tls", "tls"),
-        ("udp", "socket"),
-        ("udp", "rtu"),
-        ("serial", "rtu"),
+        ("tcp", "socket", True),
+        ("tcp", "socket", False),
+        ("tcp", "rtu", True),
+        ("tcp", "rtu", False),
+        # awaiting fix: ("tls", "tls", None),
+        ("udp", "socket", None),
+        ("udp", "rtu", None),
+        ("serial", "rtu", None),
     ],
 )
 class TestClientServerSyncExamples:
@@ -50,6 +54,16 @@ class TestClientServerSyncExamples:
         """Return next port."""
         base_ports[__class__.__name__] += 1  # type: ignore[index, name-defined]
         return base_ports[__class__.__name__]  # type: ignore[index, name-defined]
+
+    @pytest.fixture(autouse=True)
+    @staticmethod
+    def select_tcp_implementation(run_async):
+        """Run the tcp client on the async client and on the old sync code."""
+        if run_async is None:
+            yield
+            return
+        with mock.patch.object(ModbusTcpClient, "_run_async", run_async):
+            yield
 
     def test_combinations(
         self,

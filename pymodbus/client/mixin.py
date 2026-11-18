@@ -972,22 +972,11 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
             raise TypeError("Illegal data_type, please use <client>.DATATYPE!")
 
         if data_type == cls.DATATYPE.BITS:
-            if not isinstance(value, list):
-                raise TypeError(f"Value should be list of bool but is {type(value)}.")
-            byte_list = pack_bitstring(cast(list[bool], value), align_byte=False)
+            byte_list = cls._bits_to_bytes(value)
         elif data_type == cls.DATATYPE.STRING:
-            if not isinstance(value, str):
-                raise TypeError(f"Value should be string but is {type(value)}.")
-            byte_list = value.encode(string_encoding)
-            if len(byte_list) % 2:
-                byte_list += b"\x00"
+            byte_list = cls._string_to_bytes(value, string_encoding)
         else:
-            if not isinstance(value, list):
-                value = cast(list[int], [value])
-            struct_format = data_type.value[0]
-            byte_list = bytearray()
-            for v in value:
-                byte_list.extend(struct.pack(f">{struct_format}", v))
+            byte_list = cls._values_to_bytes(value, data_type)
         regs = [
             int.from_bytes(byte_list[x : x + 2], "big")
             for x in range(0, len(byte_list), 2)
@@ -996,6 +985,44 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
             return cls._get_reversed_registers(regs, data_type)
 
         return regs
+
+    @classmethod
+    def _bits_to_bytes(
+        cls, value: int | float | str | list[bool] | list[int] | list[float]
+    ) -> bytes:
+        """Pack a list of bits, 16 bits per register."""
+        if not isinstance(value, list):
+            raise TypeError(f"Value should be list of bool but is {type(value)}.")
+        return pack_bitstring(cast(list[bool], value), align_byte=False)
+
+    @classmethod
+    def _string_to_bytes(
+        cls,
+        value: int | float | str | list[bool] | list[int] | list[float],
+        string_encoding: str,
+    ) -> bytes:
+        """Encode a string, padded with a NUL byte to fill the last register."""
+        if not isinstance(value, str):
+            raise TypeError(f"Value should be string but is {type(value)}.")
+        byte_list = value.encode(string_encoding)
+        if len(byte_list) % 2:
+            byte_list += b"\x00"
+        return byte_list
+
+    @classmethod
+    def _values_to_bytes(
+        cls,
+        value: int | float | str | list[bool] | list[int] | list[float],
+        data_type: DATATYPE,
+    ) -> bytearray:
+        """Pack one or more numeric values using the struct format of data_type."""
+        if not isinstance(value, list):
+            value = cast(list[int], [value])
+        struct_format = data_type.value[0]
+        byte_list = bytearray()
+        for v in value:
+            byte_list.extend(struct.pack(f">{struct_format}", v))
+        return byte_list
 
     @classmethod
     def _registers_to_bytes(

@@ -102,6 +102,11 @@ class FramerRTU(FramerBase):
             return data_len, dev_id, 0, data[used_len + 1 : crc_start]
         return 0, 0, 0, self.EMPTY
 
+    def next_transaction_id(self, transaction_id: int) -> int:
+        """Return 0, RTU frames do not carry a transaction id."""
+        _ = transaction_id
+        return 0
+
     def encode(self, payload: bytes, device_id: int, _tid: int) -> bytes:
         """Encode ADU."""
         frame = device_id.to_bytes(1, "big") + payload

@@ -79,6 +79,11 @@ class FramerAscii(FramerBase):
                 continue
             return used_len, dev_id, 0, msg[1:]
 
+    def next_transaction_id(self, transaction_id: int) -> int:
+        """Return 0, ASCII frames do not carry a transaction id."""
+        _ = transaction_id
+        return 0
+
     def encode(self, payload: bytes, device_id: int, _tid: int) -> bytes:
         """Encode ADU."""
         dev_id = device_id.to_bytes(1, "big")

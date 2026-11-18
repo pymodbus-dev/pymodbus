@@ -56,6 +56,16 @@ class FramerBase:
         """
         return payload
 
+    def next_transaction_id(self, transaction_id: int) -> int:
+        """Return the transaction id to use for the next request.
+
+        :param transaction_id: transaction id of the previous request
+        :returns: transaction id 1..65000, wrapping around to 1
+        """
+        if transaction_id >= 65000:
+            return 1
+        return transaction_id + 1
+
     def buildFrame(self, message: ModbusPDU) -> bytes:
         """Create a ready to send modbus packet.
 

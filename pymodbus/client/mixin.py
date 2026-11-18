@@ -925,7 +925,8 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         if not isinstance(data_type, cls.DATATYPE):
             raise TypeError("Illegal data_type, please use <client>.DATATYPE!")
 
-        if not (regs_per_value := data_type.value[1]):
+        struct_format, regs_per_value = data_type.value
+        if not regs_per_value:
             byte_list = bytearray()
             if word_order == "little":
                 registers = list(reversed(registers))
@@ -953,7 +954,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
             byte_list = bytearray()
             for x in regs:
                 byte_list.extend(int.to_bytes(x, 2, "big"))
-            result.append(struct.unpack(f">{data_type.value[0]}", byte_list)[0])
+            result.append(struct.unpack(f">{struct_format}", byte_list)[0])
         return result if len(result) != 1 else result[0]
 
     @classmethod
@@ -990,9 +991,10 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         else:
             if not isinstance(value, list):
                 value = cast(list[int], [value])
+            struct_format = data_type.value[0]
             byte_list = bytearray()
             for v in value:
-                byte_list.extend(struct.pack(f">{data_type.value[0]}", v))
+                byte_list.extend(struct.pack(f">{struct_format}", v))
         regs = [
             int.from_bytes(byte_list[x : x + 2], "big")
             for x in range(0, len(byte_list), 2)

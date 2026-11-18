@@ -904,7 +904,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         BITS = ("bits", 0)
 
     @classmethod
-    def convert_from_registers(  # noqa: C901
+    def convert_from_registers(
         cls,
         registers: Sequence[int],
         data_type: DATATYPE,
@@ -927,11 +927,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
         struct_format, regs_per_value = data_type.value
         if not regs_per_value:
-            byte_list = bytearray()
-            if word_order == "little":
-                registers = list(reversed(registers))
-            for x in registers:
-                byte_list.extend(int.to_bytes(x, 2, "big"))
+            byte_list = cls._registers_to_bytes(registers, word_order)
             if data_type == cls.DATATYPE.STRING:
                 trailing_nulls_begin = len(byte_list)
                 while (
@@ -948,12 +944,9 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
         result = []
         for i in range(0, registers_count, regs_per_value):
-            regs = registers[i : i + regs_per_value]
-            if word_order == "little":
-                regs = list(reversed(regs))
-            byte_list = bytearray()
-            for x in regs:
-                byte_list.extend(int.to_bytes(x, 2, "big"))
+            byte_list = cls._registers_to_bytes(
+                registers[i : i + regs_per_value], word_order
+            )
             result.append(struct.unpack(f">{struct_format}", byte_list)[0])
         return result if len(result) != 1 else result[0]
 
@@ -1003,6 +996,18 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
             return cls._get_reversed_registers(regs, data_type)
 
         return regs
+
+    @classmethod
+    def _registers_to_bytes(
+        cls, registers: Sequence[int], word_order: Literal["big", "little"]
+    ) -> bytearray:
+        """Convert registers to bytes (2 bytes per register, big endian)."""
+        if word_order == "little":
+            registers = list(reversed(registers))
+        byte_list = bytearray()
+        for register in registers:
+            byte_list.extend(int.to_bytes(register, 2, "big"))
+        return byte_list
 
     @classmethod
     def _get_reversed_registers(cls, regs: list[int], data_type: DATATYPE) -> list[int]:

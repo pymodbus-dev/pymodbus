@@ -925,7 +925,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         if not isinstance(data_type, cls.DATATYPE):
             raise TypeError("Illegal data_type, please use <client>.DATATYPE!")
 
-        if not (data_len := data_type.value[1]):
+        if not (regs_per_value := data_type.value[1]):
             byte_list = bytearray()
             if word_order == "little":
                 registers = list(reversed(registers))
@@ -940,14 +940,14 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
                 byte_list = byte_list[:trailing_nulls_begin]
                 return byte_list.decode(string_encoding)
             return unpack_bitstring(byte_list)
-        if (reg_len := len(registers)) % data_len:
+        if (registers_count := len(registers)) % regs_per_value:
             raise ModbusException(
-                f"Registers illegal size ({len(registers)}) expected multiple of {data_len}!"
+                f"Registers illegal size ({len(registers)}) expected multiple of {regs_per_value}!"
             )
 
         result = []
-        for i in range(0, reg_len, data_len):
-            regs = registers[i : i + data_len]
+        for i in range(0, registers_count, regs_per_value):
+            regs = registers[i : i + regs_per_value]
             if word_order == "little":
                 regs = list(reversed(regs))
             byte_list = bytearray()
@@ -1004,13 +1004,13 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
 
     @classmethod
     def _get_reversed_registers(cls, regs: list[int], data_type: DATATYPE) -> list[int]:
-        if not (data_type_len := data_type.value[1]):
+        if not (regs_per_value := data_type.value[1]):
             regs.reverse()
             return regs
 
         reversed_regs: list[int] = []
-        for x in range(0, len(regs), data_type_len):
-            single_value_regs = regs[x : x + data_type_len]
+        for start in range(0, len(regs), regs_per_value):
+            single_value_regs = regs[start : start + regs_per_value]
             single_value_regs.reverse()
             reversed_regs += single_value_regs
         return reversed_regs

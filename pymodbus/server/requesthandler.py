@@ -78,16 +78,18 @@ class ServerRequestHandler(TransactionManager):
                 self.server_send(response, addr)
             used_len += new_len
             if self.last_pdu:
-                self.loop.call_soon(partial(self.handle_later, self.last_pdu))
+                self.loop.call_soon(
+                    partial(self.handle_later, self.last_pdu, self.last_addr)
+                )
             if not new_len:
                 break
         return used_len
 
-    def handle_later(self, pdu: ModbusPDU) -> None:
+    def handle_later(self, pdu: ModbusPDU, addr: tuple | None) -> None:
         """Change sync (async not allowed in call_soon) to async."""
-        asyncio.run_coroutine_threadsafe(self.handle_request(pdu), self.loop)
+        asyncio.run_coroutine_threadsafe(self.handle_request(pdu, addr), self.loop)
 
-    async def handle_request(self, pdu: ModbusPDU) -> None:
+    async def handle_request(self, pdu: ModbusPDU, addr: tuple | None = None) -> None:
         """Handle request."""
         try:
             if self.server.broadcast_enable and not pdu.dev_id:
@@ -115,7 +117,7 @@ class ServerRequestHandler(TransactionManager):
             response = ExceptionResponse(pdu.function_code, ExcCodes.DEVICE_FAILURE)
         response.transaction_id = pdu.transaction_id
         response.dev_id = pdu.dev_id
-        self.server_send(response, self.last_addr)
+        self.server_send(response, addr)
 
     def server_send(self, pdu, addr):
         """Send message."""

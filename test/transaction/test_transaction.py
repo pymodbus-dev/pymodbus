@@ -353,7 +353,10 @@ class TestTransaction:
     @pytest.mark.parametrize(
         "cases", ["timeout", "resend", "resend_response", "new_id", "new_fc"]
     )
-    async def test_transaction_execute_cancel(self, use_clc, cases):
+    @pytest.mark.parametrize("inter_request_delay", [0.0, 0.02])
+    async def test_transaction_execute_cancel(
+        self, use_clc, cases, inter_request_delay
+    ):
         """Test next request does not get the response of a cancelled request."""
         req_org = ReadHoldingRegistersRequest(dev_id=1, count=4)
         resp_org = ReadHoldingRegistersResponse(dev_id=1, registers=[1, 2, 3, 4])
@@ -374,6 +377,7 @@ class TestTransaction:
         )
         transact.retries = 0
         transact.comm_params.timeout_connect = 0.5
+        transact.comm_params.inter_request_delay = inter_request_delay
         transport = mock.Mock()
         transact.connection_made(transport)
         resp = asyncio.create_task(transact.execute(False, req_org))

@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable
+import math
+from collections.abc import AsyncGenerator, Callable
+from contextlib import asynccontextmanager
 from threading import RLock
-from time import monotonic
+from time import monotonic, perf_counter, sleep
 
 from ..exceptions import ConnectionException, ModbusIOException
 from ..framer import FramerAscii, FramerBase, FramerRTU
@@ -50,6 +52,7 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
         self.max_buffer_size = framer.MAX_SIZE
         self.framer = framer
         self.retries = retries
+        self._last_transaction_end: dict[int, float] = {}
         self.next_tid: int = 0
         self.request_dev_id: int = 0
         self.request_transaction_id: int = 0
@@ -137,6 +140,36 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
             dev_id=request.dev_id,
         )
 
+    def _inter_request_delay(self, dev_id: int) -> float:
+        """Return this device's remaining delay interval, including broadcasts."""
+        if not self.comm_params.inter_request_delay or not self._last_transaction_end:
+            return 0.0
+        if dev_id == 0:  # pylint: disable=use-implicit-booleaness-not-comparison-to-zero
+            # Broadcasts address all slaves, so use the latest transaction completion.
+            last_end = max(self._last_transaction_end.values())
+        else:
+            last_end = max(
+                self._last_transaction_end.get(dev_id, -math.inf),
+                self._last_transaction_end.get(0, -math.inf),
+            )
+        remaining = self.comm_params.inter_request_delay - (perf_counter() - last_end)
+        return remaining if remaining > 0.0 else 0.0
+
+    @asynccontextmanager
+    async def _request_lock(self, dev_id: int) -> AsyncGenerator[None]:
+        """Serialize attempts, releasing the wire during device delay intervals."""
+        while True:
+            async with self._lock:
+                if not (delay := self._inter_request_delay(dev_id)):
+                    yield
+                    return
+            await asyncio.sleep(delay)
+
+    def _set_transaction_end(self, dev_id: int) -> None:
+        """Record completion for the addressed device when spacing is enabled."""
+        if self.comm_params.inter_request_delay:
+            self._last_transaction_end[dev_id] = perf_counter()
+
     def _no_response(self, request: ModbusPDU) -> ModbusIOException:
         """Count a request that got no response, and build the exception to raise."""
         if self.count_until_disconnect < 0:
@@ -165,28 +198,33 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
             request.transaction_id = self.getNextTID()
             count_retries = 0
             while count_retries <= self.retries:
-                self.pdu_send(request)
-                if no_response_expected:
-                    return None  # type: ignore[return-value]
+                if delay := self._inter_request_delay(request.dev_id):
+                    sleep(delay)
                 try:
-                    response = self.sync_get_response(
-                        request.dev_id, request.transaction_id
-                    )
-                    self.count_until_disconnect = self.max_until_disconnect
-                    if response.dev_id != request.dev_id:
-                        raise self._io_exception_from_request(
-                            f"ERROR: request uses device id={request.dev_id} but received {response.dev_id}.",
-                            request,
+                    self.pdu_send(request)
+                    if no_response_expected:
+                        return None  # type: ignore[return-value]
+                    try:
+                        response = self.sync_get_response(
+                            request.dev_id, request.transaction_id
                         )
-                    if response.transaction_id != request.transaction_id:
-                        raise self._io_exception_from_request(
-                            f"ERROR: request uses transaction id={request.transaction_id} but received {response.transaction_id}.",
-                            request,
-                        )
-                    response.retries = count_retries
-                    return response
-                except asyncio.exceptions.TimeoutError:
-                    count_retries += 1
+                        self.count_until_disconnect = self.max_until_disconnect
+                        if response.dev_id != request.dev_id:
+                            raise self._io_exception_from_request(
+                                f"ERROR: request uses device id={request.dev_id} but received {response.dev_id}.",
+                                request,
+                            )
+                        if response.transaction_id != request.transaction_id:
+                            raise self._io_exception_from_request(
+                                f"ERROR: request uses transaction id={request.transaction_id} but received {response.transaction_id}.",
+                                request,
+                            )
+                        response.retries = count_retries
+                        return response
+                    except asyncio.exceptions.TimeoutError:
+                        count_retries += 1
+                finally:
+                    self._set_transaction_end(request.dev_id)
             raise self._no_response(request)
 
     async def _connect_if_needed(self) -> None:
@@ -207,57 +245,61 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
                 and the wait after a cancel. any changes in either method MUST be mirrored !!!
         """
         await self._connect_if_needed()
-        async with self._lock:
-            cancel_key = (request.dev_id, request.function_code)
-            if cancelled := self.cancelled_requests.pop(cancel_key, None):
-                late_response, until = cancelled
-                await asyncio.wait([late_response], timeout=until - monotonic())
-            request.transaction_id = self.getNextTID()
-            count_retries = 0
-            while count_retries <= self.retries:
-                self.recv_buffer = b""
-                self.response_future = asyncio.Future()
-                self.pdu_send(request)
-                if no_response_expected:
-                    return None  # type: ignore[return-value]
+        request.transaction_id = self.getNextTID()
+        count_retries = 0
+        while count_retries <= self.retries:
+            async with self._request_lock(request.dev_id):
+                cancel_key = (request.dev_id, request.function_code)
+                if cancelled := self.cancelled_requests.pop(cancel_key, None):
+                    late_response, until = cancelled
+                    await asyncio.wait([late_response], timeout=until - monotonic())
                 try:
-                    response: ModbusPDU = await asyncio.wait_for(
-                        self.response_future, timeout=self.comm_params.timeout_connect
-                    )
-                    self.count_until_disconnect = self.max_until_disconnect
-                    if (request.dev_id and response.dev_id != request.dev_id) or (
-                        response.function_code & 0x7F
-                    ) != request.function_code:
-                        Log.error(
-                            f"ERROR: request ask for id/fc={request.dev_id}/{request.function_code}  but got {response.dev_id}/{response.function_code}, Skipping."
-                        )
-                        continue
-                    if (
-                        response.transaction_id
-                        and response.transaction_id != request.transaction_id
-                    ):
-                        raise self._io_exception_from_request(
-                            f"ERROR: request uses transaction id={request.transaction_id} but received {response.transaction_id}.",
-                            request,
-                        )
-                    response.retries = count_retries
-                    return response
-                except asyncio.exceptions.TimeoutError:
-                    count_retries += 1
-                except asyncio.exceptions.CancelledError:
-                    # RTU/ASCII responses carry no transaction id, so the next
-                    # request to this device with this function code first
-                    # waits for the response to this one. A response from
-                    # another device or with another function code is skipped,
-                    # so other requests are not delayed.
-                    if not request.transaction_id:
-                        self.response_future = asyncio.Future()
-                        self.cancelled_requests[cancel_key] = (
+                    self.recv_buffer = b""
+                    self.response_future = asyncio.Future()
+                    self.pdu_send(request)
+                    if no_response_expected:
+                        return None  # type: ignore[return-value]
+                    try:
+                        response: ModbusPDU = await asyncio.wait_for(
                             self.response_future,
-                            monotonic() + self.comm_params.timeout_connect,
+                            timeout=self.comm_params.timeout_connect,
                         )
-                    raise
-            raise self._no_response(request)
+                        self.count_until_disconnect = self.max_until_disconnect
+                        if (request.dev_id and response.dev_id != request.dev_id) or (
+                            response.function_code & 0x7F
+                        ) != request.function_code:
+                            Log.error(
+                                f"ERROR: request ask for id/fc={request.dev_id}/{request.function_code}  but got {response.dev_id}/{response.function_code}, Skipping."
+                            )
+                            continue
+                        if (
+                            response.transaction_id
+                            and response.transaction_id != request.transaction_id
+                        ):
+                            raise self._io_exception_from_request(
+                                f"ERROR: request uses transaction id={request.transaction_id} but received {response.transaction_id}.",
+                                request,
+                            )
+                        response.retries = count_retries
+                        return response
+                    except asyncio.exceptions.TimeoutError:
+                        count_retries += 1
+                    except asyncio.exceptions.CancelledError:
+                        # RTU/ASCII responses carry no transaction id, so the next
+                        # request to this device with this function code first
+                        # waits for the response to this one. A response from
+                        # another device or with another function code is skipped,
+                        # so other requests are not delayed.
+                        if not request.transaction_id:
+                            self.response_future = asyncio.Future()
+                            self.cancelled_requests[cancel_key] = (
+                                self.response_future,
+                                monotonic() + self.comm_params.timeout_connect,
+                            )
+                        raise
+                finally:
+                    self._set_transaction_end(request.dev_id)
+        raise self._no_response(request)
 
     def pdu_send(self, pdu: ModbusPDU, addr: tuple | None = None) -> None:
         """Build byte stream and send."""

@@ -36,15 +36,14 @@ class FramerSocket(FramerBase):
             return 0, 0, 0, self.EMPTY
         if msg_len == 8 and data_len == 9:
             msg_len = 9
-        return msg_len, dev_id, tid, data[7:msg_len]
+        return msg_len, dev_id, tid, data[6:msg_len]
 
-    def encode(self, payload: bytes, device_id: int, tid: int) -> bytes:
+    def encode(self, payload: bytes, tid: int) -> bytes:
         """Encode ADU."""
         frame = (
             tid.to_bytes(2, "big")
             + b"\x00\x00"
-            + (len(payload) + 1).to_bytes(2, "big")
-            + device_id.to_bytes(1, "big")
+            + len(payload).to_bytes(2, "big")
             + payload
         )
         return frame

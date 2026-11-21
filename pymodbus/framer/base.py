@@ -11,7 +11,7 @@ from enum import Enum
 
 from ..exceptions import ModbusIOException
 from ..logging import Log
-from ..pdu import DecodePDU, ModbusPDU
+from ..pdu import DecodePDU, ModbusPdu
 
 
 class FramerType(str, Enum):
@@ -48,7 +48,7 @@ class FramerBase:
         """
         return 0, 0, 0, self.EMPTY
 
-    def encode(self, payload: bytes, _dev_id: int, _tid: int) -> bytes:
+    def encode(self, payload: bytes, _tid: int) -> bytes:
         """Encode ADU.
 
         returns:
@@ -56,18 +56,15 @@ class FramerBase:
         """
         return payload
 
-    def buildFrame(self, message: ModbusPDU) -> bytes:
-        """Create a ready to send modbus packet.
-
-        :param message: The populated request/response to send
-        """
-        data = message.function_code.to_bytes(1, "big") + self.decoder.encode(message)
-        frame = self.encode(data, message.dev_id, message.transaction_id)
+    def buildFrame(self, pdu: ModbusPdu) -> bytes:
+        """Create a ready to send modbus packet."""
+        data = self.decoder.encode(pdu)
+        frame = self.encode(data, pdu.transaction_id)
         return frame
 
     def handleFrame(
         self, data: bytes, exp_devid: int, exp_tid: int
-    ) -> tuple[int, ModbusPDU | None]:
+    ) -> tuple[int, ModbusPdu | None]:
         """Process incoming data."""
         used_len = 0
         while True:

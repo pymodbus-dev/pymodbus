@@ -6,6 +6,7 @@ import pytest
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer import (
+    FRAMER_NAME_TO_CLASS,
     FramerAscii,
     FramerBase,
     FramerRTU,
@@ -13,36 +14,48 @@ from pymodbus.framer import (
     FramerTLS,
     FramerType,
 )
-from pymodbus.pdu import DecodePDU
-from pymodbus.pdu.bit_message import WriteMultipleCoilsRequest
-from pymodbus.pdu.device import ModbusControlBlock
-from pymodbus.pdu.register_message import (
-    ReadWriteMultipleRegistersRequest,
-    WriteMultipleRegistersRequest,
+from pymodbus.pdu import DecodePDU, ModbusControlBlock
+from pymodbus.pdu.data_message import (
+    PDUreadInputRegisters,
+    PDUreadWriteMultipleRegisters,
+    PDUwriteMultipleCoils,
+    PDUwriteMultipleRegisters,
 )
-from test.framer.generator import set_calls
+
+
+@pytest.fixture(name="entry")
+def prepare_entry():
+    """Return framer_type."""
+    return FramerType.RTU
+
+
+@pytest.fixture(name="is_server")
+def prepare_is_server():
+    """Return client/server."""
+    return False
+
+
+@pytest.fixture(name="test_framer")
+async def prepare_test_framer(entry, is_server):
+    """Return framer object."""
+    return FRAMER_NAME_TO_CLASS[entry](DecodePDU(is_server))
 
 
 class TestFramer:
     """Test module."""
 
-    def test_setup(self, entry, is_server):
-        """Test setup."""
-        assert entry == FramerType.RTU
-        assert not is_server
-        set_calls()
-
-    def test_base(self):
+    def test_frame_0(self):
         """Test FramerBase."""
-        framer = FramerBase(DecodePDU(False))
-        framer.decode(b"")
-        framer.encode(b"", 0, 0)
-        framer.encode(b"", 2, 0)
+        base = FramerBase(DecodePDU(True))
+        base.decode(b"")
+        base.encode(b"", 0)
 
+    @pytest.mark.parametrize(("is_server"), [True, False])
     @pytest.mark.parametrize(("entry"), list(FramerType))
-    async def test_framer_init(self, test_framer):
-        """Test framer type."""
-        assert test_framer
+    def test_frame_1(self, test_framer):
+        """Test FramerBase."""
+        test_framer.decode(b"")
+        test_framer.encode(b"", 0)
 
     @pytest.mark.parametrize(
         ("func", "test_compare", "expect"),
@@ -55,48 +68,50 @@ class TestFramer:
             (FramerRTU.compute_CRC, None, 0xE2DB),
         ],
     )
-    def test_LRC_CRC(self, func, test_compare, expect):
+    def test_frame_2(self, func, test_compare, expect):
         """Test check_LRC."""
         data = b"\x12\x34\x23\x45\x34\x56\x45\x67"
         assert expect == func(data, test_compare) if test_compare else func(data)
 
-    def test_roundtrip_LRC(self):
+    def test_frame_3(self):
         """Test combined compute/check LRC."""
         data = b"\x12\x34\x23\x45\x34\x56\x45\x67"
         assert FramerAscii.compute_LRC(data) == 0x1C
         assert FramerAscii.check_LRC(data, 0x1C)
 
-    def test_crc16_table(self):
+    def test_frame_4(self):
         """Test the crc16 table is prefilled."""
         assert len(FramerRTU.crc16_table) == 256
         assert isinstance(FramerRTU.crc16_table[0], int)
         assert isinstance(FramerRTU.crc16_table[255], int)
 
-    def test_roundtrip_CRC(self):
+    def test_frame_5(self):
         """Test combined compute/check CRC."""
         data = b"\x12\x34\x23\x45\x34\x56\x45\x67"
         assert FramerRTU.compute_CRC(data) == 0xE2DB
         assert FramerRTU.check_CRC(data, 0xE2DB)
 
-    async def test_handleFrame2(self):
+    async def test_frame_6(self):
         """Test handleFrame."""
         test_framer = FramerRTU(DecodePDU(True))
-        msg = b"\xfe\x04\x00\x03\x00\x01\xd5\xc5\x00"
+        msg = b"\xfe\x04\x00\x03\x00\x01\xd5\xc5"
         used_len, pdu = test_framer.handleFrame(msg, 0, 0)
         assert used_len == len(msg)
-        assert pdu
+        assert isinstance(pdu, PDUreadInputRegisters)
 
-    def test_ascii_framer_uses_configured_delimiter_on_encode(self):
+    def test_frame_7(self):
         """Test ASCII framer encode uses the configured delimiter."""
         control = ModbusControlBlock()
         control.Delimiter = b"="
         try:
             framer = FramerAscii(DecodePDU(False))
-            assert framer.encode(b"\x03\x00\x7c\x00\x02", 0, 0) == b":0003007C00027F\r="
+            assert (
+                framer.encode(b"\x00\x03\x00\x7c\x00\x02", 0) == b":0003007C00027F\r="
+            )
         finally:
             control.Delimiter = b"\n"
 
-    def test_ascii_framer_uses_configured_delimiter_on_decode(self):
+    def test_frame_8(self):
         """Test ASCII framer decode uses the configured delimiter."""
         control = ModbusControlBlock()
         control.Delimiter = b"="
@@ -106,7 +121,7 @@ class TestFramer:
             assert used_len == len(b":0003007C00027F\r=")
             assert dev_id == 0
             assert tr_id == 0
-            assert payload == b"\x03\x00\x7c\x00\x02"
+            assert payload == b"\x00\x03\x00\x7c\x00\x02"
         finally:
             control.Delimiter = b"\n"
 
@@ -269,7 +284,7 @@ class TestFramerType:
             return
         frame_obj = frame(DecodePDU(False))
         expected = frame_expected[inx1 + inx2 + inx3]
-        encoded_data = frame_obj.encode(data, dev_id, tr_id)
+        encoded_data = frame_obj.encode(dev_id.to_bytes(1, "big") + data, tr_id)
         assert encoded_data == expected
 
     @pytest.mark.parametrize(
@@ -281,7 +296,7 @@ class TestFramerType:
                 b":0003007C00027F\r\n",
                 0,
                 0,
-                b"\x03\x00\x7c\x00\x02",
+                b"\x00\x03\x00\x7c\x00\x02",
             ),  # Request
             (
                 FramerType.ASCII,
@@ -289,7 +304,7 @@ class TestFramerType:
                 b":000304008D008EDE\r\n",
                 0,
                 0,
-                b"\x03\x04\x00\x8d\x00\x8e",
+                b"\x00\x03\x04\x00\x8d\x00\x8e",
             ),  # Response
             (
                 FramerType.ASCII,
@@ -297,7 +312,7 @@ class TestFramerType:
                 b":0083027B\r\n",
                 0,
                 0,
-                b"\x83\x02",
+                b"\x00\x83\x02",
             ),  # Exception
             (
                 FramerType.ASCII,
@@ -305,7 +320,7 @@ class TestFramerType:
                 b":1103007C00026E\r\n",
                 17,
                 0,
-                b"\x03\x00\x7c\x00\x02",
+                b"\x11\x03\x00\x7c\x00\x02",
             ),  # Request
             (
                 FramerType.ASCII,
@@ -313,7 +328,7 @@ class TestFramerType:
                 b":110304008D008ECD\r\n",
                 17,
                 0,
-                b"\x03\x04\x00\x8d\x00\x8e",
+                b"\x11\x03\x04\x00\x8d\x00\x8e",
             ),  # Response
             (
                 FramerType.ASCII,
@@ -321,7 +336,7 @@ class TestFramerType:
                 b":1183026A\r\n",
                 17,
                 0,
-                b"\x83\x02",
+                b"\x11\x83\x02",
             ),  # Exception
             (
                 FramerType.ASCII,
@@ -329,7 +344,7 @@ class TestFramerType:
                 b":FF03007C000280\r\n",
                 255,
                 0,
-                b"\x03\x00\x7c\x00\x02",
+                b"\xff\x03\x00\x7c\x00\x02",
             ),  # Request
             (
                 FramerType.ASCII,
@@ -337,7 +352,7 @@ class TestFramerType:
                 b":FF0304008D008EDF\r\n",
                 255,
                 0,
-                b"\x03\x04\x00\x8d\x00\x8e",
+                b"\xff\x03\x04\x00\x8d\x00\x8e",
             ),  # Response
             (
                 FramerType.ASCII,
@@ -345,7 +360,7 @@ class TestFramerType:
                 b":FF83027C\r\n",
                 255,
                 0,
-                b"\x83\x02",
+                b"\xff\x83\x02",
             ),  # Exception
             (
                 FramerType.RTU,
@@ -425,7 +440,7 @@ class TestFramerType:
                 b"\x00\x00\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02",
                 0,
                 0,
-                b"\x03\x00\x7c\x00\x02",
+                b"\x00\x03\x00\x7c\x00\x02",
             ),  # Request
             (
                 FramerType.SOCKET,
@@ -433,7 +448,7 @@ class TestFramerType:
                 b"\x00\x00\x00\x00\x00\x07\x00\x03\x04\x00\x8d\x00\x8e",
                 0,
                 0,
-                b"\x03\x04\x00\x8d\x00\x8e",
+                b"\x00\x03\x04\x00\x8d\x00\x8e",
             ),  # Response
             (
                 FramerType.SOCKET,
@@ -441,7 +456,7 @@ class TestFramerType:
                 b"\x00\x00\x00\x00\x00\x03\x00\x83\x02",
                 0,
                 0,
-                b"\x83\x02",
+                b"\x00\x83\x02",
             ),  # Exception
             (
                 FramerType.SOCKET,
@@ -449,7 +464,7 @@ class TestFramerType:
                 b"\x00\x00\x00\x00\x00\x06\x11\x03\x00\x7c\x00\x02",
                 17,
                 0,
-                b"\x03\x00\x7c\x00\x02",
+                b"\x11\x03\x00\x7c\x00\x02",
             ),  # Request
             (
                 FramerType.SOCKET,
@@ -457,7 +472,7 @@ class TestFramerType:
                 b"\x00\x00\x00\x00\x00\x07\x11\x03\x04\x00\x8d\x00\x8e",
                 17,
                 0,
-                b"\x03\x04\x00\x8d\x00\x8e",
+                b"\x11\x03\x04\x00\x8d\x00\x8e",
             ),  # Response
             (
                 FramerType.SOCKET,
@@ -465,7 +480,7 @@ class TestFramerType:
                 b"\x00\x00\x00\x00\x00\x03\x11\x83\x02",
                 17,
                 0,
-                b"\x83\x02",
+                b"\x11\x83\x02",
             ),  # Exception
             (
                 FramerType.SOCKET,
@@ -473,7 +488,7 @@ class TestFramerType:
                 b"\x00\x00\x00\x00\x00\x06\xff\x03\x00\x7c\x00\x02",
                 255,
                 0,
-                b"\x03\x00\x7c\x00\x02",
+                b"\xff\x03\x00\x7c\x00\x02",
             ),  # Request
             (
                 FramerType.SOCKET,
@@ -481,7 +496,7 @@ class TestFramerType:
                 b"\x00\x00\x00\x00\x00\x07\xff\x03\x04\x00\x8d\x00\x8e",
                 255,
                 0,
-                b"\x03\x04\x00\x8d\x00\x8e",
+                b"\xff\x03\x04\x00\x8d\x00\x8e",
             ),  # Response
             (
                 FramerType.SOCKET,
@@ -489,7 +504,7 @@ class TestFramerType:
                 b"\x00\x00\x00\x00\x00\x03\xff\x83\x02",
                 255,
                 0,
-                b"\x83\x02",
+                b"\xff\x83\x02",
             ),  # Exception
             (
                 FramerType.SOCKET,
@@ -497,7 +512,7 @@ class TestFramerType:
                 b"\x0c\x05\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02",
                 0,
                 3077,
-                b"\x03\x00\x7c\x00\x02",
+                b"\x00\x03\x00\x7c\x00\x02",
             ),  # Request
             (
                 FramerType.SOCKET,
@@ -505,7 +520,7 @@ class TestFramerType:
                 b"\x0c\x05\x00\x00\x00\x07\x00\x03\x04\x00\x8d\x00\x8e",
                 0,
                 3077,
-                b"\x03\x04\x00\x8d\x00\x8e",
+                b"\x00\x03\x04\x00\x8d\x00\x8e",
             ),  # Response
             (
                 FramerType.SOCKET,
@@ -513,7 +528,7 @@ class TestFramerType:
                 b"\x0c\x05\x00\x00\x00\x03\x00\x83\x02",
                 0,
                 3077,
-                b"\x83\x02",
+                b"\x00\x83\x02",
             ),  # Exception
             (
                 FramerType.SOCKET,
@@ -521,7 +536,7 @@ class TestFramerType:
                 b"\x0c\x05\x00\x00\x00\x06\x11\x03\x00\x7c\x00\x02",
                 17,
                 3077,
-                b"\x03\x00\x7c\x00\x02",
+                b"\x11\x03\x00\x7c\x00\x02",
             ),  # Request
             (
                 FramerType.SOCKET,
@@ -529,7 +544,7 @@ class TestFramerType:
                 b"\x0c\x05\x00\x00\x00\x07\x11\x03\x04\x00\x8d\x00\x8e",
                 17,
                 3077,
-                b"\x03\x04\x00\x8d\x00\x8e",
+                b"\x11\x03\x04\x00\x8d\x00\x8e",
             ),  # Response
             (
                 FramerType.SOCKET,
@@ -537,7 +552,7 @@ class TestFramerType:
                 b"\x0c\x05\x00\x00\x00\x03\x11\x83\x02",
                 17,
                 3077,
-                b"\x83\x02",
+                b"\x11\x83\x02",
             ),  # Exception
             (
                 FramerType.SOCKET,
@@ -545,7 +560,7 @@ class TestFramerType:
                 b"\x0c\x05\x00\x00\x00\x06\xff\x03\x00\x7c\x00\x02",
                 255,
                 3077,
-                b"\x03\x00\x7c\x00\x02",
+                b"\xff\x03\x00\x7c\x00\x02",
             ),  # Request
             (
                 FramerType.SOCKET,
@@ -553,7 +568,7 @@ class TestFramerType:
                 b"\x0c\x05\x00\x00\x00\x07\xff\x03\x04\x00\x8d\x00\x8e",
                 255,
                 3077,
-                b"\x03\x04\x00\x8d\x00\x8e",
+                b"\xff\x03\x04\x00\x8d\x00\x8e",
             ),  # Response
             (
                 FramerType.SOCKET,
@@ -561,7 +576,7 @@ class TestFramerType:
                 b"\x0c\x05\x00\x00\x00\x03\xff\x83\x02",
                 255,
                 3077,
-                b"\x83\x02",
+                b"\xff\x83\x02",
             ),  # Exception
             (
                 FramerType.TLS,
@@ -569,7 +584,7 @@ class TestFramerType:
                 b"\x00\x00\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02",
                 0,
                 0,
-                b"\x03\x00\x7c\x00\x02",
+                b"\x00\x03\x00\x7c\x00\x02",
             ),  # Request
             (
                 FramerType.TLS,
@@ -577,7 +592,7 @@ class TestFramerType:
                 b"\x00\x00\x00\x00\x00\x07\x00\x03\x04\x00\x8d\x00\x8e",
                 0,
                 0,
-                b"\x03\x04\x00\x8d\x00\x8e",
+                b"\x00\x03\x04\x00\x8d\x00\x8e",
             ),  # Response
             (
                 FramerType.TLS,
@@ -585,7 +600,7 @@ class TestFramerType:
                 b"\x00\x00\x00\x00\x00\x03\x00\x83\x02",
                 0,
                 0,
-                b"\x83\x02",
+                b"\x00\x83\x02",
             ),  # Exception
         ],
     )
@@ -647,22 +662,22 @@ class TestFramerType:
                 FramerType.ASCII,
                 b":0003007C00027F\r\n:0003007C00027F\r\n",
                 [  # double good crc
-                    (17, b"\x03\x00\x7c\x00\x02"),
-                    (17, b"\x03\x00\x7c\x00\x02"),
+                    (17, b"\x00\x03\x00\x7c\x00\x02"),
+                    (17, b"\x00\x03\x00\x7c\x00\x02"),
                 ],
             ),
             (
                 FramerType.ASCII,
                 b":0003007C00017F\r\n:0003007C00027F\r\n",
                 [  # bad crc + good CRC
-                    (34, b"\x03\x00\x7c\x00\x02"),
+                    (34, b"\x00\x03\x00\x7c\x00\x02"),
                 ],
             ),
             (
                 FramerType.ASCII,
                 b"abc:0003007C00027F\r\n",
                 [  # garble in front
-                    (20, b"\x03\x00\x7c\x00\x02"),
+                    (20, b"\x00\x03\x00\x7c\x00\x02"),
                 ],
             ),
             (
@@ -683,7 +698,7 @@ class TestFramerType:
                 FramerType.ASCII,
                 b":0003007C00027F\r\nabc",
                 [  # good crc, garble after
-                    (17, b"\x03\x00\x7c\x00\x02"),
+                    (17, b"\x00\x03\x00\x7c\x00\x02"),
                 ],
             ),
             (
@@ -697,15 +712,15 @@ class TestFramerType:
                 FramerType.SOCKET,
                 b"\x00\x00\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02\x00\x00\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02",
                 [  # double good crc
-                    (12, b"\x03\x00\x7c\x00\x02"),
-                    (12, b"\x03\x00\x7c\x00\x02"),
+                    (12, b"\x00\x03\x00\x7c\x00\x02"),
+                    (12, b"\x00\x03\x00\x7c\x00\x02"),
                 ],
             ),
             (
                 FramerType.SOCKET,
                 b"\x0c\x05\x00\x00\x00\x02\xff\x83\x02",
                 [  # Exception
-                    (9, b"\x83\x02"),
+                    (9, b"\xff\x83\x02"),
                 ],
             ),
             (
@@ -749,71 +764,76 @@ class TestFramerType:
     @pytest.mark.parametrize(
         ("entry", "data", "dev_id", "res_msg"),
         [
-            (FramerType.ASCII, b"\x01\x05\x04\x00\x17", 1, b":010105040017DF\r\n"),
-            (FramerType.ASCII, b"\x03\x07\x06\x00\x73", 2, b":0203070600737D\r\n"),
-            (FramerType.ASCII, b"\x08\x00\x01", 3, b":03080001F7\r\n"),
-            (FramerType.ASCII, b"\x84\x01", 2, b":02840179\r\n"),
-            (FramerType.RTU, b"\x01\x01\x00", 2, b"\x02\x01\x01\x00\x51\xcc"),
+            (FramerType.ASCII, b"\x01\x01\x05\x04\x00\x17", 1, b":010105040017DF\r\n"),
+            (FramerType.ASCII, b"\x02\x03\x07\x06\x00\x73", 2, b":0203070600737D\r\n"),
+            (FramerType.ASCII, b"\x03\x08\x00\x01", 3, b":03080001F7\r\n"),
+            (FramerType.ASCII, b"\x02\x84\x01", 2, b":02840179\r\n"),
+            (FramerType.RTU, b"\x02\x01\x01\x00", 2, b"\x02\x01\x01\x00\x51\xcc"),
             (
                 FramerType.RTU,
-                b"\x03\x06\xae\x41\x56\x52\x43\x40",
+                b"\x11\x03\x06\xae\x41\x56\x52\x43\x40",
                 17,
                 b"\x11\x03\x06\xae\x41\x56\x52\x43\x40\x49\xad",
             ),
             (
                 FramerType.RTU,
-                b"\x01\x03\x01\x00\x0a",
+                b"\x01\x01\x03\x01\x00\x0a",
                 1,
                 b"\x01\x01\x03\x01\x00\x0a\xed\x89",
             ),
             (
                 FramerType.SOCKET,
-                b"\x01\x05\x04\x00\x17",
+                b"\x1f\x01\x05\x04\x00\x17",
                 31,
                 b"\x00\x05\x00\x00\x00\x06\x07\x01\x05\x04\x00\x17",
             ),
             (
                 FramerType.SOCKET,
-                b"\x03\x07\x06\x00\x73",
+                b"\x20\x03\x07\x06\x00\x73",
                 32,
                 b"\x00\x09\x00\x00\x00\x06\x02\x03\x07\x06\x00\x73",
             ),
             (
                 FramerType.SOCKET,
-                b"\x08\x00\x01",
+                b"\x21\x08\x00\x01",
                 33,
                 b"\x00\x06\x00\x00\x00\x04\x03\x08\x00\x01",
             ),
             (
                 FramerType.SOCKET,
-                b"\x84\x01",
+                b"\x22\x84\x01",
                 34,
                 b"\x00\x08\x00\x00\x00\x03\x04\x84\x01",
             ),
             (
                 FramerType.TLS,
-                b"\x01\x05\x04\x00\x17",
+                b"\x1f\x01\x05\x04\x00\x17",
                 31,
                 b"\x00\x05\x00\x00\x00\x06\x07\x01\x05\x04\x00\x17",
             ),
             (
                 FramerType.TLS,
-                b"\x03\x07\x06\x00\x73",
+                b"\x20\x03\x07\x06\x00\x73",
                 32,
                 b"\x00\x09\x00\x00\x00\x06\x02\x03\x07\x06\x00\x73",
             ),
             (
                 FramerType.TLS,
-                b"\x08\x00\x01",
+                b"\x21\x08\x00\x01",
                 33,
                 b"\x00\x06\x00\x00\x00\x04\x03\x08\x00\x01",
             ),
-            (FramerType.TLS, b"\x84\x01", 34, b"\x00\x08\x00\x00\x00\x03\x04\x84\x01"),
+            (
+                FramerType.TLS,
+                b"\x22\x84\x01",
+                34,
+                b"\x00\x08\x00\x00\x00\x03\x04\x84\x01",
+            ),
         ],
     )
     def test_roundtrip(self, test_framer, data, dev_id, res_msg):
         """Test encode."""
-        msg = test_framer.encode(data, dev_id, 0)
+        msg = test_framer.encode(data, 0)
         res_len, res_dev_id, _, res_data = test_framer.decode(msg)
         assert data == res_data
         assert dev_id == res_dev_id
@@ -863,14 +883,15 @@ class TestFramerType:
     @pytest.mark.parametrize(
         "request_pdu",
         [
-            WriteMultipleCoilsRequest(address=1, bits=[True, False, True], dev_id=1),
-            WriteMultipleRegistersRequest(address=1, registers=[10, 11], dev_id=1),
-            ReadWriteMultipleRegistersRequest(
-                read_address=1,
-                read_count=2,
+            PDUwriteMultipleCoils(True, 1, address=1, bits=[True, False, True]),
+            PDUwriteMultipleRegisters(True, 1, address=1, registers=[10, 11]),
+            PDUreadWriteMultipleRegisters(
+                True,
+                1,
+                address=1,
+                count=2,
                 write_address=3,
-                write_registers=[4, 5],
-                dev_id=1,
+                registers=[4, 5],
             ),
         ],
     )
@@ -928,34 +949,8 @@ class TestFramerType:
         assert result
         assert result.dev_id == dev_id
         assert result.transaction_id == tid
-        expected = test_framer.encode(
-            result.function_code.to_bytes(1, "big") + DecodePDU(False).encode(result),
-            dev_id,
-            1,
-        )
+        expected = test_framer.encode(DecodePDU(False).encode(result), 1)
         assert msg == expected
-
-    @pytest.mark.parametrize(("is_server"), [True])
-    @pytest.mark.parametrize(
-        ("entry", "msg"),
-        [
-            (FramerType.SOCKET, b"\x00\x01\x00\x00\x00\x02\xff\x01"),
-            (FramerType.TLS, b"\x00\x01\x00\x00\x00\x02\xff\x01"),
-            (FramerType.RTU, b"\xff\x01\x81\x80"),
-            (FramerType.ASCII, b":FF0100\r\n"),
-        ],
-    )
-    def test_framer_encode(self, test_framer, msg, mockPDU):
-        """Test a tcp frame transaction."""
-        with mock.patch.object(mockPDU, "x_encode") as mock_encode:
-            message = mockPDU()
-            message.transaction_id = 0x0001
-            message.dev_id = 0xFF
-            message.function_code = 0x01
-            mock_encode.return_value = b""
-
-            actual = test_framer.buildFrame(message)
-            assert msg == actual
 
     def test_bad_file_record_request_for_framer_socket(self):
         """Test a bad file record request keeps the ids the server reply needs."""

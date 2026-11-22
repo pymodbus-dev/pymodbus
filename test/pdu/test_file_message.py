@@ -100,6 +100,13 @@ class TestBitMessage:
         handle = ReadFileRecordRequest()
         handle.x_decode(request)
         # assert handle.records[0] == record
+        assert [
+            (rec.file_number, rec.record_number, rec.record_length)
+            for rec in handle.records
+        ] == [(4, 1, 2), (3, 9, 2)]
+        handle.x_decode(b"\x07\x06\x00\x04\x00\x01\x00\x03")
+        assert handle.records[0].record_length == 3
+        assert handle.x_encode() == b"\x07\x06\x00\x04\x00\x01\x00\x03"
 
     def test_read_file_record_request_frame_size(self):
         """Test basic bit message encoding/decoding."""

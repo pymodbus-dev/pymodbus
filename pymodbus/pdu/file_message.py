@@ -76,8 +76,8 @@ class ReadFileRecordRequest(ModbusPDU):
             record = FileRecord(
                 file_number=decoded[1],
                 record_number=decoded[2],
-                record_length=decoded[3],
             )
+            record.record_length = decoded[3]
             self.records.append(record)
 
     async def datastore_update(

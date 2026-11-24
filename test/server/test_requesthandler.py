@@ -133,6 +133,30 @@ class TestRequesthandler:
         await asyncio.sleep(0.1)
         assert exp_send == requesthandler.pdu_send.call_count
 
+    @pytest.mark.parametrize(
+        "second",
+        [
+            "000200000006000300000001",  # valid request
+            "000200000006004100000001",  # unknown function code 0x41
+        ],
+    )
+    async def test_rh_reply_goes_to_request_sender(self, requesthandler, second):
+        """Each reply goes to the peer that sent its request.
+
+        A UDP server shares one handler between all peers, so a second
+        datagram can arrive before the first request is answered.
+        """
+        peer_a = ("192.0.2.1", 5020)
+        peer_b = ("192.0.2.2", 5020)
+        requesthandler.callback_data(bytes.fromhex("000100000006000300000001"), peer_a)
+        requesthandler.callback_data(bytes.fromhex(second), peer_b)
+        await asyncio.sleep(0.1)
+        sent = {
+            call.args[0].transaction_id: call.kwargs["addr"]
+            for call in requesthandler.pdu_send.call_args_list
+        }
+        assert sent == {1: peer_a, 2: peer_b}
+
     async def test_rh_callback_exc(
         self,
         requesthandler,

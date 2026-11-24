@@ -89,7 +89,7 @@ class ReadDeviceInformationRequest(EncapsulatedInterfaceTransportBase):
         _ = context
         if not 0x00 <= self.object_id <= 0xFF:
             return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
-        if not 0x00 <= self.read_code <= 0x04:
+        if not 0x01 <= self.read_code <= 0x04:
             return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
 
         information = DeviceInformationFactory.get(_MCB, self.read_code, self.object_id)

@@ -694,6 +694,20 @@ class TestFramerType:
                 ],
             ),
             (
+                FramerType.ASCII,
+                b":0003G07C00027F\r\n:0003007C00027F\r\n",
+                [  # non hex frame + good frame
+                    (34, b"\x03\x00\x7c\x00\x02"),
+                ],
+            ),
+            (
+                FramerType.ASCII,
+                b":0003007C:0003007C00027F\r\n",
+                [  # truncated frame restarted by a new start + good frame
+                    (26, b"\x03\x00\x7c\x00\x02"),
+                ],
+            ),
+            (
                 FramerType.SOCKET,
                 b"\x00\x00\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02\x00\x00\x00\x00\x00\x06\x00\x03\x00\x7c\x00\x02",
                 [  # double good crc

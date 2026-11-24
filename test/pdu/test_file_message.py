@@ -10,6 +10,8 @@ bit based request/response messages:
 import pytest
 
 from pymodbus.exceptions import ModbusException
+from pymodbus.framer import FramerRTU
+from pymodbus.pdu import DecodePDU
 from pymodbus.pdu.file_message import (
     FileRecord,
     ReadFifoQueueRequest,
@@ -64,9 +66,15 @@ class TestBitMessage:
         """Test that the read fifo queue response can decode."""
         message = TEST_MESSAGE
         assert (
-            ReadFifoQueueResponse.x_calculateRtuFrameSize(b"\x00\x18" + message) == 14
+            ReadFifoQueueResponse.x_calculateRtuFrameSize(b"\x00\x18" + message) == 16
         )
         assert ReadFifoQueueRequest.x_calculateRtuFrameSize(b"") == 6
+        frame = bytes.fromhex("1018000a00046131346662303165a946")
+        used_len, pdu = FramerRTU(DecodePDU(False)).handleFrame(frame, 0, 0)
+        assert used_len == len(frame)
+        assert isinstance(pdu, ReadFifoQueueResponse)
+        assert pdu.dev_id == 0x10
+        assert pdu.values == [0x6131, 0x3466, 0x6230, 0x3165]
 
     # -----------------------------------------------------------------------#
     #  File Record
@@ -100,6 +108,13 @@ class TestBitMessage:
         handle = ReadFileRecordRequest()
         handle.x_decode(request)
         # assert handle.records[0] == record
+        assert [
+            (rec.file_number, rec.record_number, rec.record_length)
+            for rec in handle.records
+        ] == [(4, 1, 2), (3, 9, 2)]
+        handle.x_decode(b"\x07\x06\x00\x04\x00\x01\x00\x03")
+        assert handle.records[0].record_length == 3
+        assert handle.x_encode() == b"\x07\x06\x00\x04\x00\x01\x00\x03"
 
     def test_read_file_record_request_frame_size(self):
         """Test basic bit message encoding/decoding."""

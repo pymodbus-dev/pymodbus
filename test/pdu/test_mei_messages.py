@@ -92,6 +92,9 @@ class TestMeiMessage:
         assert (await handle.datastore_update(context, 0)).function_code == 0xAB
         handle.read_code = 0x05
         assert (await handle.datastore_update(context, 0)).function_code == 0xAB
+        handle.read_code = 0x00
+        result = await handle.datastore_update(context, 0)
+        assert result.exception_code == ExcCodes.ILLEGAL_VALUE
         handle.object_id = -1
         assert (await handle.datastore_update(context, 0)).function_code == 0xAB
         handle.object_id = 0x100

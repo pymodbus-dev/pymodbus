@@ -76,8 +76,8 @@ class ReadFileRecordRequest(ModbusPDU):
             record = FileRecord(
                 file_number=decoded[1],
                 record_number=decoded[2],
-                record_length=decoded[3],
             )
+            record.record_length = decoded[3]
             self.records.append(record)
 
     async def datastore_update(
@@ -305,7 +305,7 @@ class ReadFifoQueueResponse(ModbusPDU):
         """Calculate the size of the message."""
         hi_byte = int(data[2])
         lo_byte = int(data[3])
-        return ((hi_byte << 8) + lo_byte) + 4
+        return ((hi_byte << 8) + lo_byte) + 6
 
     def __init__(
         self, values: list[int] | None = None, dev_id: int = 1, transaction_id: int = 0

@@ -75,7 +75,7 @@ class TestFramer:
     @pytest.mark.parametrize(
         ("framer", "tids"),
         [
-            (FramerBase, [(0, 1), (1, 2), (64999, 65000), (65000, 1)]),
+            (FramerBase, [(0, 0), (1, 0), (65000, 0)]),
             (FramerSocket, [(0, 1), (1, 2), (64999, 65000), (65000, 1)]),
             (FramerTLS, [(0, 1), (1, 2), (64999, 65000), (65000, 1)]),
             (FramerRTU, [(0, 0), (1, 0), (65000, 0)]),

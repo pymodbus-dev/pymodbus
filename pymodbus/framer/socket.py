@@ -38,6 +38,16 @@ class FramerSocket(FramerBase):
             msg_len = 9
         return msg_len, dev_id, tid, data[7:msg_len]
 
+    def next_transaction_id(self, transaction_id: int) -> int:
+        """Return the transaction id to use for the next request.
+
+        :param transaction_id: transaction id of the previous request
+        :returns: transaction id 1..65000, wrapping around to 1
+        """
+        if transaction_id >= 65000:
+            return 1
+        return transaction_id + 1
+
     def encode(self, payload: bytes, device_id: int, tid: int) -> bytes:
         """Encode ADU."""
         frame = (
@@ -48,3 +58,10 @@ class FramerSocket(FramerBase):
             + payload
         )
         return frame
+
+
+class FramerTLS(FramerSocket):
+    """Modbus TLS frame type.
+
+    Identical to socket.
+    """

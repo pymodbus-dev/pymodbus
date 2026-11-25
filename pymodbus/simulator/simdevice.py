@@ -200,13 +200,6 @@ class SimDevice:
         """Define a device."""
         self.__check_parameters()
 
-    def __build_flags(self, simdata: SimData) -> int:
-        """Create flags from SimData."""
-        flag_normal: int = simdata.datatype
-        if simdata.readonly:
-            flag_normal |= SimUtils.RunTimeFlag_READONLY
-        return flag_normal
-
     def __create_simdata(
         self,
         simdata: SimData,
@@ -215,7 +208,7 @@ class SimDevice:
         use_bits: bool,
     ):
         """Build registers for single SimData."""
-        flag_normal = self.__build_flags(simdata)
+        flag_normal = simdata.build_flags()
         blocks_regs = simdata.build_registers(use_bits)
         for _ in range(simdata.count):
             first = True

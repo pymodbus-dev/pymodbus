@@ -72,6 +72,22 @@ class TestFramer:
         assert isinstance(FramerRTU.crc16_table[0], int)
         assert isinstance(FramerRTU.crc16_table[255], int)
 
+    @pytest.mark.parametrize(
+        ("framer", "tids"),
+        [
+            (FramerBase, [(0, 0), (1, 0), (65000, 0)]),
+            (FramerSocket, [(0, 1), (1, 2), (64999, 65000), (65000, 1)]),
+            (FramerTLS, [(0, 1), (1, 2), (64999, 65000), (65000, 1)]),
+            (FramerRTU, [(0, 0), (1, 0), (65000, 0)]),
+            (FramerAscii, [(0, 0), (1, 0), (65000, 0)]),
+        ],
+    )
+    def test_next_transaction_id(self, framer, tids):
+        """Test transaction id sequence of each framer."""
+        test_framer = framer(DecodePDU(False))
+        for previous, expected in tids:
+            assert test_framer.next_transaction_id(previous) == expected
+
     def test_roundtrip_CRC(self):
         """Test combined compute/check CRC."""
         data = b"\x12\x34\x23\x45\x34\x56\x45\x67"
@@ -1006,7 +1022,7 @@ class TestFramerType:
         framer = FramerTLS(DecodePDU(False))
         data = b"\x00\x01\x00\x00\x00"
         data_len, dev_id, tid, pdu = framer.decode(data)
-        assert data_len == len(data)
+        assert data_len == 0
         assert dev_id == 0
         assert tid == 0
         assert pdu == framer.EMPTY

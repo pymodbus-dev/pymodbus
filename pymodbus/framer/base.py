@@ -56,6 +56,17 @@ class FramerBase:
         """
         return payload
 
+    def next_transaction_id(self, transaction_id: int) -> int:
+        """Return the transaction id to use for the next request.
+
+        The default frame does not carry a transaction id, so this returns 0.
+
+        :param transaction_id: transaction id of the previous request
+        :returns: 0
+        """
+        _ = transaction_id
+        return 0
+
     def buildFrame(self, message: ModbusPDU) -> bytes:
         """Create a ready to send modbus packet.
 

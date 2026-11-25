@@ -8,7 +8,7 @@ from threading import RLock
 from time import monotonic
 
 from ..exceptions import ConnectionException, ModbusIOException
-from ..framer import FramerAscii, FramerBase, FramerRTU
+from ..framer import FramerBase
 from ..logging import Log
 from ..pdu import ModbusPDU
 from ..transport import CommParams, CommType, ModbusProtocol
@@ -316,10 +316,5 @@ class TransactionManager(ModbusProtocol):  # pylint: disable=too-many-instance-a
 
     def getNextTID(self) -> int:
         """Retrieve the next transaction identifier."""
-        if isinstance(self.framer, (FramerAscii, FramerRTU)):
-            self.next_tid = 0
-        elif self.next_tid >= 65000:
-            self.next_tid = 1
-        else:
-            self.next_tid += 1
+        self.next_tid = self.framer.next_transaction_id(self.next_tid)
         return self.next_tid

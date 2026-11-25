@@ -29,7 +29,7 @@ from examples.server_updating import main as main_updating_server
 from examples.simple_async_client import run_async_simple_client
 from examples.simple_sync_client import run_sync_simple_client
 from examples.simulator import run_simulator as run_simulator3
-from pymodbus.client import ModbusTcpClient
+from pymodbus.client import ModbusTcpClient, ModbusUdpClient
 from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ExceptionResponse
 from pymodbus.server import ServerAsyncStop, ServerStop
@@ -190,8 +190,10 @@ class TestAsyncExamples:
         ("tcp", "rtu", True),
         ("tcp", "rtu", False),
         # awaiting fix: ("tls", "tls", None),
-        ("udp", "socket", None),
-        ("udp", "rtu", None),
+        ("udp", "socket", True),
+        ("udp", "socket", False),
+        ("udp", "rtu", True),
+        ("udp", "rtu", False),
         ("serial", "rtu", None),
     ],
 )
@@ -207,12 +209,13 @@ class TestSyncExamples:
 
     @pytest.fixture(autouse=True)
     @staticmethod
-    def select_tcp_implementation(run_async):
-        """Run the tcp client on the async client and on the old sync code."""
+    def select_implementation(use_comm, run_async):
+        """Run the tcp/udp client on the async client and on the old sync code."""
         if run_async is None:
             yield
             return
-        with mock.patch.object(ModbusTcpClient, "_run_async", run_async):
+        client_class = ModbusTcpClient if use_comm == "tcp" else ModbusUdpClient
+        with mock.patch.object(client_class, "_run_async", run_async):
             yield
 
     def test_client_calls(self, mock_clc, mock_cls):

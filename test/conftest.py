@@ -50,6 +50,7 @@ BASE_PORTS = {
     "TestNetwork": 8500,
     "TestSimulator": 8600,
     "TestSyncClientLoop": 8700,
+    "TestSyncClientLoopUdp": 8750,
 }
 
 

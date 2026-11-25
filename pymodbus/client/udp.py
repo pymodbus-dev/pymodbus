@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import functools
 import socket
 from collections.abc import Callable
 
@@ -176,17 +177,54 @@ class ModbusUdpClient(ModbusBaseSyncClient):
             trace_connect,
         )
         self.socket: socket.socket | None = None
+        self._async_client_factory = functools.partial(
+            AsyncModbusUdpClient,
+            host,
+            framer=framer,
+            port=port,
+            name=name,
+            source_address=source_address,
+            reconnect_delay=0,  # the sync client connects when a request needs it
+            timeout=timeout,
+            retries=retries,
+            trace_packet=trace_packet,
+            trace_pdu=trace_pdu,
+            trace_connect=trace_connect,
+        )
+
+    _run_async = True
 
     @property
     def connected(self) -> bool:
         """Connect internal."""
+        if self._run_async:
+            return bool(self._async_client and self._async_client.connected)
         return self.socket is not None
+
+    async def _create_async_client(self) -> ModbusBaseClient:
+        """Create the async counterpart, with the socket of the sync code.
+
+        The sync code uses an IPv4 socket, bound to source_address if given,
+        where host "" means any address.
+
+        :meta private:
+        """
+        client = await super()._create_async_client()
+        local_addr = None
+        if source_address := self.comm_params.source_address:
+            local_addr = (source_address[0] or "0.0.0.0", source_address[1])
+        client.ctx.call_create = functools.partial(
+            client.ctx.call_create, family=socket.AF_INET, local_addr=local_addr
+        )
+        return client
 
     def connect(self):
         """Connect to the modbus udp server.
 
         :meta private:
         """
+        if self._run_async:
+            return self._connect_async()
         if self.socket:
             return True
         try:
@@ -204,6 +242,9 @@ class ModbusUdpClient(ModbusBaseSyncClient):
 
         :meta private:
         """
+        if self._run_async:
+            self._close_async()
+            return
         if self.socket:
             self.socket.close()
         self.socket = None

@@ -29,11 +29,13 @@ from pymodbus.framer import (
 class TestSyncClientUdp:
     """Unittest for the pymodbus.client module."""
 
+    @mock.patch.object(ModbusUdpClient, "_run_async", False)
     def test_basic_syn_udp_bind(self):
         """Test the basic methods for the udp sync client."""
         client = ModbusUdpClient("127.0.0.1", source_address=("", 4096))
         client.connect()
 
+    @mock.patch.object(ModbusUdpClient, "_run_async", False)
     def test_basic_syn_udp_client(self, mockSocket):
         """Test the basic methods for the udp sync client."""
         # receive/send
@@ -59,6 +61,7 @@ class TestSyncClientUdp:
         client = ModbusUdpClient("127.0.0.1")
         assert client.is_socket_open()
 
+    @mock.patch.object(ModbusUdpClient, "_run_async", False)
     def test_udp_client_close_releases_socket(self):
         """Test the udp client close method releases the socket."""
         client = ModbusUdpClient("127.0.0.1")
@@ -88,6 +91,7 @@ class TestSyncClientUdp:
         assert client.recv(0) == b""
         assert client.recv(4) == b"\x00" * 4
 
+    @mock.patch.object(ModbusUdpClient, "_run_async", False)
     def test_udp_client_recv_duplicate(self, mockSocket):
         """Test the udp client receive method."""
         test_msg = b"\x00\x01\x00\x00\x00\x05\x01\x04\x02\x00\x03"

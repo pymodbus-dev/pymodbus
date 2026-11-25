@@ -904,7 +904,7 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         BITS = ("bits", 0)
 
     @classmethod
-    def convert_from_registers(  # noqa: C901
+    def convert_from_registers(
         cls,
         registers: Sequence[int],
         data_type: DATATYPE,
@@ -925,12 +925,9 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         if not isinstance(data_type, cls.DATATYPE):
             raise TypeError("Illegal data_type, please use <client>.DATATYPE!")
 
-        if not (data_len := data_type.value[1]):
-            byte_list = bytearray()
-            if word_order == "little":
-                registers = list(reversed(registers))
-            for x in registers:
-                byte_list.extend(int.to_bytes(x, 2, "big"))
+        struct_format, regs_per_value = data_type.value
+        if not regs_per_value:
+            byte_list = cls._registers_to_bytes(registers, word_order)
             if data_type == cls.DATATYPE.STRING:
                 trailing_nulls_begin = len(byte_list)
                 while (
@@ -940,20 +937,17 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
                 byte_list = byte_list[:trailing_nulls_begin]
                 return byte_list.decode(string_encoding)
             return unpack_bitstring(byte_list)
-        if (reg_len := len(registers)) % data_len:
+        if (registers_count := len(registers)) % regs_per_value:
             raise ModbusException(
-                f"Registers illegal size ({len(registers)}) expected multiple of {data_len}!"
+                f"Registers illegal size ({len(registers)}) expected multiple of {regs_per_value}!"
             )
 
         result = []
-        for i in range(0, reg_len, data_len):
-            regs = registers[i : i + data_len]
-            if word_order == "little":
-                regs = list(reversed(regs))
-            byte_list = bytearray()
-            for x in regs:
-                byte_list.extend(int.to_bytes(x, 2, "big"))
-            result.append(struct.unpack(f">{data_type.value[0]}", byte_list)[0])
+        for i in range(0, registers_count, regs_per_value):
+            byte_list = cls._registers_to_bytes(
+                registers[i : i + regs_per_value], word_order
+            )
+            result.append(struct.unpack(f">{struct_format}", byte_list)[0])
         return result if len(result) != 1 else result[0]
 
     @classmethod
@@ -978,21 +972,11 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
             raise TypeError("Illegal data_type, please use <client>.DATATYPE!")
 
         if data_type == cls.DATATYPE.BITS:
-            if not isinstance(value, list):
-                raise TypeError(f"Value should be list of bool but is {type(value)}.")
-            byte_list = pack_bitstring(cast(list[bool], value), align_byte=False)
+            byte_list = cls._bits_to_bytes(value)
         elif data_type == cls.DATATYPE.STRING:
-            if not isinstance(value, str):
-                raise TypeError(f"Value should be string but is {type(value)}.")
-            byte_list = value.encode(string_encoding)
-            if len(byte_list) % 2:
-                byte_list += b"\x00"
+            byte_list = cls._string_to_bytes(value, string_encoding)
         else:
-            if not isinstance(value, list):
-                value = cast(list[int], [value])
-            byte_list = bytearray()
-            for v in value:
-                byte_list.extend(struct.pack(f">{data_type.value[0]}", v))
+            byte_list = cls._values_to_bytes(value, data_type)
         regs = [
             int.from_bytes(byte_list[x : x + 2], "big")
             for x in range(0, len(byte_list), 2)
@@ -1003,14 +987,64 @@ class ModbusClientMixin(Generic[T]):  # pylint: disable=too-many-public-methods
         return regs
 
     @classmethod
+    def _bits_to_bytes(
+        cls, value: int | float | str | list[bool] | list[int] | list[float]
+    ) -> bytes:
+        """Pack a list of bits, 16 bits per register."""
+        if not isinstance(value, list):
+            raise TypeError(f"Value should be list of bool but is {type(value)}.")
+        return pack_bitstring(cast(list[bool], value), align_byte=False)
+
+    @classmethod
+    def _string_to_bytes(
+        cls,
+        value: int | float | str | list[bool] | list[int] | list[float],
+        string_encoding: str,
+    ) -> bytes:
+        """Encode a string, padded with a NUL byte to fill the last register."""
+        if not isinstance(value, str):
+            raise TypeError(f"Value should be string but is {type(value)}.")
+        byte_list = value.encode(string_encoding)
+        if len(byte_list) % 2:
+            byte_list += b"\x00"
+        return byte_list
+
+    @classmethod
+    def _values_to_bytes(
+        cls,
+        value: int | float | str | list[bool] | list[int] | list[float],
+        data_type: DATATYPE,
+    ) -> bytearray:
+        """Pack one or more numeric values using the struct format of data_type."""
+        if not isinstance(value, list):
+            value = cast(list[int], [value])
+        struct_format = data_type.value[0]
+        byte_list = bytearray()
+        for v in value:
+            byte_list.extend(struct.pack(f">{struct_format}", v))
+        return byte_list
+
+    @classmethod
+    def _registers_to_bytes(
+        cls, registers: Sequence[int], word_order: Literal["big", "little"]
+    ) -> bytearray:
+        """Convert registers to bytes (2 bytes per register, big endian)."""
+        if word_order == "little":
+            registers = list(reversed(registers))
+        byte_list = bytearray()
+        for register in registers:
+            byte_list.extend(int.to_bytes(register, 2, "big"))
+        return byte_list
+
+    @classmethod
     def _get_reversed_registers(cls, regs: list[int], data_type: DATATYPE) -> list[int]:
-        if not (data_type_len := data_type.value[1]):
+        if not (regs_per_value := data_type.value[1]):
             regs.reverse()
             return regs
 
         reversed_regs: list[int] = []
-        for x in range(0, len(regs), data_type_len):
-            single_value_regs = regs[x : x + data_type_len]
+        for start in range(0, len(regs), regs_per_value):
+            single_value_regs = regs[start : start + regs_per_value]
             single_value_regs.reverse()
             reversed_regs += single_value_regs
         return reversed_regs

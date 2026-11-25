@@ -48,3 +48,10 @@ class FramerSocket(FramerBase):
             + payload
         )
         return frame
+
+
+class FramerTLS(FramerSocket):
+    """Modbus TLS frame type.
+
+    Identical to socket.
+    """

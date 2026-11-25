@@ -12,8 +12,7 @@ __all__ = [
 from .ascii import FramerAscii
 from .base import FramerBase, FramerType
 from .rtu import FramerRTU
-from .socket import FramerSocket
-from .tls import FramerTLS
+from .socket import FramerSocket, FramerTLS
 
 
 FRAMER_NAME_TO_CLASS = {

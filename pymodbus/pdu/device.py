@@ -241,7 +241,7 @@ class DeviceInformationFactory:  # pylint: disable=too-few-public-methods
 
     __lookup = {
         DeviceInformation.BASIC: lambda c, r, i: c.__gets(  # pylint: disable=protected-access
-            r, list(range(i, 0x03))
+            r, list(range(i, 0x03)) if i < 0x03 else list(range(0, 0x03))
         ),
         DeviceInformation.REGULAR: lambda c, r, i: c.__gets(  # pylint: disable=protected-access
             r,

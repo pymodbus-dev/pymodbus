@@ -23,7 +23,7 @@ from examples.client_sync import (
 )
 from examples.server_async import setup_server
 from examples.server_sync import run_sync_server
-from pymodbus.client import ModbusTcpClient
+from pymodbus.client import ModbusTcpClient, ModbusUdpClient
 from pymodbus.exceptions import ConnectionException
 from pymodbus.server import ServerStop
 
@@ -40,8 +40,10 @@ SLEEPING = 5 if os.name == "nt" else 1
         ("tcp", "rtu", True),
         ("tcp", "rtu", False),
         # awaiting fix: ("tls", "tls", None),
-        ("udp", "socket", None),
-        ("udp", "rtu", None),
+        ("udp", "socket", True),
+        ("udp", "socket", False),
+        ("udp", "rtu", True),
+        ("udp", "rtu", False),
         ("serial", "rtu", None),
     ],
 )
@@ -57,12 +59,13 @@ class TestClientServerSyncExamples:
 
     @pytest.fixture(autouse=True)
     @staticmethod
-    def select_tcp_implementation(run_async):
-        """Run the tcp client on the async client and on the old sync code."""
+    def select_implementation(use_comm, run_async):
+        """Run the tcp/udp client on the async client and on the old sync code."""
         if run_async is None:
             yield
             return
-        with mock.patch.object(ModbusTcpClient, "_run_async", run_async):
+        client_class = ModbusTcpClient if use_comm == "tcp" else ModbusUdpClient
+        with mock.patch.object(client_class, "_run_async", run_async):
             yield
 
     def test_combinations(

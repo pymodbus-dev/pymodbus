@@ -3,6 +3,7 @@
 import pytest
 
 from pymodbus.simulator import DataType, SimData
+from pymodbus.simulator.simutils import SimUtils
 
 
 class TestSimData:
@@ -193,6 +194,18 @@ class TestSimData:
         sd = SimData(11, values=value, datatype=DataType.BITS)
         build_regs = sd.build_registers(True)
         assert build_regs == regs
+
+    @pytest.mark.parametrize("readonly", [False, True])
+    @pytest.mark.parametrize(
+        ("datatype", "value"),
+        [(DataType.INT16, 1), (DataType.FLOAT32, 1.5), (DataType.STRING, "A")],
+    )
+    def test_simdata_build_flags(self, datatype, value, readonly):
+        """Test simdata runtime flags."""
+        sd = SimData(0, values=value, datatype=datatype, readonly=readonly)
+        flags = sd.build_flags()
+        assert flags & SimUtils.RunTimeFlag_TYPE == datatype
+        assert bool(flags & SimUtils.RunTimeFlag_READONLY) == readonly
 
     def test_simdata_build_updated_simdata(self):
         """Test simdata value."""

@@ -16,11 +16,16 @@ __all__ = [
 class ModbusException(Exception):
     """Base modbus exception."""
 
-    def __init__(self, string: str) -> None:
+    #: Category shown as "[category]" in front of the message, set by subclasses.
+    category: str = ""
+
+    def __init__(self, string: str = "") -> None:
         """Initialize the exception.
 
         :param string: The message to append to the error
         """
+        if self.category:
+            string = f"[{self.category}] {string}"
         self.string = string
         super().__init__(string)
 
@@ -35,6 +40,8 @@ class ModbusException(Exception):
 
 class ModbusIOException(ModbusException):
     """Error resulting from data i/o."""
+
+    category = "Input/Output"
 
     def __init__(
         self,
@@ -62,62 +69,35 @@ class ModbusIOException(ModbusException):
         self.transaction_id = transaction_id
         self.dev_id = dev_id
         self.used_len = used_len
-        self.message = f"[Input/Output] {string}"
-        ModbusException.__init__(self, self.message)
+        super().__init__(string)
+        self.message = self.string
 
 
 class ParameterException(ModbusException):
     """Error resulting from invalid parameter."""
 
-    def __init__(self, string: str = "") -> None:
-        """Initialize the exception.
-
-        :param string: The message to append to the error
-        """
-        message = f"[Invalid Parameter] {string}"
-        ModbusException.__init__(self, message)
+    category = "Invalid Parameter"
 
 
 class NoSuchIdException(ModbusException):
     """Error resulting from making a request to a id that does not exist."""
 
-    def __init__(self, string: str = "") -> None:
-        """Initialize the exception.
-
-        :param string: The message to append to the error
-        """
-        message = f"[No Such id] {string}"
-        ModbusException.__init__(self, message)
+    category = "No Such id"
 
 
 class NotImplementedException(ModbusException):
     """Error resulting from not implemented function."""
 
-    def __init__(self, string: str = "") -> None:
-        """Initialize the exception.
-
-        :param string: The message to append to the error
-        """
-        message = f"[Not Implemented] {string}"
-        ModbusException.__init__(self, message)
+    category = "Not Implemented"
 
 
 class ConnectionException(ModbusException):
     """Error resulting from a bad connection."""
 
-    def __init__(self, string: str = "") -> None:
-        """Initialize the exception.
-
-        :param string: The message to append to the error
-        """
-        message = f"[Connection] {string}"
-        ModbusException.__init__(self, message)
+    category = "Connection"
 
 
 class MessageRegisterException(ModbusException):
     """Error resulting from failing to register a custom message request/response."""
 
-    def __init__(self, string: str = "") -> None:
-        """Initialize."""
-        message = f"[Error registering message] {string}"
-        ModbusException.__init__(self, message)
+    category = "Error registering message"

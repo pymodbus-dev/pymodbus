@@ -691,6 +691,7 @@ class TestClientBase:
             client.ctx.execute = mock.AsyncMock(return_value="response")
             assert await client.execute(False, None)
 
+    @mock.patch.object(lib_client.ModbusUdpClient, "_run_async", False)
     def test_client_udp_connect(self):
         """Test the Udp client connection method."""
         with mock.patch.object(socket, "socket") as mock_method:

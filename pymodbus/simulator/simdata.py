@@ -206,6 +206,13 @@ class SimData:
             blocks_regs.extend(regs)
         return blocks_regs
 
+    def build_flags(self) -> int:
+        """Create the runtime flags (datatype, readonly) of the registers."""
+        flags: int = self.datatype
+        if self.readonly:
+            flags |= SimUtils.RunTimeFlag_READONLY
+        return flags
+
     def build_registers(self, block_bits: bool) -> list[int] | list[bool]:
         """Convert values= to registers."""
         self.__check_parameters()

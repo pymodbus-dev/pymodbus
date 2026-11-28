@@ -98,6 +98,31 @@ class TestModbusBitMessage:
             pdu = decoder.decode(frame)
             assert pdu.count == expected_count
 
+    def test_write_coils_max_count_fits_pdu(self):
+        """The largest write count must keep the PDU within 253 bytes."""
+        assert bit_msg.WriteMultipleCoilsRequest.MAX_COUNT == 0x07B0
+        pdu = bit_msg.WriteMultipleCoilsRequest(address=0, bits=[True] * 0x07B0)
+        assert len(pdu.x_encode()) + 1 <= 253
+        with pytest.raises(ValueError, match="count"):
+            bit_msg.WriteMultipleCoilsRequest(
+                address=0, bits=[True] * (0x07B0 + 1)
+            ).x_encode()
+
+    @pytest.mark.parametrize("count", [0, 0x07B1, 2000])
+    async def test_write_coils_count_out_of_range_returns_illegal_value(
+        self, count, mock_server_context
+    ):
+        """An out-of-range write quantity must answer 0x03, not silence."""
+        context = mock_server_context()
+        context.async_setValues = mock.AsyncMock(return_value=0)
+        byte_count = (count + 7) // 8
+        frame = b"\x0f\x00\x00" + count.to_bytes(2, "big") + bytes([byte_count])
+        pdu = DecodePDU(True).decode(frame + b"\xff" * byte_count)
+        result = await pdu.datastore_update(context, 1)
+        assert result.function_code == 0x8F
+        assert result.exception_code == ExcCodes.ILLEGAL_VALUE
+        context.async_setValues.assert_not_awaited()
+
     async def test_bit_datastore_exceptions(self, mock_server_context):
         """Test bit exception response from datastore."""
         context = mock_server_context()

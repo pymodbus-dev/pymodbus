@@ -10,7 +10,7 @@ from __future__ import annotations
 from binascii import a2b_hex, b2a_hex
 
 from ..logging import Log
-from ..pdu.device import ModbusControlBlock
+from ..pdu import ModbusControlBlock
 from .base import FramerBase
 
 
@@ -77,18 +77,13 @@ class FramerAscii(FramerBase):
             if not self.check_LRC(msg, lrc):
                 Log.debug("LRC wrong in frame: {} skipping", data, ":hex")
                 continue
-            return used_len, dev_id, 0, msg[1:]
+            return used_len, dev_id, 0, msg
 
-    def encode(self, payload: bytes, device_id: int, _tid: int) -> bytes:
+    def encode(self, payload: bytes, _tid: int) -> bytes:
         """Encode ADU."""
-        dev_id = device_id.to_bytes(1, "big")
-        checksum = self.compute_LRC(dev_id + payload)
+        checksum = self.compute_LRC(payload)
         frame = (
-            self.START
-            + f"{device_id:02x}".encode()
-            + b2a_hex(payload)
-            + f"{checksum:02x}".encode()
-            + self.end
+            self.START + b2a_hex(payload) + f"{checksum:02x}".encode() + self.end
         ).upper()
         return frame
 

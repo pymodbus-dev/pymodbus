@@ -10,6 +10,7 @@ import enum
 
 
 INTERNAL_ERROR = "Pymodbus internal error"
+MAX_TRANSACTION_ID = 65535
 
 
 class ModbusStatus(enum.IntEnum):
@@ -55,22 +56,8 @@ class ExcCodes(enum.IntEnum):
     GATEWAY_NO_RESPONSE = 0x0B
 
 
-class ModbusPlusOperation(enum.IntEnum):
-    """Represents the type of modbus plus request.
-
-    .. attribute:: GET_STATISTICS
-
-       Operation requesting that the current modbus plus statistics
-       be returned in the response.
-
-    .. attribute:: CLEAR_STATISTICS
-
-       Operation requesting that the current modbus plus statistics
-       be cleared and not returned in the response.
-    """
-
-    GET_STATISTICS = 0x0003
-    CLEAR_STATISTICS = 0x0004
+GET_STATISTICS = b"\x00\x03"
+CLEAR_STATISTICS = b"\x00\x04"
 
 
 class DeviceInformation(enum.IntEnum):

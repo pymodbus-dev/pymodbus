@@ -35,7 +35,6 @@ class BasicClient(asyncio.BaseProtocol):
 
     connected: asyncio.Future
     data: bytes
-    dataTo: bytes
     received_data: bytes
     done: asyncio.Future
     eof: asyncio.Future
@@ -49,11 +48,9 @@ class BasicClient(asyncio.BaseProtocol):
             BasicClient.connected.set_result(True)
 
         self.transport = transport
-        if BasicClient.data is not None:
-            _logger.debug("TEST Client write data")
-            self.transport.write(BasicClient.data)  # type: ignore[union-attr]
-        _logger.debug("TEST Client sendTo data")
-        self.transport.sendto(BasicClient.dataTo)  # type: ignore[union-attr]
+        _logger.debug("TEST Client write data")
+        self.transport.write(BasicClient.data)  # type: ignore[union-attr]
+        return
 
     def data_received(self, data):
         """Get Data received."""
@@ -264,7 +261,7 @@ class TestAsyncioServer:
         await self.start_server()
         await self.connect_server()
         await asyncio.wait_for(BasicClient.done, timeout=0.1)
-        assert BasicClient.received_data == b"\x00\x00\x00\x00\x00\x03\x01\x83\x03"
+        assert BasicClient.received_data == b"\x00\x00\x00\x00\x00\x03\x01\x83\x02"
 
     async def test_async_tcp_server_write_coil_illegal_value(self):
         """A Write Single Coil value other than 0x0000 or 0xFF00 must answer 0x03."""
@@ -272,7 +269,7 @@ class TestAsyncioServer:
         await self.start_server()
         await self.connect_server()
         await asyncio.wait_for(BasicClient.done, timeout=0.1)
-        assert BasicClient.received_data == b"\x00\x00\x00\x00\x00\x03\x01\x85\x03"
+        assert BasicClient.received_data == b"\x00\x00\x00\x00\x00\x03\x01\x85\x02"
 
     async def test_async_tcp_server_reserved_function_code(self):
         """A function code reserved for exception responses must answer 0x01."""
@@ -280,7 +277,7 @@ class TestAsyncioServer:
         await self.start_server()
         await self.connect_server()
         await asyncio.wait_for(BasicClient.done, timeout=0.1)
-        assert BasicClient.received_data == b"\x00\x00\x00\x00\x00\x03\x01\x81\x01"
+        assert BasicClient.received_data == b"\x00\x00\x00\x00\x00\x03\x00\x80\x01"
 
     async def test_async_server_trace_connect_disconnect(self):
         """Test connect/disconnect trace handler."""
@@ -330,7 +327,7 @@ class TestAsyncioServer:
         BasicClient.data = TEST_DATA
         await self.start_server()
         with mock.patch(
-            "pymodbus.pdu.register_message.ReadHoldingRegistersRequest.datastore_update",
+            "pymodbus.pdu.data_message.PDUreadHoldingRegisters.build_response",
             side_effect=NoSuchIdException,
         ):
             await self.connect_server()
@@ -385,7 +382,7 @@ class TestAsyncioServer:
     async def test_async_udp_server_roundtrip(self):
         """Test sending and receiving data on udp socket."""
         expected_response = b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"  # value of 17 as per context
-        BasicClient.dataTo = TEST_DATA  # device 1, read register
+        BasicClient.data = TEST_DATA  # device 1, read register
         BasicClient.done = asyncio.Future()
         await self.start_server(do_udp=True)
         random_port = self.server.transport._sock.getsockname()[1]  # type: ignore[union-attr,attr-defined] # pylint: disable=protected-access
@@ -398,7 +395,7 @@ class TestAsyncioServer:
 
     async def test_async_udp_server_exception(self):
         """Test sending garbage data on a TCP socket should drop the connection."""
-        BasicClient.dataTo = b"\xff\xff\xff\xff\xff\xff\xff\xff"
+        BasicClient.data = b"\xff\xff\xff\xff\xff\xff\xff\xff"
         BasicClient.connected = asyncio.Future()
         BasicClient.done = asyncio.Future()
         await self.start_server(do_udp=True)

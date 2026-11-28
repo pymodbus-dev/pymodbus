@@ -5,6 +5,7 @@ Versions (X.Y.Z) where Z == 0 e.g. 3.0.1 do NOT have API changes!
 API changes 3.17.0
 ------------------
 - the sync client converts automatically to async, this is not a API change, but it is a major change.
+- ModbusTcpServer/ModbusTlsServer accept max 10 connections, more connections are closed (change with server.max_connections).
 
 API changes 3.16.0
 ------------------

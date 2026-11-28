@@ -61,6 +61,7 @@ class ModbusBaseServer(ModbusProtocol):
         self.trace_packet = trace_packet
         self.trace_pdu = trace_pdu
         self.trace_connect = trace_connect
+        self.max_connections = 10
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 

@@ -42,6 +42,17 @@ class ServerRequestHandler(TransactionManager):
             trace_connect,
         )
 
+    def callback_connected(self) -> None:
+        """Call when connection is successful."""
+        if len(self.server.active_connections) > self.server.max_connections:
+            Log.warning(
+                "Connection refused, server already has {} connections",
+                self.server.max_connections,
+            )
+            self.close()
+            return
+        super().callback_connected()
+
     def callback_disconnected(self, exc: Exception | None) -> None:
         """Call when connection is lost."""
         super().callback_disconnected(exc)

@@ -336,6 +336,42 @@ class TestAsyncioServer:
             await self.connect_server()
             await asyncio.wait_for(BasicClient.done, timeout=0.1)
 
+    async def test_async_tcp_server_max_connections(self):
+        """Test connections above max_connections are closed by the server."""
+        await self.start_server()
+        assert self.server
+        self.server.max_connections = 3
+        port = self.server.transport.sockets[0].getsockname()[1]  # type: ignore[attr-defined]
+        clients = [await asyncio.open_connection(SERV_IP, port) for _ in range(3)]
+        await asyncio.sleep(0.1)
+        assert len(self.server.active_connections) == 3
+
+        reader, writer = await asyncio.open_connection(SERV_IP, port)
+        assert not await asyncio.wait_for(reader.read(), timeout=1)
+        writer.close()
+        assert len(self.server.active_connections) == 3
+
+        reader, writer = clients[0]
+        writer.write(TEST_DATA)
+        assert await asyncio.wait_for(reader.read(11), timeout=1) == (
+            b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"
+        )
+
+        writer.close()
+        await asyncio.sleep(0.1)
+        reader, writer = await asyncio.open_connection(SERV_IP, port)
+        clients[0] = (reader, writer)
+        await asyncio.sleep(0.1)
+        assert len(self.server.active_connections) == 3
+        for _, writer in clients:
+            writer.close()
+
+    async def test_async_tcp_server_default_max_connections(self):
+        """Test the default connection limit."""
+        await self.start_server(do_forever=False)
+        assert self.server
+        assert self.server.max_connections == 10
+
     # -----------------------------------------------------------------------#
     # Test ModbusTlsProtocol
     # -----------------------------------------------------------------------#

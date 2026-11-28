@@ -204,7 +204,7 @@ class WriteMultipleCoilsRequest(ModbusPDU):
     count: int
     byte_count: int | None
     data_byte_count: int
-    MAX_COUNT = 2000
+    MAX_COUNT = 1968  # 0x07B0, largest count whose PDU fits in 253 bytes
 
     @classmethod
     def x_calculateRtuFrameSize(cls, data: bytes) -> int:
@@ -242,7 +242,6 @@ class WriteMultipleCoilsRequest(ModbusPDU):
     def x_decode(self, data: bytes) -> None:
         """Decode a write coils request."""
         self.address, self.count, self.byte_count = struct.unpack(">HHB", data[0:5])
-        self.verifyCount(self.MAX_COUNT)
         self.data_byte_count = len(data) - 5
         self.bits = unpack_bitstring(data[5 : 5 + cast(int, self.byte_count)])[
             : self.count
@@ -254,6 +253,8 @@ class WriteMultipleCoilsRequest(ModbusPDU):
         """Run a request against a datastore."""
         if self.byte_count is None:
             self.count = len(self.bits)
+        elif not 1 <= self.count <= self.MAX_COUNT:
+            return ExceptionResponse(self.function_code, ExcCodes.ILLEGAL_VALUE)
         else:
             expected_byte_count = (self.count + 7) // 8
             if (
